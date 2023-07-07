@@ -32,6 +32,9 @@ export function WithSubnavigation() {
                 borderStyle={'solid'}
                 borderColor={useColorModeValue('gray.200', 'gray.900')}
                 align={'center'}
+                as='header'
+                position='fixed'
+                w='100%'
             >
                 <Flex
                     flex={{ base: 1, md: 'auto' }}
@@ -51,7 +54,7 @@ export function WithSubnavigation() {
                         fontFamily={'heading'}
                         color={useColorModeValue('gray.800', 'white')}
                     >
-                        Logo
+                        Recipes
                     </Text>
 
                     <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
