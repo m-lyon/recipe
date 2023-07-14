@@ -7,14 +7,21 @@ export function EditableIngredientList() {
     // map that to the EditableIngredient component array
     const [ingredients, setIngredients] = useState(['']);
 
+    console.log('EditableIngredientList', ingredients);
+
+    const ingredientsList = ingredients.map((ingredient, index) => (
+        <EditableIngredient
+            key={index}
+            numIngredients={ingredients.length}
+            setIngredients={setIngredients}
+            index={index}
+        />
+    ));
+
     return (
         <VStack spacing='24px' align='left'>
             <Box fontSize='2xl'>Ingredients</Box>
-            <UnorderedList>
-                {ingredients.map((ingredient, index) => (
-                    <EditableIngredient key={index} setIngredients={setIngredients} />
-                ))}
-            </UnorderedList>
+            <UnorderedList>{ingredientsList}</UnorderedList>
         </VStack>
     );
 }

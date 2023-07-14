@@ -1,7 +1,9 @@
 import { useRef, useState } from 'react';
 
-export function useEditableListItem(defaultStr: string, setIngredients) {
+interface UseEditableListItemReturn {}
+export function useEditableListItem(numIngredients: number, setIngredients, index: number) {
     const inputRef = useRef(null);
+    const defaultStr = 'Enter ingredient';
     const [isEdited, setIsEdited] = useState<boolean>(false);
     const [inputValue, setInputValue] = useState<string>(defaultStr);
 
@@ -12,7 +14,7 @@ export function useEditableListItem(defaultStr: string, setIngredients) {
     };
 
     const handleChange = (value: string) => {
-        console.log(value);
+        console.log('handleChange');
         if (!isEdited) {
             setIsEdited(true);
             setInputValue(value.replace(defaultStr, ''));
@@ -22,13 +24,38 @@ export function useEditableListItem(defaultStr: string, setIngredients) {
     };
 
     const handleSubmit = (value: string) => {
+        // Reset the value to the default text when the field is empty, if last
+        // in list, or remove item if not
+        console.log('handleSubmit called, index -> ', index);
         if (value.trim() === '') {
-            // Reset the value to the default text when the field is empty
-            setIsEdited(false);
-            setInputValue(defaultStr);
+            if (index + 1 === numIngredients) {
+                // Last entry in ingredient list
+                setIsEdited(false);
+                setInputValue(defaultStr);
+            } else {
+                setIngredients((prevIngredients: string[]) => {
+                    console.log(prevIngredients);
+                    return prevIngredients.filter((value, idx) => {
+                        console.log(
+                            'setIngredients, value -> ',
+                            value,
+                            ', idx -> ',
+                            idx,
+                            idx !== index
+                        );
+                        return idx !== index;
+                    });
+                });
+            }
         } else if (isEdited) {
             // Add the current inputValue to the list of ingredients
-            setIngredients((prevIngredients) => [...prevIngredients, inputValue]);
+            setIngredients((prevIngredients: string[]) => {
+                if (prevIngredients.length === 1 && prevIngredients[0] === '') {
+                    return [`${index} ${inputValue}`, ''];
+                } else {
+                    return [...prevIngredients.slice(0, -1), `${index} ${inputValue}`, ''];
+                }
+            });
         }
     };
 

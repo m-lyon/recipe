@@ -2,7 +2,7 @@ import { Container, Box, SkeletonCircle, SkeletonText } from '@chakra-ui/react';
 import { Grid, GridItem } from '@chakra-ui/react';
 import { WithSubnavigation } from '../components/Navbar';
 import { EditableTitle } from '../components/EditableTitle';
-import { EditableIngredientList } from '../components/EditableIngredientList';
+import { EditableIngredientList } from '../components/EditableIngredientListV2';
 import { EditableField } from '../components/EditableField';
 
 export function CreateRecipePage(props) {

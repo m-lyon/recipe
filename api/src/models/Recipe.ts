@@ -1,5 +1,6 @@
 import { Schema, Document, model, Types } from 'mongoose';
 import { tagValidator } from './Tag';
+import { cuisineValidator } from './Cuisine';
 
 export interface IRecipeIngredient extends Document {
     ingredient: Types.ObjectId;
@@ -25,6 +26,7 @@ export interface IRecipe extends Document {
     notes?: string[];
     owner: Types.ObjectId;
     source?: string;
+    cuisine?: Types.ObjectId[];
 }
 
 const recipeSchema = new Schema<IRecipe>({
@@ -58,6 +60,10 @@ const recipeSchema = new Schema<IRecipe>({
     },
     owner: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
     source: { type: String },
+    cuisine: {
+        type: [{ type: Schema.Types.ObjectId, ref: 'Cuisine' }],
+        validate: cuisineValidator,
+    },
 });
 
 export const Recipe = model<IRecipe>('Recipe', recipeSchema);
