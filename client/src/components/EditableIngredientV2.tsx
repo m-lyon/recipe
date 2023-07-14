@@ -64,7 +64,7 @@ export function EditableIngredient({
     useEffect(() => {
         const handleKeyPress = (event) => {
             if (event.key === 'Enter') {
-                console.log('enter was pressed');
+                // Can use this to enter edit mode of a component hopefully
             }
         };
         if (inputRef.current) {
