@@ -3,6 +3,7 @@ import { Grid, GridItem } from '@chakra-ui/react';
 import { WithSubnavigation } from '../components/Navbar';
 import { EditableIngredientList } from '../components/EditableIngredientList';
 import { EditableField } from '../components/EditableField';
+import { EditableTagList } from '../components/EditableTagList';
 
 export function CreateRecipePage(props) {
     return (
@@ -11,7 +12,7 @@ export function CreateRecipePage(props) {
             <Container maxW='container.xl' pt='60px'>
                 <Grid
                     templateAreas={`'title title'
-                                    'ingredients info'
+                                    'ingredients tags'
                                     'ingredients main'
                                     'images images'`}
                     gridTemplateRows={'100px 0.2fr 0.9fr 200px'}
@@ -30,8 +31,8 @@ export function CreateRecipePage(props) {
                             textAlign='center'
                         />
                     </GridItem>
-                    <GridItem pl='2' area={'info'} boxShadow='lg' padding='6'>
-                        <SkeletonText mt='4' noOfLines={3} spacing='3' skeletonHeight='2' />
+                    <GridItem pl='2' area={'tags'} boxShadow='lg' padding='6'>
+                        <EditableTagList />
                     </GridItem>
                     <GridItem pl='2' area={'ingredients'} boxShadow='lg' padding='6'>
                         <EditableIngredientList />
