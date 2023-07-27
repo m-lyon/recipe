@@ -1,14 +1,14 @@
 import { Schema, Document, Types, model } from 'mongoose';
 
-export interface ITag extends Document {
+export interface Tag extends Document {
     name: string;
 }
 
-const tagSchema = new Schema<ITag>({
+const tagSchema = new Schema<Tag>({
     name: { type: String, required: true, unique: true },
 });
 
-export const Tag = model<ITag>('Tag', tagSchema);
+export const Tag = model<Tag>('Tag', tagSchema);
 
 export const tagValidator = {
     validator: function (tags?: Types.ObjectId[]) {

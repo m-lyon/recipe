@@ -2,7 +2,7 @@ import { Schema, Document, model, Types } from 'mongoose';
 import { tagValidator } from './Tag';
 import { cuisineValidator } from './Cuisine';
 
-export interface IRecipeIngredient extends Document {
+export interface RecipeIngredient extends Document {
     ingredient: Types.ObjectId;
     ingredientType: 'Ingredient' | 'Recipe';
     amount: number;
@@ -10,7 +10,7 @@ export interface IRecipeIngredient extends Document {
     prepMethod: Types.ObjectId;
 }
 
-const recipeIngredientSchema = new Schema<IRecipeIngredient>({
+const recipeIngredientSchema = new Schema<RecipeIngredient>({
     ingredient: { type: Schema.Types.ObjectId, refPath: 'ingredientType', required: true },
     ingredientType: { type: String, enum: ['Ingredient', 'Recipe'], required: true },
     amount: { type: Number, required: true },
@@ -18,10 +18,10 @@ const recipeIngredientSchema = new Schema<IRecipeIngredient>({
     prepMethod: { type: Schema.Types.ObjectId, ref: 'PrepMethod' },
 });
 
-export interface IRecipe extends Document {
+export interface Recipe extends Document {
     title: string;
     tags?: Types.ObjectId[];
-    ingredients: IRecipeIngredient[];
+    ingredients: RecipeIngredient[];
     instructions: string[];
     notes?: string[];
     owner: Types.ObjectId;
@@ -29,7 +29,7 @@ export interface IRecipe extends Document {
     cuisine?: Types.ObjectId[];
 }
 
-const recipeSchema = new Schema<IRecipe>({
+const recipeSchema = new Schema<Recipe>({
     title: { type: String, required: true },
     tags: {
         type: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
@@ -39,7 +39,7 @@ const recipeSchema = new Schema<IRecipe>({
         type: [{ type: recipeIngredientSchema }],
         required: true,
         validate: {
-            validator: function (ingredients: IRecipeIngredient[]) {
+            validator: function (ingredients: RecipeIngredient[]) {
                 return ingredients.length > 0;
             },
             message: 'At least one ingredient is required.',
@@ -66,4 +66,4 @@ const recipeSchema = new Schema<IRecipe>({
     },
 });
 
-export const Recipe = model<IRecipe>('Recipe', recipeSchema);
+export const Recipe = model<Recipe>('Recipe', recipeSchema);

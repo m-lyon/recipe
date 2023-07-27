@@ -1,14 +1,14 @@
 import { Schema, Document, Types, model } from 'mongoose';
 
-export interface ICuisine extends Document {
+export interface Cuisine extends Document {
     name: string;
 }
 
-const cuisineSchema = new Schema<ICuisine>({
+const cuisineSchema = new Schema<Cuisine>({
     name: { type: String, required: true, unique: true },
 });
 
-export const Cuisine = model<ICuisine>('Cuisine', cuisineSchema);
+export const Cuisine = model<Cuisine>('Cuisine', cuisineSchema);
 
 export const cuisineValidator = {
     validator: function (cuisines?: Types.ObjectId[]) {

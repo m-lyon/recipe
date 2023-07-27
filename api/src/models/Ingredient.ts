@@ -1,13 +1,13 @@
 import { Schema, Document, Types, model } from 'mongoose';
 import { tagValidator } from './Tag';
 
-export interface IIngredient extends Document {
+export interface Ingredient extends Document {
     name: string;
     tags?: Types.ObjectId[];
     prepMethods: Types.ObjectId[];
 }
 
-const ingredientSchema = new Schema<IIngredient>({
+const ingredientSchema = new Schema<Ingredient>({
     name: { type: String, required: true, unique: true },
     tags: {
         type: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
@@ -25,4 +25,4 @@ const ingredientSchema = new Schema<IIngredient>({
     },
 });
 
-export const Ingredient = model<IIngredient>('Ingredient', ingredientSchema);
+export const Ingredient = model<Ingredient>('Ingredient', ingredientSchema);

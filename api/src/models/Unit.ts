@@ -1,11 +1,11 @@
 import { Schema, Document, model } from 'mongoose';
 
-export interface IUnit extends Document {
+export interface Unit extends Document {
     name: string;
 }
 
-const unitSchema = new Schema<IUnit>({
+const unitSchema = new Schema<Unit>({
     name: { type: String, required: true, unique: true },
 });
 
-export const Unit = model<IUnit>('Unit', unitSchema);
+export const Unit = model<Unit>('Unit', unitSchema);

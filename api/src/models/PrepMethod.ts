@@ -1,11 +1,11 @@
 import { Schema, Document, model } from 'mongoose';
 
-export interface IPrepMethod extends Document {
+export interface PrepMethod extends Document {
     name: string;
 }
 
-const prepMethodSchema = new Schema<IPrepMethod>({
+const prepMethodSchema = new Schema<PrepMethod>({
     name: { type: String, required: true, unique: true },
 });
 
-export const PrepMethod = model<IPrepMethod>('PrepMethod', prepMethodSchema);
+export const PrepMethod = model<PrepMethod>('PrepMethod', prepMethodSchema);

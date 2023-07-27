@@ -1,11 +1,11 @@
 import { Schema, Document, model, Types } from 'mongoose';
 
-export interface IRating extends Document {
+export interface Rating extends Document {
     value: number;
     recipe: Types.ObjectId;
 }
 
-const ratingSchema = new Schema<IRating>({
+const ratingSchema = new Schema<Rating>({
     value: {
         type: Number,
         required: true,
@@ -19,4 +19,4 @@ const ratingSchema = new Schema<IRating>({
     recipe: { type: Schema.Types.ObjectId, ref: 'Recipe', required: true },
 });
 
-export const Rating = model<IRating>('Rating', ratingSchema);
+export const Rating = model<Rating>('Rating', ratingSchema);

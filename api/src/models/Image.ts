@@ -1,15 +1,15 @@
 import { Schema, Document, Types, model } from 'mongoose';
 
-export interface IImage extends Document {
+export interface Image extends Document {
     lowresPath?: string;
     fullresPath: string;
     recipe: Types.ObjectId;
 }
 
-const imageSchema = new Schema<IImage>({
+const imageSchema = new Schema<Image>({
     lowresPath: { type: String },
     fullresPath: { type: String, required: true },
     recipe: { type: Schema.Types.ObjectId, required: true, ref: 'Recipe' },
 });
 
-export const Image = model<IImage>('Image', imageSchema);
+export const Image = model<Image>('Image', imageSchema);
