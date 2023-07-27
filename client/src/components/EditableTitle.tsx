@@ -3,13 +3,13 @@ import { useRef, useState } from 'react';
 
 export function EditableTitle() {
     const defaultStr = 'Enter Recipe Title';
-    const inputRef = useRef(null);
+    const inputRef = useRef<HTMLInputElement | null>(null);
     const [isEdited, setIsEdited] = useState<boolean>(false);
     const [inputValue, setInputValue] = useState<string>(defaultStr);
 
     const handleEdit = () => {
         if (!isEdited) {
-            inputRef.current.setSelectionRange(0, 0);
+            inputRef.current?.setSelectionRange(0, 0);
         }
     };
 

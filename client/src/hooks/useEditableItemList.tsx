@@ -10,16 +10,22 @@ interface EditableItem {
     isEdited: boolean;
 }
 
-function itemsReducer(state: EditableItem[], action: Action) {
+function itemsReducer(state: EditableItem[], action: Action): EditableItem[] {
     switch (action.type) {
         case 'add_item': {
-            return state.concat([{ value: action.value, isEdited: false }]);
+            if (typeof action.value === 'undefined') {
+                throw new Error('Cannot add an item with undefined value.');
+            }
+            return [...state, { value: action.value, isEdited: false }];
         }
         case 'remove_item': {
-            return state.filter((item, idx) => action.index !== idx);
+            return state.filter((_, idx) => action.index !== idx);
         }
         case 'set_value': {
             return state.map((item, idx) => {
+                if (typeof action.value === 'undefined') {
+                    throw new Error('Cannot add an item with undefined value.');
+                }
                 if (action.index === idx) {
                     return { value: action.value, isEdited: item.isEdited };
                 } else {

@@ -2,6 +2,7 @@ import { Wrap, WrapItem } from '@chakra-ui/react';
 import { useEditableItemList } from '../hooks/useEditableItemList';
 import { useEnterFocus } from '../hooks/useEnterCapture';
 import { EditableItem } from './EditableItem';
+import { RefObject } from 'react';
 
 export function EditableTagList() {
     const defaultStr = 'Add a tag...';
@@ -18,7 +19,11 @@ export function EditableTagList() {
         return (
             <WrapItem color={tag.isEdited ? '' : 'gray.400'} key={index}>
                 <EditableItem
-                    ref={index === tags.length - 1 ? lastInputRef : null}
+                    ref={
+                        index === tags.length - 1
+                            ? (lastInputRef as RefObject<HTMLInputElement>)
+                            : null
+                    }
                     defaultStr={defaultStr}
                     isLast={index + 1 === tags.length}
                     item={tag}

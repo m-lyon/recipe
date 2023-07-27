@@ -2,6 +2,7 @@ import { Box, UnorderedList, VStack, ListItem } from '@chakra-ui/react';
 import { EditableItem } from './EditableItem';
 import { useEditableItemList } from '../hooks/useEditableItemList';
 import { useEnterFocus } from '../hooks/useEnterCapture';
+import { RefObject } from 'react';
 
 export function EditableIngredientList() {
     const defaultStr = 'Enter ingredient';
@@ -18,7 +19,11 @@ export function EditableIngredientList() {
     const ingredientsList = ingredients.map((ingr, index) => (
         <ListItem color={ingr.isEdited ? '' : 'gray.400'} key={index}>
             <EditableItem
-                ref={index === ingredients.length - 1 ? lastInputRef : null}
+                ref={
+                    index === ingredients.length - 1
+                        ? (lastInputRef as RefObject<HTMLInputElement>)
+                        : null
+                }
                 defaultStr={defaultStr}
                 isLast={index + 1 === ingredients.length}
                 item={ingr}

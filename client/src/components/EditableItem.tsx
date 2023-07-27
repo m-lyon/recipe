@@ -1,6 +1,6 @@
-import { Editable, EditablePreview, EditableInput, Box } from '@chakra-ui/react';
+import { Editable, EditablePreview, EditableInput } from '@chakra-ui/react';
 import { useRef, useEffect } from 'react';
-import { forwardRef, useState } from 'react';
+import { forwardRef } from 'react';
 
 interface Item {
     value: string;
@@ -30,20 +30,11 @@ export const EditableItem = forwardRef<HTMLInputElement, Props>(function Editabl
     }: Props,
     ref
 ) {
-    const inputRef = useRef(null);
-    const wrapperRef = useRef(null);
-    const [textWidth, setTextWidth] = useState(0);
-
-    useEffect(() => {
-        // Set the initial width given the default text
-        const width = wrapperRef.current.getBoundingClientRect().width;
-        console.log('initial width -> ', width);
-        setTextWidth(width);
-    }, []);
+    const inputRef = useRef<HTMLInputElement | null>(null);
 
     const handleEdit = () => {
         if (!item.isEdited) {
-            inputRef.current.setSelectionRange(0, 0);
+            inputRef.current?.setSelectionRange(0, 0);
         }
     };
 
@@ -53,12 +44,6 @@ export const EditableItem = forwardRef<HTMLInputElement, Props>(function Editabl
             setValue(value.replace(defaultStr, ''));
         } else {
             setValue(value);
-        }
-        if (item.isEdited) {
-            const rectWidth = inputRef.current.getBoundingClientRect().width;
-            const scrollWidth = inputRef.current.scrollWidth;
-            const offsetWidth = wrapperRef.current.offsetWidth;
-            console.log('editing width -> ', rectWidth, scrollWidth, offsetWidth);
         }
     };
 
@@ -79,11 +64,6 @@ export const EditableItem = forwardRef<HTMLInputElement, Props>(function Editabl
                 addNewEntry();
             }
         }
-        setTimeout(() => {
-            const width = wrapperRef.current.getBoundingClientRect().width;
-            console.log('current width -> ', width);
-            setTextWidth(width);
-        }, 0);
     };
 
     useEffect(() => {
@@ -101,7 +81,6 @@ export const EditableItem = forwardRef<HTMLInputElement, Props>(function Editabl
 
     return (
         <Editable
-            ref={wrapperRef}
             value={item.value}
             selectAllOnFocus={false}
             onEdit={handleEdit}
@@ -110,12 +89,7 @@ export const EditableItem = forwardRef<HTMLInputElement, Props>(function Editabl
             textAlign='left'
         >
             <EditablePreview ref={ref} />
-            <EditableInput
-                ref={inputRef}
-                value={item.value}
-                _focusVisible={{ outline: 'none' }}
-                width={textWidth}
-            />
+            <EditableInput ref={inputRef} value={item.value} _focusVisible={{ outline: 'none' }} />
         </Editable>
     );
 });

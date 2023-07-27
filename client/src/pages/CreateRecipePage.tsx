@@ -5,7 +5,7 @@ import { EditableIngredientList } from '../components/EditableIngredientList';
 import { EditableField } from '../components/EditableField';
 import { EditableTagList } from '../components/EditableTagList';
 
-export function CreateRecipePage(props) {
+export function CreateRecipePage() {
     return (
         <>
             <WithSubnavigation />
