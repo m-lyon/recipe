@@ -1,18 +1,18 @@
-import { Box, UnorderedList, VStack, ListItem } from '@chakra-ui/react';
+import { OrderedList, ListItem } from '@chakra-ui/react';
 import { EditableItem } from './EditableItem';
 import { useEditableItemList } from '../hooks/useEditableItemList';
 import { useEnterFocus } from '../hooks/useEnterCapture';
 import { RefObject } from 'react';
 
-export function EditableIngredientList() {
-    const defaultStr = 'Enter ingredient';
+export function EditableInstructionList() {
+    const defaultStr = 'Enter instructions...';
     const { items, handleAddItem, handleRemoveItem, handleSetValue, handleToggleEdited } =
         useEditableItemList(defaultStr);
 
     const [lastInputRef, handleEnter] = useEnterFocus();
 
-    const ingredientsList = items.map((ingr, index) => (
-        <ListItem color={ingr.isEdited ? '' : 'gray.400'} key={index}>
+    const instructionsList = items.map((instr, index) => (
+        <ListItem color={instr.isEdited ? '' : 'gray.400'} key={index}>
             <EditableItem
                 ref={
                     index === items.length - 1
@@ -21,7 +21,7 @@ export function EditableIngredientList() {
                 }
                 defaultStr={defaultStr}
                 isLast={index + 1 === items.length}
-                item={ingr}
+                item={instr}
                 addNewEntry={handleAddItem}
                 removeFromList={() => handleRemoveItem(index)}
                 setValue={(value: string) => handleSetValue(index, value)}
@@ -31,10 +31,5 @@ export function EditableIngredientList() {
         </ListItem>
     ));
 
-    return (
-        <VStack spacing='24px' align='left'>
-            <Box fontSize='2xl'>Ingredients</Box>
-            <UnorderedList>{ingredientsList}</UnorderedList>
-        </VStack>
-    );
+    return <OrderedList>{instructionsList}</OrderedList>;
 }

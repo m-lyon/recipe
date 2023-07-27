@@ -6,26 +6,21 @@ import { RefObject } from 'react';
 
 export function EditableTagList() {
     const defaultStr = 'Add a tag...';
-    const {
-        items: tags,
-        handleAddItem,
-        handleRemoveItem,
-        handleSetValue,
-        handleToggleEdited,
-    } = useEditableItemList(defaultStr);
+    const { items, handleAddItem, handleRemoveItem, handleSetValue, handleToggleEdited } =
+        useEditableItemList(defaultStr);
     const [lastInputRef, handleEnter] = useEnterFocus();
 
-    const tagsList = tags.map((tag, index) => {
+    const tagsList = items.map((tag, index) => {
         return (
             <WrapItem color={tag.isEdited ? '' : 'gray.400'} key={index}>
                 <EditableItem
                     ref={
-                        index === tags.length - 1
+                        index === items.length - 1
                             ? (lastInputRef as RefObject<HTMLInputElement>)
                             : null
                     }
                     defaultStr={defaultStr}
-                    isLast={index + 1 === tags.length}
+                    isLast={index + 1 === items.length}
                     item={tag}
                     addNewEntry={handleAddItem}
                     removeFromList={() => handleRemoveItem(index)}

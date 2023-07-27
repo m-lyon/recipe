@@ -1,9 +1,10 @@
-import { Container, Box, SkeletonCircle, SkeletonText } from '@chakra-ui/react';
+import { Container } from '@chakra-ui/react';
 import { Grid, GridItem } from '@chakra-ui/react';
 import { WithSubnavigation } from '../components/Navbar';
 import { EditableIngredientList } from '../components/EditableIngredientList';
 import { EditableField } from '../components/EditableField';
 import { EditableTagList } from '../components/EditableTagList';
+import { EditableInstructionList } from '../components/EditableInstructionList';
 
 export function CreateRecipePage() {
     return (
@@ -13,7 +14,7 @@ export function CreateRecipePage() {
                 <Grid
                     templateAreas={`'title title'
                                     'ingredients tags'
-                                    'ingredients main'
+                                    'ingredients instructions'
                                     'images images'`}
                     gridTemplateRows={'100px 0.2fr 0.9fr 200px'}
                     gridTemplateColumns={'0.4fr 1fr'}
@@ -37,14 +38,8 @@ export function CreateRecipePage() {
                     <GridItem pl='2' area={'ingredients'} boxShadow='lg' padding='6'>
                         <EditableIngredientList />
                     </GridItem>
-                    <GridItem pl='2' boxShadow='lg' padding='6' area={'main'}>
-                        <Box>
-                            <SkeletonCircle size='10' />
-                            <SkeletonText mt='4' noOfLines={5} spacing='4' skeletonHeight='2' />
-                        </Box>
-                        <Box pt='6'>
-                            <SkeletonText mt='4' noOfLines={5} spacing='4' skeletonHeight='2' />
-                        </Box>
+                    <GridItem pl='2' boxShadow='lg' padding='6' area={'instructions'}>
+                        <EditableInstructionList />
                     </GridItem>
                     <GridItem pl='2' boxShadow='lg' padding='6' area={'images'}>
                         Images
