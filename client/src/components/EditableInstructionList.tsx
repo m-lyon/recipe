@@ -27,6 +27,7 @@ export function EditableInstructionList() {
                 setValue={(value: string) => handleSetValue(index, value)}
                 toggleIsEdited={() => handleToggleEdited(index)}
                 handleEnter={handleEnter}
+                fontSize='lg'
             />
         </ListItem>
     ));

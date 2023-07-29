@@ -1,4 +1,4 @@
-import { Wrap, WrapItem } from '@chakra-ui/react';
+import { Tag, TagCloseButton, TagLabel, VStack, Wrap, WrapItem } from '@chakra-ui/react';
 import { useEditableItemList } from '../hooks/useEditableItemList';
 import { useEnterFocus } from '../hooks/useEnterCapture';
 import { EditableItem } from './EditableItem';
@@ -9,27 +9,34 @@ export function EditableTagList() {
     const { items, handleAddItem, handleRemoveItem, handleSetValue, handleToggleEdited } =
         useEditableItemList(defaultStr);
     const [lastInputRef, handleEnter] = useEnterFocus();
-
     const tagsList = items.map((tag, index) => {
-        return (
-            <WrapItem color={tag.isEdited ? '' : 'gray.400'} key={index}>
-                <EditableItem
-                    ref={
-                        index === items.length - 1
-                            ? (lastInputRef as RefObject<HTMLInputElement>)
-                            : null
-                    }
-                    defaultStr={defaultStr}
-                    isLast={index + 1 === items.length}
-                    item={tag}
-                    addNewEntry={handleAddItem}
-                    removeFromList={() => handleRemoveItem(index)}
-                    setValue={(value: string) => handleSetValue(index, value)}
-                    toggleIsEdited={() => handleToggleEdited(index)}
-                    handleEnter={handleEnter}
-                />
-            </WrapItem>
-        );
+        if (index !== items.length - 1) {
+            return (
+                <WrapItem>
+                    <Tag>
+                        <TagLabel>{tag.value}</TagLabel>
+                        <TagCloseButton onClick={() => handleRemoveItem(index)} />
+                    </Tag>
+                </WrapItem>
+            );
+        }
     });
-    return <Wrap spacing='25px'>{tagsList}</Wrap>;
+    return (
+        <VStack align='left' spacing={items.length > 1 ? 3 : 0}>
+            <Wrap spacing='10px'>{tagsList}</Wrap>
+            <EditableItem
+                ref={lastInputRef as RefObject<HTMLInputElement>}
+                defaultStr={defaultStr}
+                isLast={true}
+                item={items[items.length - 1]}
+                addNewEntry={handleAddItem}
+                removeFromList={() => handleRemoveItem(items.length - 1)}
+                setValue={(value: string) => handleSetValue(items.length - 1, value)}
+                toggleIsEdited={() => handleToggleEdited(items.length - 1)}
+                handleEnter={handleEnter}
+                color={items[items.length - 1].isEdited ? '' : 'gray.400'}
+            />
+            );
+        </VStack>
+    );
 }

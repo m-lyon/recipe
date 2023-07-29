@@ -15,6 +15,8 @@ interface Props {
     addNewEntry: () => void;
     toggleIsEdited: () => void;
     handleEnter: (event: KeyboardEvent) => void;
+    fontSize?: string;
+    color?: string;
 }
 
 export const EditableItem = forwardRef<HTMLInputElement, Props>(function EditableIngredient(
@@ -27,6 +29,8 @@ export const EditableItem = forwardRef<HTMLInputElement, Props>(function Editabl
         addNewEntry,
         toggleIsEdited,
         handleEnter,
+        fontSize,
+        color,
     }: Props,
     ref
 ) {
@@ -87,6 +91,8 @@ export const EditableItem = forwardRef<HTMLInputElement, Props>(function Editabl
             onSubmit={handleSubmit}
             onChange={handleChange}
             textAlign='left'
+            fontSize={fontSize}
+            color={color}
         >
             <EditablePreview ref={ref} />
             <EditableInput ref={inputRef} value={item.value} _focusVisible={{ outline: 'none' }} />
