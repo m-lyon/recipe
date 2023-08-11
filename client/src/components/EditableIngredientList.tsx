@@ -1,35 +1,33 @@
 import { Box, UnorderedList, VStack, ListItem } from '@chakra-ui/react';
-import { EditableItem } from './EditableItem';
-import { useEditableItemList } from '../hooks/useEditableItemList';
+import { EditableIngredient } from './EditableIngredient';
 import { useEnterFocus } from '../hooks/useEnterCapture';
 import { RefObject } from 'react';
+import { useIngredientList, Ingredient } from '../hooks/useIngredientList';
 
 export function EditableIngredientList() {
     const defaultStr = 'Enter ingredient';
-    const { items, handleAddItem, handleRemoveItem, handleSetValue, handleToggleEdited } =
-        useEditableItemList(defaultStr);
+    const { items, getActionHandler } = useIngredientList(defaultStr);
 
     const [lastInputRef, handleEnter] = useEnterFocus();
 
-    const ingredientsList = items.map((ingr, index) => (
-        <ListItem color={ingr.isEdited ? '' : 'gray.400'} key={index}>
-            <EditableItem
-                ref={
-                    index === items.length - 1
-                        ? (lastInputRef as RefObject<HTMLInputElement>)
-                        : null
-                }
-                defaultStr={defaultStr}
-                isLast={index + 1 === items.length}
-                item={ingr}
-                addNewEntry={handleAddItem}
-                removeFromList={() => handleRemoveItem(index)}
-                setValue={(value: string) => handleSetValue(index, value)}
-                toggleIsEdited={() => handleToggleEdited(index)}
-                handleEnter={handleEnter}
-            />
-        </ListItem>
-    ));
+    const ingredientsList = items.map((ingr: Ingredient, index: number) => {
+        return (
+            <ListItem color={ingr.isEdited ? '' : 'gray.400'} key={index}>
+                <EditableIngredient
+                    ref={
+                        index === items.length - 1
+                            ? (lastInputRef as RefObject<HTMLInputElement>)
+                            : null
+                    }
+                    defaultStr={defaultStr}
+                    isLast={index + 1 === items.length}
+                    item={ingr}
+                    actionHandler={getActionHandler(index)}
+                    handleEnter={handleEnter}
+                />
+            </ListItem>
+        );
+    });
 
     return (
         <VStack spacing='24px' align='left'>
@@ -38,3 +36,5 @@ export function EditableIngredientList() {
         </VStack>
     );
 }
+
+//

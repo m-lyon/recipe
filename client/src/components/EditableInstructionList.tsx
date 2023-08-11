@@ -1,13 +1,13 @@
 import { OrderedList, ListItem } from '@chakra-ui/react';
 import { EditableItem } from './EditableItem';
-import { useEditableItemList } from '../hooks/useEditableItemList';
+import { useItemList } from '../hooks/useItemList';
 import { useEnterFocus } from '../hooks/useEnterCapture';
 import { RefObject } from 'react';
 
 export function EditableInstructionList() {
     const defaultStr = 'Enter instructions...';
     const { items, handleAddItem, handleRemoveItem, handleSetValue, handleToggleEdited } =
-        useEditableItemList(defaultStr);
+        useItemList(defaultStr);
 
     const [lastInputRef, handleEnter] = useEnterFocus();
 

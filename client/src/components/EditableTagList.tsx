@@ -1,5 +1,5 @@
 import { Tag, TagCloseButton, TagLabel, VStack, Wrap, WrapItem } from '@chakra-ui/react';
-import { useEditableItemList } from '../hooks/useEditableItemList';
+import { useItemList } from '../hooks/useItemList';
 import { useEnterFocus } from '../hooks/useEnterCapture';
 import { EditableItem } from './EditableItem';
 import { RefObject } from 'react';
@@ -7,7 +7,7 @@ import { RefObject } from 'react';
 export function EditableTagList() {
     const defaultStr = 'Add a tag...';
     const { items, handleAddItem, handleRemoveItem, handleSetValue, handleToggleEdited } =
-        useEditableItemList(defaultStr);
+        useItemList(defaultStr);
     const [lastInputRef, handleEnter] = useEnterFocus();
     const tagsList = items.map((tag, index) => {
         if (index !== items.length - 1) {

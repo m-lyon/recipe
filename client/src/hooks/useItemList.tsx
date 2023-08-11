@@ -48,7 +48,7 @@ function itemsReducer(state: EditableItem[], action: Action): EditableItem[] {
     }
 }
 
-export function useEditableItemList(defaultStr: string) {
+export function useItemList(defaultStr: string) {
     const [items, dispatch] = useReducer(itemsReducer, [{ value: defaultStr, isEdited: false }]);
 
     function handleAddItem() {
