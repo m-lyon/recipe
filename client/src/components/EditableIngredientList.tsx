@@ -5,8 +5,7 @@ import { RefObject } from 'react';
 import { useIngredientList, Ingredient } from '../hooks/useIngredientList';
 
 export function EditableIngredientList() {
-    const defaultStr = 'Enter ingredient';
-    const { items, getActionHandler } = useIngredientList(defaultStr);
+    const { items, getActionHandler } = useIngredientList();
 
     const [lastInputRef, handleEnter] = useEnterFocus();
 
@@ -19,7 +18,6 @@ export function EditableIngredientList() {
                             ? (lastInputRef as RefObject<HTMLInputElement>)
                             : null
                     }
-                    defaultStr={defaultStr}
                     isLast={index + 1 === items.length}
                     item={ingr}
                     actionHandler={getActionHandler(index)}
