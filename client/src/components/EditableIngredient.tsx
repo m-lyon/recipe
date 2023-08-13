@@ -1,8 +1,8 @@
-import { Editable, EditablePreview, EditableInput, useBoolean } from '@chakra-ui/react';
-import { useRef, useEffect, forwardRef } from 'react';
+import { Editable, EditablePreview, EditableInput } from '@chakra-ui/react';
+import { useRef, useEffect, forwardRef, useState } from 'react';
 import { MenuList } from './MenuList';
-import { handleIngredientChange, handleIngredientSubmit } from './utils';
 import { Ingredient, ActionHandler } from '../hooks/useIngredientList';
+import { mergeRefs } from 'react-merge-refs';
 
 const handleKeyDown = (event: any) => {
     // To stop entering from submitting
@@ -13,7 +13,6 @@ const handleKeyDown = (event: any) => {
 };
 
 interface Props {
-    isLast: boolean;
     item: Ingredient;
     actionHandler: ActionHandler;
     handleEnter: (event: KeyboardEvent) => void;
@@ -21,19 +20,29 @@ interface Props {
     color?: string;
 }
 export const EditableIngredient = forwardRef<HTMLInputElement, Props>(function EditableIngredient(
-    { isLast, item, actionHandler, handleEnter, fontSize, color }: Props,
+    { item, actionHandler, handleEnter, fontSize, color }: Props,
     ref
 ) {
+    const previewRef = useRef<HTMLInputElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null);
-    // const [show, setShow] = useBoolean(false);
-    // const [selection, setSelection] = useState<string | null>(null);
-    // const { getIngredientStr, handleChange, handleSubmit } = useIngredientHandler(defaultStr);
-    const ingredientStr = actionHandler.getStr();
+    const ingredientStr = actionHandler.get.string();
+    const [isSelecting, setIsSelecting] = useState<boolean>(false);
 
     const handleEdit = () => {
         if (!item.isEdited) {
             inputRef.current?.setSelectionRange(0, 0);
-            // setShow.on();
+        }
+    };
+
+    const handleSubmit = (value: string) => {
+        if (isSelecting) {
+            setTimeout(() => {
+                previewRef.current?.focus();
+            }, 0);
+        } else {
+            console.log('value', value);
+            actionHandler.handleSubmit(value);
+            console.log('submitted');
         }
     };
 
@@ -56,13 +65,13 @@ export const EditableIngredient = forwardRef<HTMLInputElement, Props>(function E
                 value={ingredientStr}
                 selectAllOnFocus={false}
                 onEdit={handleEdit}
-                onSubmit={(value: string) => handleIngredientSubmit(value, item, actionHandler)}
-                onChange={(value: string) => handleIngredientChange(value, item, actionHandler)}
+                onSubmit={handleSubmit}
+                onChange={actionHandler.handleChange}
                 textAlign='left'
                 fontSize={fontSize}
                 color={color}
             >
-                <EditablePreview ref={ref} />
+                <EditablePreview ref={mergeRefs([previewRef, ref])} />
                 <EditableInput
                     ref={inputRef}
                     value={ingredientStr}
@@ -70,13 +79,20 @@ export const EditableIngredient = forwardRef<HTMLInputElement, Props>(function E
                     // onKeyDown={handleKeyDown}
                 />
             </Editable>
-            {/* <MenuList
-                parentValue={item.value.replace(defaultStr, '')}
-                show={show}
-                setShow={setShow}
-                setValue={setValue}
-                setSelection={setSelection}
-            /> */}
+            <MenuList
+                inputState={item.state}
+                show={item.show}
+                setShow={actionHandler.set.show}
+                currentValue={actionHandler.get.currentValue()}
+                setValue={actionHandler.set.currentValue}
+                setIsSelecting={setIsSelecting}
+                blurCallback={() => {
+                    console.log('called blur');
+                    setTimeout(() => {
+                        inputRef.current?.blur();
+                    }, 0);
+                }}
+            />
         </>
     );
 });

@@ -1,33 +1,64 @@
 import { Box, List, ListItem } from '@chakra-ui/react';
 import { matchSorter } from 'match-sorter';
+import { Dispatch, SetStateAction, useEffect } from 'react';
 import { UseBooleanActions } from '../types/chakra';
+import { InputState } from '../hooks/useIngredientList';
 
-// const DEFAULT_MEASUREMENTS = ['cup', 'ml', 'g'];
-const DEFAULT_NAMES = ['soy sauce', 'asparagus'];
+const MOCK_ITEMS = ['cup', 'ml', 'g'];
+const MOCK_NAMES = ['soy sauce', 'asparagus'];
 
 interface Props {
+    inputState: InputState;
     show: boolean;
     setShow: UseBooleanActions;
-    parentValue: string;
+    currentValue: string | null;
     setValue: (value: string) => void;
-    setSelection: (value: string | null) => void;
+    setIsSelecting: Dispatch<SetStateAction<boolean>>;
+    blurCallback: () => void;
 }
 export function MenuList(props: Props) {
-    const { show, setShow, parentValue, setValue, setSelection } = props;
-    const filteredItems = matchSorter(DEFAULT_NAMES, parentValue);
+    const { inputState, show, setShow, currentValue, setValue, setIsSelecting, blurCallback } =
+        props;
+
+    const getListSelection = () => {
+        // TODO: this will be conntected to backend at some point
+        const value = currentValue !== null ? currentValue : '';
+        const stateMap = {
+            amount: { items: [], value: '' },
+            unit: { items: MOCK_ITEMS, value: value },
+            name: { items: MOCK_NAMES, value: value },
+        };
+        return stateMap[inputState];
+    };
+
+    const handleClick = (item: string) => {
+        console.log('clicked');
+        setValue(item);
+        if (inputState === 'name') {
+            setShow.off();
+            blurCallback();
+        }
+        setIsSelecting(false);
+    };
+
+    const matchItems = getListSelection();
+    const filteredItems = matchSorter(matchItems.items, matchItems.value);
+
+    useEffect(() => {
+        if (filteredItems.length === 0) {
+            setIsSelecting(false);
+        }
+    }, [filteredItems]);
+
     const suggestionList = filteredItems.map((item, index) => (
         <ListItem
             px={2}
             py={1}
             key={`${item}${index}`}
             _hover={{ bg: 'gray.100' }}
-            onClick={() => {
-                setValue(item);
-                console.log('clicked');
-                setShow.off();
-            }}
-            onMouseEnter={() => setSelection(item)}
-            onMouseLeave={() => setSelection(null)}
+            onClick={() => handleClick(item)}
+            onMouseEnter={() => setIsSelecting(true)}
+            onMouseLeave={() => setIsSelecting(false)}
             cursor='default'
         >
             {item}

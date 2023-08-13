@@ -6,7 +6,6 @@ import { useIngredientList, Ingredient } from '../hooks/useIngredientList';
 
 export function EditableIngredientList() {
     const { items, getActionHandler } = useIngredientList();
-
     const [lastInputRef, handleEnter] = useEnterFocus();
 
     const ingredientsList = items.map((ingr: Ingredient, index: number) => {
@@ -18,7 +17,6 @@ export function EditableIngredientList() {
                             ? (lastInputRef as RefObject<HTMLInputElement>)
                             : null
                     }
-                    isLast={index + 1 === items.length}
                     item={ingr}
                     actionHandler={getActionHandler(index)}
                     handleEnter={handleEnter}
@@ -34,5 +32,3 @@ export function EditableIngredientList() {
         </VStack>
     );
 }
-
-//
