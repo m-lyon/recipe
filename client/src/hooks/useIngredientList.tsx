@@ -1,4 +1,5 @@
 import { useReducer } from 'react';
+import { produce } from 'immer';
 
 export const DEFAULT_INGREDIENT_STR = 'Enter ingredient';
 
@@ -12,7 +13,11 @@ const validateUnit = (char: string): boolean => /^[a-zA-Z ]$/.test(char);
 const validateName = (char: string): boolean => /^[a-zA-Z ]$/.test(char);
 
 type NewChar = string | number;
-function handleAmountChange(char: NewChar, item: Ingredient, actionHandler: InternalActionHandler) {
+function handleAmountChange(
+    char: NewChar,
+    item: Ingredient,
+    actionHandler: InternalEditableActionHandler
+) {
     if (typeof char === 'number') {
         console.log(`truncating by ${char} characters`);
         actionHandler.truncate(char);
@@ -38,7 +43,7 @@ function handleAmountChange(char: NewChar, item: Ingredient, actionHandler: Inte
     }
 }
 
-function handleUnitChange(char: NewChar, actionHandler: InternalActionHandler) {
+function handleUnitChange(char: NewChar, actionHandler: InternalEditableActionHandler) {
     if (typeof char === 'number') {
         console.log(`truncating by ${char} characters`);
         actionHandler.truncate(char);
@@ -57,7 +62,7 @@ function handleUnitChange(char: NewChar, actionHandler: InternalActionHandler) {
     }
 }
 
-function handleNameChange(char: NewChar, actionHandler: InternalActionHandler) {
+function handleNameChange(char: NewChar, actionHandler: InternalEditableActionHandler) {
     console.log(`name char: ${char}`);
     if (typeof char === 'number') {
         console.log(`truncating by ${char} characters`);
@@ -94,6 +99,7 @@ interface Action {
     start?: number;
     end?: number;
     num?: number;
+    finished?: Ingredient[];
 }
 export type InputState = 'amount' | 'unit' | 'name';
 export interface Ingredient {
@@ -103,79 +109,68 @@ export interface Ingredient {
     isEdited: boolean;
     state: InputState;
     show: boolean;
+    key: string;
 }
 
 function getEmptyIngredient(): Ingredient {
-    return { amount: null, unit: null, name: null, isEdited: false, state: 'amount', show: false };
+    return {
+        amount: null,
+        unit: null,
+        name: null,
+        isEdited: false,
+        state: 'amount',
+        show: false,
+        key: crypto.randomUUID(),
+    };
 }
 
-function setIngredientProperty(
-    state: Ingredient[],
+function setEditableIngredientProperty(
+    state: EditableIngredientState,
     action: Action,
     property: InputState
-): Ingredient[] {
-    return state.map((item: Ingredient, idx: number): Ingredient => {
-        if (action.index === idx) {
-            return { ...item, [property]: action.value };
-        } else {
-            return item;
+): EditableIngredientState {
+    return produce(state, (draft) => {
+        if (typeof action.value === 'undefined') {
+            throw new Error('Cannot append an item with undefined value.');
         }
+        draft.editable[property] = action.value;
     });
 }
 
 function appendIngredientProperty(
-    state: Ingredient[],
+    state: EditableIngredientState,
     action: Action,
     property: InputState
-): Ingredient[] {
-    return state.map((item: Ingredient, idx: number): Ingredient => {
+): EditableIngredientState {
+    return produce(state, (draft) => {
         if (typeof action.value === 'undefined') {
-            throw new Error('Cannot append an item with undefined value.');
+            throw new Error(`Cannot append editable ${property} with undefined value.`);
         }
-        if (action.index === idx) {
-            const prop = item[property];
-            if (prop === null) {
-                return { ...item, [property]: action.value };
-            } else {
-                return { ...item, [property]: prop.concat(action.value) };
-            }
+        if (draft.editable[property] === null) {
+            draft.editable[property] = action.value;
         } else {
-            return item;
+            draft.editable[property] += action.value;
         }
     });
 }
 
 function sliceIngredientProperty(
-    state: Ingredient[],
+    state: EditableIngredientState,
     action: Action,
     property: InputState
-): Ingredient[] {
-    if (typeof action.start === 'undefined') {
-        action.start = 0;
-    }
-    if (typeof action.end === 'undefined') {
-        throw new Error('end value is required to slice item');
-    }
-    return state.map((item: Ingredient, idx: number): Ingredient => {
-        if (typeof action.value === 'undefined') {
-            throw new Error('Cannot append an item with undefined value.');
+): EditableIngredientState {
+    return produce(state, (draft) => {
+        if (typeof action.start === 'undefined') {
+            action.start = 0;
         }
-        if (action.index === idx) {
-            const prop = item[property];
-            if (prop === null) {
-                return { ...item, [property]: action.value };
-            } else {
-                return { ...item, [property]: action.value.slice(0, action.end) };
-            }
-        } else {
-            return item;
+        if (typeof action.end === 'undefined') {
+            throw new Error('end value is required to slice item');
+        }
+        const prop = draft.editable[property];
+        if (prop !== null) {
+            draft.editable[property] = prop.slice(action.start, action.end);
         }
     });
-}
-
-function getNextState(state: InputState): InputState {
-    const nextState = { amount: 'unit', unit: 'name', name: 'name' };
-    return nextState[state] as InputState;
 }
 
 function getPrevState(state: InputState): InputState {
@@ -224,7 +219,7 @@ function truncateIngredient(num: number, item: Ingredient): Ingredient {
     return newItem;
 }
 
-const getIngredientStr = (item: Ingredient): string => {
+export function getIngredientStr(item: Ingredient): string {
     if (item.amount === null && item.isEdited) {
         return '';
     }
@@ -232,100 +227,100 @@ const getIngredientStr = (item: Ingredient): string => {
     const unitStr = `${item.state !== 'amount' ? ' ' : ''}${item.unit !== null ? item.unit : ''}`;
     const nameStr = `${item.state === 'name' ? ' ' : ''}${item.name !== null ? item.name : ''}`;
     return `${amountStr}${unitStr}${nameStr}`;
-};
+}
 type ShowStates = 'on' | 'off' | 'toggle';
 
-function itemsReducer(state: Ingredient[], action: Action): Ingredient[] {
+interface EditableIngredientState {
+    finished: Ingredient[];
+    editable: Ingredient;
+}
+
+function itemsReducer(state: EditableIngredientState, action: Action): EditableIngredientState {
     switch (action.type) {
-        case 'add_empty': {
-            return [...state, getEmptyIngredient()];
-        }
-        case 'remove_item': {
-            return state.filter((_, idx: number): boolean => action.index !== idx);
-        }
-        case 'reset_item': {
-            console.log('reset item called');
-            return state.map((item: Ingredient, idx: number): Ingredient => {
-                if (action.index === idx) {
-                    return getEmptyIngredient();
-                } else {
-                    return item;
+        case 'remove_finished_item': {
+            return produce(state, (draft) => {
+                if (typeof action.index === 'undefined') {
+                    throw new Error('index is required to remove finished ingredient.');
                 }
+                draft.finished.splice(action.index, 1);
             });
         }
-        case 'set_show': {
-            return state.map((item: Ingredient, idx: number): Ingredient => {
+        case 'reset_editable': {
+            console.log('reset item called');
+            return produce(state, (draft) => {
+                draft.editable = getEmptyIngredient();
+            });
+        }
+        case 'set_editable_show': {
+            return produce(state, (draft) => {
                 if (typeof action.value === 'undefined') {
                     throw new Error('num is required to truncate item');
                 }
                 if (!['on', 'off', 'toggle'].includes(action.value)) {
                     throw new Error('invalid show value given');
                 }
-                if (action.index === idx) {
-                    const newState = { on: true, off: false, toggle: !item.show };
-                    return { ...item, show: newState[action.value as ShowStates] };
-                } else {
-                    return item;
-                }
+                const newState = { on: true, off: false, toggle: !draft.editable.show };
+                draft.editable.show = newState[action.value as ShowStates];
             });
         }
-        case 'set_amount': {
-            return setIngredientProperty(state, action, 'amount');
+        case 'set_editable_amount': {
+            return setEditableIngredientProperty(state, action, 'amount');
         }
-        case 'set_unit': {
-            return setIngredientProperty(state, action, 'unit');
+        case 'set_editable_unit': {
+            return setEditableIngredientProperty(state, action, 'unit');
         }
-        case 'set_name': {
-            return setIngredientProperty(state, action, 'name');
+        case 'set_editable_name': {
+            return setEditableIngredientProperty(state, action, 'name');
         }
-        case 'append_amount': {
+        case 'set_finished': {
+            return produce(state, (draft) => {
+                if (typeof action.finished === 'undefined') {
+                    throw new Error('finished array cannot be undefined');
+                }
+                draft.finished = action.finished;
+            });
+        }
+        case 'append_editable_amount': {
             return appendIngredientProperty(state, action, 'amount');
         }
-        case 'append_unit': {
+        case 'append_editable_unit': {
             return appendIngredientProperty(state, action, 'unit');
         }
-        case 'append_name': {
+        case 'append_editable_name': {
             return appendIngredientProperty(state, action, 'name');
         }
-        case 'slice_amount': {
+        case 'slice_editable_amount': {
             return sliceIngredientProperty(state, action, 'amount');
         }
-        case 'slice_unit': {
+        case 'slice_editable_unit': {
             return sliceIngredientProperty(state, action, 'unit');
         }
-        case 'slice_name': {
+        case 'slice_editable_name': {
             return sliceIngredientProperty(state, action, 'name');
         }
-        case 'toggle_edited': {
-            return state.map((item: Ingredient, idx: number): Ingredient => {
-                if (action.index === idx) {
-                    return { ...item, isEdited: !item.isEdited };
-                } else {
-                    return item;
-                }
+        case 'toggle_editable_is_edited': {
+            return produce(state, (draft) => {
+                draft.editable.isEdited = !draft.editable.isEdited;
             });
         }
-        case 'increment_state': {
-            return state.map((item: Ingredient, idx: number): Ingredient => {
-                if (action.index === idx) {
-                    return { ...item, state: getNextState(item.state) };
-                } else {
-                    return item;
-                }
+        case 'increment_editable_state': {
+            return produce(state, (draft) => {
+                const nextState = { amount: 'unit', unit: 'name', name: 'name' };
+                draft.editable.state = nextState[draft.editable.state] as InputState;
             });
         }
-        case 'truncate': {
-            return state.map((item: Ingredient, idx: number): Ingredient => {
-                if (action.index === idx) {
-                    if (typeof action.num === 'undefined') {
-                        throw new Error('num is required to truncate item');
-                    }
-                    const newItem = truncateIngredient(action.num, item);
-                    console.log(newItem);
-                    return newItem;
-                } else {
-                    return item;
+        case 'truncate_editable': {
+            return produce(state, (draft) => {
+                if (typeof action.num === 'undefined') {
+                    throw new Error('num is required to truncate item');
                 }
+                draft.editable = truncateIngredient(action.num, draft.editable);
+            });
+        }
+        case 'submit_editable': {
+            return produce(state, (draft) => {
+                draft.finished.push(draft.editable);
+                draft.editable = getEmptyIngredient();
             });
         }
         default: {
@@ -338,10 +333,9 @@ interface ActionTypeHandler {
     set: (value: string) => void;
     append: (value: string) => void;
 }
-interface InternalActionHandler {
-    addEmpty: () => void;
+interface InternalEditableActionHandler {
     incrementState: () => void;
-    remove: () => void;
+    submit: () => void;
     truncate: (num: number) => void;
     toggleEdited: () => void;
     amount: ActionTypeHandler;
@@ -352,7 +346,7 @@ interface InternalActionHandler {
 }
 interface Get {
     string: () => string;
-    currentValue: () => string | null;
+    currentStateValue: () => string | null;
 }
 interface SetShow {
     on: () => void;
@@ -360,89 +354,99 @@ interface SetShow {
     toggle: () => void;
 }
 interface Set {
-    currentValue: (value: string) => void;
+    currentStateValue: (value: string) => void;
     show: SetShow;
 }
-export interface ActionHandler {
+export interface EditableActionHandler {
     get: Get;
     set: Set;
     handleSubmit: (value: string) => void;
     handleChange: (value: string) => void;
 }
 interface UseIngredientListReturnType {
-    items: Ingredient[];
-    getActionHandler: (index: number) => ActionHandler;
+    state: EditableIngredientState;
+    editableActionHandler: EditableActionHandler;
+    setFinished: (finished: Ingredient[]) => void;
+    removeFinished: (index: number) => void;
 }
-export function useIngredientList(): UseIngredientListReturnType {
-    const [items, dispatch] = useReducer(itemsReducer, [getEmptyIngredient()]);
+export function useEditableIngredients(): UseIngredientListReturnType {
+    const [state, dispatch] = useReducer(itemsReducer, {
+        finished: [],
+        editable: getEmptyIngredient(),
+    });
 
-    function getActionHandler(index: number): ActionHandler {
-        const item: Ingredient = items[index];
-        const actions: InternalActionHandler = {
-            addEmpty: () => dispatch({ type: 'add_empty' }),
-            remove: () => dispatch({ type: 'remove_item', index }),
-            reset: () => dispatch({ type: 'reset_item', index }),
-            truncate: (num: number) => dispatch({ type: 'truncate', index, num }),
-            toggleEdited: () => dispatch({ type: 'toggle_edited', index }),
-            incrementState: () => dispatch({ type: 'increment_state', index }),
+    const getEditableActionHandler = (): EditableActionHandler => {
+        const editableActions: InternalEditableActionHandler = {
+            reset: () => dispatch({ type: 'reset_editable' }),
+            submit: () => dispatch({ type: 'submit_editable' }),
+            truncate: (num: number) => dispatch({ type: 'truncate_editable', num }),
+            toggleEdited: () => dispatch({ type: 'toggle_editable_is_edited' }),
+            incrementState: () => dispatch({ type: 'increment_editable_state' }),
             amount: {
-                set: (value: string) => dispatch({ type: 'set_amount', index, value }),
-                append: (value: string) => dispatch({ type: 'append_amount', index, value }),
+                set: (value: string) => dispatch({ type: 'set_editable_amount', value }),
+                append: (value: string) => dispatch({ type: 'append_editable_amount', value }),
             },
             unit: {
-                set: (value: string) => dispatch({ type: 'set_unit', index, value }),
-                append: (value: string) => dispatch({ type: 'append_unit', index, value }),
+                set: (value: string) => dispatch({ type: 'set_editable_unit', value }),
+                append: (value: string) => dispatch({ type: 'append_editable_unit', value }),
             },
             name: {
-                set: (value: string) => dispatch({ type: 'set_name', index, value }),
-                append: (value: string) => dispatch({ type: 'append_name', index, value }),
+                set: (value: string) => dispatch({ type: 'set_editable_name', value }),
+                append: (value: string) => dispatch({ type: 'append_editable_name', value }),
             },
             setShow: {
-                on: () => dispatch({ type: 'set_show', index, value: 'on' }),
-                off: () => dispatch({ type: 'set_show', index, value: 'off' }),
-                toggle: () => dispatch({ type: 'set_show', index, value: 'toggle' }),
+                on: () => dispatch({ type: 'set_editable_show', value: 'on' }),
+                off: () => dispatch({ type: 'set_editable_show', value: 'off' }),
+                toggle: () => dispatch({ type: 'set_editable_show', value: 'toggle' }),
             },
         };
 
         // Public functions
         const get: Get = {
-            string: () => getIngredientStr(item),
-            currentValue: () => item[item.state],
+            string: () => getIngredientStr(state.editable),
+            currentStateValue: () => state.editable[state.editable.state],
         };
         const handleSubmit = (value: string) => {
-            if (item.name === null) {
+            if (state.editable.name === null) {
                 console.log('ingredient not finished, resetting.');
-                actions.reset();
+                editableActions.reset();
             } else {
-                console.log('submitted value:', value, item);
-                actions.setShow.off();
-                actions.addEmpty();
+                console.log('submitted value:', value, state.editable);
+                editableActions.setShow.off();
+                editableActions.submit();
             }
         };
         const set: Set = {
-            currentValue: (value: string) => {
-                actions[item.state].set(value);
-                actions.incrementState();
+            currentStateValue: (value: string) => {
+                editableActions[state.editable.state].set(value);
+                editableActions.incrementState();
             },
-            show: actions.setShow,
+            show: editableActions.setShow,
         };
         const handleChange = (value: string) => {
-            const diff = getTextDiff(value, item, getIngredientStr(item));
-            switch (item.state) {
+            const diff = getTextDiff(value, state.editable, get.string());
+            switch (state.editable.state) {
                 case 'amount': {
-                    return handleAmountChange(diff, item, actions);
+                    return handleAmountChange(diff, state.editable, editableActions);
                 }
                 case 'unit': {
-                    return handleUnitChange(diff, actions);
+                    return handleUnitChange(diff, editableActions);
                 }
                 case 'name': {
-                    return handleNameChange(diff, actions);
+                    return handleNameChange(diff, editableActions);
                 }
             }
         };
 
         return { get, set, handleSubmit, handleChange };
-    }
+    };
+    const editableActionHandler = getEditableActionHandler();
+    const setFinished = (finished: Ingredient[]) => {
+        return dispatch({ type: 'set_finished', finished });
+    };
+    const removeFinished = (index: number) => {
+        return dispatch({ type: 'remove_finished_item', index });
+    };
 
-    return { items, getActionHandler };
+    return { state, editableActionHandler, setFinished, removeFinished };
 }

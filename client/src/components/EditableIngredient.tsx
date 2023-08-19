@@ -1,8 +1,7 @@
 import { Editable, EditablePreview, EditableInput } from '@chakra-ui/react';
-import { useRef, useEffect, forwardRef, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { MenuList } from './MenuList';
-import { Ingredient, ActionHandler } from '../hooks/useIngredientList';
-import { mergeRefs } from 'react-merge-refs';
+import { Ingredient, EditableActionHandler } from '../hooks/useIngredientList';
 
 const handleKeyDown = (event: any) => {
     // To stop entering from submitting
@@ -14,15 +13,10 @@ const handleKeyDown = (event: any) => {
 
 interface Props {
     item: Ingredient;
-    actionHandler: ActionHandler;
-    handleEnter: (event: KeyboardEvent) => void;
+    actionHandler: EditableActionHandler;
     fontSize?: string;
-    color?: string;
 }
-export const EditableIngredient = forwardRef<HTMLInputElement, Props>(function EditableIngredient(
-    { item, actionHandler, handleEnter, fontSize, color }: Props,
-    ref
-) {
+export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
     const previewRef = useRef<HTMLInputElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null);
     const ingredientStr = actionHandler.get.string();
@@ -40,9 +34,15 @@ export const EditableIngredient = forwardRef<HTMLInputElement, Props>(function E
                 previewRef.current?.focus();
             }, 0);
         } else {
-            console.log('value', value);
             actionHandler.handleSubmit(value);
-            console.log('submitted');
+        }
+    };
+
+    const handleEnter = (event: KeyboardEvent) => {
+        if (event.key === 'Enter' && previewRef.current) {
+            setTimeout(() => {
+                previewRef.current?.focus();
+            }, 0);
         }
     };
 
@@ -69,9 +69,10 @@ export const EditableIngredient = forwardRef<HTMLInputElement, Props>(function E
                 onChange={actionHandler.handleChange}
                 textAlign='left'
                 fontSize={fontSize}
-                color={color}
+                color={item.isEdited ? '' : 'gray.400'}
+                paddingLeft='6px'
             >
-                <EditablePreview ref={mergeRefs([previewRef, ref])} />
+                <EditablePreview ref={previewRef} />
                 <EditableInput
                     ref={inputRef}
                     value={ingredientStr}
@@ -83,8 +84,8 @@ export const EditableIngredient = forwardRef<HTMLInputElement, Props>(function E
                 inputState={item.state}
                 show={item.show}
                 setShow={actionHandler.set.show}
-                currentValue={actionHandler.get.currentValue()}
-                setValue={actionHandler.set.currentValue}
+                currentValue={actionHandler.get.currentStateValue()}
+                setValue={actionHandler.set.currentStateValue}
                 setIsSelecting={setIsSelecting}
                 blurCallback={() => {
                     console.log('called blur');
@@ -95,4 +96,4 @@ export const EditableIngredient = forwardRef<HTMLInputElement, Props>(function E
             />
         </>
     );
-});
+}
