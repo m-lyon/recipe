@@ -8,6 +8,7 @@ interface Action {
 interface EditableItem {
     value: string;
     isEdited: boolean;
+    key: string;
 }
 
 function itemsReducer(state: EditableItem[], action: Action): EditableItem[] {
@@ -16,7 +17,7 @@ function itemsReducer(state: EditableItem[], action: Action): EditableItem[] {
             if (typeof action.value === 'undefined') {
                 throw new Error('Cannot add an item with undefined value.');
             }
-            return [...state, { value: action.value, isEdited: false }];
+            return [...state, { value: action.value, isEdited: false, key: crypto.randomUUID() }];
         }
         case 'remove_item': {
             return state.filter((_, idx) => action.index !== idx);
@@ -27,7 +28,7 @@ function itemsReducer(state: EditableItem[], action: Action): EditableItem[] {
                     throw new Error('Cannot add an item with undefined value.');
                 }
                 if (action.index === idx) {
-                    return { value: action.value, isEdited: item.isEdited };
+                    return { ...item, value: action.value };
                 } else {
                     return item;
                 }
@@ -36,7 +37,7 @@ function itemsReducer(state: EditableItem[], action: Action): EditableItem[] {
         case 'toggle_edited': {
             return state.map((item, idx) => {
                 if (action.index === idx) {
-                    return { value: item.value, isEdited: !item.isEdited };
+                    return { ...item, isEdited: !item.isEdited };
                 } else {
                     return item;
                 }
@@ -49,7 +50,9 @@ function itemsReducer(state: EditableItem[], action: Action): EditableItem[] {
 }
 
 export function useItemList(defaultStr: string) {
-    const [items, dispatch] = useReducer(itemsReducer, [{ value: defaultStr, isEdited: false }]);
+    const [items, dispatch] = useReducer(itemsReducer, [
+        { value: defaultStr, isEdited: false, key: crypto.randomUUID() },
+    ]);
 
     function handleAddItem() {
         dispatch({ type: 'add_item', value: defaultStr });

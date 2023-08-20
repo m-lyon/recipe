@@ -80,6 +80,7 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
                     // onKeyDown={handleKeyDown}
                 />
             </Editable>
+
             <MenuList
                 inputState={item.state}
                 show={item.show}

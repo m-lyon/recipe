@@ -3,6 +3,7 @@ import { matchSorter } from 'match-sorter';
 import { Dispatch, SetStateAction, useEffect } from 'react';
 import { UseBooleanActions } from '../types/chakra';
 import { InputState } from '../hooks/useIngredientList';
+import { motion, LayoutGroup } from 'framer-motion';
 
 const MOCK_ITEMS = ['cup', 'ml', 'g'];
 const MOCK_NAMES = ['soy sauce', 'asparagus'];
@@ -50,35 +51,43 @@ export function MenuList(props: Props) {
         }
     }, [filteredItems]);
 
-    const suggestionList = filteredItems.map((item, index) => (
-        <ListItem
-            px={2}
-            py={1}
-            key={`${item}${index}`}
-            _hover={{ bg: 'gray.100' }}
-            onClick={() => handleClick(item)}
-            onMouseEnter={() => setIsSelecting(true)}
-            onMouseLeave={() => setIsSelecting(false)}
-            cursor='default'
+    const suggestionList = filteredItems.map((item) => (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            key={`${item}`}
         >
-            {item}
-        </ListItem>
+            <ListItem
+                px={2}
+                py={1}
+                _hover={{ bg: 'gray.100' }}
+                onClick={() => handleClick(item)}
+                onMouseEnter={() => setIsSelecting(true)}
+                onMouseLeave={() => setIsSelecting(false)}
+                cursor='default'
+            >
+                {item}
+            </ListItem>
+        </motion.div>
     ));
     return (
         show && (
-            <Box pb={4} mb={4}>
-                <List
-                    color='rgba(0, 0, 0, 0.64)'
-                    bg='white'
-                    borderRadius='4px'
-                    borderBottom={show ? '1px solid rgba(0,0,0,0.1)' : undefined}
-                    borderLeft={show ? '1px solid rgba(0,0,0,0.1)' : undefined}
-                    borderRight={show ? '1px solid rgba(0,0,0,0.1)' : undefined}
-                    boxShadow='6px 5px 8px rgba(0,50,30,0.02)'
-                >
-                    {suggestionList}
-                </List>
-            </Box>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <Box pb={4} mb={4}>
+                    <List
+                        color='rgba(0, 0, 0, 0.64)'
+                        bg='white'
+                        borderRadius='4px'
+                        borderBottom={show ? '1px solid rgba(0,0,0,0.1)' : undefined}
+                        borderLeft={show ? '1px solid rgba(0,0,0,0.1)' : undefined}
+                        borderRight={show ? '1px solid rgba(0,0,0,0.1)' : undefined}
+                        boxShadow='6px 5px 8px rgba(0,50,30,0.02)'
+                    >
+                        <LayoutGroup>{suggestionList}</LayoutGroup>
+                    </List>
+                </Box>
+            </motion.div>
         )
     );
 }
