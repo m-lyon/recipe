@@ -7,7 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "compile": "tsc",
+    "start": "npm run compile && nodemon ./dist/index.js"
   },
   "keywords": [],
   "author": "",
@@ -15,8 +16,11 @@
   "type": "module",
   "dependencies": {
     "@apollo/server": "^4.7.4",
-    "@types/node": "^20.3.1",
     "graphql": "^16.6.0",
     "mongoose": "^7.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.5.1",
+    "typescript": "^5.1.6"
   }
 }

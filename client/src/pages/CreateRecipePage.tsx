@@ -5,6 +5,7 @@ import { EditableIngredientList } from '../components/EditableIngredientList';
 import { EditableField } from '../components/EditableField';
 import { EditableTagList } from '../components/EditableTagList';
 import { EditableInstructionList } from '../components/EditableInstructionList';
+import { ImageUpload } from '../components/ImageUpload';
 
 export function CreateRecipePage() {
     return (
@@ -42,7 +43,7 @@ export function CreateRecipePage() {
                         <EditableInstructionList />
                     </GridItem>
                     <GridItem pl='2' boxShadow='lg' padding='6' area={'images'}>
-                        Images
+                        <ImageUpload />
                     </GridItem>
                 </Grid>
             </Container>
