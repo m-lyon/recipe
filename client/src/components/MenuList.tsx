@@ -25,7 +25,7 @@ export function MenuList(props: Props) {
         // TODO: this will be conntected to backend at some point
         const value = currentValue !== null ? currentValue : '';
         const stateMap = {
-            amount: { items: [], value: '' },
+            quantity: { items: [], value: '' },
             unit: { items: MOCK_ITEMS, value: value },
             name: { items: MOCK_NAMES, value: value },
         };

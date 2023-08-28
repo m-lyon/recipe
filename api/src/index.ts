@@ -1,10 +1,11 @@
+import 'dotenv-flow/config';
+import './utils/connectdb.js';
+
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
-import { typeDefs } from './models/typeDef.js';
-import { resolvers } from './resolvers.js';
+import { schema } from './schema/index.js';
 
-const server = new ApolloServer({ typeDefs, resolvers });
-
+const server = new ApolloServer({ schema });
 const { url } = await startStandaloneServer(server, {
     listen: { port: 4000 },
 });

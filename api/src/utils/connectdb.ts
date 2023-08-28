@@ -1,11 +1,15 @@
-import { connect, set } from 'mongoose';
+import mongoose from 'mongoose';
 
-const url = process.env.MONGO_DB_CONNECTION_STRING;
-set({ strictQuery: true });
-connect(url)
+const url = process.env.MONGODB_URI;
+
+mongoose.set({ strictQuery: true });
+mongoose
+    .connect(url)
     .then((db) => {
         console.log('connected to db');
     })
     .catch((err) => {
         console.log(err);
     });
+
+export default mongoose;

@@ -25,17 +25,17 @@ function handleAmountChange(
         if (validateAmount(char, item)) {
             if (!item.isEdited) {
                 actionHandler.toggleEdited();
-                actionHandler.amount.set(char);
+                actionHandler.quantity.set(char);
             } else if (char === ' ') {
                 console.log('changing state from "amnt" to "unit"');
                 actionHandler.incrementState();
                 actionHandler.setShow.on();
             } else {
-                actionHandler.amount.append(char);
+                actionHandler.quantity.append(char);
             }
         } else {
             if (!item.isEdited) {
-                actionHandler.amount.set('');
+                actionHandler.quantity.set('');
                 // Could do some red text warning here
             }
             console.log(`invalid char given: "${char}"`);
@@ -101,9 +101,9 @@ interface Action {
     num?: number;
     finished?: Ingredient[];
 }
-export type InputState = 'amount' | 'unit' | 'name';
+export type InputState = 'quantity' | 'unit' | 'name';
 export interface Ingredient {
-    amount: string | null;
+    quantity: string | null;
     unit: string | null;
     name: string | null;
     isEdited: boolean;
@@ -114,11 +114,11 @@ export interface Ingredient {
 
 function getEmptyIngredient(): Ingredient {
     return {
-        amount: null,
+        quantity: null,
         unit: null,
         name: null,
         isEdited: false,
-        state: 'amount',
+        state: 'quantity',
         show: false,
         key: crypto.randomUUID(),
     };
@@ -174,7 +174,7 @@ function sliceIngredientProperty(
 }
 
 function getPrevState(state: InputState): InputState {
-    const nextState = { amount: 'amount', unit: 'amount', name: 'unit' };
+    const nextState = { quantity: 'quantity', unit: 'quantity', name: 'unit' };
     return nextState[state] as InputState;
 }
 
@@ -215,18 +215,18 @@ function truncateIngredient(num: number, item: Ingredient): Ingredient {
 
     [num, newItem] = removeFromProperty(num, newItem, 'name');
     [num, newItem] = removeFromProperty(num, newItem, 'unit');
-    [num, newItem] = removeFromProperty(num, newItem, 'amount');
+    [num, newItem] = removeFromProperty(num, newItem, 'quantity');
     return newItem;
 }
 
 export function getIngredientStr(item: Ingredient): string {
-    if (item.amount === null && item.isEdited) {
+    if (item.quantity === null && item.isEdited) {
         return '';
     }
-    const amountStr = `${item.amount !== null ? item.amount : DEFAULT_INGREDIENT_STR}`;
-    const unitStr = `${item.state !== 'amount' ? ' ' : ''}${item.unit !== null ? item.unit : ''}`;
+    const quantityStr = `${item.quantity !== null ? item.quantity : DEFAULT_INGREDIENT_STR}`;
+    const unitStr = `${item.state !== 'quantity' ? ' ' : ''}${item.unit !== null ? item.unit : ''}`;
     const nameStr = `${item.state === 'name' ? ' ' : ''}${item.name !== null ? item.name : ''}`;
-    return `${amountStr}${unitStr}${nameStr}`;
+    return `${quantityStr}${unitStr}${nameStr}`;
 }
 type ShowStates = 'on' | 'off' | 'toggle';
 
@@ -263,8 +263,8 @@ function itemsReducer(state: EditableIngredientState, action: Action): EditableI
                 draft.editable.show = newState[action.value as ShowStates];
             });
         }
-        case 'set_editable_amount': {
-            return setEditableIngredientProperty(state, action, 'amount');
+        case 'set_editable_quantity': {
+            return setEditableIngredientProperty(state, action, 'quantity');
         }
         case 'set_editable_unit': {
             return setEditableIngredientProperty(state, action, 'unit');
@@ -280,8 +280,8 @@ function itemsReducer(state: EditableIngredientState, action: Action): EditableI
                 draft.finished = action.finished;
             });
         }
-        case 'append_editable_amount': {
-            return appendIngredientProperty(state, action, 'amount');
+        case 'append_editable_quantity': {
+            return appendIngredientProperty(state, action, 'quantity');
         }
         case 'append_editable_unit': {
             return appendIngredientProperty(state, action, 'unit');
@@ -289,8 +289,8 @@ function itemsReducer(state: EditableIngredientState, action: Action): EditableI
         case 'append_editable_name': {
             return appendIngredientProperty(state, action, 'name');
         }
-        case 'slice_editable_amount': {
-            return sliceIngredientProperty(state, action, 'amount');
+        case 'slice_editable_quantity': {
+            return sliceIngredientProperty(state, action, 'quantity');
         }
         case 'slice_editable_unit': {
             return sliceIngredientProperty(state, action, 'unit');
@@ -305,7 +305,7 @@ function itemsReducer(state: EditableIngredientState, action: Action): EditableI
         }
         case 'increment_editable_state': {
             return produce(state, (draft) => {
-                const nextState = { amount: 'unit', unit: 'name', name: 'name' };
+                const nextState = { quantity: 'unit', unit: 'name', name: 'name' };
                 draft.editable.state = nextState[draft.editable.state] as InputState;
             });
         }
@@ -338,7 +338,7 @@ interface InternalEditableActionHandler {
     submit: () => void;
     truncate: (num: number) => void;
     toggleEdited: () => void;
-    amount: ActionTypeHandler;
+    quantity: ActionTypeHandler;
     unit: ActionTypeHandler;
     name: ActionTypeHandler;
     reset: () => void;
@@ -382,9 +382,9 @@ export function useEditableIngredients(): UseIngredientListReturnType {
             truncate: (num: number) => dispatch({ type: 'truncate_editable', num }),
             toggleEdited: () => dispatch({ type: 'toggle_editable_is_edited' }),
             incrementState: () => dispatch({ type: 'increment_editable_state' }),
-            amount: {
-                set: (value: string) => dispatch({ type: 'set_editable_amount', value }),
-                append: (value: string) => dispatch({ type: 'append_editable_amount', value }),
+            quantity: {
+                set: (value: string) => dispatch({ type: 'set_editable_quantity', value }),
+                append: (value: string) => dispatch({ type: 'append_editable_quantity', value }),
             },
             unit: {
                 set: (value: string) => dispatch({ type: 'set_editable_unit', value }),
@@ -426,7 +426,7 @@ export function useEditableIngredients(): UseIngredientListReturnType {
         const handleChange = (value: string) => {
             const diff = getTextDiff(value, state.editable, get.string());
             switch (state.editable.state) {
-                case 'amount': {
+                case 'quantity': {
                     return handleAmountChange(diff, state.editable, editableActions);
                 }
                 case 'unit': {

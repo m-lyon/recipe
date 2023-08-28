@@ -1,4 +1,5 @@
 import { Schema, Document, model, Types } from 'mongoose';
+import { composeMongoose } from 'graphql-compose-mongoose';
 
 export interface Rating extends Document {
     value: number;
@@ -20,3 +21,4 @@ const ratingSchema = new Schema<Rating>({
 });
 
 export const Rating = model<Rating>('Rating', ratingSchema);
+export const RatingTC = composeMongoose(Rating);

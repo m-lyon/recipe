@@ -1,14 +1,13 @@
 import { Schema, Document, Types, model } from 'mongoose';
+import { composeMongoose } from 'graphql-compose-mongoose';
 
 export interface Tag extends Document {
-    name: string;
+    value: string;
 }
 
 const tagSchema = new Schema<Tag>({
-    name: { type: String, required: true, unique: true },
+    value: { type: String, required: true, unique: true },
 });
-
-export const Tag = model<Tag>('Tag', tagSchema);
 
 export const tagValidator = {
     validator: function (tags?: Types.ObjectId[]) {
@@ -20,3 +19,6 @@ export const tagValidator = {
     },
     message: 'Duplicate tags are not allowed.',
 };
+
+export const Tag = model<Tag>('Tag', tagSchema);
+export const TagTC = composeMongoose(Tag);

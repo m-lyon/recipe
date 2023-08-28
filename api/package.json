@@ -8,7 +8,9 @@
   },
   "scripts": {
     "compile": "tsc",
-    "start": "npm run compile && nodemon ./dist/index.js"
+    "start": "npm run compile && node ./dist/index.js",
+    "dev": "NODE_ENV=development nodemon -e ts --exec \"npm run start\"",
+    "seed": "npm run compile && node ./dist/scripts/seedDatabase.js"
   },
   "keywords": [],
   "author": "",
@@ -16,7 +18,10 @@
   "type": "module",
   "dependencies": {
     "@apollo/server": "^4.7.4",
+    "dotenv-flow": "^3.3.0",
     "graphql": "^16.6.0",
+    "graphql-compose": "^9.0.10",
+    "graphql-compose-mongoose": "^9.8.0",
     "mongoose": "^7.3.0"
   },
   "devDependencies": {

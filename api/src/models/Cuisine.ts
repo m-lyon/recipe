@@ -1,11 +1,12 @@
 import { Schema, Document, Types, model } from 'mongoose';
+import { composeMongoose } from 'graphql-compose-mongoose';
 
 export interface Cuisine extends Document {
-    name: string;
+    value: string;
 }
 
 const cuisineSchema = new Schema<Cuisine>({
-    name: { type: String, required: true, unique: true },
+    value: { type: String, required: true, unique: true },
 });
 
 export const Cuisine = model<Cuisine>('Cuisine', cuisineSchema);
@@ -20,3 +21,4 @@ export const cuisineValidator = {
     },
     message: 'Duplicate cuisines are not allowed.',
 };
+export const CuisineTC = composeMongoose(Cuisine);

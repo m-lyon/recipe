@@ -1,19 +1,20 @@
 import { Schema, Document, model, Types } from 'mongoose';
+import { composeMongoose } from 'graphql-compose-mongoose';
 import { tagValidator } from './Tag';
 import { cuisineValidator } from './Cuisine';
 
 export interface RecipeIngredient extends Document {
     ingredient: Types.ObjectId;
-    ingredientType: 'Ingredient' | 'Recipe';
-    amount: number;
+    type: 'Ingredient' | 'Recipe';
+    quantity: number;
     unit: Types.ObjectId;
     prepMethod: Types.ObjectId;
 }
 
 const recipeIngredientSchema = new Schema<RecipeIngredient>({
     ingredient: { type: Schema.Types.ObjectId, refPath: 'ingredientType', required: true },
-    ingredientType: { type: String, enum: ['Ingredient', 'Recipe'], required: true },
-    amount: { type: Number, required: true },
+    type: { type: String, enum: ['Ingredient', 'Recipe'], required: true },
+    quantity: { type: Number, required: true },
     unit: { type: Schema.Types.ObjectId, ref: 'Unit', required: true },
     prepMethod: { type: Schema.Types.ObjectId, ref: 'PrepMethod' },
 });
@@ -67,3 +68,4 @@ const recipeSchema = new Schema<Recipe>({
 });
 
 export const Recipe = model<Recipe>('Recipe', recipeSchema);
+export const RecipeTC = composeMongoose(Recipe);

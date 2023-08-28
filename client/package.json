@@ -11,12 +11,14 @@
     "test": "NODE_ENV=test jest"
   },
   "dependencies": {
+    "@apollo/client": "^3.8.1",
     "@chakra-ui/icons": "^2.0.19",
     "@chakra-ui/react": "^2.7.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@types/react-dom": "^18.2.5",
     "framer-motion": "^10.12.16",
+    "graphql": "^16.8.0",
     "immer": "^10.0.2",
     "match-sorter": "^6.3.1",
     "react": "^18.2.0",
