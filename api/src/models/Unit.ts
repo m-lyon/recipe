@@ -2,13 +2,17 @@ import { Schema, Document, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 
 export interface Unit extends Document {
-    shortValue: string;
-    longValue: string;
+    shortSingular: string;
+    shortPlural: string;
+    longSingular: string;
+    longPlural: string;
 }
 
 const unitSchema = new Schema<Unit>({
-    shortValue: { type: String, required: true, unique: true },
-    longValue: { type: String, required: true, unique: true },
+    shortSingular: { type: String, required: true, unique: true },
+    shortPlural: { type: String, required: true, unique: true },
+    longSingular: { type: String, required: true, unique: true },
+    longPlural: { type: String, required: true, unique: true },
 });
 
 export const Unit = model<Unit>('Unit', unitSchema);

@@ -19,8 +19,9 @@ interface Props {
 export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
     const previewRef = useRef<HTMLInputElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null);
-    const ingredientStr = actionHandler.get.string();
     const [isSelecting, setIsSelecting] = useState<boolean>(false);
+
+    const ingredientStr = actionHandler.get.string();
 
     const handleEdit = () => {
         if (!item.isEdited) {

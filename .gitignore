@@ -130,3 +130,6 @@ yarn-error.log*
 
 # ideas folder
 ideas
+
+# graphql generated files
+*/src/__generated__/

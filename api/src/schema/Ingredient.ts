@@ -1,13 +1,4 @@
 import { IngredientTC } from '../models/Ingredient.js';
-import { PrepMethodTC } from '../models/PrepMethod.js';
-
-IngredientTC.addRelation('prepMethods', {
-    resolver: () => PrepMethodTC.mongooseResolvers.findByIds(),
-    prepareArgs: {
-        _ids: (source) => source.prepMethods.map((o) => o._id),
-    },
-    projection: { prepMethods: true },
-});
 
 export const IngredientQuery = {
     ingredientById: IngredientTC.mongooseResolvers.findById(),

@@ -4,10 +4,19 @@ import { Dispatch, SetStateAction, useEffect } from 'react';
 import { UseBooleanActions } from '../types/chakra';
 import { InputState } from '../hooks/useIngredientList';
 import { motion, LayoutGroup } from 'framer-motion';
+import { useQuery } from '@apollo/client';
+import { gql } from '../__generated__/gql';
+
+const GET_INGREDIENT_OPTS = gql(`
+    query GetIngredientOpts {
+        ingredientMany {
+            name
+        }
+    }
+`);
 
 const MOCK_ITEMS = ['cup', 'ml', 'g'];
-const MOCK_NAMES = ['soy sauce', 'asparagus'];
-
+// TODO: typing for graphql data
 interface Props {
     inputState: InputState;
     show: boolean;
@@ -20,15 +29,27 @@ interface Props {
 export function MenuList(props: Props) {
     const { inputState, show, setShow, currentValue, setValue, setIsSelecting, blurCallback } =
         props;
+    const { loading, error, data } = useQuery(GET_INGREDIENT_OPTS);
 
     const getListSelection = () => {
-        // TODO: this will be conntected to backend at some point
         const value = currentValue !== null ? currentValue : '';
-        const stateMap = {
-            quantity: { items: [], value: '' },
-            unit: { items: MOCK_ITEMS, value: value },
-            name: { items: MOCK_NAMES, value: value },
-        };
+
+        // Default stateMap
+        let stateMap;
+        if (loading || error) {
+            stateMap = {
+                quantity: { items: [], value: '' },
+                unit: { items: MOCK_ITEMS, value: '' },
+                name: { items: [], value: '' },
+            };
+        } else {
+            stateMap = {
+                quantity: { items: [], value: '' },
+                unit: { items: MOCK_ITEMS, value: value },
+                name: { items: data?.ingredientMany.map((ingr) => ingr.name), value: value },
+            };
+        }
+
         return stateMap[inputState];
     };
 

@@ -5,7 +5,7 @@ declare global {
             NODE_ENV: 'development' | 'production';
             PORT?: string;
             PWD: string;
-            MONGO_DB_CONNECTION_STRING: string;
+            MONGODB_URI: string;
         }
     }
 }

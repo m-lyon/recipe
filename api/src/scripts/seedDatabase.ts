@@ -1,4 +1,4 @@
-import 'dotenv/config.js';
+import 'dotenv-flow/config';
 import mongoose from '../utils/connectdb.js';
 import { Tag } from '../models/Tag.js';
 import { Unit } from '../models/Unit.js';
@@ -44,10 +44,45 @@ async function populateUnits() {
 
         // Create new dummy units
         const dummyUnits = [
-            { shortValue: 'g', longValue: 'grams' },
-            { shortValue: 'cups', longValue: 'cups' },
-            { shortValue: 'tsp', longValue: 'teaspoons' },
-            { shortValue: 'tbsp', longValue: 'tablespoons' },
+            { shortSingular: 'g', shortPlural: 'g', longSingular: 'gram', longPlural: 'grams' },
+            {
+                shortSingular: 'kg',
+                shortPlural: 'kg',
+                longSingular: 'kilogram',
+                longPlural: 'kilograms',
+            },
+            {
+                shortSingular: 'ml',
+                shortPlural: 'ml',
+                longSingular: 'millilitre',
+                longPlural: 'millilitres',
+            },
+            { shortSingular: 'l', shortPlural: 'l', longSingular: 'litre', longPlural: 'litres' },
+            {
+                shortSingular: 'tsp',
+                shortPlural: 'tsp',
+                longSingular: 'teaspoon',
+                longPlural: 'teaspoons',
+            },
+            {
+                shortSingular: 'tbsp',
+                shortPlural: 'tbsp',
+                longSingular: 'tablespoon',
+                longPlural: 'tablespoons',
+            },
+            { shortSingular: 'cup', shortPlural: 'cups', longSingular: 'cup', longPlural: 'cups' },
+            {
+                shortSingular: 'pinch',
+                shortPlural: 'pinches',
+                longSingular: 'pinch',
+                longPlural: 'pinches',
+            },
+            {
+                shortSingular: 'handful',
+                shortPlural: 'handfuls',
+                longSingular: 'handful',
+                longPlural: 'handfuls',
+            },
         ];
         const createdUnits = await Unit.create(dummyUnits);
 
@@ -63,18 +98,13 @@ async function populateIngredients() {
         await Ingredient.deleteMany({});
 
         // Retrieve prepMethod IDs by their values from the database
-        const sliced = await PrepMethod.findOne({ value: 'sliced' });
-        const chopped = await PrepMethod.findOne({ value: 'chopped' });
-        const diced = await PrepMethod.findOne({ value: 'diced' });
-        const shredded = await PrepMethod.findOne({ value: 'shredded' });
+        // const sliced = await PrepMethod.findOne({ value: 'sliced' });
+        // const chopped = await PrepMethod.findOne({ value: 'chopped' });
+        // const diced = await PrepMethod.findOne({ value: 'diced' });
+        // const shredded = await PrepMethod.findOne({ value: 'shredded' });
 
         // Create new dummy ingredients with associated prepMethods
-        const dummyIngredients = [
-            { name: 'Onion', prepMethods: [sliced._id, chopped._id] },
-            { name: 'Tomato', prepMethods: [diced._id] },
-            { name: 'Chicken', prepMethods: [shredded._id] },
-        ];
-
+        const dummyIngredients = [{ name: 'onion' }, { name: 'tomato' }, { name: 'chicken' }];
         const createdIngredients = await Ingredient.create(dummyIngredients);
 
         console.log('Ingredients with prepMethods added:', createdIngredients);
