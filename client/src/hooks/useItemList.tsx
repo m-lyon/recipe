@@ -48,27 +48,27 @@ function itemsReducer(state: EditableItem[], action: Action): EditableItem[] {
         }
     }
 }
-
-export function useItemList(defaultStr: string) {
+interface ActionHandler {
+    addItem: () => void;
+    removeItem: (index: number) => void;
+    setValue: (index: number, value: string) => void;
+    toggleEdited: (index: number) => void;
+}
+export interface UseItemListReturnType {
+    items: EditableItem[];
+    defaultStr: string;
+    actionHandler: ActionHandler;
+}
+export function useItemList(defaultStr: string): UseItemListReturnType {
     const [items, dispatch] = useReducer(itemsReducer, [
         { value: defaultStr, isEdited: false, key: crypto.randomUUID() },
     ]);
+    const actionHandler = {
+        addItem: () => dispatch({ type: 'add_item', value: defaultStr }),
+        removeItem: (index: number) => dispatch({ type: 'remove_item', index }),
+        setValue: (index: number, value: string) => dispatch({ type: 'set_value', index, value }),
+        toggleEdited: (index: number) => dispatch({ type: 'toggle_edited', index }),
+    };
 
-    function handleAddItem() {
-        dispatch({ type: 'add_item', value: defaultStr });
-    }
-
-    function handleRemoveItem(index: number) {
-        dispatch({ type: 'remove_item', index });
-    }
-
-    function handleSetValue(index: number, value: string) {
-        dispatch({ type: 'set_value', index, value });
-    }
-
-    function handleToggleEdited(index: number) {
-        dispatch({ type: 'toggle_edited', index });
-    }
-
-    return { items, handleAddItem, handleRemoveItem, handleSetValue, handleToggleEdited };
+    return { items, defaultStr, actionHandler };
 }

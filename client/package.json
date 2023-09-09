@@ -9,7 +9,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "NODE_ENV=test jest",
-    "compile:graphql": "NODE_ENV=development graphql-codegen"
+    "compile": "NODE_ENV=development graphql-codegen"
   },
   "dependencies": {
     "@apollo/client": "^3.8.1",

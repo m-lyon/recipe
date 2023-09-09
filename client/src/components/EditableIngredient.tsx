@@ -1,7 +1,7 @@
 import { Editable, EditablePreview, EditableInput } from '@chakra-ui/react';
 import { useRef, useEffect, useState } from 'react';
 import { MenuList } from './MenuList';
-import { Ingredient, EditableActionHandler } from '../hooks/useIngredientList';
+import { Ingredient, IngredientActionHandler } from '../hooks/useIngredientList';
 
 const handleKeyDown = (event: any) => {
     // To stop entering from submitting
@@ -13,7 +13,7 @@ const handleKeyDown = (event: any) => {
 
 interface Props {
     item: Ingredient;
-    actionHandler: EditableActionHandler;
+    actionHandler: IngredientActionHandler;
     fontSize?: string;
 }
 export function EditableIngredient({ item, actionHandler, fontSize }: Props) {

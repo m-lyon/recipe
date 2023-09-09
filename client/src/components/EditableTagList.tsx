@@ -1,14 +1,12 @@
 import { Tag, TagCloseButton, TagLabel, VStack, Wrap, WrapItem } from '@chakra-ui/react';
-import { useItemList } from '../hooks/useItemList';
+import { UseItemListReturnType } from '../hooks/useItemList';
 import { useEnterFocus } from '../hooks/useEnterCapture';
 import { EditableItem } from './EditableItem';
 import { RefObject } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 
-export function EditableTagList() {
-    const defaultStr = 'Add a tag...';
-    const { items, handleAddItem, handleRemoveItem, handleSetValue, handleToggleEdited } =
-        useItemList(defaultStr);
+export function EditableTagList(props: UseItemListReturnType) {
+    const { items, defaultStr, actionHandler } = props;
     const [lastInputRef, handleEnter] = useEnterFocus();
     const tagsList = items.map((tag, index) => {
         if (index !== items.length - 1) {
@@ -23,7 +21,7 @@ export function EditableTagList() {
                     <WrapItem>
                         <Tag>
                             <TagLabel>{tag.value}</TagLabel>
-                            <TagCloseButton onClick={() => handleRemoveItem(index)} />
+                            <TagCloseButton onClick={() => actionHandler.removeItem(index)} />
                         </Tag>
                     </WrapItem>
                 </motion.div>
@@ -42,10 +40,12 @@ export function EditableTagList() {
                         defaultStr={defaultStr}
                         isLast={true}
                         item={items[items.length - 1]}
-                        addNewEntry={handleAddItem}
-                        removeFromList={() => handleRemoveItem(items.length - 1)}
-                        setValue={(value: string) => handleSetValue(items.length - 1, value)}
-                        toggleIsEdited={() => handleToggleEdited(items.length - 1)}
+                        addNewEntry={actionHandler.addItem}
+                        removeFromList={() => actionHandler.removeItem(items.length - 1)}
+                        setValue={(value: string) =>
+                            actionHandler.setValue(items.length - 1, value)
+                        }
+                        toggleIsEdited={() => actionHandler.toggleEdited(items.length - 1)}
                         handleEnter={handleEnter}
                         color={items[items.length - 1].isEdited ? '' : 'gray.400'}
                     />

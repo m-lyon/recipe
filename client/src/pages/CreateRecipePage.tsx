@@ -1,13 +1,38 @@
-import { Container } from '@chakra-ui/react';
+import { Box, Button, Center, Container } from '@chakra-ui/react';
 import { Grid, GridItem } from '@chakra-ui/react';
 import { WithSubnavigation } from '../components/Navbar';
 import { EditableIngredientList } from '../components/EditableIngredientList';
-import { EditableField } from '../components/EditableField';
+import { EditableTitle } from '../components/EditableTitle';
 import { EditableTagList } from '../components/EditableTagList';
 import { EditableInstructionList } from '../components/EditableInstructionList';
 import { ImageUpload } from '../components/ImageUpload';
+import { useRecipeState } from '../hooks/useRecipeState';
+import { useMutation } from '@apollo/client';
+import { gql } from '../__generated__';
+
+const CREATE_RECIPE = gql(`
+    mutation CreateRecipe($recipe: CreateOneRecipeInput!) {
+        recipeCreateOne(record: $recipe) {
+            record {
+                title
+                tags {
+                    _id
+                }
+                ingredients {
+                    quantity
+                    unit
+                    name
+                }
+                instructions
+            }
+        }
+    }
+`);
 
 export function CreateRecipePage() {
+    const { ingredientState, instructionsState, tagsState, titleState } = useRecipeState();
+    const [createRecipe, { data, loading, error }] = useMutation(CREATE_RECIPE);
+
     return (
         <>
             <WithSubnavigation />
@@ -16,8 +41,9 @@ export function CreateRecipePage() {
                     templateAreas={`'title title'
                                     'ingredients tags'
                                     'ingredients instructions'
-                                    'images images'`}
-                    gridTemplateRows={'100px 0.2fr 0.9fr 200px'}
+                                    'images images'
+                                    'button button'`}
+                    gridTemplateRows={'100px 0.2fr 0.9fr 200px 90px'}
                     gridTemplateColumns={'0.4fr 1fr'}
                     h='1000px'
                     gap='2'
@@ -27,23 +53,33 @@ export function CreateRecipePage() {
                     fontWeight='bold'
                 >
                     <GridItem pl='2' boxShadow='lg' padding='6' area={'title'}>
-                        <EditableField
-                            defaultStr='Enter Recipe Title'
-                            fontSize='3xl'
-                            textAlign='center'
-                        />
+                        <EditableTitle {...titleState} />
                     </GridItem>
                     <GridItem pl='2' area={'tags'} boxShadow='lg' padding='6'>
-                        <EditableTagList />
+                        <EditableTagList {...tagsState} />
                     </GridItem>
                     <GridItem pl='2' area={'ingredients'} boxShadow='lg' padding='6'>
-                        <EditableIngredientList />
+                        <EditableIngredientList {...ingredientState} />
                     </GridItem>
                     <GridItem pl='2' boxShadow='lg' padding='6' area={'instructions'}>
-                        <EditableInstructionList />
+                        <EditableInstructionList {...instructionsState} />
                     </GridItem>
                     <GridItem pl='2' boxShadow='lg' padding='6' area={'images'}>
                         <ImageUpload />
+                    </GridItem>
+                    <GridItem pl='2' padding='6' area={'button'}>
+                        <Center>
+                            <Box position='fixed' bottom='4' pb='3'>
+                                <Button
+                                    size='lg'
+                                    borderRadius='full'
+                                    border='1px'
+                                    borderColor='gray.200'
+                                >
+                                    Submit Recipe
+                                </Button>
+                            </Box>
+                        </Center>
                     </GridItem>
                 </Grid>
             </Container>

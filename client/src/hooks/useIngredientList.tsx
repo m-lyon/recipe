@@ -13,11 +13,7 @@ const validateUnit = (char: string): boolean => /^[a-zA-Z ]$/.test(char);
 const validateName = (char: string): boolean => /^[a-zA-Z ]$/.test(char);
 
 type NewChar = string | number;
-function handleAmountChange(
-    char: NewChar,
-    item: Ingredient,
-    actionHandler: InternalEditableActionHandler
-) {
+function handleAmountChange(char: NewChar, item: Ingredient, actionHandler: InternalActionHandler) {
     if (typeof char === 'number') {
         console.log(`truncating by ${char} characters`);
         actionHandler.truncate(char);
@@ -43,7 +39,7 @@ function handleAmountChange(
     }
 }
 
-function handleUnitChange(char: NewChar, actionHandler: InternalEditableActionHandler) {
+function handleUnitChange(char: NewChar, actionHandler: InternalActionHandler) {
     if (typeof char === 'number') {
         console.log(`truncating by ${char} characters`);
         actionHandler.truncate(char);
@@ -62,7 +58,7 @@ function handleUnitChange(char: NewChar, actionHandler: InternalEditableActionHa
     }
 }
 
-function handleNameChange(char: NewChar, actionHandler: InternalEditableActionHandler) {
+function handleNameChange(char: NewChar, actionHandler: InternalActionHandler) {
     console.log(`name char: ${char}`);
     if (typeof char === 'number') {
         console.log(`truncating by ${char} characters`);
@@ -125,10 +121,10 @@ function getEmptyIngredient(): Ingredient {
 }
 
 function setEditableIngredientProperty(
-    state: EditableIngredientState,
+    state: IngredientState,
     action: Action,
     property: InputState
-): EditableIngredientState {
+): IngredientState {
     return produce(state, (draft) => {
         if (typeof action.value === 'undefined') {
             throw new Error('Cannot append an item with undefined value.');
@@ -138,10 +134,10 @@ function setEditableIngredientProperty(
 }
 
 function appendIngredientProperty(
-    state: EditableIngredientState,
+    state: IngredientState,
     action: Action,
     property: InputState
-): EditableIngredientState {
+): IngredientState {
     return produce(state, (draft) => {
         if (typeof action.value === 'undefined') {
             throw new Error(`Cannot append editable ${property} with undefined value.`);
@@ -155,10 +151,10 @@ function appendIngredientProperty(
 }
 
 function sliceIngredientProperty(
-    state: EditableIngredientState,
+    state: IngredientState,
     action: Action,
     property: InputState
-): EditableIngredientState {
+): IngredientState {
     return produce(state, (draft) => {
         if (typeof action.start === 'undefined') {
             action.start = 0;
@@ -230,12 +226,12 @@ export function getIngredientStr(item: Ingredient): string {
 }
 type ShowStates = 'on' | 'off' | 'toggle';
 
-interface EditableIngredientState {
+interface IngredientState {
     finished: Ingredient[];
     editable: Ingredient;
 }
 
-function itemsReducer(state: EditableIngredientState, action: Action): EditableIngredientState {
+function itemsReducer(state: IngredientState, action: Action): IngredientState {
     switch (action.type) {
         case 'remove_finished_item': {
             return produce(state, (draft) => {
@@ -333,7 +329,7 @@ interface ActionTypeHandler {
     set: (value: string) => void;
     append: (value: string) => void;
 }
-interface InternalEditableActionHandler {
+interface InternalActionHandler {
     incrementState: () => void;
     submit: () => void;
     truncate: (num: number) => void;
@@ -357,15 +353,15 @@ interface Set {
     currentStateValue: (value: string) => void;
     show: SetShow;
 }
-export interface EditableActionHandler {
+export interface IngredientActionHandler {
     get: Get;
     set: Set;
     handleSubmit: (value: string) => void;
     handleChange: (value: string) => void;
 }
-interface UseIngredientListReturnType {
-    state: EditableIngredientState;
-    editableActionHandler: EditableActionHandler;
+export interface UseIngredientListReturnType {
+    state: IngredientState;
+    actionHandler: IngredientActionHandler;
     setFinished: (finished: Ingredient[]) => void;
     removeFinished: (index: number) => void;
 }
@@ -375,8 +371,8 @@ export function useEditableIngredients(): UseIngredientListReturnType {
         editable: getEmptyIngredient(),
     });
 
-    const getEditableActionHandler = (): EditableActionHandler => {
-        const editableActions: InternalEditableActionHandler = {
+    const getIngredientActionHandler = (): IngredientActionHandler => {
+        const editableActions: InternalActionHandler = {
             reset: () => dispatch({ type: 'reset_editable' }),
             submit: () => dispatch({ type: 'submit_editable' }),
             truncate: (num: number) => dispatch({ type: 'truncate_editable', num }),
@@ -440,7 +436,7 @@ export function useEditableIngredients(): UseIngredientListReturnType {
 
         return { get, set, handleSubmit, handleChange };
     };
-    const editableActionHandler = getEditableActionHandler();
+    const actionHandler = getIngredientActionHandler();
     const setFinished = (finished: Ingredient[]) => {
         return dispatch({ type: 'set_finished', finished });
     };
@@ -448,5 +444,10 @@ export function useEditableIngredients(): UseIngredientListReturnType {
         return dispatch({ type: 'remove_finished_item', index });
     };
 
-    return { state, editableActionHandler, setFinished, removeFinished };
+    return {
+        state,
+        actionHandler,
+        setFinished,
+        removeFinished,
+    };
 }

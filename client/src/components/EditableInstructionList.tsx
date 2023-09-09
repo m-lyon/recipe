@@ -1,14 +1,12 @@
 import { OrderedList, ListItem } from '@chakra-ui/react';
 import { EditableItem } from './EditableItem';
-import { useItemList } from '../hooks/useItemList';
+import { UseItemListReturnType } from '../hooks/useItemList';
 import { useEnterFocus } from '../hooks/useEnterCapture';
 import { RefObject } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 
-export function EditableInstructionList() {
-    const defaultStr = 'Enter instructions...';
-    const { items, handleAddItem, handleRemoveItem, handleSetValue, handleToggleEdited } =
-        useItemList(defaultStr);
+export function EditableInstructionList(props: UseItemListReturnType) {
+    const { items, defaultStr, actionHandler } = props;
 
     const [lastInputRef, handleEnter] = useEnterFocus();
 
@@ -30,10 +28,10 @@ export function EditableInstructionList() {
                     defaultStr={defaultStr}
                     isLast={index + 1 === items.length}
                     item={instr}
-                    addNewEntry={handleAddItem}
-                    removeFromList={() => handleRemoveItem(index)}
-                    setValue={(value: string) => handleSetValue(index, value)}
-                    toggleIsEdited={() => handleToggleEdited(index)}
+                    addNewEntry={actionHandler.addItem}
+                    removeFromList={() => actionHandler.removeItem(index)}
+                    setValue={(value: string) => actionHandler.setValue(index, value)}
+                    toggleIsEdited={() => actionHandler.toggleEdited(index)}
                     handleEnter={handleEnter}
                     fontSize='lg'
                 />

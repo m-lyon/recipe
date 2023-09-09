@@ -1,25 +1,21 @@
 import { Editable, EditablePreview, EditableInput } from '@chakra-ui/react';
-import { useEditable } from '../hooks/useEditable';
+import { UseEditableReturnType } from '../hooks/useEditable';
 import * as CSS from 'csstype';
 
-interface EditableField {
-    defaultStr: string;
+interface EditableField extends UseEditableReturnType {
     fontSize?: string;
     textAlign: CSS.Property.TextAlign;
 }
-
 export function EditableField(props: EditableField) {
-    const { defaultStr, fontSize, textAlign } = props;
-    const { inputValue, inputRef, isEdited, handleEdit, handleChange, handleSubmit } =
-        useEditable(defaultStr);
+    const { inputValue, inputRef, isEdited, actionHandler, fontSize, textAlign } = props;
 
     return (
         <Editable
             value={inputValue}
             selectAllOnFocus={false}
-            onEdit={handleEdit}
-            onSubmit={handleSubmit}
-            onChange={handleChange}
+            onEdit={actionHandler.edit}
+            onSubmit={actionHandler.submit}
+            onChange={actionHandler.change}
             fontSize={fontSize}
             textAlign={textAlign}
         >

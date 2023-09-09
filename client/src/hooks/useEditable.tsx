@@ -1,6 +1,18 @@
 import { useRef, useState } from 'react';
 
-export function useEditable(defaultStr: string) {
+interface ActionHandler {
+    edit: () => void;
+    change: (value: string) => void;
+    submit: (value: string) => void;
+}
+export interface UseEditableReturnType {
+    inputValue: string;
+    inputRef: React.RefObject<HTMLInputElement>;
+    defaultStr: string;
+    isEdited: boolean;
+    actionHandler: ActionHandler;
+}
+export function useEditable(defaultStr: string): UseEditableReturnType {
     const inputRef = useRef<HTMLInputElement | null>(null);
     const [isEdited, setIsEdited] = useState<boolean>(false);
     const [inputValue, setInputValue] = useState<string>(defaultStr);
@@ -28,5 +40,7 @@ export function useEditable(defaultStr: string) {
         }
     };
 
-    return { inputValue, inputRef, isEdited, handleEdit, handleChange, handleSubmit };
+    const actionHandler = { edit: handleEdit, change: handleChange, submit: handleSubmit };
+
+    return { inputValue, inputRef, defaultStr, isEdited, actionHandler };
 }

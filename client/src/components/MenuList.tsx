@@ -10,13 +10,19 @@ import { gql } from '../__generated__/gql';
 const GET_INGREDIENT_OPTS = gql(`
     query GetIngredientOpts {
         ingredientMany {
+            _id
             name
+        }
+        unitMany {
+            _id
+            shortSingular
+            shortPlural
+            longSingular
+            longPlural
         }
     }
 `);
 
-const MOCK_ITEMS = ['cup', 'ml', 'g'];
-// TODO: typing for graphql data
 interface Props {
     inputState: InputState;
     show: boolean;
@@ -36,20 +42,19 @@ export function MenuList(props: Props) {
 
         // Default stateMap
         let stateMap;
-        if (loading || error) {
+        if (loading || error || !data) {
             stateMap = {
                 quantity: { items: [], value: '' },
-                unit: { items: MOCK_ITEMS, value: '' },
+                unit: { items: [], value: '' },
                 name: { items: [], value: '' },
             };
         } else {
             stateMap = {
                 quantity: { items: [], value: '' },
-                unit: { items: MOCK_ITEMS, value: value },
-                name: { items: data?.ingredientMany.map((ingr) => ingr.name), value: value },
+                unit: { items: data.unitMany.map((unit) => unit.shortSingular), value: value },
+                name: { items: data.ingredientMany.map((ingr) => ingr.name), value: value },
             };
         }
-
         return stateMap[inputState];
     };
 
