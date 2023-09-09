@@ -1,5 +1,7 @@
 import { Schema, Document, model, Types } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
+import { Recipe } from './Recipe';
+import { validateMongooseObjectIds } from './utils.js';
 
 export interface Rating extends Document {
     value: number;
@@ -18,6 +20,9 @@ const ratingSchema = new Schema<Rating>({
         },
     },
     recipe: { type: Schema.Types.ObjectId, ref: 'Recipe', required: true },
+});
+ratingSchema.pre('save', async function (next) {
+    await validateMongooseObjectIds.call(this, { recipe: Recipe }, next);
 });
 
 export const Rating = model<Rating>('Rating', ratingSchema);

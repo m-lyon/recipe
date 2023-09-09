@@ -1,7 +1,13 @@
 import { Schema, Document, model, Types } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
-import { tagValidator } from './Tag';
-import { cuisineValidator } from './Cuisine';
+
+import { User } from './User.js';
+import { Unit } from './Unit.js';
+import { Ingredient } from './Ingredient.js';
+import { PrepMethod } from './PrepMethod.js';
+import { Tag, tagValidator } from './Tag.js';
+import { Cuisine, cuisineValidator } from './Cuisine.js';
+import { validateMongooseObjectIds, validateMongooseObjectIdsArray } from './utils.js';
 
 export interface RecipeIngredient extends Document {
     ingredient: Types.ObjectId;
@@ -12,11 +18,16 @@ export interface RecipeIngredient extends Document {
 }
 
 const recipeIngredientSchema = new Schema<RecipeIngredient>({
-    ingredient: { type: Schema.Types.ObjectId, refPath: 'ingredientType', required: true },
+    ingredient: { type: Schema.Types.ObjectId, refPath: 'Ingredient', required: true },
     type: { type: String, enum: ['Ingredient', 'Recipe'], required: true },
     quantity: { type: Number, required: true },
     unit: { type: Schema.Types.ObjectId, ref: 'Unit', required: true },
     prepMethod: { type: Schema.Types.ObjectId, ref: 'PrepMethod' },
+});
+recipeIngredientSchema.pre('save', async function (next) {
+    // Attribute validation
+    const attribs = { ingredient: Ingredient, unit: Unit, prepMethod: PrepMethod };
+    await validateMongooseObjectIds.call(this, attribs, next);
 });
 
 export interface Recipe extends Document {
@@ -65,6 +76,11 @@ const recipeSchema = new Schema<Recipe>({
         type: [{ type: Schema.Types.ObjectId, ref: 'Cuisine' }],
         validate: cuisineValidator,
     },
+});
+
+recipeSchema.pre('save', async function (next) {
+    await validateMongooseObjectIds.call(this, { owner: User }, next);
+    await validateMongooseObjectIdsArray.call(this, { tags: Tag, cuisine: Cuisine }, next);
 });
 
 export const Recipe = model<Recipe>('Recipe', recipeSchema);

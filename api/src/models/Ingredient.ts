@@ -1,4 +1,4 @@
-import { Schema, Document, Types, model } from 'mongoose';
+import { Schema, Document, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 
 export interface Ingredient extends Document {

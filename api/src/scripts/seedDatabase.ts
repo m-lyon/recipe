@@ -2,13 +2,14 @@ import 'dotenv-flow/config';
 import mongoose from '../utils/connectdb.js';
 import { Tag } from '../models/Tag.js';
 import { Unit } from '../models/Unit.js';
+import { User } from '../models/User.js';
 import { Ingredient } from '../models/Ingredient.js';
 import { PrepMethod } from '../models/PrepMethod.js';
 
 async function populateTags() {
     try {
         // Remove all existing tags
-        await Tag.deleteMany({});
+        await Tag.collection.drop();
 
         // Create new dummy records
         const dummyTags = ['Lunch', 'Dinner', 'Spicy', 'Freezes'];
@@ -23,7 +24,7 @@ async function populateTags() {
 async function populatePrepMethods() {
     try {
         // Remove all existing prep methods
-        await PrepMethod.deleteMany({});
+        await PrepMethod.collection.drop();
 
         // Create new dummy prep methods
         const dummyPrepMethods = ['sliced', 'chopped', 'diced', 'grated', 'shredded'];
@@ -40,7 +41,7 @@ async function populatePrepMethods() {
 async function populateUnits() {
     try {
         // Remove all existing units
-        await Unit.deleteMany({});
+        await Unit.collection.drop();
 
         // Create new dummy units
         const dummyUnits = [
@@ -95,7 +96,7 @@ async function populateUnits() {
 async function populateIngredients() {
     try {
         // Remove all existing ingredients
-        await Ingredient.deleteMany({});
+        await Ingredient.collection.drop();
 
         // Retrieve prepMethod IDs by their values from the database
         // const sliced = await PrepMethod.findOne({ value: 'sliced' });
@@ -113,11 +114,40 @@ async function populateIngredients() {
     }
 }
 
+async function populateUsers() {
+    try {
+        // Remove all existing users
+        await User.collection.drop();
+
+        const dummerUserDetails = [
+            {
+                username: 'john@gmail.com',
+                firstName: 'John',
+                lastName: 'Doe',
+                role: 'admin',
+            },
+            {
+                username: 'jane@gmail.com',
+                firstName: 'Jane',
+                lastName: 'Doe',
+                role: 'user',
+            },
+        ];
+        for (const user of dummerUserDetails) {
+            await User.register(new User(user), 'password1');
+        }
+        console.log('Dummy user added:', dummerUserDetails);
+    } catch (error) {
+        console.error('Error populating users:', error);
+    }
+}
+
 async function populateData() {
     await populateTags();
     await populateUnits();
     await populatePrepMethods();
     await populateIngredients();
+    await populateUsers();
     mongoose.disconnect();
 }
 
