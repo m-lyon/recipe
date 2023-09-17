@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { CreateRecipePage } from './pages/CreateRecipePage';
+import { CreateRecipe } from './pages/CreateRecipe';
 import { ChakraProvider } from '@chakra-ui/react';
 import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
 
@@ -14,7 +14,7 @@ const client = new ApolloClient({
 root.render(
     <ApolloProvider client={client}>
         <ChakraProvider>
-            <CreateRecipePage />
+            <CreateRecipe />
         </ChakraProvider>
     </ApolloProvider>
 );

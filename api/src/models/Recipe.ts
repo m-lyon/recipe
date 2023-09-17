@@ -13,15 +13,15 @@ export interface RecipeIngredient extends Document {
     ingredient: Types.ObjectId;
     type: 'Ingredient' | 'Recipe';
     quantity: number;
-    unit: Types.ObjectId;
-    prepMethod: Types.ObjectId;
+    unit?: Types.ObjectId;
+    prepMethod?: Types.ObjectId;
 }
 
 const recipeIngredientSchema = new Schema<RecipeIngredient>({
     ingredient: { type: Schema.Types.ObjectId, refPath: 'Ingredient', required: true },
-    type: { type: String, enum: ['Ingredient', 'Recipe'], required: true },
+    type: { type: String, enum: { ingredient: 'ingredient', recipe: 'recipe' }, required: true },
     quantity: { type: Number, required: true },
-    unit: { type: Schema.Types.ObjectId, ref: 'Unit', required: true },
+    unit: { type: Schema.Types.ObjectId, ref: 'Unit' },
     prepMethod: { type: Schema.Types.ObjectId, ref: 'PrepMethod' },
 });
 recipeIngredientSchema.pre('save', async function (next) {

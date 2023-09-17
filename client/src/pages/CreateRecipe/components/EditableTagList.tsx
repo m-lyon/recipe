@@ -1,7 +1,7 @@
 import { Tag, TagCloseButton, TagLabel, VStack, Wrap, WrapItem } from '@chakra-ui/react';
 import { UseItemListReturnType } from '../hooks/useItemList';
-import { useEnterFocus } from '../hooks/useEnterCapture';
-import { EditableItem } from './EditableItem';
+import { useEnterFocus } from '../../../hooks/useEnterCapture';
+import { EditableItem } from '../../../components/EditableItem';
 import { RefObject } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 

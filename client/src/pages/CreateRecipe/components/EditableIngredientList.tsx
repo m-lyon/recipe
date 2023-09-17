@@ -1,10 +1,10 @@
+import { Reorder } from 'framer-motion';
 import { Box, VStack } from '@chakra-ui/react';
 import { EditableIngredient } from './EditableIngredient';
-import { Ingredient, getIngredientStr } from '../hooks/useIngredientList';
-import { UseIngredientListReturnType } from '../hooks/useIngredientList';
-import { Reorder } from 'framer-motion';
 import { Tag, TagLabel, TagCloseButton } from '@chakra-ui/react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
+import { FinishedIngredient, UseIngredientListReturnType } from '../hooks/useIngredientList';
+import { getFinishedIngredientStr } from '../hooks/useIngredientList';
 
 export function EditableIngredientList(props: UseIngredientListReturnType) {
     const { state, actionHandler, setFinished, removeFinished } = props;
@@ -22,8 +22,7 @@ export function EditableIngredientList(props: UseIngredientListReturnType) {
                         style={{ listStyle: 'none' }}
                     >
                         <AnimatePresence>
-                            {state.finished.map((item: Ingredient, index: number) => {
-                                const ingrStr = getIngredientStr(item);
+                            {state.finished.map((item: FinishedIngredient, index: number) => {
                                 return (
                                     <Reorder.Item
                                         key={item.key}
@@ -33,7 +32,7 @@ export function EditableIngredientList(props: UseIngredientListReturnType) {
                                         exit={{ opacity: 0 }}
                                     >
                                         <Tag size='lg' marginBottom='5px'>
-                                            <TagLabel>{ingrStr}</TagLabel>
+                                            <TagLabel>{getFinishedIngredientStr(item)}</TagLabel>
                                             <TagCloseButton onClick={() => removeFinished(index)} />
                                         </Tag>
                                     </Reorder.Item>

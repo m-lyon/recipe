@@ -1,6 +1,6 @@
 import { Editable, EditablePreview, EditableInput } from '@chakra-ui/react';
 import { useRef, useEffect, useState } from 'react';
-import { MenuList } from './MenuList';
+import { IngredientDropdown } from './IngredientDropdown';
 import { Ingredient, IngredientActionHandler } from '../hooks/useIngredientList';
 
 const handleKeyDown = (event: any) => {
@@ -45,6 +45,9 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
                 previewRef.current?.focus();
             }, 0);
         }
+        // if (event.key === 'ArrowDown' && previewRef.current) {
+        //     console.log('arrow down');
+        // }
     };
 
     useEffect(() => {
@@ -81,13 +84,12 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
                     // onKeyDown={handleKeyDown}
                 />
             </Editable>
-
-            <MenuList
+            <IngredientDropdown
                 inputState={item.state}
                 show={item.show}
                 setShow={actionHandler.set.show}
                 currentValue={actionHandler.get.currentStateValue()}
-                setValue={actionHandler.set.currentStateValue}
+                setItem={actionHandler.set.currentStateItem}
                 setIsSelecting={setIsSelecting}
                 blurCallback={() => {
                     console.log('called blur');

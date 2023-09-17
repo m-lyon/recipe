@@ -6,6 +6,9 @@ interface Attributes {
 export async function validateMongooseObjectIds(attribs: Attributes, next: any) {
     try {
         for (const attrib in attribs) {
+            if (!this[attrib]) {
+                continue;
+            }
             const doc = await attribs[attrib].findById(this[attrib]);
             if (!doc) {
                 throw new Error(`${attrib} not found: ${this[attrib]}.`);

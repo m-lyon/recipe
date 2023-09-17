@@ -1,12 +1,12 @@
 import { render } from '@testing-library/react';
 import { ChakraProvider } from '@chakra-ui/react';
-import { CreateRecipePage } from './pages/CreateRecipePage';
+import { CreateRecipe } from './pages/CreateRecipe';
 
 describe('index', () => {
     it('should work as expected', () => {
         render(
             <ChakraProvider>
-                <CreateRecipePage />
+                <CreateRecipe />
             </ChakraProvider>
         );
         expect(1 + 1).toBe(2);

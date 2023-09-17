@@ -6,16 +6,16 @@ interface ActionHandler {
     submit: (value: string) => void;
 }
 export interface UseEditableReturnType {
-    inputValue: string;
+    value: string | null;
+    displayStr: string;
     inputRef: React.RefObject<HTMLInputElement>;
-    defaultStr: string;
     isEdited: boolean;
     actionHandler: ActionHandler;
 }
 export function useEditable(defaultStr: string): UseEditableReturnType {
     const inputRef = useRef<HTMLInputElement | null>(null);
     const [isEdited, setIsEdited] = useState<boolean>(false);
-    const [inputValue, setInputValue] = useState<string>(defaultStr);
+    const [value, setInputValue] = useState<null | string>(null);
 
     const handleEdit = () => {
         if (!isEdited) {
@@ -34,13 +34,13 @@ export function useEditable(defaultStr: string): UseEditableReturnType {
 
     const handleSubmit = (value: string) => {
         if (value.trim() === '') {
-            // Reset the value to the default text when the field is empty
+            // Reset the value to default when the field is empty
             setIsEdited(false);
-            setInputValue(defaultStr);
+            setInputValue(null);
         }
     };
-
+    const displayStr = value === null ? defaultStr : value;
     const actionHandler = { edit: handleEdit, change: handleChange, submit: handleSubmit };
 
-    return { inputValue, inputRef, defaultStr, isEdited, actionHandler };
+    return { value, displayStr, inputRef, isEdited, actionHandler };
 }

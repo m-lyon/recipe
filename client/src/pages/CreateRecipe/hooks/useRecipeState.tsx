@@ -1,5 +1,5 @@
 import { useEditableIngredients, UseIngredientListReturnType } from './useIngredientList';
-import { useItemList, UseItemListReturnType } from '../hooks/useItemList';
+import { useItemList, UseItemListReturnType } from './useItemList';
 import { useEditable, UseEditableReturnType } from './useEditable';
 
 interface RecipeState {

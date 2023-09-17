@@ -1,4 +1,4 @@
-import { EditableField } from '../components/EditableField';
+import { EditableField } from '../../../components/EditableField';
 import { UseEditableReturnType } from '../hooks/useEditable';
 
 export function EditableTitle(props: UseEditableReturnType) {
