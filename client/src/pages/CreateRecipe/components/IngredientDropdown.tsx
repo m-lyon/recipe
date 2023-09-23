@@ -1,5 +1,5 @@
 import { Box, List } from '@chakra-ui/react';
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction, MutableRefObject } from 'react';
 import { UseBooleanActions } from '../../../types/chakra';
 import { InputState } from '../hooks/useIngredientList';
 import { motion, LayoutGroup } from 'framer-motion';
@@ -76,10 +76,21 @@ interface Props {
     setItem: (value: string | null, _id?: string) => void;
     setIsSelecting: Dispatch<SetStateAction<boolean>>;
     blurCallback: () => void;
+    inputRef: MutableRefObject<HTMLInputElement | null>;
+    previewRef: MutableRefObject<HTMLDivElement | null>;
 }
 export function IngredientDropdown(props: Props) {
-    const { inputState, show, setShow, currentValue, setItem, setIsSelecting, blurCallback } =
-        props;
+    const {
+        inputState,
+        show,
+        setShow,
+        currentValue,
+        setItem,
+        setIsSelecting,
+        blurCallback,
+        inputRef,
+        previewRef,
+    } = props;
     const { loading, error, data } = useQuery(GET_INGREDIENT_OPTS);
     const strValue = currentValue ? currentValue : '';
 
@@ -92,6 +103,7 @@ export function IngredientDropdown(props: Props) {
             data,
             setItem,
             setIsSelecting,
+            inputRef,
         };
         switch (inputState) {
             case 'unit':
@@ -103,6 +115,7 @@ export function IngredientDropdown(props: Props) {
                     <IngredientPropList
                         {...genericProps}
                         filter={getFilteredPrepMethodItems}
+                        previewRef={previewRef}
                         handleSubmitCallback={() => {
                             setShow.off();
                             blurCallback();

@@ -455,6 +455,7 @@ interface Set {
 export interface IngredientActionHandler {
     get: Get;
     set: Set;
+    reset: () => void;
     handleSubmit: (value: string) => void;
     handleChange: (value: string) => void;
 }
@@ -544,7 +545,7 @@ export function useEditableIngredients(): UseIngredientListReturnType {
             return handleOtherChange(state.editable.state, diff, editableActions);
         };
 
-        return { get, set, handleSubmit, handleChange };
+        return { get, set, reset: editableActions.reset, handleSubmit, handleChange };
     };
     const actionHandler = getIngredientActionHandler();
     const setFinished = (finished: FinishedIngredient[]) => {

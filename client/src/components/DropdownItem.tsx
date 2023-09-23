@@ -6,22 +6,26 @@ interface Props {
     value: string;
     onClick: () => void;
     setIsSelecting: (value: boolean) => void;
+    isHighlighted: boolean;
+    setHighlighted: () => void;
 }
 export function DropdownItem(props: Props) {
-    const { color, value, onClick, setIsSelecting } = props;
+    const { color, value, onClick, setIsSelecting, isHighlighted, setHighlighted } = props;
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <ListItem
                 px={2}
                 py={1}
-                _hover={{ bg: 'gray.100' }}
-                _focus={{ bg: 'gray.100' }}
                 onClick={onClick}
-                onMouseEnter={() => setIsSelecting(true)}
+                onMouseEnter={() => {
+                    setIsSelecting(true);
+                    setHighlighted();
+                }}
                 onMouseLeave={() => setIsSelecting(false)}
                 cursor='default'
                 color={color}
+                background={isHighlighted ? 'gray.100' : undefined}
             >
                 {value}
             </ListItem>
