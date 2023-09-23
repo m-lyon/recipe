@@ -12,7 +12,10 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
     const previewRef = useRef<HTMLInputElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null);
     const [isSelecting, setIsSelecting] = useState<boolean>(false);
-
+    const [isComplete, setIsComplete] = useState<boolean>(false);
+    // TODO: look at isSelecting, here it is used to ensure
+    // when the user clicks to select, that handleSubmit doesnt
+    // reset.
     const ingredientStr = actionHandler.get.string();
 
     const handleEdit = () => {
@@ -21,49 +24,37 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
         }
     };
 
-    // somehow get submit action passed down to IngredientPropList
-    // so that the click action/enter action can trigger the submit action
-    // then focus on new element
-    const handleSubmit = (value: string) => {
+    const handleSubmit = () => {
         // This function ensures that when submit is called, the EditableIngredient is
         // rendered for the next item in the list, if the EditableIngredient was previously
         // in focus.
-        if (isSelecting) {
-            // setTimeout(() => {
-            //     previewRef.current?.focus();
-            // }, 0);
-        } else {
-            console.log('submitting');
-            actionHandler.handleSubmit(value);
-        }
-    };
 
-    const handleEnter = (event: KeyboardEvent) => {
-        // TODO: this no longer works as expected.
-        if (event.key === 'Enter' && previewRef.current) {
-            // setTimeout(() => {
-            //     // console.log('beep')
-            //     previewRef.current?.focus();
-            // }, 50);
+        if (!isComplete && !isSelecting) {
+            console.log('resetter called');
+            actionHandler.reset();
+        } else {
+            console.log('submit called');
+            setTimeout(() => {
+                previewRef.current?.focus();
+            }, 0);
+            setIsComplete(false);
         }
     };
 
     const handleEscape = (event: KeyboardEvent) => {
         if (event.key === 'Escape' && inputRef.current) {
-            actionHandler.reset()
+            actionHandler.reset();
         }
-    }
+    };
 
     useEffect(() => {
         if (inputRef.current) {
-            inputRef.current.addEventListener('keydown', handleEnter);
             inputRef.current.addEventListener('keydown', handleEscape);
         }
 
         return () => {
             if (inputRef.current) {
                 // Cleanup: Remove the event listener when the component unmounts
-                inputRef.current.removeEventListener('keydown', handleEnter);
                 inputRef.current.removeEventListener('keydown', handleEscape);
             }
         };
@@ -104,6 +95,8 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
                 }}
                 inputRef={inputRef}
                 previewRef={previewRef}
+                handleSubmit={actionHandler.handleSubmit}
+                setIsComplete={setIsComplete}
             />
         </>
     );

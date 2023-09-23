@@ -78,6 +78,8 @@ interface Props {
     blurCallback: () => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
+    handleSubmit: () => void;
+    setIsComplete: (val: boolean) => void;
 }
 export function IngredientDropdown(props: Props) {
     const {
@@ -90,6 +92,8 @@ export function IngredientDropdown(props: Props) {
         blurCallback,
         inputRef,
         previewRef,
+        handleSubmit,
+        setIsComplete,
     } = props;
     const { loading, error, data } = useQuery(GET_INGREDIENT_OPTS);
     const strValue = currentValue ? currentValue : '';
@@ -116,10 +120,12 @@ export function IngredientDropdown(props: Props) {
                         {...genericProps}
                         filter={getFilteredPrepMethodItems}
                         previewRef={previewRef}
-                        handleSubmitCallback={() => {
+                        handleSubmit={() => {
                             setShow.off();
+                            handleSubmit();
                             blurCallback();
                             setIsSelecting(false);
+                            setIsComplete(true);
                         }}
                     />
                 );

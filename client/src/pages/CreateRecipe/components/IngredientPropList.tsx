@@ -14,13 +14,12 @@ interface Props {
     setItem: (value: string | null, _id?: string) => void;
     setIsSelecting: (value: boolean) => void;
     filter: (data: GetIngredientOptsQuery, value: string) => Array<PropListOpt>;
-    handleSubmitCallback?: () => void;
+    handleSubmit?: () => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef?: MutableRefObject<HTMLDivElement | null>;
 }
 export function IngredientPropList(props: Props) {
-    const { strValue, data, setItem, setIsSelecting, filter, handleSubmitCallback, inputRef, previewRef } =
-        props;
+    const { strValue, data, setItem, setIsSelecting, filter, handleSubmit, inputRef } = props;
     const [highlightedIndex, setHighlightedIndex] = useState(-1);
     const suggestions = filter(data, strValue);
 
@@ -32,23 +31,22 @@ export function IngredientPropList(props: Props) {
 
     const handleSkip = () => {
         setItem(null);
-        if (typeof handleSubmitCallback !== 'undefined') {
-            handleSubmitCallback();
+        if (typeof handleSubmit !== 'undefined') {
+            handleSubmit();
         }
-    }
+    };
 
     const handleAddNew = () => {
         setItem(null); // TODO
-    }
+    };
 
     const handleSelect = (item: PropListOpt) => {
         setItem(item.value, item._id);
-        if (typeof handleSubmitCallback !== 'undefined') {
-            handleSubmitCallback();
+        if (typeof handleSubmit !== 'undefined') {
+            console.log('beeep');
+            handleSubmit();
         }
-        console.log('beep');
-        previewRef?.current?.focus();
-    }
+    };
 
     const getHandler = (item: PropListOpt) => {
         if (item.value.startsWith('skip ')) {
@@ -58,7 +56,7 @@ export function IngredientPropList(props: Props) {
         } else {
             return () => handleSelect(item);
         }
-    }
+    };
 
     const handleKeyboardEvent = (event: KeyboardEvent) => {
         if (event.key === 'ArrowDown' && highlightedIndex < suggestions.length - 1) {

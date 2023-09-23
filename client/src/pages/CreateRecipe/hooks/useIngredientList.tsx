@@ -456,7 +456,7 @@ export interface IngredientActionHandler {
     get: Get;
     set: Set;
     reset: () => void;
-    handleSubmit: (value: string) => void;
+    handleSubmit: () => void;
     handleChange: (value: string) => void;
 }
 export interface UseIngredientListReturnType {
