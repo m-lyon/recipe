@@ -16,12 +16,17 @@ interface Props {
     filter: (data: GetIngredientOptsQuery, value: string) => Array<PropListOpt>;
     handleSubmit?: () => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
-    previewRef?: MutableRefObject<HTMLDivElement | null>;
+    previewRef: MutableRefObject<HTMLDivElement | null>;
 }
 export function IngredientPropList(props: Props) {
-    const { strValue, data, setItem, setIsSelecting, filter, handleSubmit, inputRef } = props;
+    const { strValue, data, setItem, setIsSelecting, filter, handleSubmit, inputRef, previewRef } =
+        props;
     const [highlightedIndex, setHighlightedIndex] = useState(-1);
     const suggestions = filter(data, strValue);
+
+    // NOTE: previewRef is used here to ensure when the user clicks to select,
+    // that the Editable component is refocused, this is because clicking on the
+    // DropdownItem will blue the Editable component.
 
     useEffect(() => {
         if (highlightedIndex > suggestions.length - 1) {
@@ -71,36 +76,30 @@ export function IngredientPropList(props: Props) {
             }
         }
     };
-
-    // const handleUp = (event: KeyboardEvent) => {
-    //     if (event.key === 'ArrowUp' && highlightedIndex > 0) {
-    //         event.preventDefault();
-    //         setHighlightedIndex((index) => (index -= 1));
-    //     }
-    // };
-
     useEffect(() => {
         if (inputRef.current) {
             inputRef.current.addEventListener('keydown', handleKeyboardEvent);
-            // inputRef.current.addEventListener('keydown', handleUp);
         }
 
         return () => {
             if (inputRef.current) {
                 // Cleanup: Remove the event listener when the component unmounts
                 inputRef.current.removeEventListener('keydown', handleKeyboardEvent);
-                // inputRef.current.removeEventListener('keydown', handleUp);
             }
         };
     }, [highlightedIndex]);
 
     const listItems = suggestions.map((item, index) => {
+        const clickHandler = getHandler(item);
         return (
             <DropdownItem
                 key={index}
                 color={item.colour}
                 value={item.value}
-                onClick={getHandler(item)}
+                onClick={() => {
+                    clickHandler();
+                    previewRef?.current?.focus();
+                }}
                 setIsSelecting={setIsSelecting}
                 isHighlighted={index === highlightedIndex}
                 setHighlighted={() => setHighlightedIndex(index)}

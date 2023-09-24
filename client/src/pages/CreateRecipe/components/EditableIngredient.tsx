@@ -13,9 +13,7 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
     const inputRef = useRef<HTMLInputElement | null>(null);
     const [isSelecting, setIsSelecting] = useState<boolean>(false);
     const [isComplete, setIsComplete] = useState<boolean>(false);
-    // TODO: look at isSelecting, here it is used to ensure
-    // when the user clicks to select, that handleSubmit doesnt
-    // reset.
+
     const ingredientStr = actionHandler.get.string();
 
     const handleEdit = () => {
@@ -25,24 +23,38 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
     };
 
     const handleSubmit = () => {
-        // This function ensures that when submit is called, the EditableIngredient is
-        // rendered for the next item in the list, if the EditableIngredient was previously
-        // in focus.
-
+        // This function is triggered when Editable is blurred. Enter KeybaordEvent
+        // does not trigger this due to event.preventDefault() in IngredientPropList.
+        // This function only handles incomplete submissions, as complete submissions
+        // are handled by the useEffect below.
+        console.log('isComplete', isComplete, 'isSelecting', isSelecting);
         if (!isComplete && !isSelecting) {
             console.log('resetter called');
             actionHandler.reset();
-        } else {
-            console.log('submit called');
-            setTimeout(() => {
-                previewRef.current?.focus();
-            }, 0);
-            setIsComplete(false);
         }
     };
 
+    useEffect(() => {
+        if (isComplete) {
+            console.log('useEffect called', item.isEdited);
+            // isComplete is changed to true when succesful submission occurs,
+            // therefore the next Editable component is focused via this useEffect.
+            // We use a useEffect here to ensure that the previewRef is focused after
+            // the submit event has been handled.
+            previewRef.current?.focus();
+            // Below ensures that the cursor is at the start of the input, which will
+            // not be the case if user submits via Enter KeyboardEvent, as handleEdit
+            // Will not be triggered in this instance.
+            if (!item.isEdited) {
+                inputRef.current?.setSelectionRange(0, 0);
+            }
+            setIsComplete(false);
+        }
+    }, [isComplete]);
+
     const handleEscape = (event: KeyboardEvent) => {
         if (event.key === 'Escape' && inputRef.current) {
+            console.log('escape called');
             actionHandler.reset();
         }
     };

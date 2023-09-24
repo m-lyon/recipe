@@ -108,6 +108,7 @@ export function IngredientDropdown(props: Props) {
             setItem,
             setIsSelecting,
             inputRef,
+            previewRef,
         };
         switch (inputState) {
             case 'unit':
@@ -119,13 +120,12 @@ export function IngredientDropdown(props: Props) {
                     <IngredientPropList
                         {...genericProps}
                         filter={getFilteredPrepMethodItems}
-                        previewRef={previewRef}
                         handleSubmit={() => {
-                            setShow.off();
-                            handleSubmit();
-                            blurCallback();
                             setIsSelecting(false);
                             setIsComplete(true);
+                            setShow.off();
+                            handleSubmit();
+                            // blurCallback();
                         }}
                     />
                 );
