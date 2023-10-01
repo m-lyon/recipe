@@ -10,8 +10,9 @@ import { useRecipeState } from './hooks/useRecipeState';
 import { useMutation } from '@apollo/client';
 import { EnumRecipeIngredientsType } from '../../__generated__/graphql';
 import { gql } from '../../__generated__';
+import { MOCK_USER_ID } from '../../constants';
 
-const CREATE_RECIPE = gql(`
+export const CREATE_RECIPE = gql(`
     mutation CreateRecipe($recipe: CreateOneRecipeInput!) {
         recipeCreateOne(record: $recipe) {
             record {
@@ -46,7 +47,7 @@ export function CreateRecipe() {
         });
         const tags = tagsState.items.filter((item) => item.isEdited).map((item) => item.value);
         const recipe = {
-            owner: import.meta.env.VITE_USER_ID,
+            owner: MOCK_USER_ID,
             title: titleState.value,
             instructions,
             ingredients,

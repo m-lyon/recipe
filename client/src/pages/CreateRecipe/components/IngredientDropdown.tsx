@@ -10,7 +10,7 @@ import { GetIngredientOptsQuery, Ingredient } from '../../../__generated__/graph
 import { Unit, PrepMethod } from '../../../__generated__/graphql';
 import { IngredientPropList, PropListOpt } from './IngredientPropList';
 
-const GET_INGREDIENT_OPTS = gql(`
+export const GET_INGREDIENT_OPTS = gql(`
     query GetIngredientOpts {
         ingredientMany {
             _id
@@ -75,7 +75,6 @@ interface Props {
     currentValue: string | null;
     setItem: (value: string | null, _id?: string) => void;
     setIsSelecting: Dispatch<SetStateAction<boolean>>;
-    blurCallback: () => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
     handleSubmit: () => void;
@@ -89,7 +88,6 @@ export function IngredientDropdown(props: Props) {
         currentValue,
         setItem,
         setIsSelecting,
-        blurCallback,
         inputRef,
         previewRef,
         handleSubmit,
@@ -125,7 +123,6 @@ export function IngredientDropdown(props: Props) {
                             setIsComplete(true);
                             setShow.off();
                             handleSubmit();
-                            // blurCallback();
                         }}
                     />
                 );

@@ -323,8 +323,8 @@ function itemsReducer(state: IngredientState, action: Action): IngredientState {
             });
         }
         case 'reset_editable': {
-            console.log('reset item called');
             return produce(state, (draft) => {
+                console.log('reset item called');
                 draft.editable = getEmptyIngredient();
             });
         }

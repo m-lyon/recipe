@@ -27,17 +27,14 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
         // does not trigger this due to event.preventDefault() in IngredientPropList.
         // This function only handles incomplete submissions, as complete submissions
         // are handled by the useEffect below.
-        console.log('isComplete', isComplete, 'isSelecting', isSelecting);
         if (!isComplete && !isSelecting) {
-            console.log('resetter called');
             actionHandler.reset();
         }
     };
 
     useEffect(() => {
         if (isComplete) {
-            console.log('useEffect called', item.isEdited);
-            // isComplete is changed to true when succesful submission occurs,
+            // isComplete is set to true when succesful submission occurs,
             // therefore the next Editable component is focused via this useEffect.
             // We use a useEffect here to ensure that the previewRef is focused after
             // the submit event has been handled.
@@ -52,26 +49,6 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
         }
     }, [isComplete]);
 
-    const handleEscape = (event: KeyboardEvent) => {
-        if (event.key === 'Escape' && inputRef.current) {
-            console.log('escape called');
-            actionHandler.reset();
-        }
-    };
-
-    useEffect(() => {
-        if (inputRef.current) {
-            inputRef.current.addEventListener('keydown', handleEscape);
-        }
-
-        return () => {
-            if (inputRef.current) {
-                // Cleanup: Remove the event listener when the component unmounts
-                inputRef.current.removeEventListener('keydown', handleEscape);
-            }
-        };
-    }, []);
-
     return (
         <>
             <Editable
@@ -80,6 +57,7 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
                 onEdit={handleEdit}
                 onSubmit={handleSubmit}
                 onChange={actionHandler.handleChange}
+                onCancel={actionHandler.reset}
                 textAlign='left'
                 fontSize={fontSize}
                 color={item.isEdited ? '' : 'gray.400'}
@@ -99,12 +77,6 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
                 currentValue={actionHandler.get.currentStateValue()}
                 setItem={actionHandler.set.currentStateItem}
                 setIsSelecting={setIsSelecting}
-                blurCallback={() => {
-                    console.log('called blur');
-                    setTimeout(() => {
-                        inputRef.current?.blur();
-                    }, 0);
-                }}
                 inputRef={inputRef}
                 previewRef={previewRef}
                 handleSubmit={actionHandler.handleSubmit}

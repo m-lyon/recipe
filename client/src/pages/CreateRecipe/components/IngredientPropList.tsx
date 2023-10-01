@@ -24,9 +24,9 @@ export function IngredientPropList(props: Props) {
     const [highlightedIndex, setHighlightedIndex] = useState(-1);
     const suggestions = filter(data, strValue);
 
-    // NOTE: previewRef is used here to ensure when the user clicks to select,
+    // previewRef is used here to ensure when the user clicks to select,
     // that the Editable component is refocused, this is because clicking on the
-    // DropdownItem will blue the Editable component.
+    // DropdownItem will blur the Editable component.
 
     useEffect(() => {
         if (highlightedIndex > suggestions.length - 1) {
@@ -46,9 +46,9 @@ export function IngredientPropList(props: Props) {
     };
 
     const handleSelect = (item: PropListOpt) => {
+        console.log('handleSelect setItem called', item.value, item._id);
         setItem(item.value, item._id);
         if (typeof handleSubmit !== 'undefined') {
-            console.log('beeep');
             handleSubmit();
         }
     };
@@ -76,6 +76,7 @@ export function IngredientPropList(props: Props) {
             }
         }
     };
+
     useEffect(() => {
         if (inputRef.current) {
             inputRef.current.addEventListener('keydown', handleKeyboardEvent);
@@ -87,7 +88,7 @@ export function IngredientPropList(props: Props) {
                 inputRef.current.removeEventListener('keydown', handleKeyboardEvent);
             }
         };
-    }, [highlightedIndex]);
+    }, [suggestions, highlightedIndex]);
 
     const listItems = suggestions.map((item, index) => {
         const clickHandler = getHandler(item);
