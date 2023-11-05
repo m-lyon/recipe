@@ -49,15 +49,13 @@ export function WithSubnavigation() {
                     />
                 </Flex>
                 <Flex flex={{ base: 1 }} justify={{ base: 'center', md: 'start' }}>
-                    <Link
+                    <Text
                         textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
                         fontFamily={'heading'}
                         color={useColorModeValue('gray.800', 'white')}
-                        _hover={{ textDecoration: 'none' }}
-                        href={'/'}
                     >
                         Recipes
-                    </Link>
+                    </Text>
 
                     <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
                         <DesktopNav />
@@ -247,11 +245,41 @@ interface NavItem {
 
 const NAV_ITEMS: Array<NavItem> = [
     {
-        label: 'Create',
-        href: '/create',
+        label: 'Inspiration',
+        children: [
+            {
+                label: 'Explore Design Work',
+                subLabel: 'Trending Design to inspire you',
+                href: '#',
+            },
+            {
+                label: 'New & Noteworthy',
+                subLabel: 'Up-and-coming Designers',
+                href: '#',
+            },
+        ],
     },
     {
-        label: 'Search',
+        label: 'Find Work',
+        children: [
+            {
+                label: 'Job Board',
+                subLabel: 'Find your dream design job',
+                href: '#',
+            },
+            {
+                label: 'Freelance Projects',
+                subLabel: 'An exclusive list for contract work',
+                href: '#',
+            },
+        ],
+    },
+    {
+        label: 'Learn Design',
+        href: '#',
+    },
+    {
+        label: 'Hire Designers',
         href: '#',
     },
 ];

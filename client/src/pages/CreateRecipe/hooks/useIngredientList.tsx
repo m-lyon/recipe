@@ -4,7 +4,7 @@ import { strToNumber } from '../../../utils/number';
 
 export const DEFAULT_INGREDIENT_STR = 'Enter ingredient';
 
-const validateQuantity = (char: string, item: Ingredient): boolean => {
+const validateQuantity = (char: string, item: EditableIngredient): boolean => {
     if (char === ' ' && item.isEdited) {
         return true;
     }
@@ -14,7 +14,7 @@ const validateQuantity = (char: string, item: Ingredient): boolean => {
 type NewChar = string | number;
 function handleQuantityChange(
     char: NewChar,
-    item: Ingredient,
+    item: EditableIngredient,
     actionHandler: InternalActionHandler
 ) {
     if (typeof char === 'number') {
@@ -60,7 +60,7 @@ function handleOtherChange(
     }
 }
 
-export function getTextDiff(value: string, item: Ingredient, origStr: string): NewChar {
+export function getTextDiff(value: string, item: EditableIngredient, origStr: string): NewChar {
     // TODO: need to disallow copy and pasting
     if (!item.isEdited) {
         return value.replace(DEFAULT_INGREDIENT_STR, '');
@@ -93,7 +93,7 @@ export interface EditableFromDB {
     value: string | null;
     _id?: string;
 }
-export interface Ingredient {
+export interface EditableIngredient {
     quantity: string | null;
     unit: EditableFromDB;
     name: EditableFromDB;
@@ -114,7 +114,12 @@ export interface FinishedIngredient {
     prepMethod: EditableFromDB;
     key: string;
 }
-function getEmptyIngredient(): Ingredient {
+type ShowStates = 'on' | 'off' | 'toggle';
+interface IngredientState {
+    finished: FinishedIngredient[];
+    editable: EditableIngredient;
+}
+function getEmptyIngredient(): EditableIngredient {
     return {
         quantity: null,
         unit: { value: null },
@@ -193,7 +198,7 @@ function getPrevState(state: InputState): InputState {
     return nextState[state] as InputState;
 }
 
-function removeFromQuantity(num: number, item: Ingredient): Ingredient {
+function removeFromQuantity(num: number, item: EditableIngredient): EditableIngredient {
     if (num <= 0 || item.state !== 'quantity') {
         return item;
     }
@@ -210,9 +215,9 @@ function removeFromQuantity(num: number, item: Ingredient): Ingredient {
 
 function removeFromDBProperty(
     num: number,
-    item: Ingredient,
+    item: EditableIngredient,
     currentState: DBInputState
-): [number, Ingredient] {
+): [number, EditableIngredient] {
     if (num <= 0 || item.state !== currentState) {
         return [num, item];
     }
@@ -243,7 +248,7 @@ function removeFromDBProperty(
     return [0, item];
 }
 
-function truncateIngredient(num: number, item: Ingredient): Ingredient {
+function truncateIngredient(num: number, item: EditableIngredient): EditableIngredient {
     let newItem = { ...item };
 
     [num, newItem] = removeFromDBProperty(num, newItem, 'prepMethod');
@@ -254,11 +259,11 @@ function truncateIngredient(num: number, item: Ingredient): Ingredient {
     return newItem;
 }
 
-function getQuantityStr(item: Ingredient): string {
+function getQuantityStr(item: EditableIngredient): string {
     return `${item.quantity !== null ? item.quantity : DEFAULT_INGREDIENT_STR}`;
 }
 
-function getUnitStr(item: Ingredient): string {
+function getUnitStr(item: EditableIngredient): string {
     if (item.state === 'quantity') {
         return '';
     }
@@ -277,19 +282,19 @@ function getUnitStr(item: Ingredient): string {
     }
 }
 
-function getNameStr(item: Ingredient): string {
+function getNameStr(item: EditableIngredient): string {
     const delim = ['name', 'prepMethod'].includes(item.state) ? ' ' : '';
     const str = item.name.value !== null ? item.name.value : '';
     return `${delim}${str}`;
 }
 
-function getPrepMethodStr(item: Ingredient): string {
+function getPrepMethodStr(item: EditableIngredient): string {
     const delim = item.state === 'prepMethod' && item.prepMethod.value !== null ? ', ' : '';
     const str = item.prepMethod.value !== null ? item.prepMethod.value : '';
     return `${delim}${str}`;
 }
 
-function getIngredientStr(item: Ingredient): string {
+function getIngredientStr(item: EditableIngredient): string {
     if (item.quantity === null && item.isEdited) {
         return '';
     }
@@ -306,13 +311,7 @@ export function getFinishedIngredientStr(item: FinishedIngredient): string {
     return `${item.quantity}${unitStr} ${item.name.value}${prepMethodStr}`;
 }
 
-type ShowStates = 'on' | 'off' | 'toggle';
-interface IngredientState {
-    finished: FinishedIngredient[];
-    editable: Ingredient;
-}
-
-function itemsReducer(state: IngredientState, action: Action): IngredientState {
+function reducer(state: IngredientState, action: Action): IngredientState {
     switch (action.type) {
         case 'remove_finished_item': {
             return produce(state, (draft) => {
@@ -331,7 +330,7 @@ function itemsReducer(state: IngredientState, action: Action): IngredientState {
         case 'set_editable_show': {
             return produce(state, (draft) => {
                 if (typeof action.value === 'undefined') {
-                    throw new Error('num is required to truncate item');
+                    throw new Error('value is required to set editable show state');
                 }
                 if (!['on', 'off', 'toggle'].includes(action.value)) {
                     throw new Error('invalid show value given');
@@ -465,8 +464,8 @@ export interface UseIngredientListReturnType {
     setFinished: (finished: FinishedIngredient[]) => void;
     removeFinished: (index: number) => void;
 }
-export function useEditableIngredients(): UseIngredientListReturnType {
-    const [state, dispatch] = useReducer(itemsReducer, {
+export function useIngredientList(): UseIngredientListReturnType {
+    const [state, dispatch] = useReducer(reducer, {
         finished: [],
         editable: getEmptyIngredient(),
     });

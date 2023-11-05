@@ -67,7 +67,7 @@ export function CreateRecipe() {
                                     'ingredients instructions'
                                     'images images'
                                     'button button'`}
-                    gridTemplateRows={'100px 0.2fr 0.9fr 200px 90px'}
+                    gridTemplateRows={'100px 0.3fr 0.9fr 200px 90px'}
                     gridTemplateColumns={'0.4fr 1fr'}
                     h='1000px'
                     gap='2'
@@ -79,7 +79,15 @@ export function CreateRecipe() {
                     <GridItem pl='2' boxShadow='lg' padding='6' area={'title'}>
                         <EditableTitle {...titleState} />
                     </GridItem>
-                    <GridItem pl='2' area={'tags'} boxShadow='lg' padding='6'>
+                    <GridItem
+                        pl='2'
+                        area={'tags'}
+                        boxShadow='lg'
+                        paddingLeft={6}
+                        paddingTop={6}
+                        paddingRight={6}
+                        paddingBottom={2}
+                    >
                         <EditableTagList {...tagsState} />
                     </GridItem>
                     <GridItem pl='2' area={'ingredients'} boxShadow='lg' padding='6'>

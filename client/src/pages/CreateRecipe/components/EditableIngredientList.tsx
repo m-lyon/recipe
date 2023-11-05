@@ -9,6 +9,23 @@ import { getFinishedIngredientStr } from '../hooks/useIngredientList';
 export function EditableIngredientList(props: UseIngredientListReturnType) {
     const { state, actionHandler, setFinished, removeFinished } = props;
 
+    const finishedIngredients = state.finished.map((item: FinishedIngredient, index: number) => {
+        return (
+            <Reorder.Item
+                key={item.key}
+                value={item}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+            >
+                <Tag size='lg' marginBottom='5px'>
+                    <TagLabel>{getFinishedIngredientStr(item)}</TagLabel>
+                    <TagCloseButton onClick={() => removeFinished(index)} />
+                </Tag>
+            </Reorder.Item>
+        );
+    });
+
     return (
         <VStack spacing='24px' align='left'>
             <Box fontSize='2xl'>Ingredients</Box>
@@ -21,24 +38,7 @@ export function EditableIngredientList(props: UseIngredientListReturnType) {
                         axis='y'
                         style={{ listStyle: 'none' }}
                     >
-                        <AnimatePresence>
-                            {state.finished.map((item: FinishedIngredient, index: number) => {
-                                return (
-                                    <Reorder.Item
-                                        key={item.key}
-                                        value={item}
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                    >
-                                        <Tag size='lg' marginBottom='5px'>
-                                            <TagLabel>{getFinishedIngredientStr(item)}</TagLabel>
-                                            <TagCloseButton onClick={() => removeFinished(index)} />
-                                        </Tag>
-                                    </Reorder.Item>
-                                );
-                            })}
-                        </AnimatePresence>
+                        <AnimatePresence>{finishedIngredients}</AnimatePresence>
                     </Reorder.Group>
                     <motion.div layout='position' transition={{ duration: 0.3 }}>
                         <EditableIngredient item={state.editable} actionHandler={actionHandler} />

@@ -1,10 +1,11 @@
 import '@testing-library/jest-dom';
-import { render, screen, getDefaultNormalizer } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { render, screen, getDefaultNormalizer } from '@testing-library/react';
 import { ChakraProvider } from '@chakra-ui/react';
 import { MockedProvider } from '@apollo/client/testing';
 import { CreateRecipe } from '..';
 import { mockGetIngredientOpts } from '../__mocks__/GetIngredientOpts';
+import { mockGetTags } from '../__mocks__/GetTags';
 
 jest.mock('constants.ts', () => ({
     MOCK_USER_ID: '64fb959fb7c183fca4e72176',
@@ -12,7 +13,7 @@ jest.mock('constants.ts', () => ({
 
 const renderComponent = () => {
     render(
-        <MockedProvider mocks={mockGetIngredientOpts} addTypename={false}>
+        <MockedProvider mocks={[mockGetIngredientOpts, mockGetTags]} addTypename={false}>
             <ChakraProvider>
                 <CreateRecipe />
             </ChakraProvider>
@@ -86,8 +87,6 @@ describe('EditableIngredient Click Action', () => {
     });
 
     it('should reset when in name state via escape key', async () => {
-        // TODO: this should fail, but it doesn't. Why?
-
         const user = userEvent.setup();
         // Render
         renderComponent();
@@ -134,5 +133,89 @@ describe('EditableIngredient Key Arrow Action', () => {
 
         // Expect
         expect(screen.getByText('1 cup carrot')).toBeInTheDocument();
+    });
+});
+
+describe('EditableTag Click Action', () => {
+    it('should display tag options', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        const tagInput = screen.getByText('Add a tag...');
+        await user.click(tagInput);
+
+        // Expect
+        expect(screen.getByText('Add a tag...')).toBeInTheDocument();
+        expect(screen.getByText('Lunch')).toBeInTheDocument();
+    });
+
+    it('should display completed tag', async () => {
+        // Render
+        const user = userEvent.setup();
+        renderComponent();
+
+        // Act
+        const tagInput = screen.getByText('Add a tag...');
+        await user.click(tagInput);
+        await user.keyboard('{L}');
+        const tag = screen.getByText('Lunch');
+        await user.click(tag);
+
+        // Expect
+        expect(screen.getByText('Add a tag...')).toBeInTheDocument();
+        expect(screen.getByText('Lunch')).toBeInTheDocument();
+    });
+
+    it('should unfocus when clicked away after first tag', async () => {
+        // Render
+        const user = userEvent.setup();
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Add a tag...'));
+        await user.click(screen.getByText('Lunch'));
+        await user.click(screen.getByText('Add a tag...'));
+        await user.click(document.body);
+
+        // Expect
+        expect(screen.queryByText('Dinner')).toBeNull();
+    });
+});
+
+describe('EditableTag Key Arrow Action', () => {
+    it('should display completed tag', async () => {
+        // Render
+        const user = userEvent.setup();
+        renderComponent();
+
+        // Act
+        const tagInput = screen.getByText('Add a tag...');
+        await user.click(tagInput);
+        await user.keyboard('{l}{ArrowDown}{Enter}');
+
+        // Expect
+        expect(screen.getByText('Add a tag...')).toBeInTheDocument();
+        expect(screen.getByText('Lunch')).toBeInTheDocument();
+    });
+
+    it('should not still be focused on editable input', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        const tagInput = screen.getByText('Add a tag...');
+        await user.click(tagInput);
+        await user.keyboard('{l}{ArrowDown}{Enter}');
+
+        // Expect
+        const inputElements = screen.getAllByRole('textbox', { hidden: true });
+        const inputWithSpecificValue = inputElements.find((element) => {
+            const value = element.getAttribute('value');
+            return value === 'Add a tag...';
+        });
+        expect(document.activeElement).not.toBe(inputWithSpecificValue);
     });
 });

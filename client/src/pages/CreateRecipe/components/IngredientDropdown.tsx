@@ -8,7 +8,7 @@ import { gql } from '../../../__generated__/gql';
 import { matchSorter } from 'match-sorter';
 import { GetIngredientOptsQuery, Ingredient } from '../../../__generated__/graphql';
 import { Unit, PrepMethod } from '../../../__generated__/graphql';
-import { IngredientPropList, PropListOpt } from './IngredientPropList';
+import { IngredientDropdownList, Suggestion } from './IngredientDropdownList';
 
 export const GET_INGREDIENT_OPTS = gql(`
     query GetIngredientOpts {
@@ -30,22 +30,18 @@ export const GET_INGREDIENT_OPTS = gql(`
     }
 `);
 
-function getFilteredUnitItems(data: GetIngredientOptsQuery, value: string): PropListOpt[] {
+function getFilteredUnitItems(data: GetIngredientOptsQuery, value: string): Suggestion[] {
     const items = matchSorter<Unit>(data.unitMany, value, {
         keys: ['longSingular', 'longPlural'],
     }).map((item) => {
-        return {
-            value: item.longSingular,
-            colour: undefined,
-            _id: item._id,
-        };
-    }) as PropListOpt[];
+        return { value: item.longSingular, colour: undefined, _id: item._id };
+    }) as Suggestion[];
     items.unshift({ value: 'skip unit', colour: 'gray.400', _id: undefined });
     items.push({ value: 'add new unit', colour: 'gray.400', _id: undefined });
     return items;
 }
 
-function getFilteredNameItems(data: GetIngredientOptsQuery, value: string): PropListOpt[] {
+function getFilteredNameItems(data: GetIngredientOptsQuery, value: string): Suggestion[] {
     const items = matchSorter<Ingredient>(data.ingredientMany, value, {
         keys: ['name'],
     }).map((item) => {
@@ -54,15 +50,15 @@ function getFilteredNameItems(data: GetIngredientOptsQuery, value: string): Prop
             colour: undefined,
             _id: item._id,
         };
-    }) as PropListOpt[];
+    }) as Suggestion[];
     items.push({ value: 'add new ingredient', colour: 'gray.400', _id: undefined });
     return items;
 }
 
-function getFilteredPrepMethodItems(data: GetIngredientOptsQuery, value: string): PropListOpt[] {
+function getFilteredPrepMethodItems(data: GetIngredientOptsQuery, value: string): Suggestion[] {
     const items = matchSorter<PrepMethod>(data.prepMethodMany, value, {
         keys: ['value'],
-    }) as PropListOpt[];
+    }) as Suggestion[];
     items.unshift({ value: 'skip prep method', colour: 'gray.400', _id: undefined });
     items.push({ value: 'add new prep method', colour: 'gray.400', _id: undefined });
     return items;
@@ -110,12 +106,12 @@ export function IngredientDropdown(props: Props) {
         };
         switch (inputState) {
             case 'unit':
-                return <IngredientPropList {...genericProps} filter={getFilteredUnitItems} />;
+                return <IngredientDropdownList {...genericProps} filter={getFilteredUnitItems} />;
             case 'name':
-                return <IngredientPropList {...genericProps} filter={getFilteredNameItems} />;
+                return <IngredientDropdownList {...genericProps} filter={getFilteredNameItems} />;
             case 'prepMethod':
                 return (
-                    <IngredientPropList
+                    <IngredientDropdownList
                         {...genericProps}
                         filter={getFilteredPrepMethodItems}
                         handleSubmit={() => {

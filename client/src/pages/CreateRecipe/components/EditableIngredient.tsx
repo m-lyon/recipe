@@ -1,10 +1,10 @@
 import { Editable, EditablePreview, EditableInput } from '@chakra-ui/react';
 import { useRef, useEffect, useState } from 'react';
 import { IngredientDropdown } from './IngredientDropdown';
-import { Ingredient, IngredientActionHandler } from '../hooks/useIngredientList';
+import { EditableIngredient, IngredientActionHandler } from '../hooks/useIngredientList';
 
 interface Props {
-    item: Ingredient;
+    item: EditableIngredient;
     actionHandler: IngredientActionHandler;
     fontSize?: string;
 }
@@ -23,8 +23,8 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
     };
 
     const handleSubmit = () => {
-        // This function is triggered when Editable is blurred. Enter KeybaordEvent
-        // does not trigger this due to event.preventDefault() in IngredientPropList.
+        // This function is triggered when Editable is blurred. Enter KeyboardEvent
+        // does not trigger this due to event.preventDefault() in IngredientDropdownList.
         // This function only handles incomplete submissions, as complete submissions
         // are handled by the useEffect below.
         if (!isComplete && !isSelecting) {
