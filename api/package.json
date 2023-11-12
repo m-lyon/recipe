@@ -27,6 +27,7 @@
     "graphql-compose": "^9.0.10",
     "graphql-compose-mongoose": "^9.8.0",
     "graphql-passport": "^0.6.7",
+    "graphql-shield": "^7.6.5",
     "mongoose": "^7.3.0",
     "passport": "^0.6.0",
     "passport-local-mongoose": "^8.0.0"

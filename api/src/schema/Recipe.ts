@@ -1,6 +1,9 @@
-import { RecipeTC } from '../models/Recipe.js';
+import { RecipeIngredientTC, RecipeTC } from '../models/Recipe.js';
 import { TagTC } from '../models/Tag.js';
 import { CuisineTC } from '../models/Cuisine.js';
+import { UnitTC } from '../models/Unit.js';
+import { IngredientTC } from '../models/Ingredient.js';
+import { PrepMethodTC } from '../models/PrepMethod.js';
 
 RecipeTC.addRelation('tags', {
     resolver: () => TagTC.mongooseResolvers.findByIds(),
@@ -14,7 +17,28 @@ RecipeTC.addRelation('cuisine', {
     prepareArgs: {
         _ids: (source) => source.cuisine?.map((o) => o._id),
     },
-    projection: { tags: true },
+    projection: { cuisine: true },
+});
+RecipeIngredientTC.addRelation('unit', {
+    resolver: () => UnitTC.mongooseResolvers.findById(),
+    prepareArgs: {
+        _id: (source) => source.unit?._id,
+    },
+    projection: { unit: true },
+});
+RecipeIngredientTC.addRelation('ingredient', {
+    resolver: () => IngredientTC.mongooseResolvers.findById(),
+    prepareArgs: {
+        _id: (source) => source.ingredient._id,
+    },
+    projection: { ingredient: true },
+});
+RecipeIngredientTC.addRelation('prepMethod', {
+    resolver: () => PrepMethodTC.mongooseResolvers.findById(),
+    prepareArgs: {
+        _id: (source) => source.prepMethod?._id,
+    },
+    projection: { prepMethod: true },
 });
 
 export const RecipeQuery = {

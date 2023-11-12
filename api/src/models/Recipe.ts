@@ -83,5 +83,7 @@ recipeSchema.pre('save', async function (next) {
     await validateMongooseObjectIdsArray.call(this, { tags: Tag, cuisine: Cuisine }, next);
 });
 
+export const RecipeIngredient = model<RecipeIngredient>('RecipeIngredient', recipeIngredientSchema);
+export const RecipeIngredientTC = composeMongoose(RecipeIngredient);
 export const Recipe = model<Recipe>('Recipe', recipeSchema);
 export const RecipeTC = composeMongoose(Recipe);
