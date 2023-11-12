@@ -3,7 +3,8 @@ import { useState, useEffect, MutableRefObject } from 'react';
 export function useNavigatableList<T>(
     list: Array<T>,
     handleEnter: (item: T) => void,
-    focusRef: MutableRefObject<HTMLElement | null>
+    focusRef: MutableRefObject<HTMLElement | null>,
+    handleOutsideEnter?: () => void
 ) {
     const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
@@ -34,6 +35,8 @@ export function useNavigatableList<T>(
             event.preventDefault();
             if (highlightedIndex !== -1) {
                 handleEnter(list[highlightedIndex]);
+            } else if (handleOutsideEnter) {
+                handleOutsideEnter();
             }
         }
     };

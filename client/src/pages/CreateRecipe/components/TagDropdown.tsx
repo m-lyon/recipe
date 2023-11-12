@@ -33,7 +33,7 @@ export function TagDropdown(props: Props) {
         return (
             <TagDropdownList
                 strValue={strValue}
-                data={data}
+                tags={data.tagMany}
                 setAndSubmit={(value: string, _id?: string) => {
                     actions.setAndSubmit(value, _id);
                     actions.setShow('off');
@@ -56,7 +56,7 @@ export function TagDropdown(props: Props) {
                         borderLeft={tag.show ? '1px solid rgba(0,0,0,0.1)' : undefined}
                         borderRight={tag.show ? '1px solid rgba(0,0,0,0.1)' : undefined}
                         boxShadow='6px 5px 8px rgba(0,50,30,0.02)'
-                        zIndex={1000}
+                        zIndex={1}
                         position={'absolute'}
                     >
                         <LayoutGroup>{getSuggestionsList()}</LayoutGroup>

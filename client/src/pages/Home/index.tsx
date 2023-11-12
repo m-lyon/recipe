@@ -1,12 +1,48 @@
-import { WithSubnavigation } from '../../components/Navbar';
+import { Navbar } from '../../components/Navbar';
 import { Container, SimpleGrid } from '@chakra-ui/react';
 import { Grid, GridItem, Text } from '@chakra-ui/react';
 import { RecipeCard } from './components/RecipeCard';
+import { gql } from '../../__generated__';
+import { useQuery } from '@apollo/client';
+
+export const GET_RECIPES = gql(`
+    query GetRecipes {
+        recipeMany {
+            _id
+            title
+            tags {
+                _id
+                value
+            }
+        }
+    }
+`);
 
 export function Home() {
+    const { data, loading, error } = useQuery(GET_RECIPES);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error.message}</div>;
+    }
+
+    const recipeCards = data?.recipeMany.map((recipe) => {
+        return (
+            <RecipeCard
+                recipeId={recipe._id}
+                title={recipe.title}
+                tags={recipe.tags}
+                key={recipe._id}
+            />
+        );
+    });
+
     return (
         <>
-            <WithSubnavigation />
+            <Navbar />
             <Container maxW='container.xl' pt='60px'>
                 <Grid
                     templateAreas={`'title'
@@ -27,8 +63,7 @@ export function Home() {
                     </GridItem>
                     <GridItem pl='2' area={'recipes'} boxShadow='lg' padding='6'>
                         <SimpleGrid columns={3} spacing={10}>
-                            <RecipeCard />
-                            <RecipeCard />
+                            {recipeCards}
                         </SimpleGrid>
                     </GridItem>
                 </Grid>

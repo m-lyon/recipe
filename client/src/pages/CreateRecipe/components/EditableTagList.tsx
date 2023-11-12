@@ -16,7 +16,7 @@ export function EditableTagList(props: UseTagListReturnType) {
                 layout='position'
             >
                 <WrapItem>
-                    <Tag>
+                    <Tag colorScheme={tag._id ? undefined : 'green'}>
                         <TagLabel>{tag.value}</TagLabel>
                         <TagCloseButton onClick={() => removeTag(index)} />
                     </Tag>

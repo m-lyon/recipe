@@ -8,9 +8,18 @@ interface Props {
     setIsSelecting: (value: boolean) => void;
     isHighlighted: boolean;
     setHighlighted: () => void;
+    resetHighlighted: () => void;
 }
 export function DropdownItem(props: Props) {
-    const { color, value, onClick, setIsSelecting, isHighlighted, setHighlighted } = props;
+    const {
+        color,
+        value,
+        onClick,
+        setIsSelecting,
+        isHighlighted,
+        setHighlighted,
+        resetHighlighted,
+    } = props;
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -22,7 +31,10 @@ export function DropdownItem(props: Props) {
                     setIsSelecting(true);
                     setHighlighted();
                 }}
-                onMouseLeave={() => setIsSelecting(false)}
+                onMouseLeave={() => {
+                    setIsSelecting(false);
+                    resetHighlighted();
+                }}
                 cursor='default'
                 color={color}
                 background={isHighlighted ? 'gray.100' : undefined}

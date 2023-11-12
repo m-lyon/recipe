@@ -1,6 +1,6 @@
 import { Box, Button, Center, Container } from '@chakra-ui/react';
 import { Grid, GridItem } from '@chakra-ui/react';
-import { WithSubnavigation } from '../../components/Navbar';
+import { Navbar } from '../../components/Navbar';
 import { EditableIngredientList } from './components/EditableIngredientList';
 import { EditableTitle } from './components/EditableTitle';
 import { EditableTagList } from './components/EditableTagList';
@@ -8,7 +8,7 @@ import { EditableInstructionList } from './components/EditableInstructionList';
 import { ImageUpload } from './components/ImageUpload';
 import { useRecipeState } from './hooks/useRecipeState';
 import { useMutation } from '@apollo/client';
-import { EnumRecipeIngredientsType } from '../../__generated__/graphql';
+import { EnumRecipeIngredientType } from '../../__generated__/graphql';
 import { gql } from '../../__generated__';
 import { MOCK_USER_ID } from '../../constants';
 
@@ -42,7 +42,7 @@ export function CreateRecipe() {
                 unit: item.unit._id,
                 ingredient: item.name._id,
                 prepMethod: item.prepMethod._id,
-                type: 'ingredient' as EnumRecipeIngredientsType,
+                type: 'ingredient' as EnumRecipeIngredientType,
             };
         });
         const tags = tagsState.items.filter((item) => item.isEdited).map((item) => item.value);
@@ -59,7 +59,7 @@ export function CreateRecipe() {
 
     return (
         <>
-            <WithSubnavigation />
+            <Navbar />
             <Container maxW='container.xl' pt='60px'>
                 <Grid
                     templateAreas={`'title title'

@@ -1,5 +1,5 @@
 import { LayoutGroup } from 'framer-motion';
-import { GetTagsQuery, Tag } from '../../../__generated__/graphql';
+import { Tag } from '../../../__generated__/graphql';
 import { DropdownItem } from '../../../components/DropdownItem';
 import { MutableRefObject } from 'react';
 import { useNavigatableList } from '../hooks/useNavigatableList';
@@ -12,15 +12,15 @@ export interface Suggestion {
 }
 interface Props {
     strValue: string;
-    data: GetTagsQuery;
+    tags: Tag[];
     setAndSubmit: (value: string, _id?: string) => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     setIsSelecting: (value: boolean) => void;
 }
 export function TagDropdownList(props: Props) {
-    const { strValue, data, setAndSubmit, inputRef, setIsSelecting } = props;
+    const { strValue, tags, setAndSubmit, inputRef, setIsSelecting } = props;
 
-    const suggestions = matchSorter<Tag>(data.tagMany, strValue, { keys: ['value'] }).map((tag) => {
+    const suggestions = matchSorter<Tag>(tags, strValue, { keys: ['value'] }).map((tag) => {
         return { value: tag.value, colour: undefined, _id: tag._id };
     }) as Suggestion[];
 
@@ -29,10 +29,16 @@ export function TagDropdownList(props: Props) {
         inputRef.current?.blur();
     };
 
+    const handleOutsideEnter = () => {
+        setAndSubmit(strValue);
+        inputRef.current?.blur();
+    };
+
     const { highlightedIndex, setHighlightedIndex } = useNavigatableList<Suggestion>(
         suggestions,
         handleSelect,
-        inputRef
+        inputRef,
+        handleOutsideEnter
     );
 
     const listItems = suggestions.map((item, index) => {
@@ -48,6 +54,7 @@ export function TagDropdownList(props: Props) {
                 setIsSelecting={setIsSelecting}
                 isHighlighted={index === highlightedIndex}
                 setHighlighted={() => setHighlightedIndex(index)}
+                resetHighlighted={() => setHighlightedIndex(-1)}
             />
         );
     });

@@ -1,24 +1,15 @@
-import {
-    Box,
-    Flex,
-    Text,
-    IconButton,
-    Button,
-    Stack,
-    Collapse,
-    Icon,
-    Link,
-    Popover,
-    PopoverTrigger,
-    PopoverContent,
-    useColorModeValue,
-    useBreakpointValue,
-    useDisclosure,
-} from '@chakra-ui/react';
+import { Box, Flex, Text, IconButton } from '@chakra-ui/react';
+import { Stack, Collapse, Icon, Link, Popover } from '@chakra-ui/react';
+import { PopoverTrigger, PopoverContent, useColorModeValue } from '@chakra-ui/react';
+import { useBreakpointValue, useDisclosure } from '@chakra-ui/react';
 import { HamburgerIcon, CloseIcon, ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons';
+import { UserOptions } from './UserOptions';
+import { useContext } from 'react';
+import { UserContext } from '../context/UserContext';
 
-export function WithSubnavigation() {
+export function Navbar() {
     const { isOpen, onToggle } = useDisclosure();
+    const userContext = useContext(UserContext)[0];
 
     return (
         <Box>
@@ -60,46 +51,32 @@ export function WithSubnavigation() {
                     </Link>
 
                     <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
-                        <DesktopNav />
+                        <DesktopNav isLoggedIn={userContext !== null} />
                     </Flex>
                 </Flex>
-
-                <Stack flex={{ base: 1, md: 0 }} justify={'flex-end'} direction={'row'} spacing={6}>
-                    <Button as={'a'} fontSize={'sm'} fontWeight={400} variant={'link'} href={'#'}>
-                        Sign In
-                    </Button>
-                    <Button
-                        as={'a'}
-                        display={{ base: 'none', md: 'inline-flex' }}
-                        fontSize={'sm'}
-                        fontWeight={600}
-                        color={'white'}
-                        bg={'pink.400'}
-                        href={'#'}
-                        _hover={{
-                            bg: 'pink.300',
-                        }}
-                    >
-                        Sign Up
-                    </Button>
-                </Stack>
+                <UserOptions />
             </Flex>
 
             <Collapse in={isOpen} animateOpacity>
-                <MobileNav />
+                <MobileNav isLoggedIn={userContext !== null} />
             </Collapse>
         </Box>
     );
 }
 
-const DesktopNav = () => {
+interface DesktopNavProps {
+    isLoggedIn: boolean;
+}
+const DesktopNav = (props: DesktopNavProps) => {
+    const { isLoggedIn } = props;
     const linkColor = useColorModeValue('gray.600', 'gray.200');
     const linkHoverColor = useColorModeValue('gray.800', 'white');
     const popoverContentBgColor = useColorModeValue('white', 'gray.800');
+    const navItems = isLoggedIn ? USER_NAV_ITEMS : PUBLIC_NAV_ITEMS;
 
     return (
         <Stack direction={'row'} spacing={4}>
-            {NAV_ITEMS.map((navItem) => (
+            {navItems.map((navItem) => (
                 <Box key={navItem.label}>
                     <Popover trigger={'hover'} placement={'bottom-start'}>
                         <PopoverTrigger>
@@ -178,10 +155,15 @@ const DesktopSubNav = ({ label, href, subLabel }: NavItem) => {
     );
 };
 
-const MobileNav = () => {
+interface MobileNavProps {
+    isLoggedIn: boolean;
+}
+const MobileNav = (props: MobileNavProps) => {
+    const { isLoggedIn } = props;
+    const navItems = isLoggedIn ? USER_NAV_ITEMS : PUBLIC_NAV_ITEMS;
     return (
         <Stack bg={useColorModeValue('white', 'gray.800')} p={4} display={{ md: 'none' }}>
-            {NAV_ITEMS.map((navItem) => (
+            {navItems.map((navItem) => (
                 <MobileNavItem key={navItem.label} {...navItem} />
             ))}
         </Stack>
@@ -245,13 +227,20 @@ interface NavItem {
     href?: string;
 }
 
-const NAV_ITEMS: Array<NavItem> = [
+const USER_NAV_ITEMS: Array<NavItem> = [
     {
         label: 'Create',
         href: '/create',
     },
     {
         label: 'Search',
-        href: '#',
+        href: '/search',
+    },
+];
+
+const PUBLIC_NAV_ITEMS: Array<NavItem> = [
+    {
+        label: 'Search',
+        href: '/search',
     },
 ];
