@@ -24,7 +24,6 @@ export const CURRENT_USER_QUERY = gql(`
 
 export function UserOptions() {
     const [userContext, setUserContext] = useContext(UserContext);
-    console.log('userContext', userContext);
     const [logout] = useMutation(LOGOUT_MUTATION);
     const navigate = useNavigate();
     const { data, error, loading } = useQuery(CURRENT_USER_QUERY);
@@ -58,7 +57,6 @@ export function UserOptions() {
                 setUserContext(null);
                 navigate('/');
             }
-            // redirect to dashboard or home page
         } catch (err) {
             if (err instanceof Error) {
                 console.error(err);

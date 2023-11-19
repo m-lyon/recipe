@@ -46,20 +46,22 @@ export const RecipeQuery = {
     recipeByIds: RecipeTC.mongooseResolvers.findByIds(),
     recipeOne: RecipeTC.mongooseResolvers.findOne(),
     recipeMany: RecipeTC.mongooseResolvers.findMany(),
-    recipeDataLoader: RecipeTC.mongooseResolvers.dataLoader(),
-    recipeDataLoaderMany: RecipeTC.mongooseResolvers.dataLoaderMany(),
-    recipeCount: RecipeTC.mongooseResolvers.count(),
-    recipeConnection: RecipeTC.mongooseResolvers.connection(),
-    recipePagination: RecipeTC.mongooseResolvers.pagination(),
+    // recipeDataLoader: RecipeTC.mongooseResolvers.dataLoader(),
+    // recipeDataLoaderMany: RecipeTC.mongooseResolvers.dataLoaderMany(),
+    // recipeCount: RecipeTC.mongooseResolvers.count(),
+    // recipeConnection: RecipeTC.mongooseResolvers.connection(),
+    // recipePagination: RecipeTC.mongooseResolvers.pagination(),
 };
 
 export const RecipeMutation = {
+    // 'many' methods are commented out because they are not currently used
+    // by frontend. They are left here for reference.
     recipeCreateOne: RecipeTC.mongooseResolvers.createOne(),
-    recipeCreateMany: RecipeTC.mongooseResolvers.createMany(),
+    // recipeCreateMany: RecipeTC.mongooseResolvers.createMany(),
     recipeUpdateById: RecipeTC.mongooseResolvers.updateById(),
     recipeUpdateOne: RecipeTC.mongooseResolvers.updateOne(),
-    recipeUpdateMany: RecipeTC.mongooseResolvers.updateMany(),
+    // recipeUpdateMany: RecipeTC.mongooseResolvers.updateMany(),
     recipeRemoveById: RecipeTC.mongooseResolvers.removeById(),
     recipeRemoveOne: RecipeTC.mongooseResolvers.removeOne(),
-    recipeRemoveMany: RecipeTC.mongooseResolvers.removeMany(),
+    // recipeRemoveMany: RecipeTC.mongooseResolvers.removeMany(),
 };

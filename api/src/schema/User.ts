@@ -11,10 +11,6 @@ UserTC.addResolver({
     },
 });
 
-export const UserQuery = {
-    currentUser: UserTC.getResolver('currentUser'),
-};
-
 UserTC.addResolver({
     name: 'login',
     type: UserTC,
@@ -61,6 +57,10 @@ UserTC.addResolver({
         return user;
     },
 });
+
+export const UserQuery = {
+    currentUser: UserTC.getResolver('currentUser'),
+};
 
 export const UserMutation = {
     login: UserTC.getResolver('login'),

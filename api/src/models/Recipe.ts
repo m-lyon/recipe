@@ -1,6 +1,5 @@
 import { Schema, Document, model, Types } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
-
 import { User } from './User.js';
 import { Unit } from './Unit.js';
 import { Ingredient } from './Ingredient.js';
@@ -11,7 +10,7 @@ import { validateMongooseObjectIds, validateMongooseObjectIdsArray } from './uti
 
 export interface RecipeIngredient extends Document {
     ingredient: Types.ObjectId;
-    type: 'Ingredient' | 'Recipe';
+    type: 'ingredient' | 'recipe';
     quantity: number;
     unit?: Types.ObjectId;
     prepMethod?: Types.ObjectId;
@@ -41,7 +40,7 @@ export interface Recipe extends Document {
     cuisine?: Types.ObjectId[];
 }
 
-const recipeSchema = new Schema<Recipe>({
+let recipeSchema = new Schema<Recipe>({
     title: { type: String, required: true },
     tags: {
         type: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],

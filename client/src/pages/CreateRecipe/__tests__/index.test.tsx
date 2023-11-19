@@ -6,16 +6,22 @@ import { MockedProvider } from '@apollo/client/testing';
 import { CreateRecipe } from '..';
 import { mockGetIngredientOpts } from '../__mocks__/GetIngredientOpts';
 import { mockGetTags } from '../__mocks__/GetTags';
+import { RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
 
 jest.mock('constants.ts', () => ({
     MOCK_USER_ID: '64fb959fb7c183fca4e72176',
 }));
 
+const routes = createBrowserRouter(
+    createRoutesFromElements(<Route path='/' element={<CreateRecipe />} />)
+);
+
 const renderComponent = () => {
     render(
         <MockedProvider mocks={[mockGetIngredientOpts, mockGetTags]} addTypename={false}>
             <ChakraProvider>
-                <CreateRecipe />
+                <RouterProvider router={routes} />
             </ChakraProvider>
         </MockedProvider>
     );

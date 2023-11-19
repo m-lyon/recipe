@@ -10,7 +10,11 @@ import { useRecipeState } from './hooks/useRecipeState';
 import { useMutation } from '@apollo/client';
 import { EnumRecipeIngredientType } from '../../__generated__/graphql';
 import { gql } from '../../__generated__';
-import { MOCK_USER_ID } from '../../constants';
+import { useToast } from '@chakra-ui/react';
+import { CreateManyTagInput } from '../../__generated__/graphql';
+import { useContext } from 'react';
+import { UserContext } from '../../context/UserContext';
+import { useNavigate } from 'react-router-dom';
 
 export const CREATE_RECIPE = gql(`
     mutation CreateRecipe($recipe: CreateOneRecipeInput!) {
@@ -23,39 +27,159 @@ export const CREATE_RECIPE = gql(`
     }
 `);
 
+export const CREATE_TAGS = gql(`
+    mutation CreateTags($tags: [CreateManyTagInput!]!) {
+        tagCreateMany(records: $tags) {
+            records {
+                _id
+                value
+            }
+        }
+    }
+`);
+
 export function CreateRecipe() {
     const { ingredientState, instructionsState, tagsState, titleState } = useRecipeState();
-    const [createRecipe, { data, loading, error }] = useMutation(CREATE_RECIPE);
+    const userContext = useContext(UserContext)[0];
+    const toast = useToast();
+    const [createTags, { loading: tagLoading }] = useMutation(CREATE_TAGS);
+    const [createRecipe, { loading: recipeLoading }] = useMutation(CREATE_RECIPE);
+    const navigate = useNavigate();
 
-    const handleSubmit = () => {
+    const runDataValidation = () => {
         if (titleState.value === null) {
-            // Placeholder for proper error handling
-            console.log('empty title');
+            toast({
+                title: 'Please enter a title',
+                status: 'error',
+                position: 'top',
+                duration: 3000,
+                isClosable: true,
+            });
+            return false;
+        }
+        if (ingredientState.state.finished.length === 0) {
+            toast({
+                title: 'Please enter at least one ingredient',
+                status: 'error',
+                position: 'top',
+                duration: 3000,
+                isClosable: true,
+            });
+            return false;
+        }
+        if (instructionsState.items.length === 0) {
+            toast({
+                title: 'Please enter at least one instruction',
+                status: 'error',
+                position: 'top',
+                duration: 3000,
+                isClosable: true,
+            });
+            return false;
+        }
+        return true;
+    };
+
+    const handleCreateTags = async (): Promise<string[]> => {
+        const newTags = tagsState.state.finished
+            .filter((tag) => tag._id === undefined)
+            .map((tag) => ({ value: tag.value } as CreateManyTagInput));
+        if (newTags.length === 0) {
+            return tagsState.state.finished.map((tag) => {
+                return tag._id as string;
+            });
+        } else {
+            try {
+                const tagData = await createTags({ variables: { tags: newTags } });
+                console.log('tagData', tagData);
+                return tagsState.state.finished.map((tag) => {
+                    if (tag._id !== undefined) {
+                        return tag._id;
+                    }
+                    const newTag = tagData?.data?.tagCreateMany?.records?.find(
+                        (newTag) => newTag.value === tag.value
+                    );
+                    if (!newTag) {
+                        throw new Error('No data returned from tag creation');
+                    }
+                    return newTag._id;
+                });
+            } catch (error: any) {
+                toast({
+                    title: 'Error creating tags',
+                    description: error.message,
+                    status: 'error',
+                    position: 'top',
+                    duration: 3000,
+                    isClosable: true,
+                });
+                throw error;
+            }
+        }
+    };
+
+    const handleSubmit = async () => {
+        if (!runDataValidation()) {
             return;
         }
-        const instructions = instructionsState.items
-            .filter((item) => item.isEdited)
-            .map((item) => item.value);
-        const ingredients = ingredientState.state.finished.map((item) => {
-            return {
-                quantity: item.quantity,
-                unit: item.unit._id,
-                ingredient: item.name._id,
-                prepMethod: item.prepMethod._id,
-                type: 'ingredient' as EnumRecipeIngredientType,
+        let tagIds: string[];
+        try {
+            tagIds = await handleCreateTags();
+            const instructions = instructionsState.items
+                .filter((item) => item.isEdited)
+                .map((item) => item.value);
+            const ingredients = ingredientState.state.finished.map((item) => {
+                return {
+                    quantity: item.quantity,
+                    unit: item.unit._id,
+                    ingredient: item.name._id,
+                    prepMethod: item.prepMethod._id,
+                    type: 'ingredient' as EnumRecipeIngredientType,
+                };
+            });
+
+            const recipe = {
+                owner: userContext?._id,
+                title: titleState.value as string,
+                instructions,
+                ingredients,
+                tags: tagIds,
             };
-        });
-        const tags = tagsState.items.filter((item) => item.isEdited).map((item) => item.value);
-        const recipe = {
-            owner: MOCK_USER_ID,
-            title: titleState.value,
-            instructions,
-            ingredients,
-            tags,
-        };
-        console.log(recipe);
-        createRecipe({ variables: { recipe } });
+            console.log(recipe);
+            createRecipe({ variables: { recipe } })
+                .then(() => {
+                    toast({
+                        title: 'Recipe created',
+                        description:
+                            'Your recipe has been created, redirecting you to the home page',
+                        status: 'success',
+                        position: 'top',
+                        duration: 1500,
+                        isClosable: true,
+                    });
+                    setTimeout(() => navigate('/'), 1500);
+                })
+                .catch((error) => {
+                    toast({
+                        title: 'Error creating recipe',
+                        description: error.message,
+                        status: 'error',
+                        position: 'top',
+                        duration: 3000,
+                        isClosable: true,
+                    });
+                });
+        } catch (error: any) {
+            return;
+        }
     };
+
+    let submitText = 'Submit';
+    if (recipeLoading) {
+        submitText = 'Submitting Recipe...';
+    } else if (tagLoading) {
+        submitText = 'Submitting Tags...';
+    }
 
     return (
         <>
@@ -108,8 +232,9 @@ export function CreateRecipe() {
                                     border='1px'
                                     borderColor='gray.200'
                                     onClick={handleSubmit}
+                                    isLoading={recipeLoading || tagLoading}
                                 >
-                                    Submit Recipe
+                                    {submitText}
                                 </Button>
                             </Box>
                         </Center>
