@@ -104,7 +104,6 @@ async function populateIngredients() {
         // const diced = await PrepMethod.findOne({ value: 'diced' });
         // const shredded = await PrepMethod.findOne({ value: 'shredded' });
 
-        // Create new dummy ingredients with associated prepMethods
         const dummyIngredients = [{ name: 'onion' }, { name: 'tomato' }, { name: 'chicken' }];
         const createdIngredients = await Ingredient.create(dummyIngredients);
 

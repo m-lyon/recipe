@@ -40,7 +40,7 @@ export interface Recipe extends Document {
     cuisine?: Types.ObjectId[];
 }
 
-let recipeSchema = new Schema<Recipe>({
+const recipeSchema = new Schema<Recipe>({
     title: { type: String, required: true },
     tags: {
         type: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],

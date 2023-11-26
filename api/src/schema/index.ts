@@ -6,6 +6,8 @@ import { PrepMethodQuery, PrepMethodMutation } from './PrepMethod.js';
 import { IngredientQuery, IngredientMutation } from './Ingredient.js';
 import { CuisineQuery, CuisineMutation } from './Cuisine.js';
 import { RecipeQuery, RecipeMutation } from './Recipe.js';
+import { applyMiddleware } from 'graphql-middleware';
+import { permissions } from '../middleware/shield.js';
 
 const schemaComposer = new SchemaComposer();
 schemaComposer.Query.addFields({
@@ -26,4 +28,4 @@ schemaComposer.Mutation.addFields({
     ...CuisineMutation,
     ...RecipeMutation,
 });
-export const schema = schemaComposer.buildSchema();
+export const schema = applyMiddleware(schemaComposer.buildSchema(), permissions);
