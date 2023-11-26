@@ -6,8 +6,36 @@ import { PrepMethodQuery, PrepMethodMutation } from './PrepMethod.js';
 import { IngredientQuery, IngredientMutation } from './Ingredient.js';
 import { CuisineQuery, CuisineMutation } from './Cuisine.js';
 import { RecipeQuery, RecipeMutation } from './Recipe.js';
-import { applyMiddleware } from 'graphql-middleware';
-import { permissions } from '../middleware/shield.js';
+import { composeResolvers } from '@graphql-tools/resolvers-composition';
+import { isAdmin, isAuthenticated, isRecipeOwnerOrAdmin } from '../middleware/resolvers.js';
+
+const defaultMutations = composeResolvers(
+    {
+        Mutation: {
+            ...TagMutation,
+            ...UnitMutation,
+            ...PrepMethodMutation,
+            ...IngredientMutation,
+            ...CuisineMutation,
+        },
+    },
+    { 'Mutation.*': [isAdmin()] }
+);
+const recipeCreateMutation = composeResolvers(
+    {
+        Mutation: { recipeCreateOne: RecipeMutation.recipeCreateOne },
+    },
+    { 'Mutation.*': [isAuthenticated()] }
+);
+const recipeModifyMutation = composeResolvers(
+    {
+        Mutation: {
+            recipeUpdateById: RecipeMutation.recipeUpdateById,
+            recipeRemoveById: RecipeMutation.recipeRemoveById,
+        },
+    },
+    { 'Mutation.*': [isRecipeOwnerOrAdmin()] }
+);
 
 const schemaComposer = new SchemaComposer();
 schemaComposer.Query.addFields({
@@ -20,12 +48,10 @@ schemaComposer.Query.addFields({
     ...RecipeQuery,
 });
 schemaComposer.Mutation.addFields({
-    ...TagMutation,
-    ...UnitMutation,
     ...UserMutation,
-    ...PrepMethodMutation,
-    ...IngredientMutation,
-    ...CuisineMutation,
-    ...RecipeMutation,
+    ...defaultMutations.Mutation,
+    ...recipeCreateMutation.Mutation,
+    ...recipeModifyMutation.Mutation,
 });
-export const schema = applyMiddleware(schemaComposer.buildSchema(), permissions);
+
+export const schema = schemaComposer.buildSchema();

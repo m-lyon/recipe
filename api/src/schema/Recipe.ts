@@ -59,9 +59,9 @@ export const RecipeMutation = {
     recipeCreateOne: RecipeTC.mongooseResolvers.createOne(),
     // recipeCreateMany: RecipeTC.mongooseResolvers.createMany(),
     recipeUpdateById: RecipeTC.mongooseResolvers.updateById(),
-    recipeUpdateOne: RecipeTC.mongooseResolvers.updateOne(),
+    // recipeUpdateOne: RecipeTC.mongooseResolvers.updateOne(), // not used because resolver logic would need to be updated to find via findOne
     // recipeUpdateMany: RecipeTC.mongooseResolvers.updateMany(),
     recipeRemoveById: RecipeTC.mongooseResolvers.removeById(),
-    recipeRemoveOne: RecipeTC.mongooseResolvers.removeOne(),
+    // recipeRemoveOne: RecipeTC.mongooseResolvers.removeOne(),
     // recipeRemoveMany: RecipeTC.mongooseResolvers.removeMany(),
 };
