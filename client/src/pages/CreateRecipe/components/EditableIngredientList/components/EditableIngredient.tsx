@@ -1,7 +1,7 @@
 import { Editable, EditablePreview, EditableInput } from '@chakra-ui/react';
 import { useRef, useEffect, useState } from 'react';
 import { IngredientDropdown } from './IngredientDropdown';
-import { EditableIngredient, IngredientActionHandler } from '../hooks/useIngredientList';
+import { EditableIngredient, IngredientActionHandler } from '../../../hooks/useIngredientList';
 
 interface Props {
     item: EditableIngredient;

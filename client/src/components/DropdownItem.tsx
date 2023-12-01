@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { ListItem } from '@chakra-ui/react';
+import { forwardRef } from 'react';
 
 interface Props {
     color?: string;
@@ -10,7 +11,7 @@ interface Props {
     setHighlighted: () => void;
     resetHighlighted: () => void;
 }
-export function DropdownItem(props: Props) {
+export const DropdownItem = forwardRef((props: Props, ref: any) => {
     const {
         color,
         value,
@@ -38,9 +39,10 @@ export function DropdownItem(props: Props) {
                 cursor='default'
                 color={color}
                 background={isHighlighted ? 'gray.100' : undefined}
+                ref={ref}
             >
                 {value}
             </ListItem>
         </motion.div>
     );
-}
+});

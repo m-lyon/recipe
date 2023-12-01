@@ -4,7 +4,7 @@ import { Navbar } from '../../components/Navbar';
 import { EditableIngredientList } from './components/EditableIngredientList';
 import { EditableTitle } from './components/EditableTitle';
 import { EditableTagList } from './components/EditableTagList';
-import { EditableInstructionList } from './components/EditableInstructionList';
+import { EditableInstructionList } from './components/EditableIngredientList/components/EditableInstructionList';
 import { ImageUpload } from './components/ImageUpload';
 import { useRecipeState } from './hooks/useRecipeState';
 import { useMutation } from '@apollo/client';

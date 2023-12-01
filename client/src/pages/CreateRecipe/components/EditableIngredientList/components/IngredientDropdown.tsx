@@ -1,14 +1,13 @@
 import { Box, List } from '@chakra-ui/react';
 import { Dispatch, SetStateAction, MutableRefObject } from 'react';
-import { UseBooleanActions } from '../../../types/chakra';
-import { InputState } from '../hooks/useIngredientList';
+import { UseBooleanActions } from '../../../../../types/chakra';
+import { InputState } from '../../../hooks/useIngredientList';
 import { motion, LayoutGroup } from 'framer-motion';
 import { useQuery } from '@apollo/client';
-import { gql } from '../../../__generated__/gql';
-import { matchSorter } from 'match-sorter';
-import { GetIngredientOptsQuery, Ingredient } from '../../../__generated__/graphql';
-import { Unit, PrepMethod } from '../../../__generated__/graphql';
-import { IngredientDropdownList, Suggestion } from './IngredientDropdownList';
+import { gql } from '../../../../../__generated__/gql';
+import { IngredientNameDropdownList } from './IngredientNameDropdownList';
+import { UnitDropdownList } from './UnitDropdownList';
+import { PrepMethodDropdownList } from './PrepMethodDropdownList';
 
 export const GET_INGREDIENT_OPTS = gql(`
     query GetIngredientOpts {
@@ -29,40 +28,6 @@ export const GET_INGREDIENT_OPTS = gql(`
         }
     }
 `);
-
-function getFilteredUnitItems(data: GetIngredientOptsQuery, value: string): Suggestion[] {
-    const items = matchSorter<Unit>(data.unitMany, value, {
-        keys: ['longSingular', 'longPlural'],
-    }).map((item) => {
-        return { value: item.longSingular, colour: undefined, _id: item._id };
-    }) as Suggestion[];
-    items.unshift({ value: 'skip unit', colour: 'gray.400', _id: undefined });
-    items.push({ value: 'add new unit', colour: 'gray.400', _id: undefined });
-    return items;
-}
-
-function getFilteredNameItems(data: GetIngredientOptsQuery, value: string): Suggestion[] {
-    const items = matchSorter<Ingredient>(data.ingredientMany, value, {
-        keys: ['name'],
-    }).map((item) => {
-        return {
-            value: item.name,
-            colour: undefined,
-            _id: item._id,
-        };
-    }) as Suggestion[];
-    items.push({ value: 'add new ingredient', colour: 'gray.400', _id: undefined });
-    return items;
-}
-
-function getFilteredPrepMethodItems(data: GetIngredientOptsQuery, value: string): Suggestion[] {
-    const items = matchSorter<PrepMethod>(data.prepMethodMany, value, {
-        keys: ['value'],
-    }) as Suggestion[];
-    items.unshift({ value: 'skip prep method', colour: 'gray.400', _id: undefined });
-    items.push({ value: 'add new prep method', colour: 'gray.400', _id: undefined });
-    return items;
-}
 
 interface Props {
     inputState: InputState;
@@ -96,7 +61,7 @@ export function IngredientDropdown(props: Props) {
         if (!data) {
             return [];
         }
-        const genericProps = {
+        const dropdownProps = {
             strValue,
             data,
             setItem,
@@ -106,14 +71,13 @@ export function IngredientDropdown(props: Props) {
         };
         switch (inputState) {
             case 'unit':
-                return <IngredientDropdownList {...genericProps} filter={getFilteredUnitItems} />;
+                return <UnitDropdownList {...dropdownProps} />;
             case 'name':
-                return <IngredientDropdownList {...genericProps} filter={getFilteredNameItems} />;
+                return <IngredientNameDropdownList {...dropdownProps} />;
             case 'prepMethod':
                 return (
-                    <IngredientDropdownList
-                        {...genericProps}
-                        filter={getFilteredPrepMethodItems}
+                    <PrepMethodDropdownList
+                        {...dropdownProps}
                         handleSubmit={() => {
                             setIsSelecting(false);
                             setIsComplete(true);

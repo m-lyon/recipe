@@ -1,10 +1,10 @@
 import { Reorder } from 'framer-motion';
 import { Box, VStack } from '@chakra-ui/react';
-import { EditableIngredient } from './EditableIngredient';
+import { EditableIngredient } from './components/EditableIngredient';
 import { Tag, TagLabel, TagCloseButton } from '@chakra-ui/react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
-import { FinishedIngredient, UseIngredientListReturnType } from '../hooks/useIngredientList';
-import { getFinishedIngredientStr } from '../hooks/useIngredientList';
+import { FinishedIngredient, UseIngredientListReturnType } from '../../hooks/useIngredientList';
+import { getFinishedIngredientStr } from '../../hooks/useIngredientList';
 
 export function EditableIngredientList(props: UseIngredientListReturnType) {
     const { state, actionHandler, setFinished, removeFinished } = props;
