@@ -1,25 +1,21 @@
-import { GetIngredientOptsQuery } from '../../../../../__generated__/graphql';
+import { GetUnitsQuery } from '../../../../../__generated__/graphql';
 import { MutableRefObject } from 'react';
-import { NewUnitForm } from './NewUnitForm';
+import { NewUnitPopover } from './NewUnitPopover';
 import { DropdownList } from './DropdownList';
 import { matchSorter } from 'match-sorter';
 import { Unit } from '../../../../../__generated__/graphql';
+import { Suggestion } from '../../../types';
 
-export interface Suggestion {
-    value: string;
-    colour?: string;
-    _id: undefined;
-}
 interface Props {
     strValue: string;
-    data: GetIngredientOptsQuery;
+    data: GetUnitsQuery;
     setItem: (value: string | null, _id?: string) => void;
     setIsSelecting: (value: boolean) => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
 }
 export function UnitDropdownList(props: Props) {
-    const filter = (data: GetIngredientOptsQuery, value: string): Suggestion[] => {
+    const filter = (data: GetUnitsQuery, value: string): Suggestion[] => {
         const items = matchSorter<Unit>(data.unitMany, value, {
             keys: ['longSingular', 'longPlural'],
         }).map((item) => {
@@ -34,5 +30,5 @@ export function UnitDropdownList(props: Props) {
         return items;
     };
 
-    return <DropdownList filter={filter} AddNewForm={NewUnitForm} {...props} />;
+    return <DropdownList filter={filter} AddNewPopover={NewUnitPopover} {...props} />;
 }

@@ -1,31 +1,24 @@
 import { LayoutGroup } from 'framer-motion';
-import { GetIngredientOptsQuery } from '../../../../../__generated__/graphql';
 import { DropdownItem } from '../../../../../components/DropdownItem';
 import { MutableRefObject, FC } from 'react';
 import { useNavigatableList } from '../../../hooks/useNavigatableList';
 import { Popover, PopoverAnchor } from '@chakra-ui/react';
 import { useRef } from 'react';
-import { PopoverCloseButton, PopoverContent, PopoverArrow } from '@chakra-ui/react';
 import { useDisclosure } from '@chakra-ui/react';
-import FocusLock from 'react-focus-lock';
+import { Suggestion, NewFormProps } from '../../../types';
 
-export interface Suggestion {
-    value: string;
-    colour?: string;
-    _id: undefined;
-}
-interface Props {
+interface Props<T> {
     strValue: string;
-    data: GetIngredientOptsQuery;
+    data: T;
     setItem: (value: string | null, _id?: string) => void;
     setIsSelecting: (value: boolean) => void;
-    filter: (data: GetIngredientOptsQuery, value: string) => Array<Suggestion>;
+    filter: (data: T, value: string) => Array<Suggestion>;
     handleSubmit?: () => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
-    AddNewForm: FC<{ firstFieldRef: MutableRefObject<HTMLInputElement | null> }>;
+    AddNewPopover: FC<NewFormProps>;
 }
-export function DropdownList(props: Props) {
+export function DropdownList<T>(props: Props<T>) {
     const {
         strValue,
         data,
@@ -35,11 +28,15 @@ export function DropdownList(props: Props) {
         handleSubmit,
         inputRef,
         previewRef,
-        AddNewForm,
+        AddNewPopover,
     } = props;
     const dropdownRef = useRef<HTMLDivElement | null>(null);
     const firstFieldRef = useRef<HTMLInputElement | null>(null);
-    const { isOpen, onOpen, onClose } = useDisclosure();
+    const { isOpen, onOpen, onClose } = useDisclosure({
+        onClose: () => {
+            previewRef.current?.focus();
+        },
+    });
     const suggestions = filter(data, strValue);
 
     // previewRef is used here to ensure when the user clicks to select,
@@ -120,13 +117,11 @@ export function DropdownList(props: Props) {
             returnFocusOnClose={true}
         >
             <LayoutGroup>{listItems}</LayoutGroup>
-            <PopoverContent p={5}>
-                <FocusLock returnFocus>
-                    <PopoverArrow />
-                    <PopoverCloseButton />
-                    <AddNewForm firstFieldRef={firstFieldRef} />
-                </FocusLock>
-            </PopoverContent>
+            <AddNewPopover
+                firstFieldRef={firstFieldRef}
+                onClose={onClose}
+                handleSelect={handleSelect}
+            />
         </Popover>
     );
 }

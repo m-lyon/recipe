@@ -23,7 +23,7 @@ interface Props {
 }
 export function TagDropdown(props: Props) {
     const { tag, actions, inputRef, setIsSelecting } = props;
-    const { loading, error, data } = useQuery(GET_TAGS);
+    const { data } = useQuery(GET_TAGS);
     const strValue = tag.value !== null ? tag.value : '';
 
     const getSuggestionsList = () => {

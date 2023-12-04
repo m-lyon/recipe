@@ -9,12 +9,8 @@ import { IngredientNameDropdownList } from './IngredientNameDropdownList';
 import { UnitDropdownList } from './UnitDropdownList';
 import { PrepMethodDropdownList } from './PrepMethodDropdownList';
 
-export const GET_INGREDIENT_OPTS = gql(`
-    query GetIngredientOpts {
-        ingredientMany {
-            _id
-            name
-        }
+const GET_UNITS = gql(`
+    query GetUnits {
         unitMany {
             _id
             shortSingular
@@ -22,6 +18,20 @@ export const GET_INGREDIENT_OPTS = gql(`
             longSingular
             longPlural
         }
+    }
+`);
+
+const GET_INGREDIENTS = gql(`
+    query GetIngredients {
+        ingredientMany {
+            _id
+            name
+        }
+    }
+`);
+
+const GET_PREP_METHODS = gql(`
+    query GetPrepMethods {
         prepMethodMany {
             _id
             value
@@ -54,16 +64,14 @@ export function IngredientDropdown(props: Props) {
         handleSubmit,
         setIsComplete,
     } = props;
-    const { loading, error, data } = useQuery(GET_INGREDIENT_OPTS);
+    const { data: unitData } = useQuery(GET_UNITS);
+    const { data: ingredientData } = useQuery(GET_INGREDIENTS);
+    const { data: prepMethodData } = useQuery(GET_PREP_METHODS);
     const strValue = currentValue ? currentValue : '';
 
     const getSuggestionsList = () => {
-        if (!data) {
-            return [];
-        }
         const dropdownProps = {
             strValue,
-            data,
             setItem,
             setIsSelecting,
             inputRef,
@@ -71,12 +79,22 @@ export function IngredientDropdown(props: Props) {
         };
         switch (inputState) {
             case 'unit':
-                return <UnitDropdownList {...dropdownProps} />;
+                if (!unitData) {
+                    return [];
+                }
+                return <UnitDropdownList data={unitData} {...dropdownProps} />;
             case 'name':
-                return <IngredientNameDropdownList {...dropdownProps} />;
+                if (!ingredientData) {
+                    return [];
+                }
+                return <IngredientNameDropdownList data={ingredientData} {...dropdownProps} />;
             case 'prepMethod':
+                if (!prepMethodData) {
+                    return [];
+                }
                 return (
                     <PrepMethodDropdownList
+                        data={prepMethodData}
                         {...dropdownProps}
                         handleSubmit={() => {
                             setIsSelecting(false);

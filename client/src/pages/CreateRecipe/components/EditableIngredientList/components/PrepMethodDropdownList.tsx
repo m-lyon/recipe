@@ -1,19 +1,14 @@
-import { GetIngredientOptsQuery } from '../../../../../__generated__/graphql';
+import { GetPrepMethodsQuery } from '../../../../../__generated__/graphql';
 import { MutableRefObject } from 'react';
 import { DropdownList } from './DropdownList';
 import { matchSorter } from 'match-sorter';
 import { PrepMethod } from '../../../../../__generated__/graphql';
-import { NewPrepMethodForm } from './NewPrepMethodForm';
+import { NewPrepMethodPopover } from './NewPrepMethodPopover';
+import { Suggestion } from '../../../types';
 
-// TODO: Suggestion interface may be duplicated elsewhere, fix that
-export interface Suggestion {
-    value: string;
-    colour?: string;
-    _id: undefined;
-}
 interface Props {
     strValue: string;
-    data: GetIngredientOptsQuery;
+    data: GetPrepMethodsQuery;
     setItem: (value: string | null, _id?: string) => void;
     setIsSelecting: (value: boolean) => void;
     handleSubmit: () => void;
@@ -21,7 +16,7 @@ interface Props {
     previewRef: MutableRefObject<HTMLDivElement | null>;
 }
 export function PrepMethodDropdownList(props: Props) {
-    const filter = (data: GetIngredientOptsQuery, value: string): Suggestion[] => {
+    const filter = (data: GetPrepMethodsQuery, value: string): Suggestion[] => {
         const items = matchSorter<PrepMethod>(data.prepMethodMany, value, {
             keys: ['value'],
         }) as Suggestion[];
@@ -34,5 +29,5 @@ export function PrepMethodDropdownList(props: Props) {
         return items;
     };
 
-    return <DropdownList filter={filter} AddNewForm={NewPrepMethodForm} {...props} />;
+    return <DropdownList filter={filter} AddNewPopover={NewPrepMethodPopover} {...props} />;
 }
