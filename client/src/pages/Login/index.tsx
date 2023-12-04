@@ -41,6 +41,8 @@ export function Login() {
             if (data?.login) {
                 setUserContext(data.login);
                 navigate('/');
+            } else {
+                setUserContext(false);
             }
         } catch (err) {
             if (err instanceof Error) {

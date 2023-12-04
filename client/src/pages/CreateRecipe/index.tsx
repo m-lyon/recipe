@@ -1,6 +1,5 @@
 import { Box, Button, Center, Container } from '@chakra-ui/react';
 import { Grid, GridItem } from '@chakra-ui/react';
-import { Navbar } from '../../components/Navbar';
 import { EditableIngredientList } from './components/EditableIngredientList';
 import { EditableTitle } from './components/EditableTitle';
 import { EditableTagList } from './components/EditableTagList';
@@ -8,10 +7,9 @@ import { EditableInstructionList } from './components/EditableIngredientList/com
 import { ImageUpload } from './components/ImageUpload';
 import { useRecipeState } from './hooks/useRecipeState';
 import { useMutation } from '@apollo/client';
-import { EnumRecipeIngredientType } from '../../__generated__/graphql';
+import { EnumRecipeIngredientType, CreateManyTagInput } from '../../__generated__/graphql';
 import { gql } from '../../__generated__';
 import { useToast } from '@chakra-ui/react';
-import { CreateManyTagInput } from '../../__generated__/graphql';
 import { useContext } from 'react';
 import { UserContext } from '../../context/UserContext';
 import { useNavigate } from 'react-router-dom';
@@ -182,65 +180,62 @@ export function CreateRecipe() {
     }
 
     return (
-        <>
-            <Navbar />
-            <Container maxW='container.xl' pt='60px'>
-                <Grid
-                    templateAreas={`'title title'
+        <Container maxW='container.xl' pt='60px'>
+            <Grid
+                templateAreas={`'title title'
                                     'ingredients tags'
                                     'ingredients instructions'
                                     'images images'
                                     'button button'`}
-                    gridTemplateRows={'100px 0.3fr 0.9fr 200px 90px'}
-                    gridTemplateColumns={'0.4fr 1fr'}
-                    h='1000px'
-                    gap='2'
-                    pt='2'
-                    pb='2'
-                    color='blackAlpha.700'
-                    fontWeight='bold'
+                gridTemplateRows={'100px 0.3fr 0.9fr 200px 90px'}
+                gridTemplateColumns={'0.4fr 1fr'}
+                h='1000px'
+                gap='2'
+                pt='2'
+                pb='2'
+                color='blackAlpha.700'
+                fontWeight='bold'
+            >
+                <GridItem pl='2' boxShadow='lg' padding='6' area={'title'}>
+                    <EditableTitle {...titleState} />
+                </GridItem>
+                <GridItem
+                    pl='2'
+                    area={'tags'}
+                    boxShadow='lg'
+                    paddingLeft={6}
+                    paddingTop={6}
+                    paddingRight={6}
+                    paddingBottom={2}
                 >
-                    <GridItem pl='2' boxShadow='lg' padding='6' area={'title'}>
-                        <EditableTitle {...titleState} />
-                    </GridItem>
-                    <GridItem
-                        pl='2'
-                        area={'tags'}
-                        boxShadow='lg'
-                        paddingLeft={6}
-                        paddingTop={6}
-                        paddingRight={6}
-                        paddingBottom={2}
-                    >
-                        <EditableTagList {...tagsState} />
-                    </GridItem>
-                    <GridItem pl='2' area={'ingredients'} boxShadow='lg' padding='6'>
-                        <EditableIngredientList {...ingredientState} />
-                    </GridItem>
-                    <GridItem pl='2' boxShadow='lg' padding='6' area={'instructions'}>
-                        <EditableInstructionList {...instructionsState} />
-                    </GridItem>
-                    <GridItem pl='2' boxShadow='lg' padding='6' area={'images'}>
-                        <ImageUpload />
-                    </GridItem>
-                    <GridItem pl='2' padding='6' area={'button'}>
-                        <Center>
-                            <Box position='fixed' bottom='4' pb='3'>
-                                <Button
-                                    size='lg'
-                                    borderRadius='full'
-                                    border='1px'
-                                    borderColor='gray.200'
-                                    onClick={handleSubmit}
-                                    isLoading={recipeLoading || tagLoading}
-                                >
-                                    {submitText}
-                                </Button>
-                            </Box>
-                        </Center>
-                    </GridItem>
-                </Grid>
-            </Container>
-        </>
+                    <EditableTagList {...tagsState} />
+                </GridItem>
+                <GridItem pl='2' area={'ingredients'} boxShadow='lg' padding='6'>
+                    <EditableIngredientList {...ingredientState} />
+                </GridItem>
+                <GridItem pl='2' boxShadow='lg' padding='6' area={'instructions'}>
+                    <EditableInstructionList {...instructionsState} />
+                </GridItem>
+                <GridItem pl='2' boxShadow='lg' padding='6' area={'images'}>
+                    <ImageUpload />
+                </GridItem>
+                <GridItem pl='2' padding='6' area={'button'}>
+                    <Center>
+                        <Box position='fixed' bottom='4' pb='3'>
+                            <Button
+                                size='lg'
+                                borderRadius='full'
+                                border='1px'
+                                borderColor='gray.200'
+                                onClick={handleSubmit}
+                                isLoading={recipeLoading || tagLoading}
+                            >
+                                {submitText}
+                            </Button>
+                        </Box>
+                    </Center>
+                </GridItem>
+            </Grid>
+        </Container>
     );
 }

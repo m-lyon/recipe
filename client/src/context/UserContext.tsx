@@ -1,7 +1,7 @@
 import { useState, createContext, Dispatch, SetStateAction } from 'react';
 import { LoginMutation } from '../__generated__/graphql';
 
-type UserContextType = Partial<LoginMutation['login']>;
+type UserContextType = Partial<LoginMutation['login']> | false;
 
 const UserContext = createContext<[UserContextType, Dispatch<SetStateAction<UserContextType>>]>([
     null,

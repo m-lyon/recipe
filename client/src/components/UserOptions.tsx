@@ -1,5 +1,5 @@
 import { Stack, Button } from '@chakra-ui/react';
-import { useContext, useEffect, useCallback } from 'react';
+import { useContext } from 'react';
 import { UserContext } from '../context/UserContext';
 import { gql } from '../__generated__';
 import { useMutation, useQuery } from '@apollo/client';
@@ -26,35 +26,32 @@ export function UserOptions() {
     const [userContext, setUserContext] = useContext(UserContext);
     const [logout] = useMutation(LOGOUT_MUTATION);
     const navigate = useNavigate();
-    const { data, error, loading } = useQuery(CURRENT_USER_QUERY);
     const toast = useToast();
-
-    if (error) {
-        toast({
-            title: 'An error occurred.',
-            description: error.message,
-            status: 'error',
-            duration: 9000,
-            isClosable: true,
-        });
-    }
-
-    const verifyUser = useCallback(() => {
-        console.log('data', data);
-        if (data?.currentUser) {
-            setUserContext(data.currentUser);
-        }
-    }, [setUserContext, loading]);
-
-    useEffect(() => {
-        verifyUser();
-    }, [verifyUser]);
+    const { loading } = useQuery(CURRENT_USER_QUERY, {
+        pollInterval: 1000 * 60 * 5,
+        onCompleted: (data) => {
+            if (!data.currentUser) {
+                setUserContext(false);
+            } else {
+                setUserContext(data.currentUser);
+            }
+        },
+        onError: (err) => {
+            toast({
+                title: 'An error occurred.',
+                description: err.message,
+                status: 'error',
+                duration: 9000,
+                isClosable: true,
+            });
+        },
+    });
 
     const handleLogout = async () => {
         try {
             const { data } = await logout();
             if (data) {
-                setUserContext(null);
+                setUserContext(false);
                 navigate('/');
             }
         } catch (err) {

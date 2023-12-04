@@ -5,10 +5,12 @@ import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
 import { Home } from './pages/Home';
 import { ViewRecipe } from './pages/ViewRecipe';
 import { Login } from './pages/Login';
-import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
+import { createBrowserRouter, createRoutesFromElements, Outlet, Route } from 'react-router-dom';
 import { RouterProvider } from 'react-router-dom';
 import { UserProvider } from './context/UserContext';
 import { ErrorBoundary } from './pages/Error';
+import { RequireAuth } from './RequireAuth';
+import { Navbar } from './components/Navbar';
 
 const domNode = document.getElementById('root')!;
 const root = createRoot(domNode);
@@ -21,12 +23,21 @@ const client = new ApolloClient({
 
 const routes = createBrowserRouter(
     createRoutesFromElements(
-        <>
-            <Route path='/' element={<Home />} errorElement={<ErrorBoundary />} />
-            <Route path='create' element={<CreateRecipe />} />
-            <Route path='recipe/:recipeId' element={<ViewRecipe />} />
+        <Route path='/'>
+            <Route element={<Navbar />}>
+                <Route index element={<Home />} errorElement={<ErrorBoundary />} />
+                <Route path='recipe/:recipeId' element={<ViewRecipe />} />
+                <Route
+                    path='create'
+                    element={
+                        <RequireAuth>
+                            <CreateRecipe />
+                        </RequireAuth>
+                    }
+                />
+            </Route>
             <Route path='login' element={<Login />} />
-        </>
+        </Route>
     )
 );
 
