@@ -4,12 +4,21 @@ import { DropdownItem } from '../../../components/DropdownItem';
 import { MutableRefObject } from 'react';
 import { useNavigatableList } from '../hooks/useNavigatableList';
 import { matchSorter } from 'match-sorter';
+import { Suggestion } from '../types';
+import { gql } from '../../../__generated__/gql';
+import { useMutation } from '@apollo/client';
 
-export interface Suggestion {
-    value: string;
-    colour?: string;
-    _id: undefined;
-}
+const CREATE_NEW_TAG_MUTATION = gql(`
+    mutation CreateTag($record: CreateOneTagInput!) {
+        tagCreateOne(record: $record) {
+            record {
+                _id
+                value
+            }
+        }
+    }
+`);
+
 interface Props {
     strValue: string;
     tags: Tag[];
@@ -19,6 +28,17 @@ interface Props {
 }
 export function TagDropdownList(props: Props) {
     const { strValue, tags, setAndSubmit, inputRef, setIsSelecting } = props;
+    const [createNewTag] = useMutation(CREATE_NEW_TAG_MUTATION, {
+        variables: {
+            record: {
+                value: strValue,
+            },
+        },
+        onCompleted: (data) => {
+            setAndSubmit(data!.tagCreateOne!.record!.value, data?.tagCreateOne?.record?._id);
+        },
+        refetchQueries: ['GetTags'],
+    });
 
     const suggestions = matchSorter<Tag>(tags, strValue, { keys: ['value'] }).map((tag) => {
         return { value: tag.value, colour: undefined, _id: tag._id };
