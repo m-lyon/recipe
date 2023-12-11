@@ -34,8 +34,8 @@ export function TagDropdown(props: Props) {
             <TagDropdownList
                 strValue={strValue}
                 tags={data.tagMany}
-                setAndSubmit={(value: string, _id?: string) => {
-                    actions.setAndSubmit(value, _id);
+                setAndSubmit={(value: string, _id: string, isNew?: boolean) => {
+                    actions.setAndSubmit(value, _id, isNew);
                     actions.setShow('off');
                 }}
                 inputRef={inputRef}

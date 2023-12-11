@@ -7,7 +7,7 @@ import { EditableInstructionList } from './components/EditableIngredientList/com
 import { ImageUpload } from './components/ImageUpload';
 import { useRecipeState } from './hooks/useRecipeState';
 import { useMutation } from '@apollo/client';
-import { EnumRecipeIngredientType, CreateManyTagInput } from '../../__generated__/graphql';
+import { EnumRecipeIngredientType } from '../../__generated__/graphql';
 import { gql } from '../../__generated__';
 import { useToast } from '@chakra-ui/react';
 import { useContext } from 'react';
@@ -25,23 +25,11 @@ export const CREATE_RECIPE = gql(`
     }
 `);
 
-export const CREATE_TAGS = gql(`
-    mutation CreateTags($tags: [CreateManyTagInput!]!) {
-        tagCreateMany(records: $tags) {
-            records {
-                _id
-                value
-            }
-        }
-    }
-`);
-
 export function CreateRecipe() {
     const { ingredientState, instructionsState, tagsState, titleState } = useRecipeState();
     const userContext = useContext(UserContext)[0];
     const toast = useToast();
-    const [createTags, { loading: tagLoading }] = useMutation(CREATE_TAGS);
-    const [createRecipe, { loading: recipeLoading }] = useMutation(CREATE_RECIPE);
+    const [createRecipe, { loading }] = useMutation(CREATE_RECIPE);
     const navigate = useNavigate();
 
     const runDataValidation = () => {
@@ -78,51 +66,12 @@ export function CreateRecipe() {
         return true;
     };
 
-    const handleCreateTags = async (): Promise<string[]> => {
-        const newTags = tagsState.state.finished
-            .filter((tag) => tag._id === undefined)
-            .map((tag) => ({ value: tag.value } as CreateManyTagInput));
-        if (newTags.length === 0) {
-            return tagsState.state.finished.map((tag) => {
-                return tag._id as string;
-            });
-        } else {
-            try {
-                const tagData = await createTags({ variables: { tags: newTags } });
-                console.log('tagData', tagData);
-                return tagsState.state.finished.map((tag) => {
-                    if (tag._id !== undefined) {
-                        return tag._id;
-                    }
-                    const newTag = tagData?.data?.tagCreateMany?.records?.find(
-                        (newTag) => newTag.value === tag.value
-                    );
-                    if (!newTag) {
-                        throw new Error('No data returned from tag creation');
-                    }
-                    return newTag._id;
-                });
-            } catch (error: any) {
-                toast({
-                    title: 'Error creating tags',
-                    description: error.message,
-                    status: 'error',
-                    position: 'top',
-                    duration: 3000,
-                    isClosable: true,
-                });
-                throw error;
-            }
-        }
-    };
-
     const handleSubmit = async () => {
         if (!runDataValidation()) {
             return;
         }
-        let tagIds: string[];
         try {
-            tagIds = await handleCreateTags();
+            const tags = tagsState.state.finished.map((tag) => tag._id);
             const instructions = instructionsState.items
                 .filter((item) => item.isEdited)
                 .map((item) => item.value);
@@ -135,13 +84,22 @@ export function CreateRecipe() {
                     type: 'ingredient' as EnumRecipeIngredientType,
                 };
             });
-
+            if (userContext === false) {
+                toast({
+                    title: 'Please log in to create a recipe',
+                    status: 'error',
+                    position: 'top',
+                    duration: 3000,
+                    isClosable: true,
+                });
+                return;
+            }
             const recipe = {
                 owner: userContext?._id,
                 title: titleState.value as string,
                 instructions,
                 ingredients,
-                tags: tagIds,
+                tags,
             };
             console.log(recipe);
             createRecipe({ variables: { recipe } })
@@ -171,13 +129,6 @@ export function CreateRecipe() {
             return;
         }
     };
-
-    let submitText = 'Submit';
-    if (recipeLoading) {
-        submitText = 'Submitting Recipe...';
-    } else if (tagLoading) {
-        submitText = 'Submitting Tags...';
-    }
 
     return (
         <Container maxW='container.xl' pt='60px'>
@@ -228,9 +179,9 @@ export function CreateRecipe() {
                                 border='1px'
                                 borderColor='gray.200'
                                 onClick={handleSubmit}
-                                isLoading={recipeLoading || tagLoading}
+                                isLoading={loading}
                             >
-                                {submitText}
+                                {loading ? 'Submitting Recipe...' : 'Submit'}
                             </Button>
                         </Box>
                     </Center>

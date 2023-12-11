@@ -4,9 +4,10 @@ import { DropdownItem } from '../../../components/DropdownItem';
 import { MutableRefObject } from 'react';
 import { useNavigatableList } from '../hooks/useNavigatableList';
 import { matchSorter } from 'match-sorter';
-import { Suggestion } from '../types';
 import { gql } from '../../../__generated__/gql';
 import { useMutation } from '@apollo/client';
+import { SetAndSubmit } from '../hooks/useTagList';
+import { useToast } from '@chakra-ui/react';
 
 const CREATE_NEW_TAG_MUTATION = gql(`
     mutation CreateTag($record: CreateOneTagInput!) {
@@ -19,15 +20,21 @@ const CREATE_NEW_TAG_MUTATION = gql(`
     }
 `);
 
+interface TagSuggestion {
+    value: string;
+    _id: string;
+}
+
 interface Props {
     strValue: string;
     tags: Tag[];
-    setAndSubmit: (value: string, _id?: string) => void;
+    setAndSubmit: SetAndSubmit;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     setIsSelecting: (value: boolean) => void;
 }
 export function TagDropdownList(props: Props) {
     const { strValue, tags, setAndSubmit, inputRef, setIsSelecting } = props;
+    const toast = useToast();
     const [createNewTag] = useMutation(CREATE_NEW_TAG_MUTATION, {
         variables: {
             record: {
@@ -35,26 +42,34 @@ export function TagDropdownList(props: Props) {
             },
         },
         onCompleted: (data) => {
-            setAndSubmit(data!.tagCreateOne!.record!.value, data?.tagCreateOne?.record?._id);
+            setAndSubmit(data!.tagCreateOne!.record!.value, data?.tagCreateOne?.record?._id, true);
+            toast({
+                title: 'Tag created',
+                description: `Tag ${data?.tagCreateOne?.record?.value} created`,
+                status: 'success',
+                position: 'top',
+                duration: 3000,
+                isClosable: true,
+            });
         },
         refetchQueries: ['GetTags'],
     });
 
     const suggestions = matchSorter<Tag>(tags, strValue, { keys: ['value'] }).map((tag) => {
-        return { value: tag.value, colour: undefined, _id: tag._id };
-    }) as Suggestion[];
+        return { value: tag.value, _id: tag._id };
+    }) as TagSuggestion[];
 
-    const handleSelect = (item: Suggestion) => {
+    const handleSelect = (item: TagSuggestion) => {
         setAndSubmit(item.value, item._id);
         inputRef.current?.blur();
     };
 
     const handleOutsideEnter = () => {
-        setAndSubmit(strValue);
+        createNewTag();
         inputRef.current?.blur();
     };
 
-    const { highlightedIndex, setHighlightedIndex } = useNavigatableList<Suggestion>(
+    const { highlightedIndex, setHighlightedIndex } = useNavigatableList<TagSuggestion>(
         suggestions,
         handleSelect,
         inputRef,
@@ -65,7 +80,6 @@ export function TagDropdownList(props: Props) {
         return (
             <DropdownItem
                 key={index}
-                color={item.colour}
                 value={item.value}
                 onClick={() => {
                     handleSelect(item);

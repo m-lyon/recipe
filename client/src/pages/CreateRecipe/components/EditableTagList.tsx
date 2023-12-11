@@ -2,9 +2,47 @@ import { UseTagListReturnType } from '../hooks/useTagList';
 import { motion, LayoutGroup, AnimatePresence } from 'framer-motion';
 import { Tag, TagCloseButton, TagLabel, WrapItem, VStack, Wrap } from '@chakra-ui/react';
 import { EditableTag } from './EditableTag';
+import { gql } from '../../../__generated__/gql';
+import { useMutation } from '@apollo/client';
+import { useToast } from '@chakra-ui/react';
+
+const REMOVE_TAG_MUTATION = gql(`
+    mutation RemoveTag($recordId: MongoID!) {
+        tagRemoveById(_id: $recordId) {
+            record {
+                _id
+                value
+            }
+        }
+    }
+`);
 
 export function EditableTagList(props: UseTagListReturnType) {
     const { state, removeTag, actions, tagStr } = props;
+    const toast = useToast();
+    const [removeTagMutation] = useMutation(REMOVE_TAG_MUTATION, {
+        onCompleted: (data) => {
+            toast({
+                title: 'Tag removed',
+                description: `Tag ${data?.tagRemoveById?.record?.value} removed`,
+                status: 'success',
+                position: 'top',
+                duration: 3000,
+                isClosable: true,
+            });
+        },
+        onError: (error) => {
+            toast({
+                title: 'Error removing tag',
+                description: error.message,
+                status: 'error',
+                position: 'top',
+                duration: 3000,
+                isClosable: true,
+            });
+        },
+        refetchQueries: ['GetTags'],
+    });
 
     const tagsList = state.finished.map((tag, index) => {
         return (
@@ -16,9 +54,16 @@ export function EditableTagList(props: UseTagListReturnType) {
                 layout='position'
             >
                 <WrapItem>
-                    <Tag colorScheme={tag._id ? undefined : 'green'}>
+                    <Tag colorScheme={tag.isNew ? 'green' : undefined}>
                         <TagLabel>{tag.value}</TagLabel>
-                        <TagCloseButton onClick={() => removeTag(index)} />
+                        <TagCloseButton
+                            onClick={() => {
+                                removeTag(index);
+                                if (tag.isNew) {
+                                    removeTagMutation({ variables: { recordId: tag._id } });
+                                }
+                            }}
+                        />
                     </Tag>
                 </WrapItem>
             </motion.div>

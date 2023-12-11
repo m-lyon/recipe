@@ -4,9 +4,10 @@ import { produce } from 'immer';
 export const DEFAULT_TAG_STR = 'Add a tag...';
 
 interface FinishedTag {
-    _id?: string;
+    _id: string;
     value: string;
     key: string;
+    isNew: boolean;
 }
 export interface EditableTag {
     value: string | null;
@@ -73,11 +74,14 @@ function reducer(state: TagState, action: any) {
                     console.log('resetting editable because value is', draft.editable.value);
                     draft.editable = { value: null, isEdited: false, show: false };
                 } else {
-                    console.log('submitting editable');
+                    if (!draft.editable._id) {
+                        throw new Error('Tag ID is required for submission.');
+                    }
                     draft.finished.push({
                         _id: draft.editable._id,
                         value: draft.editable.value,
                         key: crypto.randomUUID(),
+                        isNew: action.isNew ? true : false,
                     });
                     draft.editable = { value: null, isEdited: false, show: false };
                 }
@@ -93,10 +97,14 @@ function reducer(state: TagState, action: any) {
                 if (draft.editable.value === null) {
                     throw new Error('editable value must not be null when submitting');
                 }
+                if (!draft.editable._id) {
+                    throw new Error('Tag ID is required for submission.');
+                }
                 draft.finished.push({
                     _id: draft.editable._id,
                     value: draft.editable.value,
                     key: crypto.randomUUID(),
+                    isNew: false,
                 });
                 draft.editable = { value: null, isEdited: false, show: false };
             });
@@ -105,13 +113,14 @@ function reducer(state: TagState, action: any) {
             throw Error('Unknown action: ' + action.type);
     }
 }
+export type SetAndSubmit = (value: string, _id: string, isNew?: boolean) => void;
 export interface EditableTagActionHandler {
     reset: () => void;
     setShow: (value: ShowStates) => void;
     setValue: (value: string, _id?: string) => void;
     toggleIsEdited: () => void;
     submit: () => void;
-    setAndSubmit: (value: string, _id?: string) => void;
+    setAndSubmit: SetAndSubmit;
 }
 export interface UseTagListReturnType {
     state: TagState;
@@ -142,8 +151,8 @@ export function useTagList(): UseTagListReturnType {
                 dispatch({ type: 'submit_editable' });
             }
         },
-        setAndSubmit: (value: string, _id?: string) => {
-            dispatch({ type: 'set_editable_value_and_submit', value, _id });
+        setAndSubmit: (value: string, _id: string, isNew?: boolean) => {
+            dispatch({ type: 'set_editable_value_and_submit', value, _id, isNew });
         },
     };
     const tagStr = state.editable.value === null ? DEFAULT_TAG_STR : state.editable.value;

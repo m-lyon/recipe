@@ -1,7 +1,7 @@
 export interface Suggestion {
     value: string;
     colour?: string;
-    _id: undefined;
+    _id?: string;
 }
 
 export interface NewFormProps {
