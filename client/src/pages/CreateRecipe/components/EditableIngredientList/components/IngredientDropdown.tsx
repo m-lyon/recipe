@@ -9,7 +9,7 @@ import { IngredientNameDropdownList } from './IngredientNameDropdownList';
 import { UnitDropdownList } from './UnitDropdownList';
 import { PrepMethodDropdownList } from './PrepMethodDropdownList';
 
-const GET_UNITS = gql(`
+export const GET_UNITS = gql(`
     query GetUnits {
         unitMany {
             _id
@@ -21,7 +21,7 @@ const GET_UNITS = gql(`
     }
 `);
 
-const GET_INGREDIENTS = gql(`
+export const GET_INGREDIENTS = gql(`
     query GetIngredients {
         ingredientMany {
             _id
@@ -30,7 +30,7 @@ const GET_INGREDIENTS = gql(`
     }
 `);
 
-const GET_PREP_METHODS = gql(`
+export const GET_PREP_METHODS = gql(`
     query GetPrepMethods {
         prepMethodMany {
             _id

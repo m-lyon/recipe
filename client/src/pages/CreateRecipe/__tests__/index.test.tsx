@@ -4,7 +4,9 @@ import { render, screen, getDefaultNormalizer } from '@testing-library/react';
 import { ChakraProvider } from '@chakra-ui/react';
 import { MockedProvider } from '@apollo/client/testing';
 import { CreateRecipe } from '..';
-import { mockGetIngredientOpts } from '../__mocks__/GetIngredientOpts';
+import { mockGetUnits } from '../__mocks__/GetUnits';
+import { mockGetIngredients } from '../__mocks__/GetIngredients';
+import { mockGetPrepMethods } from '../__mocks__/GetPrepMethods';
 import { mockGetTags } from '../__mocks__/GetTags';
 import { RouterProvider } from 'react-router-dom';
 import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
@@ -19,7 +21,10 @@ const routes = createBrowserRouter(
 
 const renderComponent = () => {
     render(
-        <MockedProvider mocks={[mockGetIngredientOpts, mockGetTags]} addTypename={false}>
+        <MockedProvider
+            mocks={[mockGetUnits, mockGetIngredients, mockGetPrepMethods, mockGetTags]}
+            addTypename={false}
+        >
             <ChakraProvider>
                 <RouterProvider router={routes} />
             </ChakraProvider>
@@ -135,10 +140,10 @@ describe('EditableIngredient Key Arrow Action', () => {
         const ingredientInput = screen.getByText('Enter ingredient');
         await user.click(ingredientInput);
         await user.keyboard('{1}{ }{ArrowDown}{ArrowDown}{Enter}');
-        await user.keyboard('{Enter}');
+        await user.keyboard('{ArrowDown}{Enter}');
 
         // Expect
-        expect(screen.getByText('1 cup carrot')).toBeInTheDocument();
+        expect(screen.getByText('1 cup apple')).toBeInTheDocument();
     });
 });
 
