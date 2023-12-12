@@ -17,12 +17,6 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
 
     const ingredientStr = actionHandler.get.string();
 
-    const handleEdit = () => {
-        if (!item.isEdited) {
-            inputRef.current?.setSelectionRange(0, 0);
-        }
-    };
-
     const handleSubmit = () => {
         // This function is triggered when Editable is blurred. Enter KeyboardEvent
         // does not trigger this due to event.preventDefault() in IngredientDropdownList.
@@ -40,12 +34,6 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
             // We use a useEffect here to ensure that the previewRef is focused after
             // the submit event has been handled.
             previewRef.current?.focus();
-            // Below ensures that the cursor is at the start of the input, which will
-            // not be the case if user submits via Enter KeyboardEvent, as handleEdit
-            // Will not be triggered in this instance.
-            if (!item.isEdited) {
-                inputRef.current?.setSelectionRange(0, 0);
-            }
             setIsComplete(false);
         }
     }, [isComplete]);
@@ -54,14 +42,18 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
         <>
             <Editable
                 value={ingredientStr}
+                onMouseDown={(e) => {
+                    if (item.quantity !== null) {
+                        e.preventDefault();
+                    }
+                }}
                 selectAllOnFocus={false}
-                onEdit={handleEdit}
                 onSubmit={handleSubmit}
                 onChange={actionHandler.handleChange}
                 onCancel={actionHandler.reset}
                 textAlign='left'
                 fontSize={fontSize}
-                color={item.isEdited ? '' : 'gray.400'}
+                color={item.quantity !== null ? '' : 'gray.400'}
                 paddingLeft='6px'
                 placeholder={DEFAULT_INGREDIENT_STR}
             >

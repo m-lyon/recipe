@@ -1,11 +1,12 @@
 import { useReducer } from 'react';
 import { produce } from 'immer';
 import { strToNumber } from '../../../utils/number';
+import { useToast } from '@chakra-ui/react';
 
 export const DEFAULT_INGREDIENT_STR = 'Enter ingredient';
 
 const validateQuantity = (char: string, item: EditableIngredient): boolean => {
-    if (char === ' ' && item.isEdited) {
+    if (char === ' ' && item.quantity !== null) {
         return true;
     }
     return !isNaN(parseInt(char)) || char === '/' || char === '.';
@@ -22,10 +23,7 @@ function handleQuantityChange(
         actionHandler.truncate(char);
     } else {
         if (validateQuantity(char, item)) {
-            if (!item.isEdited) {
-                actionHandler.toggleEdited();
-                actionHandler.quantity.set(char);
-            } else if (char === ' ') {
+            if (char === ' ') {
                 console.log('changing state from "quantity" to "unit"');
                 actionHandler.incrementState();
                 actionHandler.setShow.on();
@@ -33,17 +31,19 @@ function handleQuantityChange(
                 actionHandler.quantity.append(char);
             }
         } else {
-            if (!item.isEdited) {
-                actionHandler.quantity.set('');
-                // Could do some red text warning here
+            if (item.quantity === null) {
+                throw new Error('Start with a number.');
+            } else {
+                throw new Error(
+                    'Only numbers and fractions are allowed when inputting a quantity.'
+                );
             }
-            console.log(`invalid char given: "${char}"`);
         }
     }
 }
 
 function handleOtherChange(
-    inputState: InputState,
+    inputState: 'unit' | 'name' | 'prepMethod',
     char: NewChar,
     actionHandler: InternalActionHandler
 ) {
@@ -55,16 +55,19 @@ function handleOtherChange(
             console.log('appending', char, 'to', inputState);
             actionHandler[inputState].append(char);
         } else {
-            console.log(`invalid char given: "${char}"`);
+            const name = {
+                unit: 'a unit',
+                name: 'an ingredient name',
+                prepMethod: 'a prep method',
+            };
+            throw new Error(
+                `Only letters and spaces are allowed when inputting ${name[inputState]}.`
+            );
         }
     }
 }
 
-export function getTextDiff(value: string, item: EditableIngredient, origStr: string): NewChar {
-    // TODO: need to disallow copy and pasting
-    if (!item.isEdited) {
-        return value.replace(DEFAULT_INGREDIENT_STR, '');
-    }
+export function getTextDiff(value: string, origStr: string): NewChar {
     if (value.length > origStr.length) {
         return value.replace(origStr, '');
     }
@@ -98,7 +101,6 @@ export interface EditableIngredient {
     unit: EditableFromDB;
     name: EditableFromDB;
     prepMethod: EditableFromDB;
-    isEdited: boolean;
     state: InputState;
     show: boolean;
     key: string;
@@ -125,7 +127,6 @@ function getEmptyIngredient(): EditableIngredient {
         unit: { value: null },
         name: { value: null },
         prepMethod: { value: null },
-        isEdited: false,
         state: 'quantity',
         show: false,
         key: crypto.randomUUID(),
@@ -295,7 +296,7 @@ function getPrepMethodStr(item: EditableIngredient): string {
 }
 
 function getIngredientStr(item: EditableIngredient): string {
-    if (item.quantity === null && item.isEdited) {
+    if (item.quantity === null) {
         return '';
     }
     const quantityStr = getQuantityStr(item);
@@ -371,11 +372,6 @@ function reducer(state: IngredientState, action: Action): IngredientState {
         case 'append_editable_prepMethod': {
             return appendDBIngredientProperty(state, action, 'prepMethod');
         }
-        case 'toggle_editable_is_edited': {
-            return produce(state, (draft) => {
-                draft.editable.isEdited = !draft.editable.isEdited;
-            });
-        }
         case 'increment_editable_state': {
             return produce(state, (draft) => {
                 const nextState = {
@@ -430,7 +426,6 @@ interface InternalActionHandler {
     incrementState: () => void;
     submit: () => void;
     truncate: (num: number) => void;
-    toggleEdited: () => void;
     quantity: ActionTypeHandler;
     unit: ActionTypeHandlerFromDB;
     name: ActionTypeHandlerFromDB;
@@ -469,13 +464,13 @@ export function useIngredientList(): UseIngredientListReturnType {
         finished: [],
         editable: getEmptyIngredient(),
     });
+    const toast = useToast();
 
     const getIngredientActionHandler = (): IngredientActionHandler => {
         const editableActions: InternalActionHandler = {
             reset: () => dispatch({ type: 'reset_editable' }),
             submit: () => dispatch({ type: 'submit_editable' }),
             truncate: (num: number) => dispatch({ type: 'truncate_editable', num }),
-            toggleEdited: () => dispatch({ type: 'toggle_editable_is_edited' }),
             incrementState: () => dispatch({ type: 'increment_editable_state' }),
             quantity: {
                 set: (nullableValue: string | null) =>
@@ -537,11 +532,23 @@ export function useIngredientList(): UseIngredientListReturnType {
         };
         const handleChange = (value: string) => {
             console.log('current state', state.editable.state);
-            const diff = getTextDiff(value, state.editable, get.string());
-            if (state.editable.state === 'quantity') {
-                return handleQuantityChange(diff, state.editable, editableActions);
+            const diff = getTextDiff(value, get.string());
+            try {
+                if (state.editable.state === 'quantity') {
+                    return handleQuantityChange(diff, state.editable, editableActions);
+                }
+                return handleOtherChange(state.editable.state, diff, editableActions);
+            } catch (e: unknown) {
+                if (e instanceof Error) {
+                    toast({
+                        title: 'Invalid input',
+                        description: e.message,
+                        status: 'error',
+                        duration: 2000,
+                        isClosable: false,
+                    });
+                }
             }
-            return handleOtherChange(state.editable.state, diff, editableActions);
         };
 
         return { get, set, reset: editableActions.reset, handleSubmit, handleChange };
