@@ -7,7 +7,6 @@ interface Action {
 }
 interface EditableItem {
     value: string;
-    isEdited: boolean;
     key: string;
 }
 
@@ -17,7 +16,7 @@ function itemsReducer(state: EditableItem[], action: Action): EditableItem[] {
             if (typeof action.value === 'undefined') {
                 throw new Error('Cannot add an item with undefined value.');
             }
-            return [...state, { value: action.value, isEdited: false, key: crypto.randomUUID() }];
+            return [...state, { value: action.value, key: crypto.randomUUID() }];
         }
         case 'remove_item': {
             return state.filter((_, idx) => action.index !== idx);
@@ -34,15 +33,6 @@ function itemsReducer(state: EditableItem[], action: Action): EditableItem[] {
                 }
             });
         }
-        case 'toggle_edited': {
-            return state.map((item, idx) => {
-                if (action.index === idx) {
-                    return { ...item, isEdited: !item.isEdited };
-                } else {
-                    return item;
-                }
-            });
-        }
         default: {
             throw Error('Unknown action: ' + action.type);
         }
@@ -52,23 +42,18 @@ interface ActionHandler {
     addItem: () => void;
     removeItem: (index: number) => void;
     setValue: (index: number, value: string) => void;
-    toggleEdited: (index: number) => void;
 }
 export interface UseItemListReturnType {
     items: EditableItem[];
-    defaultStr: string;
     actionHandler: ActionHandler;
 }
-export function useItemList(defaultStr: string): UseItemListReturnType {
-    const [items, dispatch] = useReducer(itemsReducer, [
-        { value: defaultStr, isEdited: false, key: crypto.randomUUID() },
-    ]);
+export function useItemList(): UseItemListReturnType {
+    const [items, dispatch] = useReducer(itemsReducer, [{ value: '', key: crypto.randomUUID() }]);
     const actionHandler = {
-        addItem: () => dispatch({ type: 'add_item', value: defaultStr }),
+        addItem: () => dispatch({ type: 'add_item', value: '' }),
         removeItem: (index: number) => dispatch({ type: 'remove_item', index }),
         setValue: (index: number, value: string) => dispatch({ type: 'set_value', index, value }),
-        toggleEdited: (index: number) => dispatch({ type: 'toggle_edited', index }),
     };
 
-    return { items, defaultStr, actionHandler };
+    return { items, actionHandler };
 }

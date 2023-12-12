@@ -73,7 +73,7 @@ export function CreateRecipe() {
         try {
             const tags = tagsState.state.finished.map((tag) => tag._id);
             const instructions = instructionsState.items
-                .filter((item) => item.isEdited)
+                .filter((item) => item.value !== '')
                 .map((item) => item.value);
             const ingredients = ingredientState.state.finished.map((item) => {
                 return {

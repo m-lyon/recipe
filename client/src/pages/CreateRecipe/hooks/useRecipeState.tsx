@@ -11,7 +11,7 @@ interface RecipeState {
 }
 export function useRecipeState(): RecipeState {
     const ingredientState = useIngredientList();
-    const instructionsState = useItemList('Enter instructions...');
+    const instructionsState = useItemList();
     const tagsState = useTagList();
     const titleState = useEditable('Enter Recipe Title');
 

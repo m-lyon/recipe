@@ -2,6 +2,7 @@ import { Editable, EditablePreview, EditableInput } from '@chakra-ui/react';
 import { useRef, useEffect, useState } from 'react';
 import { IngredientDropdown } from './IngredientDropdown';
 import { EditableIngredient, IngredientActionHandler } from '../../../hooks/useIngredientList';
+import { DEFAULT_INGREDIENT_STR } from '../../../hooks/useIngredientList';
 
 interface Props {
     item: EditableIngredient;
@@ -62,8 +63,9 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
                 fontSize={fontSize}
                 color={item.isEdited ? '' : 'gray.400'}
                 paddingLeft='6px'
+                placeholder={DEFAULT_INGREDIENT_STR}
             >
-                <EditablePreview ref={previewRef} width={'100%'} />
+                <EditablePreview ref={previewRef} width={'100%'} placeholder='test' />
                 <EditableInput
                     ref={inputRef}
                     value={ingredientStr}

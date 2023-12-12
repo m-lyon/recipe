@@ -6,7 +6,7 @@ import { RefObject } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 
 export function EditableInstructionList(props: UseItemListReturnType) {
-    const { items, defaultStr, actionHandler } = props;
+    const { items, actionHandler } = props;
 
     const [lastInputRef, handleEnter] = useEnterFocus();
 
@@ -18,20 +18,19 @@ export function EditableInstructionList(props: UseItemListReturnType) {
             key={instr.key}
             layout
         >
-            <ListItem color={instr.isEdited ? '' : 'gray.400'}>
+            <ListItem color={instr.value ? '' : 'gray.400'}>
                 <EditableItem
                     ref={
                         index === items.length - 1
                             ? (lastInputRef as RefObject<HTMLInputElement>)
                             : null
                     }
-                    defaultStr={defaultStr}
+                    defaultStr={'Enter instructions...'}
                     isLast={index + 1 === items.length}
                     item={instr}
                     addNewEntry={actionHandler.addItem}
                     removeFromList={() => actionHandler.removeItem(index)}
                     setValue={(value: string) => actionHandler.setValue(index, value)}
-                    toggleIsEdited={() => actionHandler.toggleEdited(index)}
                     handleEnter={handleEnter}
                     fontSize='lg'
                 />

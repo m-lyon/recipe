@@ -4,7 +4,6 @@ import { forwardRef } from 'react';
 
 interface Item {
     value: string;
-    isEdited: boolean;
 }
 interface Props {
     defaultStr: string;
@@ -13,10 +12,8 @@ interface Props {
     item: Item;
     setValue: (value: string) => void;
     addNewEntry: () => void;
-    toggleIsEdited: () => void;
     handleEnter: (event: KeyboardEvent) => void;
     fontSize?: string;
-    color?: string;
 }
 
 export const EditableItem = forwardRef<HTMLInputElement, Props>(function EditableIngredient(
@@ -27,46 +24,22 @@ export const EditableItem = forwardRef<HTMLInputElement, Props>(function Editabl
         item,
         setValue,
         addNewEntry,
-        toggleIsEdited,
         handleEnter,
         fontSize,
-        color,
     }: Props,
     ref
 ) {
     const inputRef = useRef<HTMLInputElement | null>(null);
 
-    const handleEdit = () => {
-        if (!item.isEdited) {
-            inputRef.current?.setSelectionRange(0, 0);
-        }
-    };
-
-    const handleChange = (value: string) => {
-        if (!item.isEdited) {
-            toggleIsEdited();
-            setValue(value.replace(defaultStr, ''));
-        } else {
-            setValue(value);
-        }
-    };
-
     const handleSubmit = (value: string) => {
         // Reset the value to the default text when the field is empty, if last
         // in list, or remove item if not
         if (value.trim() === '') {
-            if (isLast) {
-                setValue(defaultStr);
-                if (item.isEdited) {
-                    toggleIsEdited();
-                }
-            } else {
+            if (!isLast) {
                 removeFromList();
             }
-        } else {
-            if (isLast && item.isEdited) {
-                addNewEntry();
-            }
+        } else if (isLast) {
+            addNewEntry();
         }
     };
 
@@ -87,12 +60,11 @@ export const EditableItem = forwardRef<HTMLInputElement, Props>(function Editabl
         <Editable
             value={item.value}
             selectAllOnFocus={false}
-            onEdit={handleEdit}
             onSubmit={handleSubmit}
-            onChange={handleChange}
+            onChange={setValue}
             textAlign='left'
             fontSize={fontSize}
-            color={color}
+            placeholder={defaultStr}
         >
             <EditablePreview ref={ref} />
             <EditableInput ref={inputRef} value={item.value} _focusVisible={{ outline: 'none' }} />
