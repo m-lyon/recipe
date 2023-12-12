@@ -14,21 +14,6 @@ export function EditableTag(props: Props) {
     const [isSelecting, setIsSelecting] = useState<boolean>(false);
     const inputRef = useRef<HTMLInputElement | null>(null);
 
-    const handleEdit = () => {
-        if (!tag.isEdited) {
-            inputRef.current?.setSelectionRange(0, 0);
-            actions.setShow('on');
-        }
-    };
-
-    const handleChange = (value: string) => {
-        if (!tag.isEdited) {
-            actions.setValue(value.replace(DEFAULT_TAG_STR, ''));
-        } else {
-            actions.setValue(value);
-        }
-    };
-
     const handleSubmit = () => {
         // This function is triggered when Editable is blurred. Enter KeyboardEvent
         // does not trigger this due to event.preventDefault() in IngredientDropdownList.
@@ -44,13 +29,14 @@ export function EditableTag(props: Props) {
             <Editable
                 value={tagStr}
                 selectAllOnFocus={false}
-                onEdit={handleEdit}
+                onEdit={() => !tag.show && actions.setShow('on')}
                 onSubmit={handleSubmit}
-                onChange={handleChange}
+                onChange={actions.setValue}
                 onCancel={actions.reset}
                 textAlign='left'
-                color={tag.isEdited ? '' : 'gray.400'}
+                color={tag.value !== null ? '' : 'gray.400'}
                 paddingLeft='6px'
+                placeholder={DEFAULT_TAG_STR}
             >
                 <EditablePreview />
                 <EditableInput ref={inputRef} value={tagStr} _focusVisible={{ outline: 'none' }} />

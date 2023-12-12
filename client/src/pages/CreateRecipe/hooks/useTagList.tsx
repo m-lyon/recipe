@@ -11,7 +11,6 @@ interface FinishedTag {
 }
 export interface EditableTag {
     value: string | null;
-    isEdited: boolean;
     show: boolean;
     _id?: string;
 }
@@ -33,7 +32,7 @@ function reducer(state: TagState, action: any) {
         }
         case 'reset_editable': {
             return produce(state, (draft) => {
-                draft.editable = { value: null, isEdited: false, show: false };
+                draft.editable = { value: null, show: false };
             });
         }
         case 'set_editable_show': {
@@ -53,9 +52,6 @@ function reducer(state: TagState, action: any) {
                 if (typeof action.value === 'undefined') {
                     throw new Error('value is required to set editable value');
                 }
-                if (!draft.editable.isEdited) {
-                    draft.editable.isEdited = true;
-                }
                 draft.editable.value = action.value;
                 draft.editable._id = action._id;
             });
@@ -65,14 +61,11 @@ function reducer(state: TagState, action: any) {
                 if (typeof action.value === 'undefined') {
                     throw new Error('value is required to set editable value');
                 }
-                if (!draft.editable.isEdited) {
-                    draft.editable.isEdited = true;
-                }
                 draft.editable.value = action.value;
                 draft.editable._id = action._id;
                 if (draft.editable.value === null || draft.editable.value === '') {
                     console.log('resetting editable because value is', draft.editable.value);
-                    draft.editable = { value: null, isEdited: false, show: false };
+                    draft.editable = { value: null, show: false };
                 } else {
                     if (!draft.editable._id) {
                         throw new Error('Tag ID is required for submission.');
@@ -83,13 +76,8 @@ function reducer(state: TagState, action: any) {
                         key: crypto.randomUUID(),
                         isNew: action.isNew ? true : false,
                     });
-                    draft.editable = { value: null, isEdited: false, show: false };
+                    draft.editable = { value: null, show: false };
                 }
-            });
-        }
-        case 'toggle_editable_is_edited': {
-            return produce(state, (draft) => {
-                draft.editable.isEdited = !draft.editable.isEdited;
             });
         }
         case 'submit_editable': {
@@ -106,7 +94,7 @@ function reducer(state: TagState, action: any) {
                     key: crypto.randomUUID(),
                     isNew: false,
                 });
-                draft.editable = { value: null, isEdited: false, show: false };
+                draft.editable = { value: null, show: false };
             });
         }
         default:
@@ -118,7 +106,6 @@ export interface EditableTagActionHandler {
     reset: () => void;
     setShow: (value: ShowStates) => void;
     setValue: (value: string, _id?: string) => void;
-    toggleIsEdited: () => void;
     submit: () => void;
     setAndSubmit: SetAndSubmit;
 }
@@ -131,7 +118,7 @@ export interface UseTagListReturnType {
 export function useTagList(): UseTagListReturnType {
     const [state, dispatch] = useReducer(reducer, {
         finished: [],
-        editable: { value: null, isEdited: false, show: false },
+        editable: { value: null, show: false },
     });
 
     const removeTag = (index: number) => dispatch({ type: 'remove_finished_tag', index });
@@ -141,7 +128,6 @@ export function useTagList(): UseTagListReturnType {
         setValue: (value: string, _id?: string) => {
             dispatch({ type: 'set_editable_value', value, _id });
         },
-        toggleIsEdited: () => dispatch({ type: 'toggle_editable_is_edited' }),
         submit: () => {
             if (state.editable.value === null || state.editable.value === '') {
                 console.log('resetting editable because value is', state.editable.value);
@@ -155,7 +141,7 @@ export function useTagList(): UseTagListReturnType {
             dispatch({ type: 'set_editable_value_and_submit', value, _id, isNew });
         },
     };
-    const tagStr = state.editable.value === null ? DEFAULT_TAG_STR : state.editable.value;
+    const tagStr = state.editable.value === null ? '' : state.editable.value;
 
     return { state, removeTag, actions, tagStr };
 }
