@@ -44,15 +44,12 @@ export function DropdownList<T>(props: Props<T>) {
     // DropdownItem will blur the Editable component.
 
     const handleSelect = (item: Suggestion) => {
-        // Handle skip
         if (item.value.startsWith('skip ')) {
             setItem(null);
             if (typeof handleSubmit !== 'undefined') {
                 handleSubmit();
             }
-            // Handle add new
         } else if (item.value.startsWith('add new ')) {
-            console.log('add new called');
             onOpen();
         } else {
             setItem(item.value, item._id);

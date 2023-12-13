@@ -38,6 +38,8 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
         }
     }, [isComplete]);
 
+    actionHandler.set.currentStateItem;
+
     return (
         <>
             <Editable
@@ -65,16 +67,12 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
                 />
             </Editable>
             <IngredientDropdown
-                inputState={item.state}
-                show={item.show}
-                setShow={actionHandler.set.show}
-                currentValue={actionHandler.get.currentStateValue()}
-                setItem={actionHandler.set.currentStateItem}
+                item={item}
+                actionHandler={actionHandler}
                 setIsSelecting={setIsSelecting}
+                setIsComplete={setIsComplete}
                 inputRef={inputRef}
                 previewRef={previewRef}
-                handleSubmit={actionHandler.handleSubmit}
-                setIsComplete={setIsComplete}
             />
         </>
     );
