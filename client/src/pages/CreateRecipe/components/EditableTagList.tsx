@@ -77,7 +77,12 @@ export function EditableTagList(props: UseTagListReturnType) {
                     <AnimatePresence>{tagsList}</AnimatePresence>
                 </Wrap>
                 <motion.div layout='position'>
-                    <EditableTag tag={state.editable} actions={actions} tagStr={tagStr} />
+                    <EditableTag
+                        tag={state.editable}
+                        actions={actions}
+                        tagStr={tagStr}
+                        selectedTags={state.finished}
+                    />
                 </motion.div>
             </LayoutGroup>
         </VStack>

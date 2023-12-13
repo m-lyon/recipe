@@ -4,7 +4,7 @@ import { MutableRefObject } from 'react';
 import { motion, LayoutGroup } from 'framer-motion';
 import { gql } from '../../../__generated__/gql';
 import { TagDropdownList } from './TagDropdownList';
-import { EditableTag, EditableTagActionHandler } from '../hooks/useTagList';
+import { EditableTag, EditableTagActionHandler, FinishedTag } from '../hooks/useTagList';
 
 export const GET_TAGS = gql(`
     query GetTags {
@@ -20,9 +20,10 @@ interface Props {
     actions: EditableTagActionHandler;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     setIsSelecting: (value: boolean) => void;
+    selectedTags: FinishedTag[];
 }
 export function TagDropdown(props: Props) {
-    const { tag, actions, inputRef, setIsSelecting } = props;
+    const { tag, actions, inputRef, setIsSelecting, selectedTags } = props;
     const { data } = useQuery(GET_TAGS);
     const strValue = tag.value !== null ? tag.value : '';
 
@@ -40,6 +41,7 @@ export function TagDropdown(props: Props) {
                 }}
                 inputRef={inputRef}
                 setIsSelecting={setIsSelecting}
+                selectedTags={selectedTags}
             />
         );
     };

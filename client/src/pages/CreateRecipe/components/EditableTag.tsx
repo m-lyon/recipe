@@ -1,4 +1,5 @@
 import { EditableTagActionHandler, EditableTag, DEFAULT_TAG_STR } from '../hooks/useTagList';
+import { FinishedTag } from '../hooks/useTagList';
 import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { TagDropdown } from './TagDropdown';
@@ -8,9 +9,10 @@ interface Props {
     tag: EditableTag;
     actions: EditableTagActionHandler;
     tagStr: string;
+    selectedTags: FinishedTag[];
 }
 export function EditableTag(props: Props) {
-    const { tag, actions, tagStr } = props;
+    const { tag, actions, tagStr, selectedTags } = props;
     const [isSelecting, setIsSelecting] = useState<boolean>(false);
     const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -46,6 +48,7 @@ export function EditableTag(props: Props) {
                 actions={actions}
                 inputRef={inputRef}
                 setIsSelecting={setIsSelecting}
+                selectedTags={selectedTags}
             />
         </motion.div>
     );
