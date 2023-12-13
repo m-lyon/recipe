@@ -5,7 +5,7 @@ import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
 import { Home } from './pages/Home';
 import { ViewRecipe } from './pages/ViewRecipe';
 import { Login } from './pages/Login';
-import { createBrowserRouter, createRoutesFromElements, Outlet, Route } from 'react-router-dom';
+import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
 import { RouterProvider } from 'react-router-dom';
 import { UserProvider } from './context/UserContext';
 import { ErrorBoundary } from './pages/Error';
@@ -23,9 +23,9 @@ const client = new ApolloClient({
 
 const routes = createBrowserRouter(
     createRoutesFromElements(
-        <Route path='/'>
+        <Route path='/' errorElement={<ErrorBoundary />}>
             <Route element={<Navbar />}>
-                <Route index element={<Home />} errorElement={<ErrorBoundary />} />
+                <Route index element={<Home />} />
                 <Route path='recipe/:recipeId' element={<ViewRecipe />} />
                 <Route
                     path='create'

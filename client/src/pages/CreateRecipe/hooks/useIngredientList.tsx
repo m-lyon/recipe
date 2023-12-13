@@ -43,7 +43,7 @@ function handleQuantityChange(
 }
 
 function handleOtherChange(
-    inputState: 'unit' | 'name' | 'prepMethod',
+    inputState: DBInputState,
     char: NewChar,
     actionHandler: InternalActionHandler
 ) {
@@ -160,7 +160,10 @@ function setDBIngredientProperty(
         if (action.nullableValue !== null && action._id === undefined) {
             throw new Error(`Cannot set ${property} without _id.`);
         }
-        draft.editable[property] = { value: action.nullableValue, _id: action._id };
+        draft.editable[property] = {
+            value: action.nullableValue === null ? null : action.nullableValue.toLowerCase(),
+            _id: action._id,
+        };
     });
 }
 
@@ -187,9 +190,9 @@ function appendDBIngredientProperty(
             throw new Error(`Cannot append editable ${property} with undefined value.`);
         }
         if (draft.editable[property].value === null) {
-            draft.editable[property] = { value: action.value };
+            draft.editable[property] = { value: action.value.toLowerCase() };
         } else {
-            draft.editable[property].value += action.value;
+            draft.editable[property].value += action.value.toLowerCase();
         }
     });
 }

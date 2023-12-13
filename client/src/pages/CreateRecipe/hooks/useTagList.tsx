@@ -3,7 +3,7 @@ import { produce } from 'immer';
 
 export const DEFAULT_TAG_STR = 'Add a tag...';
 
-interface FinishedTag {
+export interface FinishedTag {
     _id: string;
     value: string;
     key: string;
@@ -19,8 +19,14 @@ interface TagState {
     editable: EditableTag;
 }
 type ShowStates = 'on' | 'off' | 'toggle';
-
-function reducer(state: TagState, action: any) {
+interface Action {
+    type: string;
+    index?: number;
+    value?: string;
+    _id?: string;
+    isNew?: boolean;
+}
+function reducer(state: TagState, action: Action) {
     switch (action.type) {
         case 'remove_finished_tag': {
             return produce(state, (draft) => {
@@ -52,7 +58,7 @@ function reducer(state: TagState, action: any) {
                 if (typeof action.value === 'undefined') {
                     throw new Error('value is required to set editable value');
                 }
-                draft.editable.value = action.value;
+                draft.editable.value = action.value.toLowerCase();
                 draft.editable._id = action._id;
             });
         }
@@ -61,10 +67,9 @@ function reducer(state: TagState, action: any) {
                 if (typeof action.value === 'undefined') {
                     throw new Error('value is required to set editable value');
                 }
-                draft.editable.value = action.value;
+                draft.editable.value = action.value.toLowerCase();
                 draft.editable._id = action._id;
-                if (draft.editable.value === null || draft.editable.value === '') {
-                    console.log('resetting editable because value is', draft.editable.value);
+                if (draft.editable.value === '') {
                     draft.editable = { value: null, show: false };
                 } else {
                     if (!draft.editable._id) {
@@ -83,7 +88,7 @@ function reducer(state: TagState, action: any) {
         case 'submit_editable': {
             return produce(state, (draft) => {
                 if (draft.editable.value === null) {
-                    throw new Error('editable value must not be null when submitting');
+                    throw new Error('Editable value must not be null when submitting');
                 }
                 if (!draft.editable._id) {
                     throw new Error('Tag ID is required for submission.');
@@ -130,7 +135,6 @@ export function useTagList(): UseTagListReturnType {
         },
         submit: () => {
             if (state.editable.value === null || state.editable.value === '') {
-                console.log('resetting editable because value is', state.editable.value);
                 dispatch({ type: 'reset_editable' });
             } else {
                 console.log('submitting editable');
