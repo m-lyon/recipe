@@ -6,7 +6,12 @@ export interface Ingredient extends Document {
 }
 
 const ingredientSchema = new Schema<Ingredient>({
-    name: { type: String, required: true, unique: true },
+    name: {
+        type: String,
+        required: true,
+        unique: true,
+        set: (value: string) => value.toLowerCase(),
+    },
 });
 
 export const Ingredient = model<Ingredient>('Ingredient', ingredientSchema);

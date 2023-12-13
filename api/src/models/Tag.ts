@@ -6,7 +6,12 @@ export interface Tag extends Document {
 }
 
 const tagSchema = new Schema<Tag>({
-    value: { type: String, required: true, unique: true },
+    value: {
+        type: String,
+        required: true,
+        unique: true,
+        set: (value: string) => value.toLowerCase(),
+    },
 });
 
 export const tagValidator = {

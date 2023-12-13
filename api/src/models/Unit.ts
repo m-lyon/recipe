@@ -9,10 +9,30 @@ export interface Unit extends Document {
 }
 
 const unitSchema = new Schema<Unit>({
-    shortSingular: { type: String, required: true, unique: true },
-    shortPlural: { type: String, required: true, unique: true },
-    longSingular: { type: String, required: true, unique: true },
-    longPlural: { type: String, required: true, unique: true },
+    shortSingular: {
+        type: String,
+        required: true,
+        unique: true,
+        set: (value: string) => value.toLowerCase(),
+    },
+    shortPlural: {
+        type: String,
+        required: true,
+        unique: true,
+        set: (value: string) => value.toLowerCase(),
+    },
+    longSingular: {
+        type: String,
+        required: true,
+        unique: true,
+        set: (value: string) => value.toLowerCase(),
+    },
+    longPlural: {
+        type: String,
+        required: true,
+        unique: true,
+        set: (value: string) => value.toLowerCase(),
+    },
 });
 
 export const Unit = model<Unit>('Unit', unitSchema);
