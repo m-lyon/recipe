@@ -1,6 +1,5 @@
 import { RecipeIngredientTC, RecipeTC } from '../models/Recipe.js';
 import { TagTC } from '../models/Tag.js';
-import { CuisineTC } from '../models/Cuisine.js';
 import { UnitTC } from '../models/Unit.js';
 import { IngredientTC } from '../models/Ingredient.js';
 import { PrepMethodTC } from '../models/PrepMethod.js';
@@ -11,13 +10,6 @@ RecipeTC.addRelation('tags', {
         _ids: (source) => source.tags?.map((o) => o._id),
     },
     projection: { tags: true },
-});
-RecipeTC.addRelation('cuisine', {
-    resolver: () => CuisineTC.mongooseResolvers.findByIds(),
-    prepareArgs: {
-        _ids: (source) => source.cuisine?.map((o) => o._id),
-    },
-    projection: { cuisine: true },
 });
 RecipeIngredientTC.addRelation('unit', {
     resolver: () => UnitTC.mongooseResolvers.findById(),

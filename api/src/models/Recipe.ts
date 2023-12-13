@@ -5,7 +5,6 @@ import { Unit } from './Unit.js';
 import { Ingredient } from './Ingredient.js';
 import { PrepMethod } from './PrepMethod.js';
 import { Tag, tagValidator } from './Tag.js';
-import { Cuisine, cuisineValidator } from './Cuisine.js';
 import { validateMongooseObjectIds, validateMongooseObjectIdsArray } from './utils.js';
 
 export interface RecipeIngredient extends Document {
@@ -37,7 +36,6 @@ export interface Recipe extends Document {
     notes?: string[];
     owner: Types.ObjectId;
     source?: string;
-    cuisine?: Types.ObjectId[];
 }
 
 const recipeSchema = new Schema<Recipe>({
@@ -71,15 +69,11 @@ const recipeSchema = new Schema<Recipe>({
     },
     owner: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
     source: { type: String },
-    cuisine: {
-        type: [{ type: Schema.Types.ObjectId, ref: 'Cuisine' }],
-        validate: cuisineValidator,
-    },
 });
 
 recipeSchema.pre('save', async function (next) {
     await validateMongooseObjectIds.call(this, { owner: User }, next);
-    await validateMongooseObjectIdsArray.call(this, { tags: Tag, cuisine: Cuisine }, next);
+    await validateMongooseObjectIdsArray.call(this, { tags: Tag }, next);
 });
 
 export const RecipeIngredient = model<RecipeIngredient>('RecipeIngredient', recipeIngredientSchema);

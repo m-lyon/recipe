@@ -4,7 +4,6 @@ import { UnitQuery, UnitMutation } from './Unit.js';
 import { UserQuery, UserMutation } from './User.js';
 import { PrepMethodQuery, PrepMethodMutation } from './PrepMethod.js';
 import { IngredientQuery, IngredientMutation } from './Ingredient.js';
-import { CuisineQuery, CuisineMutation } from './Cuisine.js';
 import { RecipeQuery, RecipeMutation } from './Recipe.js';
 import { composeResolvers } from '@graphql-tools/resolvers-composition';
 import { isAdmin, isAuthenticated, isRecipeOwnerOrAdmin } from '../middleware/resolvers.js';
@@ -16,7 +15,6 @@ const defaultMutations = composeResolvers(
             ...UnitMutation,
             ...PrepMethodMutation,
             ...IngredientMutation,
-            ...CuisineMutation,
         },
     },
     { 'Mutation.*': [isAdmin()] }
@@ -44,7 +42,6 @@ schemaComposer.Query.addFields({
     ...UnitQuery,
     ...PrepMethodQuery,
     ...IngredientQuery,
-    ...CuisineQuery,
     ...RecipeQuery,
 });
 schemaComposer.Mutation.addFields({
