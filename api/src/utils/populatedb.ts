@@ -48,26 +48,36 @@ export async function populateUnits() {
                 shortPlural: 'kg',
                 longSingular: 'kilogram',
                 longPlural: 'kilograms',
+                preferredNumberFormat: 'decimal',
             },
             {
                 shortSingular: 'ml',
                 shortPlural: 'ml',
                 longSingular: 'millilitre',
                 longPlural: 'millilitres',
+                preferredNumberFormat: 'decimal',
             },
             {
                 shortSingular: 'tsp',
                 shortPlural: 'tsp',
                 longSingular: 'teaspoon',
                 longPlural: 'teaspoons',
+                preferredNumberFormat: 'fraction',
             },
             {
                 shortSingular: 'tbsp',
                 shortPlural: 'tbsp',
                 longSingular: 'tablespoon',
                 longPlural: 'tablespoons',
+                preferredNumberFormat: 'fraction',
             },
-            { shortSingular: 'cup', shortPlural: 'cups', longSingular: 'cup', longPlural: 'cups' },
+            {
+                shortSingular: 'cup',
+                shortPlural: 'cups',
+                longSingular: 'cup',
+                longPlural: 'cups',
+                preferredNumberFormat: 'fraction',
+            },
         ];
         const createdUnits = await Unit.create(dummyUnits);
 
@@ -82,7 +92,11 @@ export async function populateIngredients() {
         // Remove all existing ingredients
         await Ingredient.collection.drop();
 
-        const dummyIngredients = [{ name: 'onion' }, { name: 'tomato' }, { name: 'chicken' }];
+        const dummyIngredients = [
+            { name: 'onion' },
+            { name: 'tomato', density: 0.8 },
+            { name: 'chicken', density: 1.0 },
+        ];
         const createdIngredients = await Ingredient.create(dummyIngredients);
 
         console.log('Ingredients with prepMethods added:', createdIngredients);

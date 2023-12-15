@@ -6,6 +6,7 @@ export interface Unit extends Document {
     shortPlural: string;
     longSingular: string;
     longPlural: string;
+    preferredNumberFormat: string;
 }
 
 const unitSchema = new Schema<Unit>({
@@ -32,6 +33,11 @@ const unitSchema = new Schema<Unit>({
         required: true,
         unique: true,
         set: (value: string) => value.toLowerCase(),
+    },
+    preferredNumberFormat: {
+        type: String,
+        required: true,
+        enum: ['decimal', 'fraction'],
     },
 });
 
