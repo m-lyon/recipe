@@ -3,6 +3,21 @@ import { useRef, useEffect, useState } from 'react';
 import { IngredientDropdown } from './IngredientDropdown';
 import { EditableIngredient, IngredientActionHandler } from '../../../hooks/useIngredientList';
 import { DEFAULT_INGREDIENT_STR } from '../../../hooks/useIngredientList';
+import { gql } from '../../../../../__generated__/gql';
+import { useQuery } from '@apollo/client';
+import { isPlural } from '../../../../../utils/plural';
+
+export const GET_UNITS = gql(`
+    query GetUnits {
+        unitMany {
+            _id
+            shortSingular
+            shortPlural
+            longSingular
+            longPlural
+        }
+    }
+`);
 
 interface Props {
     item: EditableIngredient;
@@ -14,6 +29,7 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
     const inputRef = useRef<HTMLInputElement | null>(null);
     const [isSelecting, setIsSelecting] = useState<boolean>(false);
     const [isComplete, setIsComplete] = useState<boolean>(false);
+    const { data: unitData } = useQuery(GET_UNITS);
 
     const ingredientStr = actionHandler.get.string();
 
@@ -38,6 +54,21 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
         }
     }, [isComplete]);
 
+    const onChange = (value: string) => {
+        actionHandler.handleChange(value);
+        if (item.state === 'unit' && item.unit.value !== null) {
+            console.log('here');
+            const units = unitData?.unitMany.map((unit) =>
+                isPlural(item.quantity) ? unit.longPlural : unit.longSingular
+            );
+            console.log('value', value);
+            if (units?.includes(item.unit.value) && value.endsWith(' ')) {
+                console.log('yepp');
+                actionHandler.incrementState();
+            }
+        }
+    };
+
     actionHandler.set.currentStateItem;
 
     return (
@@ -51,7 +82,7 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
                 }}
                 selectAllOnFocus={false}
                 onSubmit={handleSubmit}
-                onChange={actionHandler.handleChange}
+                onChange={onChange}
                 onCancel={actionHandler.reset}
                 textAlign='left'
                 fontSize={fontSize}
@@ -69,6 +100,7 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
             <IngredientDropdown
                 item={item}
                 actionHandler={actionHandler}
+                unitData={unitData}
                 setIsSelecting={setIsSelecting}
                 setIsComplete={setIsComplete}
                 inputRef={inputRef}

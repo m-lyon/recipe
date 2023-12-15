@@ -1,4 +1,4 @@
-import { GET_UNITS } from '../components/EditableIngredientList/components/IngredientDropdown';
+import { GET_UNITS } from '../components/EditableIngredientList/components/EditableIngredient';
 
 export const mockGetUnits = {
     request: {

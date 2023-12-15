@@ -7,18 +7,8 @@ import { gql } from '../../../../../__generated__/gql';
 import { IngredientNameDropdownList } from './IngredientNameDropdownList';
 import { UnitDropdownList } from './UnitDropdownList';
 import { PrepMethodDropdownList } from './PrepMethodDropdownList';
-
-export const GET_UNITS = gql(`
-    query GetUnits {
-        unitMany {
-            _id
-            shortSingular
-            shortPlural
-            longSingular
-            longPlural
-        }
-    }
-`);
+import { GetUnitsQuery } from '../../../../../__generated__/graphql';
+import { isPlural } from '../../../../../utils/plural';
 
 export const GET_INGREDIENTS = gql(`
     query GetIngredients {
@@ -38,36 +28,18 @@ export const GET_PREP_METHODS = gql(`
     }
 `);
 
-function isPlural(quantity: string | null): boolean {
-    if (quantity === null) {
-        return false;
-    }
-
-    // Check if the quantity is a fraction in the form x/y
-    const fractionRegex = /^\s*(\d+)\s*\/\s*(\d+)\s*$/;
-    const fractionMatch = quantity.match(fractionRegex);
-
-    if (fractionMatch) {
-        // If it's a fraction, return false (considered singular)
-        return false;
-    }
-
-    // If it's not a fraction, try parsing as a number and check if it's not 1
-    const num = parseFloat(quantity);
-    return num !== 1;
-}
-
 interface Props {
     item: EditableIngredient;
     actionHandler: IngredientActionHandler;
+    unitData: GetUnitsQuery | undefined;
     setIsSelecting: Dispatch<SetStateAction<boolean>>;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
     setIsComplete: (val: boolean) => void;
 }
 export function IngredientDropdown(props: Props) {
-    const { item, actionHandler, setIsSelecting, setIsComplete, inputRef, previewRef } = props;
-    const { data: unitData } = useQuery(GET_UNITS);
+    const { item, actionHandler, unitData, setIsSelecting, setIsComplete, inputRef, previewRef } =
+        props;
     const { data: ingredientData } = useQuery(GET_INGREDIENTS);
     const { data: prepMethodData } = useQuery(GET_PREP_METHODS);
 
