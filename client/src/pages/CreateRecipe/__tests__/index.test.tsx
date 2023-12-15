@@ -159,7 +159,7 @@ describe('EditableTag Click Action', () => {
 
         // Expect
         expect(screen.getByText('Add a tag...')).toBeInTheDocument();
-        expect(screen.getByText('Lunch')).toBeInTheDocument();
+        expect(screen.getByText('lunch')).toBeInTheDocument();
     });
 
     it('should display completed tag', async () => {
@@ -171,12 +171,12 @@ describe('EditableTag Click Action', () => {
         const tagInput = screen.getByText('Add a tag...');
         await user.click(tagInput);
         await user.keyboard('{L}');
-        const tag = screen.getByText('Lunch');
+        const tag = screen.getByText('lunch');
         await user.click(tag);
 
         // Expect
         expect(screen.getByText('Add a tag...')).toBeInTheDocument();
-        expect(screen.getByText('Lunch')).toBeInTheDocument();
+        expect(screen.getByText('lunch')).toBeInTheDocument();
     });
 
     it('should unfocus when clicked away after first tag', async () => {
@@ -186,12 +186,12 @@ describe('EditableTag Click Action', () => {
 
         // Act
         await user.click(screen.getByText('Add a tag...'));
-        await user.click(screen.getByText('Lunch'));
+        await user.click(screen.getByText('lunch'));
         await user.click(screen.getByText('Add a tag...'));
         await user.click(document.body);
 
         // Expect
-        expect(screen.queryByText('Dinner')).toBeNull();
+        expect(screen.queryByText('dinner')).toBeNull();
     });
 });
 
@@ -208,7 +208,7 @@ describe('EditableTag Key Arrow Action', () => {
 
         // Expect
         expect(screen.getByText('Add a tag...')).toBeInTheDocument();
-        expect(screen.getByText('Lunch')).toBeInTheDocument();
+        expect(screen.getByText('lunch')).toBeInTheDocument();
     });
 
     it('should not still be focused on editable input', async () => {

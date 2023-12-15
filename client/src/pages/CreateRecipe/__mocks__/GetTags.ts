@@ -9,19 +9,19 @@ export const mockGetTags = {
             tagMany: [
                 {
                     _id: '60f4d2e5c3d5a0a4f1b9c0e8',
-                    value: 'Dinner',
+                    value: 'dinner',
                 },
                 {
                     _id: '60f4d2e5c3d5a0a4f1b9c0e9',
-                    value: 'Lunch',
+                    value: 'lunch',
                 },
                 {
                     _id: '60f4d2e5c3d5a0a4f1b9c0ea',
-                    value: 'Freezable',
+                    value: 'freezable',
                 },
                 {
                     _id: '60f4d2e5c3d5a0a4f1b9c0f0',
-                    value: 'Spicy',
+                    value: 'spicy',
                 },
             ],
         },
