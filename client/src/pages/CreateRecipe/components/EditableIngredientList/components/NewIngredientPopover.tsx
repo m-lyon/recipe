@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { useToast } from '@chakra-ui/react';
 import { ApolloError } from '@apollo/client';
+import { object, string, number, ValidationError } from 'yup';
 
 const CREATE_NEW_INGREDIENT_MUTATION = gql(`
     mutation CreateIngredient($record: CreateOneIngredientInput!) {
@@ -29,13 +30,9 @@ function formatError(error: ApolloError) {
 function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewFormProps) {
     const [hasError, setHasError] = useState(false);
     const [name, setName] = useState('');
+    const [density, setDensity] = useState('');
     const toast = useToast();
     const [createNewIngredient] = useMutation(CREATE_NEW_INGREDIENT_MUTATION, {
-        variables: {
-            record: {
-                name,
-            },
-        },
         onCompleted: (data) => {
             onClose();
             handleSelect({
@@ -53,6 +50,7 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
             });
         },
         onError: (error) => {
+            setHasError(true);
             toast({
                 title: 'Error creating new ingredient',
                 description: formatError(error),
@@ -65,6 +63,11 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
         refetchQueries: ['GetIngredients'],
     });
 
+    const formSchema = object({
+        name: string().required(),
+        density: number(),
+    });
+
     return (
         <FormControl isInvalid={hasError}>
             <Stack spacing={4}>
@@ -74,12 +77,44 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
                     ref={firstFieldRef}
                     value={name}
                     onChange={(e) => {
-                        setName(e.target.value);
+                        setName(e.target.value.toLowerCase());
+                        hasError && setHasError(false);
+                    }}
+                />
+                <TextInput
+                    placeholder='Density (g/ml)'
+                    id='density'
+                    value={density ? density : ''}
+                    onChange={(e) => {
+                        setDensity(e.target.value);
                         hasError && setHasError(false);
                     }}
                 />
                 <ButtonGroup display='flex' justifyContent='flex-end'>
-                    <Button colorScheme='teal' onClick={() => createNewIngredient()}>
+                    <Button
+                        colorScheme='teal'
+                        onClick={() => {
+                            try {
+                                const parsedForm = formSchema.validateSync({
+                                    name,
+                                    density: density === '' ? undefined : density,
+                                });
+                                createNewIngredient({ variables: { record: parsedForm } });
+                            } catch (e: unknown) {
+                                setHasError(true);
+                                if (e instanceof ValidationError) {
+                                    toast({
+                                        title: 'Error creating new ingredient',
+                                        description: e.message,
+                                        status: 'error',
+                                        position: 'top',
+                                        duration: 3000,
+                                        isClosable: true,
+                                    });
+                                }
+                            }
+                        }}
+                    >
                         Save
                     </Button>
                 </ButtonGroup>

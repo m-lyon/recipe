@@ -76,7 +76,6 @@ export function UnitDropdownList(props: Props) {
     );
 
     const listItems = suggestions.map((item, index) => {
-        console.log('item', item);
         if (item.value === 'add new unit') {
             return (
                 <PopoverAnchor key={index}>

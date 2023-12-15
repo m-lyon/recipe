@@ -3,6 +3,7 @@ import { composeMongoose } from 'graphql-compose-mongoose';
 
 export interface Ingredient extends Document {
     name: string;
+    density?: number;
 }
 
 const ingredientSchema = new Schema<Ingredient>({
@@ -11,6 +12,10 @@ const ingredientSchema = new Schema<Ingredient>({
         required: true,
         unique: true,
         set: (value: string) => value.toLowerCase(),
+    },
+    density: {
+        type: Number,
+        required: false,
     },
 });
 

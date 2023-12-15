@@ -72,7 +72,7 @@ function NewPrepMethodForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
                 ref={firstFieldRef}
                 value={value}
                 onChange={(e) => {
-                    setValue(e.target.value);
+                    setValue(e.target.value.toLowerCase());
                     hasError && setHasError(false);
                 }}
             />

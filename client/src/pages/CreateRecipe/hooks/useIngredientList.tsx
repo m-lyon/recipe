@@ -264,7 +264,7 @@ function truncateIngredient(num: number, item: EditableIngredient): EditableIngr
 }
 
 function getQuantityStr(item: EditableIngredient): string {
-    return `${item.quantity !== null ? item.quantity : DEFAULT_INGREDIENT_STR}`;
+    return `${item.quantity !== null ? item.quantity : ''}`;
 }
 
 function getUnitStr(item: EditableIngredient): string {

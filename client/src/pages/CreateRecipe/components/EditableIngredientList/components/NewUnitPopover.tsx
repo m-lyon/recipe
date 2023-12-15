@@ -81,7 +81,7 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewFormProps) {
                     ref={firstFieldRef}
                     value={shortSingular}
                     onChange={(e) => {
-                        setShortSingular(e.target.value);
+                        setShortSingular(e.target.value.toLowerCase());
                         hasError && setHasError(false);
                     }}
                 />
@@ -90,7 +90,7 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewFormProps) {
                     id='short-plural-name'
                     value={shortPlural}
                     onChange={(e) => {
-                        setShortPlural(e.target.value);
+                        setShortPlural(e.target.value.toLowerCase());
                         hasError && setHasError(false);
                     }}
                 />
@@ -99,7 +99,7 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewFormProps) {
                     id='long-singular-name'
                     value={longSingular}
                     onChange={(e) => {
-                        setLongSingular(e.target.value);
+                        setLongSingular(e.target.value.toLowerCase());
                         hasError && setHasError(false);
                     }}
                 />
@@ -108,7 +108,7 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewFormProps) {
                     id='long-plural-name'
                     value={longPlural}
                     onChange={(e) => {
-                        setLongPlural(e.target.value);
+                        setLongPlural(e.target.value.toLowerCase());
                         hasError && setHasError(false);
                     }}
                 />
