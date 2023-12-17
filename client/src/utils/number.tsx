@@ -1,3 +1,15 @@
+import { fraction } from 'mathjs';
+import fractionUnicode from 'fraction-unicode';
+
+export function isFraction(input: string): boolean {
+    return input.includes('/');
+}
+
+export function formatFraction(input: string): string {
+    const fract = fraction(input);
+    return fractionUnicode(fract.n, fract.d);
+}
+
 export function strToNumber(input: string): number {
     const parts = input.split('/');
 

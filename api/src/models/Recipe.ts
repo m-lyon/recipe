@@ -6,11 +6,12 @@ import { Ingredient } from './Ingredient.js';
 import { PrepMethod } from './PrepMethod.js';
 import { Tag, tagValidator } from './Tag.js';
 import { validateMongooseObjectIds, validateMongooseObjectIdsArray } from './utils.js';
+import { quantityRegex } from './utils.js';
 
 export interface RecipeIngredient extends Document {
     ingredient: Types.ObjectId;
     type: 'ingredient' | 'recipe';
-    quantity: number;
+    quantity: string;
     unit?: Types.ObjectId;
     prepMethod?: Types.ObjectId;
 }
@@ -18,11 +19,16 @@ export interface RecipeIngredient extends Document {
 const recipeIngredientSchema = new Schema<RecipeIngredient>({
     ingredient: { type: Schema.Types.ObjectId, refPath: 'Ingredient', required: true },
     type: { type: String, enum: { ingredient: 'ingredient', recipe: 'recipe' }, required: true },
-    quantity: { type: Number, required: true },
+    quantity: { type: String, required: true },
     unit: { type: Schema.Types.ObjectId, ref: 'Unit' },
     prepMethod: { type: Schema.Types.ObjectId, ref: 'PrepMethod' },
 });
 recipeIngredientSchema.pre('save', async function (next) {
+    // Quantity validation
+    if (!quantityRegex.test(this.quantity)) {
+        const err = new Error('Invalid quantity format');
+        return next(err);
+    }
     // Attribute validation
     const attribs = { ingredient: Ingredient, unit: Unit, prepMethod: PrepMethod };
     await validateMongooseObjectIds.call(this, attribs, next);

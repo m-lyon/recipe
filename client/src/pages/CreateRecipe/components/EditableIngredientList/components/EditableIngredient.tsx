@@ -1,10 +1,10 @@
 import { Editable, EditablePreview, EditableInput } from '@chakra-ui/react';
 import { useRef, useEffect, useState } from 'react';
-import { IngredientDropdown } from './IngredientDropdown';
-import { EditableIngredient, IngredientActionHandler } from '../../../hooks/useIngredientList';
-import { DEFAULT_INGREDIENT_STR } from '../../../hooks/useIngredientList';
-import { gql } from '../../../../../__generated__/gql';
 import { useQuery } from '@apollo/client';
+import { IngredientDropdown } from './IngredientDropdown';
+import { EditableIngredient as EditableIngredientType } from '../../../hooks/useIngredientList';
+import { IngredientActionHandler, DEFAULT_INGREDIENT_STR } from '../../../hooks/useIngredientList';
+import { gql } from '../../../../../__generated__/gql';
 import { isPlural } from '../../../../../utils/plural';
 
 export const GET_UNITS = gql(`
@@ -20,7 +20,7 @@ export const GET_UNITS = gql(`
 `);
 
 interface Props {
-    item: EditableIngredient;
+    item: EditableIngredientType;
     actionHandler: IngredientActionHandler;
     fontSize?: string;
 }

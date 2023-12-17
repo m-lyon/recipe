@@ -1,16 +1,26 @@
 import { useReducer } from 'react';
 import { produce } from 'immer';
-import { strToNumber } from '../../../utils/number';
 import { useToast } from '@chakra-ui/react';
+import { isFraction, formatFraction } from '../../../utils/number';
 
 export const DEFAULT_INGREDIENT_STR = 'Enter ingredient';
 
-const validateQuantity = (char: string, item: EditableIngredient): boolean => {
+function validateQuantity(char: string, item: EditableIngredient) {
     if (char === ' ' && item.quantity !== null) {
-        return true;
+        if (/^(?:(?:[+-]?\d+\.\d+)|(?:[+-]?\d+)|(?:[+-]?\d+\/[1-9]\d*))$/.test(item.quantity)) {
+            return;
+        }
+        throw new Error('Invalid quantity.');
     }
-    return !isNaN(parseInt(char)) || char === '/' || char === '.';
-};
+    if (!isNaN(parseInt(char)) || char === '/' || char === '.') {
+        return;
+    }
+    if (item.quantity === null) {
+        throw new Error('Start with a number.');
+    } else {
+        throw new Error('Only numbers and fractions are allowed when inputting a quantity.');
+    }
+}
 
 type NewChar = string | number;
 function handleQuantityChange(
@@ -22,22 +32,13 @@ function handleQuantityChange(
         console.log(`truncating by ${char} characters`);
         actionHandler.truncate(char);
     } else {
-        if (validateQuantity(char, item)) {
-            if (char === ' ') {
-                console.log('changing state from "quantity" to "unit"');
-                actionHandler.incrementState();
-                actionHandler.setShow.on();
-            } else {
-                actionHandler.quantity.append(char);
-            }
+        validateQuantity(char, item);
+        if (char === ' ') {
+            console.log('changing state from "quantity" to "unit"');
+            actionHandler.incrementState();
+            actionHandler.setShow.on();
         } else {
-            if (item.quantity === null) {
-                throw new Error('Start with a number.');
-            } else {
-                throw new Error(
-                    'Only numbers and fractions are allowed when inputting a quantity.'
-                );
-            }
+            actionHandler.quantity.append(char);
         }
     }
 }
@@ -90,8 +91,8 @@ interface Action {
     num?: number;
     finished?: FinishedIngredient[];
 }
-export type DBInputState = 'unit' | 'name' | 'prepMethod';
 export type InputState = 'quantity' | 'unit' | 'name' | 'prepMethod';
+export type DBInputState = Extract<InputState, 'unit' | 'name' | 'prepMethod'>;
 export interface EditableFromDB {
     value: string | null;
     _id?: string;
@@ -110,7 +111,7 @@ export interface FinishedName extends EditableFromDB {
     _id: string;
 }
 export interface FinishedIngredient {
-    quantity: number;
+    quantity: string;
     unit: EditableFromDB;
     name: FinishedName;
     prepMethod: EditableFromDB;
@@ -264,6 +265,9 @@ function truncateIngredient(num: number, item: EditableIngredient): EditableIngr
 }
 
 function getQuantityStr(item: EditableIngredient): string {
+    if (item.state !== 'quantity' && isFraction(item.quantity!)) {
+        return formatFraction(item.quantity!);
+    }
     return `${item.quantity !== null ? item.quantity : ''}`;
 }
 
@@ -298,7 +302,7 @@ function getPrepMethodStr(item: EditableIngredient): string {
     return `${delim}${str}`;
 }
 
-function getIngredientStr(item: EditableIngredient): string {
+function getEditableIngredientStr(item: EditableIngredient): string {
     if (item.quantity === null) {
         return '';
     }
@@ -309,10 +313,20 @@ function getIngredientStr(item: EditableIngredient): string {
     return `${quantityStr}${unitStr}${nameStr}${prepMethodStr}`;
 }
 
+export function getIngredientStr(
+    quantity: string,
+    unit: string | null,
+    name: string,
+    prepMethod: string | null
+): string {
+    const quantityStr = isFraction(quantity) ? formatFraction(quantity) : quantity;
+    const unitStr = unit === null ? '' : ` ${unit}`;
+    const prepMethodStr = prepMethod === null ? '' : `, ${prepMethod}`;
+    return `${quantityStr}${unitStr} ${name}${prepMethodStr}`;
+}
+
 export function getFinishedIngredientStr(item: FinishedIngredient): string {
-    const unitStr = item.unit.value === null ? '' : ` ${item.unit.value}`;
-    const prepMethodStr = item.prepMethod.value === null ? '' : `, ${item.prepMethod.value}`;
-    return `${item.quantity}${unitStr} ${item.name.value}${prepMethodStr}`;
+    return getIngredientStr(item.quantity, item.unit.value, item.name.value, item.prepMethod.value);
 }
 
 function reducer(state: IngredientState, action: Action): IngredientState {
@@ -400,9 +414,12 @@ function reducer(state: IngredientState, action: Action): IngredientState {
                 if (draft.editable.name === null) {
                     throw new Error('Cannot submit an item with null name.');
                 }
+                if (draft.editable.quantity === null) {
+                    throw new Error('Cannot submit an item with null quantity.');
+                }
                 const finished = {
                     key: draft.editable.key,
-                    quantity: strToNumber(draft.editable.quantity as string),
+                    quantity: draft.editable.quantity,
                     unit: draft.editable.unit,
                     name: draft.editable.name as FinishedName,
                     prepMethod: draft.editable.prepMethod,
@@ -505,7 +522,7 @@ export function useIngredientList(): UseIngredientListReturnType {
 
         // Public functions
         const get: Get = {
-            string: () => getIngredientStr(state.editable),
+            string: () => getEditableIngredientStr(state.editable),
             currentStateValue: () => {
                 if (state.editable.state === 'quantity') {
                     return state.editable.quantity;
@@ -572,10 +589,5 @@ export function useIngredientList(): UseIngredientListReturnType {
         return dispatch({ type: 'remove_finished_item', index });
     };
 
-    return {
-        state,
-        actionHandler,
-        setFinished,
-        removeFinished,
-    };
+    return { state, actionHandler, setFinished, removeFinished };
 }

@@ -31,7 +31,7 @@ export const GET_PREP_METHODS = gql(`
 interface Props {
     item: EditableIngredient;
     actionHandler: IngredientActionHandler;
-    unitData: GetUnitsQuery | undefined;
+    unitData?: GetUnitsQuery;
     setIsSelecting: Dispatch<SetStateAction<boolean>>;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;

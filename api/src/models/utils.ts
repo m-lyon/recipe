@@ -40,3 +40,5 @@ export async function validateMongooseObjectIdsArray(attribs: Attributes, next: 
         next(err);
     }
 }
+
+export const quantityRegex = /^(?:(?:[+-]?\d+\.\d+)|(?:[+-]?\d+)|(?:[+-]?\d+\/[1-9]\d*))$/;
