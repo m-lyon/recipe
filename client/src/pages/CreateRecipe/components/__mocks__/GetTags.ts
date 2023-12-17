@@ -1,4 +1,4 @@
-import { GET_TAGS } from '../components/TagDropdown';
+import { GET_TAGS } from '../TagDropdown';
 
 export const mockGetTags = {
     request: {

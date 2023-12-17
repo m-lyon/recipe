@@ -1,4 +1,4 @@
-import { GET_PREP_METHODS } from '../components/EditableIngredientList/components/IngredientDropdown';
+import { GET_PREP_METHODS } from '../components/IngredientDropdown';
 
 export const mockGetPrepMethods = {
     request: {
