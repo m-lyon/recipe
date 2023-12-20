@@ -13,6 +13,7 @@ export const mockGetUnits = {
                     shortPlural: 'tsp',
                     longSingular: 'teaspoon',
                     longPlural: 'teaspoons',
+                    preferredNumberFormat: 'fraction',
                 },
                 {
                     _id: '60f4d2e5c3d5a0a4f1b9c0f3',
@@ -20,6 +21,7 @@ export const mockGetUnits = {
                     shortPlural: 'tbsp',
                     longSingular: 'tablespoon',
                     longPlural: 'tablespoons',
+                    preferredNumberFormat: 'fraction',
                 },
                 {
                     _id: '60f4d2e5c3d5a0a4f1b9c0f4',
@@ -27,6 +29,7 @@ export const mockGetUnits = {
                     shortPlural: 'oz',
                     longSingular: 'ounce',
                     longPlural: 'ounces',
+                    preferredNumberFormat: 'decimal',
                 },
                 {
                     _id: '60f4d2e5c3d5a0a4f1b9c0f6',
@@ -34,6 +37,7 @@ export const mockGetUnits = {
                     shortPlural: 'cups',
                     longSingular: 'cup',
                     longPlural: 'cups',
+                    preferredNumberFormat: 'fraction',
                 },
             ],
         },

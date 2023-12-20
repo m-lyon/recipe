@@ -23,10 +23,6 @@ export const mockGetIngredients = {
                     _id: '60f4d2e5c3d5a0a4f1b9c0f0',
                     name: 'iceberg lettuce',
                 },
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0f1',
-                    name: 'jalapeno',
-                },
             ],
         },
     },

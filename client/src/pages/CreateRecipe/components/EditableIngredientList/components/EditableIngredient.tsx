@@ -15,6 +15,7 @@ export const GET_UNITS = gql(`
             shortPlural
             longSingular
             longPlural
+            preferredNumberFormat
         }
     }
 `);
@@ -35,7 +36,7 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
 
     const handleSubmit = () => {
         // This function is triggered when Editable is blurred. Enter KeyboardEvent
-        // does not trigger this due to event.preventDefault() in IngredientDropdownList.
+        // does not trigger this due to event.preventDefault() in DropdownList.
         // This function only handles incomplete submissions, as complete submissions
         // are handled by the useEffect below.
         if (!isComplete && !isSelecting) {
@@ -57,13 +58,10 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
     const onChange = (value: string) => {
         actionHandler.handleChange(value);
         if (item.state === 'unit' && item.unit.value !== null) {
-            console.log('here');
             const units = unitData?.unitMany.map((unit) =>
                 isPlural(item.quantity) ? unit.longPlural : unit.longSingular
             );
-            console.log('value', value);
             if (units?.includes(item.unit.value) && value.endsWith(' ')) {
-                console.log('yepp');
                 actionHandler.incrementState();
             }
         }
