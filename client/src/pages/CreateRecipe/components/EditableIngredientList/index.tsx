@@ -1,30 +1,26 @@
 import { Reorder } from 'framer-motion';
 import { Box, VStack } from '@chakra-ui/react';
 import { EditableIngredient } from './components/EditableIngredient';
-import { Tag, TagLabel, TagCloseButton } from '@chakra-ui/react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
-import { FinishedIngredient, UseIngredientListReturnType } from '../../hooks/useIngredientList';
-import { getFinishedIngredientStr } from '../../hooks/useIngredientList';
+import { UseIngredientListReturnType } from '../../hooks/useIngredientList';
+import { FinishedIngredient } from './components/FinishedIngredient';
+import { FinishedIngredient as FinishedIngredientType } from '../../hooks/useIngredientList';
 
 export function EditableIngredientList(props: UseIngredientListReturnType) {
     const { state, actionHandler, setFinished, removeFinished } = props;
 
-    const finishedIngredients = state.finished.map((item: FinishedIngredient, index: number) => {
-        return (
-            <Reorder.Item
-                key={item.key}
-                value={item}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-            >
-                <Tag size='lg' marginBottom='5px'>
-                    <TagLabel>{getFinishedIngredientStr(item)}</TagLabel>
-                    <TagCloseButton onClick={() => removeFinished(index)} />
-                </Tag>
-            </Reorder.Item>
-        );
-    });
+    const finishedIngredients = state.finished.map(
+        (item: FinishedIngredientType, index: number) => {
+            return (
+                <FinishedIngredient
+                    key={item.key}
+                    index={index}
+                    item={item}
+                    removeFinished={removeFinished}
+                />
+            );
+        }
+    );
 
     return (
         <VStack spacing='24px' align='left'>
