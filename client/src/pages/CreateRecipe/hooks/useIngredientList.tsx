@@ -29,12 +29,10 @@ function handleQuantityChange(
     actionHandler: InternalActionHandler
 ) {
     if (typeof char === 'number') {
-        console.log(`truncating by ${char} characters`);
         actionHandler.truncate(char);
     } else {
         validateQuantity(char, item);
         if (char === ' ') {
-            console.log('changing state from "quantity" to "unit"');
             actionHandler.incrementState();
             actionHandler.setShow.on();
         } else {
@@ -49,11 +47,9 @@ function handleOtherChange(
     actionHandler: InternalActionHandler
 ) {
     if (typeof char === 'number') {
-        console.log(`truncating by ${char} characters`);
         actionHandler.truncate(char);
     } else {
         if (/^[a-zA-Z ]$/.test(char)) {
-            console.log('appending', char, 'to', inputState);
             actionHandler[inputState].append(char);
         } else {
             const name = {

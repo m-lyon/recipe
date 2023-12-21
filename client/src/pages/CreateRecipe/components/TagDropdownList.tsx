@@ -30,11 +30,10 @@ interface Props {
     tags: Tag[];
     setAndSubmit: SetAndSubmit;
     inputRef: MutableRefObject<HTMLInputElement | null>;
-    setIsSelecting: (value: boolean) => void;
     selectedTags: FinishedTag[];
 }
 export function TagDropdownList(props: Props) {
-    const { strValue, tags, setAndSubmit, inputRef, setIsSelecting, selectedTags } = props;
+    const { strValue, tags, setAndSubmit, inputRef, selectedTags } = props;
     const toast = useToast();
     const [createNewTag] = useMutation(CREATE_NEW_TAG_MUTATION, {
         variables: {
@@ -98,11 +97,7 @@ export function TagDropdownList(props: Props) {
             <DropdownItem
                 key={index}
                 value={item.value}
-                onClick={() => {
-                    handleSelect(item);
-                    setIsSelecting(false);
-                }}
-                setIsSelecting={setIsSelecting}
+                onClick={() => handleSelect(item)}
                 isHighlighted={index === highlightedIndex}
                 setHighlighted={() => setHighlightedIndex(index)}
                 resetHighlighted={() => setHighlightedIndex(-1)}

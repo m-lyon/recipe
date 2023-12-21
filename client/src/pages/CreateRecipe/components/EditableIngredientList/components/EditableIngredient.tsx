@@ -1,5 +1,5 @@
-import { Editable, EditablePreview, EditableInput } from '@chakra-ui/react';
-import { useRef, useEffect, useState } from 'react';
+import { Editable, EditablePreview, EditableInput, useOutsideClick } from '@chakra-ui/react';
+import { useRef } from 'react';
 import { useQuery } from '@apollo/client';
 import { IngredientDropdown } from './IngredientDropdown';
 import { EditableIngredient as EditableIngredientType } from '../../../hooks/useIngredientList';
@@ -28,49 +28,33 @@ interface Props {
 export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
     const previewRef = useRef<HTMLInputElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null);
-    const [isSelecting, setIsSelecting] = useState<boolean>(false);
-    const [isComplete, setIsComplete] = useState<boolean>(false);
+    const parentRef = useRef<HTMLDivElement | null>(null);
+    useOutsideClick({
+        ref: parentRef,
+        handler: () => {
+            if (item.quantity !== null) {
+                actionHandler.reset();
+            }
+        },
+    });
     const { data: unitData } = useQuery(GET_UNITS);
 
     const ingredientStr = actionHandler.get.string();
 
-    const handleSubmit = () => {
-        // This function is triggered when Editable is blurred. Enter KeyboardEvent
-        // does not trigger this due to event.preventDefault() in DropdownList.
-        // This function only handles incomplete submissions, as complete submissions
-        // are handled by the useEffect below.
-        if (!isComplete && !isSelecting) {
-            actionHandler.reset();
-        }
-    };
-
-    useEffect(() => {
-        if (isComplete) {
-            // isComplete is set to true when succesful submission occurs,
-            // therefore the next Editable component is focused via this useEffect.
-            // We use a useEffect here to ensure that the previewRef is focused after
-            // the submit event has been handled.
-            previewRef.current?.focus();
-            setIsComplete(false);
-        }
-    }, [isComplete]);
-
     const onChange = (value: string) => {
-        actionHandler.handleChange(value);
         if (item.state === 'unit' && item.unit.value !== null) {
-            const units = unitData?.unitMany.map((unit) =>
-                isPlural(item.quantity) ? unit.longPlural : unit.longSingular
-            );
+            const units = unitData?.unitMany.map((unit) => {
+                return isPlural(item.quantity) ? unit.longPlural : unit.longSingular;
+            });
             if (units?.includes(item.unit.value) && value.endsWith(' ')) {
-                actionHandler.incrementState();
+                return actionHandler.incrementState();
             }
         }
+        actionHandler.handleChange(value);
     };
 
-    actionHandler.set.currentStateItem;
-
     return (
-        <>
+        <div ref={parentRef}>
             <Editable
                 value={ingredientStr}
                 onMouseDown={(e) => {
@@ -79,7 +63,6 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
                     }
                 }}
                 selectAllOnFocus={false}
-                onSubmit={handleSubmit}
                 onChange={onChange}
                 onCancel={actionHandler.reset}
                 textAlign='left'
@@ -99,11 +82,9 @@ export function EditableIngredient({ item, actionHandler, fontSize }: Props) {
                 item={item}
                 actionHandler={actionHandler}
                 unitData={unitData}
-                setIsSelecting={setIsSelecting}
-                setIsComplete={setIsComplete}
                 inputRef={inputRef}
                 previewRef={previewRef}
             />
-        </>
+        </div>
     );
 }

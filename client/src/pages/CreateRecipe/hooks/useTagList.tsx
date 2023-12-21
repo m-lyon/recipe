@@ -58,7 +58,11 @@ function reducer(state: TagState, action: Action) {
                 if (typeof action.value === 'undefined') {
                     throw new Error('value is required to set editable value');
                 }
-                draft.editable.value = action.value.toLowerCase();
+                if (action.value === '') {
+                    draft.editable.value = null;
+                } else {
+                    draft.editable.value = action.value.toLowerCase();
+                }
                 draft.editable._id = action._id;
             });
         }

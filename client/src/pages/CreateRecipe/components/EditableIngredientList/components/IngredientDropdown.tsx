@@ -1,7 +1,7 @@
 import { Box, List } from '@chakra-ui/react';
 import { useQuery } from '@apollo/client';
 import { motion, LayoutGroup } from 'framer-motion';
-import { Dispatch, SetStateAction, MutableRefObject } from 'react';
+import { MutableRefObject } from 'react';
 import { EditableIngredient, IngredientActionHandler } from '../../../hooks/useIngredientList';
 import { gql } from '../../../../../__generated__/gql';
 import { IngredientNameDropdownList } from './IngredientNameDropdownList';
@@ -32,14 +32,11 @@ interface Props {
     item: EditableIngredient;
     actionHandler: IngredientActionHandler;
     unitData?: GetUnitsQuery;
-    setIsSelecting: Dispatch<SetStateAction<boolean>>;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
-    setIsComplete: (val: boolean) => void;
 }
 export function IngredientDropdown(props: Props) {
-    const { item, actionHandler, unitData, setIsSelecting, setIsComplete, inputRef, previewRef } =
-        props;
+    const { item, actionHandler, unitData, inputRef, previewRef } = props;
     const { data: ingredientData } = useQuery(GET_INGREDIENTS);
     const { data: prepMethodData } = useQuery(GET_PREP_METHODS);
 
@@ -49,7 +46,6 @@ export function IngredientDropdown(props: Props) {
         const dropdownProps = {
             strValue: currentValue ? currentValue : '',
             setItem: actionHandler.set.currentStateItem,
-            setIsSelecting,
             inputRef,
             previewRef,
         };
@@ -79,8 +75,6 @@ export function IngredientDropdown(props: Props) {
                         data={prepMethodData}
                         {...dropdownProps}
                         handleSubmit={() => {
-                            setIsSelecting(false);
-                            setIsComplete(true);
                             actionHandler.set.show.off();
                             actionHandler.handleSubmit();
                         }}

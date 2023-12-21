@@ -26,7 +26,6 @@ interface Props {
     data: GetUnitsQuery;
     isPlural: boolean;
     setItem: (value: string | null, _id?: string) => void;
-    setIsSelecting: (value: boolean) => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
 }
@@ -87,7 +86,6 @@ export function UnitDropdownList(props: Props) {
                             handleSelect(item);
                             props.previewRef?.current?.focus();
                         }}
-                        setIsSelecting={props.setIsSelecting}
                         isHighlighted={index === highlightedIndex}
                         setHighlighted={() => setHighlightedIndex(index)}
                         resetHighlighted={() => setHighlightedIndex(-1)}
@@ -105,7 +103,6 @@ export function UnitDropdownList(props: Props) {
                     handleSelect(item);
                     props.previewRef?.current?.focus();
                 }}
-                setIsSelecting={props.setIsSelecting}
                 isHighlighted={index === highlightedIndex}
                 setHighlighted={() => setHighlightedIndex(index)}
                 resetHighlighted={() => setHighlightedIndex(-1)}

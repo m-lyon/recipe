@@ -19,11 +19,10 @@ interface Props {
     tag: EditableTag;
     actions: EditableTagActionHandler;
     inputRef: MutableRefObject<HTMLInputElement | null>;
-    setIsSelecting: (value: boolean) => void;
     selectedTags: FinishedTag[];
 }
 export function TagDropdown(props: Props) {
-    const { tag, actions, inputRef, setIsSelecting, selectedTags } = props;
+    const { tag, actions, inputRef, selectedTags } = props;
     const { data } = useQuery(GET_TAGS);
     const strValue = tag.value !== null ? tag.value : '';
 
@@ -40,7 +39,6 @@ export function TagDropdown(props: Props) {
                     actions.setShow('off');
                 }}
                 inputRef={inputRef}
-                setIsSelecting={setIsSelecting}
                 selectedTags={selectedTags}
             />
         );

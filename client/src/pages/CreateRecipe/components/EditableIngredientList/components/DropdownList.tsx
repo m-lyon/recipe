@@ -11,7 +11,6 @@ interface Props<T> {
     strValue: string;
     data: T;
     setItem: (value: string | null, _id?: string) => void;
-    setIsSelecting: (value: boolean) => void;
     filter: (data: T, value: string) => Array<Suggestion>;
     handleSubmit?: () => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
@@ -19,17 +18,8 @@ interface Props<T> {
     AddNewPopover: FC<NewFormProps>;
 }
 export function DropdownList<T>(props: Props<T>) {
-    const {
-        strValue,
-        data,
-        setItem,
-        setIsSelecting,
-        filter,
-        handleSubmit,
-        inputRef,
-        previewRef,
-        AddNewPopover,
-    } = props;
+    const { strValue, data, setItem, filter, handleSubmit, inputRef, previewRef, AddNewPopover } =
+        props;
     const dropdownRef = useRef<HTMLDivElement | null>(null);
     const firstFieldRef = useRef<HTMLInputElement | null>(null);
     const { isOpen, onOpen, onClose } = useDisclosure({
@@ -77,7 +67,6 @@ export function DropdownList<T>(props: Props<T>) {
                             handleSelect(item);
                             previewRef?.current?.focus();
                         }}
-                        setIsSelecting={setIsSelecting}
                         isHighlighted={index === highlightedIndex}
                         setHighlighted={() => setHighlightedIndex(index)}
                         resetHighlighted={() => setHighlightedIndex(-1)}
@@ -95,7 +84,6 @@ export function DropdownList<T>(props: Props<T>) {
                     handleSelect(item);
                     previewRef?.current?.focus();
                 }}
-                setIsSelecting={setIsSelecting}
                 isHighlighted={index === highlightedIndex}
                 setHighlighted={() => setHighlightedIndex(index)}
                 resetHighlighted={() => setHighlightedIndex(-1)}

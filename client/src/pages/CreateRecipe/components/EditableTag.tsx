@@ -1,9 +1,9 @@
 import { EditableTagActionHandler, EditableTag, DEFAULT_TAG_STR } from '../hooks/useTagList';
 import { FinishedTag } from '../hooks/useTagList';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { TagDropdown } from './TagDropdown';
-import { Editable, EditablePreview, EditableInput } from '@chakra-ui/react';
+import { Editable, EditablePreview, EditableInput, useOutsideClick } from '@chakra-ui/react';
 
 interface Props {
     tag: EditableTag;
@@ -13,26 +13,23 @@ interface Props {
 }
 export function EditableTag(props: Props) {
     const { tag, actions, tagStr, selectedTags } = props;
-    const [isSelecting, setIsSelecting] = useState<boolean>(false);
+    const parentRef = useRef<HTMLDivElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null);
-
-    const handleSubmit = () => {
-        // This function is triggered when Editable is blurred. Enter KeyboardEvent
-        // does not trigger this due to event.preventDefault() in IngredientDropdownList.
-        // This function only handles incomplete submissions, as complete submissions
-        // are handled by the useEffect below.
-        if (!isSelecting) {
-            actions.reset();
-        }
-    };
+    useOutsideClick({
+        ref: parentRef,
+        handler: () => {
+            if (tag.value !== null || tag.show) {
+                actions.reset();
+            }
+        },
+    });
 
     return (
-        <motion.div layout='position'>
+        <motion.div layout='position' ref={parentRef}>
             <Editable
                 value={tagStr}
                 selectAllOnFocus={false}
                 onEdit={() => !tag.show && actions.setShow('on')}
-                onSubmit={handleSubmit}
                 onChange={actions.setValue}
                 onCancel={actions.reset}
                 textAlign='left'
@@ -47,7 +44,6 @@ export function EditableTag(props: Props) {
                 tag={tag}
                 actions={actions}
                 inputRef={inputRef}
-                setIsSelecting={setIsSelecting}
                 selectedTags={selectedTags}
             />
         </motion.div>

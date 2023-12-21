@@ -10,7 +10,6 @@ interface Props {
     strValue: string;
     data: GetIngredientsQuery;
     setItem: (value: string | null, _id?: string) => void;
-    setIsSelecting: (value: boolean) => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
 }
