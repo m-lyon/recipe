@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
-import { render, screen, getDefaultNormalizer } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { ChakraProvider } from '@chakra-ui/react';
 import { MockedProvider } from '@apollo/client/testing';
 import { CreateRecipe } from '..';
@@ -29,7 +29,15 @@ const renderComponent = () => {
 };
 
 describe('placeholder test', () => {
-    it('should pass', () => {
+    it('should pass', async () => {
+        // Render
+        const user = userEvent.setup();
+        renderComponent();
+
+        // Act
+        const ingredientInput = screen.getByText('Ingredients');
+        await user.click(ingredientInput);
+
         expect(true).toBe(true);
     });
 });
