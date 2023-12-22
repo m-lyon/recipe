@@ -1,10 +1,9 @@
 import mongoose from 'mongoose';
-
-const url = process.env.MONGODB_URI;
+import { MONGODB_URI } from '../constants.js';
 
 mongoose.set({ strictQuery: true });
 mongoose
-    .connect(url)
+    .connect(MONGODB_URI)
     .then((db) => {
         console.log('connected to db');
     })
