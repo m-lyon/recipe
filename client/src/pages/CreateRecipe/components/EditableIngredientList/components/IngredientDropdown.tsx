@@ -71,7 +71,7 @@ export function IngredientDropdown(props: Props) {
                 return (
                     <IngredientNameDropdownList
                         data={ingredientData}
-                        isPlural={isPlural(item.quantity)}
+                        plural={isPlural(item.quantity)}
                         hasUnit={item.unit.value !== null}
                         {...dropdownProps}
                     />

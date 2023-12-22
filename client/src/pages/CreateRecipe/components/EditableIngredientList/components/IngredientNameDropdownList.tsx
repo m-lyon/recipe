@@ -8,10 +8,18 @@ import { DropdownItem } from '../../../../../components/DropdownItem';
 import { useNavigatableList } from '../../../hooks/useNavigatableList';
 import { NewIngredientPopover } from './NewIngredientPopover';
 
-function getDisplayValue(item: IngredientSuggestion, isPlural: boolean, hasUnit: boolean): string {
+export function isPluralIngredient(
+    plural: boolean,
+    hasUnit: boolean,
+    isCountable: boolean
+): boolean {
+    return (plural && !hasUnit) || (isCountable && hasUnit);
+}
+
+function getDisplayValue(item: IngredientSuggestion, plural: boolean, hasUnit: boolean): string {
     if (typeof item.value === 'string') {
         return item.value;
-    } else if ((isPlural && !hasUnit) || (item.value.isCountable && hasUnit)) {
+    } else if (isPluralIngredient(plural, hasUnit, item.value.isCountable)) {
         return item.value.pluralName;
     } else {
         return item.value.name;
@@ -25,14 +33,14 @@ interface IngredientSuggestion {
 interface Props {
     strValue: string;
     data: GetIngredientsQuery;
-    isPlural: boolean;
+    plural: boolean;
     hasUnit: boolean;
     setItem: (value: string | null, _id?: string) => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
 }
 export function IngredientNameDropdownList(props: Props) {
-    const { strValue, data, isPlural, hasUnit, setItem, inputRef, previewRef } = props;
+    const { strValue, data, plural, hasUnit, setItem, inputRef, previewRef } = props;
     const dropdownRef = useRef<HTMLDivElement | null>(null);
     const firstFieldRef = useRef<HTMLInputElement | null>(null);
     const { isOpen, onOpen, onClose } = useDisclosure({
@@ -57,7 +65,7 @@ export function IngredientNameDropdownList(props: Props) {
                 onOpen();
             }
         } else {
-            setItem(getDisplayValue(item, isPlural, hasUnit), item.value._id);
+            setItem(getDisplayValue(item, plural, hasUnit), item.value._id);
         }
     };
 
@@ -91,7 +99,7 @@ export function IngredientNameDropdownList(props: Props) {
             <DropdownItem
                 key={index}
                 color={item.colour}
-                value={getDisplayValue(item, isPlural, hasUnit)}
+                value={getDisplayValue(item, plural, hasUnit)}
                 onClick={() => {
                     handleSelect(item);
                     previewRef?.current?.focus();

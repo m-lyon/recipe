@@ -7,7 +7,6 @@ import { InstructionList } from './components/InstructionList';
 import { ImageDisplay } from './components/ImageDisplay';
 import { useQuery } from '@apollo/client';
 import { gql } from '../../__generated__';
-import { RecipeIngredient } from '../../__generated__/graphql';
 import { useParams } from 'react-router-dom';
 
 export const GET_RECIPE = gql(`
@@ -20,10 +19,13 @@ export const GET_RECIPE = gql(`
                 unit {
                     _id
                     shortSingular
+                    shortPlural
                 }
                 ingredient {
                     _id
                     name
+                    pluralName
+                    isCountable
                 }
                 prepMethod {
                     _id
@@ -82,7 +84,7 @@ export function ViewRecipe() {
                     <TagList tags={tags} />
                 </GridItem>
                 <GridItem pl='2' area={'ingredients'} boxShadow='lg' padding='6'>
-                    <IngredientList ingredients={ingredients as RecipeIngredient[]} />
+                    <IngredientList ingredients={ingredients} />
                 </GridItem>
                 <GridItem pl='2' boxShadow='lg' padding='6' area={'instructions'}>
                     <InstructionList instructions={instructions} />
