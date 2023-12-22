@@ -1,4 +1,5 @@
-import { Button, ButtonGroup, FormControl, Stack } from '@chakra-ui/react';
+import { Button, ButtonGroup, FormControl, FormHelperText, HStack } from '@chakra-ui/react';
+import { Radio, RadioGroup, Stack } from '@chakra-ui/react';
 import { TextInput } from '../../../../../components/TextInput';
 import { NewPopover } from './NewPopover';
 import { gql } from '../../../../../__generated__';
@@ -6,6 +7,8 @@ import { useState } from 'react';
 import { ApolloError, useMutation } from '@apollo/client';
 import { NewFormProps } from '../../../types';
 import { useToast } from '@chakra-ui/react';
+import { object, string, ValidationError } from 'yup';
+import { EnumUnitPreferredNumberFormat } from '../../../../../__generated__/graphql';
 
 const CREATE_NEW_UNIT_MUTATION = gql(`
     mutation CreateUnit($record: CreateOneUnitInput!) {
@@ -32,16 +35,9 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewFormProps) {
     const [shortPlural, setShortPlural] = useState('');
     const [longSingular, setLongSingular] = useState('');
     const [longPlural, setLongPlural] = useState('');
+    const [preferredNumberFormat, setpreferredNumberFormat] = useState('');
 
     const [createNewUnit] = useMutation(CREATE_NEW_UNIT_MUTATION, {
-        variables: {
-            record: {
-                shortSingular,
-                shortPlural,
-                longSingular,
-                longPlural,
-            },
-        },
         onCompleted: (data) => {
             onClose();
             handleSelect({
@@ -65,11 +61,21 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewFormProps) {
                 status: 'error',
                 position: 'top',
                 duration: 3000,
-                isClosable: true,
+                isClosable: false,
             });
             setHasError(true);
         },
         refetchQueries: ['GetUnits'],
+    });
+
+    const formSchema = object({
+        shortSingular: string().required('Short singular name is required'),
+        shortPlural: string().required('Short plural name is required'),
+        longSingular: string().required('Long singular name is required'),
+        longPlural: string().required('Long plural name is required'),
+        preferredNumberFormat: string()
+            .required()
+            .oneOf(['decimal', 'fraction'], 'You must select a number format'),
     });
 
     return (
@@ -112,8 +118,49 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewFormProps) {
                         hasError && setHasError(false);
                     }}
                 />
+                <FormHelperText>Preferred number format</FormHelperText>
+                <RadioGroup onChange={setpreferredNumberFormat}>
+                    <HStack spacing={'12px'}>
+                        <Radio value='decimal'>decimal</Radio>
+                        <Radio value='fraction'>fraction</Radio>
+                    </HStack>
+                </RadioGroup>
                 <ButtonGroup display='flex' justifyContent='flex-left' paddingTop={2}>
-                    <Button colorScheme='teal' onClick={() => createNewUnit()}>
+                    <Button
+                        colorScheme='teal'
+                        onClick={() => {
+                            try {
+                                const parsedForm = formSchema.validateSync({
+                                    shortSingular,
+                                    shortPlural,
+                                    longSingular,
+                                    longPlural,
+                                    preferredNumberFormat,
+                                });
+                                createNewUnit({
+                                    variables: {
+                                        record: {
+                                            ...parsedForm,
+                                            preferredNumberFormat:
+                                                parsedForm.preferredNumberFormat as EnumUnitPreferredNumberFormat,
+                                        },
+                                    },
+                                });
+                            } catch (e: unknown) {
+                                setHasError(true);
+                                if (e instanceof ValidationError) {
+                                    toast({
+                                        title: 'Error creating new unit',
+                                        description: e.message,
+                                        status: 'error',
+                                        position: 'top',
+                                        duration: 3000,
+                                        isClosable: false,
+                                    });
+                                }
+                            }
+                        }}
+                    >
                         Save
                     </Button>
                 </ButtonGroup>

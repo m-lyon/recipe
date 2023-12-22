@@ -7,13 +7,13 @@ import { GetUnitsQuery, Unit } from '../../../../../__generated__/graphql';
 import { DropdownItem } from '../../../../../components/DropdownItem';
 import { useNavigatableList } from '../../../hooks/useNavigatableList';
 
-function getDisplayValue(item: UnitSuggestion, isPlural: boolean): string {
+function getDisplayValue(item: UnitSuggestion, isPlural: boolean, short: boolean): string {
     if (typeof item.value === 'string') {
         return item.value;
     } else if (isPlural) {
-        return item.value.longPlural;
+        return short ? item.value.shortPlural : item.value.longPlural;
     } else {
-        return item.value.longSingular;
+        return short ? item.value.shortSingular : item.value.longSingular;
     }
 }
 
@@ -60,11 +60,7 @@ export function UnitDropdownList(props: Props) {
                 onOpen();
             }
         } else {
-            if (props.isPlural) {
-                props.setItem(item.value.shortPlural, item.value._id);
-            } else {
-                props.setItem(item.value.shortSingular, item.value._id);
-            }
+            props.setItem(getDisplayValue(item, props.isPlural, true), item.value._id);
         }
     };
 
@@ -98,7 +94,7 @@ export function UnitDropdownList(props: Props) {
             <DropdownItem
                 key={index}
                 color={item.colour}
-                value={getDisplayValue(item, props.isPlural)}
+                value={getDisplayValue(item, props.isPlural, false)}
                 onClick={() => {
                     handleSelect(item);
                     props.previewRef?.current?.focus();
