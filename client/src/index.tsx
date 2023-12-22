@@ -23,7 +23,7 @@ const client = new ApolloClient({
 
 const routes = createBrowserRouter(
     createRoutesFromElements(
-        <Route path='/' errorElement={<ErrorBoundary />}>
+        <Route path='/recipe' errorElement={<ErrorBoundary />}>
             <Route element={<Navbar />}>
                 <Route index element={<Home />} />
                 <Route path='recipe/:recipeId' element={<ViewRecipe />} />

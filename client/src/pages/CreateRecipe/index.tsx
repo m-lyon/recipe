@@ -113,7 +113,7 @@ export function CreateRecipe() {
                         duration: 1500,
                         isClosable: true,
                     });
-                    setTimeout(() => navigate('/'), 1500);
+                    setTimeout(() => navigate('/recipe'), 1500);
                 })
                 .catch((error) => {
                     toast({

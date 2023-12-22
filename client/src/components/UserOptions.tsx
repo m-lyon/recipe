@@ -52,7 +52,7 @@ export function UserOptions() {
             const { data } = await logout();
             if (data) {
                 setUserContext(false);
-                navigate('/');
+                navigate('/recipe');
             }
         } catch (err) {
             if (err instanceof Error) {
@@ -81,7 +81,13 @@ export function UserOptions() {
     } else {
         return (
             <Stack flex={{ base: 1, md: 0 }} justify={'flex-end'} direction={'row'} spacing={6}>
-                <Button as={'a'} fontSize={'sm'} fontWeight={400} variant={'link'} href={'/login'}>
+                <Button
+                    as={'a'}
+                    fontSize={'sm'}
+                    fontWeight={400}
+                    variant={'link'}
+                    href={'/recipe/login'}
+                >
                     Sign In
                 </Button>
                 <Button
@@ -90,7 +96,7 @@ export function UserOptions() {
                     fontSize={'sm'}
                     fontWeight={600}
                     colorScheme='teal'
-                    href={'/signup'}
+                    href={'/recipe/signup'}
                 >
                     Sign Up
                 </Button>

@@ -236,17 +236,17 @@ interface NavItem {
 const USER_NAV_ITEMS: Array<NavItem> = [
     {
         label: 'Create',
-        href: '/create',
+        href: '/recipe/create',
     },
     {
         label: 'Search',
-        href: '/search',
+        href: '/recipe/search',
     },
 ];
 
 const PUBLIC_NAV_ITEMS: Array<NavItem> = [
     {
         label: 'Search',
-        href: '/search',
+        href: '/recipe/search',
     },
 ];

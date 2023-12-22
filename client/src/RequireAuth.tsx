@@ -9,5 +9,5 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
         return <div>Loading...</div>;
     }
 
-    return userContext === false ? <Navigate to='/' /> : children;
+    return userContext === false ? <Navigate to='/recipe' /> : children;
 }

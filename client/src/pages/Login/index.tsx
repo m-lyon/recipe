@@ -40,7 +40,7 @@ export function Login() {
             const { data } = await login({ variables: { email, password } });
             if (data?.login) {
                 setUserContext(data.login);
-                navigate('/');
+                navigate('/recipe');
             } else {
                 setUserContext(false);
             }
