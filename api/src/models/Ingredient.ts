@@ -3,7 +3,9 @@ import { composeMongoose } from 'graphql-compose-mongoose';
 
 export interface Ingredient extends Document {
     name: string;
+    pluralName: string;
     density?: number;
+    isCountable: boolean;
 }
 
 const ingredientSchema = new Schema<Ingredient>({
@@ -13,9 +15,19 @@ const ingredientSchema = new Schema<Ingredient>({
         unique: true,
         set: (value: string) => value.toLowerCase(),
     },
+    pluralName: {
+        type: String,
+        required: true,
+        unique: true,
+        set: (value: string) => value.toLowerCase(),
+    },
     density: {
         type: Number,
         required: false,
+    },
+    isCountable: {
+        type: Boolean,
+        required: true,
     },
 });
 

@@ -15,6 +15,8 @@ export const GET_INGREDIENTS = gql(`
         ingredientMany {
             _id
             name
+            pluralName
+            isCountable
         }
     }
 `);
@@ -63,9 +65,17 @@ export function IngredientDropdown(props: Props) {
                 );
             case 'name':
                 if (!ingredientData) {
+                    console.log('no ingredient data');
                     return [];
                 }
-                return <IngredientNameDropdownList data={ingredientData} {...dropdownProps} />;
+                return (
+                    <IngredientNameDropdownList
+                        data={ingredientData}
+                        isPlural={isPlural(item.quantity)}
+                        hasUnit={item.unit.value !== null}
+                        {...dropdownProps}
+                    />
+                );
             case 'prepMethod':
                 if (!prepMethodData) {
                     return [];

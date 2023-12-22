@@ -10,18 +10,26 @@ export const mockGetIngredients = {
                 {
                     _id: '60f4d2e5c3d5a0a4f1b9c0e8',
                     name: 'apple',
+                    pluralName: 'apples',
+                    isCountable: true,
                 },
                 {
                     _id: '60f4d2e5c3d5a0a4f1b9c0e9',
                     name: 'chicken',
+                    pluralName: 'chickens',
+                    isCountable: false,
                 },
                 {
                     _id: '60f4d2e5c3d5a0a4f1b9c0ea',
                     name: 'carrot',
+                    pluralName: 'carrots',
+                    isCountable: true,
                 },
                 {
                     _id: '60f4d2e5c3d5a0a4f1b9c0f0',
                     name: 'iceberg lettuce',
+                    pluralName: 'iceberg lettuces',
+                    isCountable: false,
                 },
             ],
         },

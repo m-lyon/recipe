@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, FormControl, Stack } from '@chakra-ui/react';
+import { Button, ButtonGroup, Checkbox, FormControl, Stack } from '@chakra-ui/react';
 import { TextInput } from '../../../../../components/TextInput';
 import { NewPopover } from './NewPopover';
 import { NewFormProps } from '../../../types';
@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { useToast } from '@chakra-ui/react';
 import { ApolloError } from '@apollo/client';
-import { object, string, number, ValidationError } from 'yup';
+import { object, string, number, boolean, ValidationError } from 'yup';
 
 const CREATE_NEW_INGREDIENT_MUTATION = gql(`
     mutation CreateIngredient($record: CreateOneIngredientInput!) {
@@ -30,6 +30,8 @@ function formatError(error: ApolloError) {
 function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewFormProps) {
     const [hasError, setHasError] = useState(false);
     const [name, setName] = useState('');
+    const [pluralName, setPluralName] = useState('');
+    const [isCountable, setIsCountable] = useState(false);
     const [density, setDensity] = useState('');
     const toast = useToast();
     const [createNewIngredient] = useMutation(CREATE_NEW_INGREDIENT_MUTATION, {
@@ -57,14 +59,16 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
                 status: 'error',
                 position: 'top',
                 duration: 3000,
-                isClosable: true,
+                isClosable: false,
             });
         },
         refetchQueries: ['GetIngredients'],
     });
 
     const formSchema = object({
-        name: string().required(),
+        name: string().required('Name is required'),
+        pluralName: string().required('Plural name is required'),
+        isCountable: boolean().required(),
         density: number(),
     });
 
@@ -82,6 +86,16 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
                     }}
                 />
                 <TextInput
+                    placeholder='Plural name'
+                    id='plural-name'
+                    value={pluralName}
+                    onChange={(e) => {
+                        setPluralName(e.target.value.toLowerCase());
+                        hasError && setHasError(false);
+                    }}
+                />
+                <Checkbox onChange={(e) => setIsCountable(e.target.checked)}>Countable</Checkbox>
+                <TextInput
                     placeholder='Density (g/ml)'
                     id='density'
                     value={density ? density : ''}
@@ -97,6 +111,8 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
                             try {
                                 const parsedForm = formSchema.validateSync({
                                     name,
+                                    pluralName,
+                                    isCountable,
                                     density: density === '' ? undefined : density,
                                 });
                                 createNewIngredient({ variables: { record: parsedForm } });
@@ -109,7 +125,7 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
                                         status: 'error',
                                         position: 'top',
                                         duration: 3000,
-                                        isClosable: true,
+                                        isClosable: false,
                                     });
                                 }
                             }

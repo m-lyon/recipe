@@ -93,9 +93,9 @@ export async function populateIngredients() {
         await Ingredient.collection.drop();
 
         const dummyIngredients = [
-            { name: 'onion' },
-            { name: 'tomato', density: 0.8 },
-            { name: 'chicken', density: 1.0 },
+            { name: 'onion', pluralName: 'onions', isCountable: true },
+            { name: 'tomato', pluralName: 'tomatoes', isCountable: true, density: 0.8 },
+            { name: 'chicken', pluralName: 'chickens', isCountable: false, density: 1.0 },
         ];
         const createdIngredients = await Ingredient.create(dummyIngredients);
 
