@@ -1,4 +1,4 @@
-import { WHITELIST, SESSION_SECRET, PORT, DEV } from './constants.js';
+import { WHITELIST, SESSION_SECRET, SESSION_URI, PORT, DEV } from './constants.js';
 import './utils/connectdb.js';
 import './strategies/GraphQLLocalStrategy.js';
 
@@ -7,13 +7,14 @@ import express from 'express';
 import session from 'express-session';
 import passport from 'passport';
 import bodyParser from 'body-parser';
+import MongoStore from 'connect-mongo';
 
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import { expressMiddleware } from '@apollo/server/express4';
 import { buildContext } from 'graphql-passport';
 import { ApolloServer } from '@apollo/server';
 import { schema } from './schema/index.js';
-import { createHttpServer, createHttpsServer } from './utils.js';
+import { createHttpServer, createHttpsServer } from './utils/connect.js';
 
 const app = express();
 const httpServer = DEV ? createHttpServer(app) : createHttpsServer(app);
@@ -32,7 +33,14 @@ const corsOptions = {
     credentials: true,
 };
 await server.start();
-app.use(session({ secret: SESSION_SECRET, resave: false, saveUninitialized: false }));
+app.use(
+    session({
+        store: MongoStore.create({ mongoUrl: SESSION_URI }),
+        secret: SESSION_SECRET,
+        resave: false,
+        saveUninitialized: false,
+    })
+);
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(

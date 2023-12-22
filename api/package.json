@@ -8,8 +8,9 @@
   },
   "scripts": {
     "compile": "tsc",
-    "start": "npm run compile && NODE_ENV=production node ./dist/index.js",
+    "start": "npm run compile && node ./dist/index.js",
     "dev": "NODE_ENV=development nodemon -e ts --exec \"npm run start\"",
+    "prod": "NODE_ENV=production npm run start",
     "seed": "npm run compile && NODE_ENV=development node ./dist/scripts/seedDatabase.js",
     "reset_db": "npm run compile && NODE_ENV=development node ./dist/scripts/resetDatabase.js"
   },
@@ -21,6 +22,7 @@
     "@apollo/server": "^4.7.4",
     "@graphql-tools/resolvers-composition": "^7.0.0",
     "body-parser": "^1.20.2",
+    "connect-mongo": "^5.1.0",
     "cors": "^2.8.5",
     "dotenv-flow": "^3.3.0",
     "express": "^4.18.2",
