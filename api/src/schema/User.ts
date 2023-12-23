@@ -4,9 +4,7 @@ UserTC.addResolver({
     name: 'currentUser',
     type: UserTC,
     resolve: ({ source, args, context }) => {
-        console.log(context.isAuthenticated());
         const user = context.getUser();
-        console.log('returning user', user);
         return user;
     },
 });

@@ -11,6 +11,7 @@ import { Outlet } from 'react-router-dom';
 export function Navbar() {
     const { isOpen, onToggle } = useDisclosure();
     const [userContext] = useContext(UserContext);
+    const isLoggedIn = userContext !== null && userContext !== false;
 
     return (
         <>
@@ -49,20 +50,20 @@ export function Navbar() {
                             fontFamily={'heading'}
                             color={useColorModeValue('gray.800', 'white')}
                             _hover={{ textDecoration: 'none' }}
-                            href={'/'}
+                            href={'/recipe'}
                         >
-                            Recipes
+                            Home
                         </Link>
 
                         <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
-                            <DesktopNav isLoggedIn={userContext !== null} />
+                            <DesktopNav isLoggedIn={isLoggedIn} />
                         </Flex>
                     </Flex>
                     <UserOptions />
                 </Flex>
 
                 <Collapse in={isOpen} animateOpacity>
-                    <MobileNav isLoggedIn={userContext !== null} />
+                    <MobileNav isLoggedIn={isLoggedIn} />
                 </Collapse>
             </Box>
             <Outlet />

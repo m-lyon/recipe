@@ -11,6 +11,8 @@ import { UserProvider } from './context/UserContext';
 import { ErrorBoundary } from './pages/Error';
 import { RequireAuth } from './RequireAuth';
 import { Navbar } from './components/Navbar';
+import { Signup } from './pages/Signup';
+import { Search } from './pages/Search';
 
 const domNode = document.getElementById('root')!;
 const root = createRoot(domNode);
@@ -37,6 +39,8 @@ const routes = createBrowserRouter(
                 />
             </Route>
             <Route path='login' element={<Login />} />
+            <Route path='search' element={<Search />} />
+            <Route path='signup' element={<Signup />} />
         </Route>
     )
 );
