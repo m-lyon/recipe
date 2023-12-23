@@ -48,7 +48,6 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
                 status: 'success',
                 position: 'top',
                 duration: 3000,
-                isClosable: true,
             });
         },
         onError: (error) => {
@@ -59,7 +58,6 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
                 status: 'error',
                 position: 'top',
                 duration: 3000,
-                isClosable: false,
             });
         },
         refetchQueries: ['GetIngredients'],
@@ -125,7 +123,6 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
                                         status: 'error',
                                         position: 'top',
                                         duration: 3000,
-                                        isClosable: false,
                                     });
                                 }
                             }

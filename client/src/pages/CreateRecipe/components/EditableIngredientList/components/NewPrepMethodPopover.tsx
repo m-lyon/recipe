@@ -49,7 +49,6 @@ function NewPrepMethodForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
                 status: 'success',
                 position: 'top',
                 duration: 3000,
-                isClosable: true,
             });
         },
         onError: (error) => {
@@ -59,7 +58,6 @@ function NewPrepMethodForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
                 status: 'error',
                 position: 'top',
                 duration: 3000,
-                isClosable: true,
             });
         },
         refetchQueries: ['GetPrepMethods'],

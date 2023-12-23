@@ -562,7 +562,6 @@ export function useIngredientList(): UseIngredientListReturnType {
                         description: e.message,
                         status: 'error',
                         duration: 2000,
-                        isClosable: false,
                     });
                 }
             }

@@ -21,7 +21,7 @@ export function RecipeCard(props: Props) {
                 <Text>{tagsStr}</Text>
             </CardBody>
             <CardFooter>
-                <Button as={'a'} href={`/recipe/${recipeId}`}>
+                <Button as={'a'} href={`/recipe/view/${recipeId}`}>
                     View here
                 </Button>
             </CardFooter>

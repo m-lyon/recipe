@@ -51,7 +51,6 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewFormProps) {
                 status: 'success',
                 position: 'top',
                 duration: 3000,
-                isClosable: true,
             });
         },
         onError: (error) => {
@@ -61,7 +60,6 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewFormProps) {
                 status: 'error',
                 position: 'top',
                 duration: 3000,
-                isClosable: false,
             });
             setHasError(true);
         },
@@ -155,7 +153,6 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewFormProps) {
                                         status: 'error',
                                         position: 'top',
                                         duration: 3000,
-                                        isClosable: false,
                                     });
                                 }
                             }

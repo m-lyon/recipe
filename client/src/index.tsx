@@ -28,7 +28,7 @@ const routes = createBrowserRouter(
         <Route path='/recipe' errorElement={<ErrorBoundary />}>
             <Route element={<Navbar />}>
                 <Route index element={<Home />} />
-                <Route path='recipe/:recipeId' element={<ViewRecipe />} />
+                <Route path='view/:recipeId' element={<ViewRecipe />} />
                 <Route
                     path='create'
                     element={
