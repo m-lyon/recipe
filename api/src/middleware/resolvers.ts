@@ -1,7 +1,7 @@
 import { Recipe } from '../models/Recipe.js';
 
 export const isAuthenticated = () => (next) => (resolveParams) => {
-    if (!resolveParams.root.context.getUser()) {
+    if (!resolveParams.context.getUser()) {
         throw new Error('You are not authenticated!');
     }
     return next(resolveParams);
