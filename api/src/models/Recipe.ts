@@ -45,7 +45,7 @@ export interface Recipe extends Document {
 }
 
 const recipeSchema = new Schema<Recipe>({
-    title: { type: String, required: true },
+    title: { type: String, required: true, unique: true },
     tags: {
         type: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
         validate: tagValidator,
