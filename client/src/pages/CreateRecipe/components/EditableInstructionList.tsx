@@ -1,7 +1,7 @@
 import { OrderedList, ListItem } from '@chakra-ui/react';
-import { EditableItem } from '../../../../../components/EditableItem';
-import { UseItemListReturnType } from '../../../hooks/useItemList';
-import { useEnterFocus } from '../../../../../hooks/useEnterCapture';
+import { EditableItem } from '../../../components/EditableItem';
+import { UseItemListReturnType } from '../hooks/useItemList';
+import { useEnterFocus } from '../../../hooks/useEnterCapture';
 import { RefObject } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 
