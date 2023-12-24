@@ -66,17 +66,13 @@ export const EditableItem = forwardRef<HTMLInputElement, Props>(function Editabl
             fontSize={fontSize}
             placeholder={defaultStr}
         >
-            <EditablePreview
-                ref={ref}
-                display={'inline'}
-                paddingTop={'0px'}
-                verticalAlign={'top'}
-            />
+            <EditablePreview ref={ref} display={'inline'} verticalAlign={'top'} />
             <EditableInput
                 ref={inputRef}
                 value={item.value}
                 _focusVisible={{ outline: 'none' }}
                 display={'inline'}
+                paddingTop={'0px'}
             />
         </Editable>
     );
