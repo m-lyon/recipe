@@ -7,7 +7,7 @@ import { GetUnitsQuery, Unit } from '../../../../../__generated__/graphql';
 import { DropdownItem } from '../../../../../components/DropdownItem';
 import { useNavigatableList } from '../../../hooks/useNavigatableList';
 
-function getDisplayValue(item: UnitSuggestion, isPlural: boolean, short: boolean): string {
+export function getDisplayValue(item: UnitSuggestion, isPlural: boolean, short: boolean): string {
     if (typeof item.value === 'string') {
         return item.value;
     } else if (isPlural) {
