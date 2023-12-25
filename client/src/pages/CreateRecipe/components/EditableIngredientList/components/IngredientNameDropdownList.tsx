@@ -32,7 +32,7 @@ export interface IngredientSuggestion {
 }
 interface Props {
     strValue: string;
-    data: GetIngredientsQuery;
+    data: GetIngredientsQuery['ingredientMany'];
     plural: boolean;
     hasUnit: boolean;
     setItem: (value: string | null, _id?: string) => void;
@@ -48,8 +48,11 @@ export function IngredientNameDropdownList(props: Props) {
             previewRef.current?.focus();
         },
     });
-    const filter = (data: GetIngredientsQuery, value: string): IngredientSuggestion[] => {
-        const items = matchSorter<Ingredient>(data.ingredientMany, value, {
+    const filter = (
+        data: GetIngredientsQuery['ingredientMany'],
+        value: string
+    ): IngredientSuggestion[] => {
+        const items = matchSorter<Ingredient>(data, value, {
             keys: ['name', 'pluralName'],
         }).map((item) => ({ value: item, colour: undefined })) as IngredientSuggestion[];
         if (items.length === 0) {

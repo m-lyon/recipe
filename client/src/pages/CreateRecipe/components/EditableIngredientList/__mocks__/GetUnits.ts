@@ -1,4 +1,4 @@
-import { GET_UNITS } from '../components/EditableIngredient';
+import { GET_UNITS } from '../../../hooks/useIngredientList';
 
 export const mockGetUnits = {
     request: {
@@ -17,11 +17,11 @@ export const mockGetUnits = {
                 },
                 {
                     _id: '60f4d2e5c3d5a0a4f1b9c0f3',
-                    shortSingular: 'tbsp',
-                    shortPlural: 'tbsp',
-                    longSingular: 'tablespoon',
-                    longPlural: 'tablespoons',
-                    preferredNumberFormat: 'fraction',
+                    shortSingular: 'g',
+                    shortPlural: 'g',
+                    longSingular: 'gram',
+                    longPlural: 'grams',
+                    preferredNumberFormat: 'decimal',
                 },
                 {
                     _id: '60f4d2e5c3d5a0a4f1b9c0f4',

@@ -1,46 +1,22 @@
 import { Box, List } from '@chakra-ui/react';
-import { useQuery } from '@apollo/client';
 import { motion, LayoutGroup } from 'framer-motion';
 import { MutableRefObject } from 'react';
 import { EditableIngredient, IngredientActionHandler } from '../../../hooks/useIngredientList';
-import { gql } from '../../../../../__generated__/gql';
+import { QueryData } from '../../../hooks/useIngredientList';
 import { IngredientNameDropdownList } from './IngredientNameDropdownList';
 import { UnitDropdownList } from './UnitDropdownList';
 import { PrepMethodDropdownList } from './PrepMethodDropdownList';
-import { GetUnitsQuery } from '../../../../../__generated__/graphql';
 import { isPlural } from '../../../../../utils/plural';
-
-export const GET_INGREDIENTS = gql(`
-    query GetIngredients {
-        ingredientMany {
-            _id
-            name
-            pluralName
-            isCountable
-        }
-    }
-`);
-
-export const GET_PREP_METHODS = gql(`
-    query GetPrepMethods {
-        prepMethodMany {
-            _id
-            value
-        }
-    }
-`);
 
 interface Props {
     item: EditableIngredient;
     actionHandler: IngredientActionHandler;
-    unitData?: GetUnitsQuery;
+    queryData: QueryData;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
 }
 export function IngredientDropdown(props: Props) {
-    const { item, actionHandler, unitData, inputRef, previewRef } = props;
-    const { data: ingredientData } = useQuery(GET_INGREDIENTS);
-    const { data: prepMethodData } = useQuery(GET_PREP_METHODS);
+    const { item, actionHandler, queryData, inputRef, previewRef } = props;
 
     const currentValue = actionHandler.get.currentStateValue();
 
@@ -53,36 +29,36 @@ export function IngredientDropdown(props: Props) {
         };
         switch (item.state) {
             case 'unit':
-                if (!unitData) {
+                if (!queryData.unit) {
                     return [];
                 }
                 return (
                     <UnitDropdownList
-                        data={unitData}
+                        data={queryData.unit}
                         isPlural={isPlural(item.quantity)}
                         {...dropdownProps}
                     />
                 );
             case 'name':
-                if (!ingredientData) {
+                if (!queryData.ingredient) {
                     console.log('no ingredient data');
                     return [];
                 }
                 return (
                     <IngredientNameDropdownList
-                        data={ingredientData}
+                        data={queryData.ingredient}
                         plural={isPlural(item.quantity)}
                         hasUnit={item.unit.value !== null}
                         {...dropdownProps}
                     />
                 );
             case 'prepMethod':
-                if (!prepMethodData) {
+                if (!queryData.prepMethod) {
                     return [];
                 }
                 return (
                     <PrepMethodDropdownList
-                        data={prepMethodData}
+                        data={queryData.prepMethod}
                         {...dropdownProps}
                         handleSubmit={() => {
                             actionHandler.set.show.off();

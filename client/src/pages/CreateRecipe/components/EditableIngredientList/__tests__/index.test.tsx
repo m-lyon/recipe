@@ -213,7 +213,7 @@ describe('EditableIngredient Unit Keyboard', () => {
 
         // Expect
         expect(screen.getByText('teaspoon')).toBeInTheDocument();
-        expect(screen.getByText('tablespoon')).toBeInTheDocument();
+        expect(screen.getByText('gram')).toBeInTheDocument();
         expect(screen.getByText('ounce')).toBeInTheDocument();
         expect(screen.getByText('cup')).toBeInTheDocument();
     });
@@ -277,6 +277,24 @@ describe('EditableIngredient Unit Keyboard', () => {
         // Expect
         expect(screen.getByText('Add new unit')).toBeInTheDocument();
         expect(screen.getByText('Save')).toBeInTheDocument();
+    });
+
+    it('should reset back to the quantity state', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        const quantityInput = screen.getByText('Enter ingredient');
+
+        await user.click(quantityInput);
+        await user.keyboard('{1}{ }');
+        await user.keyboard('{g}{ }');
+        await user.keyboard('{Backspace}{Backspace}');
+
+        // Expect
+        expect(screen.queryByText('chicken')).toBeNull();
+        expect(screen.queryByText('1 g')).toBeNull();
     });
 });
 describe('EditableIngredient Unit Spacebar', () => {

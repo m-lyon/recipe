@@ -12,7 +12,7 @@ import { NewPrepMethodPopover } from './NewPrepMethodPopover';
 
 interface Props {
     strValue: string;
-    data: GetPrepMethodsQuery;
+    data: GetPrepMethodsQuery['prepMethodMany'];
     setItem: (value: string | null, _id?: string) => void;
     handleSubmit: () => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
@@ -25,8 +25,8 @@ export function PrepMethodDropdownList(props: Props) {
     const { isOpen, onOpen, onClose } = useDisclosure({
         onClose: () => previewRef.current?.focus(),
     });
-    const filter = (data: GetPrepMethodsQuery, value: string): Suggestion[] => {
-        const items = matchSorter<PrepMethod>(data.prepMethodMany, value, {
+    const filter = (data: GetPrepMethodsQuery['prepMethodMany'], value: string): Suggestion[] => {
+        const items = matchSorter<PrepMethod>(data, value, {
             keys: ['value'],
         }) as Suggestion[];
         if (value === '') {

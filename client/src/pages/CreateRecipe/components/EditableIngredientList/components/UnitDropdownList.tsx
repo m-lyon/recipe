@@ -23,7 +23,7 @@ export interface UnitSuggestion {
 }
 interface Props {
     strValue: string;
-    data: GetUnitsQuery;
+    data: GetUnitsQuery['unitMany'];
     isPlural: boolean;
     setItem: (value: string | null, _id?: string) => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
@@ -38,8 +38,8 @@ export function UnitDropdownList(props: Props) {
         },
     });
 
-    const filter = (data: GetUnitsQuery, value: string): UnitSuggestion[] => {
-        const items = matchSorter<Unit>(data.unitMany, value, {
+    const filter = (data: GetUnitsQuery['unitMany'], value: string): UnitSuggestion[] => {
+        const items = matchSorter<Unit>(data, value, {
             keys: ['longSingular', 'longPlural'],
         }).map((item) => ({ value: item, colour: undefined })) as UnitSuggestion[];
         if (value === '') {

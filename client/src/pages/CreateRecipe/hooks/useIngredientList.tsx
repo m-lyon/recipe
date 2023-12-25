@@ -2,8 +2,43 @@ import { useReducer } from 'react';
 import { produce } from 'immer';
 import { useToast } from '@chakra-ui/react';
 import { isFraction, formatFraction } from '../../../utils/number';
+import { gql } from '../../../__generated__/';
+import { useQuery } from '@apollo/client';
+import { isPlural } from '../../../utils/plural';
+import { GetIngredientsQuery, GetPrepMethodsQuery } from '../../../__generated__/graphql';
+import { GetUnitsQuery } from '../../../__generated__/graphql';
 
 export const DEFAULT_INGREDIENT_STR = 'Enter ingredient';
+export const GET_UNITS = gql(`
+    query GetUnits {
+        unitMany {
+            _id
+            shortSingular
+            shortPlural
+            longSingular
+            longPlural
+            preferredNumberFormat
+        }
+    }
+`);
+export const GET_INGREDIENTS = gql(`
+    query GetIngredients {
+        ingredientMany {
+            _id
+            name
+            pluralName
+            isCountable
+        }
+    }
+`);
+export const GET_PREP_METHODS = gql(`
+    query GetPrepMethods {
+        prepMethodMany {
+            _id
+            value
+        }
+    }
+`);
 
 function validateQuantity(char: string, item: EditableIngredient) {
     if (char === ' ' && item.quantity !== null) {
@@ -37,6 +72,43 @@ function handleQuantityChange(
             actionHandler.setShow.on();
         } else {
             actionHandler.quantity.append(char);
+        }
+    }
+}
+
+function handleUnitChange(
+    char: NewChar,
+    item: EditableIngredient,
+    unitData: GetUnitsQuery | undefined,
+    actionHandler: InternalActionHandler
+) {
+    if (typeof char === 'number') {
+        actionHandler.truncate(char);
+    } else {
+        if (/^[a-zA-Z ]$/.test(char)) {
+            if (char === ' ' && item.unit.value !== null) {
+                if (!unitData) {
+                    throw new Error('Could not load units');
+                }
+                const unitValue = item.unit.value;
+                for (const unit of unitData.unitMany) {
+                    if (isPlural(item.quantity)) {
+                        if (unit.longPlural === unitValue || unit.shortPlural === unitValue) {
+                            actionHandler.unit.set(unit.shortPlural, unit._id);
+                            return actionHandler.incrementState();
+                        }
+                    } else {
+                        if (unit.longSingular === unitValue || unit.shortSingular === unitValue) {
+                            actionHandler.unit.set(unit.shortSingular, unit._id);
+                            return actionHandler.incrementState();
+                        }
+                    }
+                }
+            } else {
+                actionHandler.unit.append(char);
+            }
+        } else {
+            throw new Error(`Only letters and spaces are allowed when inputting unit.`);
         }
     }
 }
@@ -470,13 +542,22 @@ export interface IngredientActionHandler {
     handleChange: (value: string) => void;
     incrementState: () => void;
 }
+export interface QueryData {
+    unit?: GetUnitsQuery['unitMany'];
+    ingredient?: GetIngredientsQuery['ingredientMany'];
+    prepMethod?: GetPrepMethodsQuery['prepMethodMany'];
+}
 export interface UseIngredientListReturnType {
     state: IngredientState;
     actionHandler: IngredientActionHandler;
     setFinished: (finished: FinishedIngredient[]) => void;
     removeFinished: (index: number) => void;
+    queryData: QueryData;
 }
 export function useIngredientList(): UseIngredientListReturnType {
+    const { data: unitData } = useQuery(GET_UNITS);
+    const { data: ingredientData } = useQuery(GET_INGREDIENTS);
+    const { data: prepMethodData } = useQuery(GET_PREP_METHODS);
     const [state, dispatch] = useReducer(reducer, {
         finished: [],
         editable: getEmptyIngredient(),
@@ -542,6 +623,7 @@ export function useIngredientList(): UseIngredientListReturnType {
                 } else {
                     editableActions[state.editable.state].set(value, _id);
                 }
+                console.log('currentStateItem.editableActions.incrementState');
                 editableActions.incrementState();
             },
             show: editableActions.setShow,
@@ -549,10 +631,18 @@ export function useIngredientList(): UseIngredientListReturnType {
         const handleChange = (value: string) => {
             const diff = getTextDiff(value, get.string());
             try {
-                if (state.editable.state === 'quantity') {
-                    return handleQuantityChange(diff, state.editable, editableActions);
+                switch (state.editable.state) {
+                    case 'quantity':
+                        return handleQuantityChange(diff, state.editable, editableActions);
+                    case 'unit':
+                        return handleUnitChange(diff, state.editable, unitData, editableActions);
+                    case 'name':
+                        return handleOtherChange(state.editable.state, diff, editableActions);
+                    case 'prepMethod':
+                        return handleOtherChange(state.editable.state, diff, editableActions);
+                    default:
+                        throw new Error(`Unknown state: ${state.editable.state}`);
                 }
-                return handleOtherChange(state.editable.state, diff, editableActions);
             } catch (e: unknown) {
                 if (e instanceof Error) {
                     toast({
@@ -581,6 +671,17 @@ export function useIngredientList(): UseIngredientListReturnType {
     const removeFinished = (index: number) => {
         return dispatch({ type: 'remove_finished_item', index });
     };
+    const queryData = {
+        unit: unitData?.unitMany,
+        ingredient: ingredientData?.ingredientMany,
+        prepMethod: prepMethodData?.prepMethodMany,
+    };
 
-    return { state, actionHandler, setFinished, removeFinished };
+    return {
+        state,
+        actionHandler,
+        setFinished,
+        removeFinished,
+        queryData,
+    };
 }

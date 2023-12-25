@@ -7,7 +7,7 @@ import { FinishedIngredient } from './components/FinishedIngredient';
 import { FinishedIngredient as FinishedIngredientType } from '../../hooks/useIngredientList';
 
 export function EditableIngredientList(props: UseIngredientListReturnType) {
-    const { state, actionHandler, setFinished, removeFinished } = props;
+    const { state, actionHandler, setFinished, removeFinished, queryData } = props;
 
     const finishedIngredients = state.finished.map(
         (item: FinishedIngredientType, index: number) => {
@@ -37,7 +37,11 @@ export function EditableIngredientList(props: UseIngredientListReturnType) {
                         <AnimatePresence>{finishedIngredients}</AnimatePresence>
                     </Reorder.Group>
                     <motion.div layout='position' transition={{ duration: 0.3 }}>
-                        <EditableIngredient item={state.editable} actionHandler={actionHandler} />
+                        <EditableIngredient
+                            item={state.editable}
+                            actionHandler={actionHandler}
+                            queryData={queryData}
+                        />
                     </motion.div>
                 </LayoutGroup>
             </VStack>

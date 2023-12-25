@@ -1,4 +1,4 @@
-import { GET_INGREDIENTS } from '../components/IngredientDropdown';
+import { GET_INGREDIENTS } from '../../../hooks/useIngredientList';
 
 export const mockGetIngredients = {
     request: {
