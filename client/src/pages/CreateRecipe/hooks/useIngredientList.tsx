@@ -529,7 +529,6 @@ export function useIngredientList(): UseIngredientListReturnType {
         };
         const handleSubmit = () => {
             if (state.editable.state !== 'prepMethod') {
-                console.log('ingredient not finished, resetting.');
                 editableActions.reset();
             } else {
                 editableActions.setShow.off();
@@ -548,7 +547,6 @@ export function useIngredientList(): UseIngredientListReturnType {
             show: editableActions.setShow,
         };
         const handleChange = (value: string) => {
-            console.log('current state', state.editable.state);
             const diff = getTextDiff(value, get.string());
             try {
                 if (state.editable.state === 'quantity') {
