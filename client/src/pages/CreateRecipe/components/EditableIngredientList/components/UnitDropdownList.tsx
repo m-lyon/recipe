@@ -17,7 +17,7 @@ export function getDisplayValue(item: UnitSuggestion, isPlural: boolean, short: 
     }
 }
 
-interface UnitSuggestion {
+export interface UnitSuggestion {
     value: string | Unit;
     colour?: string;
 }

@@ -26,7 +26,7 @@ function getDisplayValue(item: IngredientSuggestion, plural: boolean, hasUnit: b
     }
 }
 
-interface IngredientSuggestion {
+export interface IngredientSuggestion {
     value: string | Ingredient;
     colour?: string;
 }

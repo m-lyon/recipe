@@ -1,14 +1,15 @@
 import { Button, ButtonGroup, FormControl, FormHelperText, HStack } from '@chakra-ui/react';
 import { Radio, RadioGroup, Stack } from '@chakra-ui/react';
 import { TextInput } from '../../../../../components/TextInput';
-import { NewPopover } from './NewPopover';
 import { gql } from '../../../../../__generated__';
 import { useState } from 'react';
 import { ApolloError, useMutation } from '@apollo/client';
-import { NewFormProps } from '../../../types';
 import { useToast } from '@chakra-ui/react';
 import { object, string, ValidationError } from 'yup';
 import { EnumUnitPreferredNumberFormat } from '../../../../../__generated__/graphql';
+import { PopoverHeader, PopoverArrow } from '@chakra-ui/react';
+import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
+import { UnitSuggestion } from './UnitDropdownList';
 
 const CREATE_NEW_UNIT_MUTATION = gql(`
     mutation CreateUnit($record: CreateOneUnitInput!) {
@@ -16,6 +17,10 @@ const CREATE_NEW_UNIT_MUTATION = gql(`
             record {
                 _id
                 longSingular
+                longPlural
+                shortSingular
+                shortPlural
+                preferredNumberFormat
             }
         }
     }
@@ -28,7 +33,12 @@ function formatError(error: ApolloError) {
     return error.message;
 }
 
-function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewFormProps) {
+interface NewUnitFormProps {
+    firstFieldRef: React.MutableRefObject<HTMLInputElement | null>;
+    onClose: () => void;
+    handleSelect: (item: UnitSuggestion) => void;
+}
+function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewUnitFormProps) {
     const [hasError, setHasError] = useState(false);
     const toast = useToast();
     const [shortSingular, setShortSingular] = useState('');
@@ -41,13 +51,12 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewFormProps) {
         onCompleted: (data) => {
             onClose();
             handleSelect({
-                value: data!.unitCreateOne!.record!.longSingular,
+                value: data!.unitCreateOne!.record!,
                 colour: undefined,
-                _id: data?.unitCreateOne?.record?._id,
             });
             toast({
                 title: 'Unit created',
-                description: `Unit ${data?.unitCreateOne?.record?.longSingular} created`,
+                description: `${data?.unitCreateOne?.record?.longSingular} created`,
                 status: 'success',
                 position: 'top',
                 duration: 3000,
@@ -166,6 +175,13 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewFormProps) {
     );
 }
 
-export function NewUnitPopover(props: NewFormProps) {
-    return <NewPopover NewForm={NewUnitForm} formProps={props} title='Add new unit' />;
+export function NewUnitPopover(props: NewUnitFormProps) {
+    return (
+        <PopoverContent paddingRight={4} paddingBottom={3} paddingLeft={2}>
+            <PopoverArrow />
+            <PopoverCloseButton />
+            <PopoverHeader border={'hidden'}>Add new unit</PopoverHeader>
+            <NewUnitForm {...props} />
+        </PopoverContent>
+    );
 }

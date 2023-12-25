@@ -4,15 +4,15 @@ import { PopoverCloseButton } from '@chakra-ui/react';
 import { PopoverContent } from '@chakra-ui/react';
 import { NewFormProps } from '../../../types';
 
-interface Props {
-    NewForm: React.FC<NewFormProps>;
-    formProps: NewFormProps;
+interface Props<T> {
+    NewForm: React.FC<T>;
+    formProps: T;
     title: string;
     paddingRight?: number;
     paddingBottom?: number;
     paddingLeft?: number;
 }
-export function NewPopover(props: Props) {
+export function NewPopover(props: Props<NewFormProps>) {
     const { NewForm, formProps, title, paddingRight, paddingBottom, paddingLeft } = props;
     return (
         <PopoverContent

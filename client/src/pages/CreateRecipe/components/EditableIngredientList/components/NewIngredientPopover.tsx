@@ -1,13 +1,13 @@
 import { Button, ButtonGroup, Checkbox, FormControl, Stack } from '@chakra-ui/react';
 import { TextInput } from '../../../../../components/TextInput';
-import { NewPopover } from './NewPopover';
-import { NewFormProps } from '../../../types';
+import { PopoverHeader, PopoverArrow } from '@chakra-ui/react';
+import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 import { gql } from '../../../../../__generated__';
 import { useState } from 'react';
-import { useMutation } from '@apollo/client';
+import { useMutation, ApolloError } from '@apollo/client';
 import { useToast } from '@chakra-ui/react';
-import { ApolloError } from '@apollo/client';
 import { object, string, number, boolean, ValidationError } from 'yup';
+import { IngredientSuggestion } from './IngredientNameDropdownList';
 
 const CREATE_NEW_INGREDIENT_MUTATION = gql(`
     mutation CreateIngredient($record: CreateOneIngredientInput!) {
@@ -15,6 +15,8 @@ const CREATE_NEW_INGREDIENT_MUTATION = gql(`
             record {
                 _id
                 name
+                pluralName
+                isCountable
             }
         }
     }
@@ -27,7 +29,12 @@ function formatError(error: ApolloError) {
     return error.message;
 }
 
-function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewFormProps) {
+interface NewIngredientFormProps {
+    firstFieldRef: React.MutableRefObject<HTMLInputElement | null>;
+    onClose: () => void;
+    handleSelect: (item: IngredientSuggestion) => void;
+}
+function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewIngredientFormProps) {
     const [hasError, setHasError] = useState(false);
     const [name, setName] = useState('');
     const [pluralName, setPluralName] = useState('');
@@ -38,9 +45,8 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
         onCompleted: (data) => {
             onClose();
             handleSelect({
-                value: data!.ingredientCreateOne!.record!.name,
+                value: data!.ingredientCreateOne!.record!,
                 colour: undefined,
-                _id: data?.ingredientCreateOne?.record?._id,
             });
             toast({
                 title: 'Ingredient created',
@@ -136,6 +142,13 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
     );
 }
 
-export function NewIngredientPopover(props: NewFormProps) {
-    return <NewPopover NewForm={NewIngredientForm} formProps={props} title='Add new ingredient' />;
+export function NewIngredientPopover(props: NewIngredientFormProps) {
+    return (
+        <PopoverContent paddingRight={4} paddingBottom={3} paddingLeft={2}>
+            <PopoverArrow />
+            <PopoverCloseButton />
+            <PopoverHeader border={'hidden'}>Add new ingredient</PopoverHeader>
+            <NewIngredientForm {...props} />
+        </PopoverContent>
+    );
 }
