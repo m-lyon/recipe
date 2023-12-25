@@ -37,6 +37,8 @@ export const EditableItem = forwardRef<HTMLInputElement, Props>(function Editabl
         if (value.trim() === '') {
             if (!isLast) {
                 removeFromList();
+            } else {
+                setValue('');
             }
         } else if (isLast) {
             addNewEntry();
