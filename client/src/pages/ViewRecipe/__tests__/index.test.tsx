@@ -36,3 +36,12 @@ describe('placeholder test', () => {
         expect(true).toBe(true);
     });
 });
+
+describe('IngredientList', () => {
+    it('should not display skipped prep methods', async () => {
+        // Render
+        renderComponent();
+        await waitFor(() => expect(screen.queryByText('Loading...')).toBeNull());
+        expect(screen.getByText('1 oz apples')).toBeInTheDocument();
+    });
+});

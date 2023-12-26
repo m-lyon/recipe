@@ -20,6 +20,9 @@ export const GET_RECIPE = gql(`
                     _id
                     shortSingular
                     shortPlural
+                    longSingular
+                    longPlural
+                    preferredNumberFormat
                 }
                 ingredient {
                     _id
