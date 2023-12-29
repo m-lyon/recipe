@@ -36,16 +36,19 @@ recipeIngredientSchema.pre('save', async function (next) {
 
 export interface Recipe extends Document {
     title: string;
+    subTitle?: string;
     tags?: Types.ObjectId[];
     ingredients: RecipeIngredient[];
     instructions: string[];
-    notes?: string[];
+    notes?: string;
     owner: Types.ObjectId;
     source?: string;
+    numServings: number;
 }
 
 const recipeSchema = new Schema<Recipe>({
     title: { type: String, required: true, unique: true },
+    subTitle: { type: String },
     tags: {
         type: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
         validate: tagValidator,
@@ -70,11 +73,10 @@ const recipeSchema = new Schema<Recipe>({
             message: 'At least one instruction is required.',
         },
     },
-    notes: {
-        type: [{ type: String }],
-    },
+    notes: { type: String },
     owner: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
     source: { type: String },
+    numServings: { type: Number, required: true },
 });
 
 recipeSchema.pre('save', async function (next) {
