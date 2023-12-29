@@ -1,4 +1,4 @@
-import { Text } from '@chakra-ui/react';
+import { Text, VStack } from '@chakra-ui/react';
 
 interface Props {
     title: string;
@@ -6,8 +6,10 @@ interface Props {
 export function Title(props: Props) {
     const { title } = props;
     return (
-        <Text fontSize='3xl' textAlign='center'>
-            {title}
-        </Text>
+        <VStack spacing={3} align='left'>
+            <Text fontSize='3xl' textAlign='center'>
+                {title}
+            </Text>
+        </VStack>
     );
 }

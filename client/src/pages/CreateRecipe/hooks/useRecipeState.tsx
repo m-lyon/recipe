@@ -2,18 +2,35 @@ import { useIngredientList, UseIngredientListReturnType } from './useIngredientL
 import { useItemList, UseItemListReturnType } from './useItemList';
 import { useEditable, UseEditableReturnType } from './useEditable';
 import { useTagList, UseTagListReturnType } from './useTagList';
+import { ServingsProps } from '../../../components/Servings';
+import { useState } from 'react';
+import { EditableSourceProps } from '../components/EditableSource';
 
 interface RecipeState {
-    ingredientState: UseIngredientListReturnType;
-    instructionsState: UseItemListReturnType;
-    tagsState: UseTagListReturnType;
-    titleState: UseEditableReturnType;
+    numServings: ServingsProps;
+    ingredient: UseIngredientListReturnType;
+    notes: UseEditableReturnType;
+    instructions: UseItemListReturnType;
+    tags: UseTagListReturnType;
+    title: UseEditableReturnType;
+    source: EditableSourceProps;
 }
 export function useRecipeState(): RecipeState {
-    const ingredientState = useIngredientList();
-    const instructionsState = useItemList();
-    const tagsState = useTagList();
-    const titleState = useEditable('Enter Recipe Title');
+    const [numServings, setNumServings] = useState<number>(1);
+    const ingredient = useIngredientList();
+    const instructions = useItemList();
+    const tags = useTagList();
+    const title = useEditable('Enter Recipe Title');
+    const notes = useEditable('Enter Notes...');
+    const [source, setSource] = useState<string>('');
 
-    return { ingredientState, instructionsState, tagsState, titleState };
+    return {
+        numServings: { num: numServings, setNum: setNumServings },
+        ingredient,
+        notes,
+        instructions,
+        tags,
+        title,
+        source: { source, setSource },
+    };
 }

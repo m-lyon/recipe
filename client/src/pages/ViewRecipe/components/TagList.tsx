@@ -10,7 +10,7 @@ export function TagList(props: Props) {
     const tagsList = tags.map((tag) => {
         return (
             <WrapItem key={tag.value}>
-                <UITag>
+                <UITag size={'lg'}>
                     <TagLabel>{tag.value}</TagLabel>
                 </UITag>
             </WrapItem>

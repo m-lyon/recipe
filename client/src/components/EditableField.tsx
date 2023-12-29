@@ -4,10 +4,12 @@ import * as CSS from 'csstype';
 
 interface EditableField extends UseEditableReturnType {
     fontSize?: string;
+    fontWeight?: string;
     textAlign: CSS.Property.TextAlign;
 }
 export function EditableField(props: EditableField) {
-    const { displayStr, inputRef, isEdited, actionHandler, fontSize, textAlign } = props;
+    const { displayStr, inputRef, isEdited, actionHandler, fontSize, fontWeight, textAlign } =
+        props;
 
     return (
         <Editable
@@ -18,6 +20,7 @@ export function EditableField(props: EditableField) {
             onChange={actionHandler.change}
             fontSize={fontSize}
             textAlign={textAlign}
+            fontWeight={fontWeight}
         >
             <EditablePreview color={isEdited ? '' : 'gray.400'} />
             <EditableInput

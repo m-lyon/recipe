@@ -1,18 +1,17 @@
 import { Box, Button, Center, Container } from '@chakra-ui/react';
-import { Grid, GridItem } from '@chakra-ui/react';
-import { EditableIngredientList } from './components/EditableIngredientList';
+import { Grid, GridItem, useToast } from '@chakra-ui/react';
 import { EditableTitle } from './components/EditableTitle';
 import { EditableTagList } from './components/EditableTagList';
-import { EditableInstructionList } from './components/EditableInstructionList';
 import { ImageUpload } from './components/ImageUpload';
 import { useRecipeState } from './hooks/useRecipeState';
 import { useMutation } from '@apollo/client';
 import { EnumRecipeIngredientType } from '../../__generated__/graphql';
 import { gql } from '../../__generated__';
-import { useToast } from '@chakra-ui/react';
 import { useContext } from 'react';
 import { UserContext } from '../../context/UserContext';
 import { useNavigate } from 'react-router-dom';
+import { EditableIngredientsTab } from './components/EditableIngredientsTab';
+import { EditableInstructionsTab } from './components/EditableInstructionsTab';
 
 export const CREATE_RECIPE = gql(`
     mutation CreateRecipe($recipe: CreateOneRecipeInput!) {
@@ -26,14 +25,14 @@ export const CREATE_RECIPE = gql(`
 `);
 
 export function CreateRecipe() {
-    const { ingredientState, instructionsState, tagsState, titleState } = useRecipeState();
+    const states = useRecipeState();
     const userContext = useContext(UserContext)[0];
     const toast = useToast();
     const [createRecipe, { loading }] = useMutation(CREATE_RECIPE);
     const navigate = useNavigate();
 
     const runDataValidation = () => {
-        if (titleState.value === null) {
+        if (states.title.value === null) {
             toast({
                 title: 'Please enter a title',
                 status: 'error',
@@ -43,7 +42,7 @@ export function CreateRecipe() {
             });
             return false;
         }
-        if (ingredientState.state.finished.length === 0) {
+        if (states.ingredient.state.finished.length === 0) {
             toast({
                 title: 'Please enter at least one ingredient',
                 status: 'error',
@@ -53,7 +52,7 @@ export function CreateRecipe() {
             });
             return false;
         }
-        if (instructionsState.items.length === 0) {
+        if (states.instructions.items.length === 0) {
             toast({
                 title: 'Please enter at least one instruction',
                 status: 'error',
@@ -71,11 +70,11 @@ export function CreateRecipe() {
             return;
         }
         try {
-            const tags = tagsState.state.finished.map((tag) => tag._id);
-            const instructions = instructionsState.items
+            const tags = states.tags.state.finished.map((tag) => tag._id);
+            const instructions = states.instructions.items
                 .filter((item) => item.value !== '')
                 .map((item) => item.value);
-            const ingredients = ingredientState.state.finished.map((item) => {
+            const ingredients = states.ingredient.state.finished.map((item) => {
                 return {
                     quantity: item.quantity,
                     unit: item.unit._id,
@@ -94,12 +93,17 @@ export function CreateRecipe() {
                 });
                 return;
             }
+            const notes = states.notes.value ? states.notes.value : undefined;
+            const source = states.source.source ? states.source.source : undefined;
             const recipe = {
+                numServings: states.numServings.num,
                 owner: userContext?._id,
-                title: titleState.value as string,
+                title: states.title.value as string,
                 instructions,
                 ingredients,
                 tags,
+                notes,
+                source,
             };
             console.log(recipe);
             createRecipe({ variables: { recipe } })
@@ -148,7 +152,7 @@ export function CreateRecipe() {
                 fontWeight='bold'
             >
                 <GridItem pl='2' boxShadow='lg' padding='6' area={'title'}>
-                    <EditableTitle {...titleState} />
+                    <EditableTitle {...states.title} />
                 </GridItem>
                 <GridItem
                     pl='2'
@@ -159,13 +163,20 @@ export function CreateRecipe() {
                     paddingRight={6}
                     paddingBottom={2}
                 >
-                    <EditableTagList {...tagsState} />
+                    <EditableTagList {...states.tags} />
                 </GridItem>
                 <GridItem pl='2' area={'ingredients'} boxShadow='lg' padding='6'>
-                    <EditableIngredientList {...ingredientState} />
+                    <EditableIngredientsTab
+                        servingsProps={states.numServings}
+                        ingredientsProps={states.ingredient}
+                        notesProps={states.notes}
+                    />
                 </GridItem>
                 <GridItem pl='2' boxShadow='lg' padding='6' area={'instructions'}>
-                    <EditableInstructionList {...instructionsState} />
+                    <EditableInstructionsTab
+                        instructionsProps={states.instructions}
+                        sourceProps={states.source}
+                    />
                 </GridItem>
                 <GridItem pl='2' boxShadow='lg' padding='6' area={'images'}>
                     <ImageUpload />

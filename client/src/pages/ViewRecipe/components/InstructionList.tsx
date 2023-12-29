@@ -1,7 +1,8 @@
 import { OrderedList, ListItem, Text } from '@chakra-ui/react';
+import { Recipe } from '../../../__generated__/graphql';
 
 interface Props {
-    instructions: (string | null)[];
+    instructions: Recipe['instructions'];
 }
 export function InstructionList(props: Props) {
     const { instructions } = props;
@@ -11,11 +12,11 @@ export function InstructionList(props: Props) {
             return null;
         }
         return (
-            <ListItem key={index}>
+            <ListItem fontWeight={'medium'} key={index}>
                 <Text fontSize='lg'>{instr}</Text>
             </ListItem>
         );
     });
 
-    return <OrderedList>{instructionsList}</OrderedList>;
+    return <OrderedList spacing={'2'}>{instructionsList}</OrderedList>;
 }

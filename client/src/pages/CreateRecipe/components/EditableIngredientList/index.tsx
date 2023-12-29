@@ -1,5 +1,5 @@
 import { Reorder } from 'framer-motion';
-import { Box, VStack } from '@chakra-ui/react';
+import { VStack } from '@chakra-ui/react';
 import { EditableIngredient } from './components/EditableIngredient';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { UseIngredientListReturnType } from '../../hooks/useIngredientList';
@@ -23,28 +23,25 @@ export function EditableIngredientList(props: UseIngredientListReturnType) {
     );
 
     return (
-        <VStack spacing='24px' align='left'>
-            <Box fontSize='2xl'>Ingredients</Box>
-            <VStack spacing='10px' align='left'>
-                <LayoutGroup>
-                    <Reorder.Group
-                        values={state.finished}
-                        onReorder={setFinished}
-                        as='ul'
-                        axis='y'
-                        style={{ listStyle: 'none' }}
-                    >
-                        <AnimatePresence>{finishedIngredients}</AnimatePresence>
-                    </Reorder.Group>
-                    <motion.div layout='position' transition={{ duration: 0.3 }}>
-                        <EditableIngredient
-                            item={state.editable}
-                            actionHandler={actionHandler}
-                            queryData={queryData}
-                        />
-                    </motion.div>
-                </LayoutGroup>
-            </VStack>
+        <VStack spacing='0px' align='left'>
+            <LayoutGroup>
+                <Reorder.Group
+                    values={state.finished}
+                    onReorder={setFinished}
+                    as='ul'
+                    axis='y'
+                    style={{ listStyle: 'none' }}
+                >
+                    <AnimatePresence>{finishedIngredients}</AnimatePresence>
+                </Reorder.Group>
+                <motion.div layout='position' transition={{ duration: 0.3 }}>
+                    <EditableIngredient
+                        item={state.editable}
+                        actionHandler={actionHandler}
+                        queryData={queryData}
+                    />
+                </motion.div>
+            </LayoutGroup>
         </VStack>
     );
 }
