@@ -1,6 +1,6 @@
-import { Card, CardBody, CardHeader } from '@chakra-ui/react';
-import { Heading, Text, Button } from '@chakra-ui/react';
-import { CardFooter } from '@chakra-ui/react';
+import { Card, CardBody, CardHeader, WrapItem } from '@chakra-ui/react';
+import { Heading } from '@chakra-ui/react';
+import { TagList } from '../../ViewRecipe/components/TagList';
 import { Tag } from '../../../__generated__/graphql';
 
 interface Props {
@@ -9,22 +9,20 @@ interface Props {
     tags: Tag[];
 }
 export function RecipeCard(props: Props) {
-    const { title, recipeId } = props;
+    const { title, recipeId, tags } = props;
 
-    const tagsStr = props.tags.map((tag) => tag.value).join(', ');
     return (
-        <Card>
-            <CardHeader>
-                <Heading size='md'>{title}</Heading>
-            </CardHeader>
-            <CardBody>
-                <Text>{tagsStr}</Text>
-            </CardBody>
-            <CardFooter>
-                <Button as={'a'} href={`/recipe/view/${recipeId}`}>
-                    View here
-                </Button>
-            </CardFooter>
-        </Card>
+        <WrapItem>
+            <Card as='a' href={`/recipe/view/${recipeId}`} height='15em' width='18em'>
+                <CardHeader>
+                    <Heading size='md' color='blackAlpha.700'>
+                        {title}
+                    </Heading>
+                </CardHeader>
+                <CardBody>
+                    <TagList tags={tags} />
+                </CardBody>
+            </Card>
+        </WrapItem>
     );
 }

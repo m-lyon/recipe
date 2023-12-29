@@ -1,4 +1,4 @@
-import { Container, SimpleGrid } from '@chakra-ui/react';
+import { Container, Wrap } from '@chakra-ui/react';
 import { Grid, GridItem, Text } from '@chakra-ui/react';
 import { RecipeCard } from './components/RecipeCard';
 import { gql } from '../../__generated__';
@@ -59,9 +59,7 @@ export function Home() {
                     </Text>
                 </GridItem>
                 <GridItem pl='2' area={'recipes'} boxShadow='lg' padding='6'>
-                    <SimpleGrid columns={3} spacing={10}>
-                        {recipeCards}
-                    </SimpleGrid>
+                    <Wrap spacing='30px'>{recipeCards}</Wrap>
                 </GridItem>
             </Grid>
         </Container>
