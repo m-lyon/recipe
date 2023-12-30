@@ -47,6 +47,7 @@ export function Servings(props: ServingsProps) {
                 borderLeftRadius={0}
                 borderRightRadius={0}
                 size='xs'
+                paddingRight={num === 1 ? 4 : 2}
                 sx={{
                     cursor: 'default',
                     ':hover': { bg: 'inherit', color: 'inherit' },
