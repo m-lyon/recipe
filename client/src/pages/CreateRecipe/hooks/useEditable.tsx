@@ -12,7 +12,7 @@ export interface UseEditableReturnType {
     isEdited: boolean;
     actionHandler: ActionHandler;
 }
-export function useEditable(defaultStr: string): UseEditableReturnType {
+export function useEditable(defaultStr: string, endWithPeriod?: boolean): UseEditableReturnType {
     const inputRef = useRef<HTMLInputElement | null>(null);
     const [isEdited, setIsEdited] = useState<boolean>(false);
     const [value, setInputValue] = useState<null | string>(null);
@@ -37,6 +37,8 @@ export function useEditable(defaultStr: string): UseEditableReturnType {
             // Reset the value to default when the field is empty
             setIsEdited(false);
             setInputValue(null);
+        } else if (!value.endsWith('.') && endWithPeriod) {
+            setInputValue(value + '.');
         }
     };
     const displayStr = value === null ? defaultStr : value;

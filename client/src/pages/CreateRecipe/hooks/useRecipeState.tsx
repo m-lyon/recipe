@@ -21,7 +21,7 @@ export function useRecipeState(): RecipeState {
     const instructions = useItemList();
     const tags = useTagList();
     const title = useEditable('Enter Recipe Title');
-    const notes = useEditable('Enter Notes...');
+    const notes = useEditable('Enter Notes...', true);
     const [source, setSource] = useState<string>('');
 
     return {

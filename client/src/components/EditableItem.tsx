@@ -40,8 +40,13 @@ export const EditableItem = forwardRef<HTMLInputElement, Props>(function Editabl
             } else {
                 setValue('');
             }
-        } else if (isLast) {
-            addNewEntry();
+        } else {
+            if (!value.endsWith('.')) {
+                setValue(value + '.');
+            }
+            if (isLast) {
+                addNewEntry();
+            }
         }
     };
 
