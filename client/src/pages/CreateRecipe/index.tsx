@@ -5,7 +5,6 @@ import { EditableTagList } from './components/EditableTagList';
 import { ImageUpload } from './components/ImageUpload';
 import { useRecipeState } from './hooks/useRecipeState';
 import { useMutation } from '@apollo/client';
-import { EnumRecipeIngredientType } from '../../__generated__/graphql';
 import { gql } from '../../__generated__';
 import { useContext } from 'react';
 import { UserContext } from '../../context/UserContext';
@@ -38,7 +37,6 @@ export function CreateRecipe() {
                 status: 'error',
                 position: 'top',
                 duration: 3000,
-                isClosable: true,
             });
             return false;
         }
@@ -48,7 +46,6 @@ export function CreateRecipe() {
                 status: 'error',
                 position: 'top',
                 duration: 3000,
-                isClosable: true,
             });
             return false;
         }
@@ -58,7 +55,15 @@ export function CreateRecipe() {
                 status: 'error',
                 position: 'top',
                 duration: 3000,
-                isClosable: true,
+            });
+            return false;
+        }
+        if (states.asIngredient.state.isIngredient && !states.asIngredient.state.pluralTitle) {
+            toast({
+                title: 'Please enter a plural title',
+                status: 'error',
+                position: 'top',
+                duration: 3000,
             });
             return false;
         }
@@ -80,7 +85,7 @@ export function CreateRecipe() {
                     unit: item.unit._id,
                     ingredient: item.name._id,
                     prepMethod: item.prepMethod._id,
-                    type: 'ingredient' as EnumRecipeIngredientType,
+                    type: item.type,
                 };
             });
             if (userContext === false) {
@@ -89,23 +94,24 @@ export function CreateRecipe() {
                     status: 'error',
                     position: 'top',
                     duration: 3000,
-                    isClosable: true,
                 });
                 return;
             }
             const notes = states.notes.value ? states.notes.value : undefined;
             const source = states.source.source ? states.source.source : undefined;
+            const isIngredient = states.asIngredient.state.isIngredient;
             const recipe = {
                 numServings: states.numServings.num,
                 owner: userContext?._id,
-                title: states.title.value as string,
+                title: states.title.value!,
+                pluralTitle: isIngredient ? states.asIngredient.state.pluralTitle : undefined,
                 instructions,
                 ingredients,
                 tags,
                 notes,
                 source,
+                isIngredient,
             };
-            console.log(recipe);
             createRecipe({ variables: { recipe } })
                 .then(() => {
                     toast({
@@ -115,7 +121,6 @@ export function CreateRecipe() {
                         status: 'success',
                         position: 'top',
                         duration: 1500,
-                        isClosable: true,
                     });
                     setTimeout(() => navigate('/recipe'), 1500);
                 })
@@ -126,7 +131,6 @@ export function CreateRecipe() {
                         status: 'error',
                         position: 'top',
                         duration: 3000,
-                        isClosable: true,
                     });
                 });
         } catch (error: any) {
@@ -175,6 +179,7 @@ export function CreateRecipe() {
                 <GridItem pl='2' boxShadow='lg' padding='6' area={'instructions'}>
                     <EditableInstructionsTab
                         instructionsProps={states.instructions}
+                        asIngredientProps={states.asIngredient}
                         sourceProps={states.source}
                     />
                 </GridItem>

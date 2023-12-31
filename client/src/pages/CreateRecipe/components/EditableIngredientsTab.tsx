@@ -29,6 +29,7 @@ export function EditableIngredientsTab(props: Props) {
                 </Flex>
                 <Flex>
                     <Text fontSize='2xl'>Ingredients</Text>
+                    <Spacer />
                 </Flex>
                 <EditableIngredientList {...ingredientsProps} />
             </VStack>

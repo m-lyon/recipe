@@ -17,7 +17,6 @@ interface Props {
 }
 export function IngredientDropdown(props: Props) {
     const { item, actionHandler, queryData, inputRef, previewRef } = props;
-
     const currentValue = actionHandler.get.currentStateValue();
 
     const getSuggestionsList = () => {
@@ -41,12 +40,12 @@ export function IngredientDropdown(props: Props) {
                 );
             case 'name':
                 if (!queryData.ingredient) {
-                    console.log('no ingredient data');
                     return [];
                 }
                 return (
                     <IngredientNameDropdownList
-                        data={queryData.ingredient}
+                        ingredients={queryData.ingredient}
+                        recipes={queryData.recipe}
                         plural={isPlural(item.quantity)}
                         hasUnit={item.unit.value !== null}
                         {...dropdownProps}

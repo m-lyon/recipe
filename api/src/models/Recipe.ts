@@ -36,6 +36,7 @@ recipeIngredientSchema.pre('save', async function (next) {
 
 export interface Recipe extends Document {
     title: string;
+    pluralTitle?: string;
     subTitle?: string;
     tags?: Types.ObjectId[];
     ingredients: RecipeIngredient[];
@@ -44,10 +45,12 @@ export interface Recipe extends Document {
     owner: Types.ObjectId;
     source?: string;
     numServings: number;
+    isIngredient: boolean;
 }
 
 const recipeSchema = new Schema<Recipe>({
     title: { type: String, required: true, unique: true },
+    pluralTitle: { type: String },
     subTitle: { type: String },
     tags: {
         type: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
@@ -77,6 +80,7 @@ const recipeSchema = new Schema<Recipe>({
     owner: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
     source: { type: String },
     numServings: { type: Number, required: true },
+    isIngredient: { type: Boolean, required: true },
 });
 
 recipeSchema.pre('save', async function (next) {

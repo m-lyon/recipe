@@ -2,6 +2,7 @@ import { MutableRefObject, useRef } from 'react';
 import { matchSorter } from 'match-sorter';
 import { LayoutGroup } from 'framer-motion';
 import { Popover, PopoverAnchor, useDisclosure } from '@chakra-ui/react';
+import { EnumRecipeIngredientType } from '../../../../../__generated__/graphql';
 import { GetIngredientsQuery } from '../../../../../__generated__/graphql';
 import { Ingredient } from '../../../../../__generated__/graphql';
 import { DropdownItem } from '../../../../../components/DropdownItem';
@@ -26,21 +27,26 @@ function getDisplayValue(item: IngredientSuggestion, plural: boolean, hasUnit: b
     }
 }
 
+interface IngredientOrRecipe extends Ingredient {
+    type: EnumRecipeIngredientType;
+}
 export interface IngredientSuggestion {
-    value: string | Ingredient;
+    value: string | IngredientOrRecipe;
     colour?: string;
 }
 interface Props {
     strValue: string;
-    data: GetIngredientsQuery['ingredientMany'];
+    ingredients: GetIngredientsQuery['ingredientMany'];
+    recipes?: GetIngredientsQuery['recipeMany'];
     plural: boolean;
     hasUnit: boolean;
-    setItem: (value: string | null, _id?: string) => void;
+    setItem: (value: string | null, _id?: string, type?: EnumRecipeIngredientType) => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
 }
 export function IngredientNameDropdownList(props: Props) {
-    const { strValue, data, plural, hasUnit, setItem, inputRef, previewRef } = props;
+    const { strValue, ingredients, recipes, plural, hasUnit, setItem, inputRef, previewRef } =
+        props;
     const dropdownRef = useRef<HTMLDivElement | null>(null);
     const firstFieldRef = useRef<HTMLInputElement | null>(null);
     const { isOpen, onOpen, onClose } = useDisclosure({
@@ -48,11 +54,22 @@ export function IngredientNameDropdownList(props: Props) {
             previewRef.current?.focus();
         },
     });
-    const filter = (
-        data: GetIngredientsQuery['ingredientMany'],
-        value: string
-    ): IngredientSuggestion[] => {
-        const items = matchSorter<Ingredient>(data, value, {
+    const data = ingredients
+        .map((ingredient) => ({
+            ...ingredient,
+            type: 'ingredient',
+        }))
+        .concat(
+            recipes?.map((recipe) => ({
+                _id: recipe._id,
+                name: recipe.title.toLowerCase(),
+                pluralName: recipe.pluralTitle!.toLowerCase(),
+                isCountable: false,
+                type: 'recipe',
+            })) || []
+        ) as IngredientOrRecipe[];
+    const filter = (data: IngredientOrRecipe[], value: string): IngredientSuggestion[] => {
+        const items = matchSorter<IngredientOrRecipe>(data, value, {
             keys: ['name', 'pluralName'],
         }).map((item) => ({ value: item, colour: undefined })) as IngredientSuggestion[];
         if (items.length === 0) {
@@ -68,7 +85,11 @@ export function IngredientNameDropdownList(props: Props) {
                 onOpen();
             }
         } else {
-            setItem(getDisplayValue(item, plural, hasUnit), item.value._id);
+            setItem(
+                getDisplayValue(item, plural, hasUnit),
+                item.value._id,
+                item.value.type as EnumRecipeIngredientType
+            );
         }
     };
 
