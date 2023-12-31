@@ -8,6 +8,7 @@ import { useMutation, ApolloError } from '@apollo/client';
 import { useToast } from '@chakra-ui/react';
 import { object, string, number, boolean, ValidationError } from 'yup';
 import { IngredientSuggestion } from './IngredientNameDropdownList';
+import { EnumRecipeIngredientType } from '../../../../../__generated__/graphql';
 
 const CREATE_NEW_INGREDIENT_MUTATION = gql(`
     mutation CreateIngredient($record: CreateOneIngredientInput!) {
@@ -45,7 +46,10 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewIngredie
         onCompleted: (data) => {
             onClose();
             handleSelect({
-                value: data!.ingredientCreateOne!.record!,
+                value: {
+                    ...data!.ingredientCreateOne!.record!,
+                    type: 'ingredient' as EnumRecipeIngredientType,
+                },
                 colour: undefined,
             });
             toast({
