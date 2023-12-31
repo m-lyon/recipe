@@ -13,6 +13,9 @@ export const GET_RECIPES = gql(`
                 _id
                 value
             }
+            isIngredient
+            numServings
+            pluralTitle
         }
     }
 `);
@@ -29,10 +32,15 @@ export function Home() {
     }
 
     const recipeCards = data?.recipeMany.map((recipe) => {
+        const title = recipe.isIngredient
+            ? recipe.numServings > 1
+                ? recipe.pluralTitle
+                : recipe.title
+            : recipe.title;
         return (
             <RecipeCard
                 recipeId={recipe._id}
-                title={recipe.title}
+                title={title as string}
                 tags={recipe.tags}
                 key={recipe._id}
             />

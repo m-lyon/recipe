@@ -40,6 +40,8 @@ export const GET_RECIPE = gql(`
                 value
             }
             numServings
+            isIngredient
+            pluralTitle
             source
             notes
         }
@@ -57,8 +59,18 @@ export function ViewRecipe() {
     if (error) {
         return <div>Error: {error.message}</div>;
     }
-    const { title, instructions, ingredients, tags, notes, source, numServings } =
-        data!.recipeById!;
+    const {
+        title,
+        instructions,
+        ingredients,
+        tags,
+        notes,
+        source,
+        numServings,
+        isIngredient,
+        pluralTitle,
+    } = data!.recipeById!;
+    const titleNormed = isIngredient ? (numServings > 1 ? pluralTitle : title) : title;
 
     return (
         <Container maxW='container.xl' pt='60px'>
@@ -75,7 +87,7 @@ export function ViewRecipe() {
                 fontWeight='bold'
             >
                 <GridItem pl='2' boxShadow='lg' padding='6' area={'title'}>
-                    <Title title={title} />
+                    <Title title={titleNormed as string} />
                 </GridItem>
                 <GridItem pl='2' area={'ingredients'} boxShadow='lg' padding='6'>
                     <IngredientsTab
@@ -85,13 +97,7 @@ export function ViewRecipe() {
                     />
                 </GridItem>
                 <GridItem pl='2' boxShadow='lg' padding='6' area={'instructions'}>
-                    <VStack spacing={'24px'} align='left'>
-                        {/* <Flex justify='flex-end'> */}
-                        <Flex>
-                            <TagList tags={tags} />
-                        </Flex>
-                        <InstructionsTab instructions={instructions} source={source} />
-                    </VStack>
+                    <InstructionsTab tags={tags} instructions={instructions} source={source} />
                 </GridItem>
             </Grid>
         </Container>

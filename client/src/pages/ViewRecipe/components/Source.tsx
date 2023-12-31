@@ -11,7 +11,7 @@ export function Source(props: Props) {
     }
     return (
         <Text textAlign='right' fontWeight={'medium'} as='i'>
-            `Source: {source}`
+            Source: {source}
         </Text>
     );
 }
