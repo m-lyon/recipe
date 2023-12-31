@@ -17,8 +17,14 @@ export interface RecipeIngredient extends Document {
 }
 
 const recipeIngredientSchema = new Schema<RecipeIngredient>({
-    ingredient: { type: Schema.Types.ObjectId, refPath: 'Ingredient', required: true },
-    type: { type: String, enum: { ingredient: 'ingredient', recipe: 'recipe' }, required: true },
+    ingredient: {
+        type: Schema.Types.ObjectId,
+        refPath: function () {
+            return this.type === 'ingredient' ? 'Ingredient' : 'Recipe';
+        },
+        required: true,
+    },
+    type: { type: String, enum: ['ingredient', 'recipe'], required: true },
     quantity: { type: String, required: true },
     unit: { type: Schema.Types.ObjectId, ref: 'Unit' },
     prepMethod: { type: Schema.Types.ObjectId, ref: 'PrepMethod' },
