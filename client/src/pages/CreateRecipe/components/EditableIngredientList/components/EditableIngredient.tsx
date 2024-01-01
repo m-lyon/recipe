@@ -34,6 +34,7 @@ export function EditableIngredient({ item, actionHandler, fontSize, queryData }:
                 onMouseDown={(e) => {
                     if (item.quantity !== null) {
                         e.preventDefault();
+                        previewRef.current?.focus();
                     }
                 }}
                 selectAllOnFocus={false}
