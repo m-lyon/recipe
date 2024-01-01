@@ -1,7 +1,6 @@
-import { Container, Flex, VStack } from '@chakra-ui/react';
+import { Container } from '@chakra-ui/react';
 import { Grid, GridItem } from '@chakra-ui/react';
 import { Title } from './components/Title';
-import { TagList } from './components/TagList';
 import { useQuery } from '@apollo/client';
 import { gql } from '../../__generated__';
 import { useParams } from 'react-router-dom';
@@ -15,6 +14,7 @@ export const GET_RECIPE = gql(`
             title
             instructions
             ingredients {
+                type
                 quantity
                 unit {
                     _id
@@ -25,10 +25,17 @@ export const GET_RECIPE = gql(`
                     preferredNumberFormat
                 }
                 ingredient {
+                    ... on Recipe {
+                        _id
+                        title
+                        pluralTitle
+                    }
+                    ... on Ingredient {
                     _id
                     name
                     pluralName
                     isCountable
+                    }
                 }
                 prepMethod {
                     _id
@@ -77,8 +84,8 @@ export function ViewRecipe() {
             <Grid
                 templateAreas={`'title title'
                                 'ingredients instructions'`}
-                gridTemplateRows={'100px 700px'}
-                gridTemplateColumns={'0.4fr 1fr'}
+                gridTemplateRows='100px 700px'
+                gridTemplateColumns='0.4fr 1fr'
                 h='800px'
                 gap='2'
                 pt='2'
@@ -86,17 +93,17 @@ export function ViewRecipe() {
                 color='blackAlpha.700'
                 fontWeight='bold'
             >
-                <GridItem pl='2' boxShadow='lg' padding='6' area={'title'}>
+                <GridItem pl='2' boxShadow='lg' padding='6' area='title'>
                     <Title title={titleNormed as string} />
                 </GridItem>
-                <GridItem pl='2' area={'ingredients'} boxShadow='lg' padding='6'>
+                <GridItem pl='2' area='ingredients' boxShadow='lg' padding='6'>
                     <IngredientsTab
                         ingredients={ingredients as RecipeIngredient[]}
                         notes={notes}
                         numServings={numServings}
                     />
                 </GridItem>
-                <GridItem pl='2' boxShadow='lg' padding='6' area={'instructions'}>
+                <GridItem pl='2' boxShadow='lg' padding='6' area='instructions'>
                     <InstructionsTab tags={tags} instructions={instructions} source={source} />
                 </GridItem>
             </Grid>

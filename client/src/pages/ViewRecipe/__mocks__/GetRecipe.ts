@@ -12,6 +12,7 @@ export const mockGetRecipe = {
                 ingredients: [
                     {
                         // normal ingredient
+                        type: 'ingredient',
                         quantity: '1',
                         unit: {
                             _id: '60f4d2e5c3d5a0a4f1b9c0f2',
@@ -22,6 +23,7 @@ export const mockGetRecipe = {
                             preferredNumberFormat: 'fraction',
                         },
                         ingredient: {
+                            __typename: 'Ingredient',
                             _id: '60f4d2e5c3d5a0a4f1b9c0e8',
                             name: 'apple',
                             pluralName: 'apples',
@@ -34,9 +36,11 @@ export const mockGetRecipe = {
                     },
                     {
                         // ingredient with no unit
+                        type: 'ingredient',
                         quantity: '1',
                         unit: null,
                         ingredient: {
+                            __typename: 'Ingredient',
                             _id: '60f4d2e5c3d5a0a4f1b9c0e8',
                             name: 'apple',
                             pluralName: 'apples',
@@ -49,9 +53,11 @@ export const mockGetRecipe = {
                     },
                     {
                         // ingredient with no unit and plural quantity
+                        type: 'ingredient',
                         quantity: '2',
                         unit: null,
                         ingredient: {
+                            __typename: 'Ingredient',
                             _id: '60f4d2e5c3d5a0a4f1b9c0e8',
                             name: 'apple',
                             pluralName: 'apples',
@@ -64,6 +70,7 @@ export const mockGetRecipe = {
                     },
                     {
                         // ingredient with fraction quantity
+                        type: 'ingredient',
                         quantity: '1/3',
                         unit: {
                             _id: '60f4d2e5c3d5a0a4f1b9c0f6',
@@ -74,6 +81,7 @@ export const mockGetRecipe = {
                             preferredNumberFormat: 'fraction',
                         },
                         ingredient: {
+                            __typename: 'Ingredient',
                             _id: '60f4d2e5c3d5a0a4f1b9c0e8',
                             name: 'apple',
                             pluralName: 'apples',
@@ -86,6 +94,7 @@ export const mockGetRecipe = {
                     },
                     {
                         // ingredient with no prep method
+                        type: 'ingredient',
                         quantity: '1',
                         unit: {
                             _id: '60f4d2e5c3d5a0a4f1b9c0f4',
@@ -96,6 +105,7 @@ export const mockGetRecipe = {
                             preferredNumberFormat: 'decimal',
                         },
                         ingredient: {
+                            __typename: 'Ingredient',
                             _id: '60f4d2e5c3d5a0a4f1b9c0e8',
                             name: 'apple',
                             pluralName: 'apples',

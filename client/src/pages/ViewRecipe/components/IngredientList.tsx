@@ -5,6 +5,30 @@ import { isPlural } from '../../../utils/plural';
 import { isPluralIngredient } from '../../CreateRecipe/components/EditableIngredientList/components/IngredientNameDropdownList';
 import { getUnitDisplayValue } from '../../CreateRecipe/components/EditableIngredientList/components/UnitDropdownList';
 
+function getIngredientNameStr(plural: boolean, ingredient: RecipeIngredient['ingredient']): string {
+    if (ingredient == null) {
+        throw new Error('Ingredient cannot be null or undefined');
+    }
+    if (ingredient.__typename === 'Recipe') {
+        return plural ? ingredient.pluralTitle?.toLowerCase()! : ingredient.title.toLowerCase()!;
+    } else if (ingredient.__typename === 'Ingredient') {
+        return plural ? ingredient.pluralName! : ingredient.name!;
+    }
+    throw new Error(`Invalid ingredient type: ${ingredient.__typename}`);
+}
+
+function isCountable(ingredient: RecipeIngredient['ingredient']): boolean {
+    if (ingredient == null) {
+        throw new Error('Ingredient cannot be null or undefined');
+    }
+    if (ingredient.__typename === 'Recipe') {
+        return false;
+    } else if (ingredient.__typename === 'Ingredient') {
+        return ingredient.isCountable;
+    }
+    throw new Error(`Invalid ingredient type: ${ingredient.__typename}`);
+}
+
 export interface IngredientListProps {
     ingredients: RecipeIngredient[];
 }
@@ -14,17 +38,15 @@ export function IngredientList(props: IngredientListProps) {
         if (item === null) {
             return null;
         }
-        const plural = isPlural(item.quantity);
-        const pluralIngr = isPluralIngredient(
-            plural,
-            item.unit !== null,
-            item.ingredient!.isCountable
-        );
+        console.log(item);
+        const { quantity, unit, ingredient, prepMethod } = item;
+        const plural = isPlural(quantity);
+        const pluralIngr = isPluralIngredient(plural, unit !== null, isCountable(ingredient));
         const ingredientStr = getIngredientStr(
-            item.quantity,
-            item.unit != null ? getUnitDisplayValue(item.unit, plural, true) : null,
-            pluralIngr ? item.ingredient!.pluralName! : item.ingredient!.name!,
-            item.prepMethod ? item.prepMethod.value : null
+            quantity,
+            unit != null ? getUnitDisplayValue(unit, plural, true) : null,
+            getIngredientNameStr(pluralIngr, ingredient),
+            prepMethod ? prepMethod.value : null
         );
         return <ListItem key={ingredientStr}>{ingredientStr}</ListItem>;
     });

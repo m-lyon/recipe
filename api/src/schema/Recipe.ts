@@ -1,8 +1,48 @@
 import { RecipeIngredientTC, RecipeTC } from '../models/Recipe.js';
 import { TagTC } from '../models/Tag.js';
 import { UnitTC } from '../models/Unit.js';
-import { IngredientTC } from '../models/Ingredient.js';
+import { Ingredient, IngredientTC } from '../models/Ingredient.js';
 import { PrepMethodTC } from '../models/PrepMethod.js';
+import { schemaComposer } from 'graphql-compose';
+import { Model } from 'mongoose';
+import { GraphQLError } from 'graphql';
+
+const IngredientOrRecipeTC = schemaComposer.createUnionTC({
+    name: 'IngredientOrRecipe',
+    types: [IngredientTC.getType(), RecipeTC.getType()],
+    resolveType: (value: Ingredient & { constructor: typeof Model }) => {
+        if (value && value.constructor) {
+            return value.constructor.modelName;
+        }
+        return null;
+    },
+});
+
+const ingredientOrRecipeResolver = schemaComposer.createResolver({
+    name: 'ingredientOrRecipe',
+    type: IngredientOrRecipeTC,
+    args: {
+        type: 'String!',
+        ingredient: 'MongoID!',
+    },
+    resolve: async ({ args }) => {
+        const { type, ingredient } = args;
+        if (!type) {
+            throw new GraphQLError('type is required to determine ingredient or recipe');
+        }
+        if (type === 'ingredient') {
+            return await IngredientTC.mongooseResolvers
+                .findById()
+                .resolve({ args: { _id: ingredient } });
+        } else if (type === 'recipe') {
+            return await RecipeTC.mongooseResolvers
+                .findById()
+                .resolve({ args: { _id: ingredient } });
+        } else {
+            throw new GraphQLError('Invalid type');
+        }
+    },
+});
 
 RecipeTC.addRelation('tags', {
     resolver: () => TagTC.mongooseResolvers.findByIds(),
@@ -19,9 +59,10 @@ RecipeIngredientTC.addRelation('unit', {
     projection: { unit: true },
 });
 RecipeIngredientTC.addRelation('ingredient', {
-    resolver: () => IngredientTC.mongooseResolvers.findById(),
+    resolver: () => ingredientOrRecipeResolver,
     prepareArgs: {
-        _id: (source) => source.ingredient._id,
+        type: (source) => source.type,
+        ingredient: (source) => source.ingredient._id,
     },
     projection: { ingredient: true },
 });

@@ -5,11 +5,6 @@ export const IngredientQuery = {
     ingredientByIds: IngredientTC.mongooseResolvers.findByIds(),
     ingredientOne: IngredientTC.mongooseResolvers.findOne(),
     ingredientMany: IngredientTC.mongooseResolvers.findMany(),
-    // ingredientDataLoader: IngredientTC.mongooseResolvers.dataLoader(),
-    // ingredientDataLoaderMany: IngredientTC.mongooseResolvers.dataLoaderMany(),
-    // ingredientCount: IngredientTC.mongooseResolvers.count(),
-    // ingredientConnection: IngredientTC.mongooseResolvers.connection(),
-    // ingredientPagination: IngredientTC.mongooseResolvers.pagination(),
 };
 
 export const IngredientMutation = {

@@ -8,7 +8,7 @@ import { Tag, tagValidator } from './Tag.js';
 import { validateMongooseObjectIds, validateMongooseObjectIdsArray } from './utils.js';
 import { quantityRegex } from './utils.js';
 
-export interface RecipeIngredient extends Document {
+export interface RecipeIngredientType extends Document {
     ingredient: Types.ObjectId;
     type: 'ingredient' | 'recipe';
     quantity: string;
@@ -16,7 +16,26 @@ export interface RecipeIngredient extends Document {
     prepMethod?: Types.ObjectId;
 }
 
-const recipeIngredientSchema = new Schema<RecipeIngredient>({
+export async function validateIngredientIds(next: any) {
+    try {
+        if (this.type === 'ingredient') {
+            const doc = await Ingredient.findById(this.ingredient);
+            if (!doc) {
+                throw new Error(`Ingredient not found: ${this.ingredient}.`);
+            }
+        } else {
+            const doc = await Recipe.findById(this.ingredient);
+            if (!doc) {
+                throw new Error(`Recipe not found: ${this.ingredient}.`);
+            }
+        }
+        next();
+    } catch (err) {
+        next(err);
+    }
+}
+
+const recipeIngredientSchema = new Schema<RecipeIngredientType>({
     ingredient: {
         type: Schema.Types.ObjectId,
         refPath: function () {
@@ -36,7 +55,8 @@ recipeIngredientSchema.pre('save', async function (next) {
         return next(err);
     }
     // Attribute validation
-    const attribs = { ingredient: Ingredient, unit: Unit, prepMethod: PrepMethod };
+    const attribs = { unit: Unit, prepMethod: PrepMethod };
+    await validateIngredientIds.call(this, next);
     await validateMongooseObjectIds.call(this, attribs, next);
 });
 
@@ -45,7 +65,7 @@ export interface Recipe extends Document {
     pluralTitle?: string;
     subTitle?: string;
     tags?: Types.ObjectId[];
-    ingredients: RecipeIngredient[];
+    ingredients: RecipeIngredientType[];
     instructions: string[];
     notes?: string;
     owner: Types.ObjectId;
@@ -66,7 +86,7 @@ const recipeSchema = new Schema<Recipe>({
         type: [{ type: recipeIngredientSchema }],
         required: true,
         validate: {
-            validator: function (ingredients: RecipeIngredient[]) {
+            validator: function (ingredients: RecipeIngredientType[]) {
                 return ingredients.length > 0;
             },
             message: 'At least one ingredient is required.',
@@ -94,7 +114,10 @@ recipeSchema.pre('save', async function (next) {
     await validateMongooseObjectIdsArray.call(this, { tags: Tag }, next);
 });
 
-export const RecipeIngredient = model<RecipeIngredient>('RecipeIngredient', recipeIngredientSchema);
+export const RecipeIngredient = model<RecipeIngredientType>(
+    'RecipeIngredient',
+    recipeIngredientSchema
+);
 export const RecipeIngredientTC = composeMongoose(RecipeIngredient);
 export const Recipe = model<Recipe>('Recipe', recipeSchema);
 export const RecipeTC = composeMongoose(Recipe);
