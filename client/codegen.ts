@@ -14,7 +14,9 @@ const config: CodegenConfig = {
             },
         },
     },
-    ignoreNoDocuments: true,
+    ignoreNoDocuments: false,
+    verbose: true,
+    debug: true,
 };
 
 export default config;

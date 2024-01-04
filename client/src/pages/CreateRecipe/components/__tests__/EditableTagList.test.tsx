@@ -85,7 +85,7 @@ describe('EditableTag Key Arrow Action', () => {
         // Act
         const tagInput = screen.getByText('Add a tag...');
         await user.click(tagInput);
-        await user.keyboard('{l}{ArrowDown}{Enter}');
+        await user.keyboard('{l}{Enter}');
 
         // Expect
         expect(screen.getByText('Add a tag...')).toBeInTheDocument();

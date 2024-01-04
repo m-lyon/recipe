@@ -5,7 +5,7 @@ import { ChakraProvider } from '@chakra-ui/react';
 import { MockedProvider } from '@apollo/client/testing';
 import { EditableIngredientList } from '..';
 import { mockGetUnits } from '../__mocks__/GetUnits';
-import { mockGetIngredients } from '../__mocks__/GetIngredients';
+import { mockGetIngredientsWithRecipe } from '../__mocks__/GetIngredients';
 import { mockGetPrepMethods } from '../__mocks__/GetPrepMethods';
 import { RouterProvider } from 'react-router-dom';
 import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
@@ -23,7 +23,7 @@ const routes = createBrowserRouter(
 const renderComponent = () => {
     render(
         <MockedProvider
-            mocks={[mockGetUnits, mockGetIngredients, mockGetPrepMethods]}
+            mocks={[mockGetUnits, mockGetIngredientsWithRecipe, mockGetPrepMethods]}
             addTypename={false}
         >
             <ChakraProvider>
@@ -161,7 +161,7 @@ describe('EditableIngredient Unit Keyboard', () => {
         // Act
         const ingredientInput = screen.getByText('Enter ingredient');
         await user.click(ingredientInput);
-        await user.keyboard('{1}{ }{ArrowDown}{ArrowDown}{Enter}');
+        await user.keyboard('{1}{ }{ArrowDown}{Enter}');
 
         // Expect
         expect(
@@ -180,7 +180,7 @@ describe('EditableIngredient Unit Keyboard', () => {
         // Act
         const ingredientInput = screen.getByText('Enter ingredient');
         await user.click(ingredientInput);
-        await user.keyboard('{2}{ }{ArrowDown}{ArrowDown}{Enter}');
+        await user.keyboard('{2}{ }{ArrowDown}{Enter}');
 
         // Expect
         expect(
@@ -430,8 +430,8 @@ describe('EditableIngredient Name Keyboard', () => {
         // Act
         const ingredientInput = screen.getByText('Enter ingredient');
         await user.click(ingredientInput);
-        await user.keyboard('{1}{ }{ArrowDown}{ArrowDown}{Enter}');
-        await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}{Enter}');
+        await user.keyboard('{1}{ }{ArrowDown}{Enter}');
+        await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
 
         // Expect
         expect(screen.getByText('1 cup chicken')).toBeInTheDocument();
@@ -544,7 +544,7 @@ describe('EditableIngredient Name Keyboard', () => {
         await user.click(screen.getByText('cup'));
         await user.keyboard('{a}{p}{p}');
         await user.click(screen.getByText('apples'));
-        await user.keyboard('{ArrowDown}{Enter}');
+        await user.keyboard('{Enter}');
 
         // Expect
         expect(screen.getByText('1 cup apples')).toBeInTheDocument();
@@ -597,7 +597,7 @@ describe('EditableIngredient Ingredient Click', () => {
         await user.click(screen.getByText('skip unit'));
         await user.keyboard('{a}{p}{p}');
         await user.click(screen.getByText('apples'));
-        await user.keyboard('{ArrowDown}{Enter}');
+        await user.keyboard('{Enter}');
 
         // Expect
         expect(screen.getByText('2 apples')).toBeInTheDocument();
@@ -627,8 +627,8 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
         // Act
         const ingredientInput = screen.getByText('Enter ingredient');
         await user.click(ingredientInput);
-        await user.keyboard('{1}{ }{ArrowDown}{ArrowDown}{Enter}');
-        await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}{Enter}');
+        await user.keyboard('{1}{ }{ArrowDown}{Enter}');
+        await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
 
         // Expect
         expect(screen.getByText('1 cup chicken')).toBeInTheDocument();
@@ -692,8 +692,8 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
         const quantityInput = screen.getByText('Enter ingredient');
 
         await user.click(quantityInput);
-        await user.keyboard('{1}{ }{ArrowDown}{ArrowDown}{Enter}');
-        await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}{Enter}');
+        await user.keyboard('{1}{ }{ArrowDown}{Enter}');
+        await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
         await user.click(screen.getByText('skip prep method'));
 
         // Expect

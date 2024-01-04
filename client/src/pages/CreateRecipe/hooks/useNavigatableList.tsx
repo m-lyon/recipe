@@ -6,7 +6,7 @@ export function useNavigatableList<T>(
     focusRef: MutableRefObject<HTMLElement | null>,
     handleOutsideEnter?: () => void
 ) {
-    const [highlightedIndex, setHighlightedIndex] = useState(-1);
+    const [highlightedIndex, setHighlightedIndex] = useState(0);
 
     useEffect(() => {
         if (highlightedIndex > list.length - 1) {

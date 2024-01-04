@@ -33,8 +33,21 @@ export const mockGetIngredients = {
                 },
             ],
         },
-        recipeMany: [
-            { _id: '60f4d2e5c3d5a0a4f1b9c0eb', title: 'apple pie', pluralTitle: 'apple pies' },
-        ],
+    },
+};
+
+export const mockGetIngredientsWithRecipe = {
+    request: { ...mockGetIngredients.request },
+    result: {
+        data: {
+            ...mockGetIngredients.result.data,
+            recipeMany: [
+                {
+                    _id: '60f4d2e5c3d5a0a4f1b9c0eb',
+                    title: 'rhubarb pie',
+                    pluralTitle: 'rhubarb pies',
+                },
+            ],
+        },
     },
 };
