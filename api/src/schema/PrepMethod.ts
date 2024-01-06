@@ -5,11 +5,6 @@ export const PrepMethodQuery = {
     prepMethodByIds: PrepMethodTC.mongooseResolvers.findByIds(),
     prepMethodOne: PrepMethodTC.mongooseResolvers.findOne(),
     prepMethodMany: PrepMethodTC.mongooseResolvers.findMany(),
-    // prepMethodDataLoader: PrepMethodTC.mongooseResolvers.dataLoader(),
-    // prepMethodDataLoaderMany: PrepMethodTC.mongooseResolvers.dataLoaderMany(),
-    // prepMethodCount: PrepMethodTC.mongooseResolvers.count(),
-    // prepMethodConnection: PrepMethodTC.mongooseResolvers.connection(),
-    // prepMethodPagination: PrepMethodTC.mongooseResolvers.pagination(),
 };
 
 export const PrepMethodMutation = {

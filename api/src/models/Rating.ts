@@ -1,6 +1,6 @@
 import { Schema, Document, model, Types } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
-import { Recipe } from './Recipe';
+import { Recipe } from './Recipe.js';
 import { validateMongooseObjectIds } from './utils.js';
 
 export interface Rating extends Document {

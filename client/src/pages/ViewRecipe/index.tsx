@@ -63,6 +63,10 @@ export function ViewRecipe() {
         return <div>Loading...</div>;
     }
 
+    if (!recipeId) {
+        return <div>Error: Recipe not found</div>;
+    }
+
     if (error) {
         return <div>Error: {error.message}</div>;
     }
@@ -98,6 +102,7 @@ export function ViewRecipe() {
                 </GridItem>
                 <GridItem pl='2' area='ingredients' boxShadow='lg' padding='6'>
                     <IngredientsTab
+                        recipeId={recipeId}
                         ingredients={ingredients as RecipeIngredient[]}
                         notes={notes}
                         numServings={numServings}

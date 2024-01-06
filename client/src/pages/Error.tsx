@@ -4,6 +4,10 @@ import { Link, useRouteError } from 'react-router-dom';
 export function ErrorBoundary() {
     const error = useRouteError();
 
+    if (error) {
+        console.error(error);
+    }
+
     return (
         <Flex direction='column' align='center' justify='center' height='100vh' bg='gray.50'>
             <Box textAlign='center'>
@@ -16,7 +20,6 @@ export function ErrorBoundary() {
                 <Button as={Link} to='/recipe' colorScheme='teal' size='lg' fontWeight='normal'>
                     Back to homepage
                 </Button>
-                {error instanceof Error ? error.message : null}
             </Box>
         </Flex>
     );

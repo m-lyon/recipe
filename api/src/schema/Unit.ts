@@ -5,11 +5,6 @@ export const UnitQuery = {
     unitByIds: UnitTC.mongooseResolvers.findByIds(),
     unitOne: UnitTC.mongooseResolvers.findOne(),
     unitMany: UnitTC.mongooseResolvers.findMany(),
-    // unitDataLoader: UnitTC.mongooseResolvers.dataLoader(),
-    // unitDataLoaderMany: UnitTC.mongooseResolvers.dataLoaderMany(),
-    // unitCount: UnitTC.mongooseResolvers.count(),
-    // unitConnection: UnitTC.mongooseResolvers.connection(),
-    // unitPagination: UnitTC.mongooseResolvers.pagination(),
 };
 
 export const UnitMutation = {

@@ -7,6 +7,7 @@ import { IngredientQuery, IngredientMutation } from './Ingredient.js';
 import { RecipeQuery, RecipeMutation } from './Recipe.js';
 import { composeResolvers } from '@graphql-tools/resolvers-composition';
 import { isAdmin, isAuthenticated, isRecipeOwnerOrAdmin } from '../middleware/resolvers.js';
+import { RatingMutation, RatingQuery } from './Rating.js';
 
 const defaultMutations = composeResolvers(
     {
@@ -20,8 +21,19 @@ const defaultMutations = composeResolvers(
     { 'Mutation.*': [isAdmin()] }
 );
 const recipeCreateMutation = composeResolvers(
+    { Mutation: { recipeCreateOne: RecipeMutation.recipeCreateOne } },
+    { 'Mutation.*': [isAuthenticated()] }
+);
+const ratingQuery = composeResolvers({
+    Query: {
+        ratingMany: RatingQuery.ratingMany,
+    },
+});
+const ratingCreateMutation = composeResolvers(
     {
-        Mutation: { recipeCreateOne: RecipeMutation.recipeCreateOne },
+        Mutation: {
+            ratingCreateOne: RatingMutation.ratingCreateOne,
+        },
     },
     { 'Mutation.*': [isAuthenticated()] }
 );
@@ -43,12 +55,14 @@ schemaComposer.Query.addFields({
     ...PrepMethodQuery,
     ...IngredientQuery,
     ...RecipeQuery,
+    ...ratingQuery.Query,
 });
 schemaComposer.Mutation.addFields({
     ...UserMutation,
     ...defaultMutations.Mutation,
     ...recipeCreateMutation.Mutation,
     ...recipeModifyMutation.Mutation,
+    ...ratingCreateMutation.Mutation,
 });
 
 export const schema = schemaComposer.buildSchema();

@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { EditableSourceProps } from '../components/EditableSource';
 import { useAsIngredient } from './useAsIngredient';
 import { UseAsIngredientReturnType } from './useAsIngredient';
+import { StarRatingProps } from '../../../components/StarRating';
 
 interface RecipeState {
     numServings: ServingsProps;
@@ -17,6 +18,7 @@ interface RecipeState {
     title: UseEditableReturnType;
     source: EditableSourceProps;
     asIngredient: UseAsIngredientReturnType;
+    rating: StarRatingProps;
 }
 export function useRecipeState(): RecipeState {
     const [numServings, setNumServings] = useState<number>(1);
@@ -27,6 +29,7 @@ export function useRecipeState(): RecipeState {
     const notes = useEditable('Enter Notes...', true);
     const [source, setSource] = useState<string>('');
     const asIngredient = useAsIngredient();
+    const [rating, setRating] = useState<number>(0);
 
     return {
         numServings: { num: numServings, setNum: setNumServings },
@@ -37,5 +40,6 @@ export function useRecipeState(): RecipeState {
         title,
         source: { source, setSource },
         asIngredient,
+        rating: { rating, setRating },
     };
 }

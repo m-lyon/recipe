@@ -23,11 +23,23 @@ export const CREATE_RECIPE = gql(`
     }
 `);
 
+export const AddRating = gql(`
+    mutation AddRating($recipeId: MongoID!, $rating: Float!) {
+        ratingCreateOne(record: { recipe: $recipeId, value: $rating }) {
+            record {
+                _id
+                value
+            }
+        }
+    }
+`);
+
 export function CreateRecipe() {
     const states = useRecipeState();
     const userContext = useContext(UserContext)[0];
     const toast = useToast();
-    const [createRecipe, { loading }] = useMutation(CREATE_RECIPE);
+    const [createRecipe, { loading: recipeLoading }] = useMutation(CREATE_RECIPE);
+    const [addRating, { loading: ratingLoading }] = useMutation(AddRating);
     const navigate = useNavigate();
 
     const runDataValidation = () => {
@@ -68,6 +80,17 @@ export function CreateRecipe() {
             return false;
         }
         return true;
+    };
+
+    const handleRecipeCreated = () => {
+        toast({
+            title: 'Recipe created',
+            description: 'Your recipe has been created, redirecting you to the home page',
+            status: 'success',
+            position: 'top',
+            duration: 1500,
+        });
+        setTimeout(() => navigate('/recipe'), 1500);
     };
 
     const handleSubmit = async () => {
@@ -114,15 +137,27 @@ export function CreateRecipe() {
             };
             createRecipe({ variables: { recipe } })
                 .then(() => {
-                    toast({
-                        title: 'Recipe created',
-                        description:
-                            'Your recipe has been created, redirecting you to the home page',
-                        status: 'success',
-                        position: 'top',
-                        duration: 1500,
-                    });
-                    setTimeout(() => navigate('/recipe'), 1500);
+                    if (states.rating.rating !== 0) {
+                        addRating({
+                            variables: {
+                                recipeId: recipe.owner,
+                                rating: states.rating.rating,
+                            },
+                        })
+                            .then(handleRecipeCreated)
+                            .catch((error) => {
+                                toast({
+                                    title: 'Error adding rating to recipe, redirecting you to the home page',
+                                    description: error.message,
+                                    status: 'error',
+                                    position: 'top',
+                                    duration: 3000,
+                                });
+                                setTimeout(() => navigate('/recipe'), 3000);
+                            });
+                    } else {
+                        handleRecipeCreated();
+                    }
                 })
                 .catch((error) => {
                     toast({
@@ -172,6 +207,7 @@ export function CreateRecipe() {
                 <GridItem pl='2' area={'ingredients'} boxShadow='lg' padding='6'>
                     <EditableIngredientsTab
                         servingsProps={states.numServings}
+                        ratingProps={states.rating}
                         ingredientsProps={states.ingredient}
                         notesProps={states.notes}
                     />
@@ -195,9 +231,9 @@ export function CreateRecipe() {
                                 border='1px'
                                 borderColor='gray.200'
                                 onClick={handleSubmit}
-                                isLoading={loading}
+                                isLoading={recipeLoading || ratingLoading}
                             >
-                                {loading ? 'Submitting Recipe...' : 'Submit'}
+                                {recipeLoading || ratingLoading ? 'Submitting Recipe...' : 'Submit'}
                             </Button>
                         </Box>
                     </Center>
