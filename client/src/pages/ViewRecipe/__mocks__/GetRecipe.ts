@@ -3,11 +3,13 @@ import { GET_RECIPE } from '..';
 export const mockGetRecipe = {
     request: {
         query: GET_RECIPE,
+        variables: { filter: { titleIdentifier: undefined } },
     },
     result: {
         data: {
-            recipeById: {
+            recipeOne: {
                 title: 'Mock Recipe',
+                titleIdentifier: 'mock-recipe',
                 instructions: ['Instruction one', 'Instruction two'],
                 ingredients: [
                     {
