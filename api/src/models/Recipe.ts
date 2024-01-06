@@ -35,6 +35,17 @@ export async function validateIngredientIds(next: any) {
     }
 }
 
+function generateRecipeIdentifier(title: string): string {
+    // Remove special characters
+    let sanitizedTitle = title.replace(/[^a-zA-Z0-9\s]/g, '');
+    // Remove leading and trailing whitespaces
+    sanitizedTitle = sanitizedTitle.trim();
+    // Replace spaces with dashes and convert to lowercase
+    sanitizedTitle = sanitizedTitle.replace(/\s+/g, '-').toLowerCase();
+
+    return sanitizedTitle;
+}
+
 const recipeIngredientSchema = new Schema<RecipeIngredientType>({
     ingredient: {
         type: Schema.Types.ObjectId,
@@ -62,6 +73,7 @@ recipeIngredientSchema.pre('save', async function (next) {
 
 export interface Recipe extends Document {
     title: string;
+    titleIdentifier: string;
     pluralTitle?: string;
     subTitle?: string;
     tags?: Types.ObjectId[];
@@ -76,6 +88,7 @@ export interface Recipe extends Document {
 
 const recipeSchema = new Schema<Recipe>({
     title: { type: String, required: true, unique: true },
+    titleIdentifier: { type: String, unique: true },
     pluralTitle: { type: String },
     subTitle: { type: String },
     tags: {
@@ -110,6 +123,7 @@ const recipeSchema = new Schema<Recipe>({
 });
 
 recipeSchema.pre('save', async function (next) {
+    this.titleIdentifier = generateRecipeIdentifier(this.title);
     await validateMongooseObjectIds.call(this, { owner: User }, next);
     await validateMongooseObjectIdsArray.call(this, { tags: Tag }, next);
 });
@@ -120,4 +134,8 @@ export const RecipeIngredient = model<RecipeIngredientType>(
 );
 export const RecipeIngredientTC = composeMongoose(RecipeIngredient);
 export const Recipe = model<Recipe>('Recipe', recipeSchema);
-export const RecipeTC = composeMongoose(Recipe);
+export const RecipeModifyTC = composeMongoose(Recipe, {
+    removeFields: ['titleIdentifier'],
+    name: 'RecipeModify',
+});
+export const RecipeQueryTC = composeMongoose(Recipe);

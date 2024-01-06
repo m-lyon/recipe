@@ -7,7 +7,7 @@ import { useQuery } from '@apollo/client';
 export const GET_RECIPES = gql(`
     query GetRecipes {
         recipeMany {
-            _id
+            titleIdentifier
             title
             tags {
                 _id
@@ -39,10 +39,10 @@ export function Home() {
             : recipe.title;
         return (
             <RecipeCard
-                recipeId={recipe._id}
                 title={title as string}
+                titleIdentifier={recipe.titleIdentifier!}
                 tags={recipe.tags}
-                key={recipe._id}
+                key={recipe.titleIdentifier}
             />
         );
     });

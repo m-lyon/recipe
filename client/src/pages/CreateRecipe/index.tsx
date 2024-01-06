@@ -13,7 +13,7 @@ import { EditableIngredientsTab } from './components/EditableIngredientsTab';
 import { EditableInstructionsTab } from './components/EditableInstructionsTab';
 
 export const CREATE_RECIPE = gql(`
-    mutation CreateRecipe($recipe: CreateOneRecipeInput!) {
+    mutation CreateRecipe($recipe: CreateOneRecipeModifyInput!) {
         recipeCreateOne(record: $recipe) {
             record {
                 _id

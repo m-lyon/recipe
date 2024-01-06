@@ -1,4 +1,4 @@
-import { RecipeIngredientTC, RecipeTC } from '../models/Recipe.js';
+import { RecipeIngredientTC, RecipeModifyTC, RecipeQueryTC } from '../models/Recipe.js';
 import { TagTC } from '../models/Tag.js';
 import { UnitTC } from '../models/Unit.js';
 import { Ingredient, IngredientTC } from '../models/Ingredient.js';
@@ -9,7 +9,7 @@ import { GraphQLError } from 'graphql';
 
 const IngredientOrRecipeTC = schemaComposer.createUnionTC({
     name: 'IngredientOrRecipe',
-    types: [IngredientTC.getType(), RecipeTC.getType()],
+    types: [IngredientTC.getType(), RecipeQueryTC.getType()],
     resolveType: (value: Ingredient & { constructor: typeof Model }) => {
         if (value && value.constructor) {
             return value.constructor.modelName;
@@ -35,7 +35,7 @@ const ingredientOrRecipeResolver = schemaComposer.createResolver({
                 .findById()
                 .resolve({ args: { _id: ingredient } });
         } else if (type === 'recipe') {
-            return await RecipeTC.mongooseResolvers
+            return await RecipeQueryTC.mongooseResolvers
                 .findById()
                 .resolve({ args: { _id: ingredient } });
         } else {
@@ -44,7 +44,7 @@ const ingredientOrRecipeResolver = schemaComposer.createResolver({
     },
 });
 
-RecipeTC.addRelation('tags', {
+RecipeQueryTC.addRelation('tags', {
     resolver: () => TagTC.mongooseResolvers.findByIds(),
     prepareArgs: {
         _ids: (source) => source.tags?.map((o) => o._id),
@@ -75,10 +75,10 @@ RecipeIngredientTC.addRelation('prepMethod', {
 });
 
 export const RecipeQuery = {
-    recipeById: RecipeTC.mongooseResolvers.findById(),
-    recipeByIds: RecipeTC.mongooseResolvers.findByIds(),
-    recipeOne: RecipeTC.mongooseResolvers.findOne(),
-    recipeMany: RecipeTC.mongooseResolvers.findMany(),
+    recipeById: RecipeQueryTC.mongooseResolvers.findById(),
+    recipeByIds: RecipeQueryTC.mongooseResolvers.findByIds(),
+    recipeOne: RecipeQueryTC.mongooseResolvers.findOne(),
+    recipeMany: RecipeQueryTC.mongooseResolvers.findMany(),
     // recipeDataLoader: RecipeTC.mongooseResolvers.dataLoader(),
     // recipeDataLoaderMany: RecipeTC.mongooseResolvers.dataLoaderMany(),
     // recipeCount: RecipeTC.mongooseResolvers.count(),
@@ -89,12 +89,12 @@ export const RecipeQuery = {
 export const RecipeMutation = {
     // 'many' methods are commented out because they are not currently used
     // by frontend. They are left here for reference.
-    recipeCreateOne: RecipeTC.mongooseResolvers.createOne(),
+    recipeCreateOne: RecipeModifyTC.mongooseResolvers.createOne(),
     // recipeCreateMany: RecipeTC.mongooseResolvers.createMany(),
-    recipeUpdateById: RecipeTC.mongooseResolvers.updateById(),
+    recipeUpdateById: RecipeModifyTC.mongooseResolvers.updateById(),
     // recipeUpdateOne: RecipeTC.mongooseResolvers.updateOne(), // not used because resolver logic would need to be updated to find via findOne
     // recipeUpdateMany: RecipeTC.mongooseResolvers.updateMany(),
-    recipeRemoveById: RecipeTC.mongooseResolvers.removeById(),
+    recipeRemoveById: RecipeModifyTC.mongooseResolvers.removeById(),
     // recipeRemoveOne: RecipeTC.mongooseResolvers.removeOne(),
     // recipeRemoveMany: RecipeTC.mongooseResolvers.removeMany(),
 };

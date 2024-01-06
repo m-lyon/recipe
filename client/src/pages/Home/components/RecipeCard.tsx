@@ -5,15 +5,15 @@ import { Tag } from '../../../__generated__/graphql';
 
 interface Props {
     title: string;
-    recipeId: string;
+    titleIdentifier: string;
     tags: Tag[];
 }
 export function RecipeCard(props: Props) {
-    const { title, recipeId, tags } = props;
+    const { title, titleIdentifier, tags } = props;
 
     return (
         <WrapItem>
-            <Card as='a' href={`/recipe/view/${recipeId}`} height='15em' width='18em'>
+            <Card as='a' href={`/recipe/view/${titleIdentifier}`} height='15em' width='18em'>
                 <CardHeader>
                     <Heading size='md' color='blackAlpha.700'>
                         {title}

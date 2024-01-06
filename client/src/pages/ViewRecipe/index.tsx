@@ -9,8 +9,9 @@ import { RecipeIngredient } from '../../__generated__/graphql';
 import { InstructionsTab } from './components/InstructionsTab';
 
 export const GET_RECIPE = gql(`
-    query GetRecipe($recipeId: MongoID!) {
-        recipeById(_id: $recipeId) {
+    query GetRecipe($filter: FilterFindOneRecipeInput!) {
+        recipeOne(filter: $filter) {
+            _id
             title
             instructions
             ingredients {
@@ -56,15 +57,13 @@ export const GET_RECIPE = gql(`
 `);
 
 export function ViewRecipe() {
-    const { recipeId } = useParams();
-    const { data, loading, error } = useQuery(GET_RECIPE, { variables: { recipeId } });
+    const { titleIdentifier } = useParams();
+    const { data, loading, error } = useQuery(GET_RECIPE, {
+        variables: { filter: { titleIdentifier } },
+    });
 
     if (loading) {
         return <div>Loading...</div>;
-    }
-
-    if (!recipeId) {
-        return <div>Error: Recipe not found</div>;
     }
 
     if (error) {
@@ -80,7 +79,7 @@ export function ViewRecipe() {
         numServings,
         isIngredient,
         pluralTitle,
-    } = data!.recipeById!;
+    } = data!.recipeOne!;
     const titleNormed = isIngredient ? (numServings > 1 ? pluralTitle : title) : title;
 
     return (
@@ -102,7 +101,7 @@ export function ViewRecipe() {
                 </GridItem>
                 <GridItem pl='2' area='ingredients' boxShadow='lg' padding='6'>
                     <IngredientsTab
-                        recipeId={recipeId}
+                        recipeId={data!.recipeOne!._id}
                         ingredients={ingredients as RecipeIngredient[]}
                         notes={notes}
                         numServings={numServings}
