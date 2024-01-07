@@ -1,5 +1,4 @@
-import { Card, CardBody, CardHeader, WrapItem } from '@chakra-ui/react';
-import { Heading } from '@chakra-ui/react';
+import { Card, CardBody, CardHeader, WrapItem, Heading } from '@chakra-ui/react';
 import { TagList } from '../../ViewRecipe/components/TagList';
 import { Tag } from '../../../__generated__/graphql';
 
@@ -13,7 +12,13 @@ export function RecipeCard(props: Props) {
 
     return (
         <WrapItem>
-            <Card as='a' href={`/recipe/view/${titleIdentifier}`} height='15em' width='18em'>
+            <Card
+                as='a'
+                href={`/recipe/view/${titleIdentifier}`}
+                height='15em'
+                width='18em'
+                position='static'
+            >
                 <CardHeader>
                     <Heading size='md' color='blackAlpha.700'>
                         {title}
