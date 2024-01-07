@@ -146,7 +146,6 @@ export function getTextDiff(value: string, origStr: string): NewChar {
         return value.replace(origStr, '');
     }
     if (value.length < origStr.length) {
-        console.log('diff is', origStr.length - value.length);
         return origStr.length - value.length;
     }
     console.log('this shouldnt happen');
@@ -385,7 +384,7 @@ function getNameStr(item: EditableIngredient): string {
 }
 
 function getPrepMethodStr(item: EditableIngredient): string {
-    const delim = item.state === 'prepMethod' && item.prepMethod.value !== null ? ', ' : '';
+    const delim = item.state === 'prepMethod' ? ', ' : '';
     const str = item.prepMethod.value !== null ? item.prepMethod.value : '';
     return `${delim}${str}`;
 }

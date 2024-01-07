@@ -434,7 +434,7 @@ describe('EditableIngredient Name Keyboard', () => {
         await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
 
         // Expect
-        expect(screen.getByText('1 cup chicken')).toBeInTheDocument();
+        expect(screen.getByText('1 cup chicken,')).toBeInTheDocument();
     });
     it('should reset via escape key', async () => {
         const user = userEvent.setup();
@@ -529,7 +529,7 @@ describe('EditableIngredient Name Keyboard', () => {
         await user.keyboard('{ArrowDown}{Enter}');
 
         // Expect
-        expect(screen.getByText('2 apples')).toBeInTheDocument();
+        expect(screen.getByText('2 apples,')).toBeInTheDocument();
     });
     it('should have a plural countable noun name with a unit', async () => {
         const user = userEvent.setup();
@@ -631,7 +631,7 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
         await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
 
         // Expect
-        expect(screen.getByText('1 cup chicken')).toBeInTheDocument();
+        expect(screen.getByText('1 cup chicken,')).toBeInTheDocument();
         expect(screen.getByText('skip prep method')).toBeInTheDocument();
     });
     it('should display all prepMethod options', async () => {
