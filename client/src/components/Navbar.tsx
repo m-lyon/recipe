@@ -17,17 +17,18 @@ export function Navbar() {
         <>
             <Box>
                 <Flex
+                    as='nav'
                     bg={useColorModeValue('white', 'gray.800')}
                     color={useColorModeValue('gray.600', 'white')}
-                    minH={'60px'}
+                    minH='60px'
                     py={{ base: 2 }}
                     px={{ base: 4 }}
                     borderBottom={1}
-                    borderStyle={'solid'}
+                    borderStyle='solid'
                     borderColor={useColorModeValue('gray.200', 'gray.900')}
-                    align={'center'}
-                    as='header'
+                    align='center'
                     position='fixed'
+                    zIndex={2}
                     w='100%'
                 >
                     <Flex
