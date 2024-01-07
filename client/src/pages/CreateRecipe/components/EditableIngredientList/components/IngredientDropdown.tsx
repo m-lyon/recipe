@@ -83,6 +83,8 @@ export function IngredientDropdown(props: Props) {
                         borderLeft={item.show ? '1px solid rgba(0,0,0,0.1)' : undefined}
                         borderRight={item.show ? '1px solid rgba(0,0,0,0.1)' : undefined}
                         boxShadow='6px 5px 8px rgba(0,50,30,0.02)'
+                        maxHeight={item.show ? '14em' : undefined}
+                        overflowY={item.show ? 'auto' : undefined}
                     >
                         <LayoutGroup>{getSuggestionsList()}</LayoutGroup>
                     </List>
