@@ -136,11 +136,11 @@ export function CreateRecipe() {
                 isIngredient,
             };
             createRecipe({ variables: { recipe } })
-                .then(() => {
+                .then((result) => {
                     if (states.rating.rating !== 0) {
                         addRating({
                             variables: {
-                                recipeId: recipe.owner,
+                                recipeId: result.data?.recipeCreateOne?.record?._id,
                                 rating: states.rating.rating,
                             },
                         })
