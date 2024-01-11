@@ -7,6 +7,7 @@ import { IngredientNameDropdownList } from './IngredientNameDropdownList';
 import { UnitDropdownList } from './UnitDropdownList';
 import { PrepMethodDropdownList } from './PrepMethodDropdownList';
 import { isPlural } from '../../../../../utils/plural';
+import { QuantityDropdownList } from './QuantityDropdownList';
 
 interface Props {
     item: EditableIngredient;
@@ -27,6 +28,8 @@ export function IngredientDropdown(props: Props) {
             previewRef,
         };
         switch (item.state) {
+            case 'quantity':
+                return <QuantityDropdownList {...dropdownProps} />;
             case 'unit':
                 if (!queryData.unit) {
                     return [];
@@ -71,7 +74,6 @@ export function IngredientDropdown(props: Props) {
     };
 
     return (
-        item.state !== 'quantity' &&
         item.show && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <Box pb={4} mb={4}>

@@ -19,7 +19,7 @@ export function EditableIngredient({ item, actionHandler, fontSize, queryData }:
     useOutsideClick({
         ref: parentRef,
         handler: () => {
-            if (item.quantity !== null) {
+            if (item.quantity !== null || item.show) {
                 actionHandler.reset();
             }
         },
@@ -40,6 +40,7 @@ export function EditableIngredient({ item, actionHandler, fontSize, queryData }:
                 selectAllOnFocus={false}
                 onChange={actionHandler.handleChange}
                 onCancel={actionHandler.reset}
+                onEdit={actionHandler.set.show.on}
                 textAlign='left'
                 fontSize={fontSize}
                 color={item.quantity !== null ? '' : 'gray.400'}

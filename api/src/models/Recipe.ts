@@ -11,7 +11,7 @@ import { quantityRegex } from './utils.js';
 export interface RecipeIngredientType extends Document {
     ingredient: Types.ObjectId;
     type: 'ingredient' | 'recipe';
-    quantity: string;
+    quantity?: string;
     unit?: Types.ObjectId;
     prepMethod?: Types.ObjectId;
 }
@@ -55,13 +55,13 @@ const recipeIngredientSchema = new Schema<RecipeIngredientType>({
         required: true,
     },
     type: { type: String, enum: ['ingredient', 'recipe'], required: true },
-    quantity: { type: String, required: true },
+    quantity: { type: String },
     unit: { type: Schema.Types.ObjectId, ref: 'Unit' },
     prepMethod: { type: Schema.Types.ObjectId, ref: 'PrepMethod' },
 });
 recipeIngredientSchema.pre('save', async function (next) {
     // Quantity validation
-    if (!quantityRegex.test(this.quantity)) {
+    if (this.quantity != null && !quantityRegex.test(this.quantity)) {
         const err = new Error('Invalid quantity format');
         return next(err);
     }

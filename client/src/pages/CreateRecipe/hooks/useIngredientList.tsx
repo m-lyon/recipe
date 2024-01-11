@@ -168,7 +168,6 @@ export type DBInputState = Extract<InputState, 'unit' | 'name' | 'prepMethod'>;
 export interface EditableFromDB {
     value: string | null;
     _id?: string;
-    type?: EnumRecipeIngredientType;
 }
 export interface EditableIngredient {
     quantity: string | null;
@@ -185,7 +184,7 @@ export interface FinishedName extends EditableFromDB {
     _id: string;
 }
 export interface FinishedIngredient {
-    quantity: string;
+    quantity: string | null;
     unit: EditableFromDB;
     name: FinishedName;
     prepMethod: EditableFromDB;
@@ -213,9 +212,6 @@ function setQuantity(state: IngredientState, action: Action): IngredientState {
     return produce(state, (draft) => {
         if (typeof action.nullableValue === 'undefined') {
             throw new Error('Cannot append quantity with undefined value.');
-        }
-        if (action.nullableValue === null) {
-            throw new Error('Cannot set editable quantity to null.');
         }
         draft.editable.quantity = action.nullableValue;
     });
@@ -401,12 +397,15 @@ function getEditableIngredientStr(item: EditableIngredient): string {
 }
 
 export function getIngredientStr(
-    quantity: string,
+    quantity: string | null,
     unit: string | null,
     name: string,
     prepMethod: string | null
 ): string {
-    const quantityStr = isFraction(quantity) ? formatFraction(quantity) : quantity;
+    let quantityStr = '';
+    if (quantity !== null) {
+        quantityStr = isFraction(quantity) ? formatFraction(quantity) : quantity;
+    }
     const unitStr = unit === null ? '' : ` ${unit}`;
     const prepMethodStr = prepMethod === null ? '' : `, ${prepMethod}`;
     return `${quantityStr}${unitStr} ${name}${prepMethodStr}`;
@@ -502,9 +501,6 @@ function reducer(state: IngredientState, action: Action): IngredientState {
             return produce(state, (draft) => {
                 if (draft.editable.name === null) {
                     throw new Error('Cannot submit an item with null name.');
-                }
-                if (draft.editable.quantity === null) {
-                    throw new Error('Cannot submit an item with null quantity.');
                 }
                 if (typeof draft.editable.type === 'undefined') {
                     throw new Error('Cannot submit an item without an ingredient type.');
