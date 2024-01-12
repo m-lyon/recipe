@@ -348,6 +348,9 @@ function truncateIngredient(num: number, item: EditableIngredient): EditableIngr
 }
 
 function getQuantityStr(item: EditableIngredient): string {
+    if (item.quantity === null) {
+        return '';
+    }
     if (item.state !== 'quantity' && isFraction(item.quantity!)) {
         return formatFraction(item.quantity!);
     }
@@ -355,7 +358,7 @@ function getQuantityStr(item: EditableIngredient): string {
 }
 
 function getUnitStr(item: EditableIngredient): string {
-    if (item.state === 'quantity') {
+    if (item.state === 'quantity' || item.quantity === null) {
         return '';
     }
     if (item.state === 'unit') {
@@ -374,7 +377,10 @@ function getUnitStr(item: EditableIngredient): string {
 }
 
 function getNameStr(item: EditableIngredient): string {
-    const delim = ['name', 'prepMethod'].includes(item.state) ? ' ' : '';
+    if (!['name', 'prepMethod'].includes(item.state)) {
+        return '';
+    }
+    const delim = item.quantity === null ? '' : ' ';
     const str = item.name.value !== null ? item.name.value : '';
     return `${delim}${str}`;
 }
@@ -386,7 +392,7 @@ function getPrepMethodStr(item: EditableIngredient): string {
 }
 
 function getEditableIngredientStr(item: EditableIngredient): string {
-    if (item.quantity === null) {
+    if (item.quantity === null && item.state === 'quantity') {
         return '';
     }
     const quantityStr = getQuantityStr(item);
@@ -407,8 +413,9 @@ export function getIngredientStr(
         quantityStr = isFraction(quantity) ? formatFraction(quantity) : quantity;
     }
     const unitStr = unit === null ? '' : ` ${unit}`;
+    const nameStr = quantity === null ? name : ` ${name}`;
     const prepMethodStr = prepMethod === null ? '' : `, ${prepMethod}`;
-    return `${quantityStr}${unitStr} ${name}${prepMethodStr}`;
+    return `${quantityStr}${unitStr}${nameStr}${prepMethodStr}`;
 }
 
 export function getFinishedIngredientStr(item: FinishedIngredient): string {
@@ -478,7 +485,7 @@ function reducer(state: IngredientState, action: Action): IngredientState {
         case 'increment_editable_state': {
             return produce(state, (draft) => {
                 const nextState = {
-                    quantity: 'unit',
+                    quantity: draft.editable.quantity === null ? 'name' : 'unit',
                     unit: 'name',
                     name: 'prepMethod',
                 };

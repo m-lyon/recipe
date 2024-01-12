@@ -43,7 +43,7 @@ export function EditableIngredient({ item, actionHandler, fontSize, queryData }:
                 onEdit={actionHandler.set.show.on}
                 textAlign='left'
                 fontSize={fontSize}
-                color={item.quantity !== null ? '' : 'gray.400'}
+                color={item.quantity !== null || item.name.value !== null ? '' : 'gray.400'}
                 paddingLeft='6px'
                 placeholder={DEFAULT_INGREDIENT_STR}
             >
