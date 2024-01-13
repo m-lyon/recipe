@@ -38,7 +38,6 @@ export function IngredientList(props: IngredientListProps) {
         if (item === null) {
             return null;
         }
-        console.log(item);
         const { quantity, unit, ingredient, prepMethod } = item;
         const plural = isPlural(quantity);
         const pluralIngr = isPluralIngredient(plural, unit !== null, isCountable(ingredient));

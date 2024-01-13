@@ -1,5 +1,5 @@
-export function isPlural(quantity: string | null): boolean {
-    if (quantity === null) {
+export function isPlural(quantity: string | null | undefined): boolean {
+    if (quantity == null) {
         return false;
     }
 

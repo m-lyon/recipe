@@ -121,6 +121,19 @@ describe('EditableIngredient Quantity Keyboard', () => {
         // Expect
         expect(screen.getByText('Invalid input')).toBeInTheDocument();
     });
+    it('should skip the quantity', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        const quantityInput = screen.getByText('Enter ingredient');
+        await user.click(quantityInput);
+        await user.click(screen.getByText('skip quantity'));
+
+        // Expect
+        expect(screen.getByText('chicken')).toBeInTheDocument();
+    });
 });
 describe('EditableIngredient Quantity Click', () => {
     it('should reset via click away from element', async () => {
@@ -549,6 +562,34 @@ describe('EditableIngredient Name Keyboard', () => {
         // Expect
         expect(screen.getByText('1 cup apples')).toBeInTheDocument();
     });
+    it('should revert back to quantity state', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        const quantityInput = screen.getByText('Enter ingredient');
+        await user.click(quantityInput);
+        await user.click(screen.getByText('skip quantity'));
+        await user.keyboard('{Backspace}');
+
+        // Expect
+        expect(screen.getByText('skip quantity')).toBeInTheDocument();
+    });
+    it('should revert back to quantity state after beginning to type', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        const quantityInput = screen.getByText('Enter ingredient');
+        await user.click(quantityInput);
+        await user.click(screen.getByText('skip quantity'));
+        await user.keyboard('{c}{Backspace}{Backspace}');
+
+        // Expect
+        expect(screen.getByText('skip quantity')).toBeInTheDocument();
+    });
 });
 describe('EditableIngredient Ingredient Click', () => {
     it('should reset via click away', async () => {
@@ -896,6 +937,21 @@ describe('FinishedIngredient', () => {
 
         // Expect
         expect(screen.getByText('2 chickens, chopped')).toBeInTheDocument();
+        expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
+    });
+    it('should display a completed item with no quantity or unit', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.click(screen.getByText('skip quantity'));
+        await user.click(screen.getByText('chicken'));
+        await user.click(screen.getByText('chopped'));
+
+        // Expect
+        expect(screen.getByText('chicken, chopped')).toBeInTheDocument();
         expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
     });
     it('should rearrange the order of the items', async () => {}); // TODO

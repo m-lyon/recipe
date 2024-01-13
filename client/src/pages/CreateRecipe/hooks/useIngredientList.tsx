@@ -77,6 +77,9 @@ function handleQuantityChange(
             actionHandler.setShow.on();
         } else {
             actionHandler.quantity.append(char);
+            if (item.show) {
+                actionHandler.setShow.off();
+            }
         }
     }
 }
@@ -142,6 +145,7 @@ function handleOtherChange(
 }
 
 export function getTextDiff(value: string, origStr: string): NewChar {
+    console.log('value', value, 'origStr', origStr);
     if (value.length > origStr.length) {
         return value.replace(origStr, '');
     }
@@ -403,18 +407,18 @@ function getEditableIngredientStr(item: EditableIngredient): string {
 }
 
 export function getIngredientStr(
-    quantity: string | null,
-    unit: string | null,
+    quantity: string | null | undefined,
+    unit: string | null | undefined,
     name: string,
-    prepMethod: string | null
+    prepMethod: string | null | undefined
 ): string {
     let quantityStr = '';
-    if (quantity !== null) {
+    if (quantity != null) {
         quantityStr = isFraction(quantity) ? formatFraction(quantity) : quantity;
     }
-    const unitStr = unit === null ? '' : ` ${unit}`;
-    const nameStr = quantity === null ? name : ` ${name}`;
-    const prepMethodStr = prepMethod === null ? '' : `, ${prepMethod}`;
+    const unitStr = unit == null ? '' : ` ${unit}`;
+    const nameStr = quantity == null ? name : ` ${name}`;
+    const prepMethodStr = prepMethod == null ? '' : `, ${prepMethod}`;
     return `${quantityStr}${unitStr}${nameStr}${prepMethodStr}`;
 }
 
@@ -496,6 +500,20 @@ function reducer(state: IngredientState, action: Action): IngredientState {
                 draft.editable.state = nextState[draft.editable.state] as InputState;
             });
         }
+        case 'decrement_editable_state': {
+            return produce(state, (draft) => {
+                const nextState = {
+                    unit: 'quantity',
+                    name: draft.editable.quantity === null ? 'quantity' : 'unit',
+                    prepMethod: 'name',
+                };
+                if (draft.editable.state === 'quantity') {
+                    return;
+                }
+                console.log('incrementing state to', nextState[draft.editable.state]);
+                draft.editable.state = nextState[draft.editable.state] as InputState;
+            });
+        }
         case 'truncate_editable': {
             return produce(state, (draft) => {
                 if (typeof action.num === 'undefined') {
@@ -539,6 +557,7 @@ interface ActionTypeHandlerFromDB extends Omit<ActionTypeHandler, 'set'> {
 }
 interface InternalActionHandler {
     incrementState: () => void;
+    decrementState: () => void;
     submit: () => void;
     truncate: (num: number) => void;
     quantity: ActionTypeHandler;
@@ -568,6 +587,7 @@ export interface IngredientActionHandler {
     handleSubmit: () => void;
     handleChange: (value: string) => void;
     incrementState: () => void;
+    decrementState: () => void;
 }
 export interface QueryData {
     unit?: GetUnitsQuery['unitMany'];
@@ -598,6 +618,7 @@ export function useIngredientList(): UseIngredientListReturnType {
             submit: () => dispatch({ type: 'submit_editable' }),
             truncate: (num: number) => dispatch({ type: 'truncate_editable', num }),
             incrementState: () => dispatch({ type: 'increment_editable_state' }),
+            decrementState: () => dispatch({ type: 'decrement_editable_state' }),
             quantity: {
                 set: (nullableValue: string | null) =>
                     dispatch({ type: 'set_editable_quantity', nullableValue }),
@@ -698,6 +719,7 @@ export function useIngredientList(): UseIngredientListReturnType {
             handleSubmit,
             handleChange,
             incrementState: editableActions.incrementState,
+            decrementState: editableActions.decrementState,
         };
     };
     const actionHandler = getIngredientActionHandler();

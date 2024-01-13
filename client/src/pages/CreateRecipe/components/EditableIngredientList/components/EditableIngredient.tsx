@@ -38,6 +38,15 @@ export function EditableIngredient({ item, actionHandler, fontSize, queryData }:
                     }
                 }}
                 selectAllOnFocus={false}
+                onKeyDown={(e) => {
+                    if (
+                        e.key === 'Backspace' &&
+                        ingredientStr === '' &&
+                        item.state !== 'quantity'
+                    ) {
+                        actionHandler.decrementState();
+                    }
+                }}
                 onChange={actionHandler.handleChange}
                 onCancel={actionHandler.reset}
                 onEdit={actionHandler.set.show.on}
