@@ -1,5 +1,12 @@
-import { Button, ButtonGroup, FormControl, FormHelperText, HStack } from '@chakra-ui/react';
-import { Radio, RadioGroup, Stack } from '@chakra-ui/react';
+import {
+    Button,
+    ButtonGroup,
+    FormControl,
+    FormHelperText,
+    FormLabel,
+    HStack,
+} from '@chakra-ui/react';
+import { Radio, RadioGroup, Stack, Input } from '@chakra-ui/react';
 import { TextInput } from '../../../../../components/TextInput';
 import { gql } from '../../../../../__generated__';
 import { useState } from 'react';
@@ -10,6 +17,7 @@ import { EnumUnitPreferredNumberFormat } from '../../../../../__generated__/grap
 import { PopoverHeader, PopoverArrow } from '@chakra-ui/react';
 import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 import { UnitSuggestion } from './UnitDropdownList';
+import { theme } from '../../../../../components/FloatingLabels';
 
 const CREATE_NEW_UNIT_MUTATION = gql(`
     mutation CreateUnit($record: CreateOneUnitInput!) {
@@ -88,7 +96,12 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewUnitFormProps)
     return (
         <FormControl isInvalid={hasError}>
             <Stack spacing={1} paddingTop={3} paddingLeft={2}>
-                <TextInput
+                <FormControl variant='floating'>
+                    <Input placeholder='' />
+                    <FormLabel htmlFor='short-singular-name'>Short singular name</FormLabel>
+                </FormControl>
+
+                {/* <TextInput
                     placeholder='Short singular name'
                     id='short-singular-name'
                     ref={firstFieldRef}
@@ -97,7 +110,7 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewUnitFormProps)
                         setShortSingular(e.target.value.toLowerCase());
                         hasError && setHasError(false);
                     }}
-                />
+                /> */}
                 <TextInput
                     placeholder='Short plural name'
                     id='short-plural-name'

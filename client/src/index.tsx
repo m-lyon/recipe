@@ -13,6 +13,7 @@ import { RequireAuth } from './RequireAuth';
 import { Navbar } from './components/Navbar';
 import { Signup } from './pages/Signup';
 import { Search } from './pages/Search';
+import { theme } from './components/FloatingLabels';
 
 const domNode = document.getElementById('root')!;
 const root = createRoot(domNode);
@@ -47,7 +48,7 @@ const routes = createBrowserRouter(
 
 root.render(
     <ApolloProvider client={client}>
-        <ChakraProvider>
+        <ChakraProvider theme={theme}>
             <UserProvider>
                 <RouterProvider router={routes} />
             </UserProvider>
