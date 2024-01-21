@@ -9,7 +9,7 @@
   "scripts": {
     "compile": "tsc",
     "start": "npm run compile && node ./dist/index.js",
-    "dev": "NODE_ENV=development nodemon -e ts --exec \"npm run start\"",
+    "dev": "PORT=4004 NODE_ENV=development nodemon -e ts --exec \"npm run start\"",
     "prod": "NODE_ENV=production npm run start",
     "seed": "npm run compile && NODE_ENV=development node ./dist/scripts/seedDatabase.js",
     "reset_db": "npm run compile && NODE_ENV=development node ./dist/scripts/resetDatabase.js"

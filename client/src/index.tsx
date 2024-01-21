@@ -13,7 +13,7 @@ import { RequireAuth } from './RequireAuth';
 import { Navbar } from './components/Navbar';
 import { Signup } from './pages/Signup';
 import { Search } from './pages/Search';
-import { theme } from './components/FloatingLabels';
+import { theme } from './theme/chakraTheme';
 
 const domNode = document.getElementById('root')!;
 const root = createRoot(domNode);

@@ -1,13 +1,5 @@
-import {
-    Button,
-    ButtonGroup,
-    FormControl,
-    FormHelperText,
-    FormLabel,
-    HStack,
-} from '@chakra-ui/react';
-import { Radio, RadioGroup, Stack, Input } from '@chakra-ui/react';
-import { TextInput } from '../../../../../components/TextInput';
+import { Button, ButtonGroup, FormControl, FormHelperText, HStack } from '@chakra-ui/react';
+import { Radio, RadioGroup, Stack } from '@chakra-ui/react';
 import { gql } from '../../../../../__generated__';
 import { useState } from 'react';
 import { ApolloError, useMutation } from '@apollo/client';
@@ -17,7 +9,7 @@ import { EnumUnitPreferredNumberFormat } from '../../../../../__generated__/grap
 import { PopoverHeader, PopoverArrow } from '@chakra-ui/react';
 import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 import { UnitSuggestion } from './UnitDropdownList';
-import { theme } from '../../../../../components/FloatingLabels';
+import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';
 
 const CREATE_NEW_UNIT_MUTATION = gql(`
     mutation CreateUnit($record: CreateOneUnitInput!) {
@@ -94,50 +86,49 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewUnitFormProps)
     });
 
     return (
-        <FormControl isInvalid={hasError}>
-            <Stack spacing={1} paddingTop={3} paddingLeft={2}>
-                <FormControl variant='floating'>
-                    <Input placeholder='' />
-                    <FormLabel htmlFor='short-singular-name'>Short singular name</FormLabel>
-                </FormControl>
-
-                {/* <TextInput
-                    placeholder='Short singular name'
-                    id='short-singular-name'
-                    ref={firstFieldRef}
-                    value={shortSingular}
-                    onChange={(e) => {
-                        setShortSingular(e.target.value.toLowerCase());
-                        hasError && setHasError(false);
-                    }}
-                /> */}
-                <TextInput
-                    placeholder='Short plural name'
-                    id='short-plural-name'
-                    value={shortPlural}
-                    onChange={(e) => {
-                        setShortPlural(e.target.value.toLowerCase());
-                        hasError && setHasError(false);
-                    }}
-                />
-                <TextInput
-                    placeholder='Long singular name'
-                    id='long-singular-name'
-                    value={longSingular}
-                    onChange={(e) => {
-                        setLongSingular(e.target.value.toLowerCase());
-                        hasError && setHasError(false);
-                    }}
-                />
-                <TextInput
-                    placeholder='Long plural name'
-                    id='long-plural-name'
-                    value={longPlural}
-                    onChange={(e) => {
-                        setLongPlural(e.target.value.toLowerCase());
-                        hasError && setHasError(false);
-                    }}
-                />
+        <Stack spacing={4} paddingTop={3} paddingLeft={2}>
+            <FloatingLabelInput
+                firstFieldRef={firstFieldRef}
+                id='short-singular-name'
+                label='Short singular name'
+                value={shortSingular}
+                isInvalid={hasError}
+                onChange={(e) => {
+                    setShortSingular(e.target.value.toLowerCase());
+                    hasError && setHasError(false);
+                }}
+            />
+            <FloatingLabelInput
+                label='Short plural name'
+                id='short-plural-name'
+                value={shortPlural}
+                isInvalid={hasError}
+                onChange={(e) => {
+                    setShortPlural(e.target.value.toLowerCase());
+                    hasError && setHasError(false);
+                }}
+            />
+            <FloatingLabelInput
+                label='Long singular name'
+                id='long-singular-name'
+                value={longSingular}
+                isInvalid={hasError}
+                onChange={(e) => {
+                    setLongSingular(e.target.value.toLowerCase());
+                    hasError && setHasError(false);
+                }}
+            />
+            <FloatingLabelInput
+                label='Long plural name'
+                id='long-plural-name'
+                value={longPlural}
+                isInvalid={hasError}
+                onChange={(e) => {
+                    setLongPlural(e.target.value.toLowerCase());
+                    hasError && setHasError(false);
+                }}
+            />
+            <FormControl>
                 <FormHelperText>Preferred number format</FormHelperText>
                 <RadioGroup onChange={setpreferredNumberFormat}>
                     <HStack spacing={'12px'}>
@@ -145,46 +136,46 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewUnitFormProps)
                         <Radio value='fraction'>fraction</Radio>
                     </HStack>
                 </RadioGroup>
-                <ButtonGroup display='flex' justifyContent='flex-left' paddingTop={2}>
-                    <Button
-                        colorScheme='teal'
-                        onClick={() => {
-                            try {
-                                const parsedForm = formSchema.validateSync({
-                                    shortSingular,
-                                    shortPlural,
-                                    longSingular,
-                                    longPlural,
-                                    preferredNumberFormat,
-                                });
-                                createNewUnit({
-                                    variables: {
-                                        record: {
-                                            ...parsedForm,
-                                            preferredNumberFormat:
-                                                parsedForm.preferredNumberFormat as EnumUnitPreferredNumberFormat,
-                                        },
+            </FormControl>
+            <ButtonGroup display='flex' justifyContent='flex-left' paddingTop={2}>
+                <Button
+                    colorScheme='teal'
+                    onClick={() => {
+                        try {
+                            const parsedForm = formSchema.validateSync({
+                                shortSingular,
+                                shortPlural,
+                                longSingular,
+                                longPlural,
+                                preferredNumberFormat,
+                            });
+                            createNewUnit({
+                                variables: {
+                                    record: {
+                                        ...parsedForm,
+                                        preferredNumberFormat:
+                                            parsedForm.preferredNumberFormat as EnumUnitPreferredNumberFormat,
                                     },
+                                },
+                            });
+                        } catch (e: unknown) {
+                            setHasError(true);
+                            if (e instanceof ValidationError) {
+                                toast({
+                                    title: 'Error creating new unit',
+                                    description: e.message,
+                                    status: 'error',
+                                    position: 'top',
+                                    duration: 3000,
                                 });
-                            } catch (e: unknown) {
-                                setHasError(true);
-                                if (e instanceof ValidationError) {
-                                    toast({
-                                        title: 'Error creating new unit',
-                                        description: e.message,
-                                        status: 'error',
-                                        position: 'top',
-                                        duration: 3000,
-                                    });
-                                }
                             }
-                        }}
-                    >
-                        Save
-                    </Button>
-                </ButtonGroup>
-            </Stack>
-        </FormControl>
+                        }
+                    }}
+                >
+                    Save
+                </Button>
+            </ButtonGroup>
+        </Stack>
     );
 }
 

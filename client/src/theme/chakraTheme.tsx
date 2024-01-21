@@ -28,8 +28,6 @@ export const theme = extendTheme({
                             px: 1,
                             my: 2,
                             transformOrigin: 'left top',
-                            color: 'gray.400',
-                            fontWeight: 600,
                         },
                     },
                 },

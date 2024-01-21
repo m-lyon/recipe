@@ -1,5 +1,4 @@
-import { Button, ButtonGroup, Checkbox, FormControl, Stack } from '@chakra-ui/react';
-import { TextInput } from '../../../../../components/TextInput';
+import { Button, ButtonGroup, Checkbox, Stack } from '@chakra-ui/react';
 import { PopoverHeader, PopoverArrow } from '@chakra-ui/react';
 import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 import { gql } from '../../../../../__generated__';
@@ -9,6 +8,7 @@ import { useToast } from '@chakra-ui/react';
 import { object, string, number, boolean, ValidationError } from 'yup';
 import { IngredientSuggestion } from './IngredientNameDropdownList';
 import { EnumRecipeIngredientType } from '../../../../../__generated__/graphql';
+import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';
 
 const CREATE_NEW_INGREDIENT_MUTATION = gql(`
     mutation CreateIngredient($record: CreateOneIngredientInput!) {
@@ -81,68 +81,69 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewIngredie
     });
 
     return (
-        <FormControl isInvalid={hasError}>
-            <Stack spacing={4}>
-                <TextInput
-                    placeholder='Name'
-                    id='name'
-                    ref={firstFieldRef}
-                    value={name}
-                    onChange={(e) => {
-                        setName(e.target.value.toLowerCase());
-                        hasError && setHasError(false);
-                    }}
-                />
-                <TextInput
-                    placeholder='Plural name'
-                    id='plural-name'
-                    value={pluralName}
-                    onChange={(e) => {
-                        setPluralName(e.target.value.toLowerCase());
-                        hasError && setHasError(false);
-                    }}
-                />
-                <Checkbox onChange={(e) => setIsCountable(e.target.checked)}>Countable</Checkbox>
-                <TextInput
-                    placeholder='Density (g/ml)'
-                    id='density'
-                    value={density ? density : ''}
-                    onChange={(e) => {
-                        setDensity(e.target.value);
-                        hasError && setHasError(false);
-                    }}
-                />
-                <ButtonGroup display='flex' justifyContent='flex-end'>
-                    <Button
-                        colorScheme='teal'
-                        onClick={() => {
-                            try {
-                                const parsedForm = formSchema.validateSync({
-                                    name,
-                                    pluralName,
-                                    isCountable,
-                                    density: density === '' ? undefined : density,
+        <Stack spacing={4}>
+            <FloatingLabelInput
+                label='Name'
+                id='name'
+                firstFieldRef={firstFieldRef}
+                value={name}
+                isInvalid={hasError}
+                onChange={(e) => {
+                    setName(e.target.value.toLowerCase());
+                    hasError && setHasError(false);
+                }}
+            />
+            <FloatingLabelInput
+                label='Plural name'
+                id='plural-name'
+                value={pluralName}
+                isInvalid={hasError}
+                onChange={(e) => {
+                    setPluralName(e.target.value.toLowerCase());
+                    hasError && setHasError(false);
+                }}
+            />
+            <Checkbox onChange={(e) => setIsCountable(e.target.checked)}>Countable</Checkbox>
+            <FloatingLabelInput
+                label='Density (g/ml)'
+                id='density'
+                value={density ? density : ''}
+                isInvalid={hasError}
+                onChange={(e) => {
+                    setDensity(e.target.value);
+                    hasError && setHasError(false);
+                }}
+            />
+            <ButtonGroup display='flex' justifyContent='flex-end'>
+                <Button
+                    colorScheme='teal'
+                    onClick={() => {
+                        try {
+                            const parsedForm = formSchema.validateSync({
+                                name,
+                                pluralName,
+                                isCountable,
+                                density: density === '' ? undefined : density,
+                            });
+                            createNewIngredient({ variables: { record: parsedForm } });
+                        } catch (e: unknown) {
+                            setHasError(true);
+                            if (e instanceof ValidationError) {
+                                toast({
+                                    title: 'Error creating new ingredient',
+                                    description: e.message,
+                                    status: 'error',
+                                    position: 'top',
+                                    duration: 3000,
                                 });
-                                createNewIngredient({ variables: { record: parsedForm } });
-                            } catch (e: unknown) {
-                                setHasError(true);
-                                if (e instanceof ValidationError) {
-                                    toast({
-                                        title: 'Error creating new ingredient',
-                                        description: e.message,
-                                        status: 'error',
-                                        position: 'top',
-                                        duration: 3000,
-                                    });
-                                }
                             }
-                        }}
-                    >
-                        Save
-                    </Button>
-                </ButtonGroup>
-            </Stack>
-        </FormControl>
+                        }
+                    }}
+                >
+                    Save
+                </Button>
+            </ButtonGroup>
+        </Stack>
     );
 }
 

@@ -1,11 +1,11 @@
 import { Button, ButtonGroup, Stack } from '@chakra-ui/react';
-import { TextInput } from '../../../../../components/TextInput';
 import { NewPopover } from './NewPopover';
 import { NewFormProps } from '../../../types';
 import { gql } from '../../../../../__generated__';
 import { useState } from 'react';
 import { useMutation, ApolloError } from '@apollo/client';
 import { useToast } from '@chakra-ui/react';
+import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';
 
 const CREATE_NEW_PREP_METHOD_MUTATION = gql(`
     mutation CreatePrepMethod($record: CreateOnePrepMethodInput!) {
@@ -64,22 +64,21 @@ function NewPrepMethodForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
     });
     return (
         <Stack spacing={4}>
-            <TextInput
-                placeholder='Name'
+            <FloatingLabelInput
+                label='Name'
                 id='name'
-                ref={firstFieldRef}
+                firstFieldRef={firstFieldRef}
                 value={value}
+                isInvalid={hasError}
                 onChange={(e) => {
                     setValue(e.target.value.toLowerCase());
                     hasError && setHasError(false);
                 }}
             />
-            <ButtonGroup
-                display='flex'
-                justifyContent='flex-end'
-                onClick={() => createNewPrepMethod()}
-            >
-                <Button colorScheme='teal'>Save</Button>
+            <ButtonGroup display='flex' justifyContent='flex-end'>
+                <Button colorScheme='teal' onClick={() => createNewPrepMethod()}>
+                    Save
+                </Button>
             </ButtonGroup>
         </Stack>
     );
