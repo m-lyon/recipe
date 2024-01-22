@@ -177,25 +177,25 @@ export function CreateRecipe() {
         <Container maxW='container.xl' pt='60px'>
             <Grid
                 templateAreas={`'title title'
-                                    'ingredients tags'
-                                    'ingredients instructions'
-                                    'images images'
-                                    'button button'`}
-                gridTemplateRows={'100px 0.3fr 0.9fr 200px 90px'}
-                gridTemplateColumns={'0.4fr 1fr'}
-                h='1000px'
+                                'ingredients tags'
+                                'ingredients instructions'
+                                'images images'
+                                'button button'`}
+                gridTemplateRows='100px 140px auto 200px 90px'
+                gridTemplateColumns='0.4fr 1fr'
+                h='auto'
                 gap='2'
                 pt='2'
                 pb='2'
                 color='blackAlpha.700'
                 fontWeight='bold'
             >
-                <GridItem pl='2' boxShadow='lg' padding='6' area={'title'}>
+                <GridItem pl='2' boxShadow='lg' padding='6' area='title' maxH='100px'>
                     <EditableTitle {...states.title} />
                 </GridItem>
                 <GridItem
                     pl='2'
-                    area={'tags'}
+                    area='tags'
                     boxShadow='lg'
                     paddingLeft={6}
                     paddingTop={6}
@@ -204,7 +204,7 @@ export function CreateRecipe() {
                 >
                     <EditableTagList {...states.tags} />
                 </GridItem>
-                <GridItem pl='2' area={'ingredients'} boxShadow='lg' padding='6'>
+                <GridItem pl='2' area='ingredients' boxShadow='lg' padding='6'>
                     <EditableIngredientsTab
                         servingsProps={states.numServings}
                         ratingProps={states.rating}
@@ -212,17 +212,17 @@ export function CreateRecipe() {
                         notesProps={states.notes}
                     />
                 </GridItem>
-                <GridItem pl='2' boxShadow='lg' padding='6' area={'instructions'}>
+                <GridItem pl='2' boxShadow='lg' padding='6' area='instructions' minH='420px'>
                     <EditableInstructionsTab
                         instructionsProps={states.instructions}
                         asIngredientProps={states.asIngredient}
                         sourceProps={states.source}
                     />
                 </GridItem>
-                <GridItem pl='2' boxShadow='lg' padding='6' area={'images'}>
+                <GridItem pl='2' boxShadow='lg' padding='6' area='images'>
                     <ImageUpload />
                 </GridItem>
-                <GridItem pl='2' padding='6' area={'button'}>
+                <GridItem pl='2' padding='6' area='button'>
                     <Center>
                         <Box position='fixed' bottom='4' pb='3'>
                             <Button

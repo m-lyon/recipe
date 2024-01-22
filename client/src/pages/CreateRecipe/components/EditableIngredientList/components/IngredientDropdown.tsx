@@ -76,7 +76,7 @@ export function IngredientDropdown(props: Props) {
     return (
         item.show && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <Box pb={4} mb={4}>
+                <Box pb={4} mb={4} zIndex={1} position='absolute' width='100%'>
                     <List
                         color='rgba(0, 0, 0, 0.64)'
                         bg='white'

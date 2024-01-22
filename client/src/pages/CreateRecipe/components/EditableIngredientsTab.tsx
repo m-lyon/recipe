@@ -1,4 +1,4 @@
-import { Flex, VStack, Text, Spacer } from '@chakra-ui/react';
+import { Flex, VStack, Text, Spacer, Box } from '@chakra-ui/react';
 import { UseIngredientListReturnType } from '../hooks/useIngredientList';
 import { EditableIngredientList } from './EditableIngredientList';
 import { UseEditableReturnType } from '../hooks/useEditable';
@@ -15,7 +15,7 @@ interface Props {
 export function EditableIngredientsTab(props: Props) {
     const { servingsProps, ratingProps, ingredientsProps, notesProps } = props;
     return (
-        <Flex direction={'column'} justifyContent='space-between' height='100%'>
+        <Flex direction='column' justifyContent='space-between' height='100%' position='relative'>
             <VStack spacing='24px' align='left'>
                 <Flex paddingBottom={3}>
                     <Servings {...servingsProps} />
@@ -29,6 +29,7 @@ export function EditableIngredientsTab(props: Props) {
                 <EditableIngredientList {...ingredientsProps} />
             </VStack>
             <Spacer />
+            <Box height='4em' />
             <EditableNotes {...notesProps} />
         </Flex>
     );
