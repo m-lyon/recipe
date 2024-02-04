@@ -35,7 +35,7 @@ export async function validateIngredientIds(next: any) {
     }
 }
 
-function generateRecipeIdentifier(title: string): string {
+export function generateRecipeIdentifier(title: string): string {
     // Remove special characters
     let sanitizedTitle = title.replace(/[^a-zA-Z0-9\s]/g, '');
     // Remove leading and trailing whitespaces
@@ -88,7 +88,7 @@ export interface Recipe extends Document {
 
 const recipeSchema = new Schema<Recipe>({
     title: { type: String, required: true, unique: true },
-    titleIdentifier: { type: String, unique: true },
+    titleIdentifier: { type: String, unique: true, required: true },
     pluralTitle: { type: String },
     subTitle: { type: String },
     tags: {
@@ -123,7 +123,6 @@ const recipeSchema = new Schema<Recipe>({
 });
 
 recipeSchema.pre('save', async function (next) {
-    this.titleIdentifier = generateRecipeIdentifier(this.title);
     await validateMongooseObjectIds.call(this, { owner: User }, next);
     await validateMongooseObjectIdsArray.call(this, { tags: Tag }, next);
 });

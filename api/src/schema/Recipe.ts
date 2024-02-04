@@ -1,4 +1,5 @@
 import { RecipeIngredientTC, RecipeModifyTC, RecipeQueryTC } from '../models/Recipe.js';
+import { generateRecipeIdentifier } from '../models/Recipe.js';
 import { TagTC } from '../models/Tag.js';
 import { UnitTC } from '../models/Unit.js';
 import { Ingredient, IngredientTC } from '../models/Ingredient.js';
@@ -18,7 +19,7 @@ const IngredientOrRecipeTC = schemaComposer.createUnionTC({
     },
 });
 
-const ingredientOrRecipeResolver = schemaComposer.createResolver({
+RecipeIngredientTC.addResolver({
     name: 'ingredientOrRecipe',
     type: IngredientOrRecipeTC,
     args: {
@@ -59,7 +60,7 @@ RecipeIngredientTC.addRelation('unit', {
     projection: { unit: true },
 });
 RecipeIngredientTC.addRelation('ingredient', {
-    resolver: () => ingredientOrRecipeResolver,
+    resolver: () => RecipeIngredientTC.getResolver('ingredientOrRecipe'),
     prepareArgs: {
         type: (source) => source.type,
         ingredient: (source) => source.ingredient._id,
@@ -79,22 +80,17 @@ export const RecipeQuery = {
     recipeByIds: RecipeQueryTC.mongooseResolvers.findByIds(),
     recipeOne: RecipeQueryTC.mongooseResolvers.findOne(),
     recipeMany: RecipeQueryTC.mongooseResolvers.findMany(),
-    // recipeDataLoader: RecipeTC.mongooseResolvers.dataLoader(),
-    // recipeDataLoaderMany: RecipeTC.mongooseResolvers.dataLoaderMany(),
-    // recipeCount: RecipeTC.mongooseResolvers.count(),
-    // recipeConnection: RecipeTC.mongooseResolvers.connection(),
-    // recipePagination: RecipeTC.mongooseResolvers.pagination(),
 };
 
 export const RecipeMutation = {
-    // 'many' methods are commented out because they are not currently used
-    // by frontend. They are left here for reference.
-    recipeCreateOne: RecipeModifyTC.mongooseResolvers.createOne(),
-    // recipeCreateMany: RecipeTC.mongooseResolvers.createMany(),
+    recipeCreateOne: RecipeModifyTC.mongooseResolvers
+        .createOne()
+        .wrapResolve((next) => async (rp) => {
+            rp.args.record.titleIdentifier = generateRecipeIdentifier(rp.args.record.title);
+            return next(rp);
+        }),
     recipeUpdateById: RecipeModifyTC.mongooseResolvers.updateById(),
-    // recipeUpdateOne: RecipeTC.mongooseResolvers.updateOne(), // not used because resolver logic would need to be updated to find via findOne
-    // recipeUpdateMany: RecipeTC.mongooseResolvers.updateMany(),
+    // not used because resolver logic would need to be updated to find via findOne
+    // recipeUpdateOne: RecipeTC.mongooseResolvers.updateOne(),
     recipeRemoveById: RecipeModifyTC.mongooseResolvers.removeById(),
-    // recipeRemoveOne: RecipeTC.mongooseResolvers.removeOne(),
-    // recipeRemoveMany: RecipeTC.mongooseResolvers.removeMany(),
 };
