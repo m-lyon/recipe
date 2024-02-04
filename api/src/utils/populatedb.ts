@@ -3,6 +3,7 @@ import { Unit } from '../models/Unit.js';
 import { User } from '../models/User.js';
 import { Ingredient } from '../models/Ingredient.js';
 import { PrepMethod } from '../models/PrepMethod.js';
+import { Recipe } from '../models/Recipe.js';
 
 export async function populateTags() {
     try {
@@ -10,7 +11,7 @@ export async function populateTags() {
         await Tag.collection.drop();
 
         // Create new dummy records
-        const dummyTags = ['Lunch', 'Dinner', 'Spicy', 'Freezes'];
+        const dummyTags = ['lunch', 'dinner', 'spicy', 'freezes'];
         const createdTags = await Tag.create(dummyTags.map((value) => ({ value })));
 
         console.log('Dummy tags added:', createdTags);
@@ -102,6 +103,60 @@ export async function populateIngredients() {
         console.log('Ingredients with prepMethods added:', createdIngredients);
     } catch (error) {
         console.error('Error populating ingredients:', error);
+    }
+}
+
+export async function populateRecipes() {
+    try {
+        // Remove all existing recipes
+        await Recipe.collection.drop();
+        const dummyRecipes = [
+            {
+                title: 'Spaghetti Bolognese',
+                subTitle: 'A classic Italian dish',
+                tags: [
+                    (await Tag.findOne({ value: 'lunch' }))._id,
+                    (await Tag.findOne({ value: 'dinner' }))._id,
+                ],
+                ingredients: [
+                    {
+                        ingredient: (await Ingredient.findOne({ name: 'onion' }))._id,
+                        type: 'ingredient',
+                        quantity: '1',
+                        unit: null,
+                        prepMethod: (await PrepMethod.findOne({ value: 'chopped' }))._id,
+                    },
+                    {
+                        ingredient: (await Ingredient.findOne({ name: 'chicken' }))._id,
+                        type: 'ingredient',
+                        quantity: '1',
+                        unit: (await Unit.findOne({ shortSingular: 'kg' }))._id,
+                        prepMethod: (await PrepMethod.findOne({ value: 'diced' }))._id,
+                    },
+                    {
+                        ingredient: (await Ingredient.findOne({ name: 'tomato' }))._id,
+                        type: 'ingredient',
+                        quantity: '400',
+                        unit: (await Unit.findOne({ shortSingular: 'cup' }))._id,
+                        prepMethod: (await PrepMethod.findOne({ value: 'chopped' }))._id,
+                    },
+                ],
+                instructions: [
+                    'Fry the onion in a little oil until soft.',
+                    'Add the chicken and brown.',
+                    'Add the tomato and simmer for 30 minutes.',
+                    'Serve with spaghetti.',
+                ],
+                notes: 'This is a great recipe to make in bulk and freeze.',
+                owner: (await User.findOne({ username: 'john@gmail.com' }))._id,
+                numServings: 4,
+                isIngredient: false,
+            },
+        ];
+        const createdRecipes = await Recipe.create(dummyRecipes);
+        console.log('Dummy recipes added:', createdRecipes);
+    } catch (error) {
+        console.error('Error populating recipes:', error);
     }
 }
 
