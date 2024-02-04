@@ -22,6 +22,8 @@ const IngredientOrRecipeTC = schemaComposer.createUnionTC({
 RecipeIngredientTC.addResolver({
     name: 'ingredientOrRecipe',
     type: IngredientOrRecipeTC,
+    description:
+        'Determine if the object is an ingredient or a recipe and return the appropriate type',
     args: {
         type: 'String!',
         ingredient: 'MongoID!',
@@ -76,10 +78,14 @@ RecipeIngredientTC.addRelation('prepMethod', {
 });
 
 export const RecipeQuery = {
-    recipeById: RecipeQueryTC.mongooseResolvers.findById(),
-    recipeByIds: RecipeQueryTC.mongooseResolvers.findByIds(),
-    recipeOne: RecipeQueryTC.mongooseResolvers.findOne(),
-    recipeMany: RecipeQueryTC.mongooseResolvers.findMany(),
+    recipeById: RecipeQueryTC.mongooseResolvers
+        .findById()
+        .setDescription('Get a single recipe by its ID'),
+    recipeByIds: RecipeQueryTC.mongooseResolvers
+        .findByIds()
+        .setDescription('Get multiple recipes by their IDs'),
+    recipeOne: RecipeQueryTC.mongooseResolvers.findOne().setDescription('Get a single recipe'),
+    recipeMany: RecipeQueryTC.mongooseResolvers.findMany().setDescription('Get multiple recipes'),
 };
 
 export const RecipeMutation = {
@@ -88,9 +94,14 @@ export const RecipeMutation = {
         .wrapResolve((next) => async (rp) => {
             rp.args.record.titleIdentifier = generateRecipeIdentifier(rp.args.record.title);
             return next(rp);
-        }),
-    recipeUpdateById: RecipeModifyTC.mongooseResolvers.updateById(),
+        })
+        .setDescription('Create a new recipe'),
+    recipeUpdateById: RecipeModifyTC.mongooseResolvers
+        .updateById()
+        .setDescription('Update a recipe by its ID'),
     // not used because resolver logic would need to be updated to find via findOne
     // recipeUpdateOne: RecipeTC.mongooseResolvers.updateOne(),
-    recipeRemoveById: RecipeModifyTC.mongooseResolvers.removeById(),
+    recipeRemoveById: RecipeModifyTC.mongooseResolvers
+        .removeById()
+        .setDescription('Remove a recipe by its ID'),
 };

@@ -2,6 +2,7 @@ import { User, UserTC } from '../models/User.js';
 
 UserTC.addResolver({
     name: 'currentUser',
+    description: 'Retrieve the currently authenticated user',
     type: UserTC,
     resolve: ({ source, args, context }) => {
         const user = context.getUser();
@@ -11,6 +12,7 @@ UserTC.addResolver({
 
 UserTC.addResolver({
     name: 'login',
+    description: 'Login a user',
     type: UserTC,
     args: { username: 'String!', password: 'String!' },
     resolve: async ({ source, args, context }) => {
@@ -30,6 +32,7 @@ UserTC.addResolver({
 });
 UserTC.addResolver({
     name: 'logout',
+    description: 'Logout a user',
     type: 'Boolean!',
     resolve: async ({ source, args, context }) => {
         await context.logout();
@@ -38,6 +41,7 @@ UserTC.addResolver({
 });
 UserTC.addResolver({
     name: 'register',
+    description: 'Register a new user',
     type: UserTC,
     args: { username: 'String!', password: 'String!', firstName: 'String!', lastName: 'String!' },
     resolve: async ({ source, args, context }) => {

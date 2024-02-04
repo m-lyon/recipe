@@ -1,16 +1,34 @@
 import { IngredientTC } from '../models/Ingredient.js';
 
 export const IngredientQuery = {
-    ingredientById: IngredientTC.mongooseResolvers.findById(),
-    ingredientByIds: IngredientTC.mongooseResolvers.findByIds(),
-    ingredientOne: IngredientTC.mongooseResolvers.findOne(),
-    ingredientMany: IngredientTC.mongooseResolvers.findMany(),
+    ingredientById: IngredientTC.mongooseResolvers
+        .findById()
+        .setDescription('Retrieve an ingredient by its ID'),
+    ingredientByIds: IngredientTC.mongooseResolvers
+        .findByIds()
+        .setDescription('Retrieve multiple ingredients by their IDs'),
+    ingredientOne: IngredientTC.mongooseResolvers
+        .findOne()
+        .setDescription('Retrieve a single ingredient'),
+    ingredientMany: IngredientTC.mongooseResolvers
+        .findMany()
+        .setDescription('Retrieve multiple ingredients'),
 };
 
 export const IngredientMutation = {
-    ingredientCreateOne: IngredientTC.mongooseResolvers.createOne(),
-    ingredientUpdateById: IngredientTC.mongooseResolvers.updateById(),
-    ingredientUpdateOne: IngredientTC.mongooseResolvers.updateOne(),
-    ingredientRemoveById: IngredientTC.mongooseResolvers.removeById(),
-    ingredientRemoveOne: IngredientTC.mongooseResolvers.removeOne(),
+    ingredientCreateOne: IngredientTC.mongooseResolvers
+        .createOne()
+        .setDescription('Create a new ingredient'),
+    ingredientUpdateById: IngredientTC.mongooseResolvers
+        .updateById()
+        .setDescription('Update an ingredient by its ID'),
+    ingredientUpdateOne: IngredientTC.mongooseResolvers
+        .updateOne()
+        .setDescription('Update a single ingredient'),
+    ingredientRemoveById: IngredientTC.mongooseResolvers
+        .removeById()
+        .setDescription('Remove an ingredient by its ID'),
+    ingredientRemoveOne: IngredientTC.mongooseResolvers
+        .removeOne()
+        .setDescription('Remove a single ingredient'),
 };
