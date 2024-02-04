@@ -6,10 +6,10 @@ import { PrepMethodQuery, PrepMethodMutation } from './PrepMethod.js';
 import { IngredientQuery, IngredientMutation } from './Ingredient.js';
 import { RecipeQuery, RecipeMutation } from './Recipe.js';
 import { composeResolvers } from '@graphql-tools/resolvers-composition';
-import { isAdmin, isAuthenticated, isRecipeOwnerOrAdmin } from '../middleware/resolvers.js';
+import { isAdmin, isAuthenticated, isRecipeOwnerOrAdmin } from '../middleware/authorisation.js';
 import { RatingMutation, RatingQuery } from './Rating.js';
 
-const defaultMutations = composeResolvers(
+const isAdminMutations = composeResolvers(
     {
         Mutation: {
             ...TagMutation,
@@ -20,24 +20,16 @@ const defaultMutations = composeResolvers(
     },
     { 'Mutation.*': [isAdmin()] }
 );
-const recipeCreateMutation = composeResolvers(
-    { Mutation: { recipeCreateOne: RecipeMutation.recipeCreateOne } },
-    { 'Mutation.*': [isAuthenticated()] }
-);
-const ratingQuery = composeResolvers({
-    Query: {
-        ratingMany: RatingQuery.ratingMany,
-    },
-});
-const ratingCreateMutation = composeResolvers(
+const isAuthenticatedMutations = composeResolvers(
     {
         Mutation: {
+            recipeCreateOne: RecipeMutation.recipeCreateOne,
             ratingCreateOne: RatingMutation.ratingCreateOne,
         },
     },
     { 'Mutation.*': [isAuthenticated()] }
 );
-const recipeModifyMutation = composeResolvers(
+const isOwnerOrAdminMutations = composeResolvers(
     {
         Mutation: {
             recipeUpdateById: RecipeMutation.recipeUpdateById,
@@ -55,14 +47,13 @@ schemaComposer.Query.addFields({
     ...PrepMethodQuery,
     ...IngredientQuery,
     ...RecipeQuery,
-    ...ratingQuery.Query,
+    ...RatingQuery,
 });
 schemaComposer.Mutation.addFields({
     ...UserMutation,
-    ...defaultMutations.Mutation,
-    ...recipeCreateMutation.Mutation,
-    ...recipeModifyMutation.Mutation,
-    ...ratingCreateMutation.Mutation,
+    ...isAdminMutations.Mutation,
+    ...isAuthenticatedMutations.Mutation,
+    ...isOwnerOrAdminMutations.Mutation,
 });
 
 export const schema = schemaComposer.buildSchema();
