@@ -31,7 +31,9 @@
     "graphql-compose": "^9.0.10",
     "graphql-compose-mongoose": "^9.8.0",
     "graphql-passport": "^0.6.7",
+    "graphql-upload": "^16.0.2",
     "mongoose": "^7.3.0",
+    "nanoid": "^5.0.5",
     "passport": "^0.6.0",
     "passport-local-mongoose": "^8.0.0"
   },

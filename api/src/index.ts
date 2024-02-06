@@ -8,6 +8,7 @@ import session from 'express-session';
 import passport from 'passport';
 import bodyParser from 'body-parser';
 import MongoStore from 'connect-mongo';
+import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
 
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import { expressMiddleware } from '@apollo/server/express4';
@@ -43,6 +44,12 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(
+    graphqlUploadExpress({
+        maxFileSize: 10000000, // 10 MB
+        maxFiles: 10,
+    })
+);
 app.use(
     '/',
     cors<cors.CorsRequest>(corsOptions),
