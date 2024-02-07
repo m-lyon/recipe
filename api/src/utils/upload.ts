@@ -34,7 +34,7 @@ export async function storeUpload(file: Promise<FileUpload>): Promise<string> {
 }
 
 export async function validateImageFile(file: Promise<FileUpload>) {
-    const { filename, mimetype } = await file;
+    const { filename } = await file;
     try {
         const ext = path.extname(filename);
         if (!['.jpg', '.jpeg', '.png', '.tiff'].includes(ext)) {

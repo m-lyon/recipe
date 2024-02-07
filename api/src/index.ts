@@ -16,6 +16,7 @@ import { buildContext } from 'graphql-passport';
 import { ApolloServer } from '@apollo/server';
 import { schema } from './schema/index.js';
 import { createHttpServer, createHttpsServer } from './utils/connect.js';
+import { uploadRouter } from './routes/uploads.js';
 
 const app = express();
 const httpServer = DEV ? createHttpServer(app) : createHttpsServer(app);
@@ -50,6 +51,7 @@ app.use(
         maxFiles: 10,
     })
 );
+app.use('/uploads', uploadRouter);
 app.use(
     '/',
     cors<cors.CorsRequest>(corsOptions),

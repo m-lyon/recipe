@@ -1,7 +1,23 @@
+import path from 'path';
 import express from 'express';
+import { Image } from '../models/Image.js';
+import { IMAGE_DIR, IMAGE_DIR_URL } from '../constants.js';
 
-export const imagesUploadRouter = express.Router();
+export const uploadRouter = express.Router();
 
-imagesUploadRouter.get('/images/:url', (req, res) => {
-    res.sendFile(req.params.url);
+uploadRouter.get('/images/:fname', async (req, res) => {
+    const fname = req.params.fname;
+    if (!fname) {
+        return res.status(400).send('Invalid URL.');
+    }
+    const image = await Image.findOne({ origUrl: path.join(IMAGE_DIR_URL, fname) });
+    if (!image) {
+        return res.status(404).send('Image not found.');
+    }
+    res.sendFile(fname, { root: IMAGE_DIR }, (err) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send('Error sending file.');
+        }
+    });
 });
