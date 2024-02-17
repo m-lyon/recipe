@@ -122,7 +122,7 @@ function handleUnitChange(
 }
 
 function handleOtherChange(
-    inputState: DBInputState,
+    inputState: 'name' | 'prepMethod',
     char: NewChar,
     actionHandler: InternalActionHandler
 ) {
@@ -133,7 +133,6 @@ function handleOtherChange(
             actionHandler[inputState].append(char);
         } else {
             const name = {
-                unit: 'a unit',
                 name: 'an ingredient name',
                 prepMethod: 'a prep method',
             };
@@ -233,17 +232,14 @@ function setName(state: IngredientState, action: Action): IngredientState {
         draft.editable.type = action.ingrType;
     });
 }
-function setDBIngredientProperty(
+function setOtherIngredientProperty(
     state: IngredientState,
     action: Action,
-    property: DBInputState
+    property: 'unit' | 'prepMethod'
 ): IngredientState {
     return produce(state, (draft) => {
         if (typeof action.nullableValue === 'undefined') {
             throw new Error(`Cannot set ${property} as undefined.`);
-        }
-        if (action.nullableValue === null && property === 'name') {
-            throw new Error(`Cannot set name to null.`);
         }
         if (action.nullableValue !== null && action._id === undefined) {
             throw new Error(`Cannot set ${property} without _id.`);
@@ -268,7 +264,7 @@ function appendQuantity(state: IngredientState, action: Action): IngredientState
     });
 }
 
-function appendDBIngredientProperty(
+function appendOtherIngredientProperty(
     state: IngredientState,
     action: Action,
     property: DBInputState
@@ -305,7 +301,7 @@ function removeFromQuantity(num: number, item: EditableIngredient): EditableIngr
     return item;
 }
 
-function removeFromDBProperty(
+function removeFromProperty(
     num: number,
     item: EditableIngredient,
     currentState: DBInputState
@@ -343,9 +339,9 @@ function removeFromDBProperty(
 function truncateIngredient(num: number, item: EditableIngredient): EditableIngredient {
     let newItem = { ...item };
 
-    [num, newItem] = removeFromDBProperty(num, newItem, 'prepMethod');
-    [num, newItem] = removeFromDBProperty(num, newItem, 'name');
-    [num, newItem] = removeFromDBProperty(num, newItem, 'unit');
+    [num, newItem] = removeFromProperty(num, newItem, 'prepMethod');
+    [num, newItem] = removeFromProperty(num, newItem, 'name');
+    [num, newItem] = removeFromProperty(num, newItem, 'unit');
     newItem = removeFromQuantity(num, newItem);
 
     return newItem;
@@ -458,13 +454,13 @@ function reducer(state: IngredientState, action: Action): IngredientState {
             return setQuantity(state, action);
         }
         case 'set_editable_unit': {
-            return setDBIngredientProperty(state, action, 'unit');
+            return setOtherIngredientProperty(state, action, 'unit');
         }
         case 'set_editable_name': {
             return setName(state, action);
         }
         case 'set_editable_prepMethod': {
-            return setDBIngredientProperty(state, action, 'prepMethod');
+            return setOtherIngredientProperty(state, action, 'prepMethod');
         }
         case 'set_finished': {
             return produce(state, (draft) => {
@@ -478,13 +474,13 @@ function reducer(state: IngredientState, action: Action): IngredientState {
             return appendQuantity(state, action);
         }
         case 'append_editable_unit': {
-            return appendDBIngredientProperty(state, action, 'unit');
+            return appendOtherIngredientProperty(state, action, 'unit');
         }
         case 'append_editable_name': {
-            return appendDBIngredientProperty(state, action, 'name');
+            return appendOtherIngredientProperty(state, action, 'name');
         }
         case 'append_editable_prepMethod': {
-            return appendDBIngredientProperty(state, action, 'prepMethod');
+            return appendOtherIngredientProperty(state, action, 'prepMethod');
         }
         case 'increment_editable_state': {
             return produce(state, (draft) => {
