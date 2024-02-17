@@ -14,14 +14,14 @@ import { Navbar } from './components/Navbar';
 import { Signup } from './pages/Signup';
 import { Search } from './pages/Search';
 import { theme } from './theme/chakraTheme';
+import createUploadLink from 'apollo-upload-client/createUploadLink.mjs';
 
 const domNode = document.getElementById('root')!;
 const root = createRoot(domNode);
 
 const client = new ApolloClient({
-    uri: import.meta.env.VITE_GRAPHQL_ENDPOINT,
     cache: new InMemoryCache(),
-    credentials: 'include',
+    link: createUploadLink({ uri: import.meta.env.VITE_GRAPHQL_ENDPOINT, credentials: 'include' }),
 });
 
 const routes = createBrowserRouter(

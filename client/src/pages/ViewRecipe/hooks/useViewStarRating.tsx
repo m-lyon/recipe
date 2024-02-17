@@ -1,6 +1,6 @@
 import { useQuery, useMutation } from '@apollo/client';
 import { gql } from '../../../__generated__';
-import { AddRating } from '../../CreateRecipe';
+import { ADD_RATING } from '../../CreateRecipe';
 import { useToast } from '@chakra-ui/react';
 
 const GET_RATINGS = gql(`
@@ -17,7 +17,7 @@ export function useViewStarRating(recipeId: string) {
         variables: { recipeId },
     });
     const toast = useToast();
-    const [addRating] = useMutation(AddRating, { refetchQueries: ['GetRatings'] });
+    const [addRating] = useMutation(ADD_RATING, { refetchQueries: ['GetRatings'] });
 
     const setRating = (rating: number) => {
         addRating({ variables: { recipeId, rating } })
