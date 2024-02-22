@@ -88,7 +88,7 @@ export function ViewRecipe() {
                 templateAreas={`'title title'
                                 'ingredients instructions'`}
                 gridTemplateRows='100px 700px'
-                gridTemplateColumns='0.4fr 1fr'
+                gridTemplateColumns='0.285fr 0.715fr'
                 h='800px'
                 gap='2'
                 pt='2'

@@ -25,3 +25,7 @@ export function strToNumber(input: string): number {
 
     return parseFloat(input); // If it's not a fraction, attempt to parse as a number
 }
+
+export function percentage(x: number, y: number): number {
+    return 100 / (y / x);
+}
