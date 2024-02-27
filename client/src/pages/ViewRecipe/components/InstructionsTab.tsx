@@ -5,24 +5,27 @@ import { Recipe } from '../../../__generated__/graphql';
 import { TagList } from './TagList';
 import { ImageViewer } from './ImageViewer';
 
+export const instrSpacing = 24;
 interface Props {
     tags: Recipe['tags'];
     instructions: Recipe['instructions'];
     source: Recipe['source'];
+    images: Recipe['images'];
 }
 export function InstructionsTab(props: Props) {
-    const { tags, instructions, source } = props;
+    const { tags, instructions, source, images } = props;
 
-    const images = ['https://bit.ly/naruto-sage', 'https://bit.ly/dan-abramov', 'https://bit.ly/naruto-sage'];
-    // const images = ['https://bit.ly/naruto-sage']
     return (
         <Flex direction='column' justifyContent='space-between' height='100%'>
             <Flex direction='row'>
-                <Box position='relative'>
-                    <ImageViewer images={images}/>
-                    <VStack spacing='24px' align='left' border='1px black solid'>
+                <Box position='relative' w='100%'>
+                    {images ? images.length > 0 && <ImageViewer images={images} /> : undefined}
+                    <VStack spacing={`${instrSpacing}px`} align='left'>
                         <TagList tags={tags} />
-                        <InstructionList instructions={instructions} />
+                        <InstructionList
+                            instructions={instructions}
+                            numImages={images ? images.length : 0}
+                        />
                     </VStack>
                 </Box>
             </Flex>

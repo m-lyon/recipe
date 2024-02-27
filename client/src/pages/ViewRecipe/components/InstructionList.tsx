@@ -1,12 +1,16 @@
 import { OrderedList, ListItem, Text, Box } from '@chakra-ui/react';
 import { Recipe } from '../../../__generated__/graphql';
-import { remainderImageCardHeight, imageCardWidth } from '../../../theme/chakraTheme';
+import { imageCardHeight, imageCardWidth, sliderBarHeight } from './ImageViewer';
+import { tagsHeight } from './TagList';
+import { instrSpacing } from './InstructionsTab';
 
 interface Props {
     instructions: Recipe['instructions'];
+    numImages: number;
 }
 export function InstructionList(props: Props) {
-    const { instructions } = props;
+    const { instructions, numImages } = props;
+    const boxHeight = imageCardHeight - tagsHeight - instrSpacing;
 
     const instructionsList = instructions.map((instr, index) => {
         if (instr === null) {
@@ -21,18 +25,17 @@ export function InstructionList(props: Props) {
 
     return (
         <Box>
-            <Box
-                h={remainderImageCardHeight} // TODO: make this depend on whether image carousel is present or not
-                w={imageCardWidth}
-                marginLeft='4'
-                marginBottom='4'
-                float='right'
-                position='relative'
-                border='1px black solid'
-            />
-            <OrderedList spacing='2' border='1px black solid'>
-                {instructionsList}
-            </OrderedList>
+            {numImages ? (
+                <Box
+                    h={numImages > 1 ? boxHeight + sliderBarHeight : boxHeight}
+                    w={imageCardWidth}
+                    marginLeft='4'
+                    marginBottom='4'
+                    float='right'
+                    position='relative'
+                />
+            ) : undefined}
+            <OrderedList spacing='2'>{instructionsList}</OrderedList>
         </Box>
     );
 }

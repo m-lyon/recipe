@@ -1,6 +1,8 @@
 import { Tag as UITag, TagLabel, WrapItem, VStack, Wrap, Box } from '@chakra-ui/react';
 import { Tag } from '../../../__generated__/graphql';
-import { imageCardWidth, tagsHeight } from '../../../theme/chakraTheme';
+import { imageCardWidth } from './ImageViewer';
+
+export const tagsHeight = 34;
 
 interface Props {
     tags: Tag[];
@@ -11,7 +13,7 @@ export function TagList(props: Props) {
     const tagsList = tags.map((tag) => {
         return (
             <WrapItem key={tag.value}>
-                <UITag size={'lg'}>
+                <UITag size='lg'>
                     <TagLabel>{tag.value}</TagLabel>
                 </UITag>
             </WrapItem>
@@ -20,8 +22,14 @@ export function TagList(props: Props) {
 
     return (
         <Box>
-            <Box w={imageCardWidth} h={tagsHeight} float='right' position='relative' marginLeft='4' />
-            <VStack align='left' spacing={tagsList.length > 0 ? 3 : 0} border='1px black solid'>
+            <Box
+                w={imageCardWidth}
+                h={tagsHeight}
+                float='right'
+                position='relative'
+                marginLeft='4'
+            />
+            <VStack align='left' spacing={tagsList.length > 0 ? 3 : 0}>
                 <Wrap spacing='10px'>{tagsList}</Wrap>
             </VStack>
         </Box>

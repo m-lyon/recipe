@@ -14,6 +14,8 @@ import { Navbar } from './components/Navbar';
 import { Signup } from './pages/Signup';
 import { Search } from './pages/Search';
 import { theme } from './theme/chakraTheme';
+import { GRAPHQL_ENDPOINT } from './constants';
+
 import createUploadLink from 'apollo-upload-client/createUploadLink.mjs';
 
 const domNode = document.getElementById('root')!;
@@ -21,7 +23,7 @@ const root = createRoot(domNode);
 
 const client = new ApolloClient({
     cache: new InMemoryCache(),
-    link: createUploadLink({ uri: import.meta.env.VITE_GRAPHQL_ENDPOINT, credentials: 'include' }),
+    link: createUploadLink({ uri: GRAPHQL_ENDPOINT, credentials: 'include' }),
 });
 
 const routes = createBrowserRouter(

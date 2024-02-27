@@ -1,12 +1,13 @@
+import { Model } from 'mongoose';
+import { schemaComposer } from 'graphql-compose';
+import { GraphQLError, GraphQLList } from 'graphql';
 import { RecipeIngredientTC, RecipeModifyTC, RecipeQueryTC } from '../models/Recipe.js';
 import { generateRecipeIdentifier } from '../models/Recipe.js';
 import { TagTC } from '../models/Tag.js';
 import { UnitTC } from '../models/Unit.js';
 import { Ingredient, IngredientTC } from '../models/Ingredient.js';
 import { PrepMethodTC } from '../models/PrepMethod.js';
-import { schemaComposer } from 'graphql-compose';
-import { Model } from 'mongoose';
-import { GraphQLError } from 'graphql';
+import { ImageTC } from '../models/Image.js';
 
 const IngredientOrRecipeTC = schemaComposer.createUnionTC({
     name: 'IngredientOrRecipe',
@@ -75,6 +76,17 @@ RecipeIngredientTC.addRelation('prepMethod', {
         _id: (source) => source.prepMethod?._id,
     },
     projection: { prepMethod: true },
+});
+
+RecipeQueryTC.addFields({
+    images: {
+        type: new GraphQLList(ImageTC.getType()),
+        resolve: async (source) => {
+            return await ImageTC.mongooseResolvers.findMany().resolve({
+                args: { filter: { recipe: source._id } },
+            });
+        },
+    },
 });
 
 export const RecipeQuery = {

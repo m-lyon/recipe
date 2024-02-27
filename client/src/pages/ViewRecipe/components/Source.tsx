@@ -10,7 +10,7 @@ export function Source(props: Props) {
         return null;
     }
     return (
-        <Text textAlign='right' fontWeight={'medium'} as='i' border='1px black solid'>
+        <Text textAlign='right' fontWeight='medium' as='i'>
             Source: {source}
         </Text>
     );

@@ -1,4 +1,4 @@
-import { useSize } from '@chakra-ui/react-use-size'
+import { useSize } from '@chakra-ui/react-use-size';
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { ReactNode, useRef, useLayoutEffect, Dispatch, SetStateAction } from 'react';
 import { Box, Flex, Button, Progress, VStack } from '@chakra-ui/react';
@@ -10,7 +10,7 @@ interface Props {
     children: ReactNode[];
     gap: number;
 }
-export function Carousel({ children, gap }: Props){
+export function Carousel({ children, gap }: Props) {
     const [trackIsActive, setTrackIsActive] = useState(false);
     const [activeItem, setActiveItem] = useState(0);
     const [sliderWidth, setSliderWidth] = useState(0);
@@ -35,7 +35,7 @@ export function Carousel({ children, gap }: Props){
         itemWidth,
         activeItem,
         positions,
-        gap
+        gap,
     };
 
     const trackProps: Omit<TrackProps, 'children'> = {
@@ -44,7 +44,7 @@ export function Carousel({ children, gap }: Props){
         setActiveItem,
         itemWidth,
         activeItem,
-        positions
+        positions,
     };
 
     const itemProps: Omit<ItemProps, 'children' | 'index'> = {
@@ -53,7 +53,7 @@ export function Carousel({ children, gap }: Props){
         activeItem,
         itemWidth,
         positions,
-        gap
+        gap,
     };
 
     return (
@@ -80,10 +80,18 @@ interface SliderProps {
     initSliderWidth: (width: number) => void;
 }
 function Slider(props: SliderProps) {
-    const { children, gap, positions, activeItem, itemWidth, setActiveItem, setTrackIsActive, initSliderWidth } = props;
+    const {
+        children,
+        gap,
+        positions,
+        activeItem,
+        itemWidth,
+        setActiveItem,
+        setTrackIsActive,
+        initSliderWidth,
+    } = props;
     const ref = useRef<HTMLDivElement>(null);
     const dims = useSize(ref);
-    console.log('width is', dims?.width, 'itemWidth is', itemWidth)
 
     useLayoutEffect(() => {
         if (dims) {
@@ -174,7 +182,7 @@ function Slider(props: SliderProps) {
             </Flex>
         </>
     );
-};
+}
 
 const MotionFlex = motion(Flex);
 const transitionProps = {
@@ -201,7 +209,7 @@ function Track(props: TrackProps) {
         itemWidth,
         setTrackIsActive,
         trackIsActive,
-        setActiveItem
+        setActiveItem,
     } = props;
     const multiplier = 0.65;
     const [dragStartPosition, setDragStartPosition] = useState(0);
@@ -214,7 +222,6 @@ function Track(props: TrackProps) {
     };
 
     const handleDragEnd = (_: MouseEvent | PointerEvent | TouchEvent, info: PanInfo) => {
-        console.log(info);
         const distance = info.offset.x;
         const velocity = info.velocity.x * multiplier;
         const direction = velocity < 0 || distance < 0 ? 1 : -1;
@@ -268,7 +275,8 @@ function Track(props: TrackProps) {
             } else {
                 setTrackIsActive(false);
             }
-        }, [setTrackIsActive]
+        },
+        [setTrackIsActive]
     );
 
     const handleKeyDown = useCallback(
@@ -324,7 +332,7 @@ function Track(props: TrackProps) {
             )}
         </>
     );
-};
+}
 
 interface ItemProps {
     children: ReactNode;
@@ -345,7 +353,7 @@ function Item(props: ItemProps) {
         itemWidth,
         positions,
         gap,
-        index
+        index,
     } = props;
     const [userDidTab, setUserDidTab] = useState(false);
 
@@ -357,11 +365,10 @@ function Item(props: ItemProps) {
     };
 
     const handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>) =>
-        event.key === 'Tab' &&
-        !(activeItem === positions.length - 1) &&
-        setActiveItem(index);
+        event.key === 'Tab' && !(activeItem === positions.length - 1) && setActiveItem(index);
 
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => event.key === 'Tab' && setUserDidTab(true);
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) =>
+        event.key === 'Tab' && setUserDidTab(true);
     return (
         <Flex
             onFocus={handleFocus}
@@ -375,4 +382,4 @@ function Item(props: ItemProps) {
             {children}
         </Flex>
     );
-};
+}
