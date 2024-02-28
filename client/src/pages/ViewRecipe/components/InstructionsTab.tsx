@@ -19,7 +19,7 @@ export function InstructionsTab(props: Props) {
         <Flex direction='column' justifyContent='space-between' height='100%'>
             <Flex direction='row'>
                 <Box position='relative' w='100%'>
-                    {images ? images.length > 0 && <ImageViewer images={images} /> : undefined}
+                    <ImageViewer images={images} />
                     <VStack spacing={`${instrSpacing}px`} align='left'>
                         <TagList tags={tags} />
                         <InstructionList

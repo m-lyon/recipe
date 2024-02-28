@@ -1,6 +1,6 @@
 import { OrderedList, ListItem, Text, Box } from '@chakra-ui/react';
 import { Recipe } from '../../../__generated__/graphql';
-import { imageCardHeight, imageCardWidth, sliderBarHeight } from './ImageViewer';
+import { imageCardWidth, imageCardHeight, sliderBarHeight } from './ImageViewer';
 import { tagsHeight } from './TagList';
 import { instrSpacing } from './InstructionsTab';
 

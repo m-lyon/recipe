@@ -3,7 +3,7 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import { ReactNode, useRef, useLayoutEffect, Dispatch, SetStateAction } from 'react';
 import { Box, Flex, Button, Progress, VStack } from '@chakra-ui/react';
 import { ChevronRightIcon, ChevronLeftIcon } from '@chakra-ui/icons';
-import { percentage } from '../../../utils/number';
+import { percentage } from '../utils/number';
 import { PanInfo, motion, useAnimation, useMotionValue } from 'framer-motion';
 
 interface Props {
