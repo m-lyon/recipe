@@ -5,7 +5,7 @@ import { GRAPHQL_ENDPOINT } from '../constants';
 
 export const sliderBarHeight = 36;
 
-interface ImageCarouselProps extends CardProps{
+interface ImageCarouselProps extends CardProps {
     images: ImageType[];
     width: number;
     height: number;
@@ -22,6 +22,7 @@ export function ImageCarousel(props: ImageCarouselProps) {
                         src={`${GRAPHQL_ENDPOINT}${image!.origUrl}`}
                         objectFit='contain'
                         onDragStart={(e: React.DragEvent<HTMLImageElement>) => e.preventDefault()}
+                        rounded={images.length === 1 ? 'md' : undefined}
                     />
                 </AspectRatio>
             </CardBody>
@@ -30,10 +31,11 @@ export function ImageCarousel(props: ImageCarouselProps) {
 
     return (
         <Card
-        height={images.length > 1 ? height + sliderBarHeight : height}
-        width={width}
-        {...rest}
-    >
+            height={images.length > 1 ? height + sliderBarHeight : height}
+            width={width}
+            {...rest}
+        >
             {images.length > 1 ? <Carousel gap={0}>{imagesCards}</Carousel> : imagesCards[0]}
-        </Card>);
+        </Card>
+    );
 }

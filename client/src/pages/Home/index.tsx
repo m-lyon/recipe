@@ -1,8 +1,9 @@
-import { Container, Wrap } from '@chakra-ui/react';
+import { Container } from '@chakra-ui/react';
 import { Grid, GridItem, Text } from '@chakra-ui/react';
-import { RecipeCard } from './components/RecipeCard';
 import { gql } from '../../__generated__';
+import { Recipe } from '../../__generated__/graphql';
 import { useQuery } from '@apollo/client';
+import { RecipeCardContainer } from './components/RecipeCardContainer';
 
 export const GET_RECIPES = gql(`
     query GetRecipes {
@@ -16,6 +17,9 @@ export const GET_RECIPES = gql(`
             isIngredient
             numServings
             pluralTitle
+            images {
+                origUrl
+            }
         }
     }
 `);
@@ -31,27 +35,11 @@ export function Home() {
         return <div>Error: {error.message}</div>;
     }
 
-    const recipeCards = data?.recipeMany.map((recipe) => {
-        const title = recipe.isIngredient
-            ? recipe.numServings > 1
-                ? recipe.pluralTitle
-                : recipe.title
-            : recipe.title;
-        return (
-            <RecipeCard
-                title={title as string}
-                titleIdentifier={recipe.titleIdentifier!}
-                tags={recipe.tags}
-                key={recipe.titleIdentifier}
-            />
-        );
-    });
-
     return (
         <Container maxW='container.xl' pt='60px'>
             <Grid
                 templateAreas={`'title'
-                                    'recipes'`}
+                                'recipes'`}
                 gridTemplateRows='100px 0.8fr'
                 gridTemplateColumns='1fr'
                 h='1000px'
@@ -67,7 +55,7 @@ export function Home() {
                     </Text>
                 </GridItem>
                 <GridItem pl='2' boxShadow='lg' padding='6' area='recipes'>
-                    <Wrap spacing='30px'>{recipeCards}</Wrap>
+                    <RecipeCardContainer recipes={data!.recipeMany as Recipe[]} />
                 </GridItem>
             </Grid>
         </Container>

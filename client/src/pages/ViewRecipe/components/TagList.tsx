@@ -1,34 +1,37 @@
-import { Tag as UITag, TagLabel, WrapItem, VStack, Wrap, Box } from '@chakra-ui/react';
-import { Tag } from '../../../__generated__/graphql';
+import { Tag, TagLabel, WrapItem, VStack, Wrap, Box, BoxProps } from '@chakra-ui/react';
+import { Tag as TagType } from '../../../__generated__/graphql';
 import { imageCardWidth } from './ImageViewer';
 
 export const tagsHeight = 34;
 
-interface Props {
-    tags: Tag[];
+interface Props extends BoxProps {
+    tags: TagType[];
+    displayBoxMargin?: boolean;
 }
 export function TagList(props: Props) {
-    const { tags } = props;
+    const { tags, displayBoxMargin, ...rest } = props;
 
     const tagsList = tags.map((tag) => {
         return (
             <WrapItem key={tag.value}>
-                <UITag size='lg'>
+                <Tag size='lg'>
                     <TagLabel>{tag.value}</TagLabel>
-                </UITag>
+                </Tag>
             </WrapItem>
         );
     });
 
     return (
-        <Box>
-            <Box
-                w={imageCardWidth}
-                h={tagsHeight}
-                float='right'
-                position='relative'
-                marginLeft='4'
-            />
+        <Box {...rest}>
+            {displayBoxMargin ? (
+                <Box
+                    w={imageCardWidth}
+                    h={tagsHeight}
+                    float='right'
+                    position='relative'
+                    marginLeft='4'
+                />
+            ) : null}
             <VStack align='left' spacing={tagsList.length > 0 ? 3 : 0}>
                 <Wrap spacing='10px'>{tagsList}</Wrap>
             </VStack>

@@ -21,7 +21,7 @@ export function InstructionsTab(props: Props) {
                 <Box position='relative' w='100%'>
                     <ImageViewer images={images} />
                     <VStack spacing={`${instrSpacing}px`} align='left'>
-                        <TagList tags={tags} />
+                        <TagList tags={tags} displayBoxMargin={true} />
                         <InstructionList
                             instructions={instructions}
                             numImages={images ? images.length : 0}
