@@ -11,7 +11,7 @@ import { GetUnitsQuery, EnumRecipeIngredientType } from '../../../__generated__/
 export const DEFAULT_INGREDIENT_STR = 'Enter ingredient';
 export const GET_UNITS = gql(`
     query GetUnits {
-        unitMany {
+        unitMany(limit: 5000) {
             _id
             shortSingular
             shortPlural
@@ -23,13 +23,13 @@ export const GET_UNITS = gql(`
 `);
 export const GET_INGREDIENTS = gql(`
     query GetIngredients {
-        ingredientMany {
+        ingredientMany(limit: 5000) {
             _id
             name
             pluralName
             isCountable
         }
-        recipeMany(filter: {isIngredient: true}) {
+        recipeMany(limit: 5000, filter: {isIngredient: true}) {
             _id
             title
             pluralTitle
@@ -38,7 +38,7 @@ export const GET_INGREDIENTS = gql(`
 `);
 export const GET_PREP_METHODS = gql(`
     query GetPrepMethods {
-        prepMethodMany {
+        prepMethodMany(limit: 5000) {
             _id
             value
         }
