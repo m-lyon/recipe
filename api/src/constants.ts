@@ -11,3 +11,4 @@ export const PORT = process.env.PORT ? normalisePort(process.env.PORT) : 4000;
 export const DEV = process.env.NODE_ENV === 'development';
 export const PRIVKEY_PEM = process.env.PRIVKEY_PEM;
 export const FULLCHAIN_PEM = process.env.FULLCHAIN_PEM;
+export const HTTPS = process.env.HTTPS === 'true';

@@ -1,4 +1,4 @@
-import { WHITELIST, SESSION_SECRET, SESSION_URI, PORT, DEV } from './constants.js';
+import { WHITELIST, SESSION_SECRET, SESSION_URI, PORT, HTTPS } from './constants.js';
 import './utils/connectdb.js';
 import './strategies/GraphQLLocalStrategy.js';
 
@@ -17,10 +17,10 @@ import { schema } from './schema/index.js';
 import { createHttpServer, createHttpsServer } from './utils/connect.js';
 
 const app = express();
-const httpServer = DEV ? createHttpServer(app) : createHttpsServer(app);
-const server = new ApolloServer({
+const server = HTTPS ? createHttpsServer(app) : createHttpServer(app);
+const apolloServer = new ApolloServer({
     schema,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer: server })],
 });
 const corsOptions = {
     origin: function (origin, callback) {
@@ -32,7 +32,7 @@ const corsOptions = {
     },
     credentials: true,
 };
-await server.start();
+await apolloServer.start();
 app.use(
     session({
         store: MongoStore.create({ mongoUrl: SESSION_URI }),
@@ -47,8 +47,8 @@ app.use(
     '/',
     cors<cors.CorsRequest>(corsOptions),
     bodyParser.json({ limit: '50mb' }),
-    expressMiddleware(server, { context: async ({ req, res }) => buildContext({ req, res }) })
+    expressMiddleware(apolloServer, { context: async ({ req, res }) => buildContext({ req, res }) })
 );
 
-await new Promise<void>((resolve) => httpServer.listen({ port: PORT }, resolve));
-console.log('🚀 Server ready at', httpServer.address());
+await new Promise<void>((resolve) => server.listen({ port: PORT }, resolve));
+console.log('🚀 Server ready at', server.address());
