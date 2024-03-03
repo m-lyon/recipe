@@ -133,3 +133,6 @@ ideas
 
 # graphql generated files
 */src/__generated__/
+
+# testing uploads
+api/uploads/

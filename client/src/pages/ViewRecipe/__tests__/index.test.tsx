@@ -8,6 +8,8 @@ import { mockGetRecipe } from '../__mocks__/GetRecipe';
 import { RouterProvider } from 'react-router-dom';
 import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
 
+jest.mock('../../../constants.ts');
+
 const routes = createBrowserRouter(
     createRoutesFromElements(<Route path='/' element={<ViewRecipe />} />)
 );

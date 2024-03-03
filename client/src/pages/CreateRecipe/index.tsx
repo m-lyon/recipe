@@ -23,7 +23,7 @@ export const CREATE_RECIPE = gql(`
     }
 `);
 
-export const AddRating = gql(`
+export const ADD_RATING = gql(`
     mutation AddRating($recipeId: MongoID!, $rating: Float!) {
         ratingCreateOne(record: { recipe: $recipeId, value: $rating }) {
             record {
@@ -34,12 +34,23 @@ export const AddRating = gql(`
     }
 `);
 
+const UPLOAD_IMAGES = gql(`
+    mutation UploadImages($images: [Upload!]!, $recipeId: MongoID!) {
+        imageUploadMany(files: $images, _id: $recipeId) {
+            recordId
+        }
+    }
+`);
+
 export function CreateRecipe() {
     const states = useRecipeState();
     const userContext = useContext(UserContext)[0];
     const toast = useToast();
-    const [createRecipe, { loading: recipeLoading }] = useMutation(CREATE_RECIPE);
-    const [addRating, { loading: ratingLoading }] = useMutation(AddRating);
+    const [createRecipe, { loading: recipeLoading, data }] = useMutation(CREATE_RECIPE);
+    const [addRating, { loading: ratingLoading }] = useMutation(ADD_RATING);
+    const [uploadImages, { loading: uploadLoading }] = useMutation(UPLOAD_IMAGES, {
+        context: { headers: { 'apollo-require-preflight': true } },
+    });
     const navigate = useNavigate();
 
     const runDataValidation = () => {
@@ -82,7 +93,92 @@ export function CreateRecipe() {
         return true;
     };
 
-    const handleRecipeCreated = () => {
+    const handleSubmit = async () => {
+        if (!runDataValidation()) {
+            return;
+        }
+        const tags = states.tags.state.finished.map((tag) => tag._id);
+        const instructions = states.instructions.items
+            .filter((item) => item.value !== '')
+            .map((item) => item.value);
+        const ingredients = states.ingredient.state.finished.map((item) => {
+            return {
+                quantity: item.quantity,
+                unit: item.unit._id,
+                ingredient: item.name._id,
+                prepMethod: item.prepMethod._id,
+                type: item.type,
+            };
+        });
+        if (userContext === false) {
+            toast({
+                title: 'Please log in to create a recipe',
+                status: 'error',
+                position: 'top',
+                duration: 3000,
+            });
+            return;
+        }
+        const notes = states.notes.value ? states.notes.value : undefined;
+        const source = states.source.source ? states.source.source : undefined;
+        const isIngredient = states.asIngredient.state.isIngredient;
+        const recipe = {
+            numServings: states.numServings.num,
+            owner: userContext?._id,
+            title: states.title.value!,
+            pluralTitle: isIngredient ? states.asIngredient.state.pluralTitle : undefined,
+            instructions,
+            ingredients,
+            tags,
+            notes,
+            source,
+            isIngredient,
+        };
+        let recipeId: string;
+        try {
+            // Create Recipe
+            const result = await createRecipe({ variables: { recipe } });
+            recipeId = result.data?.recipeCreateOne?.record?._id;
+        } catch (error) {
+            return toast({
+                title: 'Error creating recipe',
+                description: (error as Error).message,
+                status: 'error',
+                position: 'top',
+                duration: 3000,
+            });
+        }
+        try {
+            // Add Rating
+            if (states.rating.rating !== 0) {
+                await addRating({ variables: { recipeId, rating: states.rating.rating } });
+            }
+        } catch (error) {
+            toast({
+                title: 'Error adding rating to recipe, redirecting you to the home page',
+                description: (error as Error).message,
+                status: 'error',
+                position: 'top',
+                duration: 3000,
+            });
+            return setTimeout(() => navigate('/recipe'), 3000);
+        }
+
+        try {
+            // Upload Images
+            if (states.images.images.length > 0) {
+                await uploadImages({ variables: { recipeId, images: states.images.images } });
+            }
+        } catch (error) {
+            toast({
+                title: 'Error uploading images, redirecting you to the home page',
+                description: (error as Error).message,
+                status: 'error',
+                position: 'top',
+                duration: 3000,
+            });
+            return setTimeout(() => navigate('/recipe'), 3000);
+        }
         toast({
             title: 'Recipe created',
             description: 'Your recipe has been created, redirecting you to the home page',
@@ -93,86 +189,6 @@ export function CreateRecipe() {
         setTimeout(() => navigate('/recipe'), 1500);
     };
 
-    const handleSubmit = async () => {
-        if (!runDataValidation()) {
-            return;
-        }
-        try {
-            const tags = states.tags.state.finished.map((tag) => tag._id);
-            const instructions = states.instructions.items
-                .filter((item) => item.value !== '')
-                .map((item) => item.value);
-            const ingredients = states.ingredient.state.finished.map((item) => {
-                return {
-                    quantity: item.quantity,
-                    unit: item.unit._id,
-                    ingredient: item.name._id,
-                    prepMethod: item.prepMethod._id,
-                    type: item.type,
-                };
-            });
-            if (userContext === false) {
-                toast({
-                    title: 'Please log in to create a recipe',
-                    status: 'error',
-                    position: 'top',
-                    duration: 3000,
-                });
-                return;
-            }
-            const notes = states.notes.value ? states.notes.value : undefined;
-            const source = states.source.source ? states.source.source : undefined;
-            const isIngredient = states.asIngredient.state.isIngredient;
-            const recipe = {
-                numServings: states.numServings.num,
-                owner: userContext?._id,
-                title: states.title.value!,
-                pluralTitle: isIngredient ? states.asIngredient.state.pluralTitle : undefined,
-                instructions,
-                ingredients,
-                tags,
-                notes,
-                source,
-                isIngredient,
-            };
-            createRecipe({ variables: { recipe } })
-                .then((result) => {
-                    if (states.rating.rating !== 0) {
-                        addRating({
-                            variables: {
-                                recipeId: result.data?.recipeCreateOne?.record?._id,
-                                rating: states.rating.rating,
-                            },
-                        })
-                            .then(handleRecipeCreated)
-                            .catch((error) => {
-                                toast({
-                                    title: 'Error adding rating to recipe, redirecting you to the home page',
-                                    description: error.message,
-                                    status: 'error',
-                                    position: 'top',
-                                    duration: 3000,
-                                });
-                                setTimeout(() => navigate('/recipe'), 3000);
-                            });
-                    } else {
-                        handleRecipeCreated();
-                    }
-                })
-                .catch((error) => {
-                    toast({
-                        title: 'Error creating recipe',
-                        description: error.message,
-                        status: 'error',
-                        position: 'top',
-                        duration: 3000,
-                    });
-                });
-        } catch (error: any) {
-            return;
-        }
-    };
-
     return (
         <Container maxW='container.xl' pt='60px'>
             <Grid
@@ -181,7 +197,7 @@ export function CreateRecipe() {
                                 'ingredients instructions'
                                 'images images'
                                 'button button'`}
-                gridTemplateRows='100px 140px auto 200px 90px'
+                gridTemplateRows='100px 140px auto 300px 90px'
                 gridTemplateColumns='0.4fr 1fr'
                 h='auto'
                 gap='2'
@@ -219,8 +235,15 @@ export function CreateRecipe() {
                         sourceProps={states.source}
                     />
                 </GridItem>
-                <GridItem pl='2' boxShadow='lg' padding='6' area='images'>
-                    <ImageUpload />
+                <GridItem
+                    pl='2'
+                    boxShadow='lg'
+                    padding='6'
+                    area='images'
+                    display='flex'
+                    flexDirection='column'
+                >
+                    <ImageUpload {...states.images} />
                 </GridItem>
                 <GridItem pl='2' padding='6' area='button'>
                     <Center>
@@ -231,9 +254,17 @@ export function CreateRecipe() {
                                 border='1px'
                                 borderColor='gray.200'
                                 onClick={handleSubmit}
-                                isLoading={recipeLoading || ratingLoading}
+                                loadingText={
+                                    recipeLoading || ratingLoading
+                                        ? 'Submitting Recipe...'
+                                        : uploadLoading
+                                        ? 'Uploading Images...'
+                                        : undefined
+                                }
+                                disabled={!!data}
+                                isLoading={recipeLoading || ratingLoading || uploadLoading}
                             >
-                                {recipeLoading || ratingLoading ? 'Submitting Recipe...' : 'Submit'}
+                                Submit
                             </Button>
                         </Box>
                     </Center>

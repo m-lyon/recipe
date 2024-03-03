@@ -5,7 +5,7 @@ import { useQuery } from '@apollo/client';
 import { gql } from '../../__generated__';
 import { useParams } from 'react-router-dom';
 import { IngredientsTab } from './components/IngredientsTab';
-import { RecipeIngredient } from '../../__generated__/graphql';
+import { Recipe, RecipeIngredient } from '../../__generated__/graphql';
 import { InstructionsTab } from './components/InstructionsTab';
 
 export const GET_RECIPE = gql(`
@@ -52,6 +52,9 @@ export const GET_RECIPE = gql(`
             pluralTitle
             source
             notes
+            images {
+                origUrl
+            }
         }
     }
 `);
@@ -79,6 +82,7 @@ export function ViewRecipe() {
         numServings,
         isIngredient,
         pluralTitle,
+        images,
     } = data!.recipeOne!;
     const titleNormed = isIngredient ? (numServings > 1 ? pluralTitle : title) : title;
 
@@ -88,7 +92,7 @@ export function ViewRecipe() {
                 templateAreas={`'title title'
                                 'ingredients instructions'`}
                 gridTemplateRows='100px 700px'
-                gridTemplateColumns='0.4fr 1fr'
+                gridTemplateColumns='0.285fr 0.715fr'
                 h='800px'
                 gap='2'
                 pt='2'
@@ -108,7 +112,12 @@ export function ViewRecipe() {
                     />
                 </GridItem>
                 <GridItem pl='2' boxShadow='lg' padding='6' area='instructions'>
-                    <InstructionsTab tags={tags} instructions={instructions} source={source} />
+                    <InstructionsTab
+                        tags={tags}
+                        instructions={instructions}
+                        source={source}
+                        images={images as Recipe['images']}
+                    />
                 </GridItem>
             </Grid>
         </Container>

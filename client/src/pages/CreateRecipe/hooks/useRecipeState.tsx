@@ -8,6 +8,7 @@ import { EditableSourceProps } from '../components/EditableSource';
 import { useAsIngredient } from './useAsIngredient';
 import { UseAsIngredientReturnType } from './useAsIngredient';
 import { StarRatingProps } from '../../../components/StarRating';
+import { ImageUploadProps } from '../components/ImageUpload';
 
 interface RecipeState {
     numServings: ServingsProps;
@@ -19,6 +20,7 @@ interface RecipeState {
     source: EditableSourceProps;
     asIngredient: UseAsIngredientReturnType;
     rating: StarRatingProps;
+    images: ImageUploadProps;
 }
 export function useRecipeState(): RecipeState {
     const [numServings, setNumServings] = useState<number>(1);
@@ -30,6 +32,7 @@ export function useRecipeState(): RecipeState {
     const [source, setSource] = useState<string>('');
     const asIngredient = useAsIngredient();
     const [rating, setRating] = useState<number>(0);
+    const [images, setImages] = useState<File[]>([]);
 
     return {
         numServings: { num: numServings, setNum: setNumServings },
@@ -41,5 +44,6 @@ export function useRecipeState(): RecipeState {
         source: { source, setSource },
         asIngredient,
         rating: { rating, setRating },
+        images: { images, setImages },
     };
 }

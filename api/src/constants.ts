@@ -12,3 +12,5 @@ export const DEV = process.env.NODE_ENV === 'development';
 export const PRIVKEY_PEM = process.env.PRIVKEY_PEM;
 export const FULLCHAIN_PEM = process.env.FULLCHAIN_PEM;
 export const HTTPS = process.env.HTTPS === 'true';
+export const IMAGE_DIR = process.env.IMAGE_DIR ? process.env.IMAGE_DIR : '/data/recipe/images';
+export const IMAGE_DIR_URL = process.env.IMAGE_DIR_URL;

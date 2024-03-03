@@ -8,6 +8,7 @@ import { RecipeQuery, RecipeMutation } from './Recipe.js';
 import { composeResolvers } from '@graphql-tools/resolvers-composition';
 import { isAdmin, isAuthenticated, isRecipeOwnerOrAdmin } from '../middleware/authorisation.js';
 import { RatingMutation, RatingQuery } from './Rating.js';
+import { ImageMutation, ImageQuery } from './Image.js';
 
 const isAdminMutations = composeResolvers(
     {
@@ -34,6 +35,8 @@ const isOwnerOrAdminMutations = composeResolvers(
         Mutation: {
             recipeUpdateById: RecipeMutation.recipeUpdateById,
             recipeRemoveById: RecipeMutation.recipeRemoveById,
+            imageUploadOne: ImageMutation.imageUploadOne,
+            imageUploadMany: ImageMutation.imageUploadMany,
         },
     },
     { 'Mutation.*': [isRecipeOwnerOrAdmin()] }
@@ -48,6 +51,7 @@ schemaComposer.Query.addFields({
     ...IngredientQuery,
     ...RecipeQuery,
     ...RatingQuery,
+    ...ImageQuery,
 });
 schemaComposer.Mutation.addFields({
     ...UserMutation,

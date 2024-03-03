@@ -36,7 +36,6 @@ export const isRecipeOwnerOrAdmin = () => (next) => async (resolveParams) => {
         throw new Error('You are not authenticated!');
     }
     const recipe = await Recipe.findById(resolveParams.args._id);
-    console.log(recipe);
     if (!recipe) {
         throw new Error('Recipe not found!');
     }
