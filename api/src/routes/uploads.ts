@@ -1,7 +1,7 @@
 import path from 'path';
 import express from 'express';
 import { Image } from '../models/Image.js';
-import { IMAGE_DIR, IMAGE_DIR_URL } from '../constants.js';
+import { IMAGE_DIR } from '../constants.js';
 
 export const uploadRouter = express.Router();
 
@@ -10,7 +10,7 @@ uploadRouter.get('/images/:fname', async (req, res) => {
     if (!fname) {
         return res.status(400).send('Invalid URL.');
     }
-    const image = await Image.findOne({ origUrl: path.join(IMAGE_DIR_URL, fname) });
+    const image = await Image.findOne({ origUrl: path.join('uploads/images', fname) });
     if (!image) {
         return res.status(404).send('Image not found.');
     }
