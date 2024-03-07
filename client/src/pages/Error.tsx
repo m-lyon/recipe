@@ -16,7 +16,7 @@ export function ErrorBoundary() {
                     404 Not Found
                 </Heading>
                 <Text fontSize='xl' mb={4}>
-                    Sorry, the page you are looking for does not exist.
+                    Sorry, the page you are looking for does not exist. Root path is {ROOT_PATH}.
                 </Text>
                 <Button as={Link} to={ROOT_PATH} colorScheme='teal' size='lg' fontWeight='normal'>
                     Back to homepage
