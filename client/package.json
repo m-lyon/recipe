@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "NODE_ENV=production vite build",
-    "experimental": "NODE_ENV=experimental vite build --outDir=dist/experimental --base=/experimental-recipe",
+    "experimental": "NODE_ENV=experimental vite build --outDir=dist/experimental --base=/recipe-experimental",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "NODE_ENV=test jest",
