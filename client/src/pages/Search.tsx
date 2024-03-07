@@ -1,5 +1,6 @@
 import { Box, Heading, Text, Flex, Button } from '@chakra-ui/react';
 import { Link } from 'react-router-dom';
+import { ROOT_PATH } from '../constants';
 
 export function Search() {
     return (
@@ -11,7 +12,7 @@ export function Search() {
                 <Text fontSize='xl' mb={4}>
                     Keep an eye on this space 👀
                 </Text>
-                <Button as={Link} to='/recipe' colorScheme='teal' size='lg' fontWeight='normal'>
+                <Button as={Link} to={ROOT_PATH} colorScheme='teal' size='lg' fontWeight='normal'>
                     Back to homepage
                 </Button>
             </Box>

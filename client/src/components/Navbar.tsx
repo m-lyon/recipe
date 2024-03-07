@@ -7,6 +7,7 @@ import { UserOptions } from './UserOptions';
 import { useContext } from 'react';
 import { UserContext } from '../context/UserContext';
 import { Outlet } from 'react-router-dom';
+import { ROOT_PATH } from '../constants';
 
 export function Navbar() {
     const { isOpen, onToggle } = useDisclosure();
@@ -41,17 +42,17 @@ export function Navbar() {
                             icon={
                                 isOpen ? <CloseIcon w={3} h={3} /> : <HamburgerIcon w={5} h={5} />
                             }
-                            variant={'ghost'}
-                            aria-label={'Toggle Navigation'}
+                            variant='ghost'
+                            aria-label='Toggle Navigation'
                         />
                     </Flex>
                     <Flex flex={{ base: 1 }} justify={{ base: 'center', md: 'start' }}>
                         <Link
                             textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
-                            fontFamily={'heading'}
+                            fontFamily='heading'
                             color={useColorModeValue('gray.800', 'white')}
                             _hover={{ textDecoration: 'none' }}
-                            href={'/recipe'}
+                            href={ROOT_PATH}
                         >
                             Home
                         </Link>
@@ -91,7 +92,7 @@ const DesktopNav = (props: DesktopNavProps) => {
                             <Link
                                 p={2}
                                 href={navItem.href ?? '#'}
-                                fontSize={'sm'}
+                                fontSize='sm'
                                 fontWeight={500}
                                 color={linkColor}
                                 _hover={{
@@ -106,11 +107,11 @@ const DesktopNav = (props: DesktopNavProps) => {
                         {navItem.children && (
                             <PopoverContent
                                 border={0}
-                                boxShadow={'xl'}
+                                boxShadow='xl'
                                 bg={popoverContentBgColor}
                                 p={4}
-                                rounded={'xl'}
-                                minW={'sm'}
+                                rounded='xl'
+                                minW='sm'
                             >
                                 <Stack>
                                     {navItem.children.map((child) => (
@@ -238,17 +239,17 @@ interface NavItem {
 const USER_NAV_ITEMS: Array<NavItem> = [
     {
         label: 'Create',
-        href: '/recipe/create',
+        href: `${ROOT_PATH}/create`,
     },
     {
         label: 'Search',
-        href: '/recipe/search',
+        href: `${ROOT_PATH}/search`,
     },
 ];
 
 const PUBLIC_NAV_ITEMS: Array<NavItem> = [
     {
         label: 'Search',
-        href: '/recipe/search',
+        href: `${ROOT_PATH}/search`,
     },
 ];

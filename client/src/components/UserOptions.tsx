@@ -5,6 +5,7 @@ import { gql } from '../__generated__';
 import { useMutation, useQuery } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@chakra-ui/react';
+import { ROOT_PATH } from '../constants';
 
 export const LOGOUT_MUTATION = gql(`
     mutation Logout {
@@ -52,7 +53,7 @@ export function UserOptions() {
             const { data } = await logout();
             if (data) {
                 setUserContext(false);
-                navigate('/recipe');
+                navigate(ROOT_PATH);
             }
         } catch (err) {
             if (err instanceof Error) {
@@ -72,31 +73,31 @@ export function UserOptions() {
     }
     if (userContext) {
         return (
-            <Stack flex={{ base: 1, md: 0 }} justify={'flex-end'} direction={'row'} spacing={6}>
-                <Button fontSize={'sm'} fontWeight={400} onClick={handleLogout}>
+            <Stack flex={{ base: 1, md: 0 }} justify='flex-end' direction='row' spacing={6}>
+                <Button fontSize='sm' fontWeight={400} onClick={handleLogout}>
                     Logout
                 </Button>
             </Stack>
         );
     } else {
         return (
-            <Stack flex={{ base: 1, md: 0 }} justify={'flex-end'} direction={'row'} spacing={6}>
+            <Stack flex={{ base: 1, md: 0 }} justify='flex-end' direction='row' spacing={6}>
                 <Button
-                    as={'a'}
-                    fontSize={'sm'}
+                    as='a'
+                    fontSize='sm'
                     fontWeight={400}
-                    variant={'link'}
-                    href={'/recipe/login'}
+                    variant='link'
+                    href={`${ROOT_PATH}/login`}
                 >
                     Sign In
                 </Button>
                 <Button
-                    as={'a'}
+                    as='a'
                     display={{ base: 'none', md: 'inline-flex' }}
-                    fontSize={'sm'}
+                    fontSize='sm'
                     fontWeight={600}
                     colorScheme='teal'
-                    href={'/recipe/signup'}
+                    href={`${ROOT_PATH}/signup`}
                 >
                     Sign Up
                 </Button>

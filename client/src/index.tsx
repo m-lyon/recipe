@@ -14,7 +14,7 @@ import { Navbar } from './components/Navbar';
 import { Signup } from './pages/Signup';
 import { Search } from './pages/Search';
 import { theme } from './theme/chakraTheme';
-import { GRAPHQL_ENDPOINT } from './constants';
+import { GRAPHQL_ENDPOINT, ROOT_PATH } from './constants';
 
 import createUploadLink from 'apollo-upload-client/createUploadLink.mjs';
 
@@ -28,7 +28,7 @@ const client = new ApolloClient({
 
 const routes = createBrowserRouter(
     createRoutesFromElements(
-        <Route path='/recipe' errorElement={<ErrorBoundary />}>
+        <Route path={ROOT_PATH} errorElement={<ErrorBoundary />}>
             <Route element={<Navbar />}>
                 <Route index element={<Home />} />
                 <Route path='view/:titleIdentifier' element={<ViewRecipe />} />

@@ -2,6 +2,7 @@ import { Card, CardBody, CardHeader, Heading } from '@chakra-ui/react';
 import { TagList } from '../../ViewRecipe/components/TagList';
 import { GetRecipesQuery } from '../../../__generated__/graphql';
 import { Link } from 'react-router-dom';
+import { ROOT_PATH } from '../../../constants';
 
 export function getCardTitle(recipe: GetRecipesQuery['recipeMany'][0]): string {
     const title = recipe.isIngredient
@@ -21,8 +22,8 @@ export function RecipeCard(props: Props) {
     return (
         <Card
             as={Link}
-            to={`/recipe/view/${recipe.titleIdentifier}`}
-            height='10em'
+            to={`${ROOT_PATH}/view/${recipe.titleIdentifier}`}
+            minH='10em'
             width='18em'
             position='static'
         >

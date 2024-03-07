@@ -4,6 +4,7 @@ import { gql } from '../../__generated__';
 import { UserContext } from '../../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { FormControl, FormLabel, Input, Button, Box, useToast } from '@chakra-ui/react';
+import { ROOT_PATH } from '../../constants';
 
 export const LOGIN_MUTATION = gql(`
     mutation Login($email: String!, $password: String!) {
@@ -40,7 +41,7 @@ export function Login() {
             const { data } = await login({ variables: { email, password } });
             if (data?.login) {
                 setUserContext(data.login);
-                navigate('/recipe');
+                navigate(ROOT_PATH);
             } else {
                 setUserContext(false);
             }

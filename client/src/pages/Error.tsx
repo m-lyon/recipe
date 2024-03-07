@@ -1,5 +1,6 @@
 import { Box, Heading, Text, Flex, Button } from '@chakra-ui/react';
 import { Link, useRouteError } from 'react-router-dom';
+import { ROOT_PATH } from '../constants';
 
 export function ErrorBoundary() {
     const error = useRouteError();
@@ -17,7 +18,7 @@ export function ErrorBoundary() {
                 <Text fontSize='xl' mb={4}>
                     Sorry, the page you are looking for does not exist.
                 </Text>
-                <Button as={Link} to='/recipe' colorScheme='teal' size='lg' fontWeight='normal'>
+                <Button as={Link} to={ROOT_PATH} colorScheme='teal' size='lg' fontWeight='normal'>
                     Back to homepage
                 </Button>
             </Box>

@@ -1,2 +1,4 @@
 // Expose environment variables here
-export const { VITE_GRAPHQL_ENDPOINT: GRAPHQL_ENDPOINT } = import.meta.env;
+const GRAPHQL_ENDPOINT = import.meta.env.VITE_GRAPHQL_ENDPOINT;
+const ROOT_PATH = import.meta.env.VITE_ROOT_PATH || '/recipe';
+export { GRAPHQL_ENDPOINT, ROOT_PATH };

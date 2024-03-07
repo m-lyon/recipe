@@ -11,6 +11,7 @@ import { UserContext } from '../../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { EditableIngredientsTab } from './components/EditableIngredientsTab';
 import { EditableInstructionsTab } from './components/EditableInstructionsTab';
+import { ROOT_PATH } from '../../constants';
 
 export const CREATE_RECIPE = gql(`
     mutation CreateRecipe($recipe: CreateOneRecipeModifyInput!) {
@@ -161,7 +162,7 @@ export function CreateRecipe() {
                 position: 'top',
                 duration: 3000,
             });
-            return setTimeout(() => navigate('/recipe'), 3000);
+            return setTimeout(() => navigate(ROOT_PATH), 3000);
         }
 
         try {
@@ -177,7 +178,7 @@ export function CreateRecipe() {
                 position: 'top',
                 duration: 3000,
             });
-            return setTimeout(() => navigate('/recipe'), 3000);
+            return setTimeout(() => navigate(ROOT_PATH), 3000);
         }
         toast({
             title: 'Recipe created',
@@ -186,7 +187,7 @@ export function CreateRecipe() {
             position: 'top',
             duration: 1500,
         });
-        setTimeout(() => navigate('/recipe'), 1500);
+        setTimeout(() => navigate(ROOT_PATH), 1500);
     };
 
     return (
