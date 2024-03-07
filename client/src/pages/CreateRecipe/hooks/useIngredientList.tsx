@@ -45,23 +45,6 @@ export const GET_PREP_METHODS = gql(`
     }
 `);
 
-function validateQuantity(char: string, item: EditableIngredient) {
-    if (char === ' ' && item.quantity !== null) {
-        if (/^(?:(?:[+-]?\d+\.\d+)|(?:[+-]?\d+)|(?:[+-]?\d+\/[1-9]\d*))$/.test(item.quantity)) {
-            return;
-        }
-        throw new Error('Invalid quantity.');
-    }
-    if (!isNaN(parseInt(char)) || char === '/' || char === '.') {
-        return;
-    }
-    if (item.quantity === null) {
-        throw new Error('Start with a number.');
-    } else {
-        throw new Error('Only numbers and fractions are allowed when inputting a quantity.');
-    }
-}
-
 type NewChar = string | number;
 function handleQuantityChange(
     char: NewChar,
@@ -71,15 +54,30 @@ function handleQuantityChange(
     if (typeof char === 'number') {
         actionHandler.truncate(char);
     } else {
-        validateQuantity(char, item);
-        if (char === ' ') {
+        // Validate quantity upon completion
+        if (char === ' ' && item.quantity !== null) {
+            if (
+                !/^(?:(?:[+-]?\d+\.\d+)|(?:[+-]?\d+)|(?:[+-]?\d+\/[1-9]\d*))$/.test(item.quantity)
+            ) {
+                throw new Error('Invalid quantity.');
+            } else {
+                actionHandler.incrementState();
+                actionHandler.setShow.on();
+            }
+            // Skip quantity with alphabetical characters
+        } else if (item.quantity === null && /^[a-zA-Z]$/.test(char)) {
             actionHandler.incrementState();
             actionHandler.setShow.on();
-        } else {
+            handleOtherChange('name', char, actionHandler);
+            // Valid numerical input
+        } else if (!isNaN(parseInt(char)) || char === '/' || char === '.') {
             actionHandler.quantity.append(char);
             if (item.show) {
                 actionHandler.setShow.off();
             }
+            // Throw error for invalid input
+        } else {
+            throw new Error('Only numbers and fractions are allowed when inputting a quantity.');
         }
     }
 }
