@@ -1,7 +1,7 @@
 import { useReducer } from 'react';
 import { produce } from 'immer';
 import { useToast } from '@chakra-ui/react';
-import { isFraction, formatFraction } from '../../../utils/number';
+import { isFraction, formatFraction, VALID_NUMBER_REGEX } from '../../../utils/number';
 import { gql } from '../../../__generated__/';
 import { useQuery } from '@apollo/client';
 import { isPlural } from '../../../utils/plural';
@@ -56,9 +56,7 @@ function handleQuantityChange(
     } else {
         // Validate quantity upon completion
         if (char === ' ' && item.quantity !== null) {
-            if (
-                !/^(?:(?:[+-]?\d+\.\d+)|(?:[+-]?\d+)|(?:[+-]?\d+\/[1-9]\d*))$/.test(item.quantity)
-            ) {
+            if (!VALID_NUMBER_REGEX.test(item.quantity)) {
                 throw new Error('Invalid quantity.');
             } else {
                 actionHandler.incrementState();
@@ -69,8 +67,14 @@ function handleQuantityChange(
             actionHandler.incrementState();
             actionHandler.setShow.on();
             handleIngredientNameChange(char, actionHandler);
+            // Starting input should be a number
+        } else if (item.quantity === null && /^[\d]$/.test(char)) {
+            actionHandler.quantity.append(char);
+            if (item.show) {
+                actionHandler.setShow.off();
+            }
             // Valid numerical input
-        } else if (!isNaN(parseInt(char)) || char === '/' || char === '.') {
+        } else if (/^[\d\/\.-]$/.test(char)) {
             actionHandler.quantity.append(char);
             if (item.show) {
                 actionHandler.setShow.off();

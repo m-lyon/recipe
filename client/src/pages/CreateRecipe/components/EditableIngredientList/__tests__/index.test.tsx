@@ -92,6 +92,21 @@ describe('EditableIngredient Quantity Keyboard', () => {
             screen.getByText('½ ', { normalizer: getDefaultNormalizer({ trim: false }) })
         ).toBeInTheDocument();
     });
+    it('should allow a number range', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        const quantityInput = screen.getByText('Enter ingredient');
+        await user.click(quantityInput);
+        await user.keyboard('{1}{.}{5}{{-}}{2}{.}{5}{ }');
+
+        // Expect
+        expect(
+            screen.getByText('1.5-2.5 ', { normalizer: getDefaultNormalizer({ trim: false }) })
+        ).toBeInTheDocument();
+    });
     it('should reset the fraction display', async () => {
         const user = userEvent.setup();
         // Render

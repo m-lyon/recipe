@@ -10,22 +10,9 @@ export function formatFraction(input: string): string {
     return fractionUnicode(fract.n, fract.d);
 }
 
-export function strToNumber(input: string): number {
-    const parts = input.split('/');
-
-    if (parts.length === 2) {
-        const numerator = parseFloat(parts[0]);
-        const denominator = parseFloat(parts[1]);
-
-        if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
-            console.log(numerator / denominator);
-            return numerator / denominator;
-        }
-    }
-
-    return parseFloat(input); // If it's not a fraction, attempt to parse as a number
-}
-
 export function percentage(x: number, y: number): number {
     return 100 / (y / x);
 }
+
+export const VALID_NUMBER_REGEX =
+    /^(?:(?:\d+\.\d+)|(?:\d+)|(?:\d+\/[1-9]\d*)|(?:(?:\d+\.\d+)|(?:\d+))(?:-(?:(?:\d+\.\d+)|(?:\d+))))$/;
