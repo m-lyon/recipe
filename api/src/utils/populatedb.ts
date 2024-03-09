@@ -11,7 +11,7 @@ export async function populateTags() {
         await Tag.collection.drop();
 
         // Create new dummy records
-        const dummyTags = ['lunch', 'dinner', 'spicy', 'freezes'];
+        const dummyTags = ['lunch', 'dinner', 'spicy', 'freezes', 'quick'];
         const createdTags = await Tag.create(dummyTags.map((value) => ({ value })));
 
         console.log('Dummy tags added:', createdTags);
@@ -117,6 +117,8 @@ export async function populateRecipes() {
                 tags: [
                     (await Tag.findOne({ value: 'lunch' }))._id,
                     (await Tag.findOne({ value: 'dinner' }))._id,
+                    (await Tag.findOne({ value: 'freezes' }))._id,
+                    (await Tag.findOne({ value: 'spicy' }))._id,
                 ],
                 ingredients: [
                     {

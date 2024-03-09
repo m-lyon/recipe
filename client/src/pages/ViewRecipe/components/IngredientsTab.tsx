@@ -22,7 +22,7 @@ export function IngredientsTab(props: Props) {
     const { avgRating, setRating } = useViewStarRating(recipeId);
 
     return (
-        <Flex direction={'column'} justifyContent='space-between' height='100%'>
+        <Flex direction='column' justifyContent='space-between' height='100%'>
             <VStack spacing='24px' align='left'>
                 <Flex paddingBottom={3}>
                     <Servings num={servings} setNum={setServings} />
@@ -33,8 +33,8 @@ export function IngredientsTab(props: Props) {
                     <Text fontSize='2xl'>Ingredients</Text>
                     <Spacer />
                     <HStack spacing={2}>
-                        <IconButton aria-label={'weight'} icon={<TbWeight />}></IconButton>
-                        <IconButton aria-label={'volume'} icon={<CgBowl />}></IconButton>
+                        <IconButton aria-label='weight' icon={<TbWeight />}></IconButton>
+                        <IconButton aria-label='volume' icon={<CgBowl />}></IconButton>
                     </HStack>
                 </Flex>
                 <IngredientList ingredients={ingredients} />
