@@ -146,7 +146,6 @@ function handlePrepMethodChange(char: NewChar, actionHandler: InternalActionHand
 }
 
 export function getTextDiff(value: string, origStr: string): NewChar {
-    console.log('value', value, 'origStr', origStr);
     if (value.length > origStr.length) {
         return value.replace(origStr, '');
     }
@@ -317,7 +316,6 @@ function removeFromProperty(
 
     // Current state is empty, decrement state and return item
     if (val === null) {
-        console.log('current value is null, decrementing', num);
         item.state = getPrevState(currentState);
         num--;
         return [num, item];
@@ -436,7 +434,6 @@ function reducer(state: IngredientState, action: Action): IngredientState {
         }
         case 'reset_editable': {
             return produce(state, (draft) => {
-                console.log('reset item called');
                 draft.editable = getEmptyIngredient();
             });
         }
@@ -494,7 +491,6 @@ function reducer(state: IngredientState, action: Action): IngredientState {
                 if (draft.editable.state === 'prepMethod') {
                     return;
                 }
-                console.log('incrementing state to', nextState[draft.editable.state]);
                 draft.editable.state = nextState[draft.editable.state] as InputState;
             });
         }
@@ -508,7 +504,6 @@ function reducer(state: IngredientState, action: Action): IngredientState {
                 if (draft.editable.state === 'quantity') {
                     return;
                 }
-                console.log('incrementing state to', nextState[draft.editable.state]);
                 draft.editable.state = nextState[draft.editable.state] as InputState;
             });
         }

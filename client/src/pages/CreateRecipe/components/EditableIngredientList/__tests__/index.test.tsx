@@ -116,7 +116,20 @@ describe('EditableIngredient Quantity Keyboard', () => {
         // Act
         const quantityInput = screen.getByText('Enter ingredient');
         await user.click(quantityInput);
-        await user.keyboard('{a}');
+        await user.keyboard('{1}{a}');
+
+        // Expect
+        expect(screen.getByText('Invalid input')).toBeInTheDocument();
+    });
+    it('should display an error message for non alphanumeric character at start', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        const quantityInput = screen.getByText('Enter ingredient');
+        await user.click(quantityInput);
+        await user.keyboard('{-}');
 
         // Expect
         expect(screen.getByText('Invalid input')).toBeInTheDocument();
@@ -539,7 +552,7 @@ describe('EditableIngredient Name Keyboard', () => {
         await user.keyboard('{2}{ }');
         await user.click(screen.getByText('skip unit'));
         await user.keyboard('{a}{p}{p}');
-        await user.keyboard('{ArrowDown}{Enter}');
+        await user.keyboard('{Enter}');
 
         // Expect
         expect(screen.getByText('2 apples,')).toBeInTheDocument();
