@@ -31,8 +31,7 @@ export function PrepMethodDropdownList(props: Props) {
         }) as Suggestion[];
         if (value === '') {
             items.unshift({ value: 'skip prep method', colour: 'gray.400', _id: undefined });
-        }
-        if (items.length === 0) {
+        } else {
             items.push({ value: 'add new prep method', colour: 'gray.400', _id: undefined });
         }
         return items;

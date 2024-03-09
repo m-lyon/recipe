@@ -42,8 +42,7 @@ export function UnitDropdownList(props: Props) {
         }).map((item) => ({ value: item, colour: undefined })) as UnitSuggestion[];
         if (value === '') {
             items.unshift({ value: 'skip unit', colour: 'gray.400' });
-        }
-        if (items.length === 0) {
+        } else {
             items.push({ value: 'add new unit', colour: 'gray.400' });
         }
         return items;

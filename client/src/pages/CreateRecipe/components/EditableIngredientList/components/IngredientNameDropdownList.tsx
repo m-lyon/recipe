@@ -72,9 +72,7 @@ export function IngredientNameDropdownList(props: Props) {
         const items = matchSorter<IngredientOrRecipe>(data, value, {
             keys: ['name', 'pluralName'],
         }).map((item) => ({ value: item, colour: undefined })) as IngredientSuggestion[];
-        if (items.length === 0) {
-            items.push({ value: 'add new ingredient', colour: 'gray.400' });
-        }
+        items.push({ value: 'add new ingredient', colour: 'gray.400' });
         return items;
     };
     const suggestions = filter(data, strValue);
