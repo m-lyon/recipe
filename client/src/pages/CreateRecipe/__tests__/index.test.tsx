@@ -11,6 +11,8 @@ import { mockGetTags } from '../components/__mocks__/GetTags';
 import { RouterProvider } from 'react-router-dom';
 import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
 
+jest.mock('../../../constants.ts');
+
 const routes = createBrowserRouter(
     createRoutesFromElements(<Route path='/' element={<CreateRecipe />} />)
 );
