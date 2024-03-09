@@ -68,7 +68,7 @@ function handleQuantityChange(
         } else if (item.quantity === null && /^[a-zA-Z]$/.test(char)) {
             actionHandler.incrementState();
             actionHandler.setShow.on();
-            handleOtherChange('name', char, actionHandler);
+            handleIngredientNameChange(char, actionHandler);
             // Valid numerical input
         } else if (!isNaN(parseInt(char)) || char === '/' || char === '.') {
             actionHandler.quantity.append(char);
@@ -114,29 +114,33 @@ function handleUnitChange(
                 actionHandler.unit.append(char);
             }
         } else {
-            throw new Error(`Only letters and spaces are allowed when inputting unit.`);
+            throw new Error('Only letters and spaces are allowed when inputting unit.');
         }
     }
 }
 
-function handleOtherChange(
-    inputState: 'name' | 'prepMethod',
-    char: NewChar,
-    actionHandler: InternalActionHandler
-) {
+function handleIngredientNameChange(char: NewChar, actionHandler: InternalActionHandler) {
+    if (typeof char === 'number') {
+        actionHandler.truncate(char);
+    } else {
+        if (/^[a-zA-Z \-]$/.test(char)) {
+            actionHandler.name.append(char);
+        } else {
+            throw new Error(
+                'Only letters and spaces are allowed when inputting an ingredient name.'
+            );
+        }
+    }
+}
+
+function handlePrepMethodChange(char: NewChar, actionHandler: InternalActionHandler) {
     if (typeof char === 'number') {
         actionHandler.truncate(char);
     } else {
         if (/^[a-zA-Z ]$/.test(char)) {
-            actionHandler[inputState].append(char);
+            actionHandler.prepMethod.append(char);
         } else {
-            const name = {
-                name: 'an ingredient name',
-                prepMethod: 'a prep method',
-            };
-            throw new Error(
-                `Only letters and spaces are allowed when inputting ${name[inputState]}.`
-            );
+            throw new Error(`Only letters and spaces are allowed when inputting a prep method.`);
         }
     }
 }
@@ -688,9 +692,9 @@ export function useIngredientList(): UseIngredientListReturnType {
                     case 'unit':
                         return handleUnitChange(diff, state.editable, unitData, editableActions);
                     case 'name':
-                        return handleOtherChange(state.editable.state, diff, editableActions);
+                        return handleIngredientNameChange(diff, editableActions);
                     case 'prepMethod':
-                        return handleOtherChange(state.editable.state, diff, editableActions);
+                        return handlePrepMethodChange(diff, editableActions);
                     default:
                         throw new Error(`Unknown state: ${state.editable.state}`);
                 }
