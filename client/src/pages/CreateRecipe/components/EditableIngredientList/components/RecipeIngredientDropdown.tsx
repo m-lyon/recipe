@@ -1,13 +1,14 @@
+import { MutableRefObject } from 'react';
 import { Box, List } from '@chakra-ui/react';
 import { motion, LayoutGroup } from 'framer-motion';
-import { MutableRefObject } from 'react';
-import { EditableIngredient, IngredientActionHandler } from '../../../hooks/useIngredientList';
-import { QueryData } from '../../../hooks/useIngredientList';
-import { IngredientNameDropdownList } from './IngredientNameDropdownList';
+
 import { UnitDropdownList } from './UnitDropdownList';
-import { PrepMethodDropdownList } from './PrepMethodDropdownList';
 import { isPlural } from '../../../../../utils/plural';
+import { QueryData } from '../../../hooks/useIngredientList';
 import { QuantityDropdownList } from './QuantityDropdownList';
+import { IngredientDropdownList } from './IngredientDropdownList';
+import { PrepMethodDropdownList } from './PrepMethodDropdownList';
+import { EditableIngredient, IngredientActionHandler } from '../../../hooks/useIngredientList';
 
 interface Props {
     item: EditableIngredient;
@@ -16,7 +17,7 @@ interface Props {
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
 }
-export function IngredientDropdown(props: Props) {
+export function RecipeIngredientDropdown(props: Props) {
     const { item, actionHandler, queryData, inputRef, previewRef } = props;
     const currentValue = actionHandler.get.currentStateValue();
 
@@ -46,7 +47,7 @@ export function IngredientDropdown(props: Props) {
                     return [];
                 }
                 return (
-                    <IngredientNameDropdownList
+                    <IngredientDropdownList
                         ingredients={queryData.ingredient}
                         recipes={queryData.recipe}
                         plural={isPlural(item.quantity)}

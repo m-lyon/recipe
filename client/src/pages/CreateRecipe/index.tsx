@@ -45,7 +45,7 @@ const UPLOAD_IMAGES = gql(`
 
 export function CreateRecipe() {
     const states = useRecipeState();
-    const userContext = useContext(UserContext)[0];
+    const [userContext] = useContext(UserContext);
     const toast = useToast();
     const [createRecipe, { loading: recipeLoading, data }] = useMutation(CREATE_RECIPE);
     const [addRating, { loading: ratingLoading }] = useMutation(ADD_RATING);

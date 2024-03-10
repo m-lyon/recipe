@@ -1,4 +1,4 @@
-import { Schema, Document, model } from 'mongoose';
+import { Schema, Document, model, Types } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 
 export interface Unit extends Document {
@@ -7,6 +7,7 @@ export interface Unit extends Document {
     longSingular: string;
     longPlural: string;
     preferredNumberFormat: string;
+    owner: Types.ObjectId;
 }
 
 const unitSchema = new Schema<Unit>({
@@ -34,11 +35,8 @@ const unitSchema = new Schema<Unit>({
         unique: true,
         set: (value: string) => value.toLowerCase(),
     },
-    preferredNumberFormat: {
-        type: String,
-        required: true,
-        enum: ['decimal', 'fraction'],
-    },
+    preferredNumberFormat: { type: String, required: true, enum: ['decimal', 'fraction'] },
+    owner: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
 });
 
 export const Unit = model<Unit>('Unit', unitSchema);

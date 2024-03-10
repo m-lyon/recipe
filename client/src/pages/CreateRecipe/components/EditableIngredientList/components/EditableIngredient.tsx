@@ -1,7 +1,7 @@
 import { Editable, EditablePreview, EditableInput } from '@chakra-ui/react';
 import { useOutsideClick } from '@chakra-ui/react';
 import { useRef } from 'react';
-import { IngredientDropdown } from './IngredientDropdown';
+import { RecipeIngredientDropdown } from './RecipeIngredientDropdown';
 import { EditableIngredient as EditableIngredientType } from '../../../hooks/useIngredientList';
 import { QueryData } from '../../../hooks/useIngredientList';
 import { IngredientActionHandler, DEFAULT_INGREDIENT_STR } from '../../../hooks/useIngredientList';
@@ -63,7 +63,7 @@ export function EditableIngredient({ item, actionHandler, fontSize, queryData }:
                     _focusVisible={{ outline: 'none' }}
                 />
             </Editable>
-            <IngredientDropdown
+            <RecipeIngredientDropdown
                 item={item}
                 actionHandler={actionHandler}
                 queryData={queryData}

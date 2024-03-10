@@ -1,8 +1,9 @@
 import { ListItem, UnorderedList } from '@chakra-ui/react';
+
+import { isPlural } from '../../../utils/plural';
 import { RecipeIngredient } from '../../../__generated__/graphql';
 import { getIngredientStr } from '../../CreateRecipe/hooks/useIngredientList';
-import { isPlural } from '../../../utils/plural';
-import { isPluralIngredient } from '../../CreateRecipe/components/EditableIngredientList/components/IngredientNameDropdownList';
+import { isPluralIngredient } from '../../CreateRecipe/components/EditableIngredientList/components/IngredientDropdownList';
 import { getUnitDisplayValue } from '../../CreateRecipe/components/EditableIngredientList/components/UnitDropdownList';
 
 function getIngredientNameStr(plural: boolean, ingredient: RecipeIngredient['ingredient']): string {

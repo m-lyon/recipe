@@ -1,4 +1,4 @@
-import { Schema, Document, model } from 'mongoose';
+import { Schema, Document, model, Types } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 
 export interface Ingredient extends Document {
@@ -6,6 +6,7 @@ export interface Ingredient extends Document {
     pluralName: string;
     density?: number;
     isCountable: boolean;
+    owner: Types.ObjectId;
 }
 
 const ingredientSchema = new Schema<Ingredient>({
@@ -21,14 +22,9 @@ const ingredientSchema = new Schema<Ingredient>({
         unique: true,
         set: (value: string) => value.toLowerCase(),
     },
-    density: {
-        type: Number,
-        required: false,
-    },
-    isCountable: {
-        type: Boolean,
-        required: true,
-    },
+    density: { type: Number, required: false },
+    isCountable: { type: Boolean, required: true },
+    owner: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
 });
 
 export const Ingredient = model<Ingredient>('Ingredient', ingredientSchema);

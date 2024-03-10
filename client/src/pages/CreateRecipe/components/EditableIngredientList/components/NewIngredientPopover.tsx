@@ -1,13 +1,14 @@
-import { Button, ButtonGroup, Checkbox, Stack } from '@chakra-ui/react';
-import { PopoverHeader, PopoverArrow } from '@chakra-ui/react';
-import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
-import { gql } from '../../../../../__generated__';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useMutation, ApolloError } from '@apollo/client';
-import { useToast } from '@chakra-ui/react';
+import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
+import { Button, ButtonGroup, Checkbox, Stack } from '@chakra-ui/react';
+import { PopoverHeader, PopoverArrow, useToast } from '@chakra-ui/react';
 import { object, string, number, boolean, ValidationError } from 'yup';
-import { IngredientSuggestion } from './IngredientNameDropdownList';
-import { EnumRecipeIngredientType } from '../../../../../__generated__/graphql';
+
+import { gql } from '../../../../../__generated__';
+import { IngredientSuggestion } from './IngredientDropdownList';
+import { UserContext } from '../../../../../context/UserContext';
+import { EnumRecipeIngredientType, User } from '../../../../../__generated__/graphql';
 import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';
 
 const CREATE_NEW_INGREDIENT_MUTATION = gql(`
@@ -36,6 +37,7 @@ interface NewIngredientFormProps {
     handleSelect: (item: IngredientSuggestion) => void;
 }
 function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewIngredientFormProps) {
+    const [userContext] = useContext(UserContext);
     const [hasError, setHasError] = useState(false);
     const [name, setName] = useState('');
     const [pluralName, setPluralName] = useState('');
@@ -119,13 +121,16 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewIngredie
                     colorScheme='teal'
                     onClick={() => {
                         try {
-                            const parsedForm = formSchema.validateSync({
+                            const user = userContext as User;
+                            const validated = formSchema.validateSync({
                                 name,
                                 pluralName,
                                 isCountable,
                                 density: density === '' ? undefined : density,
                             });
-                            createNewIngredient({ variables: { record: parsedForm } });
+                            createNewIngredient({
+                                variables: { record: { ...validated, owner: user._id } },
+                            });
                         } catch (e: unknown) {
                             setHasError(true);
                             if (e instanceof ValidationError) {

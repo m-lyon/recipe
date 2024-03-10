@@ -1,13 +1,14 @@
+import { matchSorter } from 'match-sorter';
+import { LayoutGroup } from 'framer-motion';
 import { MutableRefObject, useRef } from 'react';
 import { Popover, PopoverAnchor, useDisclosure } from '@chakra-ui/react';
-import { LayoutGroup } from 'framer-motion';
-import { matchSorter } from 'match-sorter';
+
 import { NewUnitPopover } from './NewUnitPopover';
-import { GetUnitsQuery, Unit } from '../../../../../__generated__/graphql';
+import { Unit } from '../../../../../__generated__/graphql';
 import { DropdownItem } from '../../../../../components/DropdownItem';
 import { useNavigatableList } from '../../../hooks/useNavigatableList';
 
-export function getUnitDisplayValue(unit: Unit, isPlural: boolean, short: boolean): string {
+export function getUnitDisplayValue(unit: UnitType, isPlural: boolean, short: boolean): string {
     if (isPlural) {
         return short ? unit.shortPlural : unit.longPlural;
     } else {
@@ -15,13 +16,14 @@ export function getUnitDisplayValue(unit: Unit, isPlural: boolean, short: boolea
     }
 }
 
+type UnitType = Omit<Unit, 'owner'>;
 export interface UnitSuggestion {
-    value: string | Unit;
+    value: string | UnitType;
     colour?: string;
 }
 interface Props {
     strValue: string;
-    data: GetUnitsQuery['unitMany'];
+    data: UnitType[];
     isPlural: boolean;
     setItem: (value: string | null, _id?: string) => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
@@ -36,8 +38,8 @@ export function UnitDropdownList(props: Props) {
         },
     });
 
-    const filter = (data: GetUnitsQuery['unitMany'], value: string): UnitSuggestion[] => {
-        const items = matchSorter<Unit>(data, value, {
+    const filter = (data: UnitType[], value: string): UnitSuggestion[] => {
+        const items = matchSorter<UnitType>(data, value, {
             keys: ['longSingular', 'longPlural'],
         }).map((item) => ({ value: item, colour: undefined })) as UnitSuggestion[];
         if (value === '') {

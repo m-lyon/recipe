@@ -1,13 +1,12 @@
-import { MutableRefObject, useRef } from 'react';
 import { matchSorter } from 'match-sorter';
 import { LayoutGroup } from 'framer-motion';
+import { MutableRefObject, useRef } from 'react';
 import { Popover, PopoverAnchor, useDisclosure } from '@chakra-ui/react';
-import { EnumRecipeIngredientType } from '../../../../../__generated__/graphql';
-import { GetIngredientsQuery } from '../../../../../__generated__/graphql';
-import { Ingredient } from '../../../../../__generated__/graphql';
+
+import { NewIngredientPopover } from './NewIngredientPopover';
 import { DropdownItem } from '../../../../../components/DropdownItem';
 import { useNavigatableList } from '../../../hooks/useNavigatableList';
-import { NewIngredientPopover } from './NewIngredientPopover';
+import { Ingredient, Recipe, EnumRecipeIngredientType } from '../../../../../__generated__/graphql';
 
 export function isPluralIngredient(
     plural: boolean,
@@ -27,7 +26,9 @@ function getDisplayValue(item: IngredientSuggestion, plural: boolean, hasUnit: b
     }
 }
 
-interface IngredientOrRecipe extends Ingredient {
+type IngredientType = Omit<Ingredient, 'owner'>;
+type RecipeType = Pick<Recipe, '_id' | 'title' | 'pluralTitle'>;
+interface IngredientOrRecipe extends IngredientType {
     type: EnumRecipeIngredientType;
 }
 export interface IngredientSuggestion {
@@ -36,15 +37,15 @@ export interface IngredientSuggestion {
 }
 interface Props {
     strValue: string;
-    ingredients: GetIngredientsQuery['ingredientMany'];
-    recipes?: GetIngredientsQuery['recipeMany'];
+    ingredients: IngredientType[];
+    recipes?: RecipeType[];
     plural: boolean;
     hasUnit: boolean;
     setItem: (value: string | null, _id?: string, type?: EnumRecipeIngredientType) => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
 }
-export function IngredientNameDropdownList(props: Props) {
+export function IngredientDropdownList(props: Props) {
     const { strValue, ingredients, recipes, plural, hasUnit, setItem, inputRef, previewRef } =
         props;
     const dropdownRef = useRef<HTMLDivElement | null>(null);

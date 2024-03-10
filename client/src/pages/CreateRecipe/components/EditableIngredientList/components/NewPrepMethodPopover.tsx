@@ -1,10 +1,13 @@
-import { Button, ButtonGroup, Stack } from '@chakra-ui/react';
+import { useState, useContext } from 'react';
+import { object, string, ValidationError } from 'yup';
+import { useMutation, ApolloError } from '@apollo/client';
+import { Button, ButtonGroup, Stack, useToast } from '@chakra-ui/react';
+
 import { NewPopover } from './NewPopover';
 import { NewFormProps } from '../../../types';
 import { gql } from '../../../../../__generated__';
-import { useState } from 'react';
-import { useMutation, ApolloError } from '@apollo/client';
-import { useToast } from '@chakra-ui/react';
+import { User } from '../../../../../__generated__/graphql';
+import { UserContext } from '../../../../../context/UserContext';
 import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';
 
 const CREATE_NEW_PREP_METHOD_MUTATION = gql(`
@@ -26,16 +29,12 @@ function formatError(error: ApolloError) {
 }
 
 function NewPrepMethodForm({ firstFieldRef, onClose, handleSelect }: NewFormProps) {
+    const [userContext] = useContext(UserContext);
     const toast = useToast();
     const [hasError, setHasError] = useState(false);
     const [value, setValue] = useState('');
 
     const [createNewPrepMethod] = useMutation(CREATE_NEW_PREP_METHOD_MUTATION, {
-        variables: {
-            record: {
-                value,
-            },
-        },
         onCompleted: (data) => {
             onClose();
             handleSelect({
@@ -62,6 +61,9 @@ function NewPrepMethodForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
         },
         refetchQueries: ['GetPrepMethods'],
     });
+
+    const formSchema = object({ value: string().required('Prep method is required') });
+
     return (
         <Stack spacing={4}>
             <FloatingLabelInput
@@ -76,7 +78,34 @@ function NewPrepMethodForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
                 }}
             />
             <ButtonGroup display='flex' justifyContent='flex-end'>
-                <Button colorScheme='teal' onClick={() => createNewPrepMethod()}>
+                <Button
+                    colorScheme='teal'
+                    onClick={() => {
+                        try {
+                            const validated = formSchema.validateSync({ value });
+                            const user = userContext as User;
+                            createNewPrepMethod({
+                                variables: {
+                                    record: {
+                                        ...validated,
+                                        owner: user._id,
+                                    },
+                                },
+                            });
+                        } catch (e: unknown) {
+                            if (e instanceof ValidationError) {
+                                setHasError(true);
+                                toast({
+                                    title: 'Error creating new prep method',
+                                    description: e.message,
+                                    status: 'error',
+                                    position: 'top',
+                                    duration: 3000,
+                                });
+                            }
+                        }
+                    }}
+                >
                     Save
                 </Button>
             </ButtonGroup>

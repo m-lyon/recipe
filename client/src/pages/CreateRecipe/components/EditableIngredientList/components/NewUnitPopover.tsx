@@ -1,15 +1,15 @@
-import { Button, ButtonGroup, FormControl, FormHelperText, HStack } from '@chakra-ui/react';
-import { Radio, RadioGroup, Stack } from '@chakra-ui/react';
-import { gql } from '../../../../../__generated__';
-import { useState } from 'react';
-import { ApolloError, useMutation } from '@apollo/client';
-import { useToast } from '@chakra-ui/react';
+import { useState, useContext } from 'react';
 import { object, string, ValidationError } from 'yup';
-import { EnumUnitPreferredNumberFormat } from '../../../../../__generated__/graphql';
-import { PopoverHeader, PopoverArrow } from '@chakra-ui/react';
-import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
+import { ApolloError, useMutation } from '@apollo/client';
+import { PopoverCloseButton, PopoverContent, useToast } from '@chakra-ui/react';
+import { Radio, RadioGroup, Stack, PopoverHeader, PopoverArrow } from '@chakra-ui/react';
+import { Button, ButtonGroup, FormControl, FormHelperText, HStack } from '@chakra-ui/react';
+
+import { gql } from '../../../../../__generated__';
 import { UnitSuggestion } from './UnitDropdownList';
+import { UserContext } from '../../../../../context/UserContext';
 import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';
+import { EnumUnitPreferredNumberFormat, User } from '../../../../../__generated__/graphql';
 
 const CREATE_NEW_UNIT_MUTATION = gql(`
     mutation CreateUnit($record: CreateOneUnitInput!) {
@@ -46,6 +46,7 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewUnitFormProps)
     const [longSingular, setLongSingular] = useState('');
     const [longPlural, setLongPlural] = useState('');
     const [preferredNumberFormat, setpreferredNumberFormat] = useState('');
+    const [userContext] = useContext(UserContext);
 
     const [createNewUnit] = useMutation(CREATE_NEW_UNIT_MUTATION, {
         onCompleted: (data) => {
@@ -142,19 +143,21 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewUnitFormProps)
                     colorScheme='teal'
                     onClick={() => {
                         try {
-                            const parsedForm = formSchema.validateSync({
+                            const validated = formSchema.validateSync({
                                 shortSingular,
                                 shortPlural,
                                 longSingular,
                                 longPlural,
                                 preferredNumberFormat,
                             });
+                            const user = userContext as User;
                             createNewUnit({
                                 variables: {
                                     record: {
-                                        ...parsedForm,
+                                        ...validated,
+                                        owner: user?._id,
                                         preferredNumberFormat:
-                                            parsedForm.preferredNumberFormat as EnumUnitPreferredNumberFormat,
+                                            validated.preferredNumberFormat as EnumUnitPreferredNumberFormat,
                                     },
                                 },
                             });
