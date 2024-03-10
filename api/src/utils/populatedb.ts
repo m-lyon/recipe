@@ -25,11 +25,18 @@ export async function populatePrepMethods() {
         // Remove all existing prep methods
         await PrepMethod.collection.drop();
 
+        const admin = await User.findOne({ role: 'admin' });
+        const user = await User.findOne({ role: 'user' });
+
         // Create new dummy prep methods
-        const dummyPrepMethods = ['sliced', 'chopped', 'diced', 'grated', 'shredded'];
-        const createdPrepMethods = await PrepMethod.create(
-            dummyPrepMethods.map((value) => ({ value }))
-        );
+        const dummyPrepMethods = [
+            { value: 'sliced', owner: admin._id },
+            { value: 'chopped', owner: admin._id },
+            { value: 'diced', owner: admin._id },
+            { value: 'grated', owner: user._id },
+            { value: 'shredded', owner: user._id },
+        ];
+        const createdPrepMethods = await PrepMethod.create(dummyPrepMethods);
 
         console.log('Dummy prep methods added:', createdPrepMethods);
     } catch (error) {
@@ -42,6 +49,9 @@ export async function populateUnits() {
         // Remove all existing units
         await Unit.collection.drop();
 
+        const admin = await User.findOne({ role: 'admin' });
+        const user = await User.findOne({ role: 'user' });
+
         // Create new dummy units
         const dummyUnits = [
             {
@@ -50,6 +60,7 @@ export async function populateUnits() {
                 longSingular: 'kilogram',
                 longPlural: 'kilograms',
                 preferredNumberFormat: 'decimal',
+                owner: admin._id,
             },
             {
                 shortSingular: 'ml',
@@ -57,6 +68,7 @@ export async function populateUnits() {
                 longSingular: 'millilitre',
                 longPlural: 'millilitres',
                 preferredNumberFormat: 'decimal',
+                owner: user._id,
             },
             {
                 shortSingular: 'tsp',
@@ -64,6 +76,7 @@ export async function populateUnits() {
                 longSingular: 'teaspoon',
                 longPlural: 'teaspoons',
                 preferredNumberFormat: 'fraction',
+                owner: admin._id,
             },
             {
                 shortSingular: 'tbsp',
@@ -71,6 +84,7 @@ export async function populateUnits() {
                 longSingular: 'tablespoon',
                 longPlural: 'tablespoons',
                 preferredNumberFormat: 'fraction',
+                owner: admin._id,
             },
             {
                 shortSingular: 'cup',
@@ -78,6 +92,7 @@ export async function populateUnits() {
                 longSingular: 'cup',
                 longPlural: 'cups',
                 preferredNumberFormat: 'fraction',
+                owner: user._id,
             },
         ];
         const createdUnits = await Unit.create(dummyUnits);
@@ -93,10 +108,26 @@ export async function populateIngredients() {
         // Remove all existing ingredients
         await Ingredient.collection.drop();
 
+        const admin = await User.findOne({ role: 'admin' });
+        const user = await User.findOne({ role: 'user' });
+
         const dummyIngredients = [
-            { name: 'onion', pluralName: 'onions', isCountable: true },
-            { name: 'tomato', pluralName: 'tomatoes', isCountable: true, density: 0.8 },
-            { name: 'chicken', pluralName: 'chickens', isCountable: false, density: 1.0 },
+            { name: 'onion', pluralName: 'onions', isCountable: true, owner: admin._id },
+            {
+                name: 'tomato',
+                pluralName: 'tomatoes',
+                isCountable: true,
+                density: 0.8,
+                owner: admin._id,
+            },
+            {
+                name: 'chicken',
+                pluralName: 'chickens',
+                isCountable: false,
+                density: 1.0,
+                owner: admin._id,
+            },
+            { name: 'beef', pluralName: 'beef', isCountable: false, density: 1.0, owner: user._id },
         ];
         const createdIngredients = await Ingredient.create(dummyIngredients);
 
@@ -110,9 +141,14 @@ export async function populateRecipes() {
     try {
         // Remove all existing recipes
         await Recipe.collection.drop();
+
+        const admin = await User.findOne({ role: 'admin' });
+        const user = await User.findOne({ role: 'user' });
+
         const dummyRecipes = [
             {
                 title: 'Spaghetti Bolognese',
+                titleIdentifier: 'spaghetti-bolognese',
                 subTitle: 'A classic Italian dish',
                 tags: [
                     (await Tag.findOne({ value: 'lunch' }))._id,
@@ -153,12 +189,64 @@ export async function populateRecipes() {
                     'Enjoy your delicious homemade spaghetti bolognese!',
                 ],
                 notes: 'This is a great recipe to make in bulk and freeze.',
-                owner: (await User.findOne({ username: 'john@gmail.com' }))._id,
+                owner: admin._id,
                 source: 'Me Myself and I',
                 numServings: 4,
                 isIngredient: false,
             },
+            {
+                title: 'Chicken Curry',
+                titleIdentifier: 'chicken-curry',
+                subTitle: 'A classic Indian dish',
+                tags: [
+                    (await Tag.findOne({ value: 'lunch' }))._id,
+                    (await Tag.findOne({ value: 'dinner' }))._id,
+                    (await Tag.findOne({ value: 'spicy' }))._id,
+                    (await Tag.findOne({ value: 'quick' }))._id,
+                ],
+                ingredients: [
+                    {
+                        ingredient: (await Ingredient.findOne({ name: 'onion' }))._id,
+                        type: 'ingredient',
+                        quantity: '1/2',
+                        unit: null,
+                        prepMethod: (await PrepMethod.findOne({ value: 'sliced' }))._id,
+                    },
+                    {
+                        ingredient: (await Ingredient.findOne({ name: 'chicken' }))._id,
+                        type: 'ingredient',
+                        quantity: '1',
+                        unit: (await Unit.findOne({ shortSingular: 'kg' }))._id,
+                        prepMethod: (await PrepMethod.findOne({ value: 'diced' }))._id,
+                    },
+                    {
+                        ingredient: (await Ingredient.findOne({ name: 'tomato' }))._id,
+                        type: 'ingredient',
+                        quantity: '400',
+                        unit: (await Unit.findOne({ shortSingular: 'cup' }))._id,
+                        prepMethod: (await PrepMethod.findOne({ value: 'chopped' }))._id,
+                    },
+                ],
+                instructions: [
+                    'Start by heating a large skillet or saucepan over medium heat. Add some vegetable oil or ghee.',
+                    'Once the oil is hot, add chopped onions and sauté until they turn translucent, about 5-7 minutes.',
+                    'Add minced garlic, ginger, and any other aromatics like chopped green chilies or curry leaves. Sauté for another 1-2 minutes until fragrant.',
+                    'Next, add your chicken pieces to the skillet. You can use boneless, skinless chicken thighs or breasts cut into bite-sized pieces. Cook until the chicken is browned on all sides, stirring occasionally.',
+                    'Now its time to add your spices. Sprinkle in curry powder, ground cumin, ground coriander, turmeric, and garam masala. Stir well to coat the chicken evenly with the spices.',
+                    'Pour in some coconut milk or chicken broth to create a creamy base for the curry. Stir to combine.',
+                    'Let the curry simmer over low heat for about 20-25 minutes, or until the chicken is fully cooked and tender. Stir occasionally to prevent sticking and ensure all flavors meld together.',
+                    'If you like your curry thicker, you can mix a tablespoon of cornstarch with a splash of water and add it to the curry. Stir well and let it simmer for a few more minutes until thickened.',
+                    'Season the curry with salt and pepper to taste. You can also add a squeeze of fresh lemon or lime juice for brightness, if desired.',
+                    'Serve the chicken curry hot over steamed rice or with naan bread on the side. Garnish with fresh cilantro leaves or a dollop of yogurt, if desired.',
+                    'Enjoy your delicious homemade chicken curry!',
+                ],
+                notes: 'This is a great recipe to make in bulk and freeze.',
+                owner: user._id,
+                numServings: 3,
+                isIngredient: false,
+            },
         ];
+
         const createdRecipes = await Recipe.create(dummyRecipes);
         console.log('Dummy recipes added:', createdRecipes);
     } catch (error) {
@@ -182,6 +270,12 @@ export async function populateUsers() {
                 username: 'jane@gmail.com',
                 firstName: 'Jane',
                 lastName: 'Doe',
+                role: 'user',
+            },
+            {
+                username: 'matt@gmail.com',
+                firstName: 'Matt',
+                lastName: 'Smith',
                 role: 'user',
             },
         ];

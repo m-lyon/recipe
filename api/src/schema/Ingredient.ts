@@ -1,3 +1,4 @@
+import { filterIsOwnerOrAdmin } from '../middleware/filters.js';
 import { IngredientTC } from '../models/Ingredient.js';
 
 export const IngredientQuery = {
@@ -12,7 +13,11 @@ export const IngredientQuery = {
         .setDescription('Retrieve a single ingredient'),
     ingredientMany: IngredientTC.mongooseResolvers
         .findMany()
+        .wrapResolve(filterIsOwnerOrAdmin())
         .setDescription('Retrieve multiple ingredients'),
+    ingredientManyAll: IngredientTC.mongooseResolvers
+        .findMany()
+        .setDescription('Retrieve all ingredients'),
 };
 
 export const IngredientMutation = {

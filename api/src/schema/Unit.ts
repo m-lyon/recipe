@@ -1,4 +1,5 @@
 import { UnitTC } from '../models/Unit.js';
+import { filterIsOwnerOrAdmin } from '../middleware/filters.js';
 
 export const UnitQuery = {
     unitById: UnitTC.mongooseResolvers.findById().setDescription('Retrieve a unit by its ID'),
@@ -6,7 +7,11 @@ export const UnitQuery = {
         .findByIds()
         .setDescription('Retrieve multiple units by their IDs'),
     unitOne: UnitTC.mongooseResolvers.findOne().setDescription('Retrieve a single unit'),
-    unitMany: UnitTC.mongooseResolvers.findMany().setDescription('Retrieve multiple units'),
+    unitMany: UnitTC.mongooseResolvers
+        .findMany()
+        .wrapResolve(filterIsOwnerOrAdmin())
+        .setDescription('Retrieve multiple units'),
+    unitManyAll: UnitTC.mongooseResolvers.findMany().setDescription('Retrieve all units'),
 };
 
 export const UnitMutation = {

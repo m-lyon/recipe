@@ -1,4 +1,5 @@
 import { PrepMethodTC } from '../models/PrepMethod.js';
+import { filterIsOwnerOrAdmin } from '../middleware/filters.js';
 
 export const PrepMethodQuery = {
     prepMethodById: PrepMethodTC.mongooseResolvers
@@ -12,7 +13,11 @@ export const PrepMethodQuery = {
         .setDescription('Retrieve a single prep method'),
     prepMethodMany: PrepMethodTC.mongooseResolvers
         .findMany()
+        .wrapResolve(filterIsOwnerOrAdmin())
         .setDescription('Retrieve multiple prep methods'),
+    prepMethodManyAll: PrepMethodTC.mongooseResolvers
+        .findMany()
+        .setDescription('Retrieve all prep methods'),
 };
 
 export const PrepMethodMutation = {
