@@ -75,7 +75,7 @@ function handleQuantityChange(
                 actionHandler.setShow.off();
             }
             // Valid numerical input
-        } else if (/^[\d\/\.-]$/.test(char)) {
+        } else if (item.quantity !== null && /^[\d\/\.-]$/.test(char)) {
             actionHandler.quantity.append(char);
             if (item.show) {
                 actionHandler.setShow.off();
