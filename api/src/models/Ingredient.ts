@@ -1,5 +1,6 @@
 import { Schema, Document, model, Types } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
+import { uniqueInAdminsAndUser } from '../middleware/validation';
 
 export interface Ingredient extends Document {
     name: string;
@@ -13,14 +14,20 @@ const ingredientSchema = new Schema<Ingredient>({
     name: {
         type: String,
         required: true,
-        unique: true,
         set: (value: string) => value.toLowerCase(),
+        validate: {
+            validator: uniqueInAdminsAndUser('Ingredient', 'name'),
+            message: 'The ingredient name must be unique.',
+        },
     },
     pluralName: {
         type: String,
         required: true,
-        unique: true,
         set: (value: string) => value.toLowerCase(),
+        validate: {
+            validator: uniqueInAdminsAndUser('Ingredient', 'pluralName'),
+            message: 'The plural ingredient name must be unique.',
+        },
     },
     density: { type: Number, required: false },
     isCountable: { type: Boolean, required: true },

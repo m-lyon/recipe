@@ -12,7 +12,8 @@
     "dev": "NODE_ENV=development nodemon -e ts --exec \"npm run start\"",
     "prod": "NODE_ENV=production npm run start",
     "seed": "npm run compile && NODE_ENV=development node ./dist/scripts/seedDatabase.js",
-    "reset_db": "npm run compile && NODE_ENV=development node ./dist/scripts/resetDatabase.js"
+    "reset_db": "npm run compile && NODE_ENV=development node ./dist/scripts/resetDatabase.js",
+    "test": "npm run compile && NODE_ENV=test mocha ./dist/test/**/*.test.js"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +23,7 @@
     "@apollo/server": "^4.7.4",
     "@graphql-tools/resolvers-composition": "^7.0.0",
     "@types/cors": "^2.8.17",
+    "@types/dotenv-flow": "^3.3.3",
     "@types/express-session": "^1.17.10",
     "@types/graphql-upload": "^16.0.7",
     "body-parser": "^1.20.2",
@@ -41,7 +43,12 @@
     "passport-local-mongoose": "^8.0.0"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.12",
+    "@types/mocha": "^10.0.6",
     "@types/node": "^20.5.1",
+    "chai": "^5.1.0",
+    "mocha": "^10.3.0",
+    "mongodb-memory-server-core": "^9.1.7",
     "typescript": "^5.1.6"
   }
 }

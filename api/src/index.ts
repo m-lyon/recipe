@@ -1,5 +1,5 @@
 import { WHITELIST, SESSION_SECRET, SESSION_URI, PORT, HTTPS } from './constants.js';
-import './utils/connectdb.js';
+import './utils/database.js';
 import './strategies/GraphQLLocalStrategy.js';
 
 import cors from 'cors';
@@ -15,7 +15,7 @@ import { expressMiddleware } from '@apollo/server/express4';
 import { buildContext } from 'graphql-passport';
 import { ApolloServer } from '@apollo/server';
 import { schema } from './schema/index.js';
-import { createHttpServer, createHttpsServer } from './utils/connect.js';
+import { createHttpServer, createHttpsServer } from './utils/server.js';
 import { uploadRouter } from './routes/uploads.js';
 
 const app = express();

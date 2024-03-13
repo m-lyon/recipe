@@ -4,9 +4,11 @@ import { User } from './User.js';
 import { Unit } from './Unit.js';
 import { Ingredient } from './Ingredient.js';
 import { PrepMethod } from './PrepMethod.js';
-import { Tag, tagValidator } from './Tag.js';
+import { Tag } from './Tag.js';
 import { validateMongooseObjectIds, validateMongooseObjectIdsArray } from './utils.js';
 import { quantityRegex } from './utils.js';
+import { generateRandomString } from '../utils/random.js';
+import { unique, uniqueInAdminsAndUser } from '../middleware/validation.js';
 
 export interface RecipeIngredientType extends Document {
     ingredient: Types.ObjectId;
@@ -42,8 +44,8 @@ export function generateRecipeIdentifier(title: string): string {
     sanitizedTitle = sanitizedTitle.trim();
     // Replace spaces with dashes and convert to lowercase
     sanitizedTitle = sanitizedTitle.replace(/\s+/g, '-').toLowerCase();
-
-    return sanitizedTitle;
+    const suffix = generateRandomString(4);
+    return `${sanitizedTitle}-${suffix}`;
 }
 
 const recipeIngredientSchema = new Schema<RecipeIngredientType>({
@@ -87,13 +89,36 @@ export interface Recipe extends Document {
 }
 
 const recipeSchema = new Schema<Recipe>({
-    title: { type: String, required: true, unique: true },
-    titleIdentifier: { type: String, unique: true, required: true },
+    title: {
+        type: String,
+        required: true,
+        validate: {
+            validator: uniqueInAdminsAndUser('Recipe', 'title'),
+            message: 'The recipe title must be unique.',
+        },
+    },
+    titleIdentifier: {
+        type: String,
+        required: true,
+        validate: {
+            validator: unique('Recipe', 'titleIdentifier'),
+            message: 'The title identifier must be unique, please try again.',
+        },
+    },
     pluralTitle: { type: String },
     subTitle: { type: String },
     tags: {
         type: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
-        validate: tagValidator,
+        validate: {
+            validator: function (tags?: Types.ObjectId[]) {
+                if (tags) {
+                    const uniqueTags = new Set(tags.map((tag) => tag.toString()));
+                    return uniqueTags.size === tags.length;
+                }
+                return true;
+            },
+            message: 'Duplicate tags are not allowed.',
+        },
     },
     ingredients: {
         type: [{ type: recipeIngredientSchema }],
