@@ -17,6 +17,7 @@ import { theme } from './theme/chakraTheme';
 import { GRAPHQL_ENDPOINT, ROOT_PATH } from './constants';
 
 import createUploadLink from 'apollo-upload-client/createUploadLink.mjs';
+import { EditRecipe } from './pages/EditRecipe';
 
 const domNode = document.getElementById('root')!;
 const root = createRoot(domNode);
@@ -37,6 +38,14 @@ const routes = createBrowserRouter(
                     element={
                         <RequireAuth>
                             <CreateRecipe />
+                        </RequireAuth>
+                    }
+                />
+                <Route
+                    path='edit/:titleIdentifier'
+                    element={
+                        <RequireAuth>
+                            <EditRecipe />
                         </RequireAuth>
                     }
                 />
