@@ -51,7 +51,8 @@ app.use(
         maxFiles: 10,
     })
 );
-app.use('/uploads', uploadRouter);
+
+app.use('/uploads', cors<cors.CorsRequest>(corsOptions), uploadRouter);
 app.use(
     '/',
     cors<cors.CorsRequest>(corsOptions),
