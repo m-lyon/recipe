@@ -18,10 +18,13 @@ export function EditRecipe() {
     const navigate = useNavigate();
     const { titleIdentifier } = useParams();
     const { avgRating: rating, getRatings, setRating } = useViewStarRating();
-    const [saveRecipe, { data: response, loading: recipeLoading }] = useMutation(UPDATE_RECIPE);
-    const [deleteImages] = useMutation(DELETE_IMAGES);
+    const [saveRecipe, { data: response, loading: recipeLoading }] = useMutation(UPDATE_RECIPE, {
+        refetchQueries: ['GetRecipe'],
+    });
+    const [deleteImages] = useMutation(DELETE_IMAGES, { refetchQueries: ['GetRecipe'] });
     const [uploadImages, { loading: uploadLoading }] = useMutation(UPLOAD_IMAGES, {
         context: { headers: { 'apollo-require-preflight': true } },
+        refetchQueries: ['GetRecipe'],
     });
     const { data, loading, error } = useQuery(GET_RECIPE, {
         variables: { filter: { titleIdentifier: titleIdentifier } },
