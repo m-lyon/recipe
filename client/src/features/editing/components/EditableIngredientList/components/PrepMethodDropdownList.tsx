@@ -3,12 +3,16 @@ import { LayoutGroup } from 'framer-motion';
 import { MutableRefObject, useRef } from 'react';
 import { useDisclosure, Popover, PopoverAnchor } from '@chakra-ui/react';
 
-import { Suggestion } from '../../../types';
 import { NewPrepMethodPopover } from './NewPrepMethodPopover';
 import { PrepMethod } from '../../../../../__generated__/graphql';
 import { DropdownItem } from '../../../../../components/DropdownItem';
 import { useNavigatableList } from '../../../hooks/useNavigatableList';
 
+export interface PrepMethodSuggestion {
+    value: string;
+    colour?: string;
+    _id?: string;
+}
 type PrepMethodType = Omit<PrepMethod, 'owner'>;
 interface Props {
     strValue: string;
@@ -25,10 +29,10 @@ export function PrepMethodDropdownList(props: Props) {
     const { isOpen, onOpen, onClose } = useDisclosure({
         onClose: () => previewRef.current?.focus(),
     });
-    const filter = (data: PrepMethodType[], value: string): Suggestion[] => {
+    const filter = (data: PrepMethodType[], value: string): PrepMethodSuggestion[] => {
         const items = matchSorter<PrepMethodType>(data, value, {
             keys: ['value'],
-        }) as Suggestion[];
+        }) as PrepMethodSuggestion[];
         if (value === '') {
             items.unshift({ value: 'skip prep method', colour: 'gray.400', _id: undefined });
         } else {
@@ -38,7 +42,7 @@ export function PrepMethodDropdownList(props: Props) {
     };
     const suggestions = filter(data, strValue);
 
-    const handleSelect = (item: Suggestion) => {
+    const handleSelect = (item: PrepMethodSuggestion) => {
         if (item.value === 'skip prep method') {
             setItem(null);
             handleSubmit();
@@ -50,7 +54,7 @@ export function PrepMethodDropdownList(props: Props) {
         }
     };
 
-    const { highlightedIndex, setHighlightedIndex } = useNavigatableList<Suggestion>(
+    const { highlightedIndex, setHighlightedIndex } = useNavigatableList<PrepMethodSuggestion>(
         suggestions,
         handleSelect,
         inputRef

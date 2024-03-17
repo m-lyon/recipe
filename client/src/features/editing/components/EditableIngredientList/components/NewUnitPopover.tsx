@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { object, string, ValidationError } from 'yup';
 import { ApolloError, useMutation } from '@apollo/client';
 import { PopoverCloseButton, PopoverContent, useToast } from '@chakra-ui/react';
@@ -86,6 +86,55 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewUnitFormProps)
             .oneOf(['decimal', 'fraction'], 'You must select a number format'),
     });
 
+    const handleSubmit = () => {
+        try {
+            const validated = formSchema.validateSync({
+                shortSingular,
+                shortPlural,
+                longSingular,
+                longPlural,
+                preferredNumberFormat,
+            });
+            const user = userContext as User;
+            createNewUnit({
+                variables: {
+                    record: {
+                        ...validated,
+                        owner: user?._id,
+                        preferredNumberFormat:
+                            validated.preferredNumberFormat as EnumUnitPreferredNumberFormat,
+                    },
+                },
+            });
+        } catch (e: unknown) {
+            setHasError(true);
+            if (e instanceof ValidationError) {
+                toast({
+                    title: 'Error creating new unit',
+                    description: e.message,
+                    status: 'error',
+                    position: 'top',
+                    duration: 3000,
+                });
+            }
+        }
+    };
+
+    useEffect(() => {
+        const handleKeyboardEvent = (e: KeyboardEvent) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSubmit();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyboardEvent);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyboardEvent);
+        };
+    });
+
     return (
         <Stack spacing={4} paddingTop={3} paddingLeft={2}>
             <FloatingLabelInput
@@ -139,42 +188,7 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewUnitFormProps)
                 </RadioGroup>
             </FormControl>
             <ButtonGroup display='flex' justifyContent='flex-left' paddingTop={2}>
-                <Button
-                    colorScheme='teal'
-                    onClick={() => {
-                        try {
-                            const validated = formSchema.validateSync({
-                                shortSingular,
-                                shortPlural,
-                                longSingular,
-                                longPlural,
-                                preferredNumberFormat,
-                            });
-                            const user = userContext as User;
-                            createNewUnit({
-                                variables: {
-                                    record: {
-                                        ...validated,
-                                        owner: user?._id,
-                                        preferredNumberFormat:
-                                            validated.preferredNumberFormat as EnumUnitPreferredNumberFormat,
-                                    },
-                                },
-                            });
-                        } catch (e: unknown) {
-                            setHasError(true);
-                            if (e instanceof ValidationError) {
-                                toast({
-                                    title: 'Error creating new unit',
-                                    description: e.message,
-                                    status: 'error',
-                                    position: 'top',
-                                    duration: 3000,
-                                });
-                            }
-                        }
-                    }}
-                >
+                <Button colorScheme='teal' onClick={handleSubmit}>
                     Save
                 </Button>
             </ButtonGroup>

@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useMutation, ApolloError } from '@apollo/client';
 import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 import { Button, ButtonGroup, Checkbox, Stack } from '@chakra-ui/react';
@@ -82,6 +82,47 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewIngredie
         density: number(),
     });
 
+    const handleSubmit = () => {
+        try {
+            const user = userContext as User;
+            const validated = formSchema.validateSync({
+                name,
+                pluralName,
+                isCountable,
+                density: density === '' ? undefined : density,
+            });
+            createNewIngredient({
+                variables: { record: { ...validated, owner: user._id } },
+            });
+        } catch (e: unknown) {
+            setHasError(true);
+            if (e instanceof ValidationError) {
+                toast({
+                    title: 'Error creating new ingredient',
+                    description: e.message,
+                    status: 'error',
+                    position: 'top',
+                    duration: 3000,
+                });
+            }
+        }
+    };
+
+    useEffect(() => {
+        const handleKeyboardEvent = (e: KeyboardEvent) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSubmit();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyboardEvent);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyboardEvent);
+        };
+    });
+
     return (
         <Stack spacing={4}>
             <FloatingLabelInput
@@ -117,34 +158,7 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewIngredie
                 }}
             />
             <ButtonGroup display='flex' justifyContent='flex-end'>
-                <Button
-                    colorScheme='teal'
-                    onClick={() => {
-                        try {
-                            const user = userContext as User;
-                            const validated = formSchema.validateSync({
-                                name,
-                                pluralName,
-                                isCountable,
-                                density: density === '' ? undefined : density,
-                            });
-                            createNewIngredient({
-                                variables: { record: { ...validated, owner: user._id } },
-                            });
-                        } catch (e: unknown) {
-                            setHasError(true);
-                            if (e instanceof ValidationError) {
-                                toast({
-                                    title: 'Error creating new ingredient',
-                                    description: e.message,
-                                    status: 'error',
-                                    position: 'top',
-                                    duration: 3000,
-                                });
-                            }
-                        }
-                    }}
-                >
+                <Button colorScheme='teal' onClick={handleSubmit}>
                     Save
                 </Button>
             </ButtonGroup>

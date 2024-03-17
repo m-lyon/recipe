@@ -1,14 +1,15 @@
-import { useState, useContext } from 'react';
 import { object, string, ValidationError } from 'yup';
+import { useState, useContext, useEffect } from 'react';
 import { useMutation, ApolloError } from '@apollo/client';
-import { Button, ButtonGroup, Stack, useToast } from '@chakra-ui/react';
+import { Button, ButtonGroup, useToast } from '@chakra-ui/react';
+import { PopoverHeader, PopoverArrow, Stack } from '@chakra-ui/react';
+import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 
-import { NewPopover } from './NewPopover';
-import { NewFormProps } from '../../../types';
 import { gql } from '../../../../../__generated__';
 import { User } from '../../../../../__generated__/graphql';
 import { UserContext } from '../../../../../context/UserContext';
 import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';
+import { PrepMethodSuggestion } from './PrepMethodDropdownList';
 
 const CREATE_NEW_PREP_METHOD_MUTATION = gql(`
     mutation CreatePrepMethod($record: CreateOnePrepMethodInput!) {
@@ -27,8 +28,12 @@ function formatError(error: ApolloError) {
     }
     return error.message;
 }
-
-function NewPrepMethodForm({ firstFieldRef, onClose, handleSelect }: NewFormProps) {
+interface NewPrepMethodFormProps {
+    firstFieldRef: React.MutableRefObject<HTMLInputElement | null>;
+    onClose: () => void;
+    handleSelect: (item: PrepMethodSuggestion) => void;
+}
+function NewPrepMethodForm({ firstFieldRef, onClose, handleSelect }: NewPrepMethodFormProps) {
     const [userContext] = useContext(UserContext);
     const toast = useToast();
     const [hasError, setHasError] = useState(false);
@@ -64,6 +69,47 @@ function NewPrepMethodForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
 
     const formSchema = object({ value: string().required('Prep method is required') });
 
+    const handleSubmit = () => {
+        try {
+            const validated = formSchema.validateSync({ value });
+            const user = userContext as User;
+            createNewPrepMethod({
+                variables: {
+                    record: {
+                        ...validated,
+                        owner: user._id,
+                    },
+                },
+            });
+        } catch (e: unknown) {
+            if (e instanceof ValidationError) {
+                setHasError(true);
+                toast({
+                    title: 'Error creating new prep method',
+                    description: e.message,
+                    status: 'error',
+                    position: 'top',
+                    duration: 3000,
+                });
+            }
+        }
+    };
+
+    useEffect(() => {
+        const handleKeyboardEvent = (e: KeyboardEvent) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSubmit();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyboardEvent);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyboardEvent);
+        };
+    });
+
     return (
         <Stack spacing={4}>
             <FloatingLabelInput
@@ -78,34 +124,7 @@ function NewPrepMethodForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
                 }}
             />
             <ButtonGroup display='flex' justifyContent='flex-end'>
-                <Button
-                    colorScheme='teal'
-                    onClick={() => {
-                        try {
-                            const validated = formSchema.validateSync({ value });
-                            const user = userContext as User;
-                            createNewPrepMethod({
-                                variables: {
-                                    record: {
-                                        ...validated,
-                                        owner: user._id,
-                                    },
-                                },
-                            });
-                        } catch (e: unknown) {
-                            if (e instanceof ValidationError) {
-                                setHasError(true);
-                                toast({
-                                    title: 'Error creating new prep method',
-                                    description: e.message,
-                                    status: 'error',
-                                    position: 'top',
-                                    duration: 3000,
-                                });
-                            }
-                        }
-                    }}
-                >
+                <Button colorScheme='teal' onClick={handleSubmit}>
                     Save
                 </Button>
             </ButtonGroup>
@@ -113,6 +132,13 @@ function NewPrepMethodForm({ firstFieldRef, onClose, handleSelect }: NewFormProp
     );
 }
 
-export function NewPrepMethodPopover(props: NewFormProps) {
-    return <NewPopover NewForm={NewPrepMethodForm} formProps={props} title='Add new prep method' />;
+export function NewPrepMethodPopover(props: NewPrepMethodFormProps) {
+    return (
+        <PopoverContent paddingRight={4} paddingBottom={3} paddingLeft={2}>
+            <PopoverArrow />
+            <PopoverCloseButton />
+            <PopoverHeader border='hidden'>Add new prep method</PopoverHeader>
+            <NewPrepMethodForm {...props} />
+        </PopoverContent>
+    );
 }
