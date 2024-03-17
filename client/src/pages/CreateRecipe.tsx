@@ -5,6 +5,7 @@ import { EditableRecipe } from '../features/editing';
 import { CreateOneRecipeModifyInput } from '../__generated__/graphql';
 import { useMutation } from '@apollo/client';
 import { ROOT_PATH } from '../constants';
+import { useState } from 'react';
 import { useToast } from '@chakra-ui/react';
 import { ADD_RATING } from '../graphql/mutations/rating';
 import { UPLOAD_IMAGES } from '../graphql/mutations/image';
@@ -24,6 +25,7 @@ export function CreateRecipe() {
     const toast = useToast();
     const state = useRecipeState();
     const navigate = useNavigate();
+    const [rating, setRating] = useState<number>(0);
     const [createRecipe, { loading: recipeLoading, data: response }] = useMutation(CREATE_RECIPE);
     const [addRating, { loading: ratingLoading }] = useMutation(ADD_RATING);
     const [uploadImages, { loading: uploadLoading }] = useMutation(UPLOAD_IMAGES, {
@@ -47,8 +49,8 @@ export function CreateRecipe() {
         }
         try {
             // Add Rating
-            if (state.rating.rating !== 0) {
-                await addRating({ variables: { recipeId, rating: state.rating.rating } });
+            if (rating !== 0) {
+                await addRating({ variables: { recipeId, rating } });
             }
         } catch (error) {
             toast({
@@ -89,17 +91,19 @@ export function CreateRecipe() {
     return (
         <EditableRecipe
             state={state}
+            rating={{ rating, setRating }}
             handleSubmitMutation={handleSubmitMutation}
-            btnSubmitText='Submit'
-            btnLoadingText={
-                recipeLoading || ratingLoading
-                    ? 'Submitting Recipe...'
-                    : uploadLoading
-                    ? 'Uploading Images...'
-                    : undefined
-            }
-            btnDisabled={!!response}
-            btnIsLoading={recipeLoading || ratingLoading || uploadLoading}
+            submitButtonProps={{
+                submitText: 'Submit',
+                loadingText:
+                    recipeLoading || ratingLoading
+                        ? 'Submitting Recipe...'
+                        : uploadLoading
+                        ? 'Uploading Images...'
+                        : undefined,
+                disabled: !!response,
+                isLoading: recipeLoading || ratingLoading || uploadLoading,
+            }}
         />
     );
 }

@@ -11,7 +11,7 @@ export const isAuthenticated = () => (next) => (resolveParams) => {
 export const isAdmin = () => (next) => (resolveParams) => {
     const user = resolveParams.context.getUser();
     if (user.role !== 'admin') {
-        throw new Error('You are not authorized!');
+        throw new Error('You are not authorised!');
     }
     return next(resolveParams);
 };
@@ -26,7 +26,7 @@ export const isRecipeOwner = () => (next) => async (resolveParams) => {
         throw new Error('Recipe not found!');
     }
     if (!recipe.owner.equals(user._id)) {
-        throw new Error('You are not authorized!');
+        throw new Error('You are not authorised!');
     }
     return next(resolveParams);
 };
@@ -45,7 +45,7 @@ export const isDocumentOwnerOrAdmin =
             throw new Error('Document not found!');
         }
         if (!(document.owner as Types.ObjectId).equals(user._id) && user.role !== 'admin') {
-            throw new Error('You are not authorized!');
+            throw new Error('You are not authorised!');
         }
         return next(resolveParams);
     };

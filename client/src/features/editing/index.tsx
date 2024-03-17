@@ -6,28 +6,26 @@ import { ImageUpload } from './components/ImageUpload';
 import { UserContext } from '../../context/UserContext';
 import { RecipeState } from './hooks/useRecipeState';
 import { EditableTitle } from './components/EditableTitle';
+import { StarRatingProps } from '../../components/StarRating';
 import { EditableTagList } from './components/EditableTagList';
 import { EditableIngredientsTab } from './components/EditableIngredientsTab';
 import { EditableInstructionsTab } from './components/EditableInstructionsTab';
 import { CreateOneRecipeModifyInput } from '../../__generated__/graphql';
 
+interface SubmitButtonProps {
+    submitText: string;
+    loadingText?: string;
+    disabled?: boolean;
+    isLoading?: boolean;
+}
 interface Props {
     state: RecipeState;
+    rating: StarRatingProps;
     handleSubmitMutation: (recipe: CreateOneRecipeModifyInput) => void;
-    btnSubmitText: string;
-    btnLoadingText?: string;
-    btnDisabled?: boolean;
-    btnIsLoading?: boolean;
+    submitButtonProps: SubmitButtonProps;
 }
 export function EditableRecipe(props: Props) {
-    const {
-        state,
-        handleSubmitMutation,
-        btnSubmitText,
-        btnLoadingText,
-        btnDisabled,
-        btnIsLoading,
-    } = props;
+    const { state, rating, handleSubmitMutation, submitButtonProps } = props;
     const [userContext] = useContext(UserContext);
     const toast = useToast();
 
@@ -149,7 +147,7 @@ export function EditableRecipe(props: Props) {
                 <GridItem pl='2' area='ingredients' boxShadow='lg' padding='6'>
                     <EditableIngredientsTab
                         servingsProps={state.numServings}
-                        ratingProps={state.rating}
+                        ratingProps={rating}
                         ingredientsProps={state.ingredient}
                         notesProps={state.notes}
                     />
@@ -180,11 +178,11 @@ export function EditableRecipe(props: Props) {
                                 border='1px'
                                 borderColor='gray.200'
                                 onClick={handleSubmit}
-                                loadingText={btnLoadingText}
-                                disabled={btnDisabled}
-                                isLoading={btnIsLoading}
+                                loadingText={submitButtonProps.loadingText}
+                                disabled={submitButtonProps.disabled}
+                                isLoading={submitButtonProps.isLoading}
                             >
-                                {btnSubmitText}
+                                {submitButtonProps.submitText}
                             </Button>
                         </Box>
                     </Center>

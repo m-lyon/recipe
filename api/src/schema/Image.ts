@@ -1,9 +1,12 @@
+import fs from 'fs';
+import path from 'path';
 import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
 
 import { GraphQLNonNull, GraphQLObjectType, GraphQLString, GraphQLList } from 'graphql';
-import { ImageTC } from '../models/Image.js';
+import { Image, ImageTC } from '../models/Image.js';
 import { FileUpload, storeUpload, validateImageFile } from '../utils/upload.js';
 import { saveImageToDb } from '../models/Image.js';
+import { IMAGE_DIR } from '../constants.js';
 
 ImageTC.addResolver({
     name: 'imageUploadOne',
@@ -51,6 +54,41 @@ ImageTC.addResolver({
     },
 });
 
+// TODO: figure out the correct return type for this
+ImageTC.addResolver({
+    name: 'imageRemoveManyByIds',
+    description: 'Remove multiple images by their IDs',
+    type: new GraphQLObjectType({
+        name: 'ImageRemovePayload',
+        fields: {
+            recordIds: { type: new GraphQLList(GraphQLString) },
+        },
+    }),
+    args: {
+        ids: { type: '[MongoID!]!', description: 'Image IDs.' },
+    },
+    resolve: async (rp) => {
+        const { args, context } = rp;
+        const user = context.getUser();
+        const images = await Image.find({ _id: { $in: args.ids } });
+        // Ensure user has permission to remove any and all images
+        images.forEach((image) => {
+            if (!image.recipe._id.equals(user._id) && user.role !== 'admin') {
+                throw new Error('You are not authorised!');
+            }
+        });
+        // Remove the images from the database
+        await Image.deleteMany(args.filter);
+        // Remove files from disk
+        images.forEach((image: Image) => {
+            const filepath = path.join(IMAGE_DIR, path.basename(image.origUrl));
+            fs.unlink(filepath, (err) => {
+                if (err) throw err;
+            });
+        });
+    },
+});
+
 export const ImageQuery = {
     ImageById: ImageTC.mongooseResolvers.findById(),
     ImageByIds: ImageTC.mongooseResolvers.findByIds(),
@@ -61,4 +99,5 @@ export const ImageQuery = {
 export const ImageMutation = {
     imageUploadOne: ImageTC.getResolver('imageUploadOne'),
     imageUploadMany: ImageTC.getResolver('imageUploadMany'),
+    imageRemoveMany: ImageTC.getResolver('imageRemoveManyByIds'),
 };

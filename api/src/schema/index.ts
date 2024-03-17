@@ -38,6 +38,7 @@ const isAuthenticatedMutations = composeResolvers(
             unitCreateOne: UnitMutation.unitCreateOne,
             prepMethodCreateOne: PrepMethodMutation.prepMethodCreateOne,
             ingredientCreateOne: IngredientMutation.ingredientCreateOne,
+            imageRemoveMany: ImageMutation.imageRemoveMany,
         },
     },
     { 'Mutation.*': [isAuthenticated()] }

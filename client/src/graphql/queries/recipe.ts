@@ -45,6 +45,7 @@ export const GET_RECIPE = gql(`
             source
             notes
             images {
+                _id
                 origUrl
             }
         }

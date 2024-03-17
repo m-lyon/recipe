@@ -7,3 +7,11 @@ export const UPLOAD_IMAGES = gql(`
         }
     }
 `);
+
+export const DELETE_IMAGES = gql(`
+    mutation DeleteImages($ids: [MongoID!]!) {
+        imageRemoveMany(ids: $ids) {
+            recordIds
+        }
+    }
+`);
