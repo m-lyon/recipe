@@ -15,7 +15,7 @@ export function ImagePreview(props: Props) {
                 <IconButton
                     variant='solid'
                     colorScheme='gray'
-                    aria-label='Remove image'
+                    aria-label='Edit image'
                     icon={<EditIcon />}
                     isRound={true}
                     position='absolute'
