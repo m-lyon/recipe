@@ -1,13 +1,14 @@
+import { useContext } from 'react';
+import { Outlet } from 'react-router-dom';
 import { Box, Flex, Text, IconButton } from '@chakra-ui/react';
+import { useBreakpointValue, useDisclosure } from '@chakra-ui/react';
 import { Stack, Collapse, Icon, Link, Popover } from '@chakra-ui/react';
 import { PopoverTrigger, PopoverContent, useColorModeValue } from '@chakra-ui/react';
-import { useBreakpointValue, useDisclosure } from '@chakra-ui/react';
 import { HamburgerIcon, CloseIcon, ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons';
-import { UserOptions } from './UserOptions';
-import { useContext } from 'react';
-import { UserContext } from '../context/UserContext';
-import { Outlet } from 'react-router-dom';
+
 import { ROOT_PATH } from '../constants';
+import { UserOptions } from './UserOptions';
+import { UserContext } from '../context/UserContext';
 
 export function Navbar() {
     const { isOpen, onToggle } = useDisclosure();

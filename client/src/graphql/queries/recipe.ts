@@ -51,3 +51,23 @@ export const GET_RECIPE = gql(`
         }
     }
 `);
+
+export const GET_RECIPES = gql(`
+    query GetRecipes {
+        recipeMany {
+            _id
+            titleIdentifier
+            title
+            tags {
+                _id
+                value
+            }
+            isIngredient
+            numServings
+            pluralTitle
+            images {
+                origUrl
+            }
+        }
+    }
+`);

@@ -1,25 +1,15 @@
-import { gql } from '../__generated__';
+import { useState } from 'react';
+import { useToast } from '@chakra-ui/react';
+import { useMutation } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
+
 import { useRecipeState } from '../features/editing/hooks/useRecipeState';
 import { EditableRecipe } from '../features/editing';
 import { CreateOneRecipeModifyInput } from '../__generated__/graphql';
-import { useMutation } from '@apollo/client';
 import { ROOT_PATH } from '../constants';
-import { useState } from 'react';
-import { useToast } from '@chakra-ui/react';
+import { CREATE_RECIPE } from '../graphql/mutations/recipe';
 import { ADD_RATING } from '../graphql/mutations/rating';
 import { UPLOAD_IMAGES } from '../graphql/mutations/image';
-
-const CREATE_RECIPE = gql(`
-    mutation CreateRecipe($recipe: CreateOneRecipeModifyInput!) {
-        recipeCreateOne(record: $recipe) {
-            record {
-                _id
-                title
-            }
-        }
-    }
-`);
 
 export function CreateRecipe() {
     const toast = useToast();

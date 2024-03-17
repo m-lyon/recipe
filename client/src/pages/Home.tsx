@@ -1,28 +1,9 @@
 import { Container } from '@chakra-ui/react';
 import { Grid, GridItem, Text } from '@chakra-ui/react';
-import { gql } from '../__generated__';
 import { Recipe } from '../__generated__/graphql';
 import { useQuery } from '@apollo/client';
 import { RecipeCardContainer } from '../features/viewing/components/RecipeCardContainer';
-
-export const GET_RECIPES = gql(`
-    query GetRecipes {
-        recipeMany {
-            titleIdentifier
-            title
-            tags {
-                _id
-                value
-            }
-            isIngredient
-            numServings
-            pluralTitle
-            images {
-                origUrl
-            }
-        }
-    }
-`);
+import { GET_RECIPES } from '../graphql/queries/recipe';
 
 export function Home() {
     const { data, loading, error } = useQuery(GET_RECIPES);
