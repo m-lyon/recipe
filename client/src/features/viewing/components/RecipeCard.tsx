@@ -1,11 +1,12 @@
-import { Card, CardBody, CardHeader, Heading, LinkBox } from '@chakra-ui/react';
-import { IconButton, LinkOverlay } from '@chakra-ui/react';
-import { CloseIcon, EditIcon } from '@chakra-ui/icons';
-import { TagList } from './TagList';
-import { Recipe } from '../../../__generated__/graphql';
-import { Link } from 'react-router-dom';
-import { ROOT_PATH } from '../../../constants';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { CloseIcon, EditIcon } from '@chakra-ui/icons';
+import { IconButton, LinkOverlay } from '@chakra-ui/react';
+import { Card, CardBody, CardHeader, Heading, LinkBox } from '@chakra-ui/react';
+
+import { TagList } from './TagList';
+import { ROOT_PATH } from '../../../constants';
+import { Recipe } from '../../../__generated__/graphql';
 
 export function getCardTitle(recipe: Recipe): string {
     const title = recipe.isIngredient
@@ -18,22 +19,23 @@ export function getCardTitle(recipe: Recipe): string {
 
 interface Props {
     recipe: Recipe;
+    hasEditPermission: boolean;
     handleDelete: (id: string) => void;
 }
 export function RecipeCard(props: Props) {
-    const { recipe, handleDelete } = props;
+    const { recipe, hasEditPermission, handleDelete } = props;
     const [isHovered, setIsHovered] = useState(false);
 
     return (
-        <>
-            <LinkBox>
-                <Card
-                    minH='10em'
-                    width='18em'
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
-                >
-                    <LinkOverlay as={Link} to={`${ROOT_PATH}/view/${recipe.titleIdentifier}`} />
+        <LinkBox>
+            <Card
+                minH='10em'
+                width='18em'
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+            >
+                <LinkOverlay as={Link} to={`${ROOT_PATH}/view/${recipe.titleIdentifier}`} />
+                {hasEditPermission ? (
                     <IconButton
                         variant='solid'
                         colorScheme='gray'
@@ -52,14 +54,16 @@ export function RecipeCard(props: Props) {
                         as={Link}
                         to={`${ROOT_PATH}/edit/${recipe.titleIdentifier}`}
                     />
-                    <CardHeader>
-                        <Heading size='md' color='blackAlpha.700'>
-                            {getCardTitle(recipe)}
-                        </Heading>
-                    </CardHeader>
-                    <CardBody>
-                        <TagList tags={recipe.tags} />
-                    </CardBody>
+                ) : null}
+                <CardHeader>
+                    <Heading size='md' color='blackAlpha.700'>
+                        {getCardTitle(recipe)}
+                    </Heading>
+                </CardHeader>
+                <CardBody>
+                    <TagList tags={recipe.tags} />
+                </CardBody>
+                {hasEditPermission ? (
                     <IconButton
                         variant='solid'
                         colorScheme='gray'
@@ -76,8 +80,8 @@ export function RecipeCard(props: Props) {
                         transition='opacity 0.3s, transform 0.3s'
                         onClick={() => handleDelete(recipe._id)}
                     />
-                </Card>
-            </LinkBox>
-        </>
+                ) : null}
+            </Card>
+        </LinkBox>
     );
 }

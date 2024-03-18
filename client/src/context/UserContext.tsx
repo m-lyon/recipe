@@ -1,15 +1,16 @@
 import { useState, createContext, Dispatch, SetStateAction } from 'react';
+
 import { LoginMutation } from '../__generated__/graphql';
 
-type UserContextType = Partial<LoginMutation['login']> | false;
+export type IUserContext = Partial<LoginMutation['login']> | false;
 
-const UserContext = createContext<[UserContextType, Dispatch<SetStateAction<UserContextType>>]>([
+const UserContext = createContext<[IUserContext, Dispatch<SetStateAction<IUserContext>>]>([
     null,
     () => {},
 ]);
 
 function UserProvider(props: any) {
-    const [state, setState] = useState<UserContextType>(null);
+    const [state, setState] = useState<IUserContext>(null);
     return <UserContext.Provider value={[state, setState]}>{props.children}</UserContext.Provider>;
 }
 
