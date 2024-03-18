@@ -26,13 +26,14 @@ export function useNavigatableList<T>(
     }, [highlightedIndex, list]);
 
     const handleKeyboardEvent = (event: KeyboardEvent) => {
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter') {
+            event.preventDefault();
+        }
         if (event.key === 'ArrowDown' && highlightedIndex < list.length - 1) {
             setHighlightedIndex((index) => (index += 1));
         } else if (event.key === 'ArrowUp' && highlightedIndex > 0) {
-            event.preventDefault();
             setHighlightedIndex((index) => (index -= 1));
         } else if (event.key === 'Enter') {
-            event.preventDefault();
             if (highlightedIndex !== -1) {
                 handleEnter(list[highlightedIndex]);
             } else if (handleOutsideEnter) {
