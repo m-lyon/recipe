@@ -1,34 +1,20 @@
 import { Stack, Button } from '@chakra-ui/react';
 import { useContext } from 'react';
 import { UserContext } from '../context/UserContext';
-import { gql } from '../__generated__';
 import { useMutation, useQuery } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@chakra-ui/react';
 import { ROOT_PATH } from '../constants';
+import { LOGOUT } from '../graphql/mutations/user';
+import { CURRENT_USER } from '../graphql/queries/user';
 
-export const LOGOUT_MUTATION = gql(`
-    mutation Logout {
-        logout
-    }
-`);
-export const CURRENT_USER_QUERY = gql(`
-    query CurrentUser {
-        currentUser {
-            _id
-            role
-            firstName
-            lastName
-        }
-    }
-`);
 
 export function UserOptions() {
     const [userContext, setUserContext] = useContext(UserContext);
-    const [logout] = useMutation(LOGOUT_MUTATION);
+    const [logout] = useMutation(LOGOUT);
     const navigate = useNavigate();
     const toast = useToast();
-    const { loading } = useQuery(CURRENT_USER_QUERY, {
+    const { loading } = useQuery(CURRENT_USER, {
         pollInterval: 1000 * 60 * 5,
         onCompleted: (data) => {
             if (!data.currentUser) {

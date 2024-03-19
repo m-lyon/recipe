@@ -1,36 +1,15 @@
 import { useState, useContext } from 'react';
 import { useMutation } from '@apollo/client';
-import { gql } from '../__generated__';
 import { UserContext } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { FormControl, FormLabel, Input, Button, Box, useToast } from '@chakra-ui/react';
 import { ROOT_PATH } from '../constants';
-
-export const LOGIN_MUTATION = gql(`
-    mutation Login($email: String!, $password: String!) {
-        login(username: $email, password: $password) {
-            _id
-            role
-            firstName
-            lastName
-        }
-    }
-`);
-
-export const IS_LOGGED_IN = gql(`
-    query IsLoggedIn {
-        currentUser {
-            _id
-            username
-            role
-        }
-    }
-`);
+import { LOGIN } from '../graphql/mutations/user';
 
 export function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [login, { loading }] = useMutation(LOGIN_MUTATION);
+    const [login, { loading }] = useMutation(LOGIN);
     const navigate = useNavigate();
     const toast = useToast();
     const setUserContext = useContext(UserContext)[1];

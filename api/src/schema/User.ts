@@ -4,7 +4,7 @@ UserTC.addResolver({
     name: 'currentUser',
     description: 'Retrieve the currently authenticated user',
     type: UserTC,
-    resolve: ({ source, args, context }) => {
+    resolve: ({ context }) => {
         const user = context.getUser();
         return user;
     },
@@ -15,7 +15,7 @@ UserTC.addResolver({
     description: 'Login a user',
     type: UserTC,
     args: { username: 'String!', password: 'String!' },
-    resolve: async ({ source, args, context }) => {
+    resolve: async ({ args, context }) => {
         if (context.isAuthenticated()) {
             return context.getUser();
         }
@@ -34,7 +34,7 @@ UserTC.addResolver({
     name: 'logout',
     description: 'Logout a user',
     type: 'Boolean!',
-    resolve: async ({ source, args, context }) => {
+    resolve: async ({ context }) => {
         await context.logout();
         return true;
     },
@@ -44,7 +44,7 @@ UserTC.addResolver({
     description: 'Register a new user',
     type: UserTC,
     args: { username: 'String!', password: 'String!', firstName: 'String!', lastName: 'String!' },
-    resolve: async ({ source, args, context }) => {
+    resolve: async ({ args, context }) => {
         const user = await User.register(
             new User({
                 username: args.username,
