@@ -4,7 +4,20 @@ import { Tag, TagCloseButton, TagLabel, WrapItem, VStack, Wrap } from '@chakra-u
 import { EditableTag } from './EditableTag';
 import { useMutation } from '@apollo/client';
 import { useToast } from '@chakra-ui/react';
-import { REMOVE_TAG } from '../../../graphql/mutations/tag';
+import { gql } from '../../../__generated__'
+
+// NOTE: This REMOVE_TAG cannot be moved to the mutation/tags.ts file because it
+// causes an undefined error.
+const REMOVE_TAG = gql(`
+    mutation RemoveTag($recordId: MongoID!) {
+        tagRemoveById(_id: $recordId) {
+            record {
+                _id
+                value
+            }
+        }
+    }
+`);
 
 export function EditableTagList(props: UseTagListReturnType) {
     const { state, removeTag, actions, tagStr } = props;

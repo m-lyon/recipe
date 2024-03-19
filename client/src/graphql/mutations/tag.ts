@@ -1,16 +1,5 @@
 import { gql } from '../../__generated__';
 
-export const REMOVE_TAG = gql(`
-    mutation RemoveTag($recordId: MongoID!) {
-        tagRemoveById(_id: $recordId) {
-            record {
-                _id
-                value
-            }
-        }
-    }
-`);
-
 export const CREATE_TAG = gql(`
     mutation CreateTag($record: CreateOneTagInput!) {
         tagCreateOne(record: $record) {
