@@ -4,25 +4,12 @@ import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 import { Button, ButtonGroup, Checkbox, Stack } from '@chakra-ui/react';
 import { PopoverHeader, PopoverArrow, useToast } from '@chakra-ui/react';
 import { object, string, number, boolean, ValidationError } from 'yup';
-
-import { gql } from '../../../../../__generated__';
 import { IngredientSuggestion } from './IngredientDropdownList';
 import { UserContext } from '../../../../../context/UserContext';
 import { EnumRecipeIngredientType, User } from '../../../../../__generated__/graphql';
 import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';
+import { CREATE_INGREDIENT } from '../../../../../graphql/mutations/ingredient';
 
-const CREATE_NEW_INGREDIENT_MUTATION = gql(`
-    mutation CreateIngredient($record: CreateOneIngredientInput!) {
-        ingredientCreateOne(record: $record) {
-            record {
-                _id
-                name
-                pluralName
-                isCountable
-            }
-        }
-    }
-`);
 
 function formatError(error: ApolloError) {
     if (error.message.startsWith('E11000')) {
@@ -44,7 +31,7 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewIngredie
     const [isCountable, setIsCountable] = useState(false);
     const [density, setDensity] = useState('');
     const toast = useToast();
-    const [createNewIngredient] = useMutation(CREATE_NEW_INGREDIENT_MUTATION, {
+    const [createNewIngredient] = useMutation(CREATE_INGREDIENT, {
         onCompleted: (data) => {
             onClose();
             handleSelect({

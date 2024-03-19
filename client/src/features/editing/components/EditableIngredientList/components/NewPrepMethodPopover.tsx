@@ -5,22 +5,13 @@ import { Button, ButtonGroup, useToast } from '@chakra-ui/react';
 import { PopoverHeader, PopoverArrow, Stack } from '@chakra-ui/react';
 import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 
-import { gql } from '../../../../../__generated__';
 import { User } from '../../../../../__generated__/graphql';
 import { UserContext } from '../../../../../context/UserContext';
 import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';
 import { PrepMethodSuggestion } from './PrepMethodDropdownList';
+import { CREATE_PREP_METHOD } from '../../../../../graphql/mutations/prepMethod';
 
-const CREATE_NEW_PREP_METHOD_MUTATION = gql(`
-    mutation CreatePrepMethod($record: CreateOnePrepMethodInput!) {
-        prepMethodCreateOne(record: $record) {
-            record {
-                _id
-                value
-            }
-        }
-    }
-`);
+
 
 function formatError(error: ApolloError) {
     if (error.message.startsWith('E11000')) {
@@ -39,7 +30,7 @@ function NewPrepMethodForm({ firstFieldRef, onClose, handleSelect }: NewPrepMeth
     const [hasError, setHasError] = useState(false);
     const [value, setValue] = useState('');
 
-    const [createNewPrepMethod] = useMutation(CREATE_NEW_PREP_METHOD_MUTATION, {
+    const [createNewPrepMethod] = useMutation(CREATE_PREP_METHOD, {
         onCompleted: (data) => {
             onClose();
             handleSelect({

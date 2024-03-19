@@ -3,8 +3,10 @@ import { useReducer } from 'react';
 import { useQuery } from '@apollo/client';
 import { useToast } from '@chakra-ui/react';
 
-import { gql } from '../../../__generated__/';
 import { isPlural } from '../../../utils/plural';
+import { GET_UNITS } from '../../../graphql/queries/unit';
+import { GET_INGREDIENTS } from '../../../graphql/queries/ingredient';
+import { GET_PREP_METHODS } from '../../../graphql/queries/prepMethod';
 import { Ingredient, Recipe, RecipeIngredient } from '../../../__generated__/graphql';
 import { isFraction, formatFraction, VALID_NUMBER_REGEX } from '../../../utils/number';
 import { GetUnitsQuery, EnumRecipeIngredientType } from '../../../__generated__/graphql';
@@ -13,41 +15,6 @@ import { getUnitDisplayValue } from '../components/EditableIngredientList/compon
 import { getIngredientDisplayValue } from '../components/EditableIngredientList/components/IngredientDropdownList';
 
 export const DEFAULT_INGREDIENT_STR = 'Enter ingredient';
-export const GET_UNITS = gql(`
-    query GetUnits {
-        unitMany(limit: 5000) {
-            _id
-            shortSingular
-            shortPlural
-            longSingular
-            longPlural
-            preferredNumberFormat
-        }
-    }
-`);
-export const GET_INGREDIENTS = gql(`
-    query GetIngredients {
-        ingredientMany(limit: 5000) {
-            _id
-            name
-            pluralName
-            isCountable
-        }
-        recipeMany(limit: 5000, filter: {isIngredient: true}) {
-            _id
-            title
-            pluralTitle
-        }
-    }
-`);
-export const GET_PREP_METHODS = gql(`
-    query GetPrepMethods {
-        prepMethodMany(limit: 5000) {
-            _id
-            value
-        }
-    }
-`);
 
 export function dbIngredientToFinished(ingr: RecipeIngredient): FinishedRecipeIngredient {
     const plural = isPlural(ingr.quantity);

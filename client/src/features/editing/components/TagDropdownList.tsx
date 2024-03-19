@@ -4,21 +4,10 @@ import { DropdownItem } from '../../../components/DropdownItem';
 import { MutableRefObject } from 'react';
 import { useNavigatableList } from '../hooks/useNavigatableList';
 import { matchSorter } from 'match-sorter';
-import { gql } from '../../../__generated__/gql';
 import { useMutation } from '@apollo/client';
 import { FinishedTag, SetAndSubmit } from '../hooks/useTagList';
 import { useToast } from '@chakra-ui/react';
-
-const CREATE_NEW_TAG_MUTATION = gql(`
-    mutation CreateTag($record: CreateOneTagInput!) {
-        tagCreateOne(record: $record) {
-            record {
-                _id
-                value
-            }
-        }
-    }
-`);
+import { CREATE_TAG } from '../../../graphql/mutations/tag';
 
 interface TagSuggestion {
     value: string;
@@ -35,7 +24,7 @@ interface Props {
 export function TagDropdownList(props: Props) {
     const { strValue, tags, setAndSubmit, inputRef, selectedTags } = props;
     const toast = useToast();
-    const [createNewTag] = useMutation(CREATE_NEW_TAG_MUTATION, {
+    const [createNewTag] = useMutation(CREATE_TAG, {
         variables: {
             record: {
                 value: strValue,

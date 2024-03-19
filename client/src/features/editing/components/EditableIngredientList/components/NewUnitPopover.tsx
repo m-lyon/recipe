@@ -5,26 +5,11 @@ import { PopoverCloseButton, PopoverContent, useToast } from '@chakra-ui/react';
 import { Radio, RadioGroup, Stack, PopoverHeader, PopoverArrow } from '@chakra-ui/react';
 import { Button, ButtonGroup, FormControl, FormHelperText, HStack } from '@chakra-ui/react';
 
-import { gql } from '../../../../../__generated__';
 import { UnitSuggestion } from './UnitDropdownList';
 import { UserContext } from '../../../../../context/UserContext';
+import { CREATE_UNIT } from '../../../../../graphql/mutations/unit';
 import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';
 import { EnumUnitPreferredNumberFormat, User } from '../../../../../__generated__/graphql';
-
-const CREATE_NEW_UNIT_MUTATION = gql(`
-    mutation CreateUnit($record: CreateOneUnitInput!) {
-        unitCreateOne(record: $record) {
-            record {
-                _id
-                longSingular
-                longPlural
-                shortSingular
-                shortPlural
-                preferredNumberFormat
-            }
-        }
-    }
-`);
 
 function formatError(error: ApolloError) {
     if (error.message.startsWith('E11000')) {
@@ -48,7 +33,7 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewUnitFormProps)
     const [preferredNumberFormat, setpreferredNumberFormat] = useState('');
     const [userContext] = useContext(UserContext);
 
-    const [createNewUnit] = useMutation(CREATE_NEW_UNIT_MUTATION, {
+    const [createNewUnit] = useMutation(CREATE_UNIT, {
         onCompleted: (data) => {
             onClose();
             handleSelect({

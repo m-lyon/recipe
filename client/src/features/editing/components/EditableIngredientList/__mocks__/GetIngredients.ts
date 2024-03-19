@@ -1,4 +1,4 @@
-import { GET_INGREDIENTS } from '../../../hooks/useIngredientList';
+import { GET_INGREDIENTS } from '../../../../../graphql/queries/ingredient';
 
 export const mockGetIngredients = {
     request: {

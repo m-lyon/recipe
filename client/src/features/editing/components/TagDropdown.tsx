@@ -2,18 +2,9 @@ import { useQuery } from '@apollo/client';
 import { Box, List } from '@chakra-ui/react';
 import { MutableRefObject } from 'react';
 import { motion, LayoutGroup } from 'framer-motion';
-import { gql } from '../../../__generated__/gql';
 import { TagDropdownList } from './TagDropdownList';
 import { EditableTag, EditableTagActionHandler, FinishedTag } from '../hooks/useTagList';
-
-export const GET_TAGS = gql(`
-    query GetTags {
-        tagMany {
-            _id
-            value
-        }
-    }
-`);
+import { GET_TAGS } from '../../../graphql/queries/tag';
 
 interface Props {
     tag: EditableTag;

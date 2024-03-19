@@ -2,25 +2,14 @@ import { UseTagListReturnType } from '../hooks/useTagList';
 import { motion, LayoutGroup, AnimatePresence } from 'framer-motion';
 import { Tag, TagCloseButton, TagLabel, WrapItem, VStack, Wrap } from '@chakra-ui/react';
 import { EditableTag } from './EditableTag';
-import { gql } from '../../../__generated__/gql';
 import { useMutation } from '@apollo/client';
 import { useToast } from '@chakra-ui/react';
-
-const REMOVE_TAG_MUTATION = gql(`
-    mutation RemoveTag($recordId: MongoID!) {
-        tagRemoveById(_id: $recordId) {
-            record {
-                _id
-                value
-            }
-        }
-    }
-`);
+import { REMOVE_TAG } from '../../../graphql/mutations/tag';
 
 export function EditableTagList(props: UseTagListReturnType) {
     const { state, removeTag, actions, tagStr } = props;
     const toast = useToast();
-    const [removeTagMutation] = useMutation(REMOVE_TAG_MUTATION, {
+    const [removeTagMutation] = useMutation(REMOVE_TAG, {
         onCompleted: (data) => {
             toast({
                 title: 'Tag removed',

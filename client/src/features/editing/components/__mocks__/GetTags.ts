@@ -1,4 +1,4 @@
-import { GET_TAGS } from '../TagDropdown';
+import { GET_TAGS } from '../../../../graphql/queries/tag';
 
 export const mockGetTags = {
     request: {

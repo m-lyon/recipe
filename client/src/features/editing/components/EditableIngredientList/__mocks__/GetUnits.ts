@@ -1,4 +1,4 @@
-import { GET_UNITS } from '../../../hooks/useIngredientList';
+import { GET_UNITS } from '../../../../../graphql/queries/unit';
 
 export const mockGetUnits = {
     request: {

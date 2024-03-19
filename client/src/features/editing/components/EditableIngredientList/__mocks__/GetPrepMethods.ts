@@ -1,4 +1,4 @@
-import { GET_PREP_METHODS } from '../../../hooks/useIngredientList';
+import { GET_PREP_METHODS } from '../../../../../graphql/queries/prepMethod';
 
 export const mockGetPrepMethods = {
     request: {
