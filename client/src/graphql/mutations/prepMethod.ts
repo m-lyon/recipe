@@ -1,4 +1,4 @@
-import { gql } from '../../__generated__/gql';
+import { gql } from '../../__generated__';
 
 export const CREATE_PREP_METHOD = gql(`
     mutation CreatePrepMethod($record: CreateOnePrepMethodInput!) {

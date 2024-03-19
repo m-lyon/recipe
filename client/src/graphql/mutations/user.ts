@@ -18,7 +18,7 @@ export const LOGOUT = gql(`
 `);
 
 export const SIGNUP = gql(`
-    mutation Signup($email: String!, $password: String!, $firstName: String!, $lastName: String!) {
+    mutation Register($email: String!, $password: String!, $firstName: String!, $lastName: String!) {
         register(username: $email, password: $password, firstName: $firstName, lastName: $lastName) {
             _id
             role

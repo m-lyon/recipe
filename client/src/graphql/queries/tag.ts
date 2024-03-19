@@ -1,4 +1,4 @@
-import { gql } from '../../__generated__/gql';
+import { gql } from '../../__generated__';
 
 export const GET_TAGS = gql(`
     query GetTags {

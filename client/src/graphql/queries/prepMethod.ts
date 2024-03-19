@@ -1,4 +1,4 @@
-import { gql } from '../../__generated__/gql';
+import { gql } from '../../__generated__';
 
 export const GET_PREP_METHODS = gql(`
     query GetPrepMethods {
