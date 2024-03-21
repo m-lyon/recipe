@@ -11,7 +11,6 @@ import { UserContext } from '../../../../../context/UserContext';
 import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';
 import { CREATE_INGREDIENT } from '../../../../../graphql/mutations/ingredient';
 
-
 function formatError(error: ApolloError) {
     if (error.message.startsWith('E11000')) {
         return 'Ingredient already exists';
@@ -24,7 +23,8 @@ interface NewIngredientFormProps {
     onClose: () => void;
     handleSelect: (item: IngredientSuggestion) => void;
 }
-function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewIngredientFormProps) {
+function NewIngredientForm(props: NewIngredientFormProps) {
+    const { firstFieldRef, onClose, handleSelect } = props;
     const [userContext] = useContext(UserContext);
     const [hasError, setHasError] = useState(false);
     const [name, setName] = useState('');
@@ -32,11 +32,12 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewIngredie
     const [isCountable, setIsCountable] = useState(false);
     const [density, setDensity] = useState('');
     const toast = useToast();
+    const [isFocused, setIsFocused] = useState(false);
     const [createNewIngredient] = useMutation(CREATE_INGREDIENT, {
         onCompleted: (data) => {
             onClose();
             handleSelect({
-                value: {...data!.ingredientCreateOne!.record! },
+                value: { ...data!.ingredientCreateOne!.record! },
                 colour: undefined,
             });
             toast({
@@ -95,7 +96,7 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewIngredie
 
     useEffect(() => {
         const handleKeyboardEvent = (e: KeyboardEvent) => {
-            if (e.key === 'Enter') {
+            if (isFocused && e.key === 'Enter') {
                 e.preventDefault();
                 handleSubmit();
             }
@@ -109,7 +110,7 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewIngredie
     });
 
     return (
-        <Stack spacing={4}>
+        <Stack spacing={4} onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)}>
             <FloatingLabelInput
                 label='Name'
                 id='name'
@@ -156,7 +157,7 @@ export function NewIngredientPopover(props: NewIngredientFormProps) {
         <PopoverContent paddingRight={4} paddingBottom={3} paddingLeft={2}>
             <PopoverArrow />
             <PopoverCloseButton />
-            <PopoverHeader border={'hidden'}>Add new ingredient</PopoverHeader>
+            <PopoverHeader border='hidden'>Add new ingredient</PopoverHeader>
             <NewIngredientForm {...props} />
         </PopoverContent>
     );

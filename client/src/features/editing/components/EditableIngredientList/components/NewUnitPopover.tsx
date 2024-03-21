@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, useRef } from 'react';
 import { object, string, ValidationError } from 'yup';
 import { ApolloError, useMutation } from '@apollo/client';
 import { Radio, RadioGroup, Stack, PopoverHeader, PopoverArrow } from '@chakra-ui/react';
@@ -23,7 +23,8 @@ interface NewUnitFormProps {
     onClose: () => void;
     handleSelect: (item: UnitSuggestion) => void;
 }
-function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewUnitFormProps) {
+function NewUnitForm(props: NewUnitFormProps) {
+    const { firstFieldRef, onClose, handleSelect } = props;
     const [hasError, setHasError] = useState(false);
     const toast = useToast();
     const [shortSingular, setShortSingular] = useState('');
@@ -33,6 +34,7 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewUnitFormProps)
     const [preferredNumberFormat, setpreferredNumberFormat] = useState('');
     const [hasSpace, setHasSpace] = useState(true);
     const [userContext] = useContext(UserContext);
+    const [isFocused, setIsFocused] = useState(false);
 
     const [createNewUnit] = useMutation(CREATE_UNIT, {
         onCompleted: (data) => {
@@ -109,7 +111,7 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewUnitFormProps)
 
     useEffect(() => {
         const handleKeyboardEvent = (e: KeyboardEvent) => {
-            if (e.key === 'Enter') {
+            if (isFocused && e.key === 'Enter') {
                 e.preventDefault();
                 handleSubmit();
             }
@@ -123,7 +125,13 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewUnitFormProps)
     });
 
     return (
-        <Stack spacing={4} paddingTop={3} paddingLeft={2}>
+        <Stack
+            spacing={4}
+            paddingTop={3}
+            paddingLeft={2}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+        >
             <FloatingLabelInput
                 firstFieldRef={firstFieldRef}
                 id='short-singular-name'
@@ -174,7 +182,9 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewUnitFormProps)
                     </HStack>
                 </RadioGroup>
             </FormControl>
-            <Checkbox onChange={(e) => setHasSpace(e.target.checked)} isChecked={hasSpace}>Space after quantity</Checkbox>
+            <Checkbox onChange={(e) => setHasSpace(e.target.checked)} isChecked={hasSpace}>
+                Space after quantity
+            </Checkbox>
             <ButtonGroup display='flex' justifyContent='flex-left' paddingTop={2}>
                 <Button colorScheme='teal' onClick={handleSubmit}>
                     Save
@@ -189,7 +199,7 @@ export function NewUnitPopover(props: NewUnitFormProps) {
         <PopoverContent paddingRight={4} paddingBottom={3} paddingLeft={2}>
             <PopoverArrow />
             <PopoverCloseButton />
-            <PopoverHeader border={'hidden'}>Add new unit</PopoverHeader>
+            <PopoverHeader border='hidden'>Add new unit</PopoverHeader>
             <NewUnitForm {...props} />
         </PopoverContent>
     );

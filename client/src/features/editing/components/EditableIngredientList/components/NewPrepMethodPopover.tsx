@@ -6,12 +6,10 @@ import { PopoverHeader, PopoverArrow, Stack } from '@chakra-ui/react';
 import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 
 import { User } from '../../../../../__generated__/graphql';
-import { UserContext } from '../../../../../context/UserContext';
-import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';
 import { PrepMethodSuggestion } from './PrepMethodDropdownList';
+import { UserContext } from '../../../../../context/UserContext';
 import { CREATE_PREP_METHOD } from '../../../../../graphql/mutations/prepMethod';
-
-
+import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';
 
 function formatError(error: ApolloError) {
     if (error.message.startsWith('E11000')) {
@@ -24,12 +22,13 @@ interface NewPrepMethodFormProps {
     onClose: () => void;
     handleSelect: (item: PrepMethodSuggestion) => void;
 }
-function NewPrepMethodForm({ firstFieldRef, onClose, handleSelect }: NewPrepMethodFormProps) {
+function NewPrepMethodForm(props: NewPrepMethodFormProps) {
+    const { firstFieldRef, onClose, handleSelect } = props;
     const [userContext] = useContext(UserContext);
     const toast = useToast();
     const [hasError, setHasError] = useState(false);
     const [value, setValue] = useState('');
-
+    const [isFocused, setIsFocused] = useState(false);
     const [createNewPrepMethod] = useMutation(CREATE_PREP_METHOD, {
         onCompleted: (data) => {
             onClose();
@@ -88,7 +87,7 @@ function NewPrepMethodForm({ firstFieldRef, onClose, handleSelect }: NewPrepMeth
 
     useEffect(() => {
         const handleKeyboardEvent = (e: KeyboardEvent) => {
-            if (e.key === 'Enter') {
+            if (isFocused && e.key === 'Enter') {
                 e.preventDefault();
                 handleSubmit();
             }
@@ -102,7 +101,7 @@ function NewPrepMethodForm({ firstFieldRef, onClose, handleSelect }: NewPrepMeth
     });
 
     return (
-        <Stack spacing={4}>
+        <Stack spacing={4} onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)}>
             <FloatingLabelInput
                 label='Name'
                 id='name'
