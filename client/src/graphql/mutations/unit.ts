@@ -10,6 +10,7 @@ export const CREATE_UNIT = gql(`
                 shortSingular
                 shortPlural
                 preferredNumberFormat
+                hasSpace
             }
         }
     }
