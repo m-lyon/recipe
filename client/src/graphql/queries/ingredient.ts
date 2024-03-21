@@ -7,11 +7,13 @@ export const GET_INGREDIENTS = gql(`
             name
             pluralName
             isCountable
+            owner
         }
         recipeMany(limit: 5000, filter: {isIngredient: true}) {
             _id
             title
             pluralTitle
+            owner
         }
     }
 `);

@@ -3,13 +3,12 @@ import { Box, List } from '@chakra-ui/react';
 import { motion, LayoutGroup } from 'framer-motion';
 
 import { UnitDropdownList } from './UnitDropdownList';
-import { isPlural } from '../../../../../utils/plural';
 import { QueryData } from '../../../hooks/useIngredientList';
 import { QuantityDropdownList } from './QuantityDropdownList';
-import { IngredientDropdownList } from './IngredientDropdownList';
 import { PrepMethodDropdownList } from './PrepMethodDropdownList';
 import { IngredientActionHandler } from '../../../hooks/useIngredientList';
 import { EditableRecipeIngredient } from '../../../hooks/useIngredientList';
+import { IngredientDropdownList, IngredientOrRecipe } from './IngredientDropdownList';
 
 interface Props {
     item: EditableRecipeIngredient;
@@ -20,12 +19,12 @@ interface Props {
 }
 export function RecipeIngredientDropdown(props: Props) {
     const { item, actionHandler, queryData, inputRef, previewRef } = props;
-    const currentValue = actionHandler.get.currentStateValue();
+    const currentValue = actionHandler.currentEditableAttributeValue();
 
     const getSuggestionsList = () => {
         const dropdownProps = {
             strValue: currentValue ? currentValue : '',
-            setItem: actionHandler.set.currentStateItem,
+            setItem: actionHandler.setCurrentEditableAttribute,
             inputRef,
             previewRef,
         };
@@ -39,7 +38,7 @@ export function RecipeIngredientDropdown(props: Props) {
                 return (
                     <UnitDropdownList
                         data={queryData.unit}
-                        isPlural={isPlural(item.quantity)}
+                        quantity={item.quantity}
                         {...dropdownProps}
                     />
                 );
@@ -47,12 +46,13 @@ export function RecipeIngredientDropdown(props: Props) {
                 if (!queryData.ingredient) {
                     return [];
                 }
+                //@ts-ignore
+                const data: IngredientOrRecipe[] = queryData.ingredient.concat(queryData.recipe!);
                 return (
                     <IngredientDropdownList
-                        ingredients={queryData.ingredient}
-                        recipes={queryData.recipe}
-                        plural={isPlural(item.quantity)}
-                        hasUnit={item.unit.value !== null}
+                        data={data}
+                        quantity={item.quantity}
+                        unit={item.unit.data!}
                         {...dropdownProps}
                     />
                 );
@@ -65,8 +65,8 @@ export function RecipeIngredientDropdown(props: Props) {
                         data={queryData.prepMethod}
                         {...dropdownProps}
                         handleSubmit={() => {
-                            actionHandler.set.show.off();
-                            actionHandler.handleSubmit();
+                            actionHandler.setEditableShow.off();
+                            actionHandler.handleEditableSubmit();
                         }}
                     />
                 );

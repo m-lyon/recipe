@@ -36,7 +36,7 @@ export function EditRecipe() {
             const ingredients = recipe.ingredients.map((ing) => {
                 return dbIngredientToFinished(ing as RecipeIngredient);
             });
-            state.ingredient.setFinished(ingredients);
+            state.ingredient.actionHandler.setFinishedArray(ingredients);
             state.instructions.actionHandler.setItems(recipe.instructions as string[]);
             if (recipe.notes) {
                 state.notes.actionHandler.submit(recipe.notes);

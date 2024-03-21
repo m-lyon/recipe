@@ -23,29 +23,20 @@ const IngredientOrRecipeTC = schemaComposer.createUnionTC({
 RecipeIngredientTC.addResolver({
     name: 'ingredientOrRecipe',
     type: IngredientOrRecipeTC,
-    description:
-        'Determine if the object is an ingredient or a recipe and return the appropriate type',
-    args: {
-        type: 'String!',
-        ingredient: 'MongoID!',
-    },
+    description: 'Determine if the object is an ingredient or a recipe and return the appropriate type',
+    args: { _id: 'MongoID!' },
     resolve: async ({ args }) => {
-        const { type, ingredient } = args;
-        if (!type) {
-            throw new GraphQLError('type is required to determine ingredient or recipe');
+        const { _id } = args;
+        const ingredientDoc = await IngredientTC.mongooseResolvers.findById().resolve({ args: { _id } });
+        if (ingredientDoc) {
+            return ingredientDoc;
         }
-        if (type === 'ingredient') {
-            return await IngredientTC.mongooseResolvers
-                .findById()
-                .resolve({ args: { _id: ingredient } });
-        } else if (type === 'recipe') {
-            return await RecipeQueryTC.mongooseResolvers
-                .findById()
-                .resolve({ args: { _id: ingredient } });
-        } else {
-            throw new GraphQLError('Invalid type');
+        const recipeDoc = await RecipeQueryTC.mongooseResolvers.findById().resolve({ args: { _id } });
+        if (recipeDoc) {
+            return recipeDoc;
         }
-    },
+        throw new GraphQLError('Ingredient or recipe not found');
+    }
 });
 
 RecipeQueryTC.addRelation('tags', {
@@ -65,8 +56,7 @@ RecipeIngredientTC.addRelation('unit', {
 RecipeIngredientTC.addRelation('ingredient', {
     resolver: () => RecipeIngredientTC.getResolver('ingredientOrRecipe'),
     prepareArgs: {
-        type: (source) => source.type,
-        ingredient: (source) => source.ingredient._id,
+        _id: (source) => source.ingredient._id,
     },
     projection: { ingredient: true },
 });

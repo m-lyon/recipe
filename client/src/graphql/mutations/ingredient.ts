@@ -8,6 +8,7 @@ export const CREATE_INGREDIENT = gql(`
                 name
                 pluralName
                 isCountable
+                owner
             }
         }
     }

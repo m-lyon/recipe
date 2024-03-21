@@ -1,8 +1,8 @@
 import { useState, useContext, useEffect } from 'react';
 import { object, string, ValidationError } from 'yup';
 import { ApolloError, useMutation } from '@apollo/client';
-import { PopoverCloseButton, PopoverContent, useToast } from '@chakra-ui/react';
 import { Radio, RadioGroup, Stack, PopoverHeader, PopoverArrow } from '@chakra-ui/react';
+import { PopoverCloseButton, PopoverContent, useToast, Checkbox } from '@chakra-ui/react';
 import { Button, ButtonGroup, FormControl, FormHelperText, HStack } from '@chakra-ui/react';
 
 import { UnitSuggestion } from './UnitDropdownList';
@@ -31,6 +31,7 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewUnitFormProps)
     const [longSingular, setLongSingular] = useState('');
     const [longPlural, setLongPlural] = useState('');
     const [preferredNumberFormat, setpreferredNumberFormat] = useState('');
+    const [hasSpace, setHasSpace] = useState(true);
     const [userContext] = useContext(UserContext);
 
     const [createNewUnit] = useMutation(CREATE_UNIT, {
@@ -88,6 +89,7 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewUnitFormProps)
                         owner: user?._id,
                         preferredNumberFormat:
                             validated.preferredNumberFormat as EnumUnitPreferredNumberFormat,
+                        hasSpace,
                     },
                 },
             });
@@ -172,6 +174,7 @@ function NewUnitForm({ firstFieldRef, onClose, handleSelect }: NewUnitFormProps)
                     </HStack>
                 </RadioGroup>
             </FormControl>
+            <Checkbox onChange={(e) => setHasSpace(e.target.checked)} isChecked={hasSpace}>Space after quantity</Checkbox>
             <ButtonGroup display='flex' justifyContent='flex-left' paddingTop={2}>
                 <Button colorScheme='teal' onClick={handleSubmit}>
                     Save

@@ -4,9 +4,10 @@ import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 import { Button, ButtonGroup, Checkbox, Stack } from '@chakra-ui/react';
 import { PopoverHeader, PopoverArrow, useToast } from '@chakra-ui/react';
 import { object, string, number, boolean, ValidationError } from 'yup';
+
+import { User } from '../../../../../__generated__/graphql';
 import { IngredientSuggestion } from './IngredientDropdownList';
 import { UserContext } from '../../../../../context/UserContext';
-import { EnumRecipeIngredientType, User } from '../../../../../__generated__/graphql';
 import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';
 import { CREATE_INGREDIENT } from '../../../../../graphql/mutations/ingredient';
 
@@ -35,10 +36,7 @@ function NewIngredientForm({ firstFieldRef, onClose, handleSelect }: NewIngredie
         onCompleted: (data) => {
             onClose();
             handleSelect({
-                value: {
-                    ...data!.ingredientCreateOne!.record!,
-                    type: 'ingredient' as EnumRecipeIngredientType,
-                },
+                value: {...data!.ingredientCreateOne!.record! },
                 colour: undefined,
             });
             toast({

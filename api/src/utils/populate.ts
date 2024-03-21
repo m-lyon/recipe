@@ -60,6 +60,7 @@ export async function populateUnits() {
                 longSingular: 'kilogram',
                 longPlural: 'kilograms',
                 preferredNumberFormat: 'decimal',
+                hasSpace: true,
                 owner: admin._id,
             },
             {
@@ -68,6 +69,7 @@ export async function populateUnits() {
                 longSingular: 'millilitre',
                 longPlural: 'millilitres',
                 preferredNumberFormat: 'decimal',
+                hasSpace: true,
                 owner: user._id,
             },
             {
@@ -76,6 +78,7 @@ export async function populateUnits() {
                 longSingular: 'teaspoon',
                 longPlural: 'teaspoons',
                 preferredNumberFormat: 'fraction',
+                hasSpace: true,
                 owner: admin._id,
             },
             {
@@ -83,6 +86,7 @@ export async function populateUnits() {
                 shortPlural: 'tbsp',
                 longSingular: 'tablespoon',
                 longPlural: 'tablespoons',
+                hasSpace: true,
                 preferredNumberFormat: 'fraction',
                 owner: admin._id,
             },
@@ -91,6 +95,7 @@ export async function populateUnits() {
                 shortPlural: 'cups',
                 longSingular: 'cup',
                 longPlural: 'cups',
+                hasSpace: true,
                 preferredNumberFormat: 'fraction',
                 owner: user._id,
             },

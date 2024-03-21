@@ -7,25 +7,17 @@ import { NewUnitPopover } from './NewUnitPopover';
 import { Unit } from '../../../../../__generated__/graphql';
 import { DropdownItem } from '../../../../../components/DropdownItem';
 import { useNavigatableList } from '../../../hooks/useNavigatableList';
+import { Quantity, unitDisplayValue } from '../../../hooks/useIngredientList';
 
-export function getUnitDisplayValue(unit: UnitType, isPlural: boolean, short: boolean): string {
-    if (isPlural) {
-        return short ? unit.shortPlural : unit.longPlural;
-    } else {
-        return short ? unit.shortSingular : unit.longSingular;
-    }
-}
-
-type UnitType = Omit<Unit, 'owner'>;
 export interface UnitSuggestion {
-    value: string | UnitType;
+    value: string | Unit;
     colour?: string;
 }
 interface Props {
     strValue: string;
-    data: UnitType[];
-    isPlural: boolean;
-    setItem: (value: string | null, _id?: string) => void;
+    data: Unit[];
+    quantity: Quantity;
+    setItem: (value: Unit | null) => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
 }
@@ -38,8 +30,8 @@ export function UnitDropdownList(props: Props) {
         },
     });
 
-    const filter = (data: UnitType[], value: string): UnitSuggestion[] => {
-        const items = matchSorter<UnitType>(data, value, {
+    const filter = (data: Unit[], value: string): UnitSuggestion[] => {
+        const items = matchSorter<Unit>(data, value, {
             keys: ['longSingular', 'longPlural'],
         }).map((item) => ({ value: item, colour: undefined })) as UnitSuggestion[];
         if (value === '') {
@@ -59,7 +51,7 @@ export function UnitDropdownList(props: Props) {
                 onOpen();
             }
         } else {
-            props.setItem(getUnitDisplayValue(item.value, props.isPlural, true), item.value._id);
+            props.setItem(item.value);
         }
     };
 
@@ -96,7 +88,7 @@ export function UnitDropdownList(props: Props) {
                 value={
                     typeof item.value === 'string'
                         ? item.value
-                        : getUnitDisplayValue(item.value, props.isPlural, false)
+                        : unitDisplayValue(props.quantity, item.value, false)
                 }
                 onClick={() => {
                     handleSelect(item);

@@ -7,7 +7,7 @@ import { FinishedIngredient } from './components/FinishedIngredient';
 import { FinishedRecipeIngredient as FinishedIngredientType } from '../../hooks/useIngredientList';
 
 export function EditableIngredientList(props: UseIngredientListReturnType) {
-    const { state, actionHandler, setFinished, removeFinished, queryData } = props;
+    const { state, actionHandler, queryData } = props;
 
     const finishedIngredients = state.finished.map(
         (item: FinishedIngredientType, index: number) => {
@@ -16,7 +16,7 @@ export function EditableIngredientList(props: UseIngredientListReturnType) {
                     key={item.key}
                     index={index}
                     item={item}
-                    removeFinished={removeFinished}
+                    removeFinished={actionHandler.removeFinished}
                 />
             );
         }
@@ -27,7 +27,7 @@ export function EditableIngredientList(props: UseIngredientListReturnType) {
             <LayoutGroup>
                 <Reorder.Group
                     values={state.finished}
-                    onReorder={setFinished}
+                    onReorder={actionHandler.setFinishedArray}
                     as='ul'
                     axis='y'
                     style={{ listStyle: 'none' }}

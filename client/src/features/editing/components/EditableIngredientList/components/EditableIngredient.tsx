@@ -20,12 +20,12 @@ export function EditableIngredient({ item, actionHandler, fontSize, queryData }:
         ref: parentRef,
         handler: () => {
             if (item.quantity !== null || item.show) {
-                actionHandler.reset();
+                actionHandler.resetEditable();
             }
         },
     });
 
-    const ingredientStr = actionHandler.get.string();
+    const ingredientStr = actionHandler.editableStringValue();
 
     return (
         <div ref={parentRef}>
@@ -44,12 +44,12 @@ export function EditableIngredient({ item, actionHandler, fontSize, queryData }:
                         ingredientStr === '' &&
                         item.state !== 'quantity'
                     ) {
-                        actionHandler.decrementState();
+                        actionHandler.decrementEditableState();
                     }
                 }}
-                onChange={actionHandler.handleChange}
-                onCancel={actionHandler.reset}
-                onEdit={actionHandler.set.show.on}
+                onChange={actionHandler.handleEditableChange}
+                onCancel={actionHandler.resetEditable}
+                onEdit={actionHandler.setEditableShow.on}
                 textAlign='left'
                 fontSize={fontSize}
                 color={item.quantity !== null || item.ingredient.value !== null ? '' : 'gray.400'}

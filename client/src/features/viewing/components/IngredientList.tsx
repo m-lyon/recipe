@@ -1,53 +1,14 @@
 import { ListItem, UnorderedList } from '@chakra-ui/react';
-
-import { isPlural } from '../../../utils/plural';
-import { RecipeIngredient } from '../../../__generated__/graphql';
-import { getRecipeIngredientStr } from '../../editing/hooks/useIngredientList';
-import { isPluralIngredient } from '../../editing/components/EditableIngredientList/components/IngredientDropdownList';
-import { getUnitDisplayValue } from '../../editing/components/EditableIngredientList/components/UnitDropdownList';
-
-function getIngredientNameStr(plural: boolean, ingredient: RecipeIngredient['ingredient']): string {
-    if (ingredient == null) {
-        throw new Error('Ingredient cannot be null or undefined');
-    }
-    if (ingredient.__typename === 'Recipe') {
-        return plural ? ingredient.pluralTitle?.toLowerCase()! : ingredient.title.toLowerCase()!;
-    } else if (ingredient.__typename === 'Ingredient') {
-        return plural ? ingredient.pluralName! : ingredient.name!;
-    }
-    throw new Error(`Invalid ingredient type: ${ingredient.__typename}`);
-}
-
-function isCountable(ingredient: RecipeIngredient['ingredient']): boolean {
-    if (ingredient == null) {
-        throw new Error('Ingredient cannot be null or undefined');
-    }
-    if (ingredient.__typename === 'Recipe') {
-        return false;
-    } else if (ingredient.__typename === 'Ingredient') {
-        return ingredient.isCountable;
-    }
-    throw new Error(`Invalid ingredient type: ${ingredient.__typename}`);
-}
+import { FinishedRecipeIngredient } from '../../editing/hooks/useIngredientList';
+import { getFinishedRecipeIngredientStr } from '../../editing/hooks/useIngredientList';
 
 export interface IngredientListProps {
-    ingredients: RecipeIngredient[];
+    ingredients: FinishedRecipeIngredient[];
 }
 export function IngredientList(props: IngredientListProps) {
     const { ingredients } = props;
     const finishedIngredients = ingredients.map((item) => {
-        if (item === null) {
-            return null;
-        }
-        const { quantity, unit, ingredient, prepMethod } = item;
-        const plural = isPlural(quantity);
-        const pluralIngr = isPluralIngredient(plural, unit !== null, isCountable(ingredient));
-        const ingredientStr = getRecipeIngredientStr(
-            quantity,
-            unit != null ? getUnitDisplayValue(unit, plural, true) : null,
-            getIngredientNameStr(pluralIngr, ingredient),
-            prepMethod ? prepMethod.value : null
-        );
+        const ingredientStr = getFinishedRecipeIngredientStr(item);
         return <ListItem key={ingredientStr}>{ingredientStr}</ListItem>;
     });
 

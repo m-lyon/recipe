@@ -10,7 +10,7 @@ import { StarRatingProps } from '../../components/StarRating';
 import { EditableTagList } from './components/EditableTagList';
 import { EditableIngredientsTab } from './components/EditableIngredientsTab';
 import { EditableInstructionsTab } from './components/EditableInstructionsTab';
-import { CreateOneRecipeModifyInput } from '../../__generated__/graphql';
+import { CreateOneRecipeModifyInput, EnumRecipeIngredientType } from '../../__generated__/graphql';
 
 interface SubmitButtonProps {
     submitText: string;
@@ -79,11 +79,11 @@ export function EditableRecipe(props: Props) {
             .map((item) => item.value);
         const ingredients = state.ingredient.state.finished.map((item) => {
             return {
-                quantity: item.quantity,
-                unit: item.unit._id,
+                quantity: item.quantity ? item.quantity : undefined,
+                unit: item.unit ? item.unit._id : undefined,
                 ingredient: item.ingredient._id,
-                prepMethod: item.prepMethod._id,
-                type: item.type,
+                prepMethod: item.prepMethod ? item.prepMethod._id : undefined,
+                type: item.ingredient.__typename!.toLowerCase() as EnumRecipeIngredientType,
             };
         });
         if (userContext === false) {

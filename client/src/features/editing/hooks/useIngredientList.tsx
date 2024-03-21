@@ -5,54 +5,23 @@ import { useToast } from '@chakra-ui/react';
 
 import { isPlural } from '../../../utils/plural';
 import { GET_UNITS } from '../../../graphql/queries/unit';
+import { RecipeIngredient } from '../../../__generated__/graphql';
 import { GET_INGREDIENTS } from '../../../graphql/queries/ingredient';
 import { GET_PREP_METHODS } from '../../../graphql/queries/prepMethod';
-import { Ingredient, Recipe, RecipeIngredient } from '../../../__generated__/graphql';
+import { Ingredient, PrepMethod, Unit } from '../../../__generated__/graphql';
 import { isFraction, formatFraction, VALID_NUMBER_REGEX } from '../../../utils/number';
 import { GetUnitsQuery, EnumRecipeIngredientType } from '../../../__generated__/graphql';
 import { GetIngredientsQuery, GetPrepMethodsQuery } from '../../../__generated__/graphql';
-import { getUnitDisplayValue } from '../components/EditableIngredientList/components/UnitDropdownList';
-import { getIngredientDisplayValue } from '../components/EditableIngredientList/components/IngredientDropdownList';
 
 export const DEFAULT_INGREDIENT_STR = 'Enter ingredient';
 
 export function dbIngredientToFinished(ingr: RecipeIngredient): FinishedRecipeIngredient {
-    const plural = isPlural(ingr.quantity);
-    const hasUnit = ingr.unit !== null;
-    const ingredient = {
-        value: {
-            _id: ingr.ingredient!._id,
-            name:
-                ingr.ingredient?.__typename === 'Ingredient'
-                    ? (ingr.ingredient! as Ingredient).name
-                    : (ingr.ingredient! as Recipe).title.toLowerCase(),
-            pluralName:
-                ingr.ingredient?.__typename === 'Ingredient'
-                    ? (ingr.ingredient! as Ingredient).pluralName
-                    : (ingr.ingredient! as Recipe).pluralTitle!.toLowerCase(),
-            isCountable:
-                ingr.ingredient?.__typename === 'Ingredient'
-                    ? (ingr.ingredient! as Ingredient).isCountable
-                    : true,
-            type: ingr.type,
-        },
-    };
     return {
         key: crypto.randomUUID(),
-        quantity: ingr.quantity as string | null,
-        unit: {
-            _id: ingr.unit ? ingr.unit._id : undefined,
-            value: ingr.unit ? getUnitDisplayValue(ingr.unit, plural, true) : null,
-        },
-        ingredient: {
-            _id: ingr.ingredient!._id,
-            value: getIngredientDisplayValue(ingredient, plural, hasUnit),
-        },
-        prepMethod: {
-            _id: ingr.prepMethod ? ingr.prepMethod._id : undefined,
-            value: ingr.prepMethod ? ingr.prepMethod.value : null,
-        },
-        type: ingr.type,
+        quantity: ingr.quantity as FinishedQuantity,
+        unit: ingr.unit as FinishedUnit,
+        ingredient: ingr.ingredient as FinishedIngredient,
+        prepMethod: ingr.prepMethod as FinishedPrepMethod,
     };
 }
 
@@ -115,12 +84,12 @@ function handleUnitChange(
                 for (const unit of unitData.unitMany) {
                     if (isPlural(item.quantity)) {
                         if (unit.longPlural === unitValue || unit.shortPlural === unitValue) {
-                            actionHandler.unit.set(unit.shortPlural, unit._id);
+                            actionHandler.unit.set(unit);
                             return actionHandler.incrementState();
                         }
                     } else {
                         if (unit.longSingular === unitValue || unit.shortSingular === unitValue) {
-                            actionHandler.unit.set(unit.shortSingular, unit._id);
+                            actionHandler.unit.set(unit);
                             return actionHandler.incrementState();
                         }
                     }
@@ -168,51 +137,50 @@ export function getTextDiff(value: string, origStr: string): NewChar {
     console.log('this shouldnt happen');
     return '';
 }
-interface Action {
-    type: string;
-    index?: number;
-    value?: string;
-    nullableValue?: string | null;
-    _id?: string;
-    start?: number;
-    end?: number;
-    num?: number;
-    finished?: FinishedRecipeIngredient[];
-    ingrType?: EnumRecipeIngredientType;
-}
 export type InputState = 'quantity' | 'unit' | 'ingredient' | 'prepMethod';
 export type DBInputState = Extract<InputState, 'unit' | 'ingredient' | 'prepMethod'>;
-export interface EditableFromDB {
+export type Quantity = string | null;
+export type Recipe = GetIngredientsQuery['recipeMany'][0];
+type EditableQuantity = Quantity;
+type FinishedQuantity = Quantity;
+interface EditableUnit {
     value: string | null;
-    _id?: string;
+    data?: Unit | null;
 }
+type FinishedUnit = Unit | null;
+interface EditableIngredient {
+    value: string | null;
+    data?: Ingredient | Recipe;
+}
+type FinishedIngredient = Ingredient | Recipe;
+interface EditablePrepMethod {
+    value: string | null;
+    data?: PrepMethod | null;
+}
+type FinishedPrepMethod = PrepMethod | null;
 export interface EditableRecipeIngredient {
-    quantity: string | null;
-    unit: EditableFromDB;
-    ingredient: EditableFromDB;
-    prepMethod: EditableFromDB;
+    quantity: EditableQuantity;
+    unit: EditableUnit;
+    ingredient: EditableIngredient;
+    prepMethod: EditablePrepMethod;
     state: InputState;
     show: boolean;
     key: string;
     type?: EnumRecipeIngredientType;
 }
-export interface FinishedIngredient extends EditableFromDB {
-    value: string;
-    _id: string;
-}
 export interface FinishedRecipeIngredient {
-    quantity: string | null;
-    unit: EditableFromDB;
+    quantity: FinishedQuantity;
+    unit: FinishedUnit;
     ingredient: FinishedIngredient;
-    prepMethod: EditableFromDB;
+    prepMethod: FinishedPrepMethod;
     key: string;
-    type: EnumRecipeIngredientType;
 }
 type ShowStates = 'on' | 'off' | 'toggle';
 interface IngredientState {
     finished: FinishedRecipeIngredient[];
     editable: EditableRecipeIngredient;
 }
+// Helper functions -------------------------------------------------------------
 function getEmptyIngredient(): EditableRecipeIngredient {
     return {
         quantity: null,
@@ -224,77 +192,6 @@ function getEmptyIngredient(): EditableRecipeIngredient {
         key: crypto.randomUUID(),
     };
 }
-
-function setQuantity(state: IngredientState, action: Action): IngredientState {
-    return produce(state, (draft) => {
-        if (typeof action.nullableValue === 'undefined') {
-            throw new Error('Cannot append quantity with undefined value.');
-        }
-        draft.editable.quantity = action.nullableValue;
-    });
-}
-
-function setIngredient(state: IngredientState, action: Action): IngredientState {
-    return produce(state, (draft) => {
-        if (action.nullableValue == null) {
-            throw new Error('Cannot set ingredient to null or undefined.');
-        }
-        draft.editable.ingredient = {
-            value: action.nullableValue.toLowerCase(),
-            _id: action._id,
-        };
-        draft.editable.type = action.ingrType;
-    });
-}
-function setOtherIngredientProperty(
-    state: IngredientState,
-    action: Action,
-    property: 'unit' | 'prepMethod'
-): IngredientState {
-    return produce(state, (draft) => {
-        if (typeof action.nullableValue === 'undefined') {
-            throw new Error(`Cannot set ${property} as undefined.`);
-        }
-        if (action.nullableValue !== null && action._id === undefined) {
-            throw new Error(`Cannot set ${property} without _id.`);
-        }
-        draft.editable[property] = {
-            value: action.nullableValue === null ? null : action.nullableValue.toLowerCase(),
-            _id: action._id,
-        };
-    });
-}
-
-function appendQuantity(state: IngredientState, action: Action): IngredientState {
-    return produce(state, (draft) => {
-        if (typeof action.value === 'undefined') {
-            throw new Error(`Cannot append quantity with undefined value.`);
-        }
-        if (draft.editable.quantity === null) {
-            draft.editable.quantity = action.value;
-        } else {
-            draft.editable.quantity += action.value;
-        }
-    });
-}
-
-function appendOtherIngredientProperty(
-    state: IngredientState,
-    action: Action,
-    property: DBInputState
-): IngredientState {
-    return produce(state, (draft) => {
-        if (typeof action.value === 'undefined') {
-            throw new Error(`Cannot append editable ${property} with undefined value.`);
-        }
-        if (draft.editable[property].value === null) {
-            draft.editable[property] = { value: action.value.toLowerCase() };
-        } else {
-            draft.editable[property].value += action.value.toLowerCase();
-        }
-    });
-}
-
 function getPrevState(state: InputState): InputState {
     const nextState = {
         quantity: 'quantity',
@@ -304,7 +201,6 @@ function getPrevState(state: InputState): InputState {
     };
     return nextState[state] as InputState;
 }
-
 function removeFromQuantity(num: number, item: EditableRecipeIngredient): EditableRecipeIngredient {
     if (num <= 0 || item.state !== 'quantity') {
         return item;
@@ -319,7 +215,6 @@ function removeFromQuantity(num: number, item: EditableRecipeIngredient): Editab
     item.quantity = item.quantity.slice(0, item.quantity.length - num);
     return item;
 }
-
 function removeFromProperty(
     num: number,
     item: EditableRecipeIngredient,
@@ -329,8 +224,8 @@ function removeFromProperty(
         return [num, item];
     }
     const val = item[currentState].value;
-    // Remove _id if present
-    item[currentState]._id = undefined;
+    // Remove data if present
+    item[currentState].data = undefined;
 
     // Current state is empty, decrement state and return item
     if (val === null) {
@@ -353,29 +248,35 @@ function removeFromProperty(
     item[currentState].value = val.slice(0, val.length - num);
     return [0, item];
 }
-
-function truncateIngredient(num: number, item: EditableRecipeIngredient): EditableRecipeIngredient {
-    let newItem = { ...item };
-
-    [num, newItem] = removeFromProperty(num, newItem, 'prepMethod');
-    [num, newItem] = removeFromProperty(num, newItem, 'ingredient');
-    [num, newItem] = removeFromProperty(num, newItem, 'unit');
-    newItem = removeFromQuantity(num, newItem);
-
-    return newItem;
-}
-
-function getQuantityStr(item: EditableRecipeIngredient): string {
-    if (item.quantity === null) {
+// String formatting ------------------------------------------------------------
+function getFinishedQuantityStr(quantity: FinishedQuantity): string {
+    if (quantity === null) {
         return '';
     }
-    if (item.state !== 'quantity' && isFraction(item.quantity!)) {
-        return formatFraction(item.quantity!);
+    if (isFraction(quantity)) {
+        return formatFraction(quantity);
     }
-    return `${item.quantity !== null ? item.quantity : ''}`;
+    return quantity;
 }
-
-function getUnitStr(item: EditableRecipeIngredient): string {
+function getEditableQuantityStr(item: EditableRecipeIngredient): string {
+    if (item.state === 'quantity') {
+        return item.quantity === null ? '' : item.quantity;
+    }
+    return getFinishedQuantityStr(item.quantity);
+}
+export function unitDisplayValue(quantity: FinishedQuantity, unit: Unit, short: boolean): string {
+    if (short) {
+        return isPlural(quantity) ? unit.shortPlural : unit.shortSingular;
+    }
+    return isPlural(quantity) ? unit.longPlural : unit.longSingular;
+}
+function getFinishedUnitStr(quantity: FinishedQuantity, unit: FinishedUnit): string {
+    if (unit === null) {
+        return '';
+    }
+    return `${unit.hasSpace ? ' ' : ''}${unitDisplayValue(quantity, unit, true)}`;
+}
+function getEditableUnitStr(item: EditableRecipeIngredient): string {
     if (item.state === 'quantity' || item.quantity === null) {
         return '';
     }
@@ -386,224 +287,394 @@ function getUnitStr(item: EditableRecipeIngredient): string {
             return ` ${item.unit.value}`;
         }
     } else {
-        if (item.unit.value === null) {
+        return getFinishedUnitStr(item.quantity, item.unit.data!);
+    }
+}
+export function ingredientDisplayStr(
+    quantity: FinishedQuantity,
+    unit: FinishedUnit,
+    ingredient: FinishedIngredient
+): string {
+    const plural =
+        (isPlural(quantity) && unit === null) ||
+        (ingredient.__typename == 'Ingredient' && ingredient.isCountable && unit !== null);
+    if (ingredient.__typename === 'Ingredient') {
+        return plural ? ingredient.pluralName : ingredient.name;
+    } else if (ingredient.__typename === 'Recipe') {
+        return plural ? ingredient.pluralTitle!.toLowerCase() : ingredient.title.toLowerCase();
+    }
+    return '';
+}
+export function getFinishedIngredientStr(
+    quantity: FinishedQuantity,
+    unit: FinishedUnit,
+    ingredient: FinishedIngredient
+): string {
+    const delim = quantity === null ? '' : ' ';
+    return `${delim}${ingredientDisplayStr(quantity, unit, ingredient)}`;
+}
+function getEditableIngredientStr(item: EditableRecipeIngredient): string {
+    if (item.state === 'quantity' || item.state === 'unit') {
+        return '';
+    }
+    if (item.state === 'ingredient') {
+        if (item.ingredient.value === null) {
             return '';
         } else {
-            return ` ${item.unit.value}`;
+            return item.ingredient.value;
         }
     }
+    return getFinishedIngredientStr(item.quantity, item.unit.data!, item.ingredient.data!);
 }
-
-function getIngredientStr(item: EditableRecipeIngredient): string {
-    if (!['ingredient', 'prepMethod'].includes(item.state)) {
+function getFinishedPrepMethodStr(prepMethod: FinishedPrepMethod): string {
+    if (prepMethod === null) {
         return '';
     }
-    const delim = item.quantity === null ? '' : ' ';
-    const str = item.ingredient.value !== null ? item.ingredient.value : '';
-    return `${delim}${str}`;
+    return `, ${prepMethod.value}`;
 }
-
-function getPrepMethodStr(item: EditableRecipeIngredient): string {
-    const delim = item.state === 'prepMethod' ? ', ' : '';
+function getEditablePrepMethodStr(item: EditableRecipeIngredient): string {
+    if (item.state !== 'prepMethod') {
+        return '';
+    }
     const str = item.prepMethod.value !== null ? item.prepMethod.value : '';
-    return `${delim}${str}`;
+    return `, ${str}`;
 }
-
 function getEditableRecipeIngredientStr(item: EditableRecipeIngredient): string {
-    if (item.quantity === null && item.state === 'quantity') {
-        return '';
-    }
-    const quantityStr = getQuantityStr(item);
-    const unitStr = getUnitStr(item);
-    const ingrStr = getIngredientStr(item);
-    const prepMethodStr = getPrepMethodStr(item);
+    const quantityStr = getEditableQuantityStr(item);
+    const unitStr = getEditableUnitStr(item);
+    const ingrStr = getEditableIngredientStr(item);
+    const prepMethodStr = getEditablePrepMethodStr(item);
     return `${quantityStr}${unitStr}${ingrStr}${prepMethodStr}`;
 }
-
-export function getRecipeIngredientStr(
-    quantity: string | null | undefined,
-    unit: string | null | undefined,
-    ingredient: string,
-    prepMethod: string | null | undefined
-): string {
-    let quantityStr = '';
-    if (quantity != null) {
-        quantityStr = isFraction(quantity) ? formatFraction(quantity) : quantity;
-    }
-    const unitStr = unit == null ? '' : ` ${unit}`;
-    const ingrStr = quantity == null ? ingredient : ` ${ingredient}`;
-    const prepMethodStr = prepMethod == null ? '' : `, ${prepMethod}`;
+export function getFinishedRecipeIngredientStr(item: FinishedRecipeIngredient): string {
+    const { quantity, unit, ingredient, prepMethod } = item;
+    const quantityStr = getFinishedQuantityStr(quantity);
+    const unitStr = getFinishedUnitStr(quantity, unit);
+    const ingrStr = getFinishedIngredientStr(quantity, unit, ingredient);
+    const prepMethodStr = getFinishedPrepMethodStr(prepMethod);
     return `${quantityStr}${unitStr}${ingrStr}${prepMethodStr}`;
 }
-
-export function getFinishedIngredientStr(item: FinishedRecipeIngredient): string {
-    return getRecipeIngredientStr(
-        item.quantity,
-        item.unit.value,
-        item.ingredient.value,
-        item.prepMethod.value
-    );
+// Actions ---------------------------------------------------------------------
+type Action =
+    | RemoveFinishedItemAction
+    | ResetEditableAction
+    | SetShowAction
+    | SetFinishedAction
+    | AppendQuantityAction
+    | AppendOtherIngredientAction
+    | SetQuantityAction
+    | SetIngredientAction
+    | SetUnitAction
+    | SetPrepMethodAction
+    | IncrementEditableStateAction
+    | DecrementEditableStateAction
+    | SubmitEditableAction
+    | TruncateEditableAction;
+interface RemoveFinishedItemAction {
+    type: 'remove_finished_item';
+    index: number;
 }
-
+function removeFinishedItem(
+    state: IngredientState,
+    action: RemoveFinishedItemAction
+): IngredientState {
+    return produce(state, (draft) => {
+        draft.finished.splice(action.index, 1);
+    });
+}
+interface ResetEditableAction {
+    type: 'reset_editable';
+}
+function resetEditable(state: IngredientState): IngredientState {
+    return produce(state, (draft) => {
+        draft.editable = getEmptyIngredient();
+    });
+}
+interface SetShowAction {
+    type: 'set_editable_show';
+    payload: ShowStates;
+}
+function setEditableShow(state: IngredientState, action: SetShowAction): IngredientState {
+    return produce(state, (draft) => {
+        switch (action.payload) {
+            case 'on':
+                draft.editable.show = true;
+                break;
+            case 'off':
+                draft.editable.show = false;
+                break;
+            case 'toggle':
+                draft.editable.show = !draft.editable.show;
+                break;
+            default:
+                throw new Error('Invalid show state');
+        }
+    });
+}
+interface SetFinishedAction {
+    type: 'set_finished';
+    finished: FinishedRecipeIngredient[];
+}
+function setFinished(state: IngredientState, action: SetFinishedAction): IngredientState {
+    return produce(state, (draft) => {
+        draft.finished = action.finished;
+    });
+}
+interface SetQuantityAction {
+    type: 'set_editable_quantity';
+    payload: string | null;
+}
+function setQuantity(state: IngredientState, action: SetQuantityAction): IngredientState {
+    return produce(state, (draft) => {
+        draft.editable.quantity = action.payload;
+    });
+}
+interface SetUnitAction {
+    type: 'set_editable_unit';
+    payload: Unit | null;
+}
+function setUnit(state: IngredientState, action: SetUnitAction): IngredientState {
+    return produce(state, (draft) => {
+        // Set data
+        draft.editable.unit.data = action.payload;
+        // Set value
+        if (draft.editable.unit.data === null) {
+            draft.editable.unit.value = null;
+        } else {
+            if (isPlural(draft.editable.quantity)) {
+                draft.editable.unit.value = draft.editable.unit.data.shortPlural;
+            } else {
+                draft.editable.unit.value = draft.editable.unit.data.shortSingular;
+            }
+        }
+    });
+}
+interface SetIngredientAction {
+    type: 'set_editable_ingredient';
+    payload: Ingredient | Recipe;
+}
+function setIngredient(state: IngredientState, action: SetIngredientAction): IngredientState {
+    return produce(state, (draft) => {
+        // Set data
+        draft.editable.ingredient.data = action.payload;
+        // Set value
+        if (draft.editable.ingredient.data === null) {
+            draft.editable.ingredient.value = null;
+        } else {
+            draft.editable.ingredient.value = ingredientDisplayStr(
+                draft.editable.quantity,
+                draft.editable.unit.data!,
+                draft.editable.ingredient.data
+            );
+        }
+    });
+}
+interface SetPrepMethodAction {
+    type: 'set_editable_prepMethod';
+    payload: PrepMethod | null;
+}
+function setPrepMethod(state: IngredientState, action: SetPrepMethodAction): IngredientState {
+    return produce(state, (draft) => {
+        // Set data
+        draft.editable.prepMethod.data = action.payload;
+        // Set value
+        if (draft.editable.prepMethod.data === null) {
+            draft.editable.prepMethod.value = null;
+        } else {
+            draft.editable.prepMethod.value = draft.editable.prepMethod.data.value;
+        }
+    });
+}
+interface AppendQuantityAction {
+    type: 'append_editable_quantity';
+    payload: string;
+}
+function appendQuantity(state: IngredientState, action: AppendQuantityAction): IngredientState {
+    return produce(state, (draft) => {
+        if (draft.editable.quantity === null) {
+            draft.editable.quantity = action.payload;
+        } else {
+            draft.editable.quantity += action.payload;
+        }
+    });
+}
+interface AppendOtherIngredientAction {
+    type: 'append_editable_unit' | 'append_editable_ingredient' | 'append_editable_prepMethod';
+    payload: string;
+}
+function appendOtherIngredient(
+    state: IngredientState,
+    action: AppendOtherIngredientAction,
+    property: DBInputState
+): IngredientState {
+    return produce(state, (draft) => {
+        if (draft.editable[property].value === null) {
+            draft.editable[property] = { value: action.payload.toLowerCase() };
+        } else {
+            draft.editable[property].value += action.payload.toLowerCase();
+        }
+    });
+}
+interface IncrementEditableStateAction {
+    type: 'increment_editable_state';
+}
+function incrementEditableState(state: IngredientState): IngredientState {
+    return produce(state, (draft) => {
+        const nextState = {
+            quantity: draft.editable.quantity === null ? 'ingredient' : 'unit',
+            unit: 'ingredient',
+            ingredient: 'prepMethod',
+        };
+        if (draft.editable.state === 'prepMethod') {
+            return;
+        }
+        draft.editable.state = nextState[draft.editable.state] as InputState;
+    });
+}
+interface DecrementEditableStateAction {
+    type: 'decrement_editable_state';
+}
+function decrementEditableState(state: IngredientState): IngredientState {
+    return produce(state, (draft) => {
+        const nextState = {
+            unit: 'quantity',
+            ingredient: draft.editable.quantity === null ? 'quantity' : 'unit',
+            prepMethod: 'ingredient',
+        };
+        if (draft.editable.state === 'quantity') {
+            return;
+        }
+        draft.editable.state = nextState[draft.editable.state] as InputState;
+    });
+}
+interface TruncateEditableAction {
+    type: 'truncate_editable';
+    payload: number;
+}
+function truncateEditable(state: IngredientState, action: TruncateEditableAction): IngredientState {
+    return produce(state, (draft) => {
+        let newItem = { ...draft.editable };
+        [action.payload, newItem] = removeFromProperty(action.payload, newItem, 'prepMethod');
+        [action.payload, newItem] = removeFromProperty(action.payload, newItem, 'ingredient');
+        [action.payload, newItem] = removeFromProperty(action.payload, newItem, 'unit');
+        newItem = removeFromQuantity(action.payload, newItem);
+        draft.editable = newItem;
+    });
+}
+interface SubmitEditableAction {
+    type: 'submit_editable';
+}
+function submitEditable(state: IngredientState): IngredientState {
+    return produce(state, (draft) => {
+        if (draft.editable.unit.data === undefined) {
+            throw new Error('Cannot submit an item with undefined unit.');
+        }
+        if (draft.editable.ingredient.data === undefined) {
+            throw new Error('Cannot submit an item with null ingredient.');
+        }
+        if (draft.editable.prepMethod.data === undefined) {
+            throw new Error('Cannot submit an item with null prep method.');
+        }
+        const finished = {
+            key: draft.editable.key,
+            quantity: draft.editable.quantity,
+            unit: draft.editable.unit.data,
+            ingredient: draft.editable.ingredient.data,
+            prepMethod: draft.editable.prepMethod.data,
+        };
+        draft.finished.push(finished);
+        draft.editable = getEmptyIngredient();
+    });
+}
+// Reducer ---------------------------------------------------------------------
 function reducer(state: IngredientState, action: Action): IngredientState {
     switch (action.type) {
         case 'remove_finished_item': {
-            return produce(state, (draft) => {
-                if (typeof action.index === 'undefined') {
-                    throw new Error('index is required to remove finished ingredient.');
-                }
-                draft.finished.splice(action.index, 1);
-            });
+            return removeFinishedItem(state, action);
         }
         case 'reset_editable': {
-            return produce(state, (draft) => {
-                draft.editable = getEmptyIngredient();
-            });
+            return resetEditable(state);
         }
         case 'set_editable_show': {
-            return produce(state, (draft) => {
-                if (typeof action.value === 'undefined') {
-                    throw new Error('value is required to set editable show state');
-                }
-                if (!['on', 'off', 'toggle'].includes(action.value)) {
-                    throw new Error('invalid show value given');
-                }
-                const newState = { on: true, off: false, toggle: !draft.editable.show };
-                draft.editable.show = newState[action.value as ShowStates];
-            });
+            return setEditableShow(state, action);
         }
         case 'set_editable_quantity': {
             return setQuantity(state, action);
         }
         case 'set_editable_unit': {
-            return setOtherIngredientProperty(state, action, 'unit');
+            return setUnit(state, action);
         }
         case 'set_editable_ingredient': {
             return setIngredient(state, action);
         }
         case 'set_editable_prepMethod': {
-            return setOtherIngredientProperty(state, action, 'prepMethod');
+            return setPrepMethod(state, action);
         }
         case 'set_finished': {
-            return produce(state, (draft) => {
-                if (typeof action.finished === 'undefined') {
-                    throw new Error('finished array cannot be undefined');
-                }
-                draft.finished = action.finished;
-            });
+            return setFinished(state, action);
         }
         case 'append_editable_quantity': {
             return appendQuantity(state, action);
         }
         case 'append_editable_unit': {
-            return appendOtherIngredientProperty(state, action, 'unit');
+            return appendOtherIngredient(state, action, 'unit');
         }
         case 'append_editable_ingredient': {
-            return appendOtherIngredientProperty(state, action, 'ingredient');
+            return appendOtherIngredient(state, action, 'ingredient');
         }
         case 'append_editable_prepMethod': {
-            return appendOtherIngredientProperty(state, action, 'prepMethod');
+            return appendOtherIngredient(state, action, 'prepMethod');
         }
         case 'increment_editable_state': {
-            return produce(state, (draft) => {
-                const nextState = {
-                    quantity: draft.editable.quantity === null ? 'ingredient' : 'unit',
-                    unit: 'ingredient',
-                    ingredient: 'prepMethod',
-                };
-                if (draft.editable.state === 'prepMethod') {
-                    return;
-                }
-                draft.editable.state = nextState[draft.editable.state] as InputState;
-            });
+            return incrementEditableState(state);
         }
         case 'decrement_editable_state': {
-            return produce(state, (draft) => {
-                const nextState = {
-                    unit: 'quantity',
-                    ingredient: draft.editable.quantity === null ? 'quantity' : 'unit',
-                    prepMethod: 'ingredient',
-                };
-                if (draft.editable.state === 'quantity') {
-                    return;
-                }
-                draft.editable.state = nextState[draft.editable.state] as InputState;
-            });
+            return decrementEditableState(state);
         }
         case 'truncate_editable': {
-            return produce(state, (draft) => {
-                if (typeof action.num === 'undefined') {
-                    throw new Error('num is required to truncate item');
-                }
-                draft.editable = truncateIngredient(action.num, draft.editable);
-            });
+            return truncateEditable(state, action);
         }
         case 'submit_editable': {
-            return produce(state, (draft) => {
-                if (draft.editable.ingredient === null) {
-                    throw new Error('Cannot submit an item with null ingredient.');
-                }
-                if (typeof draft.editable.type === 'undefined') {
-                    throw new Error('Cannot submit an item without an ingredient type.');
-                }
-                const finished = {
-                    key: draft.editable.key,
-                    quantity: draft.editable.quantity,
-                    unit: draft.editable.unit,
-                    ingredient: draft.editable.ingredient as FinishedIngredient,
-                    prepMethod: draft.editable.prepMethod,
-                    type: draft.editable.type,
-                };
-                draft.finished.push(finished);
-                draft.editable = getEmptyIngredient();
-            });
+            return submitEditable(state);
         }
         default: {
-            throw Error('Unknown action: ' + action.type);
+            throw Error('Unknown action type');
         }
     }
 }
 
-interface ActionTypeHandler {
-    set: (value: string | null) => void;
+interface RecipeIngredientActionHandler<T> {
+    set: (attr: T) => void;
     append: (value: string) => void;
-}
-interface ActionTypeHandlerFromDB extends Omit<ActionTypeHandler, 'set'> {
-    set: (value: string | null, _id?: string, type?: EnumRecipeIngredientType) => void;
 }
 interface InternalActionHandler {
     incrementState: () => void;
     decrementState: () => void;
     submit: () => void;
     truncate: (num: number) => void;
-    quantity: ActionTypeHandler;
-    unit: ActionTypeHandlerFromDB;
-    ingredient: ActionTypeHandlerFromDB;
-    prepMethod: ActionTypeHandlerFromDB;
+    quantity: RecipeIngredientActionHandler<Quantity>;
+    unit: RecipeIngredientActionHandler<Unit | null>;
+    ingredient: RecipeIngredientActionHandler<Ingredient>;
+    prepMethod: RecipeIngredientActionHandler<PrepMethod | null>;
     reset: () => void;
     setShow: SetShow;
-}
-interface Get {
-    string: () => string;
-    currentStateValue: () => string | null;
 }
 interface SetShow {
     on: () => void;
     off: () => void;
     toggle: () => void;
 }
-interface Set {
-    currentStateItem: (value: string | null, _id?: string, type?: EnumRecipeIngredientType) => void;
-    show: SetShow;
-}
 export interface IngredientActionHandler {
-    get: Get;
-    set: Set;
-    reset: () => void;
-    handleSubmit: () => void;
-    handleChange: (value: string) => void;
-    incrementState: () => void;
-    decrementState: () => void;
+    editableStringValue: () => string;
+    resetEditable: () => void;
+    setCurrentEditableAttribute: (t: any) => void;
+    currentEditableAttributeValue: () => string | null;
+    setEditableShow: SetShow;
+    handleEditableSubmit: () => void;
+    handleEditableChange: (value: string) => void;
+    decrementEditableState: () => void;
+    setFinishedArray: (finished: FinishedRecipeIngredient[]) => void;
+    removeFinished: (index: number) => void;
 }
 export interface QueryData {
     unit?: GetUnitsQuery['unitMany'];
@@ -614,8 +685,6 @@ export interface QueryData {
 export interface UseIngredientListReturnType {
     state: IngredientState;
     actionHandler: IngredientActionHandler;
-    setFinished: (finished: FinishedRecipeIngredient[]) => void;
-    removeFinished: (index: number) => void;
     queryData: QueryData;
 }
 export function useIngredientList(): UseIngredientListReturnType {
@@ -632,57 +701,49 @@ export function useIngredientList(): UseIngredientListReturnType {
         const editableActions: InternalActionHandler = {
             reset: () => dispatch({ type: 'reset_editable' }),
             submit: () => dispatch({ type: 'submit_editable' }),
-            truncate: (num: number) => dispatch({ type: 'truncate_editable', num }),
+            truncate: (num: number) => dispatch({ type: 'truncate_editable', payload: num }),
             incrementState: () => dispatch({ type: 'increment_editable_state' }),
             decrementState: () => dispatch({ type: 'decrement_editable_state' }),
             quantity: {
-                set: (nullableValue: string | null) =>
-                    dispatch({ type: 'set_editable_quantity', nullableValue }),
-                append: (value: string) => dispatch({ type: 'append_editable_quantity', value }),
+                set: (quantity: string | null) =>
+                    dispatch({ type: 'set_editable_quantity', payload: quantity }),
+                append: (value: string) =>
+                    dispatch({ type: 'append_editable_quantity', payload: value }),
             },
             unit: {
-                set: (nullableValue: string | null, _id?: string) =>
-                    dispatch({ type: 'set_editable_unit', nullableValue, _id }),
-                append: (value: string) => dispatch({ type: 'append_editable_unit', value }),
+                set: (unit: Unit | null) => dispatch({ type: 'set_editable_unit', payload: unit }),
+                append: (value: string) =>
+                    dispatch({ type: 'append_editable_unit', payload: value }),
             },
             ingredient: {
-                set: (
-                    nullableValue: string | null,
-                    _id?: string,
-                    type?: EnumRecipeIngredientType
-                ) =>
-                    dispatch({
-                        type: 'set_editable_ingredient',
-                        nullableValue,
-                        _id,
-                        ingrType: type,
-                    }),
-                append: (value: string) => dispatch({ type: 'append_editable_ingredient', value }),
+                set: (ingredient: Ingredient | Recipe) =>
+                    dispatch({ type: 'set_editable_ingredient', payload: ingredient }),
+                append: (value: string) =>
+                    dispatch({ type: 'append_editable_ingredient', payload: value }),
             },
             prepMethod: {
-                set: (nullableValue: string | null, _id?: string) =>
-                    dispatch({ type: 'set_editable_prepMethod', nullableValue, _id }),
-                append: (value: string) => dispatch({ type: 'append_editable_prepMethod', value }),
+                set: (prepMethod: PrepMethod | null) =>
+                    dispatch({ type: 'set_editable_prepMethod', payload: prepMethod }),
+                append: (value: string) =>
+                    dispatch({ type: 'append_editable_prepMethod', payload: value }),
             },
             setShow: {
-                on: () => dispatch({ type: 'set_editable_show', value: 'on' }),
-                off: () => dispatch({ type: 'set_editable_show', value: 'off' }),
-                toggle: () => dispatch({ type: 'set_editable_show', value: 'toggle' }),
+                on: () => dispatch({ type: 'set_editable_show', payload: 'on' }),
+                off: () => dispatch({ type: 'set_editable_show', payload: 'off' }),
+                toggle: () => dispatch({ type: 'set_editable_show', payload: 'toggle' }),
             },
         };
 
         // Public functions
-        const get: Get = {
-            string: () => getEditableRecipeIngredientStr(state.editable),
-            currentStateValue: () => {
-                if (state.editable.state === 'quantity') {
-                    return state.editable.quantity;
-                } else {
-                    return state.editable[state.editable.state].value;
-                }
-            },
+        const editableStringValue = () => getEditableRecipeIngredientStr(state.editable);
+        const currentEditableAttributeValue = () => {
+            if (state.editable.state === 'quantity') {
+                return state.editable.quantity;
+            } else {
+                return state.editable[state.editable.state].value;
+            }
         };
-        const handleSubmit = () => {
+        const handleEditableSubmit = () => {
             if (state.editable.state !== 'prepMethod') {
                 editableActions.reset();
             } else {
@@ -690,25 +751,20 @@ export function useIngredientList(): UseIngredientListReturnType {
                 editableActions.submit();
             }
         };
-        const set: Set = {
-            currentStateItem: (
-                value: string | null,
-                _id?: string,
-                type?: EnumRecipeIngredientType
-            ) => {
-                if (state.editable.state === 'quantity') {
-                    editableActions.quantity.set(value);
-                } else if (state.editable.state === 'ingredient') {
-                    editableActions.ingredient.set(value, _id, type);
-                } else {
-                    editableActions[state.editable.state].set(value, _id);
-                }
-                editableActions.incrementState();
-            },
-            show: editableActions.setShow,
+        const setCurrentEditableAttribute = (attr: Quantity | Unit | Ingredient | PrepMethod) => {
+            if (state.editable.state === 'quantity') {
+                editableActions.quantity.set(attr as Quantity);
+            } else if (state.editable.state === 'unit') {
+                editableActions.unit.set(attr as Unit);
+            } else if (state.editable.state === 'ingredient') {
+                editableActions.ingredient.set(attr as Ingredient);
+            } else if (state.editable.state === 'prepMethod') {
+                editableActions.prepMethod.set(attr as PrepMethod);
+            }
+            editableActions.incrementState();
         };
-        const handleChange = (value: string) => {
-            const diff = getTextDiff(value, get.string());
+        const handleEditableChange = (value: string) => {
+            const diff = getTextDiff(value, getEditableRecipeIngredientStr(state.editable));
             try {
                 switch (state.editable.state) {
                     case 'quantity':
@@ -733,24 +789,27 @@ export function useIngredientList(): UseIngredientListReturnType {
                 }
             }
         };
+        const setFinishedArray = (finished: FinishedRecipeIngredient[]) => {
+            return dispatch({ type: 'set_finished', finished });
+        };
+        const removeFinished = (index: number) => {
+            return dispatch({ type: 'remove_finished_item', index });
+        };
 
         return {
-            get,
-            set,
-            reset: editableActions.reset,
-            handleSubmit,
-            handleChange,
-            incrementState: editableActions.incrementState,
-            decrementState: editableActions.decrementState,
+            editableStringValue,
+            resetEditable: editableActions.reset,
+            currentEditableAttributeValue,
+            setCurrentEditableAttribute,
+            setEditableShow: editableActions.setShow,
+            handleEditableSubmit,
+            handleEditableChange,
+            decrementEditableState: editableActions.decrementState,
+            setFinishedArray,
+            removeFinished,
         };
     };
     const actionHandler = getIngredientActionHandler();
-    const setFinished = (finished: FinishedRecipeIngredient[]) => {
-        return dispatch({ type: 'set_finished', finished });
-    };
-    const removeFinished = (index: number) => {
-        return dispatch({ type: 'remove_finished_item', index });
-    };
     const queryData = {
         unit: unitData?.unitMany,
         ingredient: ingredientData?.ingredientMany,
@@ -761,8 +820,6 @@ export function useIngredientList(): UseIngredientListReturnType {
     return {
         state,
         actionHandler,
-        setFinished,
-        removeFinished,
         queryData,
     };
 }

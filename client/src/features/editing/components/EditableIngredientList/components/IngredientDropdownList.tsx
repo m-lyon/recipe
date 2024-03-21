@@ -6,52 +6,25 @@ import { Popover, PopoverAnchor, useDisclosure } from '@chakra-ui/react';
 import { NewIngredientPopover } from './NewIngredientPopover';
 import { DropdownItem } from '../../../../../components/DropdownItem';
 import { useNavigatableList } from '../../../hooks/useNavigatableList';
-import { Ingredient, Recipe, EnumRecipeIngredientType } from '../../../../../__generated__/graphql';
+import { Ingredient, Unit } from '../../../../../__generated__/graphql';
+import { Quantity, ingredientDisplayStr, Recipe } from '../../../hooks/useIngredientList';
 
-export function isPluralIngredient(
-    plural: boolean,
-    hasUnit: boolean,
-    isCountable: boolean
-): boolean {
-    return (plural && !hasUnit) || (isCountable && hasUnit);
-}
-
-export function getIngredientDisplayValue(
-    item: IngredientSuggestion,
-    plural: boolean,
-    hasUnit: boolean
-): string {
-    if (typeof item.value === 'string') {
-        return item.value;
-    } else if (isPluralIngredient(plural, hasUnit, item.value.isCountable)) {
-        return item.value.pluralName;
-    } else {
-        return item.value.name;
-    }
-}
-
-type IngredientType = Omit<Ingredient, 'owner'>;
-type RecipeType = Pick<Recipe, '_id' | 'title' | 'pluralTitle'>;
-interface IngredientOrRecipe extends IngredientType {
-    type: EnumRecipeIngredientType;
-}
+export type IngredientOrRecipe = Ingredient | Recipe;
 export interface IngredientSuggestion {
     value: string | IngredientOrRecipe;
     colour?: string;
 }
 interface Props {
     strValue: string;
-    ingredients: IngredientType[];
-    recipes?: RecipeType[];
-    plural: boolean;
-    hasUnit: boolean;
-    setItem: (value: string | null, _id?: string, type?: EnumRecipeIngredientType) => void;
+    data: Array<IngredientOrRecipe>;
+    quantity: Quantity;
+    unit: Unit | null;
+    setItem: (value: IngredientOrRecipe) => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
 }
 export function IngredientDropdownList(props: Props) {
-    const { strValue, ingredients, recipes, plural, hasUnit, setItem, inputRef, previewRef } =
-        props;
+    const { strValue, data, quantity, unit, setItem, inputRef, previewRef } = props;
     const dropdownRef = useRef<HTMLDivElement | null>(null);
     const firstFieldRef = useRef<HTMLInputElement | null>(null);
     const { isOpen, onOpen, onClose } = useDisclosure({
@@ -59,20 +32,6 @@ export function IngredientDropdownList(props: Props) {
             previewRef.current?.focus();
         },
     });
-    const data = ingredients
-        .map((ingredient) => ({
-            ...ingredient,
-            type: 'ingredient',
-        }))
-        .concat(
-            recipes?.map((recipe) => ({
-                _id: recipe._id,
-                name: recipe.title.toLowerCase(),
-                pluralName: recipe.pluralTitle!.toLowerCase(),
-                isCountable: false,
-                type: 'recipe',
-            })) || []
-        ) as IngredientOrRecipe[];
     const filter = (data: IngredientOrRecipe[], value: string): IngredientSuggestion[] => {
         const items = matchSorter<IngredientOrRecipe>(data, value, {
             keys: ['name', 'pluralName'],
@@ -88,11 +47,7 @@ export function IngredientDropdownList(props: Props) {
                 onOpen();
             }
         } else {
-            setItem(
-                getIngredientDisplayValue(item, plural, hasUnit),
-                item.value._id,
-                item.value.type as EnumRecipeIngredientType
-            );
+            setItem(item.value);
         }
     };
 
@@ -126,7 +81,7 @@ export function IngredientDropdownList(props: Props) {
             <DropdownItem
                 key={index}
                 color={item.colour}
-                value={getIngredientDisplayValue(item, plural, hasUnit)}
+                value={ingredientDisplayStr(quantity, unit, item.value as Ingredient)}
                 onClick={() => {
                     handleSelect(item);
                     previewRef?.current?.focus();
