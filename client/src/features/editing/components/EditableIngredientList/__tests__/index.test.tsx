@@ -10,6 +10,10 @@ import { mockGetPrepMethods } from '../__mocks__/GetPrepMethods';
 import { RouterProvider } from 'react-router-dom';
 import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
 import { useIngredientList } from '../../../hooks/useIngredientList';
+import { loadErrorMessages, loadDevMessages } from '@apollo/client/dev';
+
+loadErrorMessages();
+loadDevMessages();
 
 const MockCreateRecipe = () => {
     const props = useIngredientList();
@@ -22,10 +26,7 @@ const routes = createBrowserRouter(
 
 const renderComponent = () => {
     render(
-        <MockedProvider
-            mocks={[mockGetUnits, mockGetIngredientsWithRecipe, mockGetPrepMethods]}
-            addTypename={false}
-        >
+        <MockedProvider mocks={[mockGetUnits, mockGetIngredientsWithRecipe, mockGetPrepMethods]}>
             <ChakraProvider>
                 <RouterProvider router={routes} />
             </ChakraProvider>
@@ -161,6 +162,7 @@ describe('EditableIngredient Quantity Keyboard', () => {
 
         // Expect
         expect(screen.getByText('chicken')).toBeInTheDocument();
+        expect(screen.getByText('apple')).toBeInTheDocument();
     });
 });
 describe('EditableIngredient Quantity Click', () => {
@@ -194,7 +196,7 @@ describe('EditableIngredient Unit Keyboard', () => {
         // Expect
         expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
     });
-    it('should switch to the name state singular', async () => {
+    it('should switch to the ingredient state singular', async () => {
         const user = userEvent.setup();
         // Render
         renderComponent();
@@ -213,7 +215,7 @@ describe('EditableIngredient Unit Keyboard', () => {
         ).toBeNull();
         expect(screen.getByText('chicken')).toBeInTheDocument();
     });
-    it('should switch to the name state plural', async () => {
+    it('should switch to the ingredient state plural', async () => {
         const user = userEvent.setup();
         // Render
         renderComponent();
@@ -253,6 +255,10 @@ describe('EditableIngredient Unit Keyboard', () => {
         await user.keyboard('{1}{ }');
 
         // Expect
+        expect(screen.queryByText('Enter ingredient')).toBeNull();
+        expect(
+            screen.getByText('1 ', { normalizer: getDefaultNormalizer({ trim: false }) })
+        ).toBeInTheDocument();
         expect(screen.getByText('teaspoon')).toBeInTheDocument();
         expect(screen.getByText('gram')).toBeInTheDocument();
         expect(screen.getByText('ounce')).toBeInTheDocument();
@@ -339,7 +345,7 @@ describe('EditableIngredient Unit Keyboard', () => {
     });
 });
 describe('EditableIngredient Unit Spacebar', () => {
-    it('should switch to the name state singular', async () => {
+    it('should switch to the ingredient state singular', async () => {
         const user = userEvent.setup();
         // Render
         renderComponent();
@@ -361,7 +367,7 @@ describe('EditableIngredient Unit Spacebar', () => {
         ).toBeNull();
         expect(screen.getByText('chicken')).toBeInTheDocument();
     });
-    it('should switch to the name state plural', async () => {
+    it('should switch to the ingredient state plural', async () => {
         const user = userEvent.setup();
         // Render
         renderComponent();
@@ -380,7 +386,7 @@ describe('EditableIngredient Unit Spacebar', () => {
     });
 });
 describe('EditableIngredient Unit Click', () => {
-    it('should switch to the name state singular', async () => {
+    it('should switch to the ingredient state singular', async () => {
         const user = userEvent.setup();
         // Render
         renderComponent();
@@ -397,7 +403,7 @@ describe('EditableIngredient Unit Click', () => {
         ).toBeInTheDocument();
         expect(screen.getByText('chicken')).toBeInTheDocument();
     });
-    it('should switch to the name state plural', async () => {
+    it('should switch to the ingredient state plural', async () => {
         const user = userEvent.setup();
         // Render
         renderComponent();
@@ -462,8 +468,8 @@ describe('EditableIngredient Unit Click', () => {
         expect(screen.getByText('Save')).toBeInTheDocument();
     });
 });
-describe('EditableIngredient Name Keyboard', () => {
-    it('should display completed name', async () => {
+describe('EditableIngredient Ingredient Keyboard', () => {
+    it('should display completed ingredient', async () => {
         const user = userEvent.setup();
         // Render
         renderComponent();
@@ -492,7 +498,7 @@ describe('EditableIngredient Name Keyboard', () => {
         // Expect
         expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
     });
-    it('should display all name options', async () => {
+    it('should display all ingredient options', async () => {
         const user = userEvent.setup();
         // Render
         renderComponent();
@@ -509,7 +515,7 @@ describe('EditableIngredient Name Keyboard', () => {
         expect(screen.getByText('chicken')).toBeInTheDocument();
         expect(screen.getByText('iceberg lettuce')).toBeInTheDocument();
     });
-    it('should display add new name', async () => {
+    it('should display add new ingredient', async () => {
         const user = userEvent.setup();
         // Render
         renderComponent();
@@ -539,7 +545,7 @@ describe('EditableIngredient Name Keyboard', () => {
         // Expect
         expect(screen.getByText('Invalid input')).toBeInTheDocument();
     });
-    it('should open up the new name popover', async () => {
+    it('should open up the new ingredient popover', async () => {
         const user = userEvent.setup();
         // Render
         renderComponent();
@@ -556,7 +562,7 @@ describe('EditableIngredient Name Keyboard', () => {
         expect(screen.getByText('Add new ingredient')).toBeInTheDocument();
         expect(screen.getByText('Save')).toBeInTheDocument();
     });
-    it('should have a plural name', async () => {
+    it('should have a plural ingredient', async () => {
         const user = userEvent.setup();
         // Render
         renderComponent();
@@ -572,7 +578,7 @@ describe('EditableIngredient Name Keyboard', () => {
         // Expect
         expect(screen.getByText('2 apples,')).toBeInTheDocument();
     });
-    it('should have a plural countable noun name with a unit', async () => {
+    it('should have a plural countable noun ingredient with a unit', async () => {
         const user = userEvent.setup();
         // Render
         renderComponent();
@@ -653,7 +659,7 @@ describe('EditableIngredient Ingredient Click', () => {
         expect(screen.getByText('Add new ingredient')).toBeInTheDocument();
         expect(screen.getByText('Save')).toBeInTheDocument();
     });
-    it('should have a plural name', async () => {
+    it('should have a plural ingredient', async () => {
         const user = userEvent.setup();
         // Render
         renderComponent();
@@ -951,7 +957,7 @@ describe('FinishedIngredient', () => {
         expect(screen.getByText('2 cups chicken, chopped')).toBeInTheDocument();
         expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
     });
-    it('should display a completed item with no unit and plural name', async () => {
+    it('should display a completed item with no unit and plural ingredient', async () => {
         const user = userEvent.setup();
         // Render
         renderComponent();

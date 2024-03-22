@@ -2,13 +2,13 @@ import { MutableRefObject } from 'react';
 import { Box, List } from '@chakra-ui/react';
 import { motion, LayoutGroup } from 'framer-motion';
 
-import { UnitDropdownList } from './UnitDropdownList';
+import { UnitDropdown } from './UnitDropdown';
 import { QueryData } from '../../../hooks/useIngredientList';
 import { QuantityDropdownList } from './QuantityDropdownList';
-import { PrepMethodDropdownList } from './PrepMethodDropdownList';
+import { PrepMethodDropdown } from './PrepMethodDropdown';
 import { IngredientActionHandler } from '../../../hooks/useIngredientList';
 import { EditableRecipeIngredient } from '../../../hooks/useIngredientList';
-import { IngredientDropdownList, IngredientOrRecipe } from './IngredientDropdownList';
+import { IngredientDropdown, IngredientOrRecipe } from './IngredientDropdown';
 
 interface Props {
     item: EditableRecipeIngredient;
@@ -36,7 +36,7 @@ export function RecipeIngredientDropdown(props: Props) {
                     return [];
                 }
                 return (
-                    <UnitDropdownList
+                    <UnitDropdown
                         data={queryData.unit}
                         quantity={item.quantity}
                         {...dropdownProps}
@@ -49,7 +49,7 @@ export function RecipeIngredientDropdown(props: Props) {
                 //@ts-ignore
                 const data: IngredientOrRecipe[] = queryData.ingredient.concat(queryData.recipe!);
                 return (
-                    <IngredientDropdownList
+                    <IngredientDropdown
                         data={data}
                         quantity={item.quantity}
                         unit={item.unit.data!}
@@ -61,7 +61,7 @@ export function RecipeIngredientDropdown(props: Props) {
                     return [];
                 }
                 return (
-                    <PrepMethodDropdownList
+                    <PrepMethodDropdown
                         data={queryData.prepMethod}
                         {...dropdownProps}
                         handleSubmit={() => {

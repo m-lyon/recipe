@@ -152,7 +152,6 @@ export function useTagList(): UseTagListReturnType {
             if (state.editable.value === null || state.editable.value === '') {
                 dispatch({ type: 'reset_editable' });
             } else {
-                console.log('submitting editable');
                 dispatch({ type: 'submit_editable' });
             }
         },

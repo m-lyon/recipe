@@ -134,7 +134,6 @@ export function getTextDiff(value: string, origStr: string): NewChar {
     if (value.length < origStr.length) {
         return origStr.length - value.length;
     }
-    console.log('this shouldnt happen');
     return '';
 }
 export type InputState = 'quantity' | 'unit' | 'ingredient' | 'prepMethod';
@@ -175,6 +174,7 @@ export interface FinishedRecipeIngredient {
     prepMethod: FinishedPrepMethod;
     key: string;
 }
+export type LikeFinishedRecipeIngredient = Omit<FinishedRecipeIngredient, 'key'>;
 type ShowStates = 'on' | 'off' | 'toggle';
 interface IngredientState {
     finished: FinishedRecipeIngredient[];
@@ -347,7 +347,7 @@ function getEditableRecipeIngredientStr(item: EditableRecipeIngredient): string 
     const prepMethodStr = getEditablePrepMethodStr(item);
     return `${quantityStr}${unitStr}${ingrStr}${prepMethodStr}`;
 }
-export function getFinishedRecipeIngredientStr(item: FinishedRecipeIngredient): string {
+export function getFinishedRecipeIngredientStr(item: LikeFinishedRecipeIngredient): string {
     const { quantity, unit, ingredient, prepMethod } = item;
     const quantityStr = getFinishedQuantityStr(quantity);
     const unitStr = getFinishedUnitStr(quantity, unit);

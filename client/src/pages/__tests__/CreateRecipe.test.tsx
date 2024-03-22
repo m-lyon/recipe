@@ -14,6 +14,11 @@ import { mockGetPrepMethods } from '../../features/editing/components/EditableIn
 
 import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
 
+import { loadErrorMessages, loadDevMessages } from '@apollo/client/dev';
+
+loadErrorMessages();
+loadDevMessages();
+
 jest.mock('../../constants.ts');
 
 const routes = createBrowserRouter(
@@ -22,10 +27,7 @@ const routes = createBrowserRouter(
 
 const renderComponent = () => {
     render(
-        <MockedProvider
-            mocks={[mockGetUnits, mockGetIngredients, mockGetPrepMethods, mockGetTags]}
-            addTypename={false}
-        >
+        <MockedProvider mocks={[mockGetUnits, mockGetIngredients, mockGetPrepMethods, mockGetTags]}>
             <ChakraProvider>
                 <RouterProvider router={routes} />
             </ChakraProvider>

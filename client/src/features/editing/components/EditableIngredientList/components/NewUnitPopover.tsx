@@ -5,7 +5,7 @@ import { Radio, RadioGroup, Stack, PopoverHeader, PopoverArrow } from '@chakra-u
 import { PopoverCloseButton, PopoverContent, useToast, Checkbox } from '@chakra-ui/react';
 import { Button, ButtonGroup, FormControl, FormHelperText, HStack } from '@chakra-ui/react';
 
-import { UnitSuggestion } from './UnitDropdownList';
+import { UnitSuggestion } from './UnitDropdown';
 import { UserContext } from '../../../../../context/UserContext';
 import { CREATE_UNIT } from '../../../../../graphql/mutations/unit';
 import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';

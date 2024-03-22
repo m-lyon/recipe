@@ -7,6 +7,12 @@ import { ViewRecipe } from '../ViewRecipe';
 import { mockGetRecipe } from '../__mocks__/GetRecipe';
 import { RouterProvider } from 'react-router-dom';
 import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
+import { loadErrorMessages, loadDevMessages } from '@apollo/client/dev';
+import { mockGetRatings } from '../__mocks__/GetRatings';
+import preview from 'jest-preview';
+
+loadErrorMessages();
+loadDevMessages();
 
 jest.mock('../../constants.ts');
 
@@ -16,7 +22,7 @@ const routes = createBrowserRouter(
 
 const renderComponent = () => {
     render(
-        <MockedProvider mocks={[mockGetRecipe]} addTypename={false}>
+        <MockedProvider mocks={[mockGetRecipe, mockGetRatings]}>
             <ChakraProvider>
                 <RouterProvider router={routes} />
             </ChakraProvider>
@@ -44,6 +50,9 @@ describe('IngredientList', () => {
         // Render
         renderComponent();
         await waitFor(() => expect(screen.queryByText('Loading...')).toBeNull());
+
+        preview.debug();
+        // Expect
         expect(screen.getByText('1 oz apples')).toBeInTheDocument();
     });
 });

@@ -6,7 +6,7 @@ import { PopoverHeader, PopoverArrow, useToast } from '@chakra-ui/react';
 import { object, string, number, boolean, ValidationError } from 'yup';
 
 import { User } from '../../../../../__generated__/graphql';
-import { IngredientSuggestion } from './IngredientDropdownList';
+import { IngredientSuggestion } from './IngredientDropdown';
 import { UserContext } from '../../../../../context/UserContext';
 import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';
 import { CREATE_INGREDIENT } from '../../../../../graphql/mutations/ingredient';

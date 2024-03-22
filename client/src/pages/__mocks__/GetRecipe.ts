@@ -8,7 +8,9 @@ export const mockGetRecipe = {
     result: {
         data: {
             recipeOne: {
+                _id: '60f4d2e5c3d5a0a4f1b9c0eb',
                 title: 'Mock Recipe',
+                pluralTitle: null,
                 titleIdentifier: 'mock-recipe',
                 instructions: ['Instruction one', 'Instruction two'],
                 ingredients: [
@@ -23,6 +25,7 @@ export const mockGetRecipe = {
                             longSingular: 'teaspoon',
                             longPlural: 'teaspoons',
                             preferredNumberFormat: 'fraction',
+                            hasSpace: true,
                         },
                         ingredient: {
                             __typename: 'Ingredient',
@@ -81,6 +84,7 @@ export const mockGetRecipe = {
                             longSingular: 'cup',
                             longPlural: 'cups',
                             preferredNumberFormat: 'fraction',
+                            hasSpace: true,
                         },
                         ingredient: {
                             __typename: 'Ingredient',
@@ -105,6 +109,7 @@ export const mockGetRecipe = {
                             longSingular: 'ounce',
                             longPlural: 'ounces',
                             preferredNumberFormat: 'decimal',
+                            hasSpace: true,
                         },
                         ingredient: {
                             __typename: 'Ingredient',
@@ -126,6 +131,11 @@ export const mockGetRecipe = {
                         value: 'lunch',
                     },
                 ],
+                numServings: 4,
+                isIngredient: false,
+                notes: null,
+                images: [],
+                source: null,
             },
         },
     },

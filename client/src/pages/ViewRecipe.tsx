@@ -34,7 +34,6 @@ export function ViewRecipe() {
         images,
     } = data!.recipeOne!;
     const titleNormed = isIngredient ? (numServings > 1 ? pluralTitle : title) : title;
-
     return (
         <Container maxW='container.xl' pt='60px'>
             <Grid

@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "test": "NODE_ENV=test jest",
     "generate": "npm run rm-generated && NODE_ENV=development graphql-codegen",
-    "rm-generated": "[ -d src/__generated__/ ] && rm -r src/__generated__/ || true"
+    "rm-generated": "[ -d src/__generated__/ ] && rm -r src/__generated__/ || true",
+    "jest-preview": "jest-preview"
   },
   "dependencies": {
     "@apollo/client": "^3.8.1",
@@ -56,6 +57,7 @@
     "eslint-plugin-react-refresh": "^0.4.3",
     "jest": "^29.6.2",
     "jest-environment-jsdom": "^29.6.2",
+    "jest-preview": "^0.2.3",
     "jest-watch-typeahead": "^2.2.2",
     "typescript": "^5.0.2",
     "vite": "^4.4.5"

@@ -6,7 +6,7 @@ import { PopoverHeader, PopoverArrow, Stack } from '@chakra-ui/react';
 import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 
 import { User } from '../../../../../__generated__/graphql';
-import { PrepMethodSuggestion } from './PrepMethodDropdownList';
+import { PrepMethodSuggestion } from './PrepMethodDropdown';
 import { UserContext } from '../../../../../context/UserContext';
 import { CREATE_PREP_METHOD } from '../../../../../graphql/mutations/prepMethod';
 import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';

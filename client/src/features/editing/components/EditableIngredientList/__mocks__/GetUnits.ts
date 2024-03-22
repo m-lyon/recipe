@@ -15,6 +15,7 @@ export const mockGetUnits = {
                     longPlural: 'teaspoons',
                     preferredNumberFormat: 'fraction',
                     hasSpace: true,
+                    owner: '60f4d2e5c3d5a0a4f1b9c0ec',
                 },
                 {
                     _id: '60f4d2e5c3d5a0a4f1b9c0f3',
@@ -24,6 +25,7 @@ export const mockGetUnits = {
                     longPlural: 'grams',
                     preferredNumberFormat: 'decimal',
                     hasSpace: true,
+                    owner: '60f4d2e5c3d5a0a4f1b9c0ec',
                 },
                 {
                     _id: '60f4d2e5c3d5a0a4f1b9c0f4',
@@ -33,6 +35,7 @@ export const mockGetUnits = {
                     longPlural: 'ounces',
                     preferredNumberFormat: 'decimal',
                     hasSpace: true,
+                    owner: '60f4d2e5c3d5a0a4f1b9c0ec',
                 },
                 {
                     _id: '60f4d2e5c3d5a0a4f1b9c0f6',
@@ -42,6 +45,7 @@ export const mockGetUnits = {
                     longPlural: 'cups',
                     preferredNumberFormat: 'fraction',
                     hasSpace: true,
+                    owner: '60f4d2e5c3d5a0a4f1b9c0ec',
                 },
             ],
         },

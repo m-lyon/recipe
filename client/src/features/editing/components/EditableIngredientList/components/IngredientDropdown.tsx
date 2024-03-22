@@ -23,7 +23,7 @@ interface Props {
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
 }
-export function IngredientDropdownList(props: Props) {
+export function IngredientDropdown(props: Props) {
     const { strValue, data, quantity, unit, setItem, inputRef, previewRef } = props;
     const dropdownRef = useRef<HTMLDivElement | null>(null);
     const firstFieldRef = useRef<HTMLInputElement | null>(null);

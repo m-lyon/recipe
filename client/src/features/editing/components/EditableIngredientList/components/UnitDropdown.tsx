@@ -1,67 +1,68 @@
 import { matchSorter } from 'match-sorter';
 import { LayoutGroup } from 'framer-motion';
 import { MutableRefObject, useRef } from 'react';
-import { useDisclosure, Popover, PopoverAnchor } from '@chakra-ui/react';
+import { Popover, PopoverAnchor, useDisclosure } from '@chakra-ui/react';
 
-import { NewPrepMethodPopover } from './NewPrepMethodPopover';
-import { PrepMethod } from '../../../../../__generated__/graphql';
+import { NewUnitPopover } from './NewUnitPopover';
+import { Unit } from '../../../../../__generated__/graphql';
 import { DropdownItem } from '../../../../../components/DropdownItem';
 import { useNavigatableList } from '../../../hooks/useNavigatableList';
+import { Quantity, unitDisplayValue } from '../../../hooks/useIngredientList';
 
-export interface PrepMethodSuggestion {
-    value: string | PrepMethod;
+export interface UnitSuggestion {
+    value: string | Unit;
     colour?: string;
 }
-type PrepMethodType = Omit<PrepMethod, 'owner'>;
 interface Props {
     strValue: string;
-    data: PrepMethodType[];
-    setItem: (value: PrepMethod | null, _id?: string) => void;
-    handleSubmit: () => void;
+    data: Unit[];
+    quantity: Quantity;
+    setItem: (value: Unit | null) => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
 }
-export function PrepMethodDropdownList(props: Props) {
-    const { strValue, data, setItem, handleSubmit, inputRef, previewRef } = props;
+export function UnitDropdown(props: Props) {
     const dropdownRef = useRef<HTMLDivElement | null>(null);
     const firstFieldRef = useRef<HTMLInputElement | null>(null);
     const { isOpen, onOpen, onClose } = useDisclosure({
-        onClose: () => previewRef.current?.focus(),
+        onClose: () => {
+            props.previewRef.current?.focus();
+        },
     });
-    const filter = (data: PrepMethodType[], value: string): PrepMethodSuggestion[] => {
-        const items = matchSorter<PrepMethodType>(data, value, {
-            keys: ['value'],
-        }).map((item) => ({ value: item })) as PrepMethodSuggestion[];
+
+    const filter = (data: Unit[], value: string): UnitSuggestion[] => {
+        const items = matchSorter<Unit>(data, value, {
+            keys: ['longSingular', 'longPlural'],
+        }).map((item) => ({ value: item })) as UnitSuggestion[];
         if (value === '') {
-            items.unshift({ value: 'skip prep method', colour: 'gray.400' });
+            items.unshift({ value: 'skip unit', colour: 'gray.400' });
         } else {
-            items.push({ value: 'add new prep method', colour: 'gray.400' });
+            items.push({ value: 'add new unit', colour: 'gray.400' });
         }
         return items;
     };
-    const suggestions = filter(data, strValue);
-    const handleSelect = (item: PrepMethodSuggestion) => {
+    const suggestions = filter(props.data, props.strValue);
+
+    const handleSelect = (item: UnitSuggestion) => {
         if (typeof item.value === 'string') {
-            if (item.value === 'skip prep method') {
-                setItem(null);
-                handleSubmit();
-            } else if (item.value === 'add new prep method') {
+            if (item.value === 'skip unit') {
+                props.setItem(null);
+            } else if (item.value === 'add new unit') {
                 onOpen();
             }
         } else {
-            setItem(item.value);
-            handleSubmit();
+            props.setItem(item.value);
         }
     };
 
-    const { highlightedIndex, setHighlightedIndex } = useNavigatableList<PrepMethodSuggestion>(
+    const { highlightedIndex, setHighlightedIndex } = useNavigatableList<UnitSuggestion>(
         suggestions,
         handleSelect,
-        inputRef
+        props.inputRef
     );
 
     const listItems = suggestions.map((item, index) => {
-        if (item.value === 'add new prep method') {
+        if (item.value === 'add new unit') {
             return (
                 <PopoverAnchor key={index}>
                     <DropdownItem
@@ -70,7 +71,7 @@ export function PrepMethodDropdownList(props: Props) {
                         value={item.value}
                         onClick={() => {
                             handleSelect(item);
-                            previewRef?.current?.focus();
+                            props.previewRef?.current?.focus();
                         }}
                         isHighlighted={index === highlightedIndex}
                         setHighlighted={() => setHighlightedIndex(index)}
@@ -84,11 +85,14 @@ export function PrepMethodDropdownList(props: Props) {
             <DropdownItem
                 key={index}
                 color={item.colour}
-                value={typeof item.value === 'string' ? item.value : item.value.value}
+                value={
+                    typeof item.value === 'string'
+                        ? item.value
+                        : unitDisplayValue(props.quantity, item.value, false)
+                }
                 onClick={() => {
-                    console.log('clicked', item);
                     handleSelect(item);
-                    previewRef?.current?.focus();
+                    props.previewRef?.current?.focus();
                 }}
                 isHighlighted={index === highlightedIndex}
                 setHighlighted={() => setHighlightedIndex(index)}
@@ -108,7 +112,7 @@ export function PrepMethodDropdownList(props: Props) {
             returnFocusOnClose={true}
         >
             <LayoutGroup>{listItems}</LayoutGroup>
-            <NewPrepMethodPopover
+            <NewUnitPopover
                 firstFieldRef={firstFieldRef}
                 onClose={onClose}
                 handleSelect={handleSelect}
