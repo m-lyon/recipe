@@ -9,15 +9,14 @@ import { DropdownItem } from '../../../../../components/DropdownItem';
 import { useNavigatableList } from '../../../hooks/useNavigatableList';
 
 export interface PrepMethodSuggestion {
-    value: string;
+    value: string | PrepMethod;
     colour?: string;
-    _id?: string;
 }
 type PrepMethodType = Omit<PrepMethod, 'owner'>;
 interface Props {
     strValue: string;
     data: PrepMethodType[];
-    setItem: (value: string | null, _id?: string) => void;
+    setItem: (value: PrepMethod | null, _id?: string) => void;
     handleSubmit: () => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
@@ -32,24 +31,25 @@ export function PrepMethodDropdownList(props: Props) {
     const filter = (data: PrepMethodType[], value: string): PrepMethodSuggestion[] => {
         const items = matchSorter<PrepMethodType>(data, value, {
             keys: ['value'],
-        }) as PrepMethodSuggestion[];
+        }).map((item) => ({ value: item })) as PrepMethodSuggestion[];
         if (value === '') {
-            items.unshift({ value: 'skip prep method', colour: 'gray.400', _id: undefined });
+            items.unshift({ value: 'skip prep method', colour: 'gray.400' });
         } else {
-            items.push({ value: 'add new prep method', colour: 'gray.400', _id: undefined });
+            items.push({ value: 'add new prep method', colour: 'gray.400' });
         }
         return items;
     };
     const suggestions = filter(data, strValue);
-
     const handleSelect = (item: PrepMethodSuggestion) => {
-        if (item.value === 'skip prep method') {
-            setItem(null);
-            handleSubmit();
-        } else if (item.value === 'add new prep method') {
-            onOpen();
+        if (typeof item.value === 'string') {
+            if (item.value === 'skip prep method') {
+                setItem(null);
+                handleSubmit();
+            } else if (item.value === 'add new prep method') {
+                onOpen();
+            }
         } else {
-            setItem(item.value, item._id);
+            setItem(item.value);
             handleSubmit();
         }
     };
@@ -84,8 +84,9 @@ export function PrepMethodDropdownList(props: Props) {
             <DropdownItem
                 key={index}
                 color={item.colour}
-                value={item.value}
+                value={typeof item.value === 'string' ? item.value : item.value.value}
                 onClick={() => {
+                    console.log('clicked', item);
                     handleSelect(item);
                     previewRef?.current?.focus();
                 }}

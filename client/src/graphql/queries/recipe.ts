@@ -16,6 +16,7 @@ export const GET_RECIPE = gql(`
                     longSingular
                     longPlural
                     preferredNumberFormat
+                    hasSpace
                 }
                 ingredient {
                     ... on Recipe {
@@ -24,10 +25,10 @@ export const GET_RECIPE = gql(`
                         pluralTitle
                     }
                     ... on Ingredient {
-                    _id
-                    name
-                    pluralName
-                    isCountable
+                        _id
+                        name
+                        pluralName
+                        isCountable
                     }
                 }
                 prepMethod {

@@ -428,6 +428,10 @@ interface SetQuantityAction {
 function setQuantity(state: IngredientState, action: SetQuantityAction): IngredientState {
     return produce(state, (draft) => {
         draft.editable.quantity = action.payload;
+        if (draft.editable.quantity === null) {
+            draft.editable.unit.value = null;
+            draft.editable.unit.data = null;
+        }
     });
 }
 interface SetUnitAction {

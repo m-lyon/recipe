@@ -33,7 +33,7 @@ export function UnitDropdownList(props: Props) {
     const filter = (data: Unit[], value: string): UnitSuggestion[] => {
         const items = matchSorter<Unit>(data, value, {
             keys: ['longSingular', 'longPlural'],
-        }).map((item) => ({ value: item, colour: undefined })) as UnitSuggestion[];
+        }).map((item) => ({ value: item })) as UnitSuggestion[];
         if (value === '') {
             items.unshift({ value: 'skip unit', colour: 'gray.400' });
         } else {
