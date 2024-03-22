@@ -318,10 +318,11 @@ function getEditableIngredientStr(item: EditableRecipeIngredient): string {
         return '';
     }
     if (item.state === 'ingredient') {
+        const delim = item.quantity === null ? '' : ' ';
         if (item.ingredient.value === null) {
-            return '';
+            return delim;
         } else {
-            return item.ingredient.value;
+            return `${delim}${item.ingredient.value}`;
         }
     }
     return getFinishedIngredientStr(item.quantity, item.unit.data!, item.ingredient.data!);
@@ -439,13 +440,13 @@ function setUnit(state: IngredientState, action: SetUnitAction): IngredientState
         draft.editable.unit.data = action.payload;
         // Set value
         if (draft.editable.unit.data === null) {
-            draft.editable.unit.value = null;
+            draft.editable.unit.value = draft.editable.unit.data;
         } else {
-            if (isPlural(draft.editable.quantity)) {
-                draft.editable.unit.value = draft.editable.unit.data.shortPlural;
-            } else {
-                draft.editable.unit.value = draft.editable.unit.data.shortSingular;
-            }
+            draft.editable.unit.value = unitDisplayValue(
+                draft.editable.quantity,
+                draft.editable.unit.data!,
+                true
+            );
         }
     });
 }

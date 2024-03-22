@@ -1,9 +1,10 @@
 import { Reorder } from 'framer-motion';
 import { VStack } from '@chakra-ui/react';
-import { EditableIngredient } from './components/EditableIngredient';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
-import { UseIngredientListReturnType } from '../../hooks/useIngredientList';
+
+import { EditableIngredient } from './components/EditableIngredient';
 import { FinishedIngredient } from './components/FinishedIngredient';
+import { UseIngredientListReturnType } from '../../hooks/useIngredientList';
 import { FinishedRecipeIngredient as FinishedIngredientType } from '../../hooks/useIngredientList';
 
 export function EditableIngredientList(props: UseIngredientListReturnType) {

@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect, useRef } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { object, string, ValidationError } from 'yup';
 import { ApolloError, useMutation } from '@apollo/client';
 import { Radio, RadioGroup, Stack, PopoverHeader, PopoverArrow } from '@chakra-ui/react';
