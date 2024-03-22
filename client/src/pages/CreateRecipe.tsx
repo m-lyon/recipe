@@ -16,7 +16,9 @@ export function CreateRecipe() {
     const state = useRecipeState();
     const navigate = useNavigate();
     const [rating, setRating] = useState<number>(0);
-    const [createRecipe, { loading: recipeLoading, data: response }] = useMutation(CREATE_RECIPE);
+    const [createRecipe, { loading: recipeLoading, data: response }] = useMutation(CREATE_RECIPE, {
+        refetchQueries: ['GetIngredients'],
+    });
     const [addRating, { loading: ratingLoading }] = useMutation(ADD_RATING);
     const [uploadImages, { loading: uploadLoading }] = useMutation(UPLOAD_IMAGES, {
         context: { headers: { 'apollo-require-preflight': true } },
