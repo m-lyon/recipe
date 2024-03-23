@@ -1,16 +1,19 @@
-import { useContext } from 'react';
-import { Grid, GridItem, useToast } from '@chakra-ui/react';
 import { Box, Button, Center, Container } from '@chakra-ui/react';
-
-import { ImageUpload } from './components/ImageUpload';
-import { UserContext } from '../../context/UserContext';
-import { RecipeState } from './hooks/useRecipeState';
-import { EditableTitle } from './components/EditableTitle';
-import { StarRatingProps } from '../../components/StarRating';
-import { EditableTagList } from './components/EditableTagList';
-import { EditableIngredientsTab } from './components/EditableIngredientsTab';
-import { EditableInstructionsTab } from './components/EditableInstructionsTab';
 import { CreateOneRecipeModifyInput, EnumRecipeIngredientType } from '../../__generated__/graphql';
+import { Grid, GridItem, useToast } from '@chakra-ui/react';
+import { StarRating, StarRatingProps } from '../../components/StarRating';
+
+import { EditableIngredientList } from './components/EditableIngredientList';
+import { EditableInstructionsTab } from './components/EditableInstructionsTab';
+import { EditableNotes } from './components/EditableNotes';
+import { EditableTagList } from './components/EditableTagList';
+import { EditableTitle } from './components/EditableTitle';
+import { ImageUpload } from './components/ImageUpload';
+import { IngredientsTabLayout } from '../../layouts/IngredientsTabLayout';
+import { RecipeState } from './hooks/useRecipeState';
+import { Servings } from '../../components/Servings';
+import { UserContext } from '../../context/UserContext';
+import { useContext } from 'react';
 
 interface SubmitButtonProps {
     submitText: string;
@@ -145,11 +148,11 @@ export function EditableRecipe(props: Props) {
                     <EditableTagList {...state.tags} />
                 </GridItem>
                 <GridItem pl='2' area='ingredients' boxShadow='lg' padding='6'>
-                    <EditableIngredientsTab
-                        servingsProps={state.numServings}
-                        ratingProps={rating}
-                        ingredientsProps={state.ingredient}
-                        notesProps={state.notes}
+                    <IngredientsTabLayout
+                        Servings={<Servings {...state.numServings} />}
+                        StarRating={<StarRating {...rating} />}
+                        IngredientList={<EditableIngredientList {...state.ingredient} />}
+                        Notes={<EditableNotes {...state.notes} />}
                     />
                 </GridItem>
                 <GridItem pl='2' boxShadow='lg' padding='6' area='instructions' minH='420px'>
