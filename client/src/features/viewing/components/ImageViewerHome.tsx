@@ -1,11 +1,5 @@
-import { Image } from '../../../__generated__/graphql';
+import { Image, Recipe } from '../../../__generated__/graphql';
 import { ImageCarousel } from '../../../components/ImageCarousel';
-import { Recipe } from '../../../__generated__/graphql';
-
-export const imageCardWidth = 360;
-const imageRatio = 3 / 2;
-export const imageCardHeight = imageCardWidth / imageRatio;
-export const sliderBarHeight = 36;
 
 interface Props {
     images: Recipe['images'];
@@ -21,7 +15,7 @@ export function ImageViewerHome(props: Props) {
         <ImageCarousel
             images={images as Image[]}
             width={288}
-            height={160}
+            ratio={3 / 2}
             zIndex={1}
             right={0}
             top={0}

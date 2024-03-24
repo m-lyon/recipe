@@ -1,18 +1,42 @@
-import { Container } from '@chakra-ui/react';
-import { Grid, GridItem } from '@chakra-ui/react';
-import { Title } from '../features/viewing/components/Title';
 import { useQuery } from '@apollo/client';
-import { GET_RECIPE } from '../graphql/queries/recipe';
 import { useParams } from 'react-router-dom';
-import { IngredientsTab } from '../features/viewing/components/IngredientsTab';
+import { Box, Container, Grid, GridItem, useBreakpointValue } from '@chakra-ui/react';
+
+import { GET_RECIPE } from '../graphql/queries/recipe';
+import { Title } from '../features/viewing/components/Title';
 import { Recipe, RecipeIngredient } from '../__generated__/graphql';
+import { IngredientsTab } from '../features/viewing/components/IngredientsTab';
 import { InstructionsTab } from '../features/viewing/components/InstructionsTab';
+import { ImageViewerRecipe } from '../features/viewing/components/ImageViewerRecipe';
 
 export function ViewRecipe() {
     const { titleIdentifier } = useParams();
     const { data, loading, error } = useQuery(GET_RECIPE, {
         variables: { filter: { titleIdentifier } },
     });
+    const styles = useBreakpointValue(
+        {
+            base: {
+                templateAreas: `'title'
+                            'image'
+                            'ingredients'
+                            'instructions'`,
+                gridTemplateRows: 'repeat(4, auto)',
+                gridTemplateColumns: '100%',
+                height: 'auto',
+                displayImageTab: true,
+            },
+            md: {
+                templateAreas: `'title title'
+                            'ingredients instructions'`,
+                gridTemplateRows: '100px auto',
+                gridTemplateColumns: '0.285fr 0.715fr',
+                height: 'auto',
+                displayImageTab: false,
+            },
+        },
+        { fallback: 'md' },
+    );
 
     if (loading) {
         return <div>Loading...</div>;
@@ -37,29 +61,39 @@ export function ViewRecipe() {
     return (
         <Container maxW='container.xl' pt='60px'>
             <Grid
-                templateAreas={`'title title'
-                                'ingredients instructions'`}
-                gridTemplateRows='100px 700px'
-                gridTemplateColumns='0.285fr 0.715fr'
-                h='800px'
+                templateAreas={styles!.templateAreas}
+                gridTemplateRows={styles!.gridTemplateRows}
+                gridTemplateColumns={styles!.gridTemplateColumns}
+                h={styles!.height}
                 gap='2'
                 pt='2'
                 pb='2'
                 color='blackAlpha.700'
                 fontWeight='bold'
             >
-                <GridItem pl='2' boxShadow='lg' padding='6' area='title'>
+                <GridItem boxShadow='lg' p='6' area='title'>
                     <Title title={titleNormed as string} />
                 </GridItem>
-                <GridItem pl='2' area='ingredients' boxShadow='lg' padding='6'>
+                {styles?.displayImageTab && (
+                    <GridItem boxShadow='lg' area='image' w='100%'>
+                        <Box position='relative' w='100%'>
+                            <ImageViewerRecipe
+                                images={images as Recipe['images']}
+                                position='relative'
+                            />
+                        </Box>
+                    </GridItem>
+                )}
+                <GridItem area='ingredients' boxShadow='lg' p='6'>
                     <IngredientsTab
                         recipeId={data!.recipeOne!._id}
                         ingredients={ingredients as RecipeIngredient[]}
                         notes={notes}
                         numServings={numServings}
+                        tags={tags}
                     />
                 </GridItem>
-                <GridItem pl='2' boxShadow='lg' padding='6' area='instructions'>
+                <GridItem boxShadow='lg' py='6' pl='6' area='instructions' minH='600px'>
                     <InstructionsTab
                         tags={tags}
                         instructions={instructions}

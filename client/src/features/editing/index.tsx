@@ -1,8 +1,8 @@
-import { Box, Button, Center, Container } from '@chakra-ui/react';
-import { CreateOneRecipeModifyInput, EnumRecipeIngredientType } from '../../__generated__/graphql';
-import { Grid, GridItem, useToast } from '@chakra-ui/react';
-import { StarRating, StarRatingProps } from '../../components/StarRating';
+import { useContext } from 'react';
+import { Box, Button, Center, Container, Grid, GridItem, useToast } from '@chakra-ui/react';
 
+import { CreateOneRecipeModifyInput, EnumRecipeIngredientType } from '../../__generated__/graphql';
+import { StarRating, StarRatingProps } from '../../components/StarRating';
 import { EditableIngredientList } from './components/EditableIngredientList';
 import { EditableInstructionsTab } from './components/EditableInstructionsTab';
 import { EditableNotes } from './components/EditableNotes';
@@ -13,7 +13,6 @@ import { IngredientsTabLayout } from '../../layouts/IngredientsTabLayout';
 import { RecipeState } from './hooks/useRecipeState';
 import { Servings } from '../../components/Servings';
 import { UserContext } from '../../context/UserContext';
-import { useContext } from 'react';
 
 interface SubmitButtonProps {
     submitText: string;
@@ -133,21 +132,13 @@ export function EditableRecipe(props: Props) {
                 color='blackAlpha.700'
                 fontWeight='bold'
             >
-                <GridItem pl='2' boxShadow='lg' padding='6' area='title' maxH='100px'>
+                <GridItem boxShadow='lg' padding='6' area='title' maxH='100px'>
                     <EditableTitle {...state.title} />
                 </GridItem>
-                <GridItem
-                    pl='2'
-                    area='tags'
-                    boxShadow='lg'
-                    paddingLeft={6}
-                    paddingTop={6}
-                    paddingRight={6}
-                    paddingBottom={2}
-                >
+                <GridItem area='tags' boxShadow='lg' pl='6' pt='6' pr='6' pb='2'>
                     <EditableTagList {...state.tags} />
                 </GridItem>
-                <GridItem pl='2' area='ingredients' boxShadow='lg' padding='6'>
+                <GridItem area='ingredients' boxShadow='lg' padding='6'>
                     <IngredientsTabLayout
                         Servings={<Servings {...state.numServings} />}
                         StarRating={<StarRating {...rating} />}
@@ -155,7 +146,7 @@ export function EditableRecipe(props: Props) {
                         Notes={<EditableNotes {...state.notes} />}
                     />
                 </GridItem>
-                <GridItem pl='2' boxShadow='lg' padding='6' area='instructions' minH='420px'>
+                <GridItem boxShadow='lg' padding='6' area='instructions' minH='420px'>
                     <EditableInstructionsTab
                         instructionsProps={state.instructions}
                         asIngredientProps={state.asIngredient}
@@ -163,7 +154,6 @@ export function EditableRecipe(props: Props) {
                     />
                 </GridItem>
                 <GridItem
-                    pl='2'
                     boxShadow='lg'
                     padding='6'
                     area='images'
@@ -172,7 +162,7 @@ export function EditableRecipe(props: Props) {
                 >
                     <ImageUpload {...state.images} />
                 </GridItem>
-                <GridItem pl='2' padding='6' area='button'>
+                <GridItem padding='6' area='button'>
                     <Center>
                         <Box position='fixed' bottom='4' pb='3'>
                             <Button

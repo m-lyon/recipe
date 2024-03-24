@@ -1,4 +1,5 @@
-import { Tag, TagLabel, WrapItem, VStack, Wrap, Box, BoxProps } from '@chakra-ui/react';
+import { Box, BoxProps, Tag, TagLabel, VStack, Wrap, WrapItem } from '@chakra-ui/react';
+
 import { Tag as TagType } from '../../../__generated__/graphql';
 import { imageCardWidth } from './ImageViewerRecipe';
 

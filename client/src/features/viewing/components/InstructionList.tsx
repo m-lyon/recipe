@@ -1,17 +1,25 @@
-import { OrderedList, ListItem, Text, Box } from '@chakra-ui/react';
-import { Recipe } from '../../../__generated__/graphql';
-import { imageCardWidth, imageCardHeight, sliderBarHeight } from './ImageViewerRecipe';
+import { Box, ListItem, OrderedList, Text, useBreakpointValue } from '@chakra-ui/react';
+
 import { tagsHeight } from './TagList';
 import { instrSpacing } from './InstructionsTab';
+import { Recipe } from '../../../__generated__/graphql';
+import { imageCardWidth, sliderBarHeight } from './ImageViewerRecipe';
 
 interface Props {
     instructions: Recipe['instructions'];
     numImages: number;
+    imageHeight: number | null | undefined;
 }
 export function InstructionList(props: Props) {
-    const { instructions, numImages } = props;
-    const boxHeight = imageCardHeight - tagsHeight - instrSpacing;
-
+    const { instructions, numImages, imageHeight } = props;
+    const boxHeight = (imageHeight ? imageHeight : 0) - tagsHeight - instrSpacing;
+    const styles = useBreakpointValue(
+        {
+            base: { showImage: false },
+            md: { showImage: true },
+        },
+        { fallback: 'md' },
+    );
     const instructionsList = instructions.map((instr, index) => {
         if (instr === null) {
             return null;
@@ -24,11 +32,11 @@ export function InstructionList(props: Props) {
     });
 
     return (
-        <Box>
-            {numImages ? (
+        <Box pr='24px'>
+            {styles?.showImage && numImages ? (
                 <Box
                     h={numImages > 1 ? boxHeight + sliderBarHeight : boxHeight}
-                    w={imageCardWidth}
+                    w={imageCardWidth - 24}
                     marginLeft='4'
                     marginBottom='4'
                     float='right'
