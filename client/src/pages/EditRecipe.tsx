@@ -1,16 +1,17 @@
+import { useToast } from '@chakra-ui/react';
+import { useMutation, useQuery } from '@apollo/client';
+import { useNavigate, useParams } from 'react-router-dom';
+
+import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
+import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
+import { DELETE_IMAGES, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
+
 import { EditableRecipe } from '../features/editing';
-import { GET_RECIPE } from '../graphql/queries/recipe';
-import { useQuery, useMutation } from '@apollo/client';
-import { useParams } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { GRAPHQL_ENDPOINT, ROOT_PATH } from '../constants';
+import { useViewStarRating } from '../hooks/useViewStarRating';
 import { useRecipeState } from '../features/editing/hooks/useRecipeState';
-import { UPDATE_RECIPE } from '../graphql/mutations/recipe';
 import { dbIngredientToFinished } from '../features/editing/hooks/useIngredientList';
 import { CreateOneRecipeModifyInput, RecipeIngredient } from '../__generated__/graphql';
-import { useViewStarRating } from '../hooks/useViewStarRating';
-import { useToast } from '@chakra-ui/react';
-import { ROOT_PATH, GRAPHQL_ENDPOINT } from '../constants';
-import { UPLOAD_IMAGES, DELETE_IMAGES } from '../graphql/mutations/image';
 
 export function EditRecipe() {
     const toast = useToast();
@@ -19,12 +20,14 @@ export function EditRecipe() {
     const { titleIdentifier } = useParams();
     const { avgRating: rating, getRatings, setRating } = useViewStarRating();
     const [saveRecipe, { data: response, loading: recipeLoading }] = useMutation(UPDATE_RECIPE, {
-        refetchQueries: ['GetRecipe'],
+        refetchQueries: ['GetRecipe', 'GetRecipes'],
     });
-    const [deleteImages] = useMutation(DELETE_IMAGES, { refetchQueries: ['GetRecipe'] });
+    const [deleteImages] = useMutation(DELETE_IMAGES, {
+        refetchQueries: ['GetRecipe', 'GetRecipes'],
+    });
     const [uploadImages, { loading: uploadLoading }] = useMutation(UPLOAD_IMAGES, {
         context: { headers: { 'apollo-require-preflight': true } },
-        refetchQueries: ['GetRecipe'],
+        refetchQueries: ['GetRecipe', 'GetRecipes'],
     });
     const { data, loading, error } = useQuery(GET_RECIPE, {
         variables: { filter: { titleIdentifier: titleIdentifier } },
@@ -49,7 +52,7 @@ export function EditRecipe() {
                         key: crypto.randomUUID(),
                         isNew: false,
                     };
-                })
+                }),
             );
             if (recipe.source) {
                 state.source.setSource(recipe.source);
@@ -65,7 +68,7 @@ export function EditRecipe() {
                             const res = await fetch(`${GRAPHQL_ENDPOINT}${img!.origUrl}`);
                             const blob = await res.blob();
                             return new File([blob], img!.origUrl, { type: blob.type });
-                        })
+                        }),
                     );
                     state.images.setImages(images);
                 } catch (error) {
@@ -107,10 +110,10 @@ export function EditRecipe() {
             const originalImages = data!.recipeOne!.images ? data!.recipeOne!.images : [];
             const newImages = state.images.images;
             const imagesToDelete = originalImages.filter(
-                (img) => !newImages.map((img) => img.name).includes(img!.origUrl)
+                (img) => !newImages.map((img) => img.name).includes(img!.origUrl),
             );
             const imagesToAdd = newImages.filter(
-                (img) => !originalImages.map((img) => img!.origUrl).includes(img.name)
+                (img) => !originalImages.map((img) => img!.origUrl).includes(img.name),
             );
             if (imagesToDelete.length > 0) {
                 await deleteImages({ variables: { ids: imagesToDelete.map((img) => img!._id) } });
