@@ -202,6 +202,7 @@ export async function populateRecipes() {
             {
                 title: 'Chicken Curry',
                 titleIdentifier: 'chicken-curry',
+                pluralTitle: 'Chicken Curry',
                 subTitle: 'A classic Indian dish',
                 tags: [
                     (await Tag.findOne({ value: 'lunch' }))._id,
@@ -248,7 +249,7 @@ export async function populateRecipes() {
                 notes: 'This is a great recipe to make in bulk and freeze.',
                 owner: user._id,
                 numServings: 3,
-                isIngredient: false,
+                isIngredient: true,
             },
         ];
 
