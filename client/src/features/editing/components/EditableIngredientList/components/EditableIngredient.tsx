@@ -56,7 +56,7 @@ export function EditableIngredient({ item, actionHandler, fontSize, queryData }:
                 paddingLeft='6px'
                 placeholder={DEFAULT_INGREDIENT_STR}
             >
-                <EditablePreview ref={previewRef} width={'100%'} placeholder='test' />
+                <EditablePreview ref={previewRef} width='100%' />
                 <EditableInput
                     ref={inputRef}
                     value={ingredientStr}
