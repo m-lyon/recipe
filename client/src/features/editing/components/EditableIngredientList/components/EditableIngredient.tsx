@@ -1,4 +1,4 @@
-import { Editable, EditablePreview, EditableInput } from '@chakra-ui/react';
+import { Editable, EditablePreview, EditableInput, Box } from '@chakra-ui/react';
 import { useOutsideClick } from '@chakra-ui/react';
 import { useRef } from 'react';
 import { RecipeIngredientDropdown } from './RecipeIngredientDropdown';
@@ -28,7 +28,8 @@ export function EditableIngredient({ item, actionHandler, fontSize, queryData }:
     const ingredientStr = actionHandler.editableStringValue();
 
     return (
-        <div ref={parentRef}>
+        // Position relative is needed for the dropdown to be positioned correctly
+        <Box ref={parentRef} position='relative'>
             <Editable
                 value={ingredientStr}
                 onMouseDown={(e) => {
@@ -70,6 +71,6 @@ export function EditableIngredient({ item, actionHandler, fontSize, queryData }:
                 inputRef={inputRef}
                 previewRef={previewRef}
             />
-        </div>
+        </Box>
     );
 }
