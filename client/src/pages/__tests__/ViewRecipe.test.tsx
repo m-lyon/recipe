@@ -1,6 +1,6 @@
-import '@testing-library/jest-dom';
+import { expect, describe, it, vi, afterEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, cleanup } from '@testing-library/react';
 import { ChakraProvider } from '@chakra-ui/react';
 import { MockedProvider } from '@apollo/client/testing';
 import { ViewRecipe } from '../ViewRecipe';
@@ -9,12 +9,11 @@ import { RouterProvider } from 'react-router-dom';
 import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
 import { loadErrorMessages, loadDevMessages } from '@apollo/client/dev';
 import { mockGetRatings } from '../__mocks__/GetRatings';
-import preview from 'jest-preview';
 
 loadErrorMessages();
 loadDevMessages();
 
-jest.mock('../../constants.ts');
+vi.mock('../../constants.ts');
 
 const routes = createBrowserRouter(
     createRoutesFromElements(<Route path='/' element={<ViewRecipe />} />)
@@ -31,6 +30,9 @@ const renderComponent = () => {
 };
 
 describe('placeholder test', () => {
+    afterEach(() => {
+        cleanup();
+    });
     it('should pass', async () => {
         // Render
         const user = userEvent.setup();
@@ -44,15 +46,15 @@ describe('placeholder test', () => {
         expect(true).toBe(true);
     });
 });
-
 describe('IngredientList', () => {
+    afterEach(() => {
+        cleanup();
+    });
     it('should not display skipped prep methods', async () => {
         // Render
         renderComponent();
         await waitFor(() => expect(screen.queryByText('Loading...')).toBeNull());
-
-        preview.debug();
         // Expect
-        expect(screen.getByText('1 oz apples')).toBeInTheDocument();
+        expect(screen.queryByText('1 oz apples')).not.toBeNull();
     });
 });

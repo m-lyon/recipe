@@ -137,3 +137,5 @@ ideas
 
 # testing uploads
 api/uploads/
+
+.vitest-preview/

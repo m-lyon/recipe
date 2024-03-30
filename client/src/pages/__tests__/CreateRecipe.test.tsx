@@ -1,9 +1,8 @@
-import '@testing-library/jest-dom';
+import { expect, describe, vi, it, afterEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
-
 import { ChakraProvider } from '@chakra-ui/react';
 import { RouterProvider } from 'react-router-dom';
-import { render, screen } from '@testing-library/react';
+import { render, screen, cleanup } from '@testing-library/react';
 import { MockedProvider } from '@apollo/client/testing';
 
 import { CreateRecipe } from '../CreateRecipe';
@@ -19,7 +18,7 @@ import { loadErrorMessages, loadDevMessages } from '@apollo/client/dev';
 loadErrorMessages();
 loadDevMessages();
 
-jest.mock('../../constants.ts');
+vi.mock('../../constants.ts');
 
 const routes = createBrowserRouter(
     createRoutesFromElements(<Route path='/' element={<CreateRecipe />} />)
@@ -36,6 +35,9 @@ const renderComponent = () => {
 };
 
 describe('placeholder test', () => {
+    afterEach(() => {
+        cleanup();
+    });
     it('should pass', async () => {
         // Render
         const user = userEvent.setup();
@@ -46,5 +48,50 @@ describe('placeholder test', () => {
         await user.click(ingredientInput);
 
         expect(true).toBe(true);
+    });
+});
+
+describe('Title', () => {
+    afterEach(() => {
+        cleanup();
+    });
+    it('should reset', async () => {
+        // Render
+
+        const user = userEvent.setup();
+        renderComponent();
+
+        // Act
+        const element = screen.getByText('Enter Recipe Title');
+        await user.click(element);
+        await user.click(screen.getByText('Ingredients'));
+        await user.click(element);
+        await user.keyboard('g');
+
+        // Expect
+        expect(screen.queryByText('gEnter Recipe Title')).toBeNull();
+        expect(screen.queryByText('g')).not.toBeNull();
+    });
+});
+
+describe('Notes', () => {
+    afterEach(() => {
+        cleanup();
+    });
+    it('should reset', async () => {
+        // Render
+        const user = userEvent.setup();
+        renderComponent();
+
+        // Act
+        const element = screen.getByText('Enter Notes...');
+        await user.click(element);
+        await user.click(screen.getByText('Ingredients'));
+        await user.click(element);
+        await user.keyboard('g');
+
+        // Expect
+        expect(screen.queryByText('gEnter Notes...')).toBeNull();
+        expect(screen.queryByText('g')).not.toBeNull();
     });
 });
