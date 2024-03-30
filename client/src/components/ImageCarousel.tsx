@@ -2,6 +2,7 @@ import * as CSS from 'csstype';
 import { useRef } from 'react';
 import { useSize } from '@chakra-ui/react-use-size';
 import { AspectRatio, Card, CardBody, CardProps, Image } from '@chakra-ui/react';
+import { UseMeasureRef } from 'react-use/lib/useMeasure';
 
 import { Carousel } from './Carousel';
 import { GRAPHQL_ENDPOINT } from '../constants';
@@ -11,7 +12,7 @@ interface ImageCarouselProps extends CardProps {
     images: ImageType[];
     width: CSS.Property.Width;
     ratio: number;
-    cardRef?: (instance: Element | null) => void;
+    cardRef?: UseMeasureRef<Element>;
 }
 export function ImageCarousel(props: ImageCarouselProps) {
     const { images, width, ratio, cardRef, ...rest } = props;

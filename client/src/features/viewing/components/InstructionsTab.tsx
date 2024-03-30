@@ -1,4 +1,6 @@
-import { useMeasure } from '@uidotdev/usehooks';
+// import { useMeasure } from '@uidotdev/usehooks';
+// import useMeasure from 'react-use-measure';
+import { useMeasure } from 'react-use';
 import { Box, Flex, Spacer, VStack, useBreakpointValue } from '@chakra-ui/react';
 
 import { Source } from './Source';
@@ -23,7 +25,7 @@ export function InstructionsTab(props: Props) {
             base: { showImages: false },
             md: { showImages: true },
         },
-        { fallback: 'md' },
+        { fallback: 'md' }
     );
 
     return (

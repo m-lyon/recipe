@@ -1,5 +1,6 @@
 import * as CSS from 'csstype';
 import { useBreakpointValue } from '@chakra-ui/react';
+import { UseMeasureRef } from 'react-use/lib/useMeasure';
 
 import { Image, Recipe } from '../../../__generated__/graphql';
 import { ImageCarousel } from '../../../components/ImageCarousel';
@@ -9,14 +10,14 @@ export const sliderBarHeight = 36;
 
 interface Props {
     images: Recipe['images'];
-    cardRef?: (instance: Element | null) => void;
+    cardRef?: UseMeasureRef<Element>;
     position?: CSS.Property.Position;
 }
 export function ImageViewerRecipe(props: Props) {
     const { images, cardRef, position } = props;
     const width = useBreakpointValue(
         { base: '100%', md: `${imageCardWidth}px` },
-        { fallback: 'md' },
+        { fallback: 'md' }
     );
 
     if (!images || images.length === 0) {
