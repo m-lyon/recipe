@@ -150,7 +150,7 @@ export function EditRecipe() {
                 submitText: 'Save',
                 loadingText: 'Saving Recipe...',
                 disabled: !!response,
-                isLoading: recipeLoading || uploadLoading,
+                loading: recipeLoading || uploadLoading,
             }}
         />
     );

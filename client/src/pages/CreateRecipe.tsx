@@ -94,7 +94,7 @@ export function CreateRecipe() {
                         ? 'Uploading Images...'
                         : undefined,
                 disabled: !!response,
-                isLoading: recipeLoading || ratingLoading || uploadLoading,
+                loading: recipeLoading || ratingLoading || uploadLoading,
             }}
         />
     );
