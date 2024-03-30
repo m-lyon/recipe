@@ -46,6 +46,7 @@ function handleQuantityChange(
         } else if (item.quantity === null && /^[a-zA-Z]$/.test(char)) {
             actionHandler.incrementState();
             actionHandler.setShow.on();
+            actionHandler.unit.set(null);
             handleIngredientChange(char, actionHandler);
             // Starting input should be a number
         } else if (item.quantity === null && /^[\d]$/.test(char)) {

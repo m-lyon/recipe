@@ -18,7 +18,7 @@ interface SubmitButtonProps {
     submitText: string;
     loadingText?: string;
     disabled?: boolean;
-    isLoading?: boolean;
+    loading?: boolean;
 }
 interface Props {
     state: RecipeState;
@@ -172,8 +172,8 @@ export function EditableRecipe(props: Props) {
                                 borderColor='gray.200'
                                 onClick={handleSubmit}
                                 loadingText={submitButtonProps.loadingText}
-                                disabled={submitButtonProps.disabled}
-                                isLoading={submitButtonProps.isLoading}
+                                isDisabled={submitButtonProps.disabled}
+                                isLoading={submitButtonProps.loading}
                             >
                                 {submitButtonProps.submitText}
                             </Button>

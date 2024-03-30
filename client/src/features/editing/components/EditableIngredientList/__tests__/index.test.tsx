@@ -1,6 +1,6 @@
-import '@testing-library/jest-dom';
+import { expect, it, describe, afterEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { render, screen, getDefaultNormalizer } from '@testing-library/react';
+import { render, screen, getDefaultNormalizer, cleanup } from '@testing-library/react';
 import { ChakraProvider } from '@chakra-ui/react';
 import { MockedProvider } from '@apollo/client/testing';
 import { EditableIngredientList } from '..';
@@ -35,6 +35,10 @@ const renderComponent = () => {
 };
 
 describe('EditableIngredient Quantity Keyboard', () => {
+    afterEach(() => {
+        cleanup();
+    });
+
     it('should enter a quantity', async () => {
         const user = userEvent.setup();
         // Render
@@ -46,7 +50,7 @@ describe('EditableIngredient Quantity Keyboard', () => {
         await user.keyboard('1');
 
         // Expect
-        expect(screen.getByText('1')).toBeInTheDocument();
+        expect(screen.queryByText('1')).not.toBeNull();
     });
     it('should reset via escape key', async () => {
         const user = userEvent.setup();
@@ -60,7 +64,7 @@ describe('EditableIngredient Quantity Keyboard', () => {
         await user.keyboard('{Escape}');
 
         // Expect
-        expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
+        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
     });
     it('should switch to the unit state', async () => {
         const user = userEvent.setup();
@@ -74,9 +78,9 @@ describe('EditableIngredient Quantity Keyboard', () => {
 
         // Expect
         expect(
-            screen.getByText('2.5 ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).toBeInTheDocument();
-        expect(screen.getByText('skip unit')).toBeInTheDocument();
+            screen.queryByText('2.5 ', { normalizer: getDefaultNormalizer({ trim: false }) })
+        ).not.toBeNull();
+        expect(screen.queryByText('skip unit')).not.toBeNull();
     });
     it('should display a fraction', async () => {
         const user = userEvent.setup();
@@ -90,8 +94,8 @@ describe('EditableIngredient Quantity Keyboard', () => {
 
         // Expect
         expect(
-            screen.getByText('½ ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).toBeInTheDocument();
+            screen.queryByText('½ ', { normalizer: getDefaultNormalizer({ trim: false }) })
+        ).not.toBeNull();
     });
     it('should allow a number range', async () => {
         const user = userEvent.setup();
@@ -105,8 +109,8 @@ describe('EditableIngredient Quantity Keyboard', () => {
 
         // Expect
         expect(
-            screen.getByText('1.5-2.5 ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).toBeInTheDocument();
+            screen.queryByText('1.5-2.5 ', { normalizer: getDefaultNormalizer({ trim: false }) })
+        ).not.toBeNull();
     });
     it('should reset the fraction display', async () => {
         const user = userEvent.setup();
@@ -121,8 +125,8 @@ describe('EditableIngredient Quantity Keyboard', () => {
 
         // Expect
         expect(
-            screen.getByText('1/2', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).toBeInTheDocument();
+            screen.queryByText('1/2', { normalizer: getDefaultNormalizer({ trim: false }) })
+        ).not.toBeNull();
     });
     it('should display an error message for alphabetic character', async () => {
         const user = userEvent.setup();
@@ -135,7 +139,7 @@ describe('EditableIngredient Quantity Keyboard', () => {
         await user.keyboard('{1}{a}');
 
         // Expect
-        expect(screen.getByText('Invalid input')).toBeInTheDocument();
+        expect(screen.queryByText('Invalid input')).not.toBeNull();
     });
     it('should display an error message for non alphanumeric character at start', async () => {
         const user = userEvent.setup();
@@ -148,7 +152,7 @@ describe('EditableIngredient Quantity Keyboard', () => {
         await user.keyboard('{-}');
 
         // Expect
-        expect(screen.getByText('Invalid input')).toBeInTheDocument();
+        expect(screen.queryByText('Invalid input')).not.toBeNull();
     });
     it('should skip the quantity', async () => {
         const user = userEvent.setup();
@@ -161,11 +165,14 @@ describe('EditableIngredient Quantity Keyboard', () => {
         await user.click(screen.getByText('skip quantity'));
 
         // Expect
-        expect(screen.getByText('chicken')).toBeInTheDocument();
-        expect(screen.getByText('apple')).toBeInTheDocument();
+        expect(screen.queryByText('chicken')).not.toBeNull();
+        expect(screen.queryByText('apple')).not.toBeNull();
     });
 });
 describe('EditableIngredient Quantity Click', () => {
+    afterEach(() => {
+        cleanup();
+    });
     it('should reset via click away from element', async () => {
         const user = userEvent.setup();
         // Render
@@ -178,10 +185,13 @@ describe('EditableIngredient Quantity Click', () => {
         await user.click(document.body);
 
         // Expect
-        expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
+        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
     });
 });
 describe('EditableIngredient Unit Keyboard', () => {
+    afterEach(() => {
+        cleanup();
+    });
     it('should reset via escape key', async () => {
         const user = userEvent.setup();
         // Render
@@ -194,7 +204,8 @@ describe('EditableIngredient Unit Keyboard', () => {
         await user.keyboard('{Escape}');
 
         // Expect
-        expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
+        expect(screen.queryByText('1 ')).toBeNull();
+        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
     });
     it('should switch to the ingredient state singular', async () => {
         const user = userEvent.setup();
@@ -208,12 +219,12 @@ describe('EditableIngredient Unit Keyboard', () => {
 
         // Expect
         expect(
-            screen.getByText('1 cup ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).toBeInTheDocument();
+            screen.queryByText('1 cup ', { normalizer: getDefaultNormalizer({ trim: false }) })
+        ).not.toBeNull();
         expect(
             screen.queryByText('1 cup  ', { normalizer: getDefaultNormalizer({ trim: false }) })
         ).toBeNull();
-        expect(screen.getByText('chicken')).toBeInTheDocument();
+        expect(screen.queryByText('chicken')).not.toBeNull();
     });
     it('should switch to the ingredient state plural', async () => {
         const user = userEvent.setup();
@@ -227,9 +238,9 @@ describe('EditableIngredient Unit Keyboard', () => {
 
         // Expect
         expect(
-            screen.getByText('2 cups ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).toBeInTheDocument();
-        expect(screen.getByText('chicken')).toBeInTheDocument();
+            screen.queryByText('2 cups ', { normalizer: getDefaultNormalizer({ trim: false }) })
+        ).not.toBeNull();
+        expect(screen.queryByText('chicken')).not.toBeNull();
     });
     it('should display skip unit', async () => {
         const user = userEvent.setup();
@@ -242,7 +253,7 @@ describe('EditableIngredient Unit Keyboard', () => {
         await user.keyboard('{1}{ }');
 
         // Expect
-        expect(screen.getByText('skip unit')).toBeInTheDocument();
+        expect(screen.queryByText('skip unit')).not.toBeNull();
     });
     it('should display all unit options', async () => {
         const user = userEvent.setup();
@@ -257,12 +268,12 @@ describe('EditableIngredient Unit Keyboard', () => {
         // Expect
         expect(screen.queryByText('Enter ingredient')).toBeNull();
         expect(
-            screen.getByText('1 ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).toBeInTheDocument();
-        expect(screen.getByText('teaspoon')).toBeInTheDocument();
-        expect(screen.getByText('gram')).toBeInTheDocument();
-        expect(screen.getByText('ounce')).toBeInTheDocument();
-        expect(screen.getByText('cup')).toBeInTheDocument();
+            screen.queryByText('1 ', { normalizer: getDefaultNormalizer({ trim: false }) })
+        ).not.toBeNull();
+        expect(screen.queryByText('teaspoon')).not.toBeNull();
+        expect(screen.queryByText('gram')).not.toBeNull();
+        expect(screen.queryByText('ounce')).not.toBeNull();
+        expect(screen.queryByText('cup')).not.toBeNull();
     });
     it('should display add new unit', async () => {
         const user = userEvent.setup();
@@ -276,7 +287,7 @@ describe('EditableIngredient Unit Keyboard', () => {
         await user.keyboard('{c}{u}{t}{z}');
 
         // Expect
-        expect(screen.getByText('Add new unit')).toBeInTheDocument();
+        expect(screen.queryByText('Add new unit')).not.toBeNull();
     });
     it('should display an error for a numeric character', async () => {
         const user = userEvent.setup();
@@ -290,7 +301,7 @@ describe('EditableIngredient Unit Keyboard', () => {
         await user.keyboard('{1}');
 
         // Expect
-        expect(screen.getByText('Invalid input')).toBeInTheDocument();
+        expect(screen.queryByText('Invalid input')).not.toBeNull();
     });
     it('should skip unit', async () => {
         const user = userEvent.setup();
@@ -305,9 +316,9 @@ describe('EditableIngredient Unit Keyboard', () => {
 
         // Expect
         expect(
-            screen.getByText('1 ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).toBeInTheDocument();
-        expect(screen.getByText('chicken')).toBeInTheDocument();
+            screen.queryByText('1 ', { normalizer: getDefaultNormalizer({ trim: false }) })
+        ).not.toBeNull();
+        expect(screen.queryByText('chicken')).not.toBeNull();
     });
     it('should open up the new unit popover', async () => {
         const user = userEvent.setup();
@@ -322,8 +333,8 @@ describe('EditableIngredient Unit Keyboard', () => {
         await user.keyboard('{ArrowDown}{Enter}');
 
         // Expect
-        expect(screen.getByText('Add new unit')).toBeInTheDocument();
-        expect(screen.getByText('Save')).toBeInTheDocument();
+        expect(screen.queryByText('Add new unit')).not.toBeNull();
+        expect(screen.queryByText('Save')).not.toBeNull();
     });
 
     it('should reset back to the quantity state', async () => {
@@ -345,6 +356,9 @@ describe('EditableIngredient Unit Keyboard', () => {
     });
 });
 describe('EditableIngredient Unit Spacebar', () => {
+    afterEach(() => {
+        cleanup();
+    });
     it('should switch to the ingredient state singular', async () => {
         const user = userEvent.setup();
         // Render
@@ -358,14 +372,14 @@ describe('EditableIngredient Unit Spacebar', () => {
 
         // Expect
         expect(
-            screen.getByText('1 cup ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).toBeInTheDocument();
+            screen.queryByText('1 cup ', { normalizer: getDefaultNormalizer({ trim: false }) })
+        ).not.toBeNull();
         expect(
             screen.queryByText('1 cup  ', {
                 normalizer: getDefaultNormalizer({ trim: false, collapseWhitespace: false }),
             })
         ).toBeNull();
-        expect(screen.getByText('chicken')).toBeInTheDocument();
+        expect(screen.queryByText('chicken')).not.toBeNull();
     });
     it('should switch to the ingredient state plural', async () => {
         const user = userEvent.setup();
@@ -380,12 +394,15 @@ describe('EditableIngredient Unit Spacebar', () => {
 
         // Expect
         expect(
-            screen.getByText('2 cups ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).toBeInTheDocument();
-        expect(screen.getByText('chicken')).toBeInTheDocument();
+            screen.queryByText('2 cups ', { normalizer: getDefaultNormalizer({ trim: false }) })
+        ).not.toBeNull();
+        expect(screen.queryByText('chicken')).not.toBeNull();
     });
 });
 describe('EditableIngredient Unit Click', () => {
+    afterEach(() => {
+        cleanup();
+    });
     it('should switch to the ingredient state singular', async () => {
         const user = userEvent.setup();
         // Render
@@ -399,9 +416,9 @@ describe('EditableIngredient Unit Click', () => {
 
         // Expect
         expect(
-            screen.getByText('1 cup ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).toBeInTheDocument();
-        expect(screen.getByText('chicken')).toBeInTheDocument();
+            screen.queryByText('1 cup ', { normalizer: getDefaultNormalizer({ trim: false }) })
+        ).not.toBeNull();
+        expect(screen.queryByText('chicken')).not.toBeNull();
     });
     it('should switch to the ingredient state plural', async () => {
         const user = userEvent.setup();
@@ -416,9 +433,9 @@ describe('EditableIngredient Unit Click', () => {
 
         // Expect
         expect(
-            screen.getByText('2 cups ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).toBeInTheDocument();
-        expect(screen.getByText('chicken')).toBeInTheDocument();
+            screen.queryByText('2 cups ', { normalizer: getDefaultNormalizer({ trim: false }) })
+        ).not.toBeNull();
+        expect(screen.queryByText('chicken')).not.toBeNull();
     });
     it('should reset via click away', async () => {
         const user = userEvent.setup();
@@ -432,7 +449,7 @@ describe('EditableIngredient Unit Click', () => {
         await user.click(document.body);
 
         // Expect
-        expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
+        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
     });
     it('should skip unit', async () => {
         const user = userEvent.setup();
@@ -447,9 +464,9 @@ describe('EditableIngredient Unit Click', () => {
 
         // Expect
         expect(
-            screen.getByText('1 ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).toBeInTheDocument();
-        expect(screen.getByText('chicken')).toBeInTheDocument();
+            screen.queryByText('1 ', { normalizer: getDefaultNormalizer({ trim: false }) })
+        ).not.toBeNull();
+        expect(screen.queryByText('chicken')).not.toBeNull();
     });
     it('should open up the new unit popover', async () => {
         const user = userEvent.setup();
@@ -464,11 +481,14 @@ describe('EditableIngredient Unit Click', () => {
         await user.click(screen.getByText('add new unit'));
 
         // Expect
-        expect(screen.getByText('Add new unit')).toBeInTheDocument();
-        expect(screen.getByText('Save')).toBeInTheDocument();
+        expect(screen.queryByText('Add new unit')).not.toBeNull();
+        expect(screen.queryByText('Save')).not.toBeNull();
     });
 });
 describe('EditableIngredient Ingredient Keyboard', () => {
+    afterEach(() => {
+        cleanup();
+    });
     it('should display completed ingredient', async () => {
         const user = userEvent.setup();
         // Render
@@ -481,7 +501,7 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
 
         // Expect
-        expect(screen.getByText('1 cup chicken,')).toBeInTheDocument();
+        expect(screen.queryByText('1 cup chicken,')).not.toBeNull();
     });
     it('should reset via escape key', async () => {
         const user = userEvent.setup();
@@ -496,7 +516,7 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         await user.keyboard('{Escape}');
 
         // Expect
-        expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
+        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
     });
     it('should display all ingredient options', async () => {
         const user = userEvent.setup();
@@ -510,10 +530,10 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         await user.click(screen.getByText('cup'));
 
         // Expect
-        expect(screen.getByText('apples')).toBeInTheDocument();
-        expect(screen.getByText('carrots')).toBeInTheDocument();
-        expect(screen.getByText('chicken')).toBeInTheDocument();
-        expect(screen.getByText('iceberg lettuce')).toBeInTheDocument();
+        expect(screen.queryByText('apples')).not.toBeNull();
+        expect(screen.queryByText('carrots')).not.toBeNull();
+        expect(screen.queryByText('chicken')).not.toBeNull();
+        expect(screen.queryByText('iceberg lettuce')).not.toBeNull();
     });
     it('should display add new ingredient', async () => {
         const user = userEvent.setup();
@@ -528,7 +548,7 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         await user.keyboard('{a}{p}{f}');
 
         // Expect
-        expect(screen.getByText('add new ingredient')).toBeInTheDocument();
+        expect(screen.queryByText('add new ingredient')).not.toBeNull();
     });
     it('should display an error for a numeric character', async () => {
         const user = userEvent.setup();
@@ -543,7 +563,7 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         await user.keyboard('{1}');
 
         // Expect
-        expect(screen.getByText('Invalid input')).toBeInTheDocument();
+        expect(screen.queryByText('Invalid input')).not.toBeNull();
     });
     it('should open up the new ingredient popover', async () => {
         const user = userEvent.setup();
@@ -559,8 +579,8 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         await user.keyboard('{ArrowDown}{Enter}');
 
         // Expect
-        expect(screen.getByText('Add new ingredient')).toBeInTheDocument();
-        expect(screen.getByText('Save')).toBeInTheDocument();
+        expect(screen.queryByText('Add new ingredient')).not.toBeNull();
+        expect(screen.queryByText('Save')).not.toBeNull();
     });
     it('should have a plural ingredient', async () => {
         const user = userEvent.setup();
@@ -576,7 +596,7 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         await user.keyboard('{Enter}');
 
         // Expect
-        expect(screen.getByText('2 apples,')).toBeInTheDocument();
+        expect(screen.queryByText('2 apples,')).not.toBeNull();
     });
     it('should have a plural countable noun ingredient with a unit', async () => {
         const user = userEvent.setup();
@@ -585,7 +605,6 @@ describe('EditableIngredient Ingredient Keyboard', () => {
 
         // Act
         const quantityInput = screen.getByText('Enter ingredient');
-
         await user.click(quantityInput);
         await user.keyboard('{1}{ }');
         await user.click(screen.getByText('cup'));
@@ -594,7 +613,7 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         await user.keyboard('{Enter}');
 
         // Expect
-        expect(screen.getByText('1 cup apples')).toBeInTheDocument();
+        expect(screen.queryByText('1 cup apples')).not.toBeNull();
     });
     it('should revert back to quantity state', async () => {
         const user = userEvent.setup();
@@ -608,7 +627,7 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         await user.keyboard('{Backspace}');
 
         // Expect
-        expect(screen.getByText('skip quantity')).toBeInTheDocument();
+        expect(screen.queryByText('skip quantity')).not.toBeNull();
     });
     it('should revert back to quantity state after beginning to type', async () => {
         const user = userEvent.setup();
@@ -622,10 +641,13 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         await user.keyboard('{c}{Backspace}{Backspace}');
 
         // Expect
-        expect(screen.getByText('skip quantity')).toBeInTheDocument();
+        expect(screen.queryByText('skip quantity')).not.toBeNull();
     });
 });
 describe('EditableIngredient Ingredient Click', () => {
+    afterEach(() => {
+        cleanup();
+    });
     it('should reset via click away', async () => {
         const user = userEvent.setup();
         // Render
@@ -640,7 +662,7 @@ describe('EditableIngredient Ingredient Click', () => {
         await user.click(document.body);
 
         // Expect
-        expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
+        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
     });
     it('should open up the new ingredient popover', async () => {
         const user = userEvent.setup();
@@ -656,8 +678,8 @@ describe('EditableIngredient Ingredient Click', () => {
         await user.click(screen.getByText('add new ingredient'));
 
         // Expect
-        expect(screen.getByText('Add new ingredient')).toBeInTheDocument();
-        expect(screen.getByText('Save')).toBeInTheDocument();
+        expect(screen.queryByText('Add new ingredient')).not.toBeNull();
+        expect(screen.queryByText('Save')).not.toBeNull();
     });
     it('should have a plural ingredient', async () => {
         const user = userEvent.setup();
@@ -666,7 +688,6 @@ describe('EditableIngredient Ingredient Click', () => {
 
         // Act
         const quantityInput = screen.getByText('Enter ingredient');
-
         await user.click(quantityInput);
         await user.keyboard('{2}{ }');
         await user.click(screen.getByText('skip unit'));
@@ -675,10 +696,13 @@ describe('EditableIngredient Ingredient Click', () => {
         await user.keyboard('{Enter}');
 
         // Expect
-        expect(screen.getByText('2 apples')).toBeInTheDocument();
+        expect(screen.queryByText('2 apples')).not.toBeNull();
     });
 });
 describe('EditableIngredient PrepMethod Keyboard', () => {
+    afterEach(() => {
+        cleanup();
+    });
     it('should reset via escape key', async () => {
         const user = userEvent.setup();
         // Render
@@ -692,7 +716,7 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
         await user.keyboard('{Escape}');
 
         // Expect
-        expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
+        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
     });
     it('should display skip prepMethod', async () => {
         const user = userEvent.setup();
@@ -706,8 +730,8 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
         await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
 
         // Expect
-        expect(screen.getByText('1 cup chicken,')).toBeInTheDocument();
-        expect(screen.getByText('skip prep method')).toBeInTheDocument();
+        expect(screen.queryByText('1 cup chicken,')).not.toBeNull();
+        expect(screen.queryByText('skip prep method')).not.toBeNull();
     });
     it('should display all prepMethod options', async () => {
         const user = userEvent.setup();
@@ -721,10 +745,10 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
         await user.keyboard('{ArrowDown}{Enter}');
 
         // Expect
-        expect(screen.getByText('chopped')).toBeInTheDocument();
-        expect(screen.getByText('diced')).toBeInTheDocument();
-        expect(screen.getByText('sliced')).toBeInTheDocument();
-        expect(screen.getByText('whole')).toBeInTheDocument();
+        expect(screen.queryByText('chopped')).not.toBeNull();
+        expect(screen.queryByText('diced')).not.toBeNull();
+        expect(screen.queryByText('sliced')).not.toBeNull();
+        expect(screen.queryByText('whole')).not.toBeNull();
     });
     it('should display add new prepMethod', async () => {
         const user = userEvent.setup();
@@ -733,14 +757,13 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
 
         // Act
         const ingredientInput = screen.getByText('Enter ingredient');
-
         await user.click(ingredientInput);
         await user.keyboard('{1}{ }{ArrowDown}{ArrowDown}{Enter}');
         await user.keyboard('{ArrowDown}{Enter}');
         await user.keyboard('{c}{h}{i}');
 
         // Expect
-        expect(screen.getByText('add new prep method')).toBeInTheDocument();
+        expect(screen.queryByText('add new prep method')).not.toBeNull();
     });
     it('should display an error for a numeric character', async () => {
         const user = userEvent.setup();
@@ -749,14 +772,13 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
 
         // Act
         const ingredientInput = screen.getByText('Enter ingredient');
-
         await user.click(ingredientInput);
         await user.keyboard('{1}{ }{ArrowDown}{ArrowDown}{Enter}');
         await user.keyboard('{ArrowDown}{Enter}');
         await user.keyboard('{1}');
 
         // Expect
-        expect(screen.getByText('Invalid input')).toBeInTheDocument();
+        expect(screen.queryByText('Invalid input')).not.toBeNull();
     });
     it('should skip prepMethod', async () => {
         const user = userEvent.setup();
@@ -765,15 +787,14 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
 
         // Act
         const quantityInput = screen.getByText('Enter ingredient');
-
         await user.click(quantityInput);
         await user.keyboard('{1}{ }{ArrowDown}{Enter}');
         await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
         await user.click(screen.getByText('skip prep method'));
 
         // Expect
-        expect(screen.getByText('1 cup chicken')).toBeInTheDocument();
-        expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
+        expect(screen.queryByText('1 cup chicken')).not.toBeNull();
+        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
     });
     it('should open up the new prepMethod popover', async () => {
         const user = userEvent.setup();
@@ -782,7 +803,6 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
 
         // Act
         const quantityInput = screen.getByText('Enter ingredient');
-
         await user.click(quantityInput);
         await user.keyboard('{1}{ }{ArrowDown}{ArrowDown}{Enter}');
         await user.keyboard('{ArrowDown}{Enter}');
@@ -790,11 +810,14 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
         await user.keyboard('{ArrowDown}{Enter}');
 
         // Expect
-        expect(screen.getByText('Add new prep method')).toBeInTheDocument();
-        expect(screen.getByText('Save')).toBeInTheDocument();
+        expect(screen.queryByText('Add new prep method')).not.toBeNull();
+        expect(screen.queryByText('Save')).not.toBeNull();
     });
 });
 describe('EditableIngredient PrepMethod Click', () => {
+    afterEach(() => {
+        cleanup();
+    });
     it('should reset via click away', async () => {
         const user = userEvent.setup();
         // Render
@@ -810,7 +833,7 @@ describe('EditableIngredient PrepMethod Click', () => {
         await user.click(document.body);
 
         // Expect
-        expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
+        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
     });
     it('should skip prepMethod', async () => {
         const user = userEvent.setup();
@@ -828,7 +851,7 @@ describe('EditableIngredient PrepMethod Click', () => {
         await user.click(screen.getByText('skip prep method'));
 
         // Expect
-        expect(screen.getByText('1 cup chicken')).toBeInTheDocument();
+        expect(screen.queryByText('1 cup chicken')).not.toBeNull();
     });
     it('should open up the new prepMethod popover', async () => {
         const user = userEvent.setup();
@@ -847,13 +870,16 @@ describe('EditableIngredient PrepMethod Click', () => {
         await user.click(screen.getByText('add new prep method'));
 
         // Expect
-        expect(screen.getByText('1 cup chicken, chi')).toBeInTheDocument();
-        expect(screen.getByText('Add new prep method')).toBeInTheDocument();
-        expect(screen.getByText('Save')).toBeInTheDocument();
+        expect(screen.queryByText('1 cup chicken, chi')).not.toBeNull();
+        expect(screen.queryByText('Add new prep method')).not.toBeNull();
+        expect(screen.queryByText('Save')).not.toBeNull();
     });
 });
 
 describe('FinishedIngredient', () => {
+    afterEach(() => {
+        cleanup();
+    });
     it('should display a completed item', async () => {
         const user = userEvent.setup();
         // Render
@@ -869,7 +895,7 @@ describe('FinishedIngredient', () => {
         await user.click(screen.getByText('chopped'));
 
         // Expect
-        expect(screen.getByText('1 oz chicken, chopped')).toBeInTheDocument();
+        expect(screen.queryByText('1 oz chicken, chopped')).not.toBeNull();
     });
     it('should display two completed items', async () => {
         const user = userEvent.setup();
@@ -889,9 +915,9 @@ describe('FinishedIngredient', () => {
         await user.click(screen.getByText('diced'));
 
         // Expect
-        expect(screen.getByText('1 oz chicken, chopped')).toBeInTheDocument();
-        expect(screen.getByText('2 oz iceberg lettuce, diced')).toBeInTheDocument();
-        expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
+        expect(screen.queryByText('1 oz chicken, chopped')).not.toBeNull();
+        expect(screen.queryByText('2 oz iceberg lettuce, diced')).not.toBeNull();
+        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
     });
     it('should display a completed item without a unit', async () => {
         const user = userEvent.setup();
@@ -906,8 +932,8 @@ describe('FinishedIngredient', () => {
         await user.click(screen.getByText('chopped'));
 
         // Expect
-        expect(screen.getByText('1 chicken, chopped')).toBeInTheDocument();
-        expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
+        expect(screen.queryByText('1 chicken, chopped')).not.toBeNull();
+        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
     });
     it('should display a completed item without a prepMethod', async () => {
         const user = userEvent.setup();
@@ -922,8 +948,8 @@ describe('FinishedIngredient', () => {
         await user.click(screen.getByText('skip prep method'));
 
         // Expect
-        expect(screen.getByText('1 oz chicken')).toBeInTheDocument();
-        expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
+        expect(screen.queryByText('1 oz chicken')).not.toBeNull();
+        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
     });
     it('should display a completed item without a prepMethod or unit', async () => {
         const user = userEvent.setup();
@@ -938,8 +964,8 @@ describe('FinishedIngredient', () => {
         await user.click(screen.getByText('skip prep method'));
 
         // Expect
-        expect(screen.getByText('1 chicken')).toBeInTheDocument();
-        expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
+        expect(screen.queryByText('1 chicken')).not.toBeNull();
+        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
     });
     it('should display a completed item with plural units', async () => {
         const user = userEvent.setup();
@@ -954,8 +980,8 @@ describe('FinishedIngredient', () => {
         await user.click(screen.getByText('chopped'));
 
         // Expect
-        expect(screen.getByText('2 cups chicken, chopped')).toBeInTheDocument();
-        expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
+        expect(screen.queryByText('2 cups chicken, chopped')).not.toBeNull();
+        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
     });
     it('should display a completed item with no unit and plural ingredient', async () => {
         const user = userEvent.setup();
@@ -970,8 +996,8 @@ describe('FinishedIngredient', () => {
         await user.click(screen.getByText('chopped'));
 
         // Expect
-        expect(screen.getByText('2 chickens, chopped')).toBeInTheDocument();
-        expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
+        expect(screen.queryByText('2 chickens, chopped')).not.toBeNull();
+        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
     });
     it('should display a completed item with no quantity or unit', async () => {
         const user = userEvent.setup();
@@ -985,8 +1011,23 @@ describe('FinishedIngredient', () => {
         await user.click(screen.getByText('chopped'));
 
         // Expect
-        expect(screen.getByText('chicken, chopped')).toBeInTheDocument();
-        expect(screen.getByText('Enter ingredient')).toBeInTheDocument();
+        expect(screen.queryByText('chicken, chopped')).not.toBeNull();
+        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
+    });
+    it('should display a completed item with no quantity or unit from typing', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{c}{h}{i}');
+        await user.click(screen.getByText('chicken'));
+        await user.click(screen.getByText('chopped'));
+
+        // Expect
+        expect(screen.queryByText('chicken, chopped')).not.toBeNull();
+        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
     });
     it('should rearrange the order of the items', async () => {}); // TODO
 });

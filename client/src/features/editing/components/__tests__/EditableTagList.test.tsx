@@ -1,8 +1,8 @@
-import '@testing-library/jest-dom';
+import { expect, describe, it, afterEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider } from 'react-router-dom';
 import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
-import { render, screen } from '@testing-library/react';
+import { render, screen, cleanup } from '@testing-library/react';
 import { ChakraProvider } from '@chakra-ui/react';
 import { MockedProvider } from '@apollo/client/testing';
 import { EditableTagList } from '../EditableTagList';
@@ -29,6 +29,9 @@ const renderComponent = () => {
 };
 
 describe('EditableTag Click Action', () => {
+    afterEach(() => {
+        cleanup();
+    });
     it('should display tag options', async () => {
         const user = userEvent.setup();
         // Render
@@ -39,8 +42,8 @@ describe('EditableTag Click Action', () => {
         await user.click(tagInput);
 
         // Expect
-        expect(screen.getByText('Add a tag...')).toBeInTheDocument();
-        expect(screen.getByText('lunch')).toBeInTheDocument();
+        expect(screen.queryByText('Add a tag...')).not.toBeNull();
+        expect(screen.queryByText('lunch')).not.toBeNull();
     });
 
     it('should display completed tag', async () => {
@@ -56,8 +59,8 @@ describe('EditableTag Click Action', () => {
         await user.click(tag);
 
         // Expect
-        expect(screen.getByText('Add a tag...')).toBeInTheDocument();
-        expect(screen.getByText('lunch')).toBeInTheDocument();
+        expect(screen.queryByText('Add a tag...')).not.toBeNull();
+        expect(screen.queryByText('lunch')).not.toBeNull();
     });
 
     it('should unfocus when clicked away after first tag', async () => {
@@ -77,6 +80,9 @@ describe('EditableTag Click Action', () => {
 });
 
 describe('EditableTag Key Arrow Action', () => {
+    afterEach(() => {
+        cleanup();
+    });
     it('should display completed tag', async () => {
         // Render
         const user = userEvent.setup();
@@ -88,8 +94,8 @@ describe('EditableTag Key Arrow Action', () => {
         await user.keyboard('{l}{Enter}');
 
         // Expect
-        expect(screen.getByText('Add a tag...')).toBeInTheDocument();
-        expect(screen.getByText('lunch')).toBeInTheDocument();
+        expect(screen.queryByText('Add a tag...')).not.toBeNull();
+        expect(screen.queryByText('lunch')).not.toBeNull();
     });
 
     it('should not still be focused on editable input', async () => {
