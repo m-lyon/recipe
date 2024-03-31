@@ -1,10 +1,23 @@
 import { useContext } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Box, Flex, Text, IconButton } from '@chakra-ui/react';
-import { useBreakpointValue, useDisclosure } from '@chakra-ui/react';
-import { Stack, Collapse, Icon, Link, Popover } from '@chakra-ui/react';
-import { PopoverTrigger, PopoverContent, useColorModeValue } from '@chakra-ui/react';
-import { HamburgerIcon, CloseIcon, ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons';
+import {
+    Box,
+    Collapse,
+    Flex,
+    Icon,
+    IconButton,
+    Link,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+    Slide,
+    Stack,
+    Text,
+    useBreakpointValue,
+    useColorModeValue,
+    useDisclosure,
+} from '@chakra-ui/react';
+import { ChevronDownIcon, ChevronRightIcon, CloseIcon, HamburgerIcon } from '@chakra-ui/icons';
 
 import { ROOT_PATH } from '../constants';
 import { UserOptions } from './UserOptions';
@@ -30,7 +43,7 @@ export function Navbar() {
                     borderColor={useColorModeValue('gray.200', 'gray.900')}
                     align='center'
                     position='fixed'
-                    zIndex={2}
+                    zIndex={3}
                     w='100%'
                 >
                     <Flex
@@ -64,10 +77,9 @@ export function Navbar() {
                     </Flex>
                     <UserOptions />
                 </Flex>
-
-                <Collapse in={isOpen} animateOpacity>
+                <Slide in={isOpen} direction='top' style={{ zIndex: 2, marginTop: '60px' }}>
                     <MobileNav isLoggedIn={isLoggedIn} />
-                </Collapse>
+                </Slide>
             </Box>
             <Outlet />
         </>
@@ -77,7 +89,7 @@ export function Navbar() {
 interface DesktopNavProps {
     isLoggedIn: boolean;
 }
-const DesktopNav = (props: DesktopNavProps) => {
+function DesktopNav(props: DesktopNavProps) {
     const { isLoggedIn } = props;
     const linkColor = useColorModeValue('gray.600', 'gray.200');
     const linkHoverColor = useColorModeValue('gray.800', 'white');
@@ -126,82 +138,83 @@ const DesktopNav = (props: DesktopNavProps) => {
             ))}
         </Stack>
     );
-};
+}
 
-const DesktopSubNav = ({ label, href, subLabel }: NavItem) => {
+function DesktopSubNav({ label, href, subLabel }: NavItem) {
     return (
         <Link
             href={href}
-            role={'group'}
-            display={'block'}
+            role='group'
+            display='block'
             p={2}
-            rounded={'md'}
+            rounded='md'
             _hover={{ bg: useColorModeValue('pink.50', 'gray.900') }}
         >
-            <Stack direction={'row'} align={'center'}>
+            <Stack direction='row' align='center'>
                 <Box>
                     <Text
-                        transition={'all .3s ease'}
+                        transition='all .3s ease'
                         _groupHover={{ color: 'pink.400' }}
                         fontWeight={500}
                     >
                         {label}
                     </Text>
-                    <Text fontSize={'sm'}>{subLabel}</Text>
+                    <Text fontSize='sm'>{subLabel}</Text>
                 </Box>
                 <Flex
-                    transition={'all .3s ease'}
-                    transform={'translateX(-10px)'}
+                    transition='all .3s ease'
+                    transform='translateX(-10px)'
                     opacity={0}
                     _groupHover={{ opacity: '100%', transform: 'translateX(0)' }}
-                    justify={'flex-end'}
-                    align={'center'}
+                    justify='flex-end'
+                    align='center'
                     flex={1}
                 >
-                    <Icon color={'pink.400'} w={5} h={5} as={ChevronRightIcon} />
+                    <Icon color='pink.400' w={5} h={5} as={ChevronRightIcon} />
                 </Flex>
             </Stack>
         </Link>
     );
-};
+}
 
 interface MobileNavProps {
     isLoggedIn: boolean;
 }
-const MobileNav = (props: MobileNavProps) => {
+function MobileNav(props: MobileNavProps) {
     const { isLoggedIn } = props;
     const navItems = isLoggedIn ? USER_NAV_ITEMS : PUBLIC_NAV_ITEMS;
     return (
-        <Stack bg={useColorModeValue('white', 'gray.800')} p={4} display={{ md: 'none' }}>
+        <Stack bg={useColorModeValue('white', 'gray.800')} display={{ md: 'none' }} width='100%'>
             {navItems.map((navItem) => (
                 <MobileNavItem key={navItem.label} {...navItem} />
             ))}
         </Stack>
     );
-};
+}
 
-const MobileNavItem = ({ label, children, href }: NavItem) => {
+function MobileNavItem({ label, children, href }: NavItem) {
     const { isOpen, onToggle } = useDisclosure();
 
     return (
         <Stack spacing={4} onClick={children && onToggle}>
             <Flex
                 py={2}
+                px={4}
                 as={Link}
                 href={href ?? '#'}
-                justify={'space-between'}
-                align={'center'}
-                _hover={{
-                    textDecoration: 'none',
-                }}
+                justify='space-between'
+                align='center'
+                _hover={{ textDecoration: 'none' }}
+                background={useColorModeValue('gray.100', 'gray.900')}
+                minH='60px'
             >
-                <Text fontWeight={600} color={useColorModeValue('gray.600', 'gray.200')}>
+                <Text fontWeight={500} color={useColorModeValue('gray.600', 'gray.200')}>
                     {label}
                 </Text>
                 {children && (
                     <Icon
                         as={ChevronDownIcon}
-                        transition={'all .25s ease-in-out'}
+                        transition='all .25s ease-in-out'
                         transform={isOpen ? 'rotate(180deg)' : ''}
                         w={6}
                         h={6}
@@ -214,9 +227,9 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
                     mt={2}
                     pl={4}
                     borderLeft={1}
-                    borderStyle={'solid'}
+                    borderStyle='solid'
                     borderColor={useColorModeValue('gray.200', 'gray.700')}
-                    align={'start'}
+                    align='start'
                 >
                     {children &&
                         children.map((child) => (
@@ -228,7 +241,7 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
             </Collapse>
         </Stack>
     );
-};
+}
 
 interface NavItem {
     label: string;
