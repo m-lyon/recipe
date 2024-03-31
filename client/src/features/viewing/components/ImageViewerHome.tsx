@@ -14,7 +14,7 @@ export function ImageViewerHome(props: Props) {
     return (
         <ImageCarousel
             images={images as Image[]}
-            width={288}
+            width='288px'
             ratio={3 / 2}
             zIndex={1}
             right={0}

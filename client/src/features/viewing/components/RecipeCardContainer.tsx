@@ -1,11 +1,11 @@
-import { useState, useContext } from 'react';
+import { useContext, useState } from 'react';
 import { Wrap, WrapItem } from '@chakra-ui/react';
 
 import { RecipeCard } from './RecipeCard';
 import { ImageRecipeCard } from './ImageRecipeCard';
 import { groupIntoPairs } from '../../../utils/array';
 import { Recipe } from '../../../__generated__/graphql';
-import { UserContext, IUserContext } from '../../../context/UserContext';
+import { IUserContext, UserContext } from '../../../context/UserContext';
 import { ConfirmDeleteModal } from '../../editing/components/ConfirmDeleteModal';
 
 function hasPermission(user: IUserContext, recipe: Recipe) {
