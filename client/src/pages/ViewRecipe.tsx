@@ -35,7 +35,7 @@ export function ViewRecipe() {
                 displayImageTab: false,
             },
         },
-        { fallback: 'md' },
+        { fallback: 'md' }
     );
 
     if (loading) {

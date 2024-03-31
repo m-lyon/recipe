@@ -1,18 +1,19 @@
 import { useContext } from 'react';
-import { Box, Button, Center, Container, Grid, GridItem, useToast } from '@chakra-ui/react';
+import { Container, Grid, GridItem, useBreakpointValue, useToast } from '@chakra-ui/react';
 
-import { CreateOneRecipeModifyInput, EnumRecipeIngredientType } from '../../__generated__/graphql';
+import { RecipeState } from './hooks/useRecipeState';
+import { Servings } from '../../components/Servings';
+import { ImageUpload } from './components/ImageUpload';
+import { UserContext } from '../../context/UserContext';
+import { SubmitButton } from './components/SubmitButton';
+import { EditableNotes } from './components/EditableNotes';
+import { EditableTitle } from './components/EditableTitle';
+import { EditableTagList } from './components/EditableTagList';
+import { IngredientsTabLayout } from '../../layouts/IngredientsTabLayout';
 import { StarRating, StarRatingProps } from '../../components/StarRating';
 import { EditableIngredientList } from './components/EditableIngredientList';
 import { EditableInstructionsTab } from './components/EditableInstructionsTab';
-import { EditableNotes } from './components/EditableNotes';
-import { EditableTagList } from './components/EditableTagList';
-import { EditableTitle } from './components/EditableTitle';
-import { ImageUpload } from './components/ImageUpload';
-import { IngredientsTabLayout } from '../../layouts/IngredientsTabLayout';
-import { RecipeState } from './hooks/useRecipeState';
-import { Servings } from '../../components/Servings';
-import { UserContext } from '../../context/UserContext';
+import { CreateOneRecipeModifyInput, EnumRecipeIngredientType } from '../../__generated__/graphql';
 
 interface SubmitButtonProps {
     submitText: string;
@@ -30,6 +31,38 @@ export function EditableRecipe(props: Props) {
     const { state, rating, handleSubmitMutation, submitButtonProps } = props;
     const [userContext] = useContext(UserContext);
     const toast = useToast();
+    const styles = useBreakpointValue(
+        {
+            base: {
+                templateAreas: `'title'
+                            'tags'
+                            'ingredients'
+                            'instructions'
+                            'images'
+                            'button'`,
+                gridTemplateRows: 'auto auto auto auto auto 90px',
+                gridTemplateColumns: '100%',
+                height: 'auto',
+                tagMinHeight: '134px',
+                ingredientsMinHeight: '500px',
+                imageMinHeight: '300px',
+            },
+            md: {
+                templateAreas: `'title title'
+                            'ingredients tags'
+                            'ingredients instructions'
+                            'images images'
+                            'button button'`,
+                gridTemplateRows: '100px 140px auto auto 90px',
+                gridTemplateColumns: '0.4fr 1fr',
+                height: 'auto',
+                tagMinHeight: '140px',
+                ingredientsMinHeight: '200px',
+                imageMinHeight: '300px',
+            },
+        },
+        { fallback: 'md' }
+    );
 
     const validate = () => {
         if (state.title.value === null) {
@@ -118,14 +151,10 @@ export function EditableRecipe(props: Props) {
     return (
         <Container maxW='container.xl' pt='60px'>
             <Grid
-                templateAreas={`'title title'
-                                'ingredients tags'
-                                'ingredients instructions'
-                                'images images'
-                                'button button'`}
-                gridTemplateRows='100px 140px auto 300px 90px'
-                gridTemplateColumns='0.4fr 1fr'
-                h='auto'
+                templateAreas={styles!.templateAreas}
+                gridTemplateRows={styles!.gridTemplateRows}
+                gridTemplateColumns={styles!.gridTemplateColumns}
+                h={styles!.height}
                 gap='2'
                 pt='2'
                 pb='2'
@@ -135,10 +164,23 @@ export function EditableRecipe(props: Props) {
                 <GridItem boxShadow='lg' padding='6' area='title' maxH='100px'>
                     <EditableTitle {...state.title} />
                 </GridItem>
-                <GridItem area='tags' boxShadow='lg' pl='6' pt='6' pr='6' pb='2'>
+                <GridItem
+                    area='tags'
+                    boxShadow='lg'
+                    pl='6'
+                    pt='6'
+                    pr='6'
+                    pb='2'
+                    minH={styles?.tagMinHeight}
+                >
                     <EditableTagList {...state.tags} />
                 </GridItem>
-                <GridItem area='ingredients' boxShadow='lg' padding='6'>
+                <GridItem
+                    area='ingredients'
+                    boxShadow='lg'
+                    padding='6'
+                    minH={styles?.ingredientsMinHeight}
+                >
                     <IngredientsTabLayout
                         Servings={<Servings {...state.numServings} />}
                         StarRating={<StarRating {...rating} />}
@@ -159,26 +201,12 @@ export function EditableRecipe(props: Props) {
                     area='images'
                     display='flex'
                     flexDirection='column'
+                    minH={styles?.imageMinHeight}
                 >
                     <ImageUpload {...state.images} />
                 </GridItem>
                 <GridItem padding='6' area='button'>
-                    <Center>
-                        <Box position='fixed' bottom='4' pb='3'>
-                            <Button
-                                size='lg'
-                                borderRadius='full'
-                                border='1px'
-                                borderColor='gray.200'
-                                onClick={handleSubmit}
-                                loadingText={submitButtonProps.loadingText}
-                                isDisabled={submitButtonProps.disabled}
-                                isLoading={submitButtonProps.loading}
-                            >
-                                {submitButtonProps.submitText}
-                            </Button>
-                        </Box>
-                    </Center>
+                    <SubmitButton {...submitButtonProps} handleSubmit={handleSubmit} />
                 </GridItem>
             </Grid>
         </Container>

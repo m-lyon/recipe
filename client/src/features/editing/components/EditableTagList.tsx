@@ -1,10 +1,10 @@
-import { UseTagListReturnType } from '../hooks/useTagList';
-import { motion, LayoutGroup, AnimatePresence } from 'framer-motion';
-import { Tag, TagCloseButton, TagLabel, WrapItem, VStack, Wrap } from '@chakra-ui/react';
-import { EditableTag } from './EditableTag';
 import { useMutation } from '@apollo/client';
-import { useToast } from '@chakra-ui/react';
-import { gql } from '../../../__generated__'
+import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
+import { Tag, TagCloseButton, TagLabel, VStack, Wrap, WrapItem, useToast } from '@chakra-ui/react';
+
+import { EditableTag } from './EditableTag';
+import { gql } from '../../../__generated__';
+import { UseTagListReturnType } from '../hooks/useTagList';
 
 // NOTE: This REMOVE_TAG cannot be moved to the mutation/tags.ts file because it
 // causes an undefined error.

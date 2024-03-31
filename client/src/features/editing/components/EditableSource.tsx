@@ -1,4 +1,11 @@
-import { Input, InputGroup, InputLeftAddon, Text, VStack } from '@chakra-ui/react';
+import {
+    Input,
+    InputGroup,
+    InputLeftAddon,
+    Text,
+    VStack,
+    useBreakpointValue,
+} from '@chakra-ui/react';
 import { Dispatch, SetStateAction } from 'react';
 
 export interface EditableSourceProps {
@@ -7,9 +14,20 @@ export interface EditableSourceProps {
 }
 export function EditableSource(props: EditableSourceProps) {
     const { source, setSource } = props;
+    const styles = useBreakpointValue(
+        {
+            base: {
+                justifyContent: 'flex-start',
+            },
+            md: {
+                justifyContent: 'flex-end',
+            },
+        },
+        { fallback: 'md' }
+    );
     return (
         <VStack width='100%' justifyContent='flex-end'>
-            <InputGroup justifyContent={'flex-end'}>
+            <InputGroup justifyContent={styles?.justifyContent}>
                 <InputLeftAddon backgroundColor='inherit' border='inhreit' padding={0}>
                     <Text
                         as='i'
