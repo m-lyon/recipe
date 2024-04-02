@@ -14,10 +14,9 @@ uploadRouter.get('/images/:fname', async (req, res) => {
     if (!image) {
         return res.status(404).send('Image not found.');
     }
-    res.sendFile(fname, { root: IMAGE_DIR }, (err) => {
+    return res.sendFile(fname, { root: IMAGE_DIR }, (err) => {
         if (err) {
             console.error(err);
-            res.status(500).send('Error sending file.');
         }
     });
 });
