@@ -2,7 +2,7 @@ import 'dotenv-flow/config';
 import { CodegenConfig } from '@graphql-codegen/cli';
 
 const config: CodegenConfig = {
-    //@ts-ignore
+    //@ts-expect-error can't find a good reason why process type is not found
     schema: process.env.VITE_GRAPHQL_ENDPOINT,
     documents: ['src/**/*.tsx', 'src/**/*.ts'],
     generates: {
