@@ -1,13 +1,12 @@
-import { Stack, Button } from '@chakra-ui/react';
+import { Button, Stack, useToast } from '@chakra-ui/react';
 import { useContext } from 'react';
-import { UserContext } from '../context/UserContext';
 import { useMutation, useQuery } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@chakra-ui/react';
+
+import { UserContext } from '../context/UserContext';
 import { ROOT_PATH } from '../constants';
 import { LOGOUT } from '../graphql/mutations/user';
 import { CURRENT_USER } from '../graphql/queries/user';
-
 
 export function UserOptions() {
     const [userContext, setUserContext] = useContext(UserContext);
@@ -24,6 +23,7 @@ export function UserOptions() {
             }
         },
         onError: (err) => {
+            console.log(err);
             toast({
                 title: 'An error occurred.',
                 description: err.message,
@@ -55,7 +55,7 @@ export function UserOptions() {
         }
     };
     if (loading) {
-        return null;
+        return <LoginOptions />;
     }
     if (userContext) {
         return (
@@ -65,29 +65,32 @@ export function UserOptions() {
                 </Button>
             </Stack>
         );
-    } else {
-        return (
-            <Stack flex={{ base: 1, md: 0 }} justify='flex-end' direction='row' spacing={6}>
-                <Button
-                    as='a'
-                    fontSize='sm'
-                    fontWeight={400}
-                    variant='link'
-                    href={`${ROOT_PATH}/login`}
-                >
-                    Sign In
-                </Button>
-                <Button
-                    as='a'
-                    display={{ base: 'none', md: 'inline-flex' }}
-                    fontSize='sm'
-                    fontWeight={600}
-                    colorScheme='teal'
-                    href={`${ROOT_PATH}/signup`}
-                >
-                    Sign Up
-                </Button>
-            </Stack>
-        );
     }
+    return <LoginOptions />;
+}
+
+function LoginOptions() {
+    return (
+        <Stack flex={{ base: 1, md: 0 }} justify='flex-end' direction='row' spacing={6}>
+            <Button
+                as='a'
+                fontSize='sm'
+                fontWeight={400}
+                variant='link'
+                href={`${ROOT_PATH}/login`}
+            >
+                Sign In
+            </Button>
+            <Button
+                as='a'
+                display={{ base: 'none', md: 'inline-flex' }}
+                fontSize='sm'
+                fontWeight={600}
+                colorScheme='teal'
+                href={`${ROOT_PATH}/signup`}
+            >
+                Sign Up
+            </Button>
+        </Stack>
+    );
 }
