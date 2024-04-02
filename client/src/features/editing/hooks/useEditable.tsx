@@ -4,6 +4,8 @@ interface ActionHandler {
     edit: () => void;
     change: (value: string) => void;
     submit: (value: string) => void;
+    // this is here to correctly set the state after loading on the edit page
+    set: (value: string) => void;
 }
 export interface UseEditableReturnType {
     value: string | null;
@@ -33,6 +35,7 @@ export function useEditable(defaultStr: string, endWithPeriod?: boolean): UseEdi
     };
 
     const handleSubmit = (value: string) => {
+        console.log('value is', value, 'isEdited is', isEdited);
         if (value.trim() === '' || !isEdited) {
             // Reset the value to default when the field is empty
             setIsEdited(false);
@@ -44,12 +47,20 @@ export function useEditable(defaultStr: string, endWithPeriod?: boolean): UseEdi
         } else {
             setInputValue(value);
         }
-        if (!isEdited) {
-            setIsEdited(true);
-        }
     };
+
+    const handleSet = (value: string) => {
+        setIsEdited(true);
+        setInputValue(value);
+    };
+
     const displayStr = value === null ? defaultStr : value;
-    const actionHandler = { edit: handleEdit, change: handleChange, submit: handleSubmit };
+    const actionHandler = {
+        edit: handleEdit,
+        change: handleChange,
+        submit: handleSubmit,
+        set: handleSet,
+    };
 
     return { value, displayStr, inputRef, isEdited, actionHandler };
 }

@@ -34,7 +34,7 @@ export function EditRecipe() {
         onCompleted: async (data) => {
             getRatings(data.recipeOne!._id);
             const recipe = data.recipeOne!;
-            state.title.actionHandler.submit(recipe.title);
+            state.title.actionHandler.set(recipe.title);
             state.numServings.setNum(recipe.numServings);
             const ingredients = recipe.ingredients.map((ing) => {
                 return dbIngredientToFinished(ing as RecipeIngredient);
@@ -42,7 +42,7 @@ export function EditRecipe() {
             state.ingredient.actionHandler.setFinishedArray(ingredients);
             state.instructions.actionHandler.setItems(recipe.instructions as string[]);
             if (recipe.notes) {
-                state.notes.actionHandler.submit(recipe.notes);
+                state.notes.actionHandler.set(recipe.notes);
             }
             state.tags.setTags(
                 data.recipeOne!.tags.map((tag) => {
@@ -52,7 +52,7 @@ export function EditRecipe() {
                         key: crypto.randomUUID(),
                         isNew: false,
                     };
-                }),
+                })
             );
             if (recipe.source) {
                 state.source.setSource(recipe.source);
@@ -68,7 +68,7 @@ export function EditRecipe() {
                             const res = await fetch(`${GRAPHQL_ENDPOINT}${img!.origUrl}`);
                             const blob = await res.blob();
                             return new File([blob], img!.origUrl, { type: blob.type });
-                        }),
+                        })
                     );
                     state.images.setImages(images);
                 } catch (error) {
@@ -110,10 +110,10 @@ export function EditRecipe() {
             const originalImages = data!.recipeOne!.images ? data!.recipeOne!.images : [];
             const newImages = state.images.images;
             const imagesToDelete = originalImages.filter(
-                (img) => !newImages.map((img) => img.name).includes(img!.origUrl),
+                (img) => !newImages.map((img) => img.name).includes(img!.origUrl)
             );
             const imagesToAdd = newImages.filter(
-                (img) => !originalImages.map((img) => img!.origUrl).includes(img.name),
+                (img) => !originalImages.map((img) => img!.origUrl).includes(img.name)
             );
             if (imagesToDelete.length > 0) {
                 await deleteImages({ variables: { ids: imagesToDelete.map((img) => img!._id) } });

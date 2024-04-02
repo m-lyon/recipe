@@ -5,13 +5,19 @@ import { useToast } from '@chakra-ui/react';
 
 import { isPlural } from '../../../utils/plural';
 import { GET_UNITS } from '../../../graphql/queries/unit';
-import { RecipeIngredient } from '../../../__generated__/graphql';
+import {
+    EnumRecipeIngredientType,
+    GetIngredientsQuery,
+    GetPrepMethodsQuery,
+    GetUnitsQuery,
+    Ingredient,
+    PrepMethod,
+    RecipeIngredient,
+    Unit,
+} from '../../../__generated__/graphql';
 import { GET_INGREDIENTS } from '../../../graphql/queries/ingredient';
 import { GET_PREP_METHODS } from '../../../graphql/queries/prepMethod';
-import { Ingredient, PrepMethod, Unit } from '../../../__generated__/graphql';
-import { isFraction, formatFraction, VALID_NUMBER_REGEX } from '../../../utils/number';
-import { GetUnitsQuery, EnumRecipeIngredientType } from '../../../__generated__/graphql';
-import { GetIngredientsQuery, GetPrepMethodsQuery } from '../../../__generated__/graphql';
+import { VALID_NUMBER_REGEX, formatFraction, isFraction } from '../../../utils/number';
 
 export const DEFAULT_INGREDIENT_STR = 'Enter ingredient';
 
@@ -55,7 +61,7 @@ function handleQuantityChange(
                 actionHandler.setShow.off();
             }
             // Valid numerical input
-        } else if (item.quantity !== null && /^[\d\/\.-]$/.test(char)) {
+        } else if (item.quantity !== null && /^[\d/.-]$/.test(char)) {
             actionHandler.quantity.append(char);
             if (item.show) {
                 actionHandler.setShow.off();
@@ -108,7 +114,7 @@ function handleIngredientChange(char: NewChar, actionHandler: InternalActionHand
     if (typeof char === 'number') {
         actionHandler.truncate(char);
     } else {
-        if (/^[a-zA-Z \-]$/.test(char)) {
+        if (/^[a-zA-Z -]$/.test(char)) {
             actionHandler.ingredient.append(char);
         } else {
             throw new Error('Only letters and spaces are allowed when inputting an ingredient.');
