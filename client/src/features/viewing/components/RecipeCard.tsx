@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CloseIcon, EditIcon } from '@chakra-ui/icons';
-import { IconButton, LinkOverlay } from '@chakra-ui/react';
+import { IconButton, LinkOverlay, useBreakpointValue } from '@chakra-ui/react';
 import { Card, CardBody, CardHeader, Heading, LinkBox } from '@chakra-ui/react';
 
 import { TagList } from './TagList';
@@ -25,6 +25,19 @@ interface Props {
 export function RecipeCard(props: Props) {
     const { recipe, hasEditPermission, handleDelete } = props;
     const [isHovered, setIsHovered] = useState(false);
+    const styles = useBreakpointValue(
+        {
+            base: {
+                transform: 'translate(-50%, -50%)',
+                opacity: 1,
+            },
+            md: {
+                transform: `translate(-50%, -50%) scale(${isHovered ? 1 : 0})`,
+                opacity: isHovered ? 1 : 0,
+            },
+        },
+        { fallback: 'md' }
+    );
 
     return (
         <LinkBox>
@@ -47,8 +60,8 @@ export function RecipeCard(props: Props) {
                         top='0'
                         left='0'
                         zIndex='1'
-                        opacity={isHovered ? 1 : 0}
-                        transform={`translate(-50%, -50%) scale(${isHovered ? 1 : 0})`}
+                        opacity={styles!.opacity}
+                        transform={styles!.transform}
                         transition='opacity 0.3s, transform 0.3s'
                         width='1'
                         as={Link}
@@ -75,8 +88,8 @@ export function RecipeCard(props: Props) {
                         top='0'
                         right='-10'
                         zIndex='1'
-                        opacity={isHovered ? 1 : 0}
-                        transform={`translate(-50%, -50%) scale(${isHovered ? 1 : 0})`}
+                        opacity={styles!.opacity}
+                        transform={styles!.transform}
                         transition='opacity 0.3s, transform 0.3s'
                         onClick={() => handleDelete(recipe._id)}
                     />

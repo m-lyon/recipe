@@ -37,6 +37,7 @@ module.exports = {
                 allowSeparatedGroups: true,
             },
         ],
+        'import/no-duplicates': 'off',
         'import/no-unresolved': 'off',
         'import/order': [
             'warn',
