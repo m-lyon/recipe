@@ -1,7 +1,8 @@
 import path from 'path';
 
-import { Schema, Document, Types, model } from 'mongoose';
+import { Document, Schema, Types, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
+
 import { Recipe } from './Recipe.js';
 import { validateMongooseObjectIds } from './utils.js';
 

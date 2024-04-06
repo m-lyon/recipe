@@ -129,13 +129,12 @@ yarn-error.log*
 # vscode
 .vscode/
 
-# ideas folder
-ideas
-
 # graphql generated files
 */src/__generated__/
 
 # testing uploads
 api/uploads/
+api/seed_data/
 
+# vitest
 .vitest-preview/

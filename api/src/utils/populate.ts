@@ -1,9 +1,14 @@
+import fs from 'fs';
+import path from 'path';
+
 import { Tag } from '../models/Tag.js';
 import { Unit } from '../models/Unit.js';
 import { User } from '../models/User.js';
+import { Image } from '../models/Image.js';
+import { IMAGE_DIR } from '../constants.js';
+import { Recipe } from '../models/Recipe.js';
 import { Ingredient } from '../models/Ingredient.js';
 import { PrepMethod } from '../models/PrepMethod.js';
-import { Recipe } from '../models/Recipe.js';
 
 export async function populateTags() {
     try {
@@ -159,7 +164,6 @@ export async function populateRecipes() {
                     (await Tag.findOne({ value: 'lunch' }))._id,
                     (await Tag.findOne({ value: 'dinner' }))._id,
                     (await Tag.findOne({ value: 'freezes' }))._id,
-                    (await Tag.findOne({ value: 'spicy' }))._id,
                 ],
                 ingredients: [
                     {
@@ -257,6 +261,51 @@ export async function populateRecipes() {
         console.log('Dummy recipes added:', createdRecipes);
     } catch (error) {
         console.error('Error populating recipes:', error);
+    }
+}
+
+export async function populateImages() {
+    try {
+        // Remove all existing images
+        await Image.collection.drop();
+        // Remove files from the uploads folder
+        fs.rmSync(IMAGE_DIR, { recursive: true });
+        fs.mkdirSync(IMAGE_DIR);
+
+        const recipe1 = await Recipe.findOne({ titleIdentifier: 'spaghetti-bolognese' });
+        const recipe2 = await Recipe.findOne({ titleIdentifier: 'chicken-curry' });
+
+        const dummyImages = [
+            {
+                origUrl: 'uploads/images/recipe1_image1.jpeg',
+                recipe: recipe1._id,
+                note: 'A picture of the finished dish',
+            },
+            {
+                origUrl: 'uploads/images/recipe2_image1.jpeg',
+                recipe: recipe2._id,
+                note: 'A picture of the finished dish',
+            },
+            {
+                origUrl: 'uploads/images/recipe2_image2.jpeg',
+                recipe: recipe2._id,
+            },
+        ];
+
+        const createdImages = await Image.create(dummyImages);
+        // Move the dummy images to the uploads folder
+        for (const image of createdImages) {
+            const dummyImagePath = path.join(
+                process.cwd(),
+                'seed_data',
+                path.basename(image.origUrl)
+            );
+            const destPath = path.join(IMAGE_DIR, path.basename(image.origUrl));
+            fs.copyFileSync(dummyImagePath, destPath);
+        }
+        console.log('Dummy images added:', createdImages);
+    } catch (error) {
+        console.error('Error populating images:', error);
     }
 }
 

@@ -1,8 +1,8 @@
 import 'dotenv-flow/config';
 import mongoose from '../utils/database.js';
-import { populateRecipes, populateTags } from '../utils/populate.js';
-import { populateUnits, populatePrepMethods } from '../utils/populate.js';
+import { populatePrepMethods, populateUnits } from '../utils/populate.js';
 import { populateIngredients, populateUsers } from '../utils/populate.js';
+import { populateImages, populateRecipes, populateTags } from '../utils/populate.js';
 
 async function populateData() {
     await populateUsers();
@@ -11,6 +11,7 @@ async function populateData() {
     await populatePrepMethods();
     await populateIngredients();
     await populateRecipes();
+    await populateImages();
     mongoose.disconnect();
 }
 
