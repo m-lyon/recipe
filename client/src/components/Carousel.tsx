@@ -1,10 +1,11 @@
 import { useSize } from '@chakra-ui/react-use-size';
-import { useState, useCallback, useEffect, useMemo } from 'react';
-import { ReactNode, useRef, useLayoutEffect, Dispatch, SetStateAction } from 'react';
-import { Box, Flex, Button, Progress, VStack } from '@chakra-ui/react';
-import { ChevronRightIcon, ChevronLeftIcon } from '@chakra-ui/icons';
-import { percentage } from '../utils/number';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
+import { Box, Button, Flex, Progress, VStack } from '@chakra-ui/react';
 import { PanInfo, motion, useAnimation, useMotionValue } from 'framer-motion';
+import { Dispatch, ReactNode, SetStateAction, useLayoutEffect, useRef } from 'react';
+
+import { percentage } from '../utils/number';
 
 interface Props {
     children: ReactNode[];
@@ -217,7 +218,7 @@ function Track(props: TrackProps) {
     const x = useMotionValue(0);
     const node = useRef<HTMLDivElement>(null);
 
-    const handleDragStart = (_: MouseEvent | PointerEvent | TouchEvent) => {
+    const handleDragStart = () => {
         setDragStartPosition(positions[activeItem]);
     };
 

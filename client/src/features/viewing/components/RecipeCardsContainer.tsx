@@ -18,7 +18,7 @@ function hasPermission(user: IUserContext, recipe: Recipe) {
 interface Props {
     recipes: Recipe[];
 }
-export function RecipeCardContainer(props: Props) {
+export function RecipeCardsContainer(props: Props) {
     const { recipes } = props;
     const [show, setShow] = useState(false);
     const [recipeId, setRecipeId] = useState('');

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CloseIcon, EditIcon } from '@chakra-ui/icons';
-import { Card, CardBody, CardHeader, Heading, IconButton } from '@chakra-ui/react';
 import { LinkBox, LinkOverlay, VStack, useBreakpointValue } from '@chakra-ui/react';
+import { Card, CardBody, CardHeader, Heading, IconButton, Spacer } from '@chakra-ui/react';
 
 import { TagList } from './TagList';
 import { getCardTitle } from './RecipeCard';
@@ -36,7 +36,6 @@ export function ImageRecipeCard(props: Props) {
     return (
         <LinkBox>
             <Card
-                minH='22em'
                 width='18em'
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
@@ -75,6 +74,7 @@ export function ImageRecipeCard(props: Props) {
                         alignItems='flex-start'
                     >
                         <TagList tags={recipe.tags} paddingX='20px' />
+                        <Spacer />
                         <ImageViewerHome images={recipe.images} />
                     </VStack>
                 </CardBody>

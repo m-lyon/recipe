@@ -1,8 +1,8 @@
 import * as CSS from 'csstype';
-import { useRef } from 'react';
-import { useSize } from '@chakra-ui/react-use-size';
-import { AspectRatio, Card, CardBody, CardProps, Image } from '@chakra-ui/react';
+import { LegacyRef } from 'react';
 import { UseMeasureRef } from 'react-use/lib/useMeasure';
+import { AspectRatio, Card, CardBody, CardProps, Image } from '@chakra-ui/react';
+import { useMeasure } from 'react-use';
 
 import { Carousel } from './Carousel';
 import { GRAPHQL_ENDPOINT } from '../constants';
@@ -13,11 +13,11 @@ interface ImageCarouselProps extends CardProps {
     width: CSS.Property.Width;
     ratio: number;
     cardRef?: UseMeasureRef<Element>;
+    imgBottomRightRadius?: CSS.Property.BorderBottomRightRadius;
 }
 export function ImageCarousel(props: ImageCarouselProps) {
-    const { images, width, ratio, cardRef, ...rest } = props;
-    const ref = useRef<HTMLImageElement>(null);
-    const dims = useSize(ref);
+    const { images, width, ratio, cardRef, imgBottomRightRadius, ...rest } = props;
+    const [ref, { height }] = useMeasure();
 
     const imagesCards = images.map((image, index) => {
         return (
@@ -27,15 +27,15 @@ export function ImageCarousel(props: ImageCarouselProps) {
                         src={`${GRAPHQL_ENDPOINT}${image!.origUrl}`}
                         objectFit='contain'
                         onDragStart={(e: React.DragEvent<HTMLImageElement>) => e.preventDefault()}
-                        rounded={images.length === 1 ? 'md' : undefined}
-                        ref={index === 0 ? ref : undefined}
+                        borderBottomRadius={images.length === 1 ? 'md' : 0}
+                        borderBottomRightRadius={images.length === 1 ? imgBottomRightRadius : 0}
+                        ref={index === 0 ? (ref as LegacyRef<HTMLImageElement>) : undefined}
                     />
                 </AspectRatio>
             </CardBody>
         );
     });
 
-    const height = dims?.height || 0;
     return (
         <Card
             height={images.length > 1 ? height + 36 : height}

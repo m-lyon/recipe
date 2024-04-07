@@ -34,6 +34,7 @@ export function ImageViewerRecipe(props: Props) {
             right={0}
             top={0}
             cardRef={cardRef}
+            imgBottomRightRadius={0}
         />
     );
 }

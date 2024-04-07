@@ -3,7 +3,7 @@ import { Container, Grid, GridItem, Text } from '@chakra-ui/react';
 
 import { Recipe } from '../__generated__/graphql';
 import { GET_RECIPES } from '../graphql/queries/recipe';
-import { RecipeCardContainer } from '../features/viewing/components/RecipeCardContainer';
+import { RecipeCardsContainer } from '../features/viewing/components/RecipeCardsContainer';
 
 export function Home() {
     const { data, loading, error } = useQuery(GET_RECIPES);
@@ -36,7 +36,7 @@ export function Home() {
                     </Text>
                 </GridItem>
                 <GridItem pl='2' boxShadow='lg' padding='6' area='recipes'>
-                    <RecipeCardContainer recipes={data!.recipeMany as Recipe[]} />
+                    <RecipeCardsContainer recipes={data!.recipeMany as Recipe[]} />
                 </GridItem>
             </Grid>
         </Container>
