@@ -1,6 +1,6 @@
 import { Document, Model, Types } from 'mongoose';
 
-import { Image } from '../models/Image';
+import { Image } from '../models/Image.js';
 
 export const isAuthenticated = () => (next) => (rp) => {
     if (!rp.context.getUser()) {

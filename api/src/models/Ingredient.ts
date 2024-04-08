@@ -1,8 +1,8 @@
 import { Document, Schema, Types, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 
-import { ownerExists } from '../middleware/validation.js';
-import { uniqueInAdminsAndUser } from '../middleware/validation.js';
+import { ownerExists } from './validation.js';
+import { uniqueInAdminsAndUser } from './validation.js';
 
 export interface Ingredient extends Document {
     name: string;

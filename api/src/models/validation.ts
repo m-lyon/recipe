@@ -1,8 +1,8 @@
 import { Types } from 'mongoose';
 
-import { User } from '../models/User.js';
-import { Recipe } from '../models/Recipe.js';
-import { Tag } from '../models/Tag.js';
+import { User } from './User.js';
+import { Recipe } from './Recipe.js';
+import { Tag } from './Tag.js';
 
 export function uniqueInAdminsAndUser(model: string, attribute: string) {
     async function validator(value: string) {

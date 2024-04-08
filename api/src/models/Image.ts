@@ -3,7 +3,7 @@ import path from 'path';
 import { Document, Schema, Types, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 
-import { recipeExists } from '../middleware/validation.js';
+import { recipeExists } from './validation.js';
 
 export interface Image extends Document {
     lowresUrl?: string;

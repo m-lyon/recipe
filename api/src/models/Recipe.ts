@@ -5,7 +5,7 @@ import { Unit } from './Unit.js';
 import { Ingredient } from './Ingredient.js';
 import { PrepMethod } from './PrepMethod.js';
 import { generateRandomString } from '../utils/random.js';
-import { ownerExists, tagsExist, unique, uniqueInAdminsAndUser } from '../middleware/validation.js';
+import { ownerExists, tagsExist, unique, uniqueInAdminsAndUser } from './validation.js';
 
 const quantityRegex = /^(?:(?:[+-]?\d+\.\d+)|(?:[+-]?\d+)|(?:[+-]?\d+\/[1-9]\d*))$/;
 

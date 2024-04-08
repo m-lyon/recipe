@@ -1,7 +1,7 @@
 import { Document, Schema, Types, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 
-import { ownerExists, recipeExists } from '../middleware/validation.js';
+import { ownerExists, recipeExists } from './validation.js';
 
 export interface Rating extends Document {
     value: number;

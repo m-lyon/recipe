@@ -1,7 +1,7 @@
 import { Document, Schema, Types, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 
-import { ownerExists, uniqueInAdminsAndUser } from '../middleware/validation.js';
+import { ownerExists, uniqueInAdminsAndUser } from './validation.js';
 
 export interface Unit extends Document {
     shortSingular: string;
