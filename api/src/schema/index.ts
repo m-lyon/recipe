@@ -47,7 +47,7 @@ const isAuthenticatedMutations = composeResolvers(
 const isImageOwnerOrAdminMutations = composeResolvers(
     {
         Mutation: {
-            imageRemoveById: ImageMutation.imageRemoveMany,
+            imageRemoveMany: ImageMutation.imageRemoveMany,
         },
     },
     { 'Mutation.*': [isImageOwnerOrAdmin()] }
