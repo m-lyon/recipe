@@ -4,20 +4,21 @@ import { MutableRefObject, useRef } from 'react';
 import { Popover, PopoverAnchor, useDisclosure } from '@chakra-ui/react';
 
 import { NewUnitPopover } from './NewUnitPopover';
-import { Unit } from '../../../../../__generated__/graphql';
+import { Unit, UnitCreate } from '../../../../../__generated__/graphql';
 import { DropdownItem } from '../../../../../components/DropdownItem';
 import { useNavigatableList } from '../../../hooks/useNavigatableList';
 import { Quantity, unitDisplayValue } from '../../../hooks/useIngredientList';
 
+type UnitType = Unit | UnitCreate;
 export interface UnitSuggestion {
-    value: string | Unit;
+    value: string | UnitType;
     colour?: string;
 }
 interface Props {
     strValue: string;
     data: Unit[];
     quantity: Quantity;
-    setItem: (value: Unit | null) => void;
+    setItem: (value: UnitType | null) => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
 }

@@ -1,21 +1,19 @@
 import mongoose from 'mongoose';
-
 import { assert } from 'chai';
-import { describe, it, before, after, beforeEach, afterEach } from 'mocha';
+import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 import { MongoMemoryServer } from 'mongodb-memory-server-core';
+
 import { User } from '../../src/models/User.js';
 import { Unit } from '../../src/models/Unit.js';
 
 describe('Unit Model', function () {
-
     let mongoServer: MongoMemoryServer;
 
     before(async function () {
         try {
             mongoServer = await MongoMemoryServer.create();
-            await mongoose.connect(mongoServer.getUri())
-        }
-        catch (error) {
+            await mongoose.connect(mongoServer.getUri());
+        } catch (error) {
             console.log(error);
             assert.fail('Connection not established');
         }
@@ -25,8 +23,7 @@ describe('Unit Model', function () {
         try {
             await mongoose.connection.close();
             await mongoServer.stop();
-        }
-        catch (error) {
+        } catch (error) {
             console.log(error);
             assert.fail('Connection not closed');
         }
@@ -85,12 +82,12 @@ describe('Unit Model', function () {
             longPlural: 'tests',
             preferredNumberFormat: 'decimal',
             owner: user._id,
+            hasSpace: false,
         });
         try {
             await newUnit.save();
             assert.isFalse(newUnit.isNew);
-        }
-        catch (error) {
+        } catch (error) {
             console.log(error);
             assert.fail('Unit not saved');
         }
@@ -106,13 +103,13 @@ describe('Unit Model', function () {
             longPlural: 'tests',
             preferredNumberFormat: 'decimal',
             owner: admin._id,
+            hasSpace: false,
         });
 
         try {
             await newUnit.save();
             assert.isFalse(newUnit.isNew);
-        }
-        catch (error) {
+        } catch (error) {
             console.log(error);
             assert.fail('Unit not saved');
         }
@@ -124,19 +121,21 @@ describe('Unit Model', function () {
             longPlural: 'tests',
             preferredNumberFormat: 'decimal',
             owner: user._id,
+            hasSpace: false,
         });
 
         try {
             await duplicateUnit.save();
             assert.fail('Duplicate unit saved');
-        }
-        catch (error) {
-            assert.equal(error.errors.shortSingular.message, 'The short plural unit name must be unique.');
+        } catch (error) {
+            assert.equal(
+                error.errors.shortSingular.message,
+                'The short plural unit name must be unique.'
+            );
         }
     });
 
     it('Should NOT update a unit with a duplicate short singular name admin1 to user1', async function () {
-        const user = await User.findOne({ firstName: 'Tester1' });
         const admin = await User.findOne({ firstName: 'Admin1', role: 'admin' });
         const newUnit1 = new Unit({
             shortSingular: 'test',
@@ -144,14 +143,16 @@ describe('Unit Model', function () {
             longSingular: 'test',
             longPlural: 'tests',
             preferredNumberFormat: 'decimal',
+            hasSpace: false,
             owner: admin._id,
         });
         const newUnit2 = new Unit({
             shortSingular: 'test2',
-            shortPlural: 'tests',
-            longSingular: 'test',
-            longPlural: 'tests',
+            shortPlural: 'tests2',
+            longSingular: 'test2',
+            longPlural: 'tests2',
             preferredNumberFormat: 'decimal',
+            hasSpace: false,
             owner: admin._id,
         });
 
@@ -160,8 +161,7 @@ describe('Unit Model', function () {
             await newUnit2.save();
             assert.isFalse(newUnit1.isNew);
             assert.isFalse(newUnit2.isNew);
-        }
-        catch (error) {
+        } catch (error) {
             console.log(error);
             assert.fail('Units not saved');
         }
@@ -170,9 +170,11 @@ describe('Unit Model', function () {
         try {
             await newUnit2.save();
             assert.fail('Duplicate unit saved');
-        }
-        catch (error) {
-            assert.equal(error.errors.shortSingular.message, 'The short plural unit name must be unique.');
+        } catch (error) {
+            assert.equal(
+                error.errors.shortSingular.message,
+                'The short plural unit name must be unique.'
+            );
         }
     });
 
@@ -186,13 +188,13 @@ describe('Unit Model', function () {
             longPlural: 'tests',
             preferredNumberFormat: 'decimal',
             owner: admin1._id,
+            hasSpace: false,
         });
 
         try {
             await newUnit.save();
             assert.isFalse(newUnit.isNew);
-        }
-        catch (error) {
+        } catch (error) {
             console.log(error);
             assert.fail('Unit not saved');
         }
@@ -204,14 +206,17 @@ describe('Unit Model', function () {
             longPlural: 'tests',
             preferredNumberFormat: 'decimal',
             owner: admin2._id,
+            hasSpace: false,
         });
 
         try {
             await duplicateUnit.save();
             assert.fail('Duplicate unit saved');
-        }
-        catch (error) {
-            assert.equal(error.errors.shortSingular.message, 'The short plural unit name must be unique.');
+        } catch (error) {
+            assert.equal(
+                error.errors.shortSingular.message,
+                'The short plural unit name must be unique.'
+            );
         }
     });
 
@@ -225,14 +230,16 @@ describe('Unit Model', function () {
             longPlural: 'tests',
             preferredNumberFormat: 'decimal',
             owner: admin1._id,
+            hasSpace: false,
         });
         const newUnit2 = new Unit({
             shortSingular: 'test2',
-            shortPlural: 'tests',
-            longSingular: 'test',
-            longPlural: 'tests',
+            shortPlural: 'tests2',
+            longSingular: 'test2',
+            longPlural: 'tests2',
             preferredNumberFormat: 'decimal',
             owner: admin2._id,
+            hasSpace: false,
         });
 
         try {
@@ -240,8 +247,7 @@ describe('Unit Model', function () {
             await newUnit2.save();
             assert.isFalse(newUnit1.isNew);
             assert.isFalse(newUnit2.isNew);
-        }
-        catch (error) {
+        } catch (error) {
             console.log(error);
             assert.fail('Units not saved');
         }
@@ -250,9 +256,11 @@ describe('Unit Model', function () {
         try {
             await newUnit2.save();
             assert.fail('Duplicate unit saved');
-        }
-        catch (error) {
-            assert.equal(error.errors.shortSingular.message, 'The short plural unit name must be unique.');
+        } catch (error) {
+            assert.equal(
+                error.errors.shortSingular.message,
+                'The short plural unit name must be unique.'
+            );
         }
     });
 
@@ -265,13 +273,13 @@ describe('Unit Model', function () {
             longPlural: 'tests',
             preferredNumberFormat: 'decimal',
             owner: user._id,
+            hasSpace: false,
         });
 
         try {
             await newUnit.save();
             assert.isFalse(newUnit.isNew);
-        }
-        catch (error) {
+        } catch (error) {
             console.log(error);
             assert.fail('Unit not saved');
         }
@@ -283,14 +291,17 @@ describe('Unit Model', function () {
             longPlural: 'tests',
             preferredNumberFormat: 'decimal',
             owner: user._id,
+            hasSpace: false,
         });
 
         try {
             await duplicateUnit.save();
             assert.fail('Duplicate unit saved');
-        }
-        catch (error) {
-            assert.equal(error.errors.shortSingular.message, 'The short plural unit name must be unique.');
+        } catch (error) {
+            assert.equal(
+                error.errors.shortSingular.message,
+                'The short plural unit name must be unique.'
+            );
         }
     });
 
@@ -303,14 +314,16 @@ describe('Unit Model', function () {
             longPlural: 'tests',
             preferredNumberFormat: 'decimal',
             owner: user._id,
+            hasSpace: false,
         });
         const newUnit2 = new Unit({
             shortSingular: 'test2',
-            shortPlural: 'tests',
-            longSingular: 'test',
-            longPlural: 'tests',
+            shortPlural: 'tests2',
+            longSingular: 'test2',
+            longPlural: 'tests2',
             preferredNumberFormat: 'decimal',
             owner: user._id,
+            hasSpace: false,
         });
 
         try {
@@ -318,8 +331,7 @@ describe('Unit Model', function () {
             await newUnit2.save();
             assert.isFalse(newUnit1.isNew);
             assert.isFalse(newUnit2.isNew);
-        }
-        catch (error) {
+        } catch (error) {
             console.log(error);
             assert.fail('Units not saved');
         }
@@ -328,9 +340,11 @@ describe('Unit Model', function () {
         try {
             await newUnit2.save();
             assert.fail('Duplicate unit saved');
-        }
-        catch (error) {
-            assert.equal(error.errors.shortSingular.message, 'The short plural unit name must be unique.');
+        } catch (error) {
+            assert.equal(
+                error.errors.shortSingular.message,
+                'The short plural unit name must be unique.'
+            );
         }
     });
 
@@ -344,13 +358,13 @@ describe('Unit Model', function () {
             longPlural: 'tests',
             preferredNumberFormat: 'decimal',
             owner: user1._id,
+            hasSpace: false,
         });
 
         try {
             await newUnit.save();
             assert.isFalse(newUnit.isNew);
-        }
-        catch (error) {
+        } catch (error) {
             console.log(error);
             assert.fail('Unit not saved');
         }
@@ -362,13 +376,13 @@ describe('Unit Model', function () {
             longPlural: 'tests',
             preferredNumberFormat: 'decimal',
             owner: user2._id,
+            hasSpace: false,
         });
 
         try {
             await duplicateUnit.save();
             assert.isFalse(duplicateUnit.isNew);
-        }
-        catch (error) {
+        } catch (error) {
             assert.fail('Duplicate unit not saved');
         }
     });
@@ -383,6 +397,7 @@ describe('Unit Model', function () {
             longPlural: 'tests',
             preferredNumberFormat: 'decimal',
             owner: user1._id,
+            hasSpace: false,
         });
         const newUnit2 = new Unit({
             shortSingular: 'test2',
@@ -391,6 +406,7 @@ describe('Unit Model', function () {
             longPlural: 'tests',
             preferredNumberFormat: 'decimal',
             owner: user2._id,
+            hasSpace: false,
         });
 
         try {
@@ -398,8 +414,7 @@ describe('Unit Model', function () {
             await newUnit2.save();
             assert.isFalse(newUnit1.isNew);
             assert.isFalse(newUnit2.isNew);
-        }
-        catch (error) {
+        } catch (error) {
             console.log(error);
             assert.fail('Units not saved');
         }
@@ -408,10 +423,9 @@ describe('Unit Model', function () {
         try {
             await newUnit2.save();
             assert.isFalse(newUnit2.isNew);
-        }
-        catch (error) {
+        } catch (error) {
+            console.log(error);
             assert.fail('Duplicate unit not saved');
         }
     });
-
 });

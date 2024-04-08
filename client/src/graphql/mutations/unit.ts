@@ -1,7 +1,7 @@
 import { gql } from '../../__generated__';
 
 export const CREATE_UNIT = gql(`
-    mutation CreateUnit($record: CreateOneUnitInput!) {
+    mutation CreateUnit($record: CreateOneUnitCreateInput!) {
         unitCreateOne(record: $record) {
             record {
                 _id
@@ -11,7 +11,6 @@ export const CREATE_UNIT = gql(`
                 shortPlural
                 preferredNumberFormat
                 hasSpace
-                owner
             }
         }
     }

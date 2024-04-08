@@ -1,5 +1,6 @@
 import { filterIsOwnerOrAdmin } from '../middleware/filters.js';
-import { IngredientTC } from '../models/Ingredient.js';
+import { IngredientCreateTC, IngredientTC } from '../models/Ingredient.js';
+import { setRecordOwnerAsUser } from '../middleware/create.js';
 
 export const IngredientQuery = {
     ingredientById: IngredientTC.mongooseResolvers
@@ -21,8 +22,9 @@ export const IngredientQuery = {
 };
 
 export const IngredientMutation = {
-    ingredientCreateOne: IngredientTC.mongooseResolvers
+    ingredientCreateOne: IngredientCreateTC.mongooseResolvers
         .createOne()
+        .wrapResolve(setRecordOwnerAsUser())
         .setDescription('Create a new ingredient'),
     ingredientUpdateById: IngredientTC.mongooseResolvers
         .updateById()

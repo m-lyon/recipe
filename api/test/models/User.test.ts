@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { assert } from 'chai';
-import { describe, it, before, after } from 'mocha';
+import { after, before, describe, it } from 'mocha';
 
 import { MONGODB_URI } from '../../src/constants.js';
 import { User } from '../../src/models/User.js';

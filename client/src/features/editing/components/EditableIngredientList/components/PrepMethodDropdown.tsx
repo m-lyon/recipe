@@ -1,7 +1,7 @@
 import { matchSorter } from 'match-sorter';
 import { LayoutGroup } from 'framer-motion';
 import { MutableRefObject, useRef } from 'react';
-import { useDisclosure, Popover, PopoverAnchor } from '@chakra-ui/react';
+import { Popover, PopoverAnchor, useDisclosure } from '@chakra-ui/react';
 
 import { NewPrepMethodPopover } from './NewPrepMethodPopover';
 import { PrepMethod } from '../../../../../__generated__/graphql';

@@ -1,13 +1,11 @@
-import { object, string, ValidationError } from 'yup';
-import { useState, useContext, useEffect } from 'react';
-import { useMutation, ApolloError } from '@apollo/client';
+import { useEffect, useState } from 'react';
+import { ValidationError, object, string } from 'yup';
+import { ApolloError, useMutation } from '@apollo/client';
 import { Button, ButtonGroup, useToast } from '@chakra-ui/react';
-import { PopoverHeader, PopoverArrow, Stack } from '@chakra-ui/react';
+import { PopoverArrow, PopoverHeader, Stack } from '@chakra-ui/react';
 import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 
-import { User } from '../../../../../__generated__/graphql';
 import { PrepMethodSuggestion } from './PrepMethodDropdown';
-import { UserContext } from '../../../../../context/UserContext';
 import { CREATE_PREP_METHOD } from '../../../../../graphql/mutations/prepMethod';
 import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';
 
@@ -24,7 +22,6 @@ interface NewPrepMethodFormProps {
 }
 function NewPrepMethodForm(props: NewPrepMethodFormProps) {
     const { firstFieldRef, onClose, handleSelect } = props;
-    const [userContext] = useContext(UserContext);
     const toast = useToast();
     const [hasError, setHasError] = useState(false);
     const [value, setValue] = useState('');
@@ -35,7 +32,6 @@ function NewPrepMethodForm(props: NewPrepMethodFormProps) {
             handleSelect({
                 value: data!.prepMethodCreateOne!.record!.value,
                 colour: undefined,
-                _id: data?.prepMethodCreateOne?.record?._id,
             });
             toast({
                 title: 'Prep method created',
@@ -62,14 +58,8 @@ function NewPrepMethodForm(props: NewPrepMethodFormProps) {
     const handleSubmit = () => {
         try {
             const validated = formSchema.validateSync({ value });
-            const user = userContext as User;
             createNewPrepMethod({
-                variables: {
-                    record: {
-                        ...validated,
-                        owner: user._id,
-                    },
-                },
+                variables: { record: validated },
             });
         } catch (e: unknown) {
             if (e instanceof ValidationError) {
@@ -108,6 +98,7 @@ function NewPrepMethodForm(props: NewPrepMethodFormProps) {
                 firstFieldRef={firstFieldRef}
                 value={value}
                 isInvalid={hasError}
+                isRequired
                 onChange={(e) => {
                     setValue(e.target.value.toLowerCase());
                     hasError && setHasError(false);

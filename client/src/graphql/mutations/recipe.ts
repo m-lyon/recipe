@@ -12,7 +12,7 @@ mutation UpdateRecipe($id: MongoID!, $recipe: UpdateByIdRecipeModifyInput!) {
 `);
 
 export const CREATE_RECIPE = gql(`
-    mutation CreateRecipe($recipe: CreateOneRecipeModifyInput!) {
+    mutation CreateRecipe($recipe: CreateOneRecipeCreateInput!) {
         recipeCreateOne(record: $recipe) {
             record {
                 _id

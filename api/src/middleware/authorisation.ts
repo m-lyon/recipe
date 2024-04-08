@@ -1,51 +1,53 @@
-import { Model, Document, Types } from 'mongoose';
-import { Recipe } from '../models/Recipe.js';
+import { Document, Model, Types } from 'mongoose';
 
-export const isAuthenticated = () => (next) => (resolveParams) => {
-    if (!resolveParams.context.getUser()) {
+import { Image } from '../models/Image';
+
+export const isAuthenticated = () => (next) => (rp) => {
+    if (!rp.context.getUser()) {
         throw new Error('You are not authenticated!');
     }
-    return next(resolveParams);
+    return next(rp);
 };
 
-export const isAdmin = () => (next) => (resolveParams) => {
-    const user = resolveParams.context.getUser();
+export const isAdmin = () => (next) => (rp) => {
+    const user = rp.context.getUser();
     if (user.role !== 'admin') {
         throw new Error('You are not authorised!');
     }
-    return next(resolveParams);
-};
-
-export const isRecipeOwner = () => (next) => async (resolveParams) => {
-    const user = resolveParams.context.getUser();
-    if (!user) {
-        throw new Error('You are not authenticated!');
-    }
-    const recipe = await Recipe.findById(resolveParams._id);
-    if (!recipe) {
-        throw new Error('Recipe not found!');
-    }
-    if (!recipe.owner.equals(user._id)) {
-        throw new Error('You are not authorised!');
-    }
-    return next(resolveParams);
+    return next(rp);
 };
 
 type DocumentWithOwner = Document & { owner: Types.ObjectId };
 export const isDocumentOwnerOrAdmin =
     <T extends DocumentWithOwner>(Model: Model<T>) =>
     (next) =>
-    async (resolveParams) => {
-        const user = resolveParams.context.getUser();
+    async (rp) => {
+        const user = rp.context.getUser();
         if (!user) {
             throw new Error('You are not authenticated!');
         }
-        const document = await Model.findById(resolveParams.args._id);
+        const document = await Model.findById(rp.args._id);
         if (!document) {
             throw new Error('Document not found!');
         }
         if (!(document.owner as Types.ObjectId).equals(user._id) && user.role !== 'admin') {
             throw new Error('You are not authorised!');
         }
-        return next(resolveParams);
+        return next(rp);
     };
+
+export const isImageOwnerOrAdmin = () => (next) => async (rp) => {
+    const user = rp.context.getUser();
+    if (!user) {
+        throw new Error('You are not authenticated!');
+    }
+    const images = await Image.find({ _id: { $in: rp.args.ids } });
+    // Ensure user has permission to remove any and all images
+    images.forEach((image) => {
+        if (!image.recipe._id.equals(user._id) && user.role !== 'admin') {
+            throw new Error('You are not authorised!');
+        }
+    });
+    rp.context.images = images;
+    return next(rp);
+};

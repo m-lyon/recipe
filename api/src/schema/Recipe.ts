@@ -1,13 +1,14 @@
 import { Model } from 'mongoose';
 import { schemaComposer } from 'graphql-compose';
 import { GraphQLError, GraphQLList } from 'graphql';
-import { RecipeIngredientTC, RecipeModifyTC, RecipeQueryTC } from '../models/Recipe.js';
-import { generateRecipeIdentifier } from '../models/Recipe.js';
+
 import { TagTC } from '../models/Tag.js';
 import { UnitTC } from '../models/Unit.js';
-import { Ingredient, IngredientTC } from '../models/Ingredient.js';
-import { PrepMethodTC } from '../models/PrepMethod.js';
 import { ImageTC } from '../models/Image.js';
+import { PrepMethodTC } from '../models/PrepMethod.js';
+import { Ingredient, IngredientTC } from '../models/Ingredient.js';
+import { Recipe, RecipeCreateTC, RecipeIngredientTC, RecipeQueryTC } from '../models/Recipe.js';
+import { RecipeModifyTC, generateRecipeIdentifier } from '../models/Recipe.js';
 
 const IngredientOrRecipeTC = schemaComposer.createUnionTC({
     name: 'IngredientOrRecipe',
@@ -23,26 +24,31 @@ const IngredientOrRecipeTC = schemaComposer.createUnionTC({
 RecipeIngredientTC.addResolver({
     name: 'ingredientOrRecipe',
     type: IngredientOrRecipeTC,
-    description: 'Determine if the object is an ingredient or a recipe and return the appropriate type',
+    description:
+        'Determine if the object is an ingredient or a recipe and return the appropriate type',
     args: { _id: 'MongoID!' },
     resolve: async ({ args }) => {
         const { _id } = args;
-        const ingredientDoc = await IngredientTC.mongooseResolvers.findById().resolve({ args: { _id } });
+        const ingredientDoc = await IngredientTC.mongooseResolvers
+            .findById()
+            .resolve({ args: { _id } });
         if (ingredientDoc) {
             return ingredientDoc;
         }
-        const recipeDoc = await RecipeQueryTC.mongooseResolvers.findById().resolve({ args: { _id } });
+        const recipeDoc = await RecipeQueryTC.mongooseResolvers
+            .findById()
+            .resolve({ args: { _id } });
         if (recipeDoc) {
             return recipeDoc;
         }
         throw new GraphQLError('Ingredient or recipe not found');
-    }
+    },
 });
 
 RecipeQueryTC.addRelation('tags', {
     resolver: () => TagTC.mongooseResolvers.findByIds(),
     prepareArgs: {
-        _ids: (source) => source.tags?.map((o) => o._id),
+        _ids: (source: Recipe) => source.tags?.map((o) => o._id),
     },
     projection: { tags: true },
 });
@@ -91,9 +97,10 @@ export const RecipeQuery = {
 };
 
 export const RecipeMutation = {
-    recipeCreateOne: RecipeModifyTC.mongooseResolvers
+    recipeCreateOne: RecipeCreateTC.mongooseResolvers
         .createOne()
         .wrapResolve((next) => async (rp) => {
+            rp.args.record.owner = rp.context.getUser();
             rp.args.record.titleIdentifier = generateRecipeIdentifier(rp.args.record.title);
             return next(rp);
         })

@@ -14,6 +14,7 @@ import {
     PrepMethod,
     RecipeIngredient,
     Unit,
+    UnitCreate,
 } from '../../../__generated__/graphql';
 import { GET_INGREDIENTS } from '../../../graphql/queries/ingredient';
 import { GET_PREP_METHODS } from '../../../graphql/queries/prepMethod';
@@ -271,7 +272,11 @@ function getEditableQuantityStr(item: EditableRecipeIngredient): string {
     }
     return getFinishedQuantityStr(item.quantity);
 }
-export function unitDisplayValue(quantity: FinishedQuantity, unit: Unit, short: boolean): string {
+export function unitDisplayValue(
+    quantity: FinishedQuantity,
+    unit: Unit | UnitCreate,
+    short: boolean
+): string {
     if (short) {
         return isPlural(quantity) ? unit.shortPlural : unit.shortSingular;
     }

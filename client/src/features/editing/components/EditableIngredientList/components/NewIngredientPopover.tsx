@@ -1,15 +1,13 @@
-import { useState, useContext, useEffect } from 'react';
-import { useMutation, ApolloError } from '@apollo/client';
+import { useEffect, useState } from 'react';
+import { ApolloError, useMutation } from '@apollo/client';
 import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
+import { ValidationError, boolean, number, object, string } from 'yup';
 import { Button, ButtonGroup, Checkbox, Stack } from '@chakra-ui/react';
-import { PopoverHeader, PopoverArrow, useToast } from '@chakra-ui/react';
-import { object, string, number, boolean, ValidationError } from 'yup';
+import { PopoverArrow, PopoverHeader, useToast } from '@chakra-ui/react';
 
-import { User } from '../../../../../__generated__/graphql';
 import { IngredientSuggestion } from './IngredientDropdown';
-import { UserContext } from '../../../../../context/UserContext';
-import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';
 import { CREATE_INGREDIENT } from '../../../../../graphql/mutations/ingredient';
+import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';
 
 function formatError(error: ApolloError) {
     if (error.message.startsWith('E11000')) {
@@ -25,7 +23,6 @@ interface NewIngredientFormProps {
 }
 function NewIngredientForm(props: NewIngredientFormProps) {
     const { firstFieldRef, onClose, handleSelect } = props;
-    const [userContext] = useContext(UserContext);
     const [hasError, setHasError] = useState(false);
     const [name, setName] = useState('');
     const [pluralName, setPluralName] = useState('');
@@ -63,23 +60,20 @@ function NewIngredientForm(props: NewIngredientFormProps) {
 
     const formSchema = object({
         name: string().required('Name is required'),
-        pluralName: string().required('Plural name is required'),
+        pluralName: string().required(),
         isCountable: boolean().required(),
         density: number(),
     });
 
     const handleSubmit = () => {
         try {
-            const user = userContext as User;
             const validated = formSchema.validateSync({
                 name,
-                pluralName,
+                pluralName: pluralName === '' ? name : pluralName,
                 isCountable,
                 density: density === '' ? undefined : density,
             });
-            createNewIngredient({
-                variables: { record: { ...validated, owner: user._id } },
-            });
+            createNewIngredient({ variables: { record: { ...validated } } });
         } catch (e: unknown) {
             setHasError(true);
             if (e instanceof ValidationError) {
@@ -117,6 +111,7 @@ function NewIngredientForm(props: NewIngredientFormProps) {
                 firstFieldRef={firstFieldRef}
                 value={name}
                 isInvalid={hasError}
+                isRequired
                 onChange={(e) => {
                     setName(e.target.value.toLowerCase());
                     hasError && setHasError(false);

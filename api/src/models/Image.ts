@@ -3,8 +3,7 @@ import path from 'path';
 import { Document, Schema, Types, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 
-import { Recipe } from './Recipe.js';
-import { validateMongooseObjectIds } from './utils.js';
+import { recipeExists } from '../middleware/validation.js';
 
 export interface Image extends Document {
     lowresUrl?: string;
@@ -16,7 +15,12 @@ export interface Image extends Document {
 const imageSchema = new Schema<Image>({
     lowresUrl: { type: String },
     origUrl: { type: String, required: true },
-    recipe: { type: Schema.Types.ObjectId, required: true, ref: 'Recipe' },
+    recipe: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: 'Recipe',
+        validate: recipeExists(),
+    },
     note: { type: String },
 });
 
@@ -31,10 +35,6 @@ export async function saveImageToDb(
     await image.save();
     return image;
 }
-
-imageSchema.pre('save', async function (next) {
-    await validateMongooseObjectIds.call(this, { recipe: Recipe }, next);
-});
 
 export const Image = model<Image>('Image', imageSchema);
 export const ImageTC = composeMongoose(Image);

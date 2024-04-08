@@ -25,7 +25,7 @@ export function CreateRecipe() {
     });
 
     const handleSubmitMutation = async (recipe: CreateOneRecipeModifyInput) => {
-        let recipeId: String;
+        let recipeId: string;
         try {
             // Create Recipe
             const result = await createRecipe({ variables: { recipe } });
@@ -91,8 +91,8 @@ export function CreateRecipe() {
                     recipeLoading || ratingLoading
                         ? 'Submitting Recipe...'
                         : uploadLoading
-                        ? 'Uploading Images...'
-                        : undefined,
+                          ? 'Uploading Images...'
+                          : undefined,
                 disabled: !!response,
                 loading: recipeLoading || ratingLoading || uploadLoading,
             }}

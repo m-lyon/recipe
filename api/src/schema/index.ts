@@ -1,18 +1,20 @@
 import { SchemaComposer } from 'graphql-compose';
-import { TagQuery, TagMutation } from './Tag.js';
-import { UnitQuery, UnitMutation } from './Unit.js';
-import { UserQuery, UserMutation } from './User.js';
-import { PrepMethodQuery, PrepMethodMutation } from './PrepMethod.js';
-import { IngredientQuery, IngredientMutation } from './Ingredient.js';
-import { RecipeQuery, RecipeMutation } from './Recipe.js';
 import { composeResolvers } from '@graphql-tools/resolvers-composition';
-import { isAdmin, isAuthenticated, isDocumentOwnerOrAdmin } from '../middleware/authorisation.js';
-import { RatingMutation, RatingQuery } from './Rating.js';
-import { ImageMutation, ImageQuery } from './Image.js';
-import { Recipe } from '../models/Recipe.js';
+
 import { Unit } from '../models/Unit.js';
+import { Recipe } from '../models/Recipe.js';
+import { TagMutation, TagQuery } from './Tag.js';
+import { UnitMutation, UnitQuery } from './Unit.js';
+import { UserMutation, UserQuery } from './User.js';
 import { Ingredient } from '../models/Ingredient.js';
 import { PrepMethod } from '../models/PrepMethod.js';
+import { ImageMutation, ImageQuery } from './Image.js';
+import { RecipeMutation, RecipeQuery } from './Recipe.js';
+import { RatingMutation, RatingQuery } from './Rating.js';
+import { PrepMethodMutation, PrepMethodQuery } from './PrepMethod.js';
+import { IngredientMutation, IngredientQuery } from './Ingredient.js';
+import { isAdmin, isImageOwnerOrAdmin } from '../middleware/authorisation.js';
+import { isAuthenticated, isDocumentOwnerOrAdmin } from '../middleware/authorisation.js';
 
 const isAdminMutations = composeResolvers(
     {
@@ -38,10 +40,17 @@ const isAuthenticatedMutations = composeResolvers(
             unitCreateOne: UnitMutation.unitCreateOne,
             prepMethodCreateOne: PrepMethodMutation.prepMethodCreateOne,
             ingredientCreateOne: IngredientMutation.ingredientCreateOne,
-            imageRemoveMany: ImageMutation.imageRemoveMany,
         },
     },
     { 'Mutation.*': [isAuthenticated()] }
+);
+const isImageOwnerOrAdminMutations = composeResolvers(
+    {
+        Mutation: {
+            imageRemoveById: ImageMutation.imageRemoveMany,
+        },
+    },
+    { 'Mutation.*': [isImageOwnerOrAdmin()] }
 );
 const isRecipeOwnerOrAdminMutations = composeResolvers(
     {
@@ -102,6 +111,7 @@ schemaComposer.Mutation.addFields({
     ...isUnitOwnerOrAdminMutations.Mutation,
     ...isIngredientOwnerOrAdminMutations.Mutation,
     ...isPrepMethodOwnerOrAdminMutations.Mutation,
+    ...isImageOwnerOrAdminMutations.Mutation,
 });
 
 export const schema = schemaComposer.buildSchema();

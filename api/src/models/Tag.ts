@@ -1,5 +1,6 @@
-import { Schema, Document, Types, model } from 'mongoose';
+import { Document, Schema, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
+
 import { uniqueInAdminsAndUser } from '../middleware/validation.js';
 
 export interface Tag extends Document {

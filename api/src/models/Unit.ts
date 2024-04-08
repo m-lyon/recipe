@@ -1,6 +1,7 @@
-import { Schema, Document, model, Types } from 'mongoose';
+import { Document, Schema, Types, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
-import { uniqueInAdminsAndUser } from '../middleware/validation.js';
+
+import { ownerExists, uniqueInAdminsAndUser } from '../middleware/validation.js';
 
 export interface Unit extends Document {
     shortSingular: string;
@@ -50,9 +51,13 @@ const unitSchema = new Schema<Unit>({
         },
     },
     preferredNumberFormat: { type: String, required: true, enum: ['decimal', 'fraction'] },
-    owner: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
+    owner: { type: Schema.Types.ObjectId, required: true, ref: 'User', validator: ownerExists() },
     hasSpace: { type: Boolean, required: true },
 });
 
 export const Unit = model<Unit>('Unit', unitSchema);
 export const UnitTC = composeMongoose(Unit);
+export const UnitCreateTC = composeMongoose(Unit, {
+    removeFields: ['owner'],
+    name: 'UnitCreate',
+});

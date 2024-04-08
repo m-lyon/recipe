@@ -1,4 +1,4 @@
-import { Schema, Document, model } from 'mongoose';
+import { Document, Schema, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 import passportLocalMongoose from 'passport-local-mongoose';
 

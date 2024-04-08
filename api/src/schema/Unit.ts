@@ -1,5 +1,6 @@
-import { UnitTC } from '../models/Unit.js';
+import { UnitCreateTC, UnitTC } from '../models/Unit.js';
 import { filterIsOwnerOrAdmin } from '../middleware/filters.js';
+import { setRecordOwnerAsUser } from '../middleware/create.js';
 
 export const UnitQuery = {
     unitById: UnitTC.mongooseResolvers.findById().setDescription('Retrieve a unit by its ID'),
@@ -15,7 +16,10 @@ export const UnitQuery = {
 };
 
 export const UnitMutation = {
-    unitCreateOne: UnitTC.mongooseResolvers.createOne().setDescription('Create a new unit'),
+    unitCreateOne: UnitCreateTC.mongooseResolvers
+        .createOne()
+        .wrapResolve(setRecordOwnerAsUser())
+        .setDescription('Create a new unit'),
     unitUpdateById: UnitTC.mongooseResolvers.updateById().setDescription('Update a unit by its ID'),
     unitUpdateOne: UnitTC.mongooseResolvers.updateOne().setDescription('Update a single unit'),
     unitRemoveById: UnitTC.mongooseResolvers.removeById().setDescription('Remove a unit by its ID'),

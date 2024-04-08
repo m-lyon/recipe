@@ -1,5 +1,6 @@
-import { PrepMethodTC } from '../models/PrepMethod.js';
 import { filterIsOwnerOrAdmin } from '../middleware/filters.js';
+import { setRecordOwnerAsUser } from '../middleware/create.js';
+import { PrepMethodCreateTC, PrepMethodTC } from '../models/PrepMethod.js';
 
 export const PrepMethodQuery = {
     prepMethodById: PrepMethodTC.mongooseResolvers
@@ -21,8 +22,9 @@ export const PrepMethodQuery = {
 };
 
 export const PrepMethodMutation = {
-    prepMethodCreateOne: PrepMethodTC.mongooseResolvers
+    prepMethodCreateOne: PrepMethodCreateTC.mongooseResolvers
         .createOne()
+        .wrapResolve(setRecordOwnerAsUser())
         .setDescription('Create a new prep method'),
     prepMethodUpdateById: PrepMethodTC.mongooseResolvers
         .updateById()

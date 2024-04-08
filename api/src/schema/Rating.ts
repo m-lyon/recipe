@@ -1,4 +1,5 @@
-import { RatingTC } from '../models/Rating.js';
+import { RatingCreateTC, RatingTC } from '../models/Rating.js';
+import { setRecordOwnerAsUser } from '../middleware/create.js';
 
 export const RatingQuery = {
     ratingById: RatingTC.mongooseResolvers.findById().setDescription('Retrieve a rating by its ID'),
@@ -10,7 +11,10 @@ export const RatingQuery = {
 };
 
 export const RatingMutation = {
-    ratingCreateOne: RatingTC.mongooseResolvers.createOne().setDescription('Create a new rating'),
+    ratingCreateOne: RatingCreateTC.mongooseResolvers
+        .createOne()
+        .wrapResolve(setRecordOwnerAsUser())
+        .setDescription('Create a new rating'),
     ratingUpdateById: RatingTC.mongooseResolvers
         .updateById()
         .setDescription('Update a rating by its ID'),

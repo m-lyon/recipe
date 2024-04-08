@@ -1,5 +1,3 @@
-// Tag GraphQL schema
-
 import { TagTC } from '../models/Tag.js';
 
 export const TagQuery = {
@@ -13,7 +11,6 @@ export const TagQuery = {
 
 export const TagMutation = {
     tagCreateOne: TagTC.mongooseResolvers.createOne().setDescription('Create a new tag'),
-    tagCreateMany: TagTC.mongooseResolvers.createMany().setDescription('Create multiple tags'),
     tagUpdateById: TagTC.mongooseResolvers.updateById().setDescription('Update a tag by its ID'),
     tagUpdateOne: TagTC.mongooseResolvers.updateOne().setDescription('Update a single tag'),
     tagRemoveById: TagTC.mongooseResolvers.removeById().setDescription('Remove a tag by its ID'),

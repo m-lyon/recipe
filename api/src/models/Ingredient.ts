@@ -1,5 +1,7 @@
-import { Schema, Document, model, Types } from 'mongoose';
+import { Document, Schema, Types, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
+
+import { ownerExists } from '../middleware/validation.js';
 import { uniqueInAdminsAndUser } from '../middleware/validation.js';
 
 export interface Ingredient extends Document {
@@ -31,8 +33,12 @@ const ingredientSchema = new Schema<Ingredient>({
     },
     density: { type: Number, required: false },
     isCountable: { type: Boolean, required: true },
-    owner: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
+    owner: { type: Schema.Types.ObjectId, required: true, ref: 'User', validator: ownerExists() },
 });
 
 export const Ingredient = model<Ingredient>('Ingredient', ingredientSchema);
 export const IngredientTC = composeMongoose(Ingredient);
+export const IngredientCreateTC = composeMongoose(Ingredient, {
+    removeFields: ['owner'],
+    name: 'IngredientCreate',
+});

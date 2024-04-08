@@ -1,15 +1,14 @@
-import { useState, useContext, useEffect } from 'react';
-import { object, string, ValidationError } from 'yup';
+import { useEffect, useState } from 'react';
+import { ValidationError, boolean, mixed, object, string } from 'yup';
 import { ApolloError, useMutation } from '@apollo/client';
-import { Radio, RadioGroup, Stack, PopoverHeader, PopoverArrow } from '@chakra-ui/react';
-import { PopoverCloseButton, PopoverContent, useToast, Checkbox } from '@chakra-ui/react';
+import { PopoverArrow, PopoverHeader, Radio, RadioGroup, Stack } from '@chakra-ui/react';
+import { Checkbox, PopoverCloseButton, PopoverContent, useToast } from '@chakra-ui/react';
 import { Button, ButtonGroup, FormControl, FormHelperText, HStack } from '@chakra-ui/react';
 
 import { UnitSuggestion } from './UnitDropdown';
-import { UserContext } from '../../../../../context/UserContext';
 import { CREATE_UNIT } from '../../../../../graphql/mutations/unit';
 import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';
-import { EnumUnitPreferredNumberFormat, User } from '../../../../../__generated__/graphql';
+import { EnumUnitCreatePreferredNumberFormat } from '../../../../../__generated__/graphql';
 
 function formatError(error: ApolloError) {
     if (error.message.startsWith('E11000')) {
@@ -33,7 +32,6 @@ function NewUnitForm(props: NewUnitFormProps) {
     const [longPlural, setLongPlural] = useState('');
     const [preferredNumberFormat, setpreferredNumberFormat] = useState('');
     const [hasSpace, setHasSpace] = useState(true);
-    const [userContext] = useContext(UserContext);
     const [isFocused, setIsFocused] = useState(false);
 
     const [createNewUnit] = useMutation(CREATE_UNIT, {
@@ -69,32 +67,28 @@ function NewUnitForm(props: NewUnitFormProps) {
         shortPlural: string().required('Short plural name is required'),
         longSingular: string().required('Long singular name is required'),
         longPlural: string().required('Long plural name is required'),
-        preferredNumberFormat: string()
+        preferredNumberFormat: mixed<EnumUnitCreatePreferredNumberFormat>()
             .required()
-            .oneOf(['decimal', 'fraction'], 'You must select a number format'),
+            .oneOf(
+                [
+                    EnumUnitCreatePreferredNumberFormat.Decimal,
+                    EnumUnitCreatePreferredNumberFormat.Fraction,
+                ],
+                'You must select a number format'
+            ),
+        hasSpace: boolean().required(),
     });
 
     const handleSubmit = () => {
         try {
             const validated = formSchema.validateSync({
                 shortSingular,
-                shortPlural,
+                shortPlural: shortPlural === '' ? shortSingular : shortPlural,
                 longSingular,
-                longPlural,
+                longPlural: longPlural === '' ? longSingular : longPlural,
                 preferredNumberFormat,
             });
-            const user = userContext as User;
-            createNewUnit({
-                variables: {
-                    record: {
-                        ...validated,
-                        owner: user?._id,
-                        preferredNumberFormat:
-                            validated.preferredNumberFormat as EnumUnitPreferredNumberFormat,
-                        hasSpace,
-                    },
-                },
-            });
+            createNewUnit({ variables: { record: validated } });
         } catch (e: unknown) {
             setHasError(true);
             if (e instanceof ValidationError) {
@@ -138,6 +132,7 @@ function NewUnitForm(props: NewUnitFormProps) {
                 label='Short singular name'
                 value={shortSingular}
                 isInvalid={hasError}
+                isRequired
                 onChange={(e) => {
                     setShortSingular(e.target.value.toLowerCase());
                     hasError && setHasError(false);
@@ -157,6 +152,7 @@ function NewUnitForm(props: NewUnitFormProps) {
                 label='Long singular name'
                 id='long-singular-name'
                 value={longSingular}
+                isRequired
                 isInvalid={hasError}
                 onChange={(e) => {
                     setLongSingular(e.target.value.toLowerCase());

@@ -1,12 +1,12 @@
 import fs from 'fs';
 import path from 'path';
-import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
 
-import { GraphQLNonNull, GraphQLObjectType, GraphQLString, GraphQLList } from 'graphql';
-import { Image, ImageTC } from '../models/Image.js';
-import { FileUpload, storeUpload, validateImageFile } from '../utils/upload.js';
-import { saveImageToDb } from '../models/Image.js';
+import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
+import { GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
+
 import { IMAGE_DIR } from '../constants.js';
+import { Image, ImageTC, saveImageToDb } from '../models/Image.js';
+import { FileUpload, storeUpload, validateImageFile } from '../utils/upload.js';
 
 ImageTC.addResolver({
     name: 'imageUploadOne',
@@ -69,14 +69,7 @@ ImageTC.addResolver({
     },
     resolve: async (rp) => {
         const { args, context } = rp;
-        const user = context.getUser();
-        const images = await Image.find({ _id: { $in: args.ids } });
-        // Ensure user has permission to remove any and all images
-        images.forEach((image) => {
-            if (!image.recipe._id.equals(user._id) && user.role !== 'admin') {
-                throw new Error('You are not authorised!');
-            }
-        });
+        const images = context.images;
         // Remove the images from the database
         await Image.deleteMany(args.filter);
         // Remove files from disk

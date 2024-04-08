@@ -1,11 +1,12 @@
-import { Schema, Document, model, Types } from 'mongoose';
+import { Document, Schema, Types, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
-import { Recipe } from './Recipe.js';
-import { validateMongooseObjectIds } from './utils.js';
+
+import { ownerExists, recipeExists } from '../middleware/validation.js';
 
 export interface Rating extends Document {
     value: number;
     recipe: Types.ObjectId;
+    owner: Types.ObjectId;
 }
 
 const ratingSchema = new Schema<Rating>({
@@ -19,11 +20,18 @@ const ratingSchema = new Schema<Rating>({
             message: 'The rating must be between 0 and 10.',
         },
     },
-    recipe: { type: Schema.Types.ObjectId, ref: 'Recipe', required: true },
-});
-ratingSchema.pre('save', async function (next) {
-    await validateMongooseObjectIds.call(this, { recipe: Recipe }, next);
+    recipe: {
+        type: Schema.Types.ObjectId,
+        ref: 'Recipe',
+        required: true,
+        validator: recipeExists(),
+    },
+    owner: { type: Schema.Types.ObjectId, ref: 'User', required: true, validator: ownerExists() },
 });
 
 export const Rating = model<Rating>('Rating', ratingSchema);
 export const RatingTC = composeMongoose(Rating);
+export const RatingCreateTC = composeMongoose(Rating, {
+    removeFields: ['owner'],
+    name: 'RatingCreate',
+});
