@@ -2,16 +2,16 @@ import { useToast } from '@chakra-ui/react';
 import { useMutation, useQuery } from '@apollo/client';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { useRecipeState } from '@recipe/features/editing';
+import { EditableRecipe } from '@recipe/features/editing';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
+import { dbIngredientToFinished } from '@recipe/features/editing';
 import { DELETE_IMAGES, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
+import { RecipeIngredient, UpdateByIdRecipeModifyInput } from '@recipe/graphql/generated';
 
-import { EditableRecipe } from '../features/editing';
 import { GRAPHQL_ENDPOINT, ROOT_PATH } from '../constants';
 import { useViewStarRating } from '../hooks/useViewStarRating';
-import { useRecipeState } from '../features/editing/hooks/useRecipeState';
-import { dbIngredientToFinished } from '../features/editing/hooks/useIngredientList';
-import { CreateOneRecipeModifyInput, RecipeIngredient } from '../__generated__/graphql';
 
 export function EditRecipe() {
     const toast = useToast();
@@ -92,7 +92,7 @@ export function EditRecipe() {
         return <div>Error: {error.message}</div>;
     }
 
-    const handleSubmitMutation = async (recipe: CreateOneRecipeModifyInput) => {
+    const handleSubmitMutation = async (recipe: UpdateByIdRecipeModifyInput) => {
         try {
             // Save Recipe
             await saveRecipe({ variables: { id: data!.recipeOne!._id, recipe } });

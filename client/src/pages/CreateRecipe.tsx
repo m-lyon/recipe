@@ -3,13 +3,14 @@ import { useToast } from '@chakra-ui/react';
 import { useMutation } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
 
-import { useRecipeState } from '../features/editing/hooks/useRecipeState';
-import { EditableRecipe } from '../features/editing';
-import { CreateOneRecipeModifyInput } from '../__generated__/graphql';
+import { useRecipeState } from '@recipe/features/editing';
+import { EditableRecipe } from '@recipe/features/editing';
+import { ADD_RATING } from '@recipe/graphql/mutations/rating';
+import { UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
+import { CREATE_RECIPE } from '@recipe/graphql/mutations/recipe';
+import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
+
 import { ROOT_PATH } from '../constants';
-import { CREATE_RECIPE } from '../graphql/mutations/recipe';
-import { ADD_RATING } from '../graphql/mutations/rating';
-import { UPLOAD_IMAGES } from '../graphql/mutations/image';
 
 export function CreateRecipe() {
     const toast = useToast();
@@ -24,7 +25,7 @@ export function CreateRecipe() {
         context: { headers: { 'apollo-require-preflight': true } },
     });
 
-    const handleSubmitMutation = async (recipe: CreateOneRecipeModifyInput) => {
+    const handleSubmitMutation = async (recipe: CreateOneRecipeCreateInput) => {
         let recipeId: string;
         try {
             // Create Recipe
