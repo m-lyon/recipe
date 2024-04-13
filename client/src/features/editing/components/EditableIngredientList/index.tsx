@@ -1,6 +1,6 @@
 import { Reorder } from 'framer-motion';
 import { VStack } from '@chakra-ui/react';
-import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
+import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 
 import { EditableIngredient } from './components/EditableIngredient';
 import { FinishedIngredient } from './components/FinishedIngredient';

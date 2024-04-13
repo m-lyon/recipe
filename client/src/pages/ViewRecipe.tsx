@@ -2,12 +2,12 @@ import { useQuery } from '@apollo/client';
 import { useParams } from 'react-router-dom';
 import { Box, Container, Grid, GridItem, useBreakpointValue } from '@chakra-ui/react';
 
-import { GET_RECIPE } from '../graphql/queries/recipe';
-import { Title } from '../features/viewing/components/Title';
-import { Recipe, RecipeIngredient } from '../__generated__/graphql';
-import { IngredientsTab } from '../features/viewing/components/IngredientsTab';
-import { InstructionsTab } from '../features/viewing/components/InstructionsTab';
-import { ImageViewerRecipe } from '../features/viewing/components/ImageViewerRecipe';
+import { Title } from '@recipe/features/viewing';
+import { IngredientsTab } from '@recipe/features/viewing';
+import { InstructionsTab } from '@recipe/features/viewing';
+import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
+import { ImageViewerRecipe } from '@recipe/features/viewing';
+import { Recipe, RecipeIngredient } from '@recipe/graphql/generated';
 
 export function ViewRecipe() {
     const { titleIdentifier } = useParams();

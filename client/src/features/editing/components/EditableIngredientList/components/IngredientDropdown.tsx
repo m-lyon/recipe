@@ -3,10 +3,11 @@ import { LayoutGroup } from 'framer-motion';
 import { MutableRefObject, useRef } from 'react';
 import { Popover, PopoverAnchor, useDisclosure } from '@chakra-ui/react';
 
+import { Ingredient, IngredientCreate, Unit } from '@recipe/graphql/generated';
+
 import { NewIngredientPopover } from './NewIngredientPopover';
 import { DropdownItem } from '../../../../../components/DropdownItem';
 import { useNavigatableList } from '../../../hooks/useNavigatableList';
-import { Ingredient, IngredientCreate, Unit } from '../../../../../__generated__/graphql';
 import { Quantity, Recipe, ingredientDisplayStr } from '../../../hooks/useIngredientList';
 
 export type IngredientOrRecipe = Ingredient | IngredientCreate | Recipe;

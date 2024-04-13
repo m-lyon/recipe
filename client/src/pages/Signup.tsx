@@ -1,12 +1,13 @@
 import { object, string } from 'yup';
-import { useState, useContext } from 'react';
+import { useContext, useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
-import { FormControl, Heading, Input, Button, Box, useToast, HStack } from '@chakra-ui/react';
+import { Box, Button, FormControl, HStack, Heading, Input, useToast } from '@chakra-ui/react';
+
+import { SIGNUP } from '@recipe/graphql/mutations/user';
 
 import { ROOT_PATH } from '../constants';
 import { UserContext } from '../context/UserContext';
-import { SIGNUP } from '../graphql/mutations/user';
 
 export function Signup() {
     const [email, setEmail] = useState('');
@@ -22,7 +23,7 @@ export function Signup() {
         email: string().email().required(),
         password: string().required(),
         firstName: string().required(),
-        lastName: string().required()
+        lastName: string().required(),
     });
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -54,16 +55,31 @@ export function Signup() {
         <Box maxW='md' mx='auto' mt={8} borderWidth='1px' borderRadius='lg' p={8}>
             <form onSubmit={handleSubmit}>
                 <Heading>Sign Up</Heading>
-                <HStack mt={8} >
-                <FormControl>
-                    <Input type='text' placeholder='First name' value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-                </FormControl>
-                <FormControl>
-                    <Input type='text' value={lastName} placeholder='Surname' onChange={(e) => setLastName(e.target.value)} />
+                <HStack mt={8}>
+                    <FormControl>
+                        <Input
+                            type='text'
+                            placeholder='First name'
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                        />
                     </FormControl>
-                    </HStack>
+                    <FormControl>
+                        <Input
+                            type='text'
+                            value={lastName}
+                            placeholder='Surname'
+                            onChange={(e) => setLastName(e.target.value)}
+                        />
+                    </FormControl>
+                </HStack>
                 <FormControl mt={4}>
-                    <Input type='email' value={email} placeholder='Email' onChange={(e) => setEmail(e.target.value)} />
+                    <Input
+                        type='email'
+                        value={email}
+                        placeholder='Email'
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
                 </FormControl>
                 <FormControl mt={4}>
                     <Input

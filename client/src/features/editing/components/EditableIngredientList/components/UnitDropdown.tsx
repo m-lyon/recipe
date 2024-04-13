@@ -3,8 +3,9 @@ import { LayoutGroup } from 'framer-motion';
 import { MutableRefObject, useRef } from 'react';
 import { Popover, PopoverAnchor, useDisclosure } from '@chakra-ui/react';
 
+import { Unit, UnitCreate } from '@recipe/graphql/generated';
+
 import { NewUnitPopover } from './NewUnitPopover';
-import { Unit, UnitCreate } from '../../../../../__generated__/graphql';
 import { DropdownItem } from '../../../../../components/DropdownItem';
 import { useNavigatableList } from '../../../hooks/useNavigatableList';
 import { Quantity, unitDisplayValue } from '../../../hooks/useIngredientList';

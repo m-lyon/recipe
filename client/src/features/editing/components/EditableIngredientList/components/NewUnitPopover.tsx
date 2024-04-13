@@ -5,10 +5,11 @@ import { PopoverArrow, PopoverHeader, Radio, RadioGroup, Stack } from '@chakra-u
 import { Checkbox, PopoverCloseButton, PopoverContent, useToast } from '@chakra-ui/react';
 import { Button, ButtonGroup, FormControl, FormHelperText, HStack } from '@chakra-ui/react';
 
+import { CREATE_UNIT } from '@recipe/graphql/mutations/unit';
+import { EnumUnitCreatePreferredNumberFormat } from '@recipe/graphql/generated';
+
 import { UnitSuggestion } from './UnitDropdown';
-import { CREATE_UNIT } from '../../../../../graphql/mutations/unit';
 import { FloatingLabelInput } from '../../../../../components/FloatingLabelInput';
-import { EnumUnitCreatePreferredNumberFormat } from '../../../../../__generated__/graphql';
 
 function formatError(error: ApolloError) {
     if (error.message.startsWith('E11000')) {
@@ -87,6 +88,7 @@ function NewUnitForm(props: NewUnitFormProps) {
                 longSingular,
                 longPlural: longPlural === '' ? longSingular : longPlural,
                 preferredNumberFormat,
+                hasSpace,
             });
             createNewUnit({ variables: { record: validated } });
         } catch (e: unknown) {

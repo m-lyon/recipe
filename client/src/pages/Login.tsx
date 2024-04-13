@@ -1,10 +1,12 @@
-import { useState, useContext } from 'react';
+import { useContext, useState } from 'react';
 import { useMutation } from '@apollo/client';
-import { UserContext } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
-import { FormControl, FormLabel, Input, Button, Box, useToast } from '@chakra-ui/react';
+import { Box, Button, FormControl, FormLabel, Input, useToast } from '@chakra-ui/react';
+
+import { LOGIN } from '@recipe/graphql/mutations/user';
+
 import { ROOT_PATH } from '../constants';
-import { LOGIN } from '../graphql/mutations/user';
+import { UserContext } from '../context/UserContext';
 
 export function Login() {
     const [email, setEmail] = useState('');

@@ -3,20 +3,21 @@ import { LayoutGroup } from 'framer-motion';
 import { MutableRefObject, useRef } from 'react';
 import { Popover, PopoverAnchor, useDisclosure } from '@chakra-ui/react';
 
+import { PrepMethod, PrepMethodCreate } from '@recipe/graphql/generated';
+
 import { NewPrepMethodPopover } from './NewPrepMethodPopover';
-import { PrepMethod } from '../../../../../__generated__/graphql';
 import { DropdownItem } from '../../../../../components/DropdownItem';
 import { useNavigatableList } from '../../../hooks/useNavigatableList';
 
+type PrepMethodType = PrepMethod | PrepMethodCreate;
 export interface PrepMethodSuggestion {
-    value: string | PrepMethod;
+    value: string | PrepMethodType;
     colour?: string;
 }
-type PrepMethodType = Omit<PrepMethod, 'owner'>;
 interface Props {
     strValue: string;
     data: PrepMethodType[];
-    setItem: (value: PrepMethod | null, _id?: string) => void;
+    setItem: (value: PrepMethodType | null, _id?: string) => void;
     handleSubmit: () => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;

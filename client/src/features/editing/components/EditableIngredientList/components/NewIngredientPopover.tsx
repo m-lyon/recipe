@@ -34,7 +34,7 @@ function NewIngredientForm(props: NewIngredientFormProps) {
         onCompleted: (data) => {
             onClose();
             handleSelect({
-                value: { ...data!.ingredientCreateOne!.record! },
+                value: data!.ingredientCreateOne!.record!,
                 colour: undefined,
             });
             toast({

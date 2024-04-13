@@ -1,16 +1,21 @@
-import { expect, it, describe, afterEach } from 'vitest';
-import userEvent from '@testing-library/user-event';
-import { render, screen, getDefaultNormalizer, cleanup } from '@testing-library/react';
 import { ChakraProvider } from '@chakra-ui/react';
+import { RouterProvider } from 'react-router-dom';
+import userEvent from '@testing-library/user-event';
+import { afterEach, describe, expect, it } from 'vitest';
 import { MockedProvider } from '@apollo/client/testing';
+import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
+import { cleanup, getDefaultNormalizer, render, screen } from '@testing-library/react';
+import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
+import { debug } from 'vitest-preview';
+
 import { EditableIngredientList } from '..';
 import { mockGetUnits } from '../__mocks__/GetUnits';
 import { mockGetIngredientsWithRecipe } from '../__mocks__/GetIngredients';
 import { mockGetPrepMethods } from '../__mocks__/GetPrepMethods';
-import { RouterProvider } from 'react-router-dom';
-import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
 import { useIngredientList } from '../../../hooks/useIngredientList';
-import { loadErrorMessages, loadDevMessages } from '@apollo/client/dev';
+import { mockCreateUnit } from '../__mocks__/CreateUnit';
+import { mockCreatePrepMethod } from '../__mocks__/CreatePrepMethod';
+import { mockCreateIngredient } from '../__mocks__/CreateIngredient';
 
 loadErrorMessages();
 loadDevMessages();
@@ -26,7 +31,16 @@ const routes = createBrowserRouter(
 
 const renderComponent = () => {
     render(
-        <MockedProvider mocks={[mockGetUnits, mockGetIngredientsWithRecipe, mockGetPrepMethods]}>
+        <MockedProvider
+            mocks={[
+                mockGetUnits,
+                mockGetIngredientsWithRecipe,
+                mockGetPrepMethods,
+                mockCreateUnit,
+                mockCreateIngredient,
+                mockCreatePrepMethod,
+            ]}
+        >
             <ChakraProvider>
                 <RouterProvider router={routes} />
             </ChakraProvider>
@@ -1030,4 +1044,69 @@ describe('FinishedIngredient', () => {
         expect(screen.queryByText('Enter ingredient')).not.toBeNull();
     });
     it('should rearrange the order of the items', async () => {}); // TODO
+});
+
+describe('Creating new items', () => {
+    afterEach(() => {
+        cleanup();
+    });
+    it('should create a new unit', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }{c}');
+        await user.click(screen.getByText('add new unit'));
+        await user.keyboard('{c}{u}{t}');
+        await user.click(screen.getByText('Long singular name'));
+        await user.keyboard('{c}{u}{t}{t}{i}{n}{g}');
+        await user.click(screen.getByText('decimal'));
+        await user.click(screen.getByText('Save'));
+
+        // Expect
+        expect(
+            screen.queryByText('1 cut ', { normalizer: getDefaultNormalizer({ trim: false }) })
+        ).not.toBeNull();
+        expect(screen.queryByText('add new ingredient')).not.toBeNull();
+    });
+    it('should create a new ingredient', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await user.click(screen.getByText('skip unit'));
+        await user.click(screen.getByText('add new ingredient'));
+        await user.keyboard('{b}{e}{e}{f}');
+        await user.click(screen.getByText('Save'));
+        debug();
+        // Expect
+        expect(
+            screen.queryByText('1 beef, ', { normalizer: getDefaultNormalizer({ trim: false }) })
+        ).not.toBeNull();
+        expect(screen.queryByText('skip prep method')).not.toBeNull();
+    });
+    it('should create a new prepMethod', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await user.click(screen.getByText('skip unit'));
+        await user.click(screen.getByText('chicken'));
+        await user.keyboard('{p}');
+        await user.click(screen.getByText('add new prep method'));
+        await user.keyboard('{p}{i}{p}{p}{e}{d}');
+        await user.click(screen.getByText('Save'));
+
+        // Expect
+        expect(screen.queryByText('1 chicken, pipped')).not.toBeNull();
+        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
+    });
 });

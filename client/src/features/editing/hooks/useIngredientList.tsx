@@ -3,21 +3,15 @@ import { useReducer } from 'react';
 import { useQuery } from '@apollo/client';
 import { useToast } from '@chakra-ui/react';
 
+import { GET_UNITS } from '@recipe/graphql/queries/unit';
+import { RecipeIngredient } from '@recipe/graphql/generated';
+import { GET_INGREDIENTS } from '@recipe/graphql/queries/ingredient';
+import { GET_PREP_METHODS } from '@recipe/graphql/queries/prepMethod';
+import { Ingredient, IngredientCreate, PrepMethod } from '@recipe/graphql/generated';
+import { EnumRecipeIngredientType, Unit, UnitCreate } from '@recipe/graphql/generated';
+import { GetIngredientsQuery, GetPrepMethodsQuery, GetUnitsQuery } from '@recipe/graphql/generated';
+
 import { isPlural } from '../../../utils/plural';
-import { GET_UNITS } from '../../../graphql/queries/unit';
-import {
-    EnumRecipeIngredientType,
-    GetIngredientsQuery,
-    GetPrepMethodsQuery,
-    GetUnitsQuery,
-    Ingredient,
-    PrepMethod,
-    RecipeIngredient,
-    Unit,
-    UnitCreate,
-} from '../../../__generated__/graphql';
-import { GET_INGREDIENTS } from '../../../graphql/queries/ingredient';
-import { GET_PREP_METHODS } from '../../../graphql/queries/prepMethod';
 import { VALID_NUMBER_REGEX, formatFraction, isFraction } from '../../../utils/number';
 
 export const DEFAULT_INGREDIENT_STR = 'Enter ingredient';
@@ -159,7 +153,7 @@ interface EditableIngredient {
     value: string | null;
     data?: Ingredient | Recipe;
 }
-type FinishedIngredient = Ingredient | Recipe;
+type FinishedIngredient = Ingredient | IngredientCreate | Recipe;
 interface EditablePrepMethod {
     value: string | null;
     data?: PrepMethod | null;
@@ -307,10 +301,13 @@ export function ingredientDisplayStr(
     unit: FinishedUnit,
     ingredient: FinishedIngredient
 ): string {
+    console.log('ingredientDisplayStr', ingredient);
     const plural =
         (isPlural(quantity) && unit === null) ||
-        (ingredient.__typename == 'Ingredient' && ingredient.isCountable && unit !== null);
-    if (ingredient.__typename === 'Ingredient') {
+        ((ingredient.__typename === 'Ingredient' || ingredient.__typename === 'IngredientCreate') &&
+            ingredient.isCountable &&
+            unit !== null);
+    if (ingredient.__typename === 'Ingredient' || ingredient.__typename === 'IngredientCreate') {
         return plural ? ingredient.pluralName : ingredient.name;
     } else if (ingredient.__typename === 'Recipe') {
         return plural ? ingredient.pluralTitle!.toLowerCase() : ingredient.title.toLowerCase();
@@ -684,7 +681,7 @@ interface SetShow {
 export interface IngredientActionHandler {
     editableStringValue: () => string;
     resetEditable: () => void;
-    setCurrentEditableAttribute: (t: any) => void;
+    setCurrentEditableAttribute: (attr: Quantity | Unit | Ingredient | PrepMethod) => void;
     currentEditableAttributeValue: () => string | null;
     setEditableShow: SetShow;
     handleEditableSubmit: () => void;

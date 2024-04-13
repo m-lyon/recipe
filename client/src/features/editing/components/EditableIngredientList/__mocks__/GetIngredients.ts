@@ -1,4 +1,4 @@
-import { GET_INGREDIENTS } from '../../../../../graphql/queries/ingredient';
+import { GET_INGREDIENTS } from '@recipe/graphql/queries/ingredient';
 
 export const mockGetIngredients = {
     request: {

@@ -1,9 +1,9 @@
 import { useQuery } from '@apollo/client';
 import { Container, Grid, GridItem, Text } from '@chakra-ui/react';
 
-import { Recipe } from '../__generated__/graphql';
-import { GET_RECIPES } from '../graphql/queries/recipe';
-import { RecipeCardsContainer } from '../features/viewing/components/RecipeCardsContainer';
+import { Recipe } from '@recipe/graphql/generated';
+import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
+import { RecipeCardsContainer } from '@recipe/features/viewing';
 
 export function Home() {
     const { data, loading, error } = useQuery(GET_RECIPES);

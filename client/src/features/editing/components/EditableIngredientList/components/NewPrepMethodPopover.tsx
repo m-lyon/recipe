@@ -30,7 +30,7 @@ function NewPrepMethodForm(props: NewPrepMethodFormProps) {
         onCompleted: (data) => {
             onClose();
             handleSelect({
-                value: data!.prepMethodCreateOne!.record!.value,
+                value: data!.prepMethodCreateOne!.record!,
                 colour: undefined,
             });
             toast({
