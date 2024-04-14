@@ -1,9 +1,6 @@
-import { useRef, RefObject } from 'react';
+import { useRef } from 'react';
 
-export function useEnterFocus(): [
-    RefObject<HTMLInputElement | null>,
-    (event: KeyboardEvent) => void
-] {
+export function useEnterFocus() {
     const lastInputRef = useRef<HTMLInputElement | null>(null);
 
     function handleEnter(event: KeyboardEvent) {

@@ -1,14 +1,13 @@
-import { OrderedList, ListItem } from '@chakra-ui/react';
-import { EditableItem } from '../../../components/EditableItem';
+import { useRef } from 'react';
+import { ListItem, OrderedList } from '@chakra-ui/react';
+import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
+import { EditableItemArea } from 'components/EditableItemArea';
+
 import { UseItemListReturnType } from '../hooks/useItemList';
-import { useEnterFocus } from '../../../hooks/useEnterCapture';
-import { RefObject } from 'react';
-import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 
 export function EditableInstructionList(props: UseItemListReturnType) {
     const { items, actionHandler } = props;
-
-    const [lastInputRef, handleEnter] = useEnterFocus();
+    const lastInputRef = useRef<HTMLTextAreaElement | null>(null);
 
     const instructionsList = items.map((instr, index) => (
         <motion.div
@@ -19,20 +18,16 @@ export function EditableInstructionList(props: UseItemListReturnType) {
             layout
         >
             <ListItem color={instr.value ? '' : 'gray.400'}>
-                <EditableItem
-                    ref={
-                        index === items.length - 1
-                            ? (lastInputRef as RefObject<HTMLInputElement>)
-                            : null
-                    }
-                    defaultStr={'Enter instructions...'}
+                <EditableItemArea
+                    lastInputRef={index === items.length - 1 ? lastInputRef : null}
+                    defaultStr='Enter instructions...'
                     isLast={index + 1 === items.length}
                     item={instr}
                     addNewEntry={actionHandler.addItem}
                     removeFromList={() => actionHandler.removeItem(index)}
                     setValue={(value: string) => actionHandler.setValue(index, value)}
-                    handleEnter={handleEnter}
                     fontSize='lg'
+                    fontWeight='600'
                 />
             </ListItem>
         </motion.div>

@@ -1,6 +1,5 @@
-import { Editable, EditablePreview, EditableInput } from '@chakra-ui/react';
-import { useRef, useEffect } from 'react';
-import { forwardRef } from 'react';
+import { forwardRef, useEffect, useRef } from 'react';
+import { Editable, EditableInput, EditablePreview } from '@chakra-ui/react';
 
 interface Item {
     value: string;
@@ -73,13 +72,13 @@ export const EditableItem = forwardRef<HTMLInputElement, Props>(function Editabl
             fontSize={fontSize}
             placeholder={defaultStr}
         >
-            <EditablePreview ref={ref} display={'inline'} verticalAlign={'top'} />
+            <EditablePreview ref={ref} display='inline' verticalAlign='top' />
             <EditableInput
                 ref={inputRef}
                 value={item.value}
                 _focusVisible={{ outline: 'none' }}
-                display={'inline'}
-                paddingTop={'0px'}
+                display='inline'
+                pt={0}
             />
         </Editable>
     );
