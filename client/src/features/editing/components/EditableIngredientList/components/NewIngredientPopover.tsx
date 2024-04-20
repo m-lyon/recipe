@@ -127,7 +127,6 @@ function NewIngredientForm(props: NewIngredientFormProps) {
                     hasError && setHasError(false);
                 }}
             />
-            <Checkbox onChange={(e) => setIsCountable(e.target.checked)}>Countable</Checkbox>
             <FloatingLabelInput
                 label='Density (g/ml)'
                 id='density'
@@ -138,6 +137,7 @@ function NewIngredientForm(props: NewIngredientFormProps) {
                     hasError && setHasError(false);
                 }}
             />
+            <Checkbox onChange={(e) => setIsCountable(e.target.checked)}>Countable</Checkbox>
             <ButtonGroup display='flex' justifyContent='flex-end'>
                 <Button colorScheme='teal' onClick={handleSubmit}>
                     Save
