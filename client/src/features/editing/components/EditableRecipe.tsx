@@ -94,15 +94,6 @@ export function EditableRecipe(props: Props) {
             });
             return false;
         }
-        if (state.asIngredient.state.isIngredient && !state.asIngredient.state.pluralTitle) {
-            toast({
-                title: 'Please enter a plural title',
-                status: 'error',
-                position: 'top',
-                duration: 3000,
-            });
-            return false;
-        }
         return true;
     };
 
@@ -132,13 +123,17 @@ export function EditableRecipe(props: Props) {
             });
             return;
         }
-        const notes = state.notes.value ? state.notes.value : undefined;
+        const notes = state.notes.notes ? state.notes.notes : undefined;
         const source = state.source.source ? state.source.source : undefined;
         const isIngredient = state.asIngredient.state.isIngredient;
         const recipe = {
             numServings: state.numServings.num,
             title: state.title.value!,
-            pluralTitle: isIngredient ? state.asIngredient.state.pluralTitle : undefined,
+            pluralTitle: isIngredient
+                ? state.asIngredient.state.pluralTitle
+                    ? state.asIngredient.state.pluralTitle
+                    : state.title.value
+                : undefined,
             instructions,
             ingredients,
             tags,
