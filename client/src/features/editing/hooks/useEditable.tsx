@@ -35,7 +35,6 @@ export function useEditable(defaultStr: string, endWithPeriod?: boolean): UseEdi
     };
 
     const handleSubmit = (value: string) => {
-        console.log('value is', value, 'isEdited is', isEdited);
         if (value.trim() === '' || !isEdited) {
             // Reset the value to default when the field is empty
             setIsEdited(false);

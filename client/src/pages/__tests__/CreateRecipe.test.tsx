@@ -1,19 +1,17 @@
-import { expect, describe, vi, it, afterEach } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { ChakraProvider } from '@chakra-ui/react';
 import { RouterProvider } from 'react-router-dom';
-import { render, screen, cleanup } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { MockedProvider } from '@apollo/client/testing';
+import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
+import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { CreateRecipe } from '../CreateRecipe';
 import { mockGetTags } from '../../features/editing/components/__mocks__/GetTags';
 import { mockGetUnits } from '../../features/editing/components/EditableIngredientList/__mocks__/GetUnits';
 import { mockGetIngredients } from '../../features/editing/components/EditableIngredientList/__mocks__/GetIngredients';
 import { mockGetPrepMethods } from '../../features/editing/components/EditableIngredientList/__mocks__/GetPrepMethods';
-
-import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
-
-import { loadErrorMessages, loadDevMessages } from '@apollo/client/dev';
 
 loadErrorMessages();
 loadDevMessages();
@@ -84,14 +82,14 @@ describe('Notes', () => {
         renderComponent();
 
         // Act
-        const element = screen.getByText('Enter Notes...');
+        const element = screen.getByPlaceholderText('Enter notes...');
         await user.click(element);
         await user.click(screen.getByText('Ingredients'));
         await user.click(element);
         await user.keyboard('g');
 
         // Expect
-        expect(screen.queryByText('gEnter Notes...')).toBeNull();
+        expect(screen.queryByText('gEnter notes...')).toBeNull();
         expect(screen.queryByText('g')).not.toBeNull();
     });
 });

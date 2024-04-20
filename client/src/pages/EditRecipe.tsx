@@ -42,7 +42,7 @@ export function EditRecipe() {
             state.ingredient.actionHandler.setFinishedArray(ingredients);
             state.instructions.actionHandler.setItems(recipe.instructions as string[]);
             if (recipe.notes) {
-                state.notes.actionHandler.set(recipe.notes);
+                state.notes.setNotes(recipe.notes);
             }
             state.tags.setTags(
                 data.recipeOne!.tags.map((tag) => {

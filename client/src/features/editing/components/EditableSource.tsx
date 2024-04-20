@@ -1,12 +1,6 @@
-import {
-    Input,
-    InputGroup,
-    InputLeftAddon,
-    Text,
-    VStack,
-    useBreakpointValue,
-} from '@chakra-ui/react';
 import { Dispatch, SetStateAction } from 'react';
+import { Text, VStack, useBreakpointValue } from '@chakra-ui/react';
+import { Input, InputGroup, InputLeftAddon } from '@chakra-ui/react';
 
 export interface EditableSourceProps {
     source: string;

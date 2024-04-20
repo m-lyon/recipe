@@ -1,69 +1,41 @@
-import * as CSS from 'csstype';
-import { Textarea, useMergeRefs } from '@chakra-ui/react';
+import { Textarea, TextareaProps, useMergeRefs } from '@chakra-ui/react';
 import { useEffect, useRef } from 'react';
 import ResizeTextarea from 'react-textarea-autosize';
 
-interface Item {
-    value: string;
-}
-interface Props {
+interface Props extends TextareaProps {
     defaultStr: string;
-    isLast: boolean;
-    removeFromList: () => void;
-    item: Item;
-    setValue: (value: string) => void;
-    addNewEntry: () => void;
-    lastInputRef: React.RefObject<HTMLTextAreaElement> | null;
-    fontSize?: CSS.Property.FontSize;
-    fontWeight?: CSS.Property.FontWeight;
+    value: string;
+    handleChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    handleSubmit: () => void;
+    handleEnter?: () => void;
+    optionalRef?: React.RefObject<HTMLTextAreaElement> | null;
 }
 export function EditableItemArea(props: Props) {
-    const { lastInputRef } = props;
+    const { defaultStr, value, handleChange, handleSubmit, handleEnter, optionalRef, ...rest } =
+        props;
     const ref = useRef<HTMLTextAreaElement | null>(null);
-    const refs = useMergeRefs(ref, props.lastInputRef);
-    const handleSubmit = () => {
-        // Reset the value to the default text when the field is empty, if last
-        // in list, or remove item if not
-        if (props.item.value.trim() === '') {
-            if (!props.isLast) {
-                props.removeFromList();
-            } else {
-                props.setValue('');
-            }
-        } else {
-            if (!props.item.value.endsWith('.')) {
-                props.setValue(props.item.value + '.');
-            }
-            if (props.isLast) {
-                props.addNewEntry();
-            }
-        }
-    };
-
-    const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        props.setValue(e.target.value);
-    };
-
-    const handleEnter = (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            ref.current?.blur();
-            if (lastInputRef && lastInputRef.current) {
-                setTimeout(() => {
-                    lastInputRef.current?.focus();
-                }, 0);
-            }
-        }
-    };
+    const refs = useMergeRefs(ref, optionalRef);
 
     useEffect(() => {
+        const onEnter = (e: KeyboardEvent) => {
+            if (e.key === 'Enter') {
+                // Prevent default behavior of adding a new line, and instead
+                // blur the text area
+                e.preventDefault();
+                ref.current?.blur();
+                if (handleEnter) {
+                    handleEnter();
+                }
+            }
+        };
+
         if (ref.current) {
-            ref.current.addEventListener('keydown', handleEnter);
+            ref.current.addEventListener('keydown', onEnter);
         }
 
         return () => {
             if (ref.current) {
-                ref.current.removeEventListener('keydown', handleEnter);
+                ref.current.removeEventListener('keydown', onEnter);
             }
         };
     }, []);
@@ -71,11 +43,9 @@ export function EditableItemArea(props: Props) {
     return (
         <Textarea
             ref={refs}
-            value={props.item.value}
-            placeholder={props.defaultStr}
-            onChange={onChange}
-            fontSize={props.fontSize}
-            fontWeight={props.fontWeight}
+            value={value}
+            placeholder={defaultStr}
+            onChange={handleChange}
             onBlur={handleSubmit}
             as={ResizeTextarea}
             minRows={1}
@@ -85,6 +55,7 @@ export function EditableItemArea(props: Props) {
             px={0}
             pt={0}
             _focusVisible={{ outline: 'none' }}
+            {...rest}
         />
     );
 }

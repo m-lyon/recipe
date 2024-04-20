@@ -301,7 +301,6 @@ export function ingredientDisplayStr(
     unit: FinishedUnit,
     ingredient: FinishedIngredient
 ): string {
-    console.log('ingredientDisplayStr', ingredient);
     const plural =
         (isPlural(quantity) && unit === null) ||
         ((ingredient.__typename === 'Ingredient' || ingredient.__typename === 'IngredientCreate') &&

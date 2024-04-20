@@ -1,19 +1,20 @@
 import { useState } from 'react';
 
-import { useIngredientList, UseIngredientListReturnType } from './useIngredientList';
-import { useItemList, UseItemListReturnType } from './useItemList';
-import { useEditable, UseEditableReturnType } from './useEditable';
-import { useTagList, UseTagListReturnType } from './useTagList';
-import { ServingsProps } from '../../../components/Servings';
-import { EditableSourceProps } from '../components/EditableSource';
 import { useAsIngredient } from './useAsIngredient';
-import { UseAsIngredientReturnType } from './useAsIngredient';
+import { ServingsProps } from '../../../components/Servings';
 import { ImageUploadProps } from '../components/ImageUpload';
+import { UseAsIngredientReturnType } from './useAsIngredient';
+import { UseTagListReturnType, useTagList } from './useTagList';
+import { EditableNotesProps } from '../components/EditableNotes';
+import { UseItemListReturnType, useItemList } from './useItemList';
+import { UseEditableReturnType, useEditable } from './useEditable';
+import { EditableSourceProps } from '../components/EditableSource';
+import { UseIngredientListReturnType, useIngredientList } from './useIngredientList';
 
 export interface RecipeState {
     numServings: ServingsProps;
     ingredient: UseIngredientListReturnType;
-    notes: UseEditableReturnType;
+    notes: EditableNotesProps;
     instructions: UseItemListReturnType;
     tags: UseTagListReturnType;
     title: UseEditableReturnType;
@@ -27,7 +28,7 @@ export function useRecipeState(): RecipeState {
     const instructions = useItemList();
     const tags = useTagList();
     const title = useEditable('Enter Recipe Title');
-    const notes = useEditable('Enter Notes...', true);
+    const [notes, setNotes] = useState<string>('');
     const [source, setSource] = useState<string>('');
     const asIngredient = useAsIngredient();
     const [images, setImages] = useState<File[]>([]);
@@ -35,7 +36,7 @@ export function useRecipeState(): RecipeState {
     return {
         numServings: { num: numServings, setNum: setNumServings },
         ingredient,
-        notes,
+        notes: { notes, setNotes },
         instructions,
         tags,
         title,
