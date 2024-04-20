@@ -13,7 +13,7 @@ export function ImageViewerHome(props: Props) {
 
     return (
         <ImageCarousel
-            images={images as Image[]}
+            images={images.slice(0, 1) as Image[]}
             width='288px'
             ratio={3 / 2}
             zIndex={1}
