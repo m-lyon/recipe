@@ -1,10 +1,11 @@
 import { useQuery } from '@apollo/client';
-import { Box, List } from '@chakra-ui/react';
+import { List } from '@chakra-ui/react';
 import { MutableRefObject } from 'react';
-import { motion, LayoutGroup } from 'framer-motion';
+import { LayoutGroup, motion } from 'framer-motion';
+
 import { TagDropdownList } from './TagDropdownList';
-import { EditableTag, EditableTagActionHandler, FinishedTag } from '../hooks/useTagList';
 import { GET_TAGS } from '../../../graphql/queries/tag';
+import { EditableTag, EditableTagActionHandler, FinishedTag } from '../hooks/useTagList';
 
 interface Props {
     tag: EditableTag;
@@ -37,23 +38,25 @@ export function TagDropdown(props: Props) {
 
     return (
         tag.show && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <Box pb={4} mb={4}>
-                    <List
-                        color='rgba(0, 0, 0, 0.64)'
-                        bg='white'
-                        borderRadius='4px'
-                        borderBottom={tag.show ? '1px solid rgba(0,0,0,0.1)' : undefined}
-                        borderLeft={tag.show ? '1px solid rgba(0,0,0,0.1)' : undefined}
-                        borderRight={tag.show ? '1px solid rgba(0,0,0,0.1)' : undefined}
-                        boxShadow='6px 5px 8px rgba(0,50,30,0.02)'
-                        position='absolute'
-                        maxHeight={tag.show ? '14em' : undefined}
-                        overflowY={tag.show ? 'auto' : undefined}
-                    >
-                        <LayoutGroup>{getSuggestionsList()}</LayoutGroup>
-                    </List>
-                </Box>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                style={{ position: 'absolute', zIndex: 1 }}
+            >
+                <List
+                    color='rgba(0, 0, 0, 0.64)'
+                    bg='white'
+                    borderRadius='4px'
+                    borderBottom='1px solid rgba(0,0,0,0.1)'
+                    borderLeft='1px solid rgba(0,0,0,0.1)'
+                    borderRight='1px solid rgba(0,0,0,0.1)'
+                    boxShadow='6px 5px 8px rgba(0,50,30,0.02)'
+                    position='absolute'
+                    maxHeight='14em'
+                >
+                    <LayoutGroup>{getSuggestionsList()}</LayoutGroup>
+                </List>
             </motion.div>
         )
     );

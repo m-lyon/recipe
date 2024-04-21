@@ -4,7 +4,7 @@ import { useQuery } from '@apollo/client';
 import { useToast } from '@chakra-ui/react';
 
 import { GET_UNITS } from '@recipe/graphql/queries/unit';
-import { RecipeIngredient } from '@recipe/graphql/generated';
+import { PrepMethodCreate, RecipeIngredient } from '@recipe/graphql/generated';
 import { GET_INGREDIENTS } from '@recipe/graphql/queries/ingredient';
 import { GET_PREP_METHODS } from '@recipe/graphql/queries/prepMethod';
 import { Ingredient, IngredientCreate, PrepMethod } from '@recipe/graphql/generated';
@@ -677,10 +677,19 @@ interface SetShow {
     off: () => void;
     toggle: () => void;
 }
+type SetAttr =
+    | Quantity
+    | Unit
+    | UnitCreate
+    | Ingredient
+    | IngredientCreate
+    | Recipe
+    | PrepMethod
+    | PrepMethodCreate;
 export interface IngredientActionHandler {
     editableStringValue: () => string;
     resetEditable: () => void;
-    setCurrentEditableAttribute: (attr: Quantity | Unit | Ingredient | PrepMethod) => void;
+    setCurrentEditableAttribute: (attr: SetAttr) => void;
     currentEditableAttributeValue: () => string | null;
     setEditableShow: SetShow;
     handleEditableSubmit: () => void;
@@ -764,7 +773,7 @@ export function useIngredientList(): UseIngredientListReturnType {
                 editableActions.submit();
             }
         };
-        const setCurrentEditableAttribute = (attr: Quantity | Unit | Ingredient | PrepMethod) => {
+        const setCurrentEditableAttribute = (attr: SetAttr) => {
             if (state.editable.state === 'quantity') {
                 editableActions.quantity.set(attr as Quantity);
             } else if (state.editable.state === 'unit') {

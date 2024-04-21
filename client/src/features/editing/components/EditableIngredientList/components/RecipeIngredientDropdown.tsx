@@ -1,11 +1,11 @@
 import { MutableRefObject } from 'react';
 import { Box, List } from '@chakra-ui/react';
-import { motion, LayoutGroup } from 'framer-motion';
+import { LayoutGroup, motion } from 'framer-motion';
 
 import { UnitDropdown } from './UnitDropdown';
+import { PrepMethodDropdown } from './PrepMethodDropdown';
 import { QueryData } from '../../../hooks/useIngredientList';
 import { QuantityDropdownList } from './QuantityDropdownList';
-import { PrepMethodDropdown } from './PrepMethodDropdown';
 import { IngredientActionHandler } from '../../../hooks/useIngredientList';
 import { EditableRecipeIngredient } from '../../../hooks/useIngredientList';
 import { IngredientDropdown, IngredientOrRecipe } from './IngredientDropdown';
@@ -28,6 +28,7 @@ export function RecipeIngredientDropdown(props: Props) {
             inputRef,
             previewRef,
         };
+        const ingrData: IngredientOrRecipe[] = [...queryData.ingredient!, ...queryData.recipe!];
         switch (item.state) {
             case 'quantity':
                 return <QuantityDropdownList {...dropdownProps} />;
@@ -46,11 +47,9 @@ export function RecipeIngredientDropdown(props: Props) {
                 if (!queryData.ingredient) {
                     return [];
                 }
-                //@ts-ignore
-                const data: IngredientOrRecipe[] = queryData.ingredient.concat(queryData.recipe!);
                 return (
                     <IngredientDropdown
-                        data={data}
+                        data={ingrData}
                         quantity={item.quantity}
                         unit={item.unit.data!}
                         {...dropdownProps}

@@ -5,6 +5,7 @@ export const GET_PREP_METHODS = gql(`
         prepMethodMany(limit: 5000) {
             _id
             value
+            owner
         }
     }
 `);

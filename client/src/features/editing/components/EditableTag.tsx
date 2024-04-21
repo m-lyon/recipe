@@ -1,9 +1,11 @@
-import { EditableTagActionHandler, EditableTag, DEFAULT_TAG_STR } from '../hooks/useTagList';
-import { FinishedTag } from '../hooks/useTagList';
 import { useRef } from 'react';
 import { motion } from 'framer-motion';
+import { Editable, EditableInput, EditablePreview, useOutsideClick } from '@chakra-ui/react';
+
 import { TagDropdown } from './TagDropdown';
-import { Editable, EditablePreview, EditableInput, useOutsideClick } from '@chakra-ui/react';
+import { FinishedTag } from '../hooks/useTagList';
+import type { EditableTag } from '../hooks/useTagList';
+import { DEFAULT_TAG_STR, EditableTagActionHandler } from '../hooks/useTagList';
 
 interface Props {
     tag: EditableTag;
