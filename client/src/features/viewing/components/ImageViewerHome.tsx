@@ -16,7 +16,6 @@ export function ImageViewerHome(props: Props) {
             images={images.slice(0, 1) as Image[]}
             width='288px'
             ratio={3 / 2}
-            zIndex={1}
             right={0}
             top={0}
             shadow='none'

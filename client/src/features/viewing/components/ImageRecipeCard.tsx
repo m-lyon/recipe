@@ -40,7 +40,6 @@ export function ImageRecipeCard(props: Props) {
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
-                <LinkOverlay as={Link} to={`${ROOT_PATH}/view/${recipe.titleIdentifier}`} />
                 {hasEditPermission ? (
                     <IconButton
                         variant='solid'
@@ -63,20 +62,24 @@ export function ImageRecipeCard(props: Props) {
                 ) : null}
                 <CardHeader>
                     <Heading size='md' color='blackAlpha.700'>
-                        {getCardTitle(recipe)}
+                        <LinkOverlay as={Link} to={`${ROOT_PATH}/view/${recipe.titleIdentifier}`}>
+                            {getCardTitle(recipe)}
+                        </LinkOverlay>
                     </Heading>
                 </CardHeader>
                 <CardBody p='0'>
-                    <VStack
-                        height='100%'
-                        justifyContent='space-between'
-                        spacing='20px'
-                        alignItems='flex-start'
-                    >
-                        <TagList tags={recipe.tags} paddingX='20px' />
-                        <Spacer />
-                        <ImageViewerHome images={recipe.images} />
-                    </VStack>
+                    <LinkOverlay as={Link} to={`${ROOT_PATH}/view/${recipe.titleIdentifier}`}>
+                        <VStack
+                            height='100%'
+                            justifyContent='space-between'
+                            spacing='20px'
+                            alignItems='flex-start'
+                        >
+                            <TagList tags={recipe.tags} paddingX='20px' />
+                            <Spacer />
+                            <ImageViewerHome images={recipe.images} />
+                        </VStack>
+                    </LinkOverlay>
                 </CardBody>
                 {hasEditPermission ? (
                     <IconButton
