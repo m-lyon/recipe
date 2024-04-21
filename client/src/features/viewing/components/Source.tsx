@@ -1,4 +1,5 @@
 import { Text } from '@chakra-ui/react';
+
 import { Recipe } from '../../../__generated__/graphql';
 
 interface Props {
@@ -10,7 +11,7 @@ export function Source(props: Props) {
         return null;
     }
     return (
-        <Text textAlign='right' fontWeight='medium' as='i'>
+        <Text textAlign='right' fontWeight='medium' as='i' pr={6}>
             Source: {source}
         </Text>
     );
