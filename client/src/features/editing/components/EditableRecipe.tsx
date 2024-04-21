@@ -106,12 +106,17 @@ export function EditableRecipe(props: Props) {
             .filter((item) => item.value !== '')
             .map((item) => item.value);
         const ingredients = state.ingredient.state.finished.map((item) => {
+            const typename = {
+                Recipe: EnumRecipeIngredientType.Recipe,
+                Ingredient: EnumRecipeIngredientType.Ingredient,
+                IngredientCreate: EnumRecipeIngredientType.Ingredient,
+            };
             return {
                 quantity: item.quantity ? item.quantity : undefined,
                 unit: item.unit ? item.unit._id : undefined,
                 ingredient: item.ingredient._id,
                 prepMethod: item.prepMethod ? item.prepMethod._id : undefined,
-                type: item.ingredient.__typename!.toLowerCase() as EnumRecipeIngredientType,
+                type: typename[item.ingredient.__typename!],
             };
         });
         if (userContext === false) {

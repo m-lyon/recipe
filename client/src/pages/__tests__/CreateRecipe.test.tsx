@@ -93,3 +93,32 @@ describe('Notes', () => {
         expect(screen.queryByText('g')).not.toBeNull();
     });
 });
+
+// describe('Create Recipe', () => {
+//     afterEach(() => {
+//         cleanup();
+//     });
+//     it('should create a recipe', async () => {
+//         // Render
+//         const user = userEvent.setup();
+//         renderComponent();
+
+//         // Act
+//         // Title
+//         await user.click(screen.getByText('Enter Recipe Title'));
+//         await user.keyboard('Recipe Title');
+//         // Ingredient
+//         await user.click(screen.getByText('Enter ingredient'));
+//         await user.keyboard('{1}{ }');
+//         await user.click(screen.getByText('gram'));
+//         await user.click(screen.getByText('chicken'));
+//         await user.click(screen.getByText('diced'));
+//         // Instructions
+//         await user.click(screen.getByText('Enter instructions...'));
+//         await user.keyboard('Instructions Number One');
+//         // Submit
+//         await user.click(screen.getByText('Submit'));
+
+//         // Expect
+//     });
+// });
