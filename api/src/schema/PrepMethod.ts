@@ -1,6 +1,15 @@
-import { filterIsOwnerOrAdmin } from '../middleware/filters.js';
+import { updateByIdResolver } from './utils.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
-import { PrepMethodCreateTC, PrepMethodTC } from '../models/PrepMethod.js';
+import { filterIsOwnerOrAdmin } from '../middleware/filters.js';
+import { PrepMethod, PrepMethodCreateTC, PrepMethodTC } from '../models/PrepMethod.js';
+
+PrepMethodTC.addResolver({
+    name: 'updateById',
+    description: 'Update a prep method by its ID',
+    type: PrepMethodTC.mongooseResolvers.updateById().getType(),
+    args: PrepMethodTC.mongooseResolvers.updateById().getArgs(),
+    resolve: updateByIdResolver(PrepMethod, PrepMethodTC),
+});
 
 export const PrepMethodQuery = {
     prepMethodById: PrepMethodTC.mongooseResolvers

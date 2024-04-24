@@ -1,4 +1,13 @@
-import { TagTC } from '../models/Tag.js';
+import { Tag, TagTC } from '../models/Tag.js';
+import { updateByIdResolver } from './utils.js';
+
+TagTC.addResolver({
+    name: 'updateById',
+    description: 'Update a tag by its ID',
+    type: TagTC.mongooseResolvers.updateById().getType(),
+    args: TagTC.mongooseResolvers.updateById().getArgs(),
+    resolve: updateByIdResolver(Tag, TagTC),
+});
 
 export const TagQuery = {
     tagById: TagTC.mongooseResolvers.findById().setDescription('Retrieve a tag by its ID'),
@@ -11,8 +20,7 @@ export const TagQuery = {
 
 export const TagMutation = {
     tagCreateOne: TagTC.mongooseResolvers.createOne().setDescription('Create a new tag'),
-    tagUpdateById: TagTC.mongooseResolvers.updateById().setDescription('Update a tag by its ID'),
-    tagUpdateOne: TagTC.mongooseResolvers.updateOne().setDescription('Update a single tag'),
+    tagUpdateById: TagTC.getResolver('updateById'),
     tagRemoveById: TagTC.mongooseResolvers.removeById().setDescription('Remove a tag by its ID'),
     tagRemoveOne: TagTC.mongooseResolvers.removeOne().setDescription('Remove a single tag'),
 };

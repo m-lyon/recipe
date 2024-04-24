@@ -1,6 +1,15 @@
-import { filterIsOwnerOrAdmin } from '../middleware/filters.js';
-import { IngredientCreateTC, IngredientTC } from '../models/Ingredient.js';
+import { updateByIdResolver } from './utils.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
+import { filterIsOwnerOrAdmin } from '../middleware/filters.js';
+import { Ingredient, IngredientCreateTC, IngredientTC } from '../models/Ingredient.js';
+
+IngredientTC.addResolver({
+    name: 'updateById',
+    description: 'Update an ingredient by its ID',
+    type: IngredientTC.mongooseResolvers.updateById().getType(),
+    args: IngredientTC.mongooseResolvers.updateById().getArgs(),
+    resolve: updateByIdResolver(Ingredient, IngredientTC),
+});
 
 export const IngredientQuery = {
     ingredientById: IngredientTC.mongooseResolvers
@@ -26,12 +35,7 @@ export const IngredientMutation = {
         .createOne()
         .wrapResolve(setRecordOwnerAsUser())
         .setDescription('Create a new ingredient'),
-    ingredientUpdateById: IngredientTC.mongooseResolvers
-        .updateById()
-        .setDescription('Update an ingredient by its ID'),
-    ingredientUpdateOne: IngredientTC.mongooseResolvers
-        .updateOne()
-        .setDescription('Update a single ingredient'),
+    ingredientUpdateById: IngredientTC.getResolver('updateById'),
     ingredientRemoveById: IngredientTC.mongooseResolvers
         .removeById()
         .setDescription('Remove an ingredient by its ID'),

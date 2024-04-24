@@ -6,12 +6,7 @@ import { Tag } from './Tag.js';
 
 export function uniqueInAdminsAndUser(model: string, attribute: string) {
     async function validator(value: string) {
-        let owner = this.owner;
-        if (!this.isNew) {
-            // For update operation, use the updated owner value
-            const doc = await this.constructor.findById(this._id);
-            owner = doc.owner;
-        }
+        const owner = this.owner;
         const admins = await User.find({ role: 'admin' });
         const count = await this.model(model).countDocuments({
             $and: [

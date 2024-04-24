@@ -5,10 +5,11 @@ import { GraphQLError, GraphQLList } from 'graphql';
 import { TagTC } from '../models/Tag.js';
 import { UnitTC } from '../models/Unit.js';
 import { ImageTC } from '../models/Image.js';
+import { updateByIdResolver } from './utils.js';
 import { PrepMethodTC } from '../models/PrepMethod.js';
 import { Ingredient, IngredientTC } from '../models/Ingredient.js';
-import { Recipe, RecipeCreateTC, RecipeIngredientTC, RecipeQueryTC } from '../models/Recipe.js';
 import { RecipeModifyTC, generateRecipeIdentifier } from '../models/Recipe.js';
+import { Recipe, RecipeCreateTC, RecipeIngredientTC, RecipeQueryTC } from '../models/Recipe.js';
 
 const IngredientOrRecipeTC = schemaComposer.createUnionTC({
     name: 'IngredientOrRecipe',
@@ -21,14 +22,28 @@ const IngredientOrRecipeTC = schemaComposer.createUnionTC({
     },
 });
 
+RecipeModifyTC.addResolver({
+    name: 'updateById',
+    description: 'Update a recipe by its ID',
+    type: RecipeModifyTC.mongooseResolvers.updateById().getType(),
+    args: RecipeModifyTC.mongooseResolvers.updateById().getArgs(),
+    resolve: updateByIdResolver(Recipe, RecipeModifyTC),
+});
+
 RecipeIngredientTC.addResolver({
     name: 'ingredientOrRecipe',
     type: IngredientOrRecipeTC,
     description:
         'Determine if the object is an ingredient or a recipe and return the appropriate type',
     args: { _id: 'MongoID!' },
-    resolve: async ({ args }) => {
-        const { _id } = args;
+    resolve: async (rp) => {
+        if (!rp?.args?._id) {
+            throw new Error(
+                `${IngredientOrRecipeTC.getTypeName()}.ingredientOrRecipe resolver requires args._id value`
+            );
+        }
+        const { _id } = rp.args;
+
         const ingredientDoc = await IngredientTC.mongooseResolvers
             .findById()
             .resolve({ args: { _id } });
@@ -105,11 +120,7 @@ export const RecipeMutation = {
             return next(rp);
         })
         .setDescription('Create a new recipe'),
-    recipeUpdateById: RecipeModifyTC.mongooseResolvers
-        .updateById()
-        .setDescription('Update a recipe by its ID'),
-    // not used because resolver logic would need to be updated to find via findOne
-    // recipeUpdateOne: RecipeTC.mongooseResolvers.updateOne(),
+    recipeUpdateById: RecipeModifyTC.getResolver('updateById'),
     recipeRemoveById: RecipeModifyTC.mongooseResolvers
         .removeById()
         .setDescription('Remove a recipe by its ID'),

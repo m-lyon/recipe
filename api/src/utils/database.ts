@@ -1,10 +1,11 @@
 import mongoose from 'mongoose';
+
 import { MONGODB_URI } from '../constants.js';
 
 mongoose.set({ strictQuery: true });
 mongoose
     .connect(MONGODB_URI)
-    .then((db) => {
+    .then(() => {
         console.log('connected to db');
     })
     .catch((err) => {

@@ -1,23 +1,32 @@
-import mongoose from 'mongoose';
 import { assert } from 'chai';
+import mongoose from 'mongoose';
 import { after, before, describe, it } from 'mocha';
+import { MongoMemoryServer } from 'mongodb-memory-server-core';
 
-import { MONGODB_URI } from '../../src/constants.js';
 import { User } from '../../src/models/User.js';
 
 describe('User Model', function () {
-    before(function (done) {
-        mongoose.connect(MONGODB_URI);
-        mongoose.connection
-            .once('open', () => done())
-            .on('error', (error) => console.log('Error:', error));
+    let mongoServer: MongoMemoryServer;
+
+    before(async function () {
+        try {
+            mongoServer = await MongoMemoryServer.create();
+            mongoose.set({ strictQuery: true });
+            await mongoose.connect(mongoServer.getUri());
+        } catch (error) {
+            console.log(error);
+            assert.fail('Connection not established');
+        }
     });
 
-    after(function (done) {
-        mongoose.connection.collections.users
-            .drop()
-            .then(() => mongoose.connection.close())
-            .then(() => done());
+    after(async function () {
+        try {
+            await mongoose.connection.close();
+            await mongoServer.stop();
+        } catch (error) {
+            console.log(error);
+            assert.fail('Connection not closed');
+        }
     });
 
     it('Should save a new user', function (done) {
@@ -48,6 +57,4 @@ describe('User Model', function () {
             done();
         });
     });
-
-    // Add more test cases as needed
 });
