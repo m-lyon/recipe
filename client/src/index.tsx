@@ -1,23 +1,23 @@
 import { createRoot } from 'react-dom/client';
-import { CreateRecipe } from './pages/CreateRecipe';
 import { ChakraProvider } from '@chakra-ui/react';
-import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
-import { Home } from './pages/Home';
-import { ViewRecipe } from './pages/ViewRecipe';
-import { Login } from './pages/Login';
-import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
 import { RouterProvider } from 'react-router-dom';
-import { UserProvider } from './context/UserContext';
-import { ErrorBoundary } from './pages/Error';
-import { RequireAuth } from './RequireAuth';
-import { Navbar } from './components/Navbar';
+import createUploadLink from 'apollo-upload-client/createUploadLink.mjs';
+import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client';
+import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
+
+import { Home } from './pages/Home';
+import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
 import { Search } from './pages/Search';
+import { RequireAuth } from './RequireAuth';
 import { theme } from './theme/chakraTheme';
-import { GRAPHQL_ENDPOINT, ROOT_PATH } from './constants';
-
-import createUploadLink from 'apollo-upload-client/createUploadLink.mjs';
+import { Navbar } from './components/Navbar';
+import { ErrorBoundary } from './pages/Error';
+import { ViewRecipe } from './pages/ViewRecipe';
 import { EditRecipe } from './pages/EditRecipe';
+import { CreateRecipe } from './pages/CreateRecipe';
+import { UserProvider } from './context/UserContext';
+import { GRAPHQL_ENDPOINT, ROOT_PATH } from './constants';
 
 const domNode = document.getElementById('root')!;
 const root = createRoot(domNode);
