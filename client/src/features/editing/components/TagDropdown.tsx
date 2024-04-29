@@ -54,6 +54,7 @@ export function TagDropdown(props: Props) {
                     boxShadow='6px 5px 8px rgba(0,50,30,0.02)'
                     position='absolute'
                     maxHeight='14em'
+                    overflowY='auto'
                 >
                     <LayoutGroup>{getSuggestionsList()}</LayoutGroup>
                 </List>

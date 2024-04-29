@@ -1,13 +1,14 @@
-import { expect, describe, it, afterEach } from 'vitest';
-import userEvent from '@testing-library/user-event';
 import { RouterProvider } from 'react-router-dom';
-import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
-import { render, screen, cleanup } from '@testing-library/react';
 import { ChakraProvider } from '@chakra-ui/react';
+import userEvent from '@testing-library/user-event';
 import { MockedProvider } from '@apollo/client/testing';
-import { EditableTagList } from '../EditableTagList';
+import { afterEach, describe, expect, it } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
+import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
+
 import { mockGetTags } from '../__mocks__/GetTags';
 import { useTagList } from '../../hooks/useTagList';
+import { EditableTagList } from '../EditableTagList';
 
 const MockCreateRecipe = () => {
     const props = useTagList();
