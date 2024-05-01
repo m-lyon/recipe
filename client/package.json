@@ -10,6 +10,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "NODE_ENV=test vitest",
+    "test-ui": "NODE_ENV=test vitest --ui",
     "generate": "npm run rm-generated && NODE_ENV=development graphql-codegen",
     "rm-generated": "[ -d src/__generated__/ ] && rm -r src/__generated__/ || true",
     "vitest-preview": "vitest-preview"

@@ -16,7 +16,7 @@ export function IngredientsTabLayout(props: Props) {
             base: { showTags: true },
             md: { showTags: false },
         },
-        { fallback: 'md' },
+        { fallback: 'md' }
     );
     return (
         <Flex direction='column' justifyContent='space-between' height='100%'>
