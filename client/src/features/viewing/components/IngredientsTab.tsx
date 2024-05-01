@@ -3,6 +3,8 @@ import { TbWeight } from 'react-icons/tb';
 import { useEffect, useState } from 'react';
 import { HStack, IconButton } from '@chakra-ui/react';
 
+import { changeIngredientQuantity } from 'utils/quantity';
+
 import { Notes } from './Notes';
 import { TagList } from './TagList';
 import { IngredientList } from './IngredientList';
@@ -28,6 +30,10 @@ export function IngredientsTab(props: Props) {
         getRatings(recipeId);
     }, [recipeId]);
 
+    const modifiedIngredients = ingredients.map((ingredient) => {
+        return changeIngredientQuantity(ingredient, servings, numServings);
+    });
+
     return (
         <IngredientsTabLayout
             Servings={<Servings num={servings} setNum={setServings} />}
@@ -38,7 +44,7 @@ export function IngredientsTab(props: Props) {
                     <IconButton aria-label='volume' icon={<CgBowl />} />
                 </HStack>
             }
-            IngredientList={<IngredientList ingredients={ingredients} />}
+            IngredientList={<IngredientList ingredients={modifiedIngredients} />}
             Notes={<Notes notes={notes} />}
             Tags={<TagList tags={tags} pb='24px' />}
         />

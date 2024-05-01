@@ -1,8 +1,7 @@
-import { Button, IconButton } from '@chakra-ui/react';
-import { AddIcon, MinusIcon } from '@chakra-ui/icons';
+import { number, object } from 'yup';
 import { Dispatch, SetStateAction } from 'react';
-import { object, number } from 'yup';
-import { useToast } from '@chakra-ui/react';
+import { AddIcon, MinusIcon } from '@chakra-ui/icons';
+import { Button, IconButton, useToast } from '@chakra-ui/react';
 
 export interface ServingsProps {
     num: number;
