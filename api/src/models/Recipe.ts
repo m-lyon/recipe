@@ -110,18 +110,12 @@ const recipeSchema = new Schema<Recipe>({
     title: {
         type: String,
         required: true,
-        validate: {
-            validator: uniqueInAdminsAndUser('Recipe', 'title'),
-            message: 'The recipe title must be unique.',
-        },
+        validate: uniqueInAdminsAndUser('Recipe', 'title'),
     },
     titleIdentifier: {
         type: String,
         required: true,
-        validate: {
-            validator: unique('Recipe', 'titleIdentifier'),
-            message: 'The title identifier must be unique, please try again.',
-        },
+        validate: unique('Recipe', 'titleIdentifier'),
     },
     pluralTitle: { type: String },
     subTitle: { type: String },

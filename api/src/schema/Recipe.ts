@@ -114,13 +114,18 @@ export const RecipeQuery = {
 export const RecipeMutation = {
     recipeCreateOne: RecipeCreateTC.mongooseResolvers
         .createOne()
-        .wrapResolve((next) => async (rp) => {
+        .wrapResolve((next) => (rp) => {
             rp.args.record.owner = rp.context.getUser();
             rp.args.record.titleIdentifier = generateRecipeIdentifier(rp.args.record.title);
             return next(rp);
         })
         .setDescription('Create a new recipe'),
-    recipeUpdateById: RecipeModifyTC.getResolver('updateById'),
+    recipeUpdateById: RecipeModifyTC.getResolver('updateById').wrapResolve((next) => (rp) => {
+        if (rp.args.record.title) {
+            rp.args.record.titleIdentifier = generateRecipeIdentifier(rp.args.record.title);
+        }
+        return next(rp);
+    }),
     recipeRemoveById: RecipeModifyTC.mongooseResolvers
         .removeById()
         .setDescription('Remove a recipe by its ID'),

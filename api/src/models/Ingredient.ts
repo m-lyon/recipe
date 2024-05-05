@@ -17,19 +17,21 @@ const ingredientSchema = new Schema<Ingredient>({
         type: String,
         required: true,
         set: (value: string) => value.toLowerCase(),
-        validate: {
-            validator: uniqueInAdminsAndUser('Ingredient', 'name'),
-            message: 'The ingredient name must be unique.',
-        },
+        validate: uniqueInAdminsAndUser(
+            'Ingredient',
+            'name',
+            'The ingredient name must be unique.'
+        ),
     },
     pluralName: {
         type: String,
         required: true,
         set: (value: string) => value.toLowerCase(),
-        validate: {
-            validator: uniqueInAdminsAndUser('Ingredient', 'pluralName'),
-            message: 'The plural ingredient name must be unique.',
-        },
+        validate: uniqueInAdminsAndUser(
+            'Ingredient',
+            'pluralName',
+            'The plural ingredient name must be unique.'
+        ),
     },
     density: { type: Number, required: false },
     isCountable: { type: Boolean, required: true },

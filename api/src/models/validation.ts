@@ -4,50 +4,59 @@ import { User } from './User.js';
 import { Recipe } from './Recipe.js';
 import { Tag } from './Tag.js';
 
-export function uniqueInAdminsAndUser(model: string, attribute: string) {
-    async function validator(value: string) {
-        const owner = this.owner;
-        const admins = await User.find({ role: 'admin' });
-        const count = await this.model(model).countDocuments({
-            $and: [
-                { $or: [{ owner }, { owner: { $in: admins } }] },
-                { _id: { $ne: this._id } }, // Exclude the current document
-                { [attribute]: value },
-            ],
-        });
-        return count === 0;
+// Validators need to be functions that return a promise, rather than async functions
+// Because of graphql-compose-mongoose internal validation calls use validateSync calls
+// which silently skip async validators
+
+export function uniqueInAdminsAndUser(model: string, attribute: string, message?: string) {
+    function validator(value: string) {
+        return User.find({ role: 'admin' })
+            .then((admins) => {
+                return this.model(model).countDocuments({
+                    $and: [
+                        { $or: [{ owner: this.owner }, { owner: { $in: admins } }] },
+                        { _id: { $ne: this._id } }, // Exclude the current document
+                        { [attribute]: value },
+                    ],
+                });
+            })
+            .then((count) => count === 0);
     }
-    return validator;
+    return { validator, message: message ? message : `The ${model} ${attribute} must be unique.` };
 }
 
 export function unique(model: string, attribute: string) {
-    async function validator(value: string) {
-        const count = await this.model(model).countDocuments({ [attribute]: value });
-        return count === 0;
+    function validator(value: string) {
+        return this.model(model)
+            .countDocuments({
+                $and: [
+                    { _id: { $ne: this._id } }, // Exclude the current document
+                    { [attribute]: value },
+                ],
+            })
+            .then((count) => count === 0);
     }
-    return validator;
+
+    return { validator, message: `The ${attribute} must be unique, please try again.` };
 }
 
 export function ownerExists() {
-    async function validator(owner: Types.ObjectId) {
-        const user = await User.findById(owner);
-        return user !== null;
+    function validator(owner: Types.ObjectId) {
+        return User.findById(owner).then((user) => user !== null);
     }
     return { validator, message: 'The owner must be a valid user.' };
 }
 
 export function recipeExists() {
-    async function validator(recipe: Types.ObjectId) {
-        const recipeDoc = await Recipe.findById(recipe);
-        return recipeDoc !== null;
+    function validator(recipe: Types.ObjectId) {
+        return Recipe.findById(recipe).then((recipeDoc) => recipeDoc !== null);
     }
     return { validator, message: 'The recipe must be a valid recipe.' };
 }
 
 export function tagsExist() {
-    async function validator(tags: Types.ObjectId[]) {
-        const count = await Tag.countDocuments({ _id: { $in: tags } });
-        return count === tags.length;
+    function validator(tags: Types.ObjectId[]) {
+        return Tag.countDocuments({ _id: { $in: tags } }).then((count) => count === tags.length);
     }
     return { validator, message: 'The tags must be valid tags.' };
 }

@@ -11,10 +11,7 @@ const tagSchema = new Schema<Tag>({
     value: {
         type: String,
         required: true,
-        validate: {
-            validator: uniqueInAdminsAndUser('Tag', 'value'),
-            message: 'The tag must be unique.',
-        },
+        validate: uniqueInAdminsAndUser('Tag', 'value', 'The tag must be unique.'),
         set: (value: string) => value.toLowerCase(),
     },
 });

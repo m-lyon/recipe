@@ -35,9 +35,7 @@ export const PrepMethodMutation = {
         .createOne()
         .wrapResolve(setRecordOwnerAsUser())
         .setDescription('Create a new prep method'),
-    prepMethodUpdateById: PrepMethodTC.mongooseResolvers
-        .updateById()
-        .setDescription('Update a prep method by its ID'),
+    prepMethodUpdateById: PrepMethodTC.getResolver('updateById'),
     prepMethodUpdateOne: PrepMethodTC.mongooseResolvers
         .updateOne()
         .setDescription('Update a single prep method'),

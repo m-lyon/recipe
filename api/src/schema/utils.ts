@@ -32,7 +32,7 @@ export function updateByIdResolver<TDoc extends Document>(
 
         if (!recordData) {
             throw new Error(
-                `${tc.getTypeName()}.updateById resolver doesn't receive new data in args.record`
+                `${tc.getTypeName()}.updateById resolver didn't receive new data in args.record`
             );
         }
 

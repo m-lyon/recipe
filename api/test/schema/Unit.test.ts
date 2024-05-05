@@ -7,13 +7,13 @@ import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 import { schema } from '../../src/schema/index.js';
 import { User } from '../../src/models/User.js';
 
-const createIngredient = async (user, record, apolloServer) => {
+const createUnit = async (user, record, apolloServer) => {
     const query = `
-    mutation IngredientCreateOne($record: CreateOneIngredientCreateInput!) {
-        ingredientCreateOne(record: $record) {
+    mutation UnitCreateOne($record: CreateOneUnitCreateInput!) {
+        unitCreateOne(record: $record) {
           record {
             _id
-            name
+            longSingular
           }
         }
       }`;
@@ -32,18 +32,18 @@ const createIngredient = async (user, record, apolloServer) => {
     return response;
 };
 
-const parseCreatedIngredient = (response) => {
+const parseCreatedUnit = (response) => {
     assert(response.body.kind === 'single');
     assert.isUndefined(response.body.singleResult.errors);
     const record = (
         response.body.singleResult.data as {
-            ingredientCreateOne: { record: { _id: string; name: string } };
+            unitCreateOne: { record: { _id: string; longSingular: string } };
         }
-    ).ingredientCreateOne.record;
+    ).unitCreateOne.record;
     return record;
 };
 
-describe('ingredientCreateOne', () => {
+describe('unitCreateOne', () => {
     let mongoServer: MongoMemoryServer;
     let apolloServer: ApolloServer;
 
@@ -86,7 +86,7 @@ describe('ingredientCreateOne', () => {
     afterEach(function (done) {
         mongoose.connection.collections.users
             .drop()
-            .then(() => mongoose.connection.collections.ingredients.drop())
+            .then(() => mongoose.connection.collections.units.drop())
             .then(() => done())
             .catch((error) => {
                 console.log(error);
@@ -94,16 +94,23 @@ describe('ingredientCreateOne', () => {
             });
     });
 
-    it('should create an ingredient', async function () {
+    it('should create a unit', async function () {
         const user = await User.findOne({ username: 'testuser1' });
-        const newRecord = { name: 'chicken', pluralName: 'chickens', isCountable: true };
-        const response = await createIngredient(user, newRecord, apolloServer);
-        const record = parseCreatedIngredient(response);
-        assert.equal(record.name, 'chicken');
+        const newRecord = {
+            shortPlural: 'tsp',
+            shortSingular: 'tsp',
+            longPlural: 'teaspoons',
+            longSingular: 'teaspoon',
+            preferredNumberFormat: 'fraction',
+            hasSpace: false,
+        };
+        const response = await createUnit(user, newRecord, apolloServer);
+        const record = parseCreatedUnit(response);
+        assert.equal(record.longSingular, 'teaspoon');
     });
 });
 
-describe('ingredientUpdateById', () => {
+describe('unitUpdateById', () => {
     let mongoServer: MongoMemoryServer;
     let apolloServer: ApolloServer;
 
@@ -146,7 +153,7 @@ describe('ingredientUpdateById', () => {
     afterEach(function (done) {
         mongoose.connection.collections.users
             .drop()
-            .then(() => mongoose.connection.collections.ingredients.drop())
+            .then(() => mongoose.connection.collections.units.drop())
             .then(() => done())
             .catch((error) => {
                 console.log(error);
@@ -154,13 +161,13 @@ describe('ingredientUpdateById', () => {
             });
     });
 
-    const updateIngredient = async (user, id, record) => {
+    const updateUnit = async (user, id, record) => {
         const query = `
-        mutation IngredientUpdateById($id: MongoID!, $record: UpdateByIdIngredientInput!) {
-            ingredientUpdateById(_id: $id, record: $record) {
+        mutation UnitUpdateById($id: MongoID!, $record: UpdateByIdUnitInput!) {
+            unitUpdateById(_id: $id, record: $record) {
               record {
                 _id
-                name
+                shortSingular
               }
             }
           }`;
@@ -176,41 +183,69 @@ describe('ingredientUpdateById', () => {
         return response;
     };
 
-    it('should update an ingredient', async function () {
+    it('should update a unit', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         // Create the ingredients
-        const recordOneVars = { name: 'chicken', pluralName: 'chickens', isCountable: true };
-        const recordTwoVars = { name: 'beef', pluralName: 'beefs', isCountable: true };
-        const recordOneResponse = await createIngredient(user, recordOneVars, apolloServer);
-        const recordOne = parseCreatedIngredient(recordOneResponse);
-        await createIngredient(user, recordTwoVars, apolloServer);
+        const recordOneVars = {
+            shortPlural: 'tsp',
+            shortSingular: 'tsp',
+            longPlural: 'teaspoons',
+            longSingular: 'teaspoon',
+            preferredNumberFormat: 'fraction',
+            hasSpace: false,
+        };
+        const recordTwoVars = {
+            shortPlural: 'tbsp',
+            shortSingular: 'tbsp',
+            longPlural: 'tablespoons',
+            longSingular: 'tablespoon',
+            preferredNumberFormat: 'fraction',
+            hasSpace: false,
+        };
+        const recordOneResponse = await createUnit(user, recordOneVars, apolloServer);
+        const recordOne = parseCreatedUnit(recordOneResponse);
+        await createUnit(user, recordTwoVars, apolloServer);
         // Update the ingredient
-        const response = await updateIngredient(user, recordOne._id, { name: 'chickeny' });
+        const response = await updateUnit(user, recordOne._id, { shortSingular: 'tspy' });
         assert(response.body.kind === 'single');
         assert.isUndefined(response.body.singleResult.errors);
         const updatedRecord = (
             response.body.singleResult.data as {
-                ingredientUpdateById: { record: { _id: string; name: string } };
+                unitUpdateById: { record: { _id: string; shortSingular: string } };
             }
-        ).ingredientUpdateById.record;
-        assert.equal(updatedRecord.name, 'chickeny');
+        ).unitUpdateById.record;
+        assert.equal(updatedRecord.shortSingular, 'tspy');
     });
 
-    it('should NOT update an ingredient', async function () {
+    it('should NOT update a unit', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         // Create the ingredients
-        const recordOneVars = { name: 'chicken', pluralName: 'chickens', isCountable: true };
-        const recordTwoVars = { name: 'beef', pluralName: 'beefs', isCountable: true };
-        const recordOneResponse = await createIngredient(user, recordOneVars, apolloServer);
-        const recordOne = parseCreatedIngredient(recordOneResponse);
-        await createIngredient(user, recordTwoVars, apolloServer);
-        // Update the ingredient
-        const response = await updateIngredient(user, recordOne._id, { name: 'beef' });
+        const recordOneVars = {
+            shortPlural: 'tsp',
+            shortSingular: 'tsp',
+            longPlural: 'teaspoons',
+            longSingular: 'teaspoon',
+            preferredNumberFormat: 'fraction',
+            hasSpace: false,
+        };
+        const recordTwoVars = {
+            shortPlural: 'tbsp',
+            shortSingular: 'tbsp',
+            longPlural: 'tablespoons',
+            longSingular: 'tablespoon',
+            preferredNumberFormat: 'fraction',
+            hasSpace: false,
+        };
+        const recordOneResponse = await createUnit(user, recordOneVars, apolloServer);
+        const recordOne = parseCreatedUnit(recordOneResponse);
+        await createUnit(user, recordTwoVars, apolloServer);
+        // Update the unit
+        const response = await updateUnit(user, recordOne._id, { shortPlural: 'tbsp' });
         assert(response.body.kind === 'single');
         assert(response.body.singleResult.errors);
         assert(
             response.body.singleResult.errors[0].message ===
-                'Ingredient validation failed: name: The ingredient name must be unique.'
+                'Unit validation failed: shortPlural: The short plural unit name must be unique.'
         );
     });
 });
