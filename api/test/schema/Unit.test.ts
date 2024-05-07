@@ -108,6 +108,26 @@ describe('unitCreateOne', () => {
         const record = parseCreatedUnit(response);
         assert.equal(record.longSingular, 'teaspoon');
     });
+
+    it('should NOT create a unit', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const newRecord = {
+            shortPlural: 'tsp',
+            shortSingular: 'tsp',
+            longPlural: 'teaspoons',
+            longSingular: 'teaspoon',
+            preferredNumberFormat: 'fraction',
+            hasSpace: false,
+        };
+        await createUnit(user, newRecord, apolloServer);
+        const response = await createUnit(user, newRecord, apolloServer);
+        assert(response.body.kind === 'single');
+        assert(response.body.singleResult.errors, 'Validation error should occur');
+        assert(
+            response.body.singleResult.errors[0].message ===
+                'Unit validation failed: shortPlural: The short plural unit name must be unique.'
+        );
+    });
 });
 
 describe('unitUpdateById', () => {

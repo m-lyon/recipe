@@ -150,6 +150,36 @@ describe('recipeCreateOne', () => {
         const record = parseCreatedRecipe(response);
         assert(record.title === 'Chicken Soup');
     });
+
+    it('should NOT create a recipe', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const newRecord = {
+            title: 'Chicken Soup',
+            ingredients: [
+                {
+                    ingredient: ingredient._id,
+                    quantity: '500',
+                    unit: unit._id,
+                    type: 'ingredient',
+                    prepMethod: prepMethod._id,
+                },
+            ],
+            instructions: ['Cook the chicken in the broth.', 'Add the noodles.'],
+            numServings: 4,
+            isIngredient: false,
+        };
+        await createRecipe(user, newRecord, apolloServer);
+        const response = await createRecipe(user, newRecord, apolloServer);
+        assert(response.body.kind === 'single');
+        assert(response.body.singleResult.errors, 'Validation error should occur');
+        assert(
+            response.body.singleResult.errors[0].message ===
+                'Recipe validation failed: title: The Recipe title must be unique.'
+        );
+    });
 });
 
 describe('recipeUpdateById', () => {

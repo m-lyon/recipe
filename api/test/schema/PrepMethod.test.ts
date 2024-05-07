@@ -101,6 +101,19 @@ describe('prepMethodCreateOne', () => {
         const record = parseCreatedPrepMethod(response);
         assert.equal(record.value, 'chopped');
     });
+
+    it('should NOT create a prep method', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const newRecord = { value: 'chopped' };
+        await createPrepMethod(user, newRecord, apolloServer);
+        const response = await createPrepMethod(user, newRecord, apolloServer);
+        assert(response.body.kind === 'single');
+        assert(response.body.singleResult.errors, 'Validation error should occur');
+        assert(
+            response.body.singleResult.errors[0].message ===
+                'PrepMethod validation failed: value: The prep method must be unique.'
+        );
+    });
 });
 
 describe('prepMethodUpdateById', () => {

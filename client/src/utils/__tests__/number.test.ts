@@ -1,4 +1,5 @@
-import { it, expect, describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
+
 import { VALID_NUMBER_REGEX } from '../number';
 
 describe('VALID_NUMBER_REGEX', () => {

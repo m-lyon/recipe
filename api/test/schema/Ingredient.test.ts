@@ -16,7 +16,7 @@ const createIngredient = async (user, record, apolloServer) => {
             name
           }
         }
-      }`;
+    }`;
     const response = await apolloServer.executeOperation(
         {
             query: query,
@@ -100,6 +100,20 @@ describe('ingredientCreateOne', () => {
         const response = await createIngredient(user, newRecord, apolloServer);
         const record = parseCreatedIngredient(response);
         assert.equal(record.name, 'chicken');
+    });
+
+    it('should NOT create an ingredient', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const newRecordOne = { name: 'chicken', pluralName: 'chickens', isCountable: true };
+        const newRecordTwo = { name: 'chicken', pluralName: 'chickeny', isCountable: true };
+        await createIngredient(user, newRecordOne, apolloServer);
+        const response = await createIngredient(user, newRecordTwo, apolloServer);
+        assert(response.body.kind === 'single');
+        assert(response.body.singleResult.errors, 'Validation Error should occur');
+        assert(
+            response.body.singleResult.errors[0].message ===
+                'Ingredient validation failed: name: The ingredient name must be unique.'
+        );
     });
 });
 
