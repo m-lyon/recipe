@@ -1,6 +1,6 @@
-import { updateByIdResolver } from './utils.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { filterIsOwnerOrAdmin } from '../middleware/filters.js';
+import { createOneResolver, updateByIdResolver } from './utils.js';
 import { Ingredient, IngredientCreateTC, IngredientTC } from '../models/Ingredient.js';
 
 IngredientTC.addResolver({
@@ -9,6 +9,14 @@ IngredientTC.addResolver({
     type: IngredientTC.mongooseResolvers.updateById().getType(),
     args: IngredientTC.mongooseResolvers.updateById().getArgs(),
     resolve: updateByIdResolver(Ingredient, IngredientTC),
+});
+
+IngredientCreateTC.addResolver({
+    name: 'createOne',
+    description: 'Create a new ingredient',
+    type: IngredientCreateTC.mongooseResolvers.createOne().getType(),
+    args: IngredientCreateTC.mongooseResolvers.createOne().getArgs(),
+    resolve: createOneResolver(Ingredient, IngredientCreateTC),
 });
 
 export const IngredientQuery = {
@@ -31,10 +39,8 @@ export const IngredientQuery = {
 };
 
 export const IngredientMutation = {
-    ingredientCreateOne: IngredientCreateTC.mongooseResolvers
-        .createOne()
-        .wrapResolve(setRecordOwnerAsUser())
-        .setDescription('Create a new ingredient'),
+    ingredientCreateOne:
+        IngredientCreateTC.getResolver('createOne').wrapResolve(setRecordOwnerAsUser()),
     ingredientUpdateById: IngredientTC.getResolver('updateById'),
     ingredientRemoveById: IngredientTC.mongooseResolvers
         .removeById()

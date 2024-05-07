@@ -1,6 +1,53 @@
 import { Document, Model } from 'mongoose';
 import { ObjectTypeComposer } from 'graphql-compose';
 import { findById } from 'graphql-compose-mongoose/lib/resolvers/findById.js';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
+import { GraphQLError } from 'graphql';
+
+export async function validateDoc(doc: Document) {
+    try {
+        await doc.validate();
+    } catch (errors) {
+        const errorList = Object.keys(errors.errors).map((key) => {
+            const { message, value } = errors.errors[key];
+            return { path: key, message, value };
+        });
+        const error = errorList[0];
+        throw new GraphQLError(`${errors._message}: ${error.path}: ${error.message}`, {
+            extensions: {
+                code: ApolloServerErrorCode.GRAPHQL_VALIDATION_FAILED,
+                value: error.value,
+            },
+        });
+    }
+}
+
+export function createOneResolver<TDoc extends Document>(
+    model: Model<TDoc>,
+    tc: ObjectTypeComposer<TDoc>
+) {
+    const resolve = async (rp) => {
+        const recordData = rp?.args?.record;
+
+        if (!(typeof recordData === 'object') || Object.keys(recordData).length === 0) {
+            throw new Error(
+                `${tc.getTypeName()}.createOne resolver requires at least one value in args.record`
+            );
+        }
+
+        let doc = new model(recordData);
+        if (rp.beforeRecordMutate) {
+            doc = await rp.beforeRecordMutate(doc, rp);
+            if (!doc) return null;
+        }
+
+        await validateDoc(doc);
+        await doc.save({ validateBeforeSave: false });
+
+        return { record: doc };
+    };
+    return resolve;
+}
 
 export function updateByIdResolver<TDoc extends Document>(
     model: Model<TDoc>,
@@ -37,7 +84,8 @@ export function updateByIdResolver<TDoc extends Document>(
         }
 
         doc.set(recordData);
-        await doc.save();
+        await validateDoc(doc);
+        await doc.save({ validateBeforeSave: false });
 
         return { record: doc };
     };

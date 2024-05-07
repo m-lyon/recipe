@@ -5,9 +5,9 @@ import { GraphQLError, GraphQLList } from 'graphql';
 import { TagTC } from '../models/Tag.js';
 import { UnitTC } from '../models/Unit.js';
 import { ImageTC } from '../models/Image.js';
-import { updateByIdResolver } from './utils.js';
 import { PrepMethodTC } from '../models/PrepMethod.js';
 import { Ingredient, IngredientTC } from '../models/Ingredient.js';
+import { createOneResolver, updateByIdResolver } from './utils.js';
 import { RecipeModifyTC, generateRecipeIdentifier } from '../models/Recipe.js';
 import { Recipe, RecipeCreateTC, RecipeIngredientTC, RecipeQueryTC } from '../models/Recipe.js';
 
@@ -28,6 +28,14 @@ RecipeModifyTC.addResolver({
     type: RecipeModifyTC.mongooseResolvers.updateById().getType(),
     args: RecipeModifyTC.mongooseResolvers.updateById().getArgs(),
     resolve: updateByIdResolver(Recipe, RecipeModifyTC),
+});
+
+RecipeCreateTC.addResolver({
+    name: 'createOne',
+    description: 'Create a new recipe',
+    type: RecipeCreateTC.mongooseResolvers.createOne().getType(),
+    args: RecipeCreateTC.mongooseResolvers.createOne().getArgs(),
+    resolve: createOneResolver(Recipe, RecipeCreateTC),
 });
 
 RecipeIngredientTC.addResolver({
@@ -112,14 +120,11 @@ export const RecipeQuery = {
 };
 
 export const RecipeMutation = {
-    recipeCreateOne: RecipeCreateTC.mongooseResolvers
-        .createOne()
-        .wrapResolve((next) => (rp) => {
-            rp.args.record.owner = rp.context.getUser();
-            rp.args.record.titleIdentifier = generateRecipeIdentifier(rp.args.record.title);
-            return next(rp);
-        })
-        .setDescription('Create a new recipe'),
+    recipeCreateOne: RecipeCreateTC.getResolver('createOne').wrapResolve((next) => (rp) => {
+        rp.args.record.owner = rp.context.getUser();
+        rp.args.record.titleIdentifier = generateRecipeIdentifier(rp.args.record.title);
+        return next(rp);
+    }),
     recipeUpdateById: RecipeModifyTC.getResolver('updateById').wrapResolve((next) => (rp) => {
         if (rp.args.record.title) {
             rp.args.record.titleIdentifier = generateRecipeIdentifier(rp.args.record.title);

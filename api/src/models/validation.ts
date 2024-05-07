@@ -4,39 +4,36 @@ import { User } from './User.js';
 import { Recipe } from './Recipe.js';
 import { Tag } from './Tag.js';
 
-// Validators need to be functions that return a promise, rather than async functions
-// Because of graphql-compose-mongoose internal validation calls use validateSync calls
-// which silently skip async validators
-
 export function uniqueInAdminsAndUser(model: string, attribute: string, message?: string) {
-    function validator(value: string) {
-        return User.find({ role: 'admin' })
-            .then((admins) => {
-                return this.model(model).countDocuments({
-                    $and: [
-                        { $or: [{ owner: this.owner }, { owner: { $in: admins } }] },
-                        { _id: { $ne: this._id } }, // Exclude the current document
-                        { [attribute]: value },
-                    ],
-                });
-            })
-            .then((count) => count === 0);
+    async function validator(value: string) {
+        const owner = this.owner;
+        const admins = await User.find({ role: 'admin' });
+        const count = await this.model(model).countDocuments({
+            $and: [
+                { $or: [{ owner }, { owner: { $in: admins } }] },
+                { _id: { $ne: this._id } }, // Exclude the current document
+                { [attribute]: value },
+            ],
+        });
+        return count === 0;
     }
     return { validator, message: message ? message : `The ${model} ${attribute} must be unique.` };
 }
 
 export function unique(model: string, attribute: string) {
-    function validator(value: string) {
-        return this.model(model)
-            .countDocuments({
+    async function validator(value: string) {
+        if (this._id) {
+            const count = await this.model(model).countDocuments({
                 $and: [
                     { _id: { $ne: this._id } }, // Exclude the current document
                     { [attribute]: value },
                 ],
-            })
-            .then((count) => count === 0);
+            });
+            return count === 0;
+        }
+        const count = await this.model(model).countDocuments({ [attribute]: value });
+        return count === 0;
     }
-
     return { validator, message: `The ${attribute} must be unique, please try again.` };
 }
 

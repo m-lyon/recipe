@@ -1,7 +1,7 @@
-import { updateByIdResolver } from './utils.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { Unit, UnitCreateTC, UnitTC } from '../models/Unit.js';
 import { filterIsOwnerOrAdmin } from '../middleware/filters.js';
+import { createOneResolver, updateByIdResolver } from './utils.js';
 
 UnitTC.addResolver({
     name: 'updateById',
@@ -9,6 +9,14 @@ UnitTC.addResolver({
     type: UnitTC.mongooseResolvers.updateById().getType(),
     args: UnitTC.mongooseResolvers.updateById().getArgs(),
     resolve: updateByIdResolver(Unit, UnitTC),
+});
+
+UnitCreateTC.addResolver({
+    name: 'createOne',
+    description: 'Create a new unit',
+    type: UnitCreateTC.mongooseResolvers.createOne().getType(),
+    args: UnitCreateTC.mongooseResolvers.createOne().getArgs(),
+    resolve: createOneResolver(Unit, UnitCreateTC),
 });
 
 export const UnitQuery = {
@@ -25,10 +33,7 @@ export const UnitQuery = {
 };
 
 export const UnitMutation = {
-    unitCreateOne: UnitCreateTC.mongooseResolvers
-        .createOne()
-        .wrapResolve(setRecordOwnerAsUser())
-        .setDescription('Create a new unit'),
+    unitCreateOne: UnitCreateTC.getResolver('createOne').wrapResolve(setRecordOwnerAsUser()),
     unitUpdateById: UnitTC.getResolver('updateById'),
     unitRemoveById: UnitTC.mongooseResolvers.removeById().setDescription('Remove a unit by its ID'),
     unitRemoveOne: UnitTC.mongooseResolvers.removeOne().setDescription('Remove a single unit'),
