@@ -14,7 +14,7 @@ const prepMethodSchema = new Schema<PrepMethod>({
         required: true,
         validate: uniqueInAdminsAndUser('PrepMethod', 'value', 'The prep method must be unique.'),
     },
-    owner: { type: Schema.Types.ObjectId, ref: 'User', required: true, validator: ownerExists() },
+    owner: { type: Schema.Types.ObjectId, ref: 'User', required: true, validate: ownerExists() },
 });
 
 export const PrepMethod = model<PrepMethod>('PrepMethod', prepMethodSchema);

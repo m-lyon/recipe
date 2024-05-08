@@ -35,7 +35,7 @@ const ingredientSchema = new Schema<Ingredient>({
     },
     density: { type: Number, required: false },
     isCountable: { type: Boolean, required: true },
-    owner: { type: Schema.Types.ObjectId, required: true, ref: 'User', validator: ownerExists() },
+    owner: { type: Schema.Types.ObjectId, required: true, ref: 'User', validate: ownerExists() },
 });
 
 export const Ingredient = model<Ingredient>('Ingredient', ingredientSchema);

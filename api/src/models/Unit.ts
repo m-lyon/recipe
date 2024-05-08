@@ -55,7 +55,7 @@ const unitSchema = new Schema<Unit>({
         ),
     },
     preferredNumberFormat: { type: String, required: true, enum: ['decimal', 'fraction'] },
-    owner: { type: Schema.Types.ObjectId, required: true, ref: 'User', validator: ownerExists() },
+    owner: { type: Schema.Types.ObjectId, required: true, ref: 'User', validate: ownerExists() },
     hasSpace: { type: Boolean, required: true },
 });
 

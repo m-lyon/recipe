@@ -38,22 +38,25 @@ export function unique(model: string, attribute: string) {
 }
 
 export function ownerExists() {
-    function validator(owner: Types.ObjectId) {
-        return User.findById(owner).then((user) => user !== null);
+    async function validator(owner: Types.ObjectId) {
+        const user = await User.findById(owner);
+        return user !== null;
     }
     return { validator, message: 'The owner must be a valid user.' };
 }
 
 export function recipeExists() {
-    function validator(recipe: Types.ObjectId) {
-        return Recipe.findById(recipe).then((recipeDoc) => recipeDoc !== null);
+    async function validator(recipe: Types.ObjectId) {
+        const doc = await Recipe.findById(recipe);
+        return doc !== null;
     }
-    return { validator, message: 'The recipe must be a valid recipe.' };
+    return { validator, message: 'Recipe does not exist.' };
 }
 
 export function tagsExist() {
-    function validator(tags: Types.ObjectId[]) {
-        return Tag.countDocuments({ _id: { $in: tags } }).then((count) => count === tags.length);
+    async function validator(tags: Types.ObjectId[]) {
+        const count = await Tag.countDocuments({ _id: { $in: tags } });
+        return count === tags.length;
     }
     return { validator, message: 'The tags must be valid tags.' };
 }

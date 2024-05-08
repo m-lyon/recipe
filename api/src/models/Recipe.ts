@@ -156,7 +156,7 @@ const recipeSchema = new Schema<Recipe>({
         },
     },
     notes: { type: String },
-    owner: { type: Schema.Types.ObjectId, required: true, ref: 'User', validator: ownerExists() },
+    owner: { type: Schema.Types.ObjectId, required: true, ref: 'User', validate: ownerExists() },
     source: { type: String },
     numServings: { type: Number, required: true },
     isIngredient: { type: Boolean, required: true },

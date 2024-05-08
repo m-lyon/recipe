@@ -86,7 +86,11 @@ describe('unitCreateOne', () => {
     afterEach(function (done) {
         mongoose.connection.collections.users
             .drop()
-            .then(() => mongoose.connection.collections.units.drop())
+            .then(() => {
+                if (mongoose.connection.collections.units) {
+                    mongoose.connection.collections.units.drop();
+                }
+            })
             .then(() => done())
             .catch((error) => {
                 console.log(error);
@@ -109,13 +113,13 @@ describe('unitCreateOne', () => {
         assert.equal(record.longSingular, 'teaspoon');
     });
 
-    it('should NOT create a unit', async function () {
+    it('should NOT create a unit, duplicate data', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         const newRecord = {
             shortPlural: 'tsp',
-            shortSingular: 'tsp',
-            longPlural: 'teaspoons',
-            longSingular: 'teaspoon',
+            shortSingular: 'tspp',
+            longPlural: 'teaspoonss',
+            longSingular: 'teaspoonn',
             preferredNumberFormat: 'fraction',
             hasSpace: false,
         };
@@ -125,7 +129,30 @@ describe('unitCreateOne', () => {
         assert(response.body.singleResult.errors, 'Validation error should occur');
         assert(
             response.body.singleResult.errors[0].message ===
-                'Unit validation failed: shortPlural: The short plural unit name must be unique.'
+                'Unit validation failed: shortPlural: The short plural unit name must be unique.',
+            `Validation error message mismatch: ${response.body.singleResult.errors[0].message}`
+        );
+    });
+
+    it('should NOT create a unit, owner does not exist', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const newRecord = {
+            shortPlural: 'tsp',
+            shortSingular: 'tsp',
+            longPlural: 'teaspoons',
+            longSingular: 'teaspoon',
+            preferredNumberFormat: 'fraction',
+            hasSpace: false,
+        };
+        await User.deleteOne({ username: 'testuser1' });
+        const deletedUser = await User.findOne({ username: 'testuser1' });
+        assert.isNull(deletedUser);
+        const response = await createUnit(user, newRecord, apolloServer);
+        assert(response.body.kind === 'single');
+        assert(response.body.singleResult.errors, 'Validation error should occur');
+        assert(
+            response.body.singleResult.errors[0].message ===
+                'Unit validation failed: owner: The owner must be a valid user.'
         );
     });
 });
@@ -237,7 +264,7 @@ describe('unitUpdateById', () => {
         assert.equal(updatedRecord.shortSingular, 'tspy');
     });
 
-    it('should NOT update a unit', async function () {
+    it('should NOT update a unit, duplicate data', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         // Create the ingredients
         const recordOneVars = {
@@ -266,6 +293,41 @@ describe('unitUpdateById', () => {
         assert(
             response.body.singleResult.errors[0].message ===
                 'Unit validation failed: shortPlural: The short plural unit name must be unique.'
+        );
+    });
+
+    it('should NOT update a unit, owner does not exist', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        // Create the ingredients
+        const recordOneVars = {
+            shortPlural: 'tsp',
+            shortSingular: 'tsp',
+            longPlural: 'teaspoons',
+            longSingular: 'teaspoon',
+            preferredNumberFormat: 'fraction',
+            hasSpace: false,
+        };
+        const recordTwoVars = {
+            shortPlural: 'tbsp',
+            shortSingular: 'tbsp',
+            longPlural: 'tablespoons',
+            longSingular: 'tablespoon',
+            preferredNumberFormat: 'fraction',
+            hasSpace: false,
+        };
+        const recordOneResponse = await createUnit(user, recordOneVars, apolloServer);
+        const recordOne = parseCreatedUnit(recordOneResponse);
+        await createUnit(user, recordTwoVars, apolloServer);
+        // Update the unit
+        await User.deleteOne({ username: 'testuser1' });
+        const deletedUser = await User.findOne({ username: 'testuser1' });
+        assert.isNull(deletedUser);
+        const response = await updateUnit(user, recordOne._id, { shortSingular: 'tspy' });
+        assert(response.body.kind === 'single');
+        assert(response.body.singleResult.errors);
+        assert(
+            response.body.singleResult.errors[0].message ===
+                'Unit validation failed: owner: The owner must be a valid user.'
         );
     });
 });

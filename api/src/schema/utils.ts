@@ -9,8 +9,8 @@ export async function validateDoc(doc: Document) {
         await doc.validate();
     } catch (errors) {
         const errorList = Object.keys(errors.errors).map((key) => {
-            const { message, value } = errors.errors[key];
-            return { path: key, message, value };
+            const { message, value, path } = errors.errors[key];
+            return { path, message, value };
         });
         const error = errorList[0];
         throw new GraphQLError(`${errors._message}: ${error.path}: ${error.message}`, {

@@ -10,8 +10,9 @@ import { Unit } from '../../src/models/Unit.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
 import { Recipe } from '../../src/models/Recipe.js';
+import { Tag } from '../../src/models/Tag.js';
 
-async function createData() {
+export async function createRecipeIngredientData() {
     const user = await User.register(
         new User({
             username: 'testuser1',
@@ -44,15 +45,32 @@ async function createData() {
         owner: user._id,
     }).save();
     assert(prepMethod);
+    const tag1 = await new Tag({
+        value: 'dinner',
+    }).save();
+    assert(tag1);
+    const tag2 = await new Tag({
+        value: 'lunch',
+    }).save();
+    assert(tag2);
 }
 
-function removeData(done) {
+export function removeRecipeIngredientData(done) {
     mongoose.connection.collections.users
         .drop()
         .then(() => mongoose.connection.collections.ingredients.drop())
         .then(() => mongoose.connection.collections.units.drop())
         .then(() => mongoose.connection.collections.prepmethods.drop())
-        .then(() => mongoose.connection.collections.recipes.drop())
+        .then(() => {
+            if (mongoose.connection.collections.tags) {
+                mongoose.connection.collections.tags.drop();
+            }
+        })
+        .then(() => {
+            if (mongoose.connection.collections.recipes) {
+                mongoose.connection.collections.recipes.drop();
+            }
+        })
         .then(() => done())
         .catch((error) => {
             console.log(error);
@@ -98,8 +116,8 @@ describe('recipeCreateOne', () => {
         }
     });
 
-    beforeEach(createData);
-    afterEach(removeData);
+    beforeEach(createRecipeIngredientData);
+    afterEach(removeRecipeIngredientData);
 
     const createRecipe = async (user, record, apolloServer) => {
         const query = `
@@ -131,6 +149,7 @@ describe('recipeCreateOne', () => {
         const ingredient = await Ingredient.findOne({ name: 'chicken' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const tag = await Tag.findOne({ value: 'dinner' });
         const newRecord = {
             title: 'Chicken Soup',
             ingredients: [
@@ -144,6 +163,7 @@ describe('recipeCreateOne', () => {
             ],
             instructions: ['Cook the chicken in the broth.', 'Add the noodles.'],
             numServings: 4,
+            tags: [tag._id],
             isIngredient: false,
         };
         const response = await createRecipe(user, newRecord, apolloServer);
@@ -151,7 +171,7 @@ describe('recipeCreateOne', () => {
         assert(record.title === 'Chicken Soup');
     });
 
-    it('should NOT create a recipe', async function () {
+    it('should NOT create a recipe, duplicate title', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         const ingredient = await Ingredient.findOne({ name: 'chicken' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
@@ -178,6 +198,40 @@ describe('recipeCreateOne', () => {
         assert(
             response.body.singleResult.errors[0].message ===
                 'Recipe validation failed: title: The Recipe title must be unique.'
+        );
+    });
+
+    it('should NOT create a recipe, tag does not exist', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const tag = await Tag.findOne({ value: 'dinner' });
+        await Tag.deleteOne({ _id: tag._id });
+        const deletedTag = await Tag.findById(tag._id);
+        assert.isNull(deletedTag);
+        const newRecord = {
+            title: 'Chicken Soup',
+            ingredients: [
+                {
+                    ingredient: ingredient._id,
+                    quantity: '500',
+                    unit: unit._id,
+                    type: 'ingredient',
+                    prepMethod: prepMethod._id,
+                },
+            ],
+            instructions: ['Cook the chicken in the broth.', 'Add the noodles.'],
+            numServings: 4,
+            tags: [tag._id],
+            isIngredient: false,
+        };
+        const response = await createRecipe(user, newRecord, apolloServer);
+        assert(response.body.kind === 'single');
+        assert(response.body.singleResult.errors, 'Validation error should occur');
+        assert(
+            response.body.singleResult.errors[0].message ===
+                'Recipe validation failed: tags: The tags must be valid tags.'
         );
     });
 });
@@ -209,8 +263,8 @@ describe('recipeUpdateById', () => {
         }
     });
 
-    beforeEach(createData);
-    afterEach(removeData);
+    beforeEach(createRecipeIngredientData);
+    afterEach(removeRecipeIngredientData);
 
     const updateRecipe = async (user, id, record) => {
         const query = `
@@ -353,6 +407,42 @@ describe('recipeUpdateById', () => {
         assert(
             response.body.singleResult.errors[0].message ===
                 'Recipe validation failed: title: The Recipe title must be unique.'
+        );
+    });
+
+    it('should NOT update a recipe, tag does not exist', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const tag = await Tag.findOne({ value: 'dinner' });
+        const recipe = new Recipe({
+            title: 'Chicken Soup',
+            titleIdentifier: 'chicken-soup',
+            ingredients: [
+                {
+                    ingredient: ingredient._id,
+                    quantity: '500',
+                    unit: unit._id,
+                    type: 'ingredient',
+                    prepMethod: prepMethod._id,
+                },
+            ],
+            instructions: ['Cook the chicken in the broth.', 'Add the noodles.'],
+            numServings: 4,
+            isIngredient: false,
+            owner: user._id,
+        });
+        await recipe.save();
+        await Tag.deleteOne({ _id: tag._id });
+        const deletedTag = await Tag.findById(tag._id);
+        assert.isNull(deletedTag);
+        const response = await updateRecipe(user, recipe._id, { tags: [tag._id] });
+        assert(response.body.kind === 'single');
+        assert(response.body.singleResult.errors, 'Validation error should occur');
+        assert(
+            response.body.singleResult.errors[0].message ===
+                'Recipe validation failed: tags: The tags must be valid tags.'
         );
     });
 });
