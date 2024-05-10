@@ -4,7 +4,7 @@ import { User } from './User.js';
 import { Recipe } from './Recipe.js';
 import { Tag } from './Tag.js';
 
-export function uniqueInAdminsAndUser(model: string, attribute: string) {
+export function uniqueInAdminsAndUser(model: string, attribute: string, message?: string) {
     async function validator(value: string) {
         const owner = this.owner;
         const admins = await User.find({ role: 'admin' });
@@ -17,15 +17,24 @@ export function uniqueInAdminsAndUser(model: string, attribute: string) {
         });
         return count === 0;
     }
-    return validator;
+    return { validator, message: message ? message : `The ${model} ${attribute} must be unique.` };
 }
 
 export function unique(model: string, attribute: string) {
     async function validator(value: string) {
+        if (this._id) {
+            const count = await this.model(model).countDocuments({
+                $and: [
+                    { _id: { $ne: this._id } }, // Exclude the current document
+                    { [attribute]: value },
+                ],
+            });
+            return count === 0;
+        }
         const count = await this.model(model).countDocuments({ [attribute]: value });
         return count === 0;
     }
-    return validator;
+    return { validator, message: `The ${attribute} must be unique, please try again.` };
 }
 
 export function ownerExists() {
@@ -38,10 +47,10 @@ export function ownerExists() {
 
 export function recipeExists() {
     async function validator(recipe: Types.ObjectId) {
-        const recipeDoc = await Recipe.findById(recipe);
-        return recipeDoc !== null;
+        const doc = await Recipe.findById(recipe);
+        return doc !== null;
     }
-    return { validator, message: 'The recipe must be a valid recipe.' };
+    return { validator, message: 'Recipe does not exist.' };
 }
 
 export function tagsExist() {

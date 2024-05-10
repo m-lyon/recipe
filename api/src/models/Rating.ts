@@ -24,9 +24,9 @@ const ratingSchema = new Schema<Rating>({
         type: Schema.Types.ObjectId,
         ref: 'Recipe',
         required: true,
-        validator: recipeExists(),
+        validate: recipeExists(),
     },
-    owner: { type: Schema.Types.ObjectId, ref: 'User', required: true, validator: ownerExists() },
+    owner: { type: Schema.Types.ObjectId, ref: 'User', required: true, validate: ownerExists() },
 });
 
 export const Rating = model<Rating>('Rating', ratingSchema);

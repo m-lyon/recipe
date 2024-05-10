@@ -1,10 +1,13 @@
+import { GraphQLError } from 'graphql';
 import { Document, Model, Types } from 'mongoose';
 
 import { Image } from '../models/Image.js';
 
 export const isAuthenticated = () => (next) => (rp) => {
     if (!rp.context.getUser()) {
-        throw new Error('You are not authenticated!');
+        throw new GraphQLError('You are not authenticated!', {
+            extensions: { code: 'FORBIDDEN' },
+        });
     }
     return next(rp);
 };
@@ -12,7 +15,9 @@ export const isAuthenticated = () => (next) => (rp) => {
 export const isAdmin = () => (next) => (rp) => {
     const user = rp.context.getUser();
     if (user.role !== 'admin') {
-        throw new Error('You are not authorised!');
+        throw new GraphQLError('You are not authorised!', {
+            extensions: { code: 'FORBIDDEN' },
+        });
     }
     return next(rp);
 };
@@ -24,14 +29,20 @@ export const isDocumentOwnerOrAdmin =
     async (rp) => {
         const user = rp.context.getUser();
         if (!user) {
-            throw new Error('You are not authenticated!');
+            throw new GraphQLError('You are not authenticated!', {
+                extensions: { code: 'FORBIDDEN' },
+            });
         }
         const document = await Model.findById(rp.args._id);
         if (!document) {
-            throw new Error('Document not found!');
+            throw new GraphQLError('Document not found!', {
+                extensions: { code: 'NOT_FOUND' },
+            });
         }
         if (!(document.owner as Types.ObjectId).equals(user._id) && user.role !== 'admin') {
-            throw new Error('You are not authorised!');
+            throw new GraphQLError('You are not authorised!', {
+                extensions: { code: 'FORBIDDEN' },
+            });
         }
         return next(rp);
     };
@@ -39,13 +50,17 @@ export const isDocumentOwnerOrAdmin =
 export const isImageOwnerOrAdmin = () => (next) => async (rp) => {
     const user = rp.context.getUser();
     if (!user) {
-        throw new Error('You are not authenticated!');
+        throw new GraphQLError('You are not authenticated!', {
+            extensions: { code: 'FORBIDDEN' },
+        });
     }
     const images = await Image.find({ _id: { $in: rp.args.ids } });
     // Ensure user has permission to remove any and all images
     images.forEach((image) => {
         if (!image.recipe._id.equals(user._id) && user.role !== 'admin') {
-            throw new Error('You are not authorised!');
+            throw new GraphQLError('You are not authorised!', {
+                extensions: { code: 'FORBIDDEN' },
+            });
         }
     });
     rp.context.images = images;

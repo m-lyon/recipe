@@ -7,16 +7,16 @@ import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 import { schema } from '../../src/schema/index.js';
 import { User } from '../../src/models/User.js';
 
-const createIngredient = async (user, record, apolloServer) => {
+const createPrepMethod = async (user, record, apolloServer) => {
     const query = `
-    mutation IngredientCreateOne($record: CreateOneIngredientCreateInput!) {
-        ingredientCreateOne(record: $record) {
+    mutation PrepMethodCreateOne($record: CreateOnePrepMethodCreateInput!) {
+        prepMethodCreateOne(record: $record) {
           record {
             _id
-            name
+            value
           }
         }
-    }`;
+      }`;
     const response = await apolloServer.executeOperation(
         {
             query: query,
@@ -32,18 +32,18 @@ const createIngredient = async (user, record, apolloServer) => {
     return response;
 };
 
-const parseCreatedIngredient = (response) => {
+const parseCreatedPrepMethod = (response) => {
     assert(response.body.kind === 'single');
     assert.isUndefined(response.body.singleResult.errors);
     const record = (
         response.body.singleResult.data as {
-            ingredientCreateOne: { record: { _id: string; name: string } };
+            prepMethodCreateOne: { record: { _id: string; value: string } };
         }
-    ).ingredientCreateOne.record;
+    ).prepMethodCreateOne.record;
     return record;
 };
 
-describe('ingredientCreateOne', () => {
+describe('prepMethodCreateOne', () => {
     let mongoServer: MongoMemoryServer;
     let apolloServer: ApolloServer;
 
@@ -86,7 +86,7 @@ describe('ingredientCreateOne', () => {
     afterEach(function (done) {
         mongoose.connection.collections.users
             .drop()
-            .then(() => mongoose.connection.collections.ingredients.drop())
+            .then(() => mongoose.connection.collections.prepmethods.drop())
             .then(() => done())
             .catch((error) => {
                 console.log(error);
@@ -94,30 +94,29 @@ describe('ingredientCreateOne', () => {
             });
     });
 
-    it('should create an ingredient', async function () {
+    it('should create a prep method', async function () {
         const user = await User.findOne({ username: 'testuser1' });
-        const newRecord = { name: 'chicken', pluralName: 'chickens', isCountable: true };
-        const response = await createIngredient(user, newRecord, apolloServer);
-        const record = parseCreatedIngredient(response);
-        assert.equal(record.name, 'chicken');
+        const newRecord = { value: 'chopped' };
+        const response = await createPrepMethod(user, newRecord, apolloServer);
+        const record = parseCreatedPrepMethod(response);
+        assert.equal(record.value, 'chopped');
     });
 
-    it('should NOT create an ingredient', async function () {
+    it('should NOT create a prep method', async function () {
         const user = await User.findOne({ username: 'testuser1' });
-        const newRecordOne = { name: 'chicken', pluralName: 'chickens', isCountable: true };
-        const newRecordTwo = { name: 'chicken', pluralName: 'chickeny', isCountable: true };
-        await createIngredient(user, newRecordOne, apolloServer);
-        const response = await createIngredient(user, newRecordTwo, apolloServer);
+        const newRecord = { value: 'chopped' };
+        await createPrepMethod(user, newRecord, apolloServer);
+        const response = await createPrepMethod(user, newRecord, apolloServer);
         assert(response.body.kind === 'single');
-        assert(response.body.singleResult.errors, 'Validation Error should occur');
+        assert(response.body.singleResult.errors, 'Validation error should occur');
         assert(
             response.body.singleResult.errors[0].message ===
-                'Ingredient validation failed: name: The ingredient name must be unique.'
+                'PrepMethod validation failed: value: The prep method must be unique.'
         );
     });
 });
 
-describe('ingredientUpdateById', () => {
+describe('prepMethodUpdateById', () => {
     let mongoServer: MongoMemoryServer;
     let apolloServer: ApolloServer;
 
@@ -160,7 +159,7 @@ describe('ingredientUpdateById', () => {
     afterEach(function (done) {
         mongoose.connection.collections.users
             .drop()
-            .then(() => mongoose.connection.collections.ingredients.drop())
+            .then(() => mongoose.connection.collections.prepmethods.drop())
             .then(() => done())
             .catch((error) => {
                 console.log(error);
@@ -168,13 +167,13 @@ describe('ingredientUpdateById', () => {
             });
     });
 
-    const updateIngredient = async (user, id, record) => {
+    const updatePrepMethod = async (user, id, record) => {
         const query = `
-        mutation IngredientUpdateById($id: MongoID!, $record: UpdateByIdIngredientInput!) {
-            ingredientUpdateById(_id: $id, record: $record) {
+        mutation UpdatePrepMethodById($id: MongoID!, $record: UpdateByIdPrepMethodInput!) {
+            prepMethodUpdateById(_id: $id, record: $record) {
               record {
                 _id
-                name
+                value
               }
             }
           }`;
@@ -190,41 +189,41 @@ describe('ingredientUpdateById', () => {
         return response;
     };
 
-    it('should update an ingredient', async function () {
+    it('should update a prep method', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         // Create the ingredients
-        const recordOneVars = { name: 'chicken', pluralName: 'chickens', isCountable: true };
-        const recordTwoVars = { name: 'beef', pluralName: 'beefs', isCountable: true };
-        const recordOneResponse = await createIngredient(user, recordOneVars, apolloServer);
-        const recordOne = parseCreatedIngredient(recordOneResponse);
-        await createIngredient(user, recordTwoVars, apolloServer);
+        const recordOneVars = { value: 'chopped' };
+        const recordTwoVars = { value: 'diced' };
+        const recordOneResponse = await createPrepMethod(user, recordOneVars, apolloServer);
+        const recordOne = parseCreatedPrepMethod(recordOneResponse);
+        await createPrepMethod(user, recordTwoVars, apolloServer);
         // Update the ingredient
-        const response = await updateIngredient(user, recordOne._id, { name: 'chickeny' });
+        const response = await updatePrepMethod(user, recordOne._id, { value: 'minced' });
         assert(response.body.kind === 'single');
         assert.isUndefined(response.body.singleResult.errors);
         const updatedRecord = (
             response.body.singleResult.data as {
-                ingredientUpdateById: { record: { _id: string; name: string } };
+                prepMethodUpdateById: { record: { _id: string; value: string } };
             }
-        ).ingredientUpdateById.record;
-        assert.equal(updatedRecord.name, 'chickeny');
+        ).prepMethodUpdateById.record;
+        assert.equal(updatedRecord.value, 'minced');
     });
 
-    it('should NOT update an ingredient', async function () {
+    it('should NOT update a prep method', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         // Create the ingredients
-        const recordOneVars = { name: 'chicken', pluralName: 'chickens', isCountable: true };
-        const recordTwoVars = { name: 'beef', pluralName: 'beefs', isCountable: true };
-        const recordOneResponse = await createIngredient(user, recordOneVars, apolloServer);
-        const recordOne = parseCreatedIngredient(recordOneResponse);
-        await createIngredient(user, recordTwoVars, apolloServer);
-        // Update the ingredient
-        const response = await updateIngredient(user, recordOne._id, { name: 'beef' });
+        const recordOneVars = { value: 'chopped' };
+        const recordTwoVars = { value: 'diced' };
+        const recordOneResponse = await createPrepMethod(user, recordOneVars, apolloServer);
+        const recordOne = parseCreatedPrepMethod(recordOneResponse);
+        await createPrepMethod(user, recordTwoVars, apolloServer);
+        // Update the unit
+        const response = await updatePrepMethod(user, recordOne._id, { value: 'diced' });
         assert(response.body.kind === 'single');
         assert(response.body.singleResult.errors);
         assert(
             response.body.singleResult.errors[0].message ===
-                'Ingredient validation failed: name: The ingredient name must be unique.'
+                'PrepMethod validation failed: value: The prep method must be unique.'
         );
     });
 });

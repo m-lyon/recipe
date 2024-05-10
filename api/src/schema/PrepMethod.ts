@@ -1,6 +1,6 @@
-import { updateByIdResolver } from './utils.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { filterIsOwnerOrAdmin } from '../middleware/filters.js';
+import { createOneResolver, updateByIdResolver } from './utils.js';
 import { PrepMethod, PrepMethodCreateTC, PrepMethodTC } from '../models/PrepMethod.js';
 
 PrepMethodTC.addResolver({
@@ -9,6 +9,14 @@ PrepMethodTC.addResolver({
     type: PrepMethodTC.mongooseResolvers.updateById().getType(),
     args: PrepMethodTC.mongooseResolvers.updateById().getArgs(),
     resolve: updateByIdResolver(PrepMethod, PrepMethodTC),
+});
+
+PrepMethodCreateTC.addResolver({
+    name: 'createOne',
+    description: 'Create a new prep method',
+    type: PrepMethodCreateTC.mongooseResolvers.createOne().getType(),
+    args: PrepMethodCreateTC.mongooseResolvers.createOne().getArgs(),
+    resolve: createOneResolver(PrepMethod, PrepMethodCreateTC),
 });
 
 export const PrepMethodQuery = {
@@ -31,13 +39,9 @@ export const PrepMethodQuery = {
 };
 
 export const PrepMethodMutation = {
-    prepMethodCreateOne: PrepMethodCreateTC.mongooseResolvers
-        .createOne()
-        .wrapResolve(setRecordOwnerAsUser())
-        .setDescription('Create a new prep method'),
-    prepMethodUpdateById: PrepMethodTC.mongooseResolvers
-        .updateById()
-        .setDescription('Update a prep method by its ID'),
+    prepMethodCreateOne:
+        PrepMethodCreateTC.getResolver('createOne').wrapResolve(setRecordOwnerAsUser()),
+    prepMethodUpdateById: PrepMethodTC.getResolver('updateById'),
     prepMethodUpdateOne: PrepMethodTC.mongooseResolvers
         .updateOne()
         .setDescription('Update a single prep method'),

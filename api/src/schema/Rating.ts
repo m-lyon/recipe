@@ -1,5 +1,5 @@
-import { updateByIdResolver } from './utils.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
+import { createOneResolver, updateByIdResolver } from './utils.js';
 import { Rating, RatingCreateTC, RatingTC } from '../models/Rating.js';
 
 RatingTC.addResolver({
@@ -8,6 +8,14 @@ RatingTC.addResolver({
     type: RatingTC.mongooseResolvers.updateById().getType(),
     args: RatingTC.mongooseResolvers.updateById().getArgs(),
     resolve: updateByIdResolver(Rating, RatingTC),
+});
+
+RatingCreateTC.addResolver({
+    name: 'createOne',
+    description: 'Create a new rating',
+    type: RatingCreateTC.mongooseResolvers.createOne().getType(),
+    args: RatingCreateTC.mongooseResolvers.createOne().getArgs(),
+    resolve: createOneResolver(Rating, RatingCreateTC),
 });
 
 export const RatingQuery = {
@@ -20,10 +28,7 @@ export const RatingQuery = {
 };
 
 export const RatingMutation = {
-    ratingCreateOne: RatingCreateTC.mongooseResolvers
-        .createOne()
-        .wrapResolve(setRecordOwnerAsUser())
-        .setDescription('Create a new rating'),
+    ratingCreateOne: RatingCreateTC.getResolver('createOne').wrapResolve(setRecordOwnerAsUser()),
     ratingUpdateById: RatingTC.getResolver('updateById'),
     ratingRemoveById: RatingTC.mongooseResolvers
         .removeById()
