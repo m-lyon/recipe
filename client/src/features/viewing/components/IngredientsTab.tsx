@@ -1,12 +1,13 @@
 import { CgBowl } from 'react-icons/cg';
 import { TbWeight } from 'react-icons/tb';
-import { useEffect, useState } from 'react';
 import { HStack, IconButton } from '@chakra-ui/react';
+import { useContext, useEffect, useState } from 'react';
 
 import { Notes } from './Notes';
 import { TagList } from './TagList';
 import { IngredientList } from './IngredientList';
 import { Servings } from '../../../components/Servings';
+import { UserContext } from '../../../context/UserContext';
 import { StarRating } from '../../../components/StarRating';
 import { useViewStarRating } from '../../../hooks/useViewStarRating';
 import { Recipe, RecipeIngredient } from '../../../__generated__/graphql';
@@ -21,6 +22,7 @@ interface Props {
 }
 export function IngredientsTab(props: Props) {
     const { recipeId, ingredients, notes, numServings, tags } = props;
+    const [userContext] = useContext(UserContext);
     const [servings, setServings] = useState(numServings);
     const { avgRating, getRatings, setRating } = useViewStarRating();
 
@@ -31,7 +33,9 @@ export function IngredientsTab(props: Props) {
     return (
         <IngredientsTabLayout
             Servings={<Servings num={servings} setNum={setServings} />}
-            StarRating={<StarRating rating={avgRating} setRating={setRating} />}
+            StarRating={
+                <StarRating rating={avgRating} setRating={setRating} readonly={!userContext} />
+            }
             UnitOptions={
                 <HStack spacing={2}>
                     <IconButton aria-label='weight' icon={<TbWeight />} />
