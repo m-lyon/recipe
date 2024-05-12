@@ -48,6 +48,7 @@ export function EditableRecipe(props: Props) {
                 tagMinHeight: '134px',
                 ingredientsMinHeight: '500px',
                 imageMinHeight: '300px',
+                readonlyStarRating: true,
             },
             md: {
                 templateAreas: `'title title'
@@ -61,6 +62,7 @@ export function EditableRecipe(props: Props) {
                 tagMinHeight: '140px',
                 ingredientsMinHeight: '200px',
                 imageMinHeight: '300px',
+                readonlyStarRating: false,
             },
         },
         { fallback: 'md' }
@@ -184,7 +186,12 @@ export function EditableRecipe(props: Props) {
                 >
                     <IngredientsTabLayout
                         Servings={<Servings {...state.numServings} />}
-                        StarRating={<StarRating {...rating} />}
+                        StarRating={
+                            <StarRating
+                                {...rating}
+                                readonly={styles?.readonlyStarRating || !userContext}
+                            />
+                        }
                         IngredientList={<EditableIngredientList {...state.ingredient} />}
                         Notes={<EditableNotes {...state.notes} />}
                     />
