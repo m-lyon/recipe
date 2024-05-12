@@ -51,9 +51,9 @@ export function CreateRecipe() {
                 description: (error as Error).message,
                 status: 'error',
                 position: 'top',
-                duration: 3000,
+                duration: 5000,
             });
-            return setTimeout(() => navigate(ROOT_PATH), 3000);
+            return setTimeout(() => navigate(ROOT_PATH), 5000);
         }
 
         try {
@@ -67,9 +67,9 @@ export function CreateRecipe() {
                 description: (error as Error).message,
                 status: 'error',
                 position: 'top',
-                duration: 3000,
+                duration: 5000,
             });
-            return setTimeout(() => navigate(ROOT_PATH), 3000);
+            return setTimeout(() => navigate(ROOT_PATH), 5000);
         }
         toast({
             title: 'Recipe created',
@@ -78,7 +78,6 @@ export function CreateRecipe() {
             position: 'top',
             duration: 1500,
         });
-
         setTimeout(() => navigate(ROOT_PATH), 1500);
     };
     return (

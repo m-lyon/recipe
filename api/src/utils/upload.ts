@@ -1,9 +1,10 @@
 import path from 'path';
-
 import { createWriteStream, unlink } from 'fs';
+
 import { nanoid } from 'nanoid';
-import { IMAGE_DIR } from '../constants.js';
 import { GraphQLError } from 'graphql';
+
+import { IMAGE_DIR } from '../constants.js';
 
 export interface FileUpload {
     filename: string;
@@ -35,15 +36,10 @@ export async function storeUpload(file: Promise<FileUpload>): Promise<string> {
 
 export async function validateImageFile(file: Promise<FileUpload>) {
     const { filename } = await file;
-    try {
-        const ext = path.extname(filename);
-        if (!['.jpg', '.jpeg', '.png', '.tiff'].includes(ext)) {
-            throw new Error('Invalid file type');
-        }
-        // if (!['image/jpeg', 'image/png'].includes(mimetype)) {
-        //     throw new Error('Invalid file type');
-        // }
-    } catch (err) {
-        throw new GraphQLError(err);
+    const ext = path.extname(filename);
+    if (!['.jpg', '.jpeg', '.png', '.tiff'].includes(ext.toLowerCase())) {
+        throw new GraphQLError('Invalid file type', {
+            extensions: { code: 'BAD_USER_INPUT' },
+        });
     }
 }

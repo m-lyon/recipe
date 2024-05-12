@@ -23,7 +23,7 @@ ImageTC.addResolver({
         note: { type: 'String', description: 'Note about the image.' },
     },
     resolve: async ({ args }) => {
-        validateImageFile(args.file);
+        await validateImageFile(args.file);
         const origFilepath = storeUpload(args.file);
         const image = await saveImageToDb(origFilepath, args._id, args.note);
         return { recordId: image._id };
@@ -45,7 +45,7 @@ ImageTC.addResolver({
     resolve: async ({ args }) => {
         const images = await Promise.all(
             args.files.map(async (file: Promise<FileUpload>) => {
-                validateImageFile(file);
+                await validateImageFile(file);
                 const origFilepath = storeUpload(file);
                 return await saveImageToDb(origFilepath, args._id, args.note);
             })
