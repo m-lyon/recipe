@@ -8,15 +8,37 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  start_dev_server:
+    runs-on: self-hosted
+  
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
 
+    - name: Start server in development mode
+      working-directory: ./api
+      run: npm run dev &
+  
+  run_generate:
+    needs: start_dev_server
     runs-on: self-hosted
 
     steps:
-      - uses: actions/checkout@v4
-      - name: Install dependencies
-        working-directory: './client'
-        run: npm install
-      - name: Build project
-        working-directory: './client'
-        run: npm run build --if-present
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Generate GraphQL types
+      working-directory: ./client
+      run: npm run generate
+  
+  build_client:
+    needs: run_generate
+    runs-on: self-hosted
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build
+      working-directory: ./client
+      run: npm run build
