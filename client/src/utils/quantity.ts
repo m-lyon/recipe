@@ -1,4 +1,4 @@
-import { fraction, multiply } from 'mathjs';
+import { Fraction, fraction, multiply } from 'mathjs';
 
 import { RecipeIngredient } from '@recipe/graphql/generated';
 
@@ -16,7 +16,7 @@ export function changeIngredientQuantity(
     const factor = fraction(newServings / oldServings);
     if (isFraction(quantity)) {
         const fract = fraction(quantity);
-        const newFract = multiply(fract, factor);
+        const newFract = multiply(fract, factor) as Fraction;
         if (newFract.d >= newFract.n) {
             return { ...ingr, quantity: newFract.toString() };
         }
