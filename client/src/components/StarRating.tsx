@@ -1,15 +1,17 @@
-import { FaStar, FaRegStar } from 'react-icons/fa6';
 import { Rating } from 'react-simple-star-rating';
+import { FaRegStar, FaStar } from 'react-icons/fa6';
 
 export interface StarRatingProps {
     rating: number;
     setRating: (rating: number) => void;
+    readonly?: boolean;
 }
 export function StarRating(props: StarRatingProps) {
-    const { rating, setRating } = props;
+    const { rating, setRating, readonly } = props;
 
     return (
         <Rating
+            readonly={readonly}
             initialValue={rating}
             onClick={setRating}
             allowFraction
