@@ -14,16 +14,16 @@ jobs:
       - name: Create API environment file
         working-directory: ./api
         run: |
-          echo "${{ secrets.HTTPS }}" >> .env.development.local
-          echo "${{ secrets.MONGODB_URI }}" >> .env.development.local
-          echo "${{ secrets.PORT }}" >> .env.development.local
-          echo "${{ secrets.SESSION_SECRET }}" >> .env.development.local
-          echo "${{ secrets.SESSION_URI }}" >> .env.development.local
-          echo "${{ secrets.WHITELISTED_DOMAINS }}" >> .env.development.local
+          echo "HTTPS = ${{ secrets.HTTPS }}" >> .env.development.local
+          echo "MONGODB_URI = ${{ secrets.MONGODB_URI }}" >> .env.development.local
+          echo "PORT = ${{ secrets.PORT }}" >> .env.development.local
+          echo "SESSION_SECRET = ${{ secrets.SESSION_SECRET }}" >> .env.development.local
+          echo "SESSION_URI = ${{ secrets.SESSION_URI }}" >> .env.development.local
+          echo "WHITELISTED_DOMAINS = ${{ secrets.WHITELISTED_DOMAINS }}" >> .env.development.local
       - name: Create client environment file
         working-directory: ./client
         run: |
-          echo "${{ secrets.VITE_GRAPHQL_ENDPOINT }}" >> .env.development.local
+          echo "VITE_GRAPHQL_ENDPOINT = ${{ secrets.VITE_GRAPHQL_ENDPOINT }}" >> .env.development.local
       - name: Install API dependencies
         working-directory: ./api
         run: npm install
