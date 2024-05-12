@@ -5,25 +5,18 @@ on:
     branches: [ "main" ]
 
 jobs:
-  start_dev_server:
+  run_generate:
     runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Install dependencies
+      - name: Install API dependencies
         working-directory: ./api
         run: npm install
       - name: Start server in development mode
         working-directory: ./api
         run: npm run dev &
-  
-  run_generate:
-    needs: start_dev_server
-    runs-on: self-hosted
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Install dependencies
+      - name: Install client dependencies
         working-directory: ./client
         run: npm install
       - name: Generate GraphQL types
