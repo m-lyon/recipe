@@ -41,8 +41,6 @@ jobs:
     needs: run_generate
     runs-on: self-hosted
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
       - name: Build
         working-directory: ./client
         run: npm run build
