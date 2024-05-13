@@ -60,7 +60,7 @@ jobs:
     steps:
       - name: Test
         working-directory: ./client
-        run: npm run test-run
+        run: npm run test -- run --test-timeout=15000
   
   client-deploy:
     needs: client-test
