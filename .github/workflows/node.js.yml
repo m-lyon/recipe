@@ -16,9 +16,20 @@ jobs:
       - name: Install client dependencies
         working-directory: ./client
         run: npm install
-        
-  client_generate:
+
+  test:
     needs: update
+    runs-on: self-hosted
+    steps:
+      - name: Test API
+        working-directory: ./api
+        run: npm run test
+      - name: Test client
+        working-directory: ./client
+        run: npm run test-run
+  
+  client_generate:
+    needs: test
     runs-on: self-hosted
     environment: development
     steps:
