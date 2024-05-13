@@ -130,7 +130,7 @@ describe('Unit Model', function () {
         } catch (error) {
             assert.equal(
                 error.errors.shortSingular.message,
-                'The short plural unit name must be unique.'
+                'The short singular unit name must be unique.'
             );
         }
     });
@@ -173,7 +173,7 @@ describe('Unit Model', function () {
         } catch (error) {
             assert.equal(
                 error.errors.shortSingular.message,
-                'The short plural unit name must be unique.'
+                'The short singular unit name must be unique.'
             );
         }
     });
@@ -215,7 +215,7 @@ describe('Unit Model', function () {
         } catch (error) {
             assert.equal(
                 error.errors.shortSingular.message,
-                'The short plural unit name must be unique.'
+                'The short singular unit name must be unique.'
             );
         }
     });
@@ -259,7 +259,7 @@ describe('Unit Model', function () {
         } catch (error) {
             assert.equal(
                 error.errors.shortSingular.message,
-                'The short plural unit name must be unique.'
+                'The short singular unit name must be unique.'
             );
         }
     });
@@ -300,7 +300,7 @@ describe('Unit Model', function () {
         } catch (error) {
             assert.equal(
                 error.errors.shortSingular.message,
-                'The short plural unit name must be unique.'
+                'The short singular unit name must be unique.'
             );
         }
     });
@@ -343,7 +343,7 @@ describe('Unit Model', function () {
         } catch (error) {
             assert.equal(
                 error.errors.shortSingular.message,
-                'The short plural unit name must be unique.'
+                'The short singular unit name must be unique.'
             );
         }
     });

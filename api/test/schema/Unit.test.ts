@@ -88,6 +88,7 @@ describe('unitCreateOne', () => {
             .drop()
             .then(() => {
                 if (mongoose.connection.collections.units) {
+                    console.log('dropping units');
                     mongoose.connection.collections.units.drop();
                 }
             })
@@ -117,13 +118,17 @@ describe('unitCreateOne', () => {
         const user = await User.findOne({ username: 'testuser1' });
         const newRecord = {
             shortPlural: 'tsp',
-            shortSingular: 'tspp',
-            longPlural: 'teaspoonss',
-            longSingular: 'teaspoonn',
+            shortSingular: 'tsp',
+            longPlural: 'teaspoons',
+            longSingular: 'teaspoon',
             preferredNumberFormat: 'fraction',
             hasSpace: false,
         };
         await createUnit(user, newRecord, apolloServer);
+        // Modify the record to only have the same shortPlural
+        newRecord.shortSingular = 'tspp';
+        newRecord.longPlural = 'teaspoonss';
+        newRecord.longSingular = 'teaspoonn';
         const response = await createUnit(user, newRecord, apolloServer);
         assert(response.body.kind === 'single');
         assert(response.body.singleResult.errors, 'Validation error should occur');

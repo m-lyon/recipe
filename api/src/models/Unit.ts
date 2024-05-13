@@ -21,7 +21,7 @@ const unitSchema = new Schema<Unit>({
         validate: uniqueInAdminsAndUser(
             'Unit',
             'shortSingular',
-            'The short plural unit name must be unique.'
+            'The short singular unit name must be unique.'
         ),
     },
     shortPlural: {
