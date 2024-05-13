@@ -20,10 +20,14 @@ jobs:
   test:
     needs: update
     runs-on: self-hosted
+    env:
+      MONGOMS_DISTRO: ubuntu-20.04
     steps:
       - name: Test API
         working-directory: ./api
-        run: npm run test
+        run: |
+          export 
+          npm run test
       - name: Test client
         working-directory: ./client
         run: npm run test-run
@@ -72,3 +76,27 @@ jobs:
         run: |
           [ -d ${{ secrets.DEPLOY_DIR }}/dist ] && rm -r ${{ secrets.DEPLOY_DIR }}/dist
           cp -r dist/ ${{ secrets.DEPLOY_DIR }}/dist
+
+  api_deploy:
+    needs: test
+    environment: production
+    runs-on: self-hosted
+    steps:
+      - name: Create API environment file
+        working-directory: ./api
+        run: |
+          echo "HTTPS = ${{ secrets.HTTPS }}" > .env.production.local
+          echo "PRIVKEY_PEM = ${{ secrets.PRIVKEY_PEM }}" >> .env.production.local
+          echo "FULLCHAIN_PEM = ${{ secrets.FULLCHAIN_PEM }}" >> .env.production.local
+          echo "MONGODB_URI = ${{ secrets.MONGODB_URI }}" >> .env.production.local
+          echo "WHITELISTED_DOMAINS = ${{ secrets.WHITELISTED_DOMAINS }}" >> .env.production.local
+          echo "SESSION_SECRET = ${{ secrets.SESSION_SECRET }}" >> .env.production.local
+          echo "SESSION_URI = ${{ secrets.SESSION_URI }}" >> .env.production.local
+          echo "PORT = ${{ secrets.PORT }}" >> .env.production.local
+          echo "IMAGE_DIR = ${{ secrets.IMAGE_DIR }}" >> .env.production.local
+      - name: Deploy
+        run: |
+          [ -d ${{ secrets.DEPLOY_DIR }}/server ] && rm -r ${{ secrets.DEPLOY_DIR }}/server
+          cp -r api/ ${{ secrets.DEPLOY_DIR }}/server
+      - name: Restart server
+        run: sudo systemctl restart recipe
