@@ -4,8 +4,9 @@ import { ApolloServer } from '@apollo/server';
 import { MongoMemoryServer } from 'mongodb-memory-server-core';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
-import { schema } from '../../src/schema/index.js';
 import { User } from '../../src/models/User.js';
+import { schema } from '../../src/schema/index.js';
+import { MONGODB_OPTS } from '../utils/mongodb.js';
 
 const createUnit = async (user, record, apolloServer) => {
     const query = `
@@ -49,7 +50,7 @@ describe('unitCreateOne', () => {
 
     before(async function () {
         try {
-            mongoServer = await MongoMemoryServer.create();
+            mongoServer = await MongoMemoryServer.create(MONGODB_OPTS);
             await mongoose.connect(mongoServer.getUri());
             apolloServer = new ApolloServer({ schema });
             await apolloServer.start();
@@ -88,7 +89,6 @@ describe('unitCreateOne', () => {
             .drop()
             .then(() => {
                 if (mongoose.connection.collections.units) {
-                    console.log('dropping units');
                     mongoose.connection.collections.units.drop();
                 }
             })
@@ -168,7 +168,7 @@ describe('unitUpdateById', () => {
 
     before(async function () {
         try {
-            mongoServer = await MongoMemoryServer.create();
+            mongoServer = await MongoMemoryServer.create(MONGODB_OPTS);
             await mongoose.connect(mongoServer.getUri());
             apolloServer = new ApolloServer({ schema });
             await apolloServer.start();

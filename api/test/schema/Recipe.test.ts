@@ -4,13 +4,14 @@ import { ApolloServer } from '@apollo/server';
 import { MongoMemoryServer } from 'mongodb-memory-server-core';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
-import { schema } from '../../src/schema/index.js';
+import { Tag } from '../../src/models/Tag.js';
 import { User } from '../../src/models/User.js';
 import { Unit } from '../../src/models/Unit.js';
+import { MONGODB_OPTS } from '../utils/mongodb.js';
+import { schema } from '../../src/schema/index.js';
+import { Recipe } from '../../src/models/Recipe.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
-import { Recipe } from '../../src/models/Recipe.js';
-import { Tag } from '../../src/models/Tag.js';
 
 export async function createRecipeIngredientData() {
     const user = await User.register(
@@ -95,7 +96,7 @@ describe('recipeCreateOne', () => {
 
     before(async function () {
         try {
-            mongoServer = await MongoMemoryServer.create();
+            mongoServer = await MongoMemoryServer.create(MONGODB_OPTS);
             await mongoose.connect(mongoServer.getUri());
             apolloServer = new ApolloServer({ schema });
             await apolloServer.start();
@@ -242,7 +243,7 @@ describe('recipeUpdateById', () => {
 
     before(async function () {
         try {
-            mongoServer = await MongoMemoryServer.create();
+            mongoServer = await MongoMemoryServer.create(MONGODB_OPTS);
             await mongoose.connect(mongoServer.getUri());
             apolloServer = new ApolloServer({ schema });
             await apolloServer.start();

@@ -5,13 +5,14 @@ import { MongoMemoryServer } from 'mongodb-memory-server-core';
 
 import { User } from '../../src/models/User.js';
 import { Unit } from '../../src/models/Unit.js';
+import { MONGODB_OPTS } from '../utils/mongodb.js';
 
 describe('Unit Model', function () {
     let mongoServer: MongoMemoryServer;
 
     before(async function () {
         try {
-            mongoServer = await MongoMemoryServer.create();
+            mongoServer = await MongoMemoryServer.create(MONGODB_OPTS);
             await mongoose.connect(mongoServer.getUri());
         } catch (error) {
             console.log(error);

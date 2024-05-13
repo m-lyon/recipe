@@ -4,13 +4,14 @@ import { ApolloServer } from '@apollo/server';
 import { MongoMemoryServer } from 'mongodb-memory-server-core';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
-import { schema } from '../../src/schema/index.js';
 import { User } from '../../src/models/User.js';
-import { createRecipeIngredientData, removeRecipeIngredientData } from './Recipe.test.js';
-import { Recipe } from '../../src/models/Recipe.js';
-import { Ingredient } from '../../src/models/Ingredient.js';
 import { Unit } from '../../src/models/Unit.js';
+import { MONGODB_OPTS } from '../utils/mongodb.js';
+import { schema } from '../../src/schema/index.js';
+import { Recipe } from '../../src/models/Recipe.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
+import { Ingredient } from '../../src/models/Ingredient.js';
+import { createRecipeIngredientData, removeRecipeIngredientData } from './Recipe.test.js';
 
 const createRating = async (user, record, apolloServer) => {
     const query = `
@@ -79,7 +80,7 @@ describe('ratingCreateOne', () => {
 
     before(async function () {
         try {
-            mongoServer = await MongoMemoryServer.create();
+            mongoServer = await MongoMemoryServer.create(MONGODB_OPTS);
             await mongoose.connect(mongoServer.getUri());
             apolloServer = new ApolloServer({ schema });
             await apolloServer.start();
