@@ -1,20 +1,31 @@
-name: Node.js CI
+name: Deploy App
 
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  run_generate:
+  update:
     runs-on: self-hosted
-    environment: development
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Install API dependencies
+        working-directory: ./api
+        run: npm install
+      - name: Install client dependencies
+        working-directory: ./client
+        run: npm install
+        
+  client_generate:
+    needs: update
+    runs-on: self-hosted
+    environment: development
+    steps:
       - name: Create API environment file
         working-directory: ./api
         run: |
-          echo "HTTPS = ${{ secrets.HTTPS }}" >> .env.development.local
+          echo "HTTPS = ${{ secrets.HTTPS }}" > .env.development.local
           echo "MONGODB_URI = ${{ secrets.MONGODB_URI }}" >> .env.development.local
           echo "PORT = ${{ secrets.PORT }}" >> .env.development.local
           echo "SESSION_SECRET = ${{ secrets.SESSION_SECRET }}" >> .env.development.local
@@ -24,23 +35,29 @@ jobs:
         working-directory: ./client
         run: |
           echo "VITE_GRAPHQL_ENDPOINT = ${{ secrets.VITE_GRAPHQL_ENDPOINT }}" >> .env.development.local
-      - name: Install API dependencies
-        working-directory: ./api
-        run: npm install
       - name: Start server in development mode
         working-directory: ./api
         run: npm run dev &
-      - name: Install client dependencies
-        working-directory: ./client
-        run: npm install
+      - name: Wait for server compilation
+        run: sleep 60s
       - name: Generate GraphQL types
         working-directory: ./client
         run: npm run generate
   
-  build_client:
-    needs: run_generate
+  client_deploy:
+    needs: client_generate
+    environment: production
     runs-on: self-hosted
     steps:
+      - name: Create client environment file
+        working-directory: ./client
+        run: |
+          echo "VITE_GRAPHQL_ENDPOINT = ${{ secrets.VITE_GRAPHQL_ENDPOINT }}" > .env.production.local
       - name: Build
         working-directory: ./client
         run: npm run build
+      - name: Deploy
+        working-directory: ./client
+        run: |
+          [ -d ${{ secrets.DEPLOY_DIR }}/dist ] && rm -r ${{ secrets.DEPLOY_DIR }}/dist
+          cp -r dist/ ${{ secrets.DEPLOY_DIR }}/dist
