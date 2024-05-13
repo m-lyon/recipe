@@ -17,23 +17,21 @@ jobs:
         working-directory: ./client
         run: npm install
 
-  test:
+  api-test:
     needs: update
     runs-on: self-hosted
     env:
       MONGOMS_DISTRO: ubuntu-20.04
     steps:
-      - name: Test API
+      - name: Test
         working-directory: ./api
-        run: |
-          export 
-          npm run test
+        run: npm run test
       - name: Test client
         working-directory: ./client
         run: npm run test-run
   
-  client_generate:
-    needs: test
+  client-generate:
+    needs: api-test
     runs-on: self-hosted
     environment: development
     steps:
@@ -58,9 +56,17 @@ jobs:
       - name: Generate GraphQL types
         working-directory: ./client
         run: npm run generate
+
+  client-test:
+    needs: client-generate
+    runs-on: self-hosted
+    steps:
+      - name: Test
+        working-directory: ./client
+        run: npm run test-run
   
-  client_deploy:
-    needs: client_generate
+  client-deploy:
+    needs: client-test
     environment: production
     runs-on: self-hosted
     steps:
@@ -77,8 +83,8 @@ jobs:
           [ -d ${{ secrets.DEPLOY_DIR }}/dist ] && rm -r ${{ secrets.DEPLOY_DIR }}/dist
           cp -r dist/ ${{ secrets.DEPLOY_DIR }}/dist
 
-  api_deploy:
-    needs: test
+  api-deploy:
+    needs: api-test
     environment: production
     runs-on: self-hosted
     steps:
