@@ -6,7 +6,6 @@ import { MockedProvider } from '@apollo/client/testing';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { cleanup, getDefaultNormalizer, render, screen } from '@testing-library/react';
 import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
-import { debug } from 'vitest-preview';
 
 import { EditableIngredientList } from '..';
 import { mockGetUnits } from '../__mocks__/GetUnits';
@@ -1083,7 +1082,6 @@ describe('Creating new items', () => {
         await user.click(screen.getByText('add new ingredient'));
         await user.keyboard('{b}{e}{e}{f}');
         await user.click(screen.getByText('Save'));
-        debug();
         // Expect
         expect(
             screen.queryByText('1 beef, ', { normalizer: getDefaultNormalizer({ trim: false }) })
