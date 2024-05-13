@@ -29,11 +29,15 @@ const routes = createBrowserRouter(
 );
 
 const renderComponent = () => {
+    // Multiple mocks of the same query are needed due to refetch calls
     render(
         <MockedProvider
             mocks={[
                 mockGetUnits,
+                mockGetUnits,
                 mockGetIngredientsWithRecipe,
+                mockGetIngredientsWithRecipe,
+                mockGetPrepMethods,
                 mockGetPrepMethods,
                 mockCreateUnit,
                 mockCreateIngredient,

@@ -65,6 +65,8 @@ jobs:
   client-deploy:
     needs: client-test
     environment: production
+    env:
+      NODE_OPTIONS: --max-old-space-size=4096
     runs-on: self-hosted
     steps:
       - name: Create client environment file
