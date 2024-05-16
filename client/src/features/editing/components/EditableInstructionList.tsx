@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { ListItem, OrderedList } from '@chakra-ui/react';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
+
 import { EditableItemArea } from 'components/EditableItemArea';
 
 import { UseItemListReturnType } from '../hooks/useItemList';

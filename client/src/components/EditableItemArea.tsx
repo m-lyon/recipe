@@ -1,6 +1,6 @@
-import { Textarea, TextareaProps, useMergeRefs } from '@chakra-ui/react';
 import { useEffect, useRef } from 'react';
 import ResizeTextarea from 'react-textarea-autosize';
+import { Textarea, TextareaProps, useMergeRefs } from '@chakra-ui/react';
 
 interface Props extends TextareaProps {
     defaultStr: string;

@@ -1,13 +1,15 @@
-import { Editable, EditablePreview, EditableInput, Box } from '@chakra-ui/react';
-import { useOutsideClick } from '@chakra-ui/react';
 import { useRef } from 'react';
-import { RecipeIngredientDropdown } from './RecipeIngredientDropdown';
-import { EditableRecipeIngredient as EditableIngredientType } from '../../../hooks/useIngredientList';
+import { useOutsideClick } from '@chakra-ui/react';
+import { Box, Editable, EditableInput, EditablePreview } from '@chakra-ui/react';
+
+import { EditableRecipeIngredient } from '@recipe/types';
+
 import { QueryData } from '../../../hooks/useIngredientList';
-import { IngredientActionHandler, DEFAULT_INGREDIENT_STR } from '../../../hooks/useIngredientList';
+import { RecipeIngredientDropdown } from './RecipeIngredientDropdown';
+import { DEFAULT_INGREDIENT_STR, IngredientActionHandler } from '../../../hooks/useIngredientList';
 
 interface Props {
-    item: EditableIngredientType;
+    item: EditableRecipeIngredient;
     actionHandler: IngredientActionHandler;
     queryData: QueryData;
     fontSize?: string;

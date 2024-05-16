@@ -24,9 +24,11 @@
     /* Paths */
     "baseUrl": "src",
     "paths":{
-      "@recipe/graphql/*": ["graphql/*", "__generated__/graphql"],
-      "@recipe/features/*": ["features/*"],
+      "@recipe/graphql/*": ["graphql/*"],
       "@recipe/graphql/generated": ["__generated__/graphql"],
+      "@recipe/features/*": ["features/*"],
+      "@recipe/types": ["types/recipe.ts"],
+      "@recipe/utils/*": ["utils/*"],
     }
   },
   "include": ["src"],

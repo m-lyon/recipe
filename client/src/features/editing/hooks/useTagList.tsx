@@ -1,5 +1,5 @@
-import { useReducer } from 'react';
 import { produce } from 'immer';
+import { useReducer } from 'react';
 
 export const DEFAULT_TAG_STR = 'Add a tag...';
 

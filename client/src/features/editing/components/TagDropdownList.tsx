@@ -1,13 +1,15 @@
-import { LayoutGroup } from 'framer-motion';
-import { Tag } from '../../../__generated__/graphql';
-import { DropdownItem } from '../../../components/DropdownItem';
 import { MutableRefObject } from 'react';
-import { useNavigatableList } from '../hooks/useNavigatableList';
 import { matchSorter } from 'match-sorter';
-import { useMutation } from '@apollo/client';
-import { FinishedTag, SetAndSubmit } from '../hooks/useTagList';
+import { LayoutGroup } from 'framer-motion';
 import { useToast } from '@chakra-ui/react';
-import { CREATE_TAG } from '../../../graphql/mutations/tag';
+import { useMutation } from '@apollo/client';
+
+import { Tag } from '@recipe/graphql/generated';
+import { CREATE_TAG } from '@recipe/graphql/mutations/tag';
+
+import { FinishedTag, SetAndSubmit } from '../hooks/useTagList';
+import { DropdownItem } from '../../../components/DropdownItem';
+import { useNavigatableList } from '../hooks/useNavigatableList';
 
 interface TagSuggestion {
     value: string;

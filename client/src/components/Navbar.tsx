@@ -1,23 +1,9 @@
 import { useContext } from 'react';
 import { Outlet } from 'react-router-dom';
-import {
-    Box,
-    Collapse,
-    Flex,
-    Icon,
-    IconButton,
-    Link,
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-    Slide,
-    Stack,
-    Text,
-    useBreakpointValue,
-    useColorModeValue,
-    useDisclosure,
-} from '@chakra-ui/react';
+import { Popover, PopoverContent, PopoverTrigger } from '@chakra-ui/react';
+import { useBreakpointValue, useColorModeValue, useDisclosure } from '@chakra-ui/react';
 import { ChevronDownIcon, ChevronRightIcon, CloseIcon, HamburgerIcon } from '@chakra-ui/icons';
+import { Box, Collapse, Flex, Icon, IconButton, Link, Slide, Stack, Text } from '@chakra-ui/react';
 
 import { ROOT_PATH } from '../constants';
 import { UserOptions } from './UserOptions';

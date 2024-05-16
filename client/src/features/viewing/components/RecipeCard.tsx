@@ -4,9 +4,10 @@ import { CloseIcon, EditIcon } from '@chakra-ui/icons';
 import { IconButton, LinkOverlay, useBreakpointValue } from '@chakra-ui/react';
 import { Card, CardBody, CardHeader, Heading, LinkBox } from '@chakra-ui/react';
 
+import { Recipe } from '@recipe/graphql/generated';
+
 import { TagList } from './TagList';
 import { ROOT_PATH } from '../../../constants';
-import { Recipe } from '../../../__generated__/graphql';
 
 export function getCardTitle(recipe: Recipe): string {
     const title = recipe.isIngredient

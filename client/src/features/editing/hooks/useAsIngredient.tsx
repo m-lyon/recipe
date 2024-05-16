@@ -1,5 +1,5 @@
-import { useReducer } from 'react';
 import { produce } from 'immer';
+import { useReducer } from 'react';
 
 interface Action {
     type: string;

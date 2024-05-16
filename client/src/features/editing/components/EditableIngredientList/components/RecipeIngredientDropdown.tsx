@@ -2,12 +2,13 @@ import { MutableRefObject } from 'react';
 import { Box, List } from '@chakra-ui/react';
 import { LayoutGroup, motion } from 'framer-motion';
 
+import { EditableRecipeIngredient } from '@recipe/types';
+
 import { UnitDropdown } from './UnitDropdown';
 import { PrepMethodDropdown } from './PrepMethodDropdown';
 import { QueryData } from '../../../hooks/useIngredientList';
 import { QuantityDropdownList } from './QuantityDropdownList';
 import { IngredientActionHandler } from '../../../hooks/useIngredientList';
-import { EditableRecipeIngredient } from '../../../hooks/useIngredientList';
 import { IngredientDropdown, IngredientOrRecipe } from './IngredientDropdown';
 
 interface Props {

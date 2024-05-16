@@ -1,8 +1,9 @@
 import { Box, ListItem, OrderedList, Text, useBreakpointValue } from '@chakra-ui/react';
 
+import { Recipe } from '@recipe/graphql/generated';
+
 import { tagsHeight } from './TagList';
 import { instrSpacing } from './InstructionsTab';
-import { Recipe } from '../../../__generated__/graphql';
 import { imageCardWidth, sliderBarHeight } from './ImageViewerRecipe';
 
 interface Props {
@@ -18,7 +19,7 @@ export function InstructionList(props: Props) {
             base: { showImage: false },
             md: { showImage: true },
         },
-        { fallback: 'md' },
+        { fallback: 'md' }
     );
     const instructionsList = instructions.map((instr, index) => {
         if (instr === null) {

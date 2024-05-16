@@ -1,7 +1,9 @@
 import { Reorder } from 'framer-motion';
-import { Tag, TagLabel, TagCloseButton } from '@chakra-ui/react';
-import { FinishedRecipeIngredient } from '../../../hooks/useIngredientList';
-import { getFinishedRecipeIngredientStr } from '../../../hooks/useIngredientList';
+import { Tag, TagCloseButton, TagLabel } from '@chakra-ui/react';
+
+import { FinishedRecipeIngredient } from '@recipe/types';
+
+import { getFinishedRecipeIngredientStr } from 'utils/formatting';
 
 interface Props {
     index: number;

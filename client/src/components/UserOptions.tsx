@@ -1,11 +1,11 @@
-import { Button, Stack, useToast } from '@chakra-ui/react';
 import { useContext } from 'react';
-import { useMutation, useQuery } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
+import { useMutation, useQuery } from '@apollo/client';
+import { Button, Stack, useToast } from '@chakra-ui/react';
 
-import { UserContext } from '../context/UserContext';
 import { ROOT_PATH } from '../constants';
 import { LOGOUT } from '../graphql/mutations/user';
+import { UserContext } from '../context/UserContext';
 import { CURRENT_USER } from '../graphql/queries/user';
 
 export function UserOptions() {

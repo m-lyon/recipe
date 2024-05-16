@@ -1,4 +1,5 @@
-import { Image, Recipe } from '../../../__generated__/graphql';
+import { Image, Recipe } from '@recipe/graphql/generated';
+
 import { ImageCarousel } from '../../../components/ImageCarousel';
 
 interface Props {

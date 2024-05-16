@@ -4,11 +4,12 @@ import { CloseIcon, EditIcon } from '@chakra-ui/icons';
 import { LinkBox, LinkOverlay, VStack, useBreakpointValue } from '@chakra-ui/react';
 import { Card, CardBody, CardHeader, Heading, IconButton, Spacer } from '@chakra-ui/react';
 
+import { Recipe } from '@recipe/graphql/generated';
+
 import { TagList } from './TagList';
 import { getCardTitle } from './RecipeCard';
 import { ROOT_PATH } from '../../../constants';
 import { ImageViewerHome } from './ImageViewerHome';
-import { Recipe } from '../../../__generated__/graphql';
 
 interface Props {
     recipe: Recipe;

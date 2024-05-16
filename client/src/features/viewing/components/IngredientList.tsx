@@ -1,7 +1,8 @@
 import { ListItem, UnorderedList } from '@chakra-ui/react';
-import { RecipeIngredient } from '../../../__generated__/graphql';
-import { LikeFinishedRecipeIngredient } from '../../editing/hooks/useIngredientList';
-import { getFinishedRecipeIngredientStr } from '../../editing/hooks/useIngredientList';
+
+import { RecipeIngredient } from '@recipe/graphql/generated';
+import { LikeFinishedRecipeIngredient } from '@recipe/types';
+import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 
 export interface IngredientListProps {
     ingredients: RecipeIngredient[];

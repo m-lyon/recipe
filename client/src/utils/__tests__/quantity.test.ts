@@ -3,11 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { Ingredient, Unit } from '@recipe/graphql/generated';
 import { EnumRecipeIngredientType, EnumUnitPreferredNumberFormat } from '@recipe/graphql/generated';
 
-import { changeIngredientQuantity } from '../quantity';
+import { changeQuantity } from '../quantity';
 
 interface IngredientInput {
     quantity?: string | null;
-    unit?: Unit;
+    unit?: Unit | null;
     ingredient?: Ingredient;
 }
 
@@ -44,7 +44,7 @@ describe('changeIngredientQuantity', () => {
         const ingr = getIngredient({ quantity: '1' });
         const newServings = 4;
         const oldServings = 4;
-        const result = changeIngredientQuantity(ingr, newServings, oldServings);
+        const result = changeQuantity(ingr, newServings, oldServings);
         expect(result).toEqual(ingr);
     });
 
@@ -52,7 +52,7 @@ describe('changeIngredientQuantity', () => {
         const ingr = getIngredient({ quantity: null });
         const newServings = 4;
         const oldServings = 2;
-        const result = changeIngredientQuantity(ingr, newServings, oldServings);
+        const result = changeQuantity(ingr, newServings, oldServings);
         expect(result).toEqual(ingr);
     });
 
@@ -60,7 +60,7 @@ describe('changeIngredientQuantity', () => {
         const ingr = getIngredient({ quantity: '1/2' });
         const newServings = 8;
         const oldServings = 4;
-        const result = changeIngredientQuantity(ingr, newServings, oldServings);
+        const result = changeQuantity(ingr, newServings, oldServings);
         expect(result.quantity).toBe('1');
     });
 
@@ -68,25 +68,34 @@ describe('changeIngredientQuantity', () => {
         const ingr = getIngredient({ quantity: '0.5' });
         const newServings = 8;
         const oldServings = 4;
-        const result = changeIngredientQuantity(ingr, newServings, oldServings);
+        const result = changeQuantity(ingr, newServings, oldServings);
         expect(result.quantity).toBe('1');
     });
 
     it('should adjust quantity to fraction when unit preferred number format is fraction', () => {
         const ingr = getIngredient({ quantity: '1' });
-        ingr.unit.preferredNumberFormat = EnumUnitPreferredNumberFormat.Fraction;
+        ingr.unit!.preferredNumberFormat = EnumUnitPreferredNumberFormat.Fraction;
         const newServings = 6;
         const oldServings = 4;
-        const result = changeIngredientQuantity(ingr, newServings, oldServings);
+        const result = changeQuantity(ingr, newServings, oldServings);
+        expect(result.quantity).toBe('3/2');
+    });
+
+    it('should adjust quantity to fraction when unit is missing', () => {
+        const ingr = getIngredient({ quantity: '1' });
+        ingr.unit = null;
+        const newServings = 6;
+        const oldServings = 4;
+        const result = changeQuantity(ingr, newServings, oldServings);
         expect(result.quantity).toBe('3/2');
     });
 
     it('should adjust quantity to decimal when unit preferred number format is decimal', () => {
         const ingr = getIngredient({ quantity: '1' });
-        ingr.unit.preferredNumberFormat = EnumUnitPreferredNumberFormat.Decimal;
+        ingr.unit!.preferredNumberFormat = EnumUnitPreferredNumberFormat.Decimal;
         const newServings = 6;
         const oldServings = 4;
-        const result = changeIngredientQuantity(ingr, newServings, oldServings);
+        const result = changeQuantity(ingr, newServings, oldServings);
         expect(result.quantity).toBe('1.5');
     });
 });

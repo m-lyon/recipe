@@ -1,6 +1,7 @@
 import { Box, BoxProps, Tag, TagLabel, VStack, Wrap, WrapItem } from '@chakra-ui/react';
 
-import { Tag as TagType } from '../../../__generated__/graphql';
+import { Tag as TagType } from '@recipe/graphql/generated';
+
 import { imageCardWidth } from './ImageViewerRecipe';
 
 export const tagsHeight = 34;

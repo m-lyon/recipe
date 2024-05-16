@@ -1,4 +1,4 @@
-import { GET_RATINGS } from '../../graphql/queries/rating';
+import { GET_RATINGS } from '@recipe/graphql/queries/rating';
 
 export const mockGetRatings = {
     request: {

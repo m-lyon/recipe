@@ -7,6 +7,9 @@ export function isFraction(input: string): boolean {
 
 export function formatFraction(input: string): string {
     const fract = fraction(input);
+    if (fract.n > fract.d) {
+        return `${Math.floor(fract.n / fract.d)}${fractionUnicode(fract.n % fract.d, fract.d)}`;
+    }
     return fractionUnicode(fract.n, fract.d);
 }
 

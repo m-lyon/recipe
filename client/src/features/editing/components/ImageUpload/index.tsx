@@ -1,5 +1,6 @@
-import { Box, Container, HStack, useToast } from '@chakra-ui/react';
 import { ChangeEvent, Dispatch, SetStateAction } from 'react';
+import { Box, Container, HStack, useToast } from '@chakra-ui/react';
+
 import { UploadBox } from './components/UploadBox';
 import { ImagePreview } from './components/ImageView';
 

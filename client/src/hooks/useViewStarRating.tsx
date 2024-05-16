@@ -1,8 +1,9 @@
-import { useLazyQuery, useMutation } from '@apollo/client';
-import { useToast } from '@chakra-ui/react';
 import { useState } from 'react';
-import { GET_RATINGS } from '../graphql/queries/rating';
-import { ADD_RATING } from '../graphql/mutations/rating';
+import { useToast } from '@chakra-ui/react';
+import { useLazyQuery, useMutation } from '@apollo/client';
+
+import { GET_RATINGS } from '@recipe/graphql/queries/rating';
+import { ADD_RATING } from '@recipe/graphql/mutations/rating';
 
 export function useViewStarRating() {
     const toast = useToast();

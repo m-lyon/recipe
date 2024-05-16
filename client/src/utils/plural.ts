@@ -1,3 +1,5 @@
+import { fraction } from 'mathjs';
+
 export function isPlural(quantity: string | null | undefined): boolean {
     if (quantity == null) {
         return false;
@@ -8,8 +10,8 @@ export function isPlural(quantity: string | null | undefined): boolean {
     const fractionMatch = quantity.match(fractionRegex);
 
     if (fractionMatch) {
-        // If it's a fraction, return false (considered singular)
-        return false;
+        const fract = fraction(quantity);
+        return fract.n > fract.d ? true : false;
     }
 
     // If it's not a fraction, try parsing as a number and check if it's not 1

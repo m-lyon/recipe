@@ -3,12 +3,13 @@ import { LayoutGroup } from 'framer-motion';
 import { MutableRefObject, useRef } from 'react';
 import { Popover, PopoverAnchor, useDisclosure } from '@chakra-ui/react';
 
+import { Quantity, Recipe } from '@recipe/types';
+import { ingredientDisplayStr } from '@recipe/utils/formatting';
 import { Ingredient, IngredientCreate, Unit } from '@recipe/graphql/generated';
 
 import { NewIngredientPopover } from './NewIngredientPopover';
 import { DropdownItem } from '../../../../../components/DropdownItem';
 import { useNavigatableList } from '../../../hooks/useNavigatableList';
-import { Quantity, Recipe, ingredientDisplayStr } from '../../../hooks/useIngredientList';
 
 export type IngredientOrRecipe = Ingredient | IngredientCreate | Recipe;
 export interface IngredientSuggestion {
@@ -26,7 +27,7 @@ interface Props {
 }
 export function IngredientDropdown(props: Props) {
     const { strValue, data, quantity, unit, setItem, inputRef, previewRef } = props;
-    const dropdownRef = useRef<HTMLDivElement | null>(null);
+    const dropdownRef = useRef<HTMLLIElement | null>(null);
     const firstFieldRef = useRef<HTMLInputElement | null>(null);
     const { isOpen, onOpen, onClose } = useDisclosure({
         onClose: () => {

@@ -1,6 +1,7 @@
-import { Checkbox, Input, VStack, Text, HStack } from '@chakra-ui/react';
-import { UseAsIngredientReturnType } from '../hooks/useAsIngredient';
 import { motion } from 'framer-motion';
+import { Checkbox, HStack, Input, Text, VStack } from '@chakra-ui/react';
+
+import { UseAsIngredientReturnType } from '../hooks/useAsIngredient';
 
 export function AsIngredientCheckbox(props: UseAsIngredientReturnType) {
     const { state, actionHandler } = props;

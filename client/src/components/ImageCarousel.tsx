@@ -1,8 +1,8 @@
 import * as CSS from 'csstype';
 import { LegacyRef } from 'react';
+import { useMeasure } from 'react-use';
 import { UseMeasureRef } from 'react-use/lib/useMeasure';
 import { AspectRatio, Card, CardBody, CardProps, Image } from '@chakra-ui/react';
-import { useMeasure } from 'react-use';
 
 import { Carousel } from './Carousel';
 import { GRAPHQL_ENDPOINT } from '../constants';

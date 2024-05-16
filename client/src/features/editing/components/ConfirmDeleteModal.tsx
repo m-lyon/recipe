@@ -1,7 +1,8 @@
-import { Modal, ModalOverlay, ModalHeader, ModalBody, ModalContent } from '@chakra-ui/react';
-import { Button, ModalFooter } from '@chakra-ui/react';
 import { useMutation } from '@apollo/client';
-import { DELETE_RECIPE } from '../../../graphql/mutations/recipe';
+import { Button, ModalFooter } from '@chakra-ui/react';
+import { Modal, ModalBody, ModalContent, ModalHeader, ModalOverlay } from '@chakra-ui/react';
+
+import { DELETE_RECIPE } from '@recipe/graphql/mutations/recipe';
 
 interface Props {
     show: boolean;

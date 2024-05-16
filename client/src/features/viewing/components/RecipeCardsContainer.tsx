@@ -1,10 +1,11 @@
 import { useContext, useState } from 'react';
 import { Wrap, WrapItem } from '@chakra-ui/react';
 
+import { Recipe } from '@recipe/graphql/generated';
+import { groupIntoPairs } from '@recipe/utils/array';
+
 import { RecipeCard } from './RecipeCard';
 import { ImageRecipeCard } from './ImageRecipeCard';
-import { groupIntoPairs } from '../../../utils/array';
-import { Recipe } from '../../../__generated__/graphql';
 import { IUserContext, UserContext } from '../../../context/UserContext';
 import { ConfirmDeleteModal } from '../../editing/components/ConfirmDeleteModal';
 

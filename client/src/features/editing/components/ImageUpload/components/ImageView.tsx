@@ -1,5 +1,5 @@
 import { CloseIcon, EditIcon } from '@chakra-ui/icons';
-import { Card, CardBody, Image, IconButton } from '@chakra-ui/react';
+import { Card, CardBody, IconButton, Image } from '@chakra-ui/react';
 
 interface Props {
     image: File;

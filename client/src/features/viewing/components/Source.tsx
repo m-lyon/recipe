@@ -1,6 +1,6 @@
 import { Text } from '@chakra-ui/react';
 
-import { Recipe } from '../../../__generated__/graphql';
+import { Recipe } from '@recipe/graphql/generated';
 
 interface Props {
     source: Recipe['source'];

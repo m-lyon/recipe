@@ -1,5 +1,6 @@
-import { Box, Heading, Text, Flex, Button } from '@chakra-ui/react';
 import { Link } from 'react-router-dom';
+import { Box, Button, Flex, Heading, Text } from '@chakra-ui/react';
+
 import { ROOT_PATH } from '../constants';
 
 export function Search() {

@@ -2,7 +2,8 @@ import * as CSS from 'csstype';
 import { useBreakpointValue } from '@chakra-ui/react';
 import { UseMeasureRef } from 'react-use/lib/useMeasure';
 
-import { Image, Recipe } from '../../../__generated__/graphql';
+import { Image, Recipe } from '@recipe/graphql/generated';
+
 import { ImageCarousel } from '../../../components/ImageCarousel';
 
 export const imageCardWidth = 360;

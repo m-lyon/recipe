@@ -1,10 +1,8 @@
 import { Fraction, fraction, multiply } from 'mathjs';
 
-import { RecipeIngredient } from '@recipe/graphql/generated';
+import { EnumUnitPreferredNumberFormat, RecipeIngredient } from '@recipe/graphql/generated';
 
-import { isFraction } from './number';
-
-export function changeIngredientQuantity(
+export function changeQuantity(
     ingr: RecipeIngredient,
     newServings: number,
     oldServings: number
@@ -13,15 +11,20 @@ export function changeIngredientQuantity(
     if (newServings === oldServings || quantity == null) {
         return ingr;
     }
-    const factor = fraction(newServings / oldServings);
-    if (isFraction(quantity)) {
-        const fract = fraction(quantity);
-        const newFract = multiply(fract, factor) as Fraction;
-        if (newFract.d >= newFract.n) {
-            return { ...ingr, quantity: newFract.toString() };
-        }
-        return { ...ingr, quantity: newFract.toString() };
+    const result = multiply(fraction(quantity), fraction(newServings / oldServings)) as Fraction;
+    if (result.d === 1) {
+        return { ...ingr, quantity: result.toString() };
+    } else {
+        return handleFraction(result, ingr);
     }
-    const newQuantity = multiply(parseFloat(quantity), factor);
-    return { ...ingr, quantity: newQuantity.toString() };
+}
+
+function handleFraction(result: Fraction, ingr: RecipeIngredient) {
+    if (ingr.unit == null) {
+        return { ...ingr, quantity: `${result.n}/${result.d}` };
+    }
+    if (ingr.unit?.preferredNumberFormat === EnumUnitPreferredNumberFormat.Fraction) {
+        return { ...ingr, quantity: `${result.n}/${result.d}` };
+    }
+    return { ...ingr, quantity: result.toString() };
 }

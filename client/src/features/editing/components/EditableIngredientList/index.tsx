@@ -2,16 +2,17 @@ import { Reorder } from 'framer-motion';
 import { VStack } from '@chakra-ui/react';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 
+import { FinishedRecipeIngredient } from '@recipe/types';
+
 import { EditableIngredient } from './components/EditableIngredient';
 import { FinishedIngredient } from './components/FinishedIngredient';
 import { UseIngredientListReturnType } from '../../hooks/useIngredientList';
-import { FinishedRecipeIngredient as FinishedIngredientType } from '../../hooks/useIngredientList';
 
 export function EditableIngredientList(props: UseIngredientListReturnType) {
     const { state, actionHandler, queryData } = props;
 
     const finishedIngredients = state.finished.map(
-        (item: FinishedIngredientType, index: number) => {
+        (item: FinishedRecipeIngredient, index: number) => {
             return (
                 <FinishedIngredient
                     key={item.key}

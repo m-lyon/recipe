@@ -24,7 +24,7 @@ interface Props {
 }
 export function PrepMethodDropdown(props: Props) {
     const { strValue, data, setItem, handleSubmit, inputRef, previewRef } = props;
-    const dropdownRef = useRef<HTMLDivElement | null>(null);
+    const dropdownRef = useRef<HTMLLIElement | null>(null);
     const firstFieldRef = useRef<HTMLInputElement | null>(null);
     const { isOpen, onOpen, onClose } = useDisclosure({
         onClose: () => previewRef.current?.focus(),

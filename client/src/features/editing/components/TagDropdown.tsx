@@ -1,10 +1,11 @@
-import { useQuery } from '@apollo/client';
 import { List } from '@chakra-ui/react';
 import { MutableRefObject } from 'react';
+import { useQuery } from '@apollo/client';
 import { LayoutGroup, motion } from 'framer-motion';
 
+import { GET_TAGS } from '@recipe/graphql/queries/tag';
+
 import { TagDropdownList } from './TagDropdownList';
-import { GET_TAGS } from '../../../graphql/queries/tag';
 import { EditableTag, EditableTagActionHandler, FinishedTag } from '../hooks/useTagList';
 
 interface Props {

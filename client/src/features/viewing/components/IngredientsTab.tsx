@@ -3,7 +3,8 @@ import { TbWeight } from 'react-icons/tb';
 import { HStack, IconButton } from '@chakra-ui/react';
 import { useContext, useEffect, useState } from 'react';
 
-import { changeIngredientQuantity } from 'utils/quantity';
+import { changeQuantity } from '@recipe/utils/quantity';
+import { Recipe, RecipeIngredient } from '@recipe/graphql/generated';
 
 import { Notes } from './Notes';
 import { TagList } from './TagList';
@@ -12,7 +13,6 @@ import { Servings } from '../../../components/Servings';
 import { UserContext } from '../../../context/UserContext';
 import { StarRating } from '../../../components/StarRating';
 import { useViewStarRating } from '../../../hooks/useViewStarRating';
-import { Recipe, RecipeIngredient } from '../../../__generated__/graphql';
 import { IngredientsTabLayout } from '../../../layouts/IngredientsTabLayout';
 
 interface Props {
@@ -33,7 +33,7 @@ export function IngredientsTab(props: Props) {
     }, [recipeId]);
 
     const modifiedIngredients = ingredients.map((ingredient) => {
-        return changeIngredientQuantity(ingredient, servings, numServings);
+        return changeQuantity(ingredient, servings, numServings);
     });
 
     return (

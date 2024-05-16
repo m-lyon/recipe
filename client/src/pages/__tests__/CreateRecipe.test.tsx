@@ -1,11 +1,11 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import userEvent from '@testing-library/user-event';
 import { ChakraProvider } from '@chakra-ui/react';
 import { RouterProvider } from 'react-router-dom';
-import { cleanup, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MockedProvider } from '@apollo/client/testing';
-import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
+import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
 
 import { CreateRecipe } from '../CreateRecipe';
 import { mockGetTags } from '../../features/editing/components/__mocks__/GetTags';
