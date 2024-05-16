@@ -5,13 +5,14 @@ import { MongoMemoryServer } from 'mongodb-memory-server-core';
 
 import { User } from '../../src/models/User.js';
 import { Unit } from '../../src/models/Unit.js';
+import { MONGODB_OPTS } from '../utils/mongodb.js';
 
 describe('Unit Model', function () {
     let mongoServer: MongoMemoryServer;
 
     before(async function () {
         try {
-            mongoServer = await MongoMemoryServer.create();
+            mongoServer = await MongoMemoryServer.create(MONGODB_OPTS);
             await mongoose.connect(mongoServer.getUri());
         } catch (error) {
             console.log(error);
@@ -130,7 +131,7 @@ describe('Unit Model', function () {
         } catch (error) {
             assert.equal(
                 error.errors.shortSingular.message,
-                'The short plural unit name must be unique.'
+                'The short singular unit name must be unique.'
             );
         }
     });
@@ -173,7 +174,7 @@ describe('Unit Model', function () {
         } catch (error) {
             assert.equal(
                 error.errors.shortSingular.message,
-                'The short plural unit name must be unique.'
+                'The short singular unit name must be unique.'
             );
         }
     });
@@ -215,7 +216,7 @@ describe('Unit Model', function () {
         } catch (error) {
             assert.equal(
                 error.errors.shortSingular.message,
-                'The short plural unit name must be unique.'
+                'The short singular unit name must be unique.'
             );
         }
     });
@@ -259,7 +260,7 @@ describe('Unit Model', function () {
         } catch (error) {
             assert.equal(
                 error.errors.shortSingular.message,
-                'The short plural unit name must be unique.'
+                'The short singular unit name must be unique.'
             );
         }
     });
@@ -300,7 +301,7 @@ describe('Unit Model', function () {
         } catch (error) {
             assert.equal(
                 error.errors.shortSingular.message,
-                'The short plural unit name must be unique.'
+                'The short singular unit name must be unique.'
             );
         }
     });
@@ -343,7 +344,7 @@ describe('Unit Model', function () {
         } catch (error) {
             assert.equal(
                 error.errors.shortSingular.message,
-                'The short plural unit name must be unique.'
+                'The short singular unit name must be unique.'
             );
         }
     });

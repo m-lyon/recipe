@@ -4,13 +4,14 @@ import { after, before, describe, it } from 'mocha';
 import { MongoMemoryServer } from 'mongodb-memory-server-core';
 
 import { User } from '../../src/models/User.js';
+import { MONGODB_OPTS } from '../utils/mongodb.js';
 
 describe('User Model', function () {
     let mongoServer: MongoMemoryServer;
 
     before(async function () {
         try {
-            mongoServer = await MongoMemoryServer.create();
+            mongoServer = await MongoMemoryServer.create(MONGODB_OPTS);
             mongoose.set({ strictQuery: true });
             await mongoose.connect(mongoServer.getUri());
         } catch (error) {

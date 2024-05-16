@@ -6,7 +6,6 @@ import { MockedProvider } from '@apollo/client/testing';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { cleanup, getDefaultNormalizer, render, screen } from '@testing-library/react';
 import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
-import { debug } from 'vitest-preview';
 
 import { EditableIngredientList } from '..';
 import { mockGetUnits } from '../__mocks__/GetUnits';
@@ -30,11 +29,15 @@ const routes = createBrowserRouter(
 );
 
 const renderComponent = () => {
+    // Multiple mocks of the same query are needed due to refetch calls
     render(
         <MockedProvider
             mocks={[
                 mockGetUnits,
+                mockGetUnits,
                 mockGetIngredientsWithRecipe,
+                mockGetIngredientsWithRecipe,
+                mockGetPrepMethods,
                 mockGetPrepMethods,
                 mockCreateUnit,
                 mockCreateIngredient,
@@ -1083,7 +1086,6 @@ describe('Creating new items', () => {
         await user.click(screen.getByText('add new ingredient'));
         await user.keyboard('{b}{e}{e}{f}');
         await user.click(screen.getByText('Save'));
-        debug();
         // Expect
         expect(
             screen.queryByText('1 beef, ', { normalizer: getDefaultNormalizer({ trim: false }) })

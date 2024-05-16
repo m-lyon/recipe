@@ -12,6 +12,7 @@ export async function validateDoc(doc: Document) {
             const { message, value, path } = errors.errors[key];
             return { path, message, value };
         });
+        // Just show the first error, if more than one, otherwise formatting is too verbose
         const error = errorList[0];
         throw new GraphQLError(`${errors._message}: ${error.path}: ${error.message}`, {
             extensions: {

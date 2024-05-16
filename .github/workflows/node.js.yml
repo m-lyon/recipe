@@ -1,0 +1,107 @@
+name: Deploy App
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  update:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install API dependencies
+        working-directory: ./api
+        run: npm install
+      - name: Install client dependencies
+        working-directory: ./client
+        run: npm install
+
+  api-test:
+    needs: update
+    runs-on: self-hosted
+    env:
+      MONGOMS_DISTRO: ubuntu-20.04
+    steps:
+      - name: Test
+        working-directory: ./api
+        run: npm run test
+  
+  client-generate:
+    needs: api-test
+    runs-on: self-hosted
+    environment: development
+    steps:
+      - name: Create API environment file
+        working-directory: ./api
+        run: |
+          echo "HTTPS = ${{ secrets.HTTPS }}" > .env.development.local
+          echo "MONGODB_URI = ${{ secrets.MONGODB_URI }}" >> .env.development.local
+          echo "PORT = ${{ secrets.PORT }}" >> .env.development.local
+          echo "SESSION_SECRET = ${{ secrets.SESSION_SECRET }}" >> .env.development.local
+          echo "SESSION_URI = ${{ secrets.SESSION_URI }}" >> .env.development.local
+          echo "WHITELISTED_DOMAINS = ${{ secrets.WHITELISTED_DOMAINS }}" >> .env.development.local
+      - name: Create client environment file
+        working-directory: ./client
+        run: |
+          echo "VITE_GRAPHQL_ENDPOINT = ${{ secrets.VITE_GRAPHQL_ENDPOINT }}" >> .env.development.local
+      - name: Start server in development mode
+        working-directory: ./api
+        run: npm run dev &
+      - name: Wait for server compilation
+        run: sleep 60s
+      - name: Generate GraphQL types
+        working-directory: ./client
+        run: npm run generate
+
+  client-test:
+    needs: client-generate
+    runs-on: self-hosted
+    steps:
+      - name: Test
+        working-directory: ./client
+        run: npm run test -- run --test-timeout=15000
+  
+  client-deploy:
+    needs: client-test
+    environment: production
+    env:
+      NODE_OPTIONS: --max-old-space-size=4096
+    runs-on: self-hosted
+    steps:
+      - name: Create client environment file
+        working-directory: ./client
+        run: |
+          echo "VITE_GRAPHQL_ENDPOINT = ${{ secrets.VITE_GRAPHQL_ENDPOINT }}" > .env.production.local
+      - name: Build
+        working-directory: ./client
+        run: npm run build
+      - name: Deploy
+        working-directory: ./client
+        run: |
+          [ -d ${{ secrets.DEPLOY_DIR }}/dist ] && rm -r ${{ secrets.DEPLOY_DIR }}/dist
+          cp -r dist/ ${{ secrets.DEPLOY_DIR }}/dist
+
+  api-deploy:
+    needs: api-test
+    environment: production
+    runs-on: self-hosted
+    steps:
+      - name: Create API environment file
+        working-directory: ./api
+        run: |
+          echo "HTTPS = ${{ secrets.HTTPS }}" > .env.production.local
+          echo "PRIVKEY_PEM = ${{ secrets.PRIVKEY_PEM }}" >> .env.production.local
+          echo "FULLCHAIN_PEM = ${{ secrets.FULLCHAIN_PEM }}" >> .env.production.local
+          echo "MONGODB_URI = ${{ secrets.MONGODB_URI }}" >> .env.production.local
+          echo "WHITELISTED_DOMAINS = ${{ secrets.WHITELISTED_DOMAINS }}" >> .env.production.local
+          echo "SESSION_SECRET = ${{ secrets.SESSION_SECRET }}" >> .env.production.local
+          echo "SESSION_URI = ${{ secrets.SESSION_URI }}" >> .env.production.local
+          echo "PORT = ${{ secrets.PORT }}" >> .env.production.local
+          echo "IMAGE_DIR = ${{ secrets.IMAGE_DIR }}" >> .env.production.local
+      - name: Deploy
+        run: |
+          [ -d ${{ secrets.DEPLOY_DIR }}/server ] && rm -r ${{ secrets.DEPLOY_DIR }}/server
+          cp -r api/ ${{ secrets.DEPLOY_DIR }}/server
+      - name: Restart server
+        run: sudo systemctl restart recipe

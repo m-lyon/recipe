@@ -4,8 +4,9 @@ import { ApolloServer } from '@apollo/server';
 import { MongoMemoryServer } from 'mongodb-memory-server-core';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
-import { schema } from '../../src/schema/index.js';
 import { User } from '../../src/models/User.js';
+import { schema } from '../../src/schema/index.js';
+import { MONGODB_OPTS } from '../utils/mongodb.js';
 
 const createUnit = async (user, record, apolloServer) => {
     const query = `
@@ -49,7 +50,7 @@ describe('unitCreateOne', () => {
 
     before(async function () {
         try {
-            mongoServer = await MongoMemoryServer.create();
+            mongoServer = await MongoMemoryServer.create(MONGODB_OPTS);
             await mongoose.connect(mongoServer.getUri());
             apolloServer = new ApolloServer({ schema });
             await apolloServer.start();
@@ -117,13 +118,17 @@ describe('unitCreateOne', () => {
         const user = await User.findOne({ username: 'testuser1' });
         const newRecord = {
             shortPlural: 'tsp',
-            shortSingular: 'tspp',
-            longPlural: 'teaspoonss',
-            longSingular: 'teaspoonn',
+            shortSingular: 'tsp',
+            longPlural: 'teaspoons',
+            longSingular: 'teaspoon',
             preferredNumberFormat: 'fraction',
             hasSpace: false,
         };
         await createUnit(user, newRecord, apolloServer);
+        // Modify the record to only have the same shortPlural
+        newRecord.shortSingular = 'tspp';
+        newRecord.longPlural = 'teaspoonss';
+        newRecord.longSingular = 'teaspoonn';
         const response = await createUnit(user, newRecord, apolloServer);
         assert(response.body.kind === 'single');
         assert(response.body.singleResult.errors, 'Validation error should occur');
@@ -163,7 +168,7 @@ describe('unitUpdateById', () => {
 
     before(async function () {
         try {
-            mongoServer = await MongoMemoryServer.create();
+            mongoServer = await MongoMemoryServer.create(MONGODB_OPTS);
             await mongoose.connect(mongoServer.getUri());
             apolloServer = new ApolloServer({ schema });
             await apolloServer.start();

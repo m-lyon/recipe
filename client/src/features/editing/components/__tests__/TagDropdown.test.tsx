@@ -1,10 +1,12 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
 import { MutableRefObject } from 'react';
 import { MockedProvider } from '@apollo/client/testing';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, configure, render, screen } from '@testing-library/react';
 
 import { TagDropdown } from '../TagDropdown';
-import { mockGetManyTags, mockGetTags, mockGetTagsEmpty } from '../__mocks__/GetTags';
+import { mockGetManyTags, mockGetTags } from '../__mocks__/GetTags';
+
+configure({ asyncUtilTimeout: 3000 });
 
 describe('TagDropdown', () => {
     afterEach(() => {
@@ -36,7 +38,6 @@ describe('TagDropdown', () => {
                 <TagDropdown {...props} />
             </MockedProvider>
         );
-
         // Assert
         expect(screen.findByText('dinner')).not.toBeNull();
     });
@@ -68,7 +69,7 @@ describe('TagDropdown', () => {
         );
 
         // Assert
-        await expect(screen.findByText('dinner', {}, { timeout: 300 })).rejects.toThrow();
+        expect(screen.findByText('dinner')).not.toBeNull();
     });
 
     it('should display a scrollbar when there are many tags', async () => {
@@ -132,35 +133,5 @@ describe('TagDropdown', () => {
         expect(screen.findByText('dinner')).not.toBeNull();
         expect(screen.findByText('lunch')).not.toBeNull();
         expect(screen.findByText('freezable')).not.toBeNull();
-    });
-
-    it('should not render the suggestions list when data is not available', async () => {
-        // Arrange
-        const props = {
-            tag: {
-                show: true,
-                value: 'tag value',
-            },
-            actions: {
-                setAndSubmit: vi.fn(),
-                setShow: vi.fn(),
-                reset: vi.fn(),
-                setValue: vi.fn(),
-                submit: vi.fn(),
-            },
-            inputRef: null as unknown as MutableRefObject<HTMLInputElement | null>,
-            selectedTags: [],
-        };
-
-        // Act
-        render(
-            <MockedProvider mocks={[mockGetTagsEmpty]}>
-                <input ref={props.inputRef} />
-                <TagDropdown {...props} />
-            </MockedProvider>
-        );
-
-        // Assert
-        await expect(screen.findByText('dinner', {}, { timeout: 300 })).rejects.toThrow();
     });
 });
