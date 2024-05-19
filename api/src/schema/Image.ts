@@ -83,10 +83,10 @@ ImageTC.addResolver({
 });
 
 export const ImageQuery = {
-    ImageById: ImageTC.mongooseResolvers.findById(),
-    ImageByIds: ImageTC.mongooseResolvers.findByIds(),
-    ImageOne: ImageTC.mongooseResolvers.findOne(),
-    ImageMany: ImageTC.mongooseResolvers.findMany(),
+    imageById: ImageTC.mongooseResolvers.findById(),
+    imageByIds: ImageTC.mongooseResolvers.findByIds(),
+    imageOne: ImageTC.mongooseResolvers.findOne(),
+    imageMany: ImageTC.mongooseResolvers.findMany(),
 };
 
 export const ImageMutation = {

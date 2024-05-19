@@ -1,5 +1,5 @@
 import { object, string } from 'yup';
-import { useContext, useState } from 'react';
+import { FormEvent, useContext, useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, FormControl, HStack, Heading, Input, useToast } from '@chakra-ui/react';
@@ -26,7 +26,7 @@ export function Signup() {
         lastName: string().required(),
     });
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
             const validated = await formSchema.validate({ email, password, firstName, lastName });

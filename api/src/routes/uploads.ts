@@ -1,9 +1,11 @@
 import path from 'path';
-import express from 'express';
+
+import { Router } from 'express';
+
 import { Image } from '../models/Image.js';
 import { IMAGE_DIR } from '../constants.js';
 
-export const uploadRouter = express.Router();
+export const uploadRouter = Router();
 
 uploadRouter.get('/images/:fname', async (req, res) => {
     const fname = req.params.fname;

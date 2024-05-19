@@ -134,13 +134,13 @@ function DesktopSubNav({ label, href, subLabel }: NavItem) {
             display='block'
             p={2}
             rounded='md'
-            _hover={{ bg: useColorModeValue('pink.50', 'gray.900') }}
+            _hover={{ bg: useColorModeValue('white', 'gray.900') }}
         >
             <Stack direction='row' align='center'>
                 <Box>
                     <Text
                         transition='all .3s ease'
-                        _groupHover={{ color: 'pink.400' }}
+                        _groupHover={{ color: 'teal.400' }}
                         fontWeight={500}
                     >
                         {label}
@@ -156,7 +156,7 @@ function DesktopSubNav({ label, href, subLabel }: NavItem) {
                     align='center'
                     flex={1}
                 >
-                    <Icon color='pink.400' w={5} h={5} as={ChevronRightIcon} />
+                    <Icon color='teal.400' w={5} h={5} as={ChevronRightIcon} />
                 </Flex>
             </Stack>
         </Link>
@@ -239,7 +239,17 @@ interface NavItem {
 const USER_NAV_ITEMS: Array<NavItem> = [
     {
         label: 'Create',
-        href: `${ROOT_PATH}/create`,
+        href: `${ROOT_PATH}/create/recipe`,
+        children: [
+            {
+                label: 'Recipe',
+                href: `${ROOT_PATH}/create/recipe`,
+            },
+            {
+                label: 'Unit Conversion',
+                href: `${ROOT_PATH}/create/unit-conversion`,
+            },
+        ],
     },
     {
         label: 'Search',

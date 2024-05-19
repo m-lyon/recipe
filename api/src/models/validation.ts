@@ -1,8 +1,9 @@
 import { Types } from 'mongoose';
 
-import { User } from './User.js';
-import { Recipe } from './Recipe.js';
 import { Tag } from './Tag.js';
+import { User } from './User.js';
+import { Unit } from './Unit.js';
+import { Recipe } from './Recipe.js';
 
 export function uniqueInAdminsAndUser(model: string, attribute: string, message?: string) {
     async function validator(value: string) {
@@ -59,4 +60,12 @@ export function tagsExist() {
         return count === tags.length;
     }
     return { validator, message: 'The tags must be valid tags.' };
+}
+
+export function unitExists() {
+    async function validator(unit: Types.ObjectId) {
+        const count = await Unit.countDocuments({ _id: unit });
+        return count === 1;
+    }
+    return { validator, message: 'The unit must be valid.' };
 }

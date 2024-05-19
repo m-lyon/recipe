@@ -6,6 +6,8 @@ import { useContext, useEffect, useState } from 'react';
 import { changeQuantity } from '@recipe/utils/quantity';
 import { Recipe, RecipeIngredient } from '@recipe/graphql/generated';
 
+import { useUnitConversion } from 'hooks/useUnitConversion';
+
 import { Notes } from './Notes';
 import { TagList } from './TagList';
 import { IngredientList } from './IngredientList';
@@ -27,13 +29,14 @@ export function IngredientsTab(props: Props) {
     const [userContext] = useContext(UserContext);
     const [servings, setServings] = useState(numServings);
     const { avgRating, getRatings, setRating } = useViewStarRating();
+    const { apply } = useUnitConversion();
 
     useEffect(() => {
         getRatings(recipeId);
     }, [recipeId]);
 
     const modifiedIngredients = ingredients.map((ingredient) => {
-        return changeQuantity(ingredient, servings, numServings);
+        return changeQuantity(ingredient, servings, numServings, apply);
     });
 
     return (

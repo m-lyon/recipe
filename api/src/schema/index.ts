@@ -14,12 +14,16 @@ import { RatingMutation, RatingQuery } from './Rating.js';
 import { PrepMethodMutation, PrepMethodQuery } from './PrepMethod.js';
 import { IngredientMutation, IngredientQuery } from './Ingredient.js';
 import { isAdmin, isImageOwnerOrAdmin } from '../middleware/authorisation.js';
+import { UnitConversionMutation, UnitConversionQuery } from './UnitConversion.js';
+import { ConversionRuleMutation, ConversionRuleQuery } from './UnitConversion.js';
 import { isAuthenticated, isDocumentOwnerOrAdmin } from '../middleware/authorisation.js';
 
 const isAdminMutations = composeResolvers(
     {
         Mutation: {
             ...TagMutation,
+            ...UnitConversionMutation,
+            ...ConversionRuleMutation,
         },
     },
     { 'Mutation.*': [isAdmin()] }
@@ -101,6 +105,8 @@ schemaComposer.Query.addFields({
     ...RecipeQuery,
     ...RatingQuery,
     ...ImageQuery,
+    ...UnitConversionQuery,
+    ...ConversionRuleQuery,
     ...isAdminQueries.Query,
 });
 schemaComposer.Mutation.addFields({

@@ -44,7 +44,7 @@ describe('changeIngredientQuantity', () => {
         const ingr = getIngredient({ quantity: '1' });
         const newServings = 4;
         const oldServings = 4;
-        const result = changeQuantity(ingr, newServings, oldServings);
+        const result = changeQuantity(ingr, newServings, oldServings, (ingr) => ingr);
         expect(result).toEqual(ingr);
     });
 
@@ -52,7 +52,7 @@ describe('changeIngredientQuantity', () => {
         const ingr = getIngredient({ quantity: null });
         const newServings = 4;
         const oldServings = 2;
-        const result = changeQuantity(ingr, newServings, oldServings);
+        const result = changeQuantity(ingr, newServings, oldServings, (ingr) => ingr);
         expect(result).toEqual(ingr);
     });
 
@@ -60,7 +60,7 @@ describe('changeIngredientQuantity', () => {
         const ingr = getIngredient({ quantity: '1/2' });
         const newServings = 8;
         const oldServings = 4;
-        const result = changeQuantity(ingr, newServings, oldServings);
+        const result = changeQuantity(ingr, newServings, oldServings, (ingr) => ingr);
         expect(result.quantity).toBe('1');
     });
 
@@ -68,7 +68,7 @@ describe('changeIngredientQuantity', () => {
         const ingr = getIngredient({ quantity: '0.5' });
         const newServings = 8;
         const oldServings = 4;
-        const result = changeQuantity(ingr, newServings, oldServings);
+        const result = changeQuantity(ingr, newServings, oldServings, (ingr) => ingr);
         expect(result.quantity).toBe('1');
     });
 
@@ -77,7 +77,7 @@ describe('changeIngredientQuantity', () => {
         ingr.unit!.preferredNumberFormat = EnumUnitPreferredNumberFormat.Fraction;
         const newServings = 6;
         const oldServings = 4;
-        const result = changeQuantity(ingr, newServings, oldServings);
+        const result = changeQuantity(ingr, newServings, oldServings, (ingr) => ingr);
         expect(result.quantity).toBe('3/2');
     });
 
@@ -86,7 +86,7 @@ describe('changeIngredientQuantity', () => {
         ingr.unit = null;
         const newServings = 6;
         const oldServings = 4;
-        const result = changeQuantity(ingr, newServings, oldServings);
+        const result = changeQuantity(ingr, newServings, oldServings, (ingr) => ingr);
         expect(result.quantity).toBe('3/2');
     });
 
@@ -95,7 +95,7 @@ describe('changeIngredientQuantity', () => {
         ingr.unit!.preferredNumberFormat = EnumUnitPreferredNumberFormat.Decimal;
         const newServings = 6;
         const oldServings = 4;
-        const result = changeQuantity(ingr, newServings, oldServings);
+        const result = changeQuantity(ingr, newServings, oldServings, (ingr) => ingr);
         expect(result.quantity).toBe('1.5');
     });
 });

@@ -5,17 +5,20 @@ import { EnumUnitPreferredNumberFormat, RecipeIngredient } from '@recipe/graphql
 export function changeQuantity(
     ingr: RecipeIngredient,
     newServings: number,
-    oldServings: number
+    oldServings: number,
+    unitConversion: (ingr: RecipeIngredient) => RecipeIngredient
 ): RecipeIngredient {
-    const { quantity } = ingr;
-    if (newServings === oldServings || quantity == null) {
+    if (newServings === oldServings || ingr.quantity == null) {
         return ingr;
     }
-    const result = multiply(fraction(quantity), fraction(newServings / oldServings)) as Fraction;
+    const result = multiply(
+        fraction(ingr.quantity),
+        fraction(newServings / oldServings)
+    ) as Fraction;
     if (result.d === 1) {
-        return { ...ingr, quantity: result.toString() };
+        return unitConversion(handleInteger(result, ingr));
     } else {
-        return handleFraction(result, ingr);
+        return unitConversion(handleFraction(result, ingr));
     }
 }
 
@@ -26,5 +29,9 @@ function handleFraction(result: Fraction, ingr: RecipeIngredient) {
     if (ingr.unit?.preferredNumberFormat === EnumUnitPreferredNumberFormat.Fraction) {
         return { ...ingr, quantity: `${result.n}/${result.d}` };
     }
+    return { ...ingr, quantity: result.toString() };
+}
+
+function handleInteger(result: Fraction, ingr: RecipeIngredient) {
     return { ...ingr, quantity: result.toString() };
 }

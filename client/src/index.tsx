@@ -5,6 +5,8 @@ import createUploadLink from 'apollo-upload-client/createUploadLink.mjs';
 import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client';
 import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
 
+import { CreateUnitConversion } from 'pages/CreateUnitConversion';
+
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
@@ -34,13 +36,14 @@ const routes = createBrowserRouter(
                 <Route index element={<Home />} />
                 <Route path='view/:titleIdentifier' element={<ViewRecipe />} />
                 <Route
-                    path='create'
+                    path='create/recipe'
                     element={
                         <RequireAuth>
                             <CreateRecipe />
                         </RequireAuth>
                     }
                 />
+                <Route path='create/unit-conversion' element={<CreateUnitConversion />} />
                 <Route
                     path='edit/:titleIdentifier'
                     element={
