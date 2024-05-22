@@ -28,14 +28,26 @@ const conversionRuleSchema = new Schema<ConversionRule>({
         type: Schema.Types.ObjectId,
         required: true,
         ref: 'Unit',
-        validate: unitExists(),
+        validate: [
+            unitExists(),
+            {
+                validator: async function (unit: Types.ObjectId) {
+                    const count = await this.model('ConversionRule').countDocuments({
+                        unit,
+                        _id: { $ne: this._id }, // Exclude the current conversion rule
+                    });
+                    return count === 0;
+                },
+                message: 'Unit already has conversion rule.',
+            },
+        ],
     },
     baseUnit: { type: Schema.Types.ObjectId, required: true, ref: 'Unit', validate: unitExists() },
     baseConversion: {
         type: Number,
         required: true,
         validate: {
-            validator: (baseConversion: number) => baseConversion > 1,
+            validator: (baseConversion: number) => baseConversion >= 1,
             message: 'Base to unit conversion must be greater than 1.',
         },
     },
@@ -50,17 +62,9 @@ const unitConversionSchema = new Schema<UnitConversion>({
         validate: [
             {
                 validator: (rules: Types.ObjectId[]) => {
-                    console.log(rules);
                     return rules.length > 0;
                 },
                 message: 'At least one rule is required.',
-            },
-            {
-                validator: async function (rules: Types.ObjectId[]) {
-                    const ruleDocs = await ConversionRule.find({ _id: { $in: rules } });
-                    return ruleDocs.every((rule) => rule.unit !== rule.baseUnit);
-                },
-                message: 'A rule cannot convert to the same unit.',
             },
             {
                 validator: async function (rules: Types.ObjectId[]) {
@@ -80,22 +84,12 @@ const unitConversionSchema = new Schema<UnitConversion>({
                 },
                 message: 'All base units in rules must be the same.',
             },
-            {
-                validator: async function (rules: Types.ObjectId[]) {
-                    const ruleDocs = await ConversionRule.find({ _id: { $in: rules } });
-                    const count = await ConversionRule.countDocuments({
-                        unit: { $in: ruleDocs.map((rule) => rule.unit) },
-                        _id: { $ne: this._id }, // Exclude the current conversion rule
-                    });
-                    return count === 0;
-                },
-                message: 'Units can only appear in one conversion rule in the entire database.',
-            },
         ],
     },
 });
 unitConversionSchema.pre('save', async function () {
     const rules = await ConversionRule.find({ _id: { $in: this.rules } });
+    // sort in descending order
     rules.sort((a, b) => b.threshold - a.threshold);
     this.rules = rules.map((rule) => rule._id);
 });

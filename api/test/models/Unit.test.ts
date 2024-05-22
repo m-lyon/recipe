@@ -1,34 +1,14 @@
 import mongoose from 'mongoose';
 import { assert } from 'chai';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
-import { MongoMemoryServer } from 'mongodb-memory-server-core';
 
 import { User } from '../../src/models/User.js';
 import { Unit } from '../../src/models/Unit.js';
-import { MONGODB_OPTS } from '../utils/mongodb.js';
+import { startServer, stopServer } from '../utils/mongodb.js';
 
 describe('Unit Model', function () {
-    let mongoServer: MongoMemoryServer;
-
-    before(async function () {
-        try {
-            mongoServer = await MongoMemoryServer.create(MONGODB_OPTS);
-            await mongoose.connect(mongoServer.getUri());
-        } catch (error) {
-            console.log(error);
-            assert.fail('Connection not established');
-        }
-    });
-
-    after(async function () {
-        try {
-            await mongoose.connection.close();
-            await mongoServer.stop();
-        } catch (error) {
-            console.log(error);
-            assert.fail('Connection not closed');
-        }
-    });
+    before(startServer);
+    after(stopServer);
 
     beforeEach(function (done) {
         const user1 = new User({

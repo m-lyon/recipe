@@ -1,19 +1,15 @@
 import { assert } from 'chai';
-import mongoose from 'mongoose';
-import { ApolloServer } from '@apollo/server';
-import { MongoMemoryServer } from 'mongodb-memory-server-core';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { User } from '../../src/models/User.js';
 import { Unit } from '../../src/models/Unit.js';
-import { MONGODB_OPTS } from '../utils/mongodb.js';
-import { schema } from '../../src/schema/index.js';
+import { startServer, stopServer } from '../utils/mongodb.js';
 import { Recipe } from '../../src/models/Recipe.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { createRecipeIngredientData, removeRecipeIngredientData } from './Recipe.test.js';
 
-const createRating = async (user, record, apolloServer) => {
+async function createRating(context, user, record) {
     const query = `
     mutation RatingCreateOne($record: CreateOneRatingCreateInput!) {
         ratingCreateOne(record: $record) {
@@ -23,7 +19,7 @@ const createRating = async (user, record, apolloServer) => {
           }
         }
       }`;
-    const response = await apolloServer.executeOperation(
+    const response = await context.apolloServer.executeOperation(
         {
             query: query,
             variables: { record },
@@ -36,7 +32,7 @@ const createRating = async (user, record, apolloServer) => {
         }
     );
     return response;
-};
+}
 
 async function createRecipeData() {
     const user = await User.findOne({ username: 'testuser1' });
@@ -75,31 +71,8 @@ const parseCreatedRating = (response) => {
 };
 
 describe('ratingCreateOne', () => {
-    let mongoServer: MongoMemoryServer;
-    let apolloServer: ApolloServer;
-
-    before(async function () {
-        try {
-            mongoServer = await MongoMemoryServer.create(MONGODB_OPTS);
-            await mongoose.connect(mongoServer.getUri());
-            apolloServer = new ApolloServer({ schema });
-            await apolloServer.start();
-        } catch (error) {
-            console.log(error);
-            assert.fail('Connection not established');
-        }
-    });
-
-    after(async function () {
-        try {
-            await mongoose.connection.close();
-            await mongoServer.stop();
-            await apolloServer.stop();
-        } catch (error) {
-            console.log(error);
-            assert.fail('Connection not closed');
-        }
-    });
+    before(startServer);
+    after(stopServer);
 
     beforeEach(async () => {
         await createRecipeIngredientData();
@@ -107,20 +80,20 @@ describe('ratingCreateOne', () => {
     });
     afterEach(removeRecipeIngredientData);
 
-    it('should create a rating', async () => {
+    it('should create a rating', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         const recipe = await Recipe.findOne({ title: 'Chicken Soup' });
         const record = { value: 5, recipe: recipe._id };
-        const response = await createRating(user, record, apolloServer);
+        const response = await createRating(this, user, record);
         const createdRating = parseCreatedRating(response);
         assert(createdRating.value === record.value);
     });
 
-    it('should not create a rating with a value less than 0', async () => {
+    it('should not create a rating with a value less than 0', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         const recipe = await Recipe.findOne({ title: 'Chicken Soup' });
         const record = { value: -1, recipe: recipe._id };
-        const response = await createRating(user, record, apolloServer);
+        const response = await createRating(this, user, record);
         assert(response.body.kind === 'single');
         assert(response.body.singleResult.errors, 'Validation error should occur');
         assert(
@@ -129,11 +102,11 @@ describe('ratingCreateOne', () => {
         );
     });
 
-    it('should not create a rating with a value greater than 10', async () => {
+    it('should not create a rating with a value greater than 10', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         const recipe = await Recipe.findOne({ title: 'Chicken Soup' });
         const record = { value: 11, recipe: recipe._id };
-        const response = await createRating(user, record, apolloServer);
+        const response = await createRating(this, user, record);
         assert(response.body.kind === 'single');
         assert(response.body.singleResult.errors, 'Validation error should occur');
         assert(
@@ -142,14 +115,14 @@ describe('ratingCreateOne', () => {
         );
     });
 
-    it('should not create a rating, recipe does not exist', async () => {
+    it('should not create a rating, recipe does not exist', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         const recipe = await Recipe.findOne({ title: 'Chicken Soup' });
         await Recipe.deleteOne({ _id: recipe._id });
         const deletedRecipe = await Recipe.findOne({ title: 'Chicken Soup' });
         assert.isNull(deletedRecipe);
         const record = { value: 5, recipe: recipe._id };
-        const response = await createRating(user, record, apolloServer);
+        const response = await createRating(this, user, record);
         assert(response.body.kind === 'single');
         assert(response.body.singleResult.errors, 'Validation error should occur');
         assert(

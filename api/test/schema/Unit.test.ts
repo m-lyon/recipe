@@ -1,14 +1,11 @@
 import { assert } from 'chai';
 import mongoose from 'mongoose';
-import { ApolloServer } from '@apollo/server';
-import { MongoMemoryServer } from 'mongodb-memory-server-core';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { User } from '../../src/models/User.js';
-import { schema } from '../../src/schema/index.js';
-import { MONGODB_OPTS } from '../utils/mongodb.js';
+import { startServer, stopServer } from '../utils/mongodb.js';
 
-const createUnit = async (user, record, apolloServer) => {
+async function createUnit(context, user, record) {
     const query = `
     mutation UnitCreateOne($record: CreateOneUnitCreateInput!) {
         unitCreateOne(record: $record) {
@@ -18,7 +15,7 @@ const createUnit = async (user, record, apolloServer) => {
           }
         }
       }`;
-    const response = await apolloServer.executeOperation(
+    const response = await context.apolloServer.executeOperation(
         {
             query: query,
             variables: { record },
@@ -31,7 +28,7 @@ const createUnit = async (user, record, apolloServer) => {
         }
     );
     return response;
-};
+}
 
 const parseCreatedUnit = (response) => {
     assert(response.body.kind === 'single');
@@ -44,32 +41,9 @@ const parseCreatedUnit = (response) => {
     return record;
 };
 
-describe('unitCreateOne', () => {
-    let mongoServer: MongoMemoryServer;
-    let apolloServer: ApolloServer;
-
-    before(async function () {
-        try {
-            mongoServer = await MongoMemoryServer.create(MONGODB_OPTS);
-            await mongoose.connect(mongoServer.getUri());
-            apolloServer = new ApolloServer({ schema });
-            await apolloServer.start();
-        } catch (error) {
-            console.log(error);
-            assert.fail('Connection not established');
-        }
-    });
-
-    after(async function () {
-        try {
-            await mongoose.connection.close();
-            await mongoServer.stop();
-            await apolloServer.stop();
-        } catch (error) {
-            console.log(error);
-            assert.fail('Connection not closed');
-        }
-    });
+describe('unitCreateOne', function () {
+    before(startServer);
+    after(stopServer);
 
     beforeEach(async function () {
         const user = await User.register(
@@ -109,7 +83,7 @@ describe('unitCreateOne', () => {
             preferredNumberFormat: 'fraction',
             hasSpace: false,
         };
-        const response = await createUnit(user, newRecord, apolloServer);
+        const response = await createUnit(this, user, newRecord);
         const record = parseCreatedUnit(response);
         assert.equal(record.longSingular, 'teaspoon');
     });
@@ -124,12 +98,12 @@ describe('unitCreateOne', () => {
             preferredNumberFormat: 'fraction',
             hasSpace: false,
         };
-        await createUnit(user, newRecord, apolloServer);
+        await createUnit(this, user, newRecord);
         // Modify the record to only have the same shortPlural
         newRecord.shortSingular = 'tspp';
         newRecord.longPlural = 'teaspoonss';
         newRecord.longSingular = 'teaspoonn';
-        const response = await createUnit(user, newRecord, apolloServer);
+        const response = await createUnit(this, user, newRecord);
         assert(response.body.kind === 'single');
         assert(response.body.singleResult.errors, 'Validation error should occur');
         assert(
@@ -152,7 +126,7 @@ describe('unitCreateOne', () => {
         await User.deleteOne({ username: 'testuser1' });
         const deletedUser = await User.findOne({ username: 'testuser1' });
         assert.isNull(deletedUser);
-        const response = await createUnit(user, newRecord, apolloServer);
+        const response = await createUnit(this, user, newRecord);
         assert(response.body.kind === 'single');
         assert(response.body.singleResult.errors, 'Validation error should occur');
         assert(
@@ -163,31 +137,8 @@ describe('unitCreateOne', () => {
 });
 
 describe('unitUpdateById', () => {
-    let mongoServer: MongoMemoryServer;
-    let apolloServer: ApolloServer;
-
-    before(async function () {
-        try {
-            mongoServer = await MongoMemoryServer.create(MONGODB_OPTS);
-            await mongoose.connect(mongoServer.getUri());
-            apolloServer = new ApolloServer({ schema });
-            await apolloServer.start();
-        } catch (error) {
-            console.log(error);
-            assert.fail('Connection not established');
-        }
-    });
-
-    after(async function () {
-        try {
-            await mongoose.connection.close();
-            await mongoServer.stop();
-            await apolloServer.stop();
-        } catch (error) {
-            console.log(error);
-            assert.fail('Connection not closed');
-        }
-    });
+    before(startServer);
+    after(stopServer);
 
     beforeEach(async function () {
         const user = await User.register(
@@ -213,7 +164,7 @@ describe('unitUpdateById', () => {
             });
     });
 
-    const updateUnit = async (user, id, record) => {
+    async function updateUnit(context, user, id, record) {
         const query = `
         mutation UnitUpdateById($id: MongoID!, $record: UpdateByIdUnitInput!) {
             unitUpdateById(_id: $id, record: $record) {
@@ -223,7 +174,7 @@ describe('unitUpdateById', () => {
               }
             }
           }`;
-        const response = await apolloServer.executeOperation(
+        const response = await context.apolloServer.executeOperation(
             { query: query, variables: { id, record } },
             {
                 contextValue: {
@@ -233,7 +184,7 @@ describe('unitUpdateById', () => {
             }
         );
         return response;
-    };
+    }
 
     it('should update a unit', async function () {
         const user = await User.findOne({ username: 'testuser1' });
@@ -254,11 +205,11 @@ describe('unitUpdateById', () => {
             preferredNumberFormat: 'fraction',
             hasSpace: false,
         };
-        const recordOneResponse = await createUnit(user, recordOneVars, apolloServer);
+        const recordOneResponse = await createUnit(this, user, recordOneVars);
         const recordOne = parseCreatedUnit(recordOneResponse);
-        await createUnit(user, recordTwoVars, apolloServer);
+        await createUnit(this, user, recordTwoVars);
         // Update the ingredient
-        const response = await updateUnit(user, recordOne._id, { shortSingular: 'tspy' });
+        const response = await updateUnit(this, user, recordOne._id, { shortSingular: 'tspy' });
         assert(response.body.kind === 'single');
         assert.isUndefined(response.body.singleResult.errors);
         const updatedRecord = (
@@ -288,11 +239,11 @@ describe('unitUpdateById', () => {
             preferredNumberFormat: 'fraction',
             hasSpace: false,
         };
-        const recordOneResponse = await createUnit(user, recordOneVars, apolloServer);
+        const recordOneResponse = await createUnit(this, user, recordOneVars);
         const recordOne = parseCreatedUnit(recordOneResponse);
-        await createUnit(user, recordTwoVars, apolloServer);
+        await createUnit(this, user, recordTwoVars);
         // Update the unit
-        const response = await updateUnit(user, recordOne._id, { shortPlural: 'tbsp' });
+        const response = await updateUnit(this, user, recordOne._id, { shortPlural: 'tbsp' });
         assert(response.body.kind === 'single');
         assert(response.body.singleResult.errors);
         assert(
@@ -320,14 +271,14 @@ describe('unitUpdateById', () => {
             preferredNumberFormat: 'fraction',
             hasSpace: false,
         };
-        const recordOneResponse = await createUnit(user, recordOneVars, apolloServer);
+        const recordOneResponse = await createUnit(this, user, recordOneVars);
         const recordOne = parseCreatedUnit(recordOneResponse);
-        await createUnit(user, recordTwoVars, apolloServer);
+        await createUnit(this, user, recordTwoVars);
         // Update the unit
         await User.deleteOne({ username: 'testuser1' });
         const deletedUser = await User.findOne({ username: 'testuser1' });
         assert.isNull(deletedUser);
-        const response = await updateUnit(user, recordOne._id, { shortSingular: 'tspy' });
+        const response = await updateUnit(this, user, recordOne._id, { shortSingular: 'tspy' });
         assert(response.body.kind === 'single');
         assert(response.body.singleResult.errors);
         assert(

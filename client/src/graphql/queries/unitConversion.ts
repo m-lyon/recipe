@@ -6,7 +6,7 @@ export const GET_UNIT_CONVERSIONS = gql(`
             baseUnit {
                 _id
             }
-            rules {
+            rules(sort: THRESHOLD_DESC) {
                 _id
                 threshold
                 baseConversion

@@ -1,14 +1,11 @@
 import { assert } from 'chai';
 import mongoose from 'mongoose';
-import { ApolloServer } from '@apollo/server';
-import { MongoMemoryServer } from 'mongodb-memory-server-core';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { Tag } from '../../src/models/Tag.js';
 import { User } from '../../src/models/User.js';
 import { Unit } from '../../src/models/Unit.js';
-import { MONGODB_OPTS } from '../utils/mongodb.js';
-import { schema } from '../../src/schema/index.js';
+import { startServer, stopServer } from '../utils/mongodb.js';
 import { Recipe } from '../../src/models/Recipe.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
@@ -91,36 +88,13 @@ const parseCreatedRecipe = (response) => {
 };
 
 describe('recipeCreateOne', () => {
-    let mongoServer: MongoMemoryServer;
-    let apolloServer: ApolloServer;
-
-    before(async function () {
-        try {
-            mongoServer = await MongoMemoryServer.create(MONGODB_OPTS);
-            await mongoose.connect(mongoServer.getUri());
-            apolloServer = new ApolloServer({ schema });
-            await apolloServer.start();
-        } catch (error) {
-            console.log(error);
-            assert.fail('Connection not established');
-        }
-    });
-
-    after(async function () {
-        try {
-            await mongoose.connection.close();
-            await mongoServer.stop();
-            await apolloServer.stop();
-        } catch (error) {
-            console.log(error);
-            assert.fail('Connection not closed');
-        }
-    });
+    before(startServer);
+    after(stopServer);
 
     beforeEach(createRecipeIngredientData);
     afterEach(removeRecipeIngredientData);
 
-    const createRecipe = async (user, record, apolloServer) => {
+    async function createRecipe(context, user, record) {
         const query = `
         mutation RecipeCreateOne($record: CreateOneRecipeCreateInput!) {
             recipeCreateOne(record: $record) {
@@ -130,7 +104,7 @@ describe('recipeCreateOne', () => {
               }
             }
           }`;
-        const response = await apolloServer.executeOperation(
+        const response = await context.apolloServer.executeOperation(
             {
                 query: query,
                 variables: { record },
@@ -143,7 +117,7 @@ describe('recipeCreateOne', () => {
             }
         );
         return response;
-    };
+    }
 
     it('should create a recipe', async function () {
         const user = await User.findOne({ username: 'testuser1' });
@@ -167,7 +141,7 @@ describe('recipeCreateOne', () => {
             tags: [tag._id],
             isIngredient: false,
         };
-        const response = await createRecipe(user, newRecord, apolloServer);
+        const response = await createRecipe(this, user, newRecord);
         const record = parseCreatedRecipe(response);
         assert(record.title === 'Chicken Soup');
     });
@@ -192,8 +166,8 @@ describe('recipeCreateOne', () => {
             numServings: 4,
             isIngredient: false,
         };
-        await createRecipe(user, newRecord, apolloServer);
-        const response = await createRecipe(user, newRecord, apolloServer);
+        await createRecipe(this, user, newRecord);
+        const response = await createRecipe(this, user, newRecord);
         assert(response.body.kind === 'single');
         assert(response.body.singleResult.errors, 'Validation error should occur');
         assert(
@@ -227,7 +201,7 @@ describe('recipeCreateOne', () => {
             tags: [tag._id],
             isIngredient: false,
         };
-        const response = await createRecipe(user, newRecord, apolloServer);
+        const response = await createRecipe(this, user, newRecord);
         assert(response.body.kind === 'single');
         assert(response.body.singleResult.errors, 'Validation error should occur');
         assert(
@@ -238,36 +212,12 @@ describe('recipeCreateOne', () => {
 });
 
 describe('recipeUpdateById', () => {
-    let mongoServer: MongoMemoryServer;
-    let apolloServer: ApolloServer;
-
-    before(async function () {
-        try {
-            mongoServer = await MongoMemoryServer.create(MONGODB_OPTS);
-            await mongoose.connect(mongoServer.getUri());
-            apolloServer = new ApolloServer({ schema });
-            await apolloServer.start();
-        } catch (error) {
-            console.log(error);
-            assert.fail('Connection not established');
-        }
-    });
-
-    after(async function () {
-        try {
-            await mongoose.connection.close();
-            await mongoServer.stop();
-            await apolloServer.stop();
-        } catch (error) {
-            console.log(error);
-            assert.fail('Connection not closed');
-        }
-    });
-
+    before(startServer);
+    after(stopServer);
     beforeEach(createRecipeIngredientData);
     afterEach(removeRecipeIngredientData);
 
-    const updateRecipe = async (user, id, record) => {
+    async function updateRecipe(context, user, id, record) {
         const query = `
         mutation RecipeUpdateById($id: MongoID!, $record: UpdateByIdRecipeModifyInput!) {
             recipeUpdateById(_id: $id,record: $record) {
@@ -277,7 +227,7 @@ describe('recipeUpdateById', () => {
               }
             }
           }`;
-        const response = await apolloServer.executeOperation(
+        const response = await context.apolloServer.executeOperation(
             { query: query, variables: { id, record } },
             {
                 contextValue: {
@@ -287,7 +237,7 @@ describe('recipeUpdateById', () => {
             }
         );
         return response;
-    };
+    }
 
     it('should update a recipe notes', async function () {
         const user = await User.findOne({ username: 'testuser1' });
@@ -312,7 +262,9 @@ describe('recipeUpdateById', () => {
             owner: user._id,
         });
         const recipe = await newRecipe.save();
-        const response = await updateRecipe(user, recipe._id, { notes: 'This is a fab recipe' });
+        const response = await updateRecipe(this, user, recipe._id, {
+            notes: 'This is a fab recipe',
+        });
         assert(response.body.kind === 'single');
         assert.isUndefined(response.body.singleResult.errors);
         const record = (
@@ -346,7 +298,7 @@ describe('recipeUpdateById', () => {
             owner: user._id,
         });
         const recipe = await newRecipe.save();
-        const response = await updateRecipe(user, recipe._id, { title: 'Chicken broth' });
+        const response = await updateRecipe(this, user, recipe._id, { title: 'Chicken broth' });
         assert(response.body.kind === 'single');
         assert.isUndefined(response.body.singleResult.errors);
         const record = (
@@ -402,7 +354,7 @@ describe('recipeUpdateById', () => {
             owner: user._id,
         });
         await recipeTwo.save();
-        const response = await updateRecipe(user, recipe._id, { title: 'Chicken Broth' });
+        const response = await updateRecipe(this, user, recipe._id, { title: 'Chicken Broth' });
         assert(response.body.kind === 'single');
         assert(response.body.singleResult.errors);
         assert(
@@ -438,7 +390,7 @@ describe('recipeUpdateById', () => {
         await Tag.deleteOne({ _id: tag._id });
         const deletedTag = await Tag.findById(tag._id);
         assert.isNull(deletedTag);
-        const response = await updateRecipe(user, recipe._id, { tags: [tag._id] });
+        const response = await updateRecipe(this, user, recipe._id, { tags: [tag._id] });
         assert(response.body.kind === 'single');
         assert(response.body.singleResult.errors, 'Validation error should occur');
         assert(

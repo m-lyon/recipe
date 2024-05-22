@@ -1,34 +1,12 @@
 import { assert } from 'chai';
-import mongoose from 'mongoose';
 import { after, before, describe, it } from 'mocha';
-import { MongoMemoryServer } from 'mongodb-memory-server-core';
 
 import { User } from '../../src/models/User.js';
-import { MONGODB_OPTS } from '../utils/mongodb.js';
+import { startServer, stopServer } from '../utils/mongodb.js';
 
 describe('User Model', function () {
-    let mongoServer: MongoMemoryServer;
-
-    before(async function () {
-        try {
-            mongoServer = await MongoMemoryServer.create(MONGODB_OPTS);
-            mongoose.set({ strictQuery: true });
-            await mongoose.connect(mongoServer.getUri());
-        } catch (error) {
-            console.log(error);
-            assert.fail('Connection not established');
-        }
-    });
-
-    after(async function () {
-        try {
-            await mongoose.connection.close();
-            await mongoServer.stop();
-        } catch (error) {
-            console.log(error);
-            assert.fail('Connection not closed');
-        }
-    });
+    before(startServer);
+    after(stopServer);
 
     it('Should save a new user', function (done) {
         const newUser = new User({
