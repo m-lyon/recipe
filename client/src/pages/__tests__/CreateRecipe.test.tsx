@@ -7,11 +7,13 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
 
+import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
+import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
+import { mockGetPrepMethods } from '@recipe/graphql/queries/__mocks__/prepMethod';
+import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
+import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
+
 import { CreateRecipe } from '../CreateRecipe';
-import { mockGetTags } from '../../features/editing/components/__mocks__/GetTags';
-import { mockGetUnits } from '../../features/editing/components/EditableIngredientList/__mocks__/GetUnits';
-import { mockGetIngredients } from '../../features/editing/components/EditableIngredientList/__mocks__/GetIngredients';
-import { mockGetPrepMethods } from '../../features/editing/components/EditableIngredientList/__mocks__/GetPrepMethods';
 
 loadErrorMessages();
 loadDevMessages();
@@ -24,7 +26,15 @@ const routes = createBrowserRouter(
 
 const renderComponent = () => {
     render(
-        <MockedProvider mocks={[mockGetUnits, mockGetIngredients, mockGetPrepMethods, mockGetTags]}>
+        <MockedProvider
+            mocks={[
+                mockGetUnits,
+                mockGetIngredients,
+                mockGetPrepMethods,
+                mockGetTags,
+                mockGetUnitConversions,
+            ]}
+        >
             <ChakraProvider>
                 <RouterProvider router={routes} />
             </ChakraProvider>

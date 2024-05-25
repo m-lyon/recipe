@@ -1,4 +1,4 @@
-import { GET_TAGS } from '../../../../graphql/queries/tag';
+import { GET_TAGS } from '../tag';
 
 export const mockGetTags = {
     request: {

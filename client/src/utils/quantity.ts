@@ -2,11 +2,13 @@ import { Fraction, fraction, multiply } from 'mathjs';
 
 import { EnumUnitPreferredNumberFormat, RecipeIngredient } from '@recipe/graphql/generated';
 
+import { UnitConversionArgs } from '../hooks/useUnitConversion';
+
 export function changeQuantity(
     ingr: RecipeIngredient,
     newServings: number,
     oldServings: number,
-    unitConversion: (ingr: RecipeIngredient) => RecipeIngredient
+    unitConversion: (ingr: UnitConversionArgs) => UnitConversionArgs
 ): RecipeIngredient {
     if (newServings === oldServings || ingr.quantity == null) {
         return ingr;
@@ -16,22 +18,24 @@ export function changeQuantity(
         fraction(newServings / oldServings)
     ) as Fraction;
     if (result.d === 1) {
-        return unitConversion(handleInteger(result, ingr));
+        const newQuantity = handleInteger(result);
+        return { ...ingr, ...unitConversion({ quantity: newQuantity, unit: ingr.unit! }) };
     } else {
-        return unitConversion(handleFraction(result, ingr));
+        const newQuantity = handleFraction(result, ingr);
+        return { ...ingr, ...unitConversion({ quantity: newQuantity, unit: ingr.unit! }) };
     }
 }
 
-function handleFraction(result: Fraction, ingr: RecipeIngredient) {
+function handleFraction(result: Fraction, ingr: RecipeIngredient): string {
     if (ingr.unit == null) {
-        return { ...ingr, quantity: `${result.n}/${result.d}` };
+        return `${result.n}/${result.d}`;
     }
     if (ingr.unit?.preferredNumberFormat === EnumUnitPreferredNumberFormat.Fraction) {
-        return { ...ingr, quantity: `${result.n}/${result.d}` };
+        return `${result.n}/${result.d}`;
     }
-    return { ...ingr, quantity: result.toString() };
+    return result.toString();
 }
 
-function handleInteger(result: Fraction, ingr: RecipeIngredient) {
-    return { ...ingr, quantity: result.toString() };
+function handleInteger(result: Fraction): string {
+    return result.toString();
 }

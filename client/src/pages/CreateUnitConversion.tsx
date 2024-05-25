@@ -24,27 +24,27 @@ interface CreateConversionRuleProps {
 }
 function CreateConversionRule(props: CreateConversionRuleProps) {
     const { setConversionRules, unitData, baseUnit } = props;
-    const [threshold, setThreshold] = useState(0);
+    const [baseUnitThreshold, setThreshold] = useState(0);
     const [unit, setUnit] = useState<Unit | undefined>(undefined);
-    const [baseConversion, setBaseConversion] = useState(0);
+    const [baseToUnitConversion, setbaseToUnitConversion] = useState(0);
     const [createConversionRule, { loading }] = useMutation(CREATE_CONVERSION_RULE);
     const toast = useToast();
 
     const formSchema = object({
-        threshold: number().required(),
+        baseUnitThreshold: number().required(),
         unit: string().required(),
         baseUnit: string().required(),
-        baseConversion: number().required(),
+        baseToUnitConversion: number().required(),
     });
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
             const validated = await formSchema.validate({
-                threshold,
+                baseUnitThreshold,
                 unit: unit?._id,
                 baseUnit: baseUnit?._id,
-                baseConversion,
+                baseToUnitConversion,
             });
             const { data } = await createConversionRule({
                 variables: { record: { ...validated } },
@@ -92,7 +92,7 @@ function CreateConversionRule(props: CreateConversionRuleProps) {
                         <FormLabel>Threshold</FormLabel>
                         <Input
                             placeholder='Threshold'
-                            value={threshold}
+                            value={baseUnitThreshold}
                             onChange={(e) => setThreshold(Number(e.target.value))}
                         />
                     </FormControl>
@@ -100,8 +100,8 @@ function CreateConversionRule(props: CreateConversionRuleProps) {
                         <FormLabel>Conversion</FormLabel>
                         <Input
                             placeholder='Base Conversion'
-                            value={baseConversion}
-                            onChange={(e) => setBaseConversion(Number(e.target.value))}
+                            value={baseToUnitConversion}
+                            onChange={(e) => setbaseToUnitConversion(Number(e.target.value))}
                         />
                     </FormControl>
                     <Button
@@ -130,7 +130,7 @@ export function CreateUnitConversion() {
 
     const formSchema = object({
         baseUnit: string().required(),
-        rules: array().of(string()).min(1),
+        rules: array(string().required()).min(1).required(),
     });
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -140,7 +140,6 @@ export function CreateUnitConversion() {
                 baseUnit: baseUnit?._id,
                 rules: rules.map((r) => r._id),
             });
-            console.log(validated);
             await createUnitConversion({ variables: { record: { ...validated } } });
             toast({
                 title: 'Unit conversion created',
@@ -167,10 +166,11 @@ export function CreateUnitConversion() {
 
     const ruleList = rules.map((rule) => (
         <ListItem key={rule._id}>
-            <Tag maxW='100%' whiteSpace='nowrap' overflow='hidden' textOverflow='ellipsis'>
+            <Tag maxW='100%' whiteSpace='nowrap' overflow='hidden' textOverflow='ellipsis' mb={2}>
                 <TagLabel>
-                    {rule.baseConversion} {baseUnit?.shortSingular} = 1 {rule.unit!.shortSingular},
-                    threshold &gt;= {rule.threshold}
+                    {rule.baseToUnitConversion} {baseUnit?.shortSingular} = 1{' '}
+                    {rule.unit!.shortSingular}, {baseUnit?.shortSingular} &gt;={' '}
+                    {rule.baseUnitThreshold}
                 </TagLabel>
                 <TagCloseButton
                     onClick={(e) => {

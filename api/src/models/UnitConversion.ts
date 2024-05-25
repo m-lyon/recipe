@@ -4,10 +4,10 @@ import { composeMongoose } from 'graphql-compose-mongoose';
 import { unitExists } from './validation.js';
 
 export interface ConversionRule extends Document {
-    threshold: number;
+    baseUnitThreshold: number;
     unit: Types.ObjectId;
     baseUnit: Types.ObjectId;
-    baseConversion: number;
+    baseToUnitConversion: number;
 }
 
 export interface UnitConversion extends Document {
@@ -16,11 +16,11 @@ export interface UnitConversion extends Document {
 }
 
 const conversionRuleSchema = new Schema<ConversionRule>({
-    threshold: {
+    baseUnitThreshold: {
         type: Number,
         required: true,
         validate: {
-            validator: (threshold: number) => threshold > 0,
+            validator: (baseUnitThreshold: number) => baseUnitThreshold > 0,
             message: 'Threshold must be greater than 0.',
         },
     },
@@ -43,11 +43,11 @@ const conversionRuleSchema = new Schema<ConversionRule>({
         ],
     },
     baseUnit: { type: Schema.Types.ObjectId, required: true, ref: 'Unit', validate: unitExists() },
-    baseConversion: {
+    baseToUnitConversion: {
         type: Number,
         required: true,
         validate: {
-            validator: (baseConversion: number) => baseConversion >= 1,
+            validator: (baseToUnitConversion: number) => baseToUnitConversion >= 1,
             message: 'Base to unit conversion must be greater than 1.',
         },
     },
@@ -68,7 +68,7 @@ const unitConversionSchema = new Schema<UnitConversion>({
             },
             {
                 validator: async function (rules: Types.ObjectId[]) {
-                    const thresholdSet = await ConversionRule.distinct('threshold', {
+                    const thresholdSet = await ConversionRule.distinct('baseUnitThreshold', {
                         _id: { $in: rules },
                     });
                     return thresholdSet.length === rules.length;
@@ -90,7 +90,7 @@ const unitConversionSchema = new Schema<UnitConversion>({
 unitConversionSchema.pre('save', async function () {
     const rules = await ConversionRule.find({ _id: { $in: this.rules } });
     // sort in descending order
-    rules.sort((a, b) => b.threshold - a.threshold);
+    rules.sort((a, b) => b.baseUnitThreshold - a.baseUnitThreshold);
     this.rules = rules.map((rule) => rule._id);
 });
 export const ConversionRule = model<ConversionRule>('ConversionRule', conversionRuleSchema);

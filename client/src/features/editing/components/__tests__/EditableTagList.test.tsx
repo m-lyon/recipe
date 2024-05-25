@@ -6,7 +6,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
 
-import { mockGetTags } from '../__mocks__/GetTags';
+import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
+
 import { useTagList } from '../../hooks/useTagList';
 import { EditableTagList } from '../EditableTagList';
 

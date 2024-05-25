@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
+import { InputState } from '@recipe/types';
 import { getEditableRecipeIngredientStr } from '@recipe/utils/formatting';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 import { EnumRecipeIngredientType, Ingredient, Unit } from '@recipe/graphql/generated';
-import { InputState } from '@recipe/types';
 
 describe('getEditableRecipeIngredientStr', () => {
     it('should display plural unit when a fraction greater than 1', () => {

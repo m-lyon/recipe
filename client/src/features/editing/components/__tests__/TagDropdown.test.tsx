@@ -3,8 +3,9 @@ import { MockedProvider } from '@apollo/client/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, configure, render, screen } from '@testing-library/react';
 
+import { mockGetManyTags, mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
+
 import { TagDropdown } from '../TagDropdown';
-import { mockGetManyTags, mockGetTags } from '../__mocks__/GetTags';
 
 configure({ asyncUtilTimeout: 3000 });
 

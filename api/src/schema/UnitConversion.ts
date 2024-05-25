@@ -88,7 +88,7 @@ UnitConversionTC.addRelation('rules', {
     resolver: () =>
         ConversionRuleTC.mongooseResolvers.findByIds().addSortArg({
             name: 'THRESHOLD_DESC',
-            value: { threshold: -1 },
+            value: { baseUnitThreshold: -1 },
             description: 'Sort by rules threshold in descending order',
         }),
     prepareArgs: {

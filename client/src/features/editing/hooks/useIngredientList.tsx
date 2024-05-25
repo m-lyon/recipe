@@ -18,6 +18,8 @@ import { EditableRecipeIngredient, FinishedQuantity, Quantity } from '@recipe/ty
 import { FinishedIngredient, FinishedRecipeIngredient, FinishedUnit } from '@recipe/types';
 import { GetIngredientsQuery, GetPrepMethodsQuery, GetUnitsQuery } from '@recipe/graphql/generated';
 
+import { useUnitConversion } from 'hooks/useUnitConversion';
+
 export const DEFAULT_INGREDIENT_STR = 'Enter ingredient';
 
 export function dbIngredientToFinished(ingr: RecipeIngredient): FinishedRecipeIngredient {
@@ -568,6 +570,7 @@ export function useIngredientList(): UseIngredientListReturnType {
     const { data: unitData } = useQuery(GET_UNITS);
     const { data: ingredientData } = useQuery(GET_INGREDIENTS);
     const { data: prepMethodData } = useQuery(GET_PREP_METHODS);
+    const { apply } = useUnitConversion();
     const [state, dispatch] = useReducer(reducer, {
         finished: [],
         editable: getEmptyIngredient(),
@@ -588,7 +591,20 @@ export function useIngredientList(): UseIngredientListReturnType {
                     dispatch({ type: 'append_editable_quantity', payload: value }),
             },
             unit: {
-                set: (unit: Unit | null) => dispatch({ type: 'set_editable_unit', payload: unit }),
+                set: (unit: Unit | null) => {
+                    const { quantity, unit: newUnit } = apply({
+                        quantity: state.editable.quantity,
+                        unit,
+                    });
+                    dispatch({
+                        type: 'set_editable_quantity',
+                        payload: quantity as SetQuantityAction['payload'],
+                    });
+                    dispatch({
+                        type: 'set_editable_unit',
+                        payload: newUnit as SetUnitAction['payload'],
+                    });
+                },
                 append: (value: string) =>
                     dispatch({ type: 'append_editable_unit', payload: value }),
             },

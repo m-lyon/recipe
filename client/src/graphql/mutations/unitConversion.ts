@@ -5,8 +5,8 @@ export const CREATE_CONVERSION_RULE = gql(`
         conversionRuleCreateOne(record: $record) {
             record {
                 _id
-                threshold
-                baseConversion
+                baseUnitThreshold
+                baseToUnitConversion
                 unit {
                     _id
                     longSingular

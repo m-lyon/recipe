@@ -1,40 +1,46 @@
 import { useQuery } from '@apollo/client';
 import { Fraction, MathType, divide, fraction, multiply } from 'mathjs';
 
-import { ConversionRule, RecipeIngredient, Unit } from '@recipe/graphql/generated';
-import { GET_UNIT_CONVERSIONS } from '@recipe/graphql/queries/unitConversion';
+import { Quantity } from '@recipe/types';
 import { isFraction } from '@recipe/utils/number';
+import { Unit, UnitConversion } from '@recipe/graphql/generated';
+import { GET_UNIT_CONVERSIONS } from '@recipe/graphql/queries/unitConversion';
 
+export interface UnitConversionArgs {
+    quantity: Quantity;
+    unit: Unit | null;
+}
 export function useUnitConversion() {
     const { data, loading, error } = useQuery(GET_UNIT_CONVERSIONS);
 
-    const apply = (ingr: RecipeIngredient): RecipeIngredient => {
-        const { quantity, unit } = ingr;
-        if (unit == null) {
-            return ingr;
+    const apply = ({ quantity, unit }: UnitConversionArgs): UnitConversionArgs => {
+        if (unit == null || quantity == null) {
+            return { quantity, unit };
         }
-        if (loading || error) {
-            return ingr;
+        if (loading || error || !data) {
+            return { quantity, unit };
         }
         const unitConversion = data!.unitConversionMany.find((conversion) =>
             conversion.rules.some((rule) => rule?.unit!._id === unit._id)
         );
         if (!unitConversion) {
-            return ingr;
+            return { quantity, unit };
         }
-        // sort rules by threshold in descending order
-        unitConversion.rules.sort((a, b) => b.threshold - a.threshold);
         // Get base conversion factor
         const currentUnit = unitConversion.rules.find((rule) => rule.unit!._id === unit._id);
 
         if (isFraction(quantity!)) {
             return handleFractionConversion(
-                ingr,
-                currentUnit!.baseConversion,
-                unitConversion.rules
+                quantity,
+                currentUnit!.baseToUnitConversion,
+                unitConversion as UnitConversion
             );
         } else {
-            return handleFloatConversion(ingr, currentUnit!.baseConversion, unitConversion.rules);
+            return handleFloatConversion(
+                quantity,
+                currentUnit!.baseToUnitConversion,
+                unitConversion as UnitConversion
+            );
         }
     };
 
@@ -42,31 +48,34 @@ export function useUnitConversion() {
 }
 
 function handleFractionConversion(
-    ingr: RecipeIngredient,
-    baseConversion: number,
-    rules: ConversionRule[]
-): RecipeIngredient {
-    const baseQuantity = multiply(fraction(ingr.quantity!), fraction(baseConversion)) as Fraction;
-    for (const rule of rules) {
-        if (baseQuantity >= (rule.threshold as MathType)) {
-            const result = divide(baseQuantity, fraction(rule.baseConversion)) as Fraction;
-            return { ...ingr, quantity: `${result.n}/${result.d}`, unit: rule.unit as Unit };
+    quantity: Quantity,
+    baseToUnitConversion: number,
+    unitConversion: UnitConversion
+): UnitConversionArgs {
+    const baseQuantity = multiply(fraction(quantity!), fraction(baseToUnitConversion)) as Fraction;
+    for (const rule of unitConversion.rules) {
+        if (baseQuantity >= (rule.baseUnitThreshold as MathType)) {
+            const result = divide(baseQuantity, fraction(rule.baseToUnitConversion)) as Fraction;
+            return { quantity: `${result.n}/${result.d}`, unit: rule.unit! };
         }
     }
-    throw new Error('No conversion rule matched');
+    return {
+        quantity: `${baseQuantity.n}/${baseQuantity.d}`,
+        unit: unitConversion.baseUnit!,
+    };
 }
 
 function handleFloatConversion(
-    ingr: RecipeIngredient,
-    baseConversion: number,
-    rules: ConversionRule[]
-): RecipeIngredient {
-    const baseQuantity = parseFloat(ingr.quantity!) * baseConversion;
-    for (const rule of rules) {
-        if (baseQuantity >= rule.threshold) {
-            const result = baseQuantity / rule.baseConversion;
-            return { ...ingr, quantity: result.toString(), unit: rule.unit as Unit };
+    quantity: Quantity,
+    baseToUnitConversion: number,
+    unitConversion: UnitConversion
+): UnitConversionArgs {
+    const baseQuantity = parseFloat(quantity!) * baseToUnitConversion;
+    for (const rule of unitConversion.rules) {
+        if (baseQuantity >= rule.baseUnitThreshold) {
+            const result = baseQuantity / rule.baseToUnitConversion;
+            return { quantity: result.toString(), unit: rule.unit! };
         }
     }
-    throw new Error('No conversion rule matched');
+    return { quantity: baseQuantity.toString(), unit: unitConversion.baseUnit! };
 }

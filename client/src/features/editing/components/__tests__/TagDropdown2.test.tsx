@@ -3,8 +3,9 @@ import { MockedProvider } from '@apollo/client/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, configure, render, screen } from '@testing-library/react';
 
+import { mockGetTagsEmpty } from '@recipe/graphql/queries/__mocks__/tag';
+
 import { TagDropdown } from '../TagDropdown';
-import { mockGetTagsEmpty } from '../__mocks__/GetTags';
 
 // This test is split up into two because the delayed timeout causes
 // other tests to erroneously fail.

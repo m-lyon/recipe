@@ -25,7 +25,17 @@ export const mockGetUnits = {
                     longPlural: 'grams',
                     preferredNumberFormat: 'decimal',
                     owner: '60f4d2e5c3d5a0a4f1b9c0ec',
-                    hasSpace: true,
+                    hasSpace: false,
+                },
+                {
+                    _id: '60f4d2e5c3d5a0a4f1b9c0f5',
+                    shortSingular: 'kg',
+                    shortPlural: 'kg',
+                    longSingular: 'kilogram',
+                    longPlural: 'kilograms',
+                    preferredNumberFormat: 'decimal',
+                    owner: '60f4d2e5c3d5a0a4f1b9c0ec',
+                    hasSpace: false,
                 },
                 {
                     _id: '60f4d2e5c3d5a0a4f1b9c0f4',

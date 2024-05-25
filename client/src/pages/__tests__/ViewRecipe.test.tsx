@@ -1,15 +1,16 @@
 import { ChakraProvider } from '@chakra-ui/react';
 import { RouterProvider } from 'react-router-dom';
-import userEvent from '@testing-library/user-event';
 import { MockedProvider } from '@apollo/client/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
 
+import { mockGetRecipe } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockGetRatings } from '@recipe/graphql/queries/__mocks__/rating';
+import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
+
 import { ViewRecipe } from '../ViewRecipe';
-import { mockGetRecipe } from '../__mocks__/GetRecipe';
-import { mockGetRatings } from '../__mocks__/GetRatings';
 
 loadErrorMessages();
 loadDevMessages();
@@ -22,7 +23,7 @@ const routes = createBrowserRouter(
 
 const renderComponent = () => {
     render(
-        <MockedProvider mocks={[mockGetRecipe, mockGetRatings]}>
+        <MockedProvider mocks={[mockGetRecipe, mockGetRatings, mockGetUnitConversions]}>
             <ChakraProvider>
                 <RouterProvider router={routes} />
             </ChakraProvider>
@@ -30,23 +31,6 @@ const renderComponent = () => {
     );
 };
 
-describe('placeholder test', () => {
-    afterEach(() => {
-        cleanup();
-    });
-    it('should pass', async () => {
-        // Render
-        const user = userEvent.setup();
-        renderComponent();
-        await waitFor(() => expect(screen.queryByText('Loading...')).toBeNull());
-
-        // Act
-        const ingredientInput = screen.getByText('Ingredients');
-        await user.click(ingredientInput);
-
-        expect(true).toBe(true);
-    });
-});
 describe('IngredientList', () => {
     afterEach(() => {
         cleanup();
