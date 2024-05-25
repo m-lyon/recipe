@@ -723,7 +723,7 @@ describe('unitConversionCreateOne', () => {
         assert.isDefined(response.body.singleResult.errors);
         assert.equal(
             response.body.singleResult.errors[0].message,
-            'UnitConversion validation failed: rules: Duplicate baseUnitThresholds are not allowed.'
+            'UnitConversion validation failed: rules: Duplicate thresholds are not allowed.'
         );
     });
 
