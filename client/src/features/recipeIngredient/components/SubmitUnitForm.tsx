@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { ApolloError, useMutation } from '@apollo/client';
 import { ValidationError, boolean, mixed, object, string } from 'yup';
-import { Checkbox, Radio, RadioGroup, Stack, useToast } from '@chakra-ui/react';
+import { Checkbox, Radio, RadioGroup, SpaceProps, Stack, useToast } from '@chakra-ui/react';
 import { Button, ButtonGroup, FormControl, FormHelperText, HStack } from '@chakra-ui/react';
 
 import { FloatingLabelInput } from '@recipe/common/components';
 import { CREATE_UNIT, MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
-import { CreateUnitMutation, ModifyUnitMutation } from '@recipe/graphql/generated';
+import { CreateUnitMutation, ModifyUnitMutation, Scalars } from '@recipe/graphql/generated';
 import { EnumUnitCreatePreferredNumberFormat, Unit } from '@recipe/graphql/generated';
 
 function formatError(error: ApolloError) {
@@ -16,15 +16,33 @@ function formatError(error: ApolloError) {
     return error.message;
 }
 
-export interface SubmitUnitFormProps {
+interface CommonSubmitUnitFormProps {
     firstFieldRef?: React.MutableRefObject<HTMLInputElement | null>;
-    mutation: typeof CREATE_UNIT | typeof MODIFY_UNIT;
-    handleComplete: ((data: CreateUnitMutation) => void) | ((data: ModifyUnitMutation) => void);
     initialData?: Unit;
     isDisabled?: boolean;
+    paddingLeft?: SpaceProps['paddingLeft'];
 }
+interface CreateSubmitUnitFormProps extends CommonSubmitUnitFormProps {
+    mutation: typeof CREATE_UNIT;
+    mutationVariables?: never;
+    handleComplete: (data: CreateUnitMutation) => void;
+}
+interface ModifySubmitUnitFormProps extends CommonSubmitUnitFormProps {
+    mutation: typeof MODIFY_UNIT;
+    mutationVariables?: { id: Scalars['MongoID']['input'] };
+    handleComplete: (data: ModifyUnitMutation) => void;
+}
+type SubmitUnitFormProps = CreateSubmitUnitFormProps | ModifySubmitUnitFormProps;
 export function SubmitUnitForm(props: SubmitUnitFormProps) {
-    const { firstFieldRef, mutation, handleComplete, initialData, isDisabled } = props;
+    const {
+        firstFieldRef,
+        mutation,
+        mutationVariables,
+        handleComplete,
+        initialData,
+        isDisabled,
+        paddingLeft = 2,
+    } = props;
     const toast = useToast();
     const [hasError, setHasError] = useState(false);
     const [shortSingular, setShortSingular] = useState('');
@@ -59,7 +77,17 @@ export function SubmitUnitForm(props: SubmitUnitFormProps) {
             setpreferredNumberFormat(initialData.preferredNumberFormat);
             setHasSpace(initialData.hasSpace);
         }
-    }, [initialData]);
+        if (isDisabled) {
+            setHasError(false);
+            // Clear form fields when disabled
+            setShortSingular('');
+            setShortPlural('');
+            setLongSingular('');
+            setLongPlural('');
+            setpreferredNumberFormat('');
+            setHasSpace(false);
+        }
+    }, [initialData, isDisabled]);
 
     const formSchema = object({
         shortSingular: string().required('Short singular name is required'),
@@ -88,7 +116,7 @@ export function SubmitUnitForm(props: SubmitUnitFormProps) {
                 preferredNumberFormat,
                 hasSpace,
             });
-            saveUnit({ variables: { record: validated } });
+            saveUnit({ variables: { record: validated, ...mutationVariables } });
         } catch (e: unknown) {
             setHasError(true);
             if (e instanceof ValidationError) {
@@ -122,7 +150,7 @@ export function SubmitUnitForm(props: SubmitUnitFormProps) {
         <Stack
             spacing={4}
             paddingTop={3}
-            paddingLeft={2}
+            paddingLeft={paddingLeft}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
         >

@@ -28,7 +28,7 @@ export function EditUnit() {
             <Box maxW='32em' mx='auto' mt={32} borderWidth='1px' borderRadius='lg' p={8}>
                 <Heading pb={6}>Edit Unit</Heading>
                 <form>
-                    <VStack mt={8}>
+                    <VStack mt={0} spacing={8}>
                         <FormControl>
                             <FormLabel>Select unit</FormLabel>
                             <Select
@@ -49,7 +49,10 @@ export function EditUnit() {
                         </FormControl>
                         <SubmitUnitForm
                             mutation={MODIFY_UNIT}
+                            mutationVariables={currentUnit ? { id: currentUnit._id } : undefined}
                             initialData={currentUnit}
+                            isDisabled={!currentUnit}
+                            paddingLeft={0}
                             handleComplete={() => {
                                 toast({
                                     title: 'Unit saved',
