@@ -109,7 +109,7 @@ export function PrepMethodDropdown(props: Props) {
         >
             <LayoutGroup>{listItems}</LayoutGroup>
             <NewPrepMethodPopover
-                firstFieldRef={firstFieldRef}
+                fieldRef={firstFieldRef}
                 onClose={onClose}
                 handleSelect={handleSelect}
             />

@@ -107,7 +107,7 @@ export function IngredientDropdown(props: Props) {
         >
             <LayoutGroup>{listItems}</LayoutGroup>
             <NewIngredientPopover
-                firstFieldRef={firstFieldRef}
+                fieldRef={firstFieldRef}
                 onClose={onClose}
                 handleSelect={handleSelect}
             />

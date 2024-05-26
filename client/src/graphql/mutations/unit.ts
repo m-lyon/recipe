@@ -31,3 +31,11 @@ export const MODIFY_UNIT = gql(`
         }
     }
 `);
+
+export const DELETE_UNIT = gql(`
+    mutation DeleteUnit($id: MongoID!) {
+        unitRemoveById(_id: $id) {
+            recordId
+        }
+    }
+`);

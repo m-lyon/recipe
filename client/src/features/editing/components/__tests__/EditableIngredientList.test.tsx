@@ -1089,6 +1089,7 @@ describe('Creating new items', () => {
         await user.click(screen.getByText('add new ingredient'));
         await user.keyboard('{b}{e}{e}{f}');
         await user.click(screen.getByText('Save'));
+
         // Expect
         expect(
             screen.queryByText('1 beef, ', { normalizer: getDefaultNormalizer({ trim: false }) })

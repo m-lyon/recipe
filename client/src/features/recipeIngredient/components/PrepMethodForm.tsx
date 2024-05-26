@@ -5,6 +5,7 @@ import { Button, ButtonGroup, Stack, StackProps, useToast } from '@chakra-ui/rea
 
 import { FloatingLabelInput } from '@recipe/common/components';
 import { PrepMethod, Scalars } from '@recipe/graphql/generated';
+import { DELETE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 import { CREATE_PREP_METHOD, MODIFY_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 import { CreatePrepMethodMutation, ModifyPrepMethodMutation } from '@recipe/graphql/generated';
 
@@ -24,19 +25,44 @@ interface CreatePrepMethodFormProps extends CommonPrepMethodFormProps {
     mutation: typeof CREATE_PREP_METHOD;
     mutationVars?: never;
     handleComplete: (data: CreatePrepMethodMutation) => void;
+    handleDelete?: never;
 }
 interface ModifyPrepMethodFormProps extends CommonPrepMethodFormProps {
     mutation: typeof MODIFY_PREP_METHOD;
     mutationVars?: { id: Scalars['MongoID']['input'] };
     handleComplete: (data: ModifyPrepMethodMutation) => void;
+    handleDelete: () => void;
 }
 type PrepMethoFormProps = CreatePrepMethodFormProps | ModifyPrepMethodFormProps;
 export function PrepMethodForm(props: PrepMethoFormProps) {
-    const { fieldRef, mutation, mutationVars, handleComplete, initData, disabled, ...rest } = props;
+    const {
+        fieldRef,
+        mutation,
+        mutationVars,
+        handleComplete,
+        handleDelete,
+        initData,
+        disabled,
+        ...rest
+    } = props;
     const toast = useToast();
     const [hasError, setHasError] = useState(false);
     const [value, setValue] = useState('');
     const [isFocused, setIsFocused] = useState(false);
+    const [deletePrepMethod] = useMutation(DELETE_PREP_METHOD, {
+        onCompleted: handleDelete,
+        onError: (error) => {
+            setHasError(true);
+            toast({
+                title: 'Error deleting prep method',
+                description: formatError(error),
+                status: 'error',
+                position: 'top',
+                duration: 3000,
+            });
+        },
+        refetchQueries: ['GetPrepMethods'],
+    });
     const [savePrepMethod] = useMutation(mutation, {
         onCompleted: handleComplete,
         onError: (error) => {
@@ -117,6 +143,14 @@ export function PrepMethodForm(props: PrepMethoFormProps) {
                 }}
             />
             <ButtonGroup display='flex' justifyContent='flex-end' isDisabled={disabled}>
+                {mutationVars && (
+                    <Button
+                        colorScheme='red'
+                        onClick={() => deletePrepMethod({ variables: mutationVars })}
+                    >
+                        Delete
+                    </Button>
+                )}
                 <Button colorScheme='teal' onClick={handleSubmit}>
                     Save
                 </Button>

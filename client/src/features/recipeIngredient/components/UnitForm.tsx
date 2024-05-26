@@ -3,10 +3,10 @@ import { ApolloError, useMutation } from '@apollo/client';
 import { FormControl, FormHelperText } from '@chakra-ui/react';
 import { ValidationError, boolean, mixed, object, string } from 'yup';
 import { Button, ButtonGroup, HStack, useToast } from '@chakra-ui/react';
-import { Checkbox, Radio, RadioGroup, SpaceProps, Stack, StackProps } from '@chakra-ui/react';
+import { Checkbox, Radio, RadioGroup, Stack, StackProps } from '@chakra-ui/react';
 
 import { FloatingLabelInput } from '@recipe/common/components';
-import { CREATE_UNIT, MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
+import { CREATE_UNIT, DELETE_UNIT, MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
 import { EnumUnitCreatePreferredNumberFormat, Unit } from '@recipe/graphql/generated';
 import { CreateUnitMutation, ModifyUnitMutation, Scalars } from '@recipe/graphql/generated';
 
@@ -21,21 +21,31 @@ interface CommonUnitFormProps extends StackProps {
     fieldRef?: React.MutableRefObject<HTMLInputElement | null>;
     initData?: Unit;
     disabled?: boolean;
-    pl?: SpaceProps['paddingLeft'];
 }
 interface CreateUnitFormProps extends CommonUnitFormProps {
     mutation: typeof CREATE_UNIT;
     mutationVars?: never;
     handleComplete: (data: CreateUnitMutation) => void;
+    handleDelete?: never;
 }
 interface ModifyUnitFormProps extends CommonUnitFormProps {
     mutation: typeof MODIFY_UNIT;
-    mutationVars?: { id: Scalars['MongoID']['input'] };
+    mutationVars: { id: Scalars['MongoID']['input'] };
     handleComplete: (data: ModifyUnitMutation) => void;
+    handleDelete: () => void;
 }
 type UnitFormProps = CreateUnitFormProps | ModifyUnitFormProps;
 export function UnitForm(props: UnitFormProps) {
-    const { fieldRef, mutation, mutationVars, handleComplete, initData, disabled, ...rest } = props;
+    const {
+        fieldRef,
+        mutation,
+        mutationVars,
+        handleComplete,
+        handleDelete,
+        initData,
+        disabled,
+        ...rest
+    } = props;
     const toast = useToast();
     const [hasError, setHasError] = useState(false);
     const [shortSingular, setShortSingular] = useState('');
@@ -45,7 +55,19 @@ export function UnitForm(props: UnitFormProps) {
     const [preferredNumberFormat, setpreferredNumberFormat] = useState('');
     const [hasSpace, setHasSpace] = useState(true);
     const [isFocused, setIsFocused] = useState(false);
-
+    const [deleteUnit] = useMutation(DELETE_UNIT, {
+        onCompleted: handleDelete,
+        onError: (error) => {
+            toast({
+                title: 'Error deleting unit',
+                description: formatError(error),
+                status: 'error',
+                position: 'top',
+                duration: 3000,
+            });
+        },
+        refetchQueries: ['GetUnits'],
+    });
     const [saveUnit] = useMutation(mutation, {
         onCompleted: handleComplete,
         onError: (error) => {
@@ -215,6 +237,14 @@ export function UnitForm(props: UnitFormProps) {
                 paddingTop={2}
                 isDisabled={disabled}
             >
+                {mutationVars && (
+                    <Button
+                        colorScheme='red'
+                        onClick={() => deleteUnit({ variables: mutationVars })}
+                    >
+                        Delete
+                    </Button>
+                )}
                 <Button colorScheme='teal' onClick={handleSubmit}>
                     Save
                 </Button>

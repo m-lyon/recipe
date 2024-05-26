@@ -25,3 +25,11 @@ export const MODIFY_INGREDIENT = gql(`
         }
     }
 `);
+
+export const DELETE_INGREDIENT = gql(`
+    mutation DeleteIngredient($id: MongoID!) {
+        ingredientRemoveById(_id: $id) {
+            recordId
+        }
+    }
+`);

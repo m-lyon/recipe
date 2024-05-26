@@ -21,3 +21,11 @@ export const MODIFY_PREP_METHOD = gql(`
         }
     }
 `);
+
+export const DELETE_PREP_METHOD = gql(`
+    mutation DeletePrepMethod($id: MongoID!) {
+        prepMethodRemoveById(_id: $id) {
+            recordId
+        }
+    }
+`);

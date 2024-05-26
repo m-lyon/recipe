@@ -5,6 +5,7 @@ import { Button, ButtonGroup, Checkbox, Stack, StackProps, useToast } from '@cha
 
 import { FloatingLabelInput } from '@recipe/common/components';
 import { Ingredient, Scalars } from '@recipe/graphql/generated';
+import { DELETE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 import { CREATE_INGREDIENT, MODIFY_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 import { CreateIngredientMutation, ModifyIngredientMutation } from '@recipe/graphql/generated';
 
@@ -24,15 +25,26 @@ interface CreateIngredientFormProps extends CommonIngredientFormProps {
     mutation: typeof CREATE_INGREDIENT;
     mutationVars?: never;
     handleComplete: (data: CreateIngredientMutation) => void;
+    handleDelete?: never;
 }
 interface ModifyIngredientFormProps extends CommonIngredientFormProps {
     mutation: typeof MODIFY_INGREDIENT;
     mutationVars?: { id: Scalars['MongoID']['input'] };
     handleComplete: (data: ModifyIngredientMutation) => void;
+    handleDelete: () => void;
 }
 type IngredientFormProps = CreateIngredientFormProps | ModifyIngredientFormProps;
 export function IngredientForm(props: IngredientFormProps) {
-    const { fieldRef, mutation, mutationVars, handleComplete, initData, disabled, ...rest } = props;
+    const {
+        fieldRef,
+        mutation,
+        mutationVars,
+        handleComplete,
+        handleDelete,
+        initData,
+        disabled,
+        ...rest
+    } = props;
     const [hasError, setHasError] = useState(false);
     const [name, setName] = useState('');
     const [pluralName, setPluralName] = useState('');
@@ -40,7 +52,20 @@ export function IngredientForm(props: IngredientFormProps) {
     const [density, setDensity] = useState('');
     const toast = useToast();
     const [isFocused, setIsFocused] = useState(false);
-
+    const [deleteIngredient] = useMutation(DELETE_INGREDIENT, {
+        onCompleted: handleDelete,
+        onError: (error) => {
+            setHasError(true);
+            toast({
+                title: 'Error deleting ingredient',
+                description: formatError(error),
+                status: 'error',
+                position: 'top',
+                duration: 3000,
+            });
+        },
+        refetchQueries: ['GetIngredients'],
+    });
     const [saveIngredient] = useMutation(mutation, {
         onCompleted: handleComplete,
         onError: (error) => {
@@ -163,6 +188,14 @@ export function IngredientForm(props: IngredientFormProps) {
                 Countable
             </Checkbox>
             <ButtonGroup display='flex' justifyContent='flex-end' isDisabled={disabled}>
+                {mutationVars && (
+                    <Button
+                        colorScheme='red'
+                        onClick={() => deleteIngredient({ variables: mutationVars })}
+                    >
+                        Delete
+                    </Button>
+                )}
                 <Button colorScheme='teal' onClick={handleSubmit}>
                     Save
                 </Button>

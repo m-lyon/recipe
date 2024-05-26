@@ -52,7 +52,7 @@ export function EditIngredient() {
                         <IngredientForm
                             mutation={MODIFY_INGREDIENT}
                             mutationVars={
-                                currentIngredient ? { id: currentIngredient._id } : undefined
+                                currentIngredient ? { id: currentIngredient._id } : { id: '' }
                             }
                             initData={currentIngredient}
                             disabled={!currentIngredient}
@@ -64,6 +64,13 @@ export function EditIngredient() {
                                     position: 'top',
                                     duration: 3000,
                                 });
+                            }}
+                            handleDelete={() => {
+                                toast({
+                                    title: 'Ingredient deleted',
+                                    status: 'success',
+                                });
+                                setCurrentIngredient(undefined);
                             }}
                         />
                     </VStack>

@@ -49,7 +49,7 @@ export function EditUnit() {
                         </FormControl>
                         <UnitForm
                             mutation={MODIFY_UNIT}
-                            mutationVars={currentUnit ? { id: currentUnit._id } : undefined}
+                            mutationVars={currentUnit ? { id: currentUnit._id } : { id: '' }}
                             initData={currentUnit}
                             disabled={!currentUnit}
                             handleComplete={() => {
@@ -60,6 +60,15 @@ export function EditUnit() {
                                     position: 'top',
                                     duration: 3000,
                                 });
+                            }}
+                            handleDelete={() => {
+                                toast({
+                                    title: 'Unit deleted',
+                                    status: 'success',
+                                    position: 'top',
+                                    duration: 3000,
+                                });
+                                setCurrentUnit(undefined);
                             }}
                         />
                     </VStack>

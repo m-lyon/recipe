@@ -52,7 +52,7 @@ export function EditPrepMethod() {
                         <PrepMethodForm
                             mutation={MODIFY_PREP_METHOD}
                             mutationVars={
-                                currentPrepMethod ? { id: currentPrepMethod._id } : undefined
+                                currentPrepMethod ? { id: currentPrepMethod._id } : { id: '' }
                             }
                             initData={currentPrepMethod}
                             disabled={!currentPrepMethod}
@@ -64,6 +64,15 @@ export function EditPrepMethod() {
                                     position: 'top',
                                     duration: 3000,
                                 });
+                            }}
+                            handleDelete={() => {
+                                toast({
+                                    title: 'Prep method deleted',
+                                    status: 'success',
+                                    position: 'top',
+                                    duration: 3000,
+                                });
+                                setCurrentPrepMethod(undefined);
                             }}
                             minW={296}
                         />
