@@ -6,8 +6,8 @@ import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client';
 import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
 
 import { Navbar } from '@recipe/features/navbar';
-import { RequireAuth, UserProvider } from '@recipe/features/user';
 import { GRAPHQL_ENDPOINT, ROOT_PATH } from '@recipe/constants';
+import { RequireAuth, UserProvider } from '@recipe/features/user';
 
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
@@ -19,6 +19,8 @@ import { ErrorBoundary } from './pages/Error';
 import { ViewRecipe } from './pages/ViewRecipe';
 import { EditRecipe } from './pages/EditRecipe';
 import { CreateRecipe } from './pages/CreateRecipe';
+import { EditIngredient } from './pages/EditIngredient';
+import { EditPrepMethod } from './pages/EditPrepMethod';
 import { CreateUnitConversion } from './pages/CreateUnitConversion';
 
 const domNode = document.getElementById('root')!;
@@ -34,25 +36,19 @@ const routes = createBrowserRouter(
         <Route path={ROOT_PATH} errorElement={<ErrorBoundary />}>
             <Route element={<Navbar />}>
                 <Route index element={<Home />} />
-                <Route path='view/recipe/:titleIdentifier' element={<ViewRecipe />} />
-                <Route
-                    path='create/recipe'
-                    element={
-                        <RequireAuth>
-                            <CreateRecipe />
-                        </RequireAuth>
-                    }
-                />
-                <Route path='edit/unit' element={<EditUnit />} />
-                <Route path='create/unit-conversion' element={<CreateUnitConversion />} />
-                <Route
-                    path='edit/recipe/:titleIdentifier'
-                    element={
-                        <RequireAuth>
-                            <EditRecipe />
-                        </RequireAuth>
-                    }
-                />
+                <Route path='view'>
+                    <Route path='recipe/:titleIdentifier' element={<ViewRecipe />} />
+                </Route>
+                <Route path='create' element={<RequireAuth />}>
+                    <Route path='recipe' element={<CreateRecipe />} />
+                    <Route path='unit-conversion' element={<CreateUnitConversion />} />
+                </Route>
+                <Route path='edit' element={<RequireAuth />}>
+                    <Route path='unit' element={<EditUnit />} />
+                    <Route path='ingredient' element={<EditIngredient />} />
+                    <Route path='prep-method' element={<EditPrepMethod />} />
+                    <Route path='recipe/:titleIdentifier' element={<EditRecipe />} />
+                </Route>
             </Route>
             <Route path='login' element={<Login />} />
             <Route path='search' element={<Search />} />

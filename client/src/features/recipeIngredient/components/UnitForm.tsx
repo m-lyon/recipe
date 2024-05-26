@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { ApolloError, useMutation } from '@apollo/client';
+import { FormControl, FormHelperText } from '@chakra-ui/react';
 import { ValidationError, boolean, mixed, object, string } from 'yup';
-import { Checkbox, Radio, RadioGroup, SpaceProps, Stack, useToast } from '@chakra-ui/react';
-import { Button, ButtonGroup, FormControl, FormHelperText, HStack } from '@chakra-ui/react';
+import { Button, ButtonGroup, HStack, useToast } from '@chakra-ui/react';
+import { Checkbox, Radio, RadioGroup, SpaceProps, Stack, StackProps } from '@chakra-ui/react';
 
 import { FloatingLabelInput } from '@recipe/common/components';
 import { CREATE_UNIT, MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
-import { CreateUnitMutation, ModifyUnitMutation, Scalars } from '@recipe/graphql/generated';
 import { EnumUnitCreatePreferredNumberFormat, Unit } from '@recipe/graphql/generated';
+import { CreateUnitMutation, ModifyUnitMutation, Scalars } from '@recipe/graphql/generated';
 
 function formatError(error: ApolloError) {
     if (error.message.startsWith('E11000')) {
@@ -16,33 +17,25 @@ function formatError(error: ApolloError) {
     return error.message;
 }
 
-interface CommonSubmitUnitFormProps {
-    firstFieldRef?: React.MutableRefObject<HTMLInputElement | null>;
-    initialData?: Unit;
-    isDisabled?: boolean;
-    paddingLeft?: SpaceProps['paddingLeft'];
+interface CommonUnitFormProps extends StackProps {
+    fieldRef?: React.MutableRefObject<HTMLInputElement | null>;
+    initData?: Unit;
+    disabled?: boolean;
+    pl?: SpaceProps['paddingLeft'];
 }
-interface CreateSubmitUnitFormProps extends CommonSubmitUnitFormProps {
+interface CreateUnitFormProps extends CommonUnitFormProps {
     mutation: typeof CREATE_UNIT;
-    mutationVariables?: never;
+    mutationVars?: never;
     handleComplete: (data: CreateUnitMutation) => void;
 }
-interface ModifySubmitUnitFormProps extends CommonSubmitUnitFormProps {
+interface ModifyUnitFormProps extends CommonUnitFormProps {
     mutation: typeof MODIFY_UNIT;
-    mutationVariables?: { id: Scalars['MongoID']['input'] };
+    mutationVars?: { id: Scalars['MongoID']['input'] };
     handleComplete: (data: ModifyUnitMutation) => void;
 }
-type SubmitUnitFormProps = CreateSubmitUnitFormProps | ModifySubmitUnitFormProps;
-export function SubmitUnitForm(props: SubmitUnitFormProps) {
-    const {
-        firstFieldRef,
-        mutation,
-        mutationVariables,
-        handleComplete,
-        initialData,
-        isDisabled,
-        paddingLeft = 2,
-    } = props;
+type UnitFormProps = CreateUnitFormProps | ModifyUnitFormProps;
+export function UnitForm(props: UnitFormProps) {
+    const { fieldRef, mutation, mutationVars, handleComplete, initData, disabled, ...rest } = props;
     const toast = useToast();
     const [hasError, setHasError] = useState(false);
     const [shortSingular, setShortSingular] = useState('');
@@ -69,17 +62,16 @@ export function SubmitUnitForm(props: SubmitUnitFormProps) {
     });
 
     useEffect(() => {
-        if (initialData) {
-            setShortSingular(initialData.shortSingular);
-            setShortPlural(initialData.shortPlural);
-            setLongSingular(initialData.longSingular);
-            setLongPlural(initialData.longPlural);
-            setpreferredNumberFormat(initialData.preferredNumberFormat);
-            setHasSpace(initialData.hasSpace);
+        if (initData) {
+            setShortSingular(initData.shortSingular);
+            setShortPlural(initData.shortPlural);
+            setLongSingular(initData.longSingular);
+            setLongPlural(initData.longPlural);
+            setpreferredNumberFormat(initData.preferredNumberFormat);
+            setHasSpace(initData.hasSpace);
         }
-        if (isDisabled) {
+        if (disabled) {
             setHasError(false);
-            // Clear form fields when disabled
             setShortSingular('');
             setShortPlural('');
             setLongSingular('');
@@ -87,7 +79,7 @@ export function SubmitUnitForm(props: SubmitUnitFormProps) {
             setpreferredNumberFormat('');
             setHasSpace(false);
         }
-    }, [initialData, isDisabled]);
+    }, [initData, disabled]);
 
     const formSchema = object({
         shortSingular: string().required('Short singular name is required'),
@@ -116,7 +108,7 @@ export function SubmitUnitForm(props: SubmitUnitFormProps) {
                 preferredNumberFormat,
                 hasSpace,
             });
-            saveUnit({ variables: { record: validated, ...mutationVariables } });
+            saveUnit({ variables: { record: validated, ...mutationVars } });
         } catch (e: unknown) {
             setHasError(true);
             if (e instanceof ValidationError) {
@@ -149,19 +141,19 @@ export function SubmitUnitForm(props: SubmitUnitFormProps) {
     return (
         <Stack
             spacing={4}
-            paddingTop={3}
-            paddingLeft={paddingLeft}
+            pt={3}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
+            {...rest}
         >
             <FloatingLabelInput
-                firstFieldRef={firstFieldRef}
+                firstFieldRef={fieldRef}
                 id='short-singular-name'
                 label='Short singular name'
                 value={shortSingular}
                 isInvalid={hasError}
                 isRequired
-                isDisabled={isDisabled}
+                isDisabled={disabled}
                 onChange={(e) => {
                     setShortSingular(e.target.value.toLowerCase());
                     hasError && setHasError(false);
@@ -172,7 +164,7 @@ export function SubmitUnitForm(props: SubmitUnitFormProps) {
                 id='short-plural-name'
                 value={shortPlural}
                 isInvalid={hasError}
-                isDisabled={isDisabled}
+                isDisabled={disabled}
                 onChange={(e) => {
                     setShortPlural(e.target.value.toLowerCase());
                     hasError && setHasError(false);
@@ -183,7 +175,7 @@ export function SubmitUnitForm(props: SubmitUnitFormProps) {
                 id='long-singular-name'
                 value={longSingular}
                 isRequired
-                isDisabled={isDisabled}
+                isDisabled={disabled}
                 isInvalid={hasError}
                 onChange={(e) => {
                     setLongSingular(e.target.value.toLowerCase());
@@ -194,14 +186,14 @@ export function SubmitUnitForm(props: SubmitUnitFormProps) {
                 label='Long plural name'
                 id='long-plural-name'
                 value={longPlural}
-                isDisabled={isDisabled}
+                isDisabled={disabled}
                 isInvalid={hasError}
                 onChange={(e) => {
                     setLongPlural(e.target.value.toLowerCase());
                     hasError && setHasError(false);
                 }}
             />
-            <FormControl isDisabled={isDisabled}>
+            <FormControl isDisabled={disabled}>
                 <FormHelperText>Preferred number format</FormHelperText>
                 <RadioGroup onChange={setpreferredNumberFormat} value={preferredNumberFormat}>
                     <HStack spacing='12px'>
@@ -211,7 +203,7 @@ export function SubmitUnitForm(props: SubmitUnitFormProps) {
                 </RadioGroup>
             </FormControl>
             <Checkbox
-                isDisabled={isDisabled}
+                isDisabled={disabled}
                 onChange={(e) => setHasSpace(e.target.checked)}
                 isChecked={hasSpace}
             >
@@ -219,9 +211,9 @@ export function SubmitUnitForm(props: SubmitUnitFormProps) {
             </Checkbox>
             <ButtonGroup
                 display='flex'
-                justifyContent='flex-left'
+                justifyContent='flex-end'
                 paddingTop={2}
-                isDisabled={isDisabled}
+                isDisabled={disabled}
             >
                 <Button colorScheme='teal' onClick={handleSubmit}>
                     Save

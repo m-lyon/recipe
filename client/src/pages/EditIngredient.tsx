@@ -3,17 +3,17 @@ import { useContext, useState } from 'react';
 import { FormLabel, Select } from '@chakra-ui/react';
 import { Box, FormControl, Heading, VStack, useToast } from '@chakra-ui/react';
 
-import { Unit } from '@recipe/graphql/generated';
 import { UserContext } from '@recipe/features/user';
-import { GET_UNITS } from '@recipe/graphql/queries/unit';
-import { MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
-import { UnitForm } from '@recipe/features/recipeIngredient';
+import { Ingredient } from '@recipe/graphql/generated';
+import { IngredientForm } from '@recipe/features/recipeIngredient';
+import { GET_INGREDIENTS } from '@recipe/graphql/queries/ingredient';
+import { MODIFY_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 
-export function EditUnit() {
+export function EditIngredient() {
     const [userContext] = useContext(UserContext);
     const toast = useToast();
-    const [currentUnit, setCurrentUnit] = useState<Unit>();
-    const { data } = useQuery(GET_UNITS, {
+    const [currentIngredient, setCurrentIngredient] = useState<Ingredient>();
+    const { data } = useQuery(GET_INGREDIENTS, {
         variables: {
             filter: userContext
                 ? userContext.role === 'admin'
@@ -26,36 +26,40 @@ export function EditUnit() {
     return (
         <VStack>
             <Box maxW='32em' mx='auto' mt={32} borderWidth='1px' borderRadius='lg' p={8}>
-                <Heading pb={6}>Edit Unit</Heading>
+                <Heading pb={6}>Edit Ingredient</Heading>
                 <form>
                     <VStack mt={0} spacing={8}>
                         <FormControl>
-                            <FormLabel>Select unit</FormLabel>
+                            <FormLabel>Select ingredient</FormLabel>
                             <Select
                                 placeholder='-'
-                                value={currentUnit?._id}
+                                value={currentIngredient?._id}
                                 onChange={(e) => {
-                                    setCurrentUnit(
-                                        data?.unitMany.find((unit) => unit._id === e.target.value)
+                                    setCurrentIngredient(
+                                        data?.ingredientMany.find(
+                                            (ingr) => ingr._id === e.target.value
+                                        )
                                     );
                                 }}
                             >
-                                {data?.unitMany.map((unit) => (
-                                    <option key={unit._id} value={unit._id}>
-                                        {unit.longSingular}
+                                {data?.ingredientMany.map((ingr) => (
+                                    <option key={ingr._id} value={ingr._id}>
+                                        {ingr.name}
                                     </option>
                                 ))}
                             </Select>
                         </FormControl>
-                        <UnitForm
-                            mutation={MODIFY_UNIT}
-                            mutationVars={currentUnit ? { id: currentUnit._id } : undefined}
-                            initData={currentUnit}
-                            disabled={!currentUnit}
+                        <IngredientForm
+                            mutation={MODIFY_INGREDIENT}
+                            mutationVars={
+                                currentIngredient ? { id: currentIngredient._id } : undefined
+                            }
+                            initData={currentIngredient}
+                            disabled={!currentIngredient}
                             handleComplete={() => {
                                 toast({
-                                    title: 'Unit saved',
-                                    description: `${currentUnit?.longSingular} saved`,
+                                    title: 'Ingredient saved',
+                                    description: `${currentIngredient!.name} saved`,
                                     status: 'success',
                                     position: 'top',
                                     duration: 3000,

@@ -1,7 +1,7 @@
 import * as CSS from 'csstype';
 import { Editable, EditableInput, EditablePreview } from '@chakra-ui/react';
 
-import { UseEditableReturnType } from '../features/editing/hooks/useEditable';
+import type { UseEditableReturnType } from '@recipe/common/hooks';
 
 interface EditableField extends UseEditableReturnType {
     fontSize?: string;

@@ -1,16 +1,16 @@
 import { useContext } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 
 import { ROOT_PATH } from '@recipe/constants';
 
 import { UserContext } from '../context/UserContext';
 
-export function RequireAuth({ children }: { children: React.ReactNode }) {
+export function RequireAuth() {
     const [userContext] = useContext(UserContext);
 
     if (userContext === null) {
         return <div>Loading...</div>;
     }
 
-    return userContext === false ? <Navigate to={ROOT_PATH} /> : children;
+    return userContext === false ? <Navigate to={ROOT_PATH} /> : <Outlet />;
 }

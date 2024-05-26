@@ -3,17 +3,17 @@ import { useContext, useState } from 'react';
 import { FormLabel, Select } from '@chakra-ui/react';
 import { Box, FormControl, Heading, VStack, useToast } from '@chakra-ui/react';
 
-import { Unit } from '@recipe/graphql/generated';
 import { UserContext } from '@recipe/features/user';
-import { GET_UNITS } from '@recipe/graphql/queries/unit';
-import { MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
-import { UnitForm } from '@recipe/features/recipeIngredient';
+import { PrepMethod } from '@recipe/graphql/generated';
+import { PrepMethodForm } from '@recipe/features/recipeIngredient';
+import { GET_PREP_METHODS } from '@recipe/graphql/queries/prepMethod';
+import { MODIFY_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 
-export function EditUnit() {
+export function EditPrepMethod() {
     const [userContext] = useContext(UserContext);
     const toast = useToast();
-    const [currentUnit, setCurrentUnit] = useState<Unit>();
-    const { data } = useQuery(GET_UNITS, {
+    const [currentPrepMethod, setCurrentPrepMethod] = useState<PrepMethod>();
+    const { data } = useQuery(GET_PREP_METHODS, {
         variables: {
             filter: userContext
                 ? userContext.role === 'admin'
@@ -26,41 +26,46 @@ export function EditUnit() {
     return (
         <VStack>
             <Box maxW='32em' mx='auto' mt={32} borderWidth='1px' borderRadius='lg' p={8}>
-                <Heading pb={6}>Edit Unit</Heading>
+                <Heading pb={6}>Edit Prep Method</Heading>
                 <form>
                     <VStack mt={0} spacing={8}>
                         <FormControl>
-                            <FormLabel>Select unit</FormLabel>
+                            <FormLabel>Select prep method</FormLabel>
                             <Select
                                 placeholder='-'
-                                value={currentUnit?._id}
+                                value={currentPrepMethod?._id}
                                 onChange={(e) => {
-                                    setCurrentUnit(
-                                        data?.unitMany.find((unit) => unit._id === e.target.value)
+                                    setCurrentPrepMethod(
+                                        data?.prepMethodMany.find(
+                                            (prep) => prep._id === e.target.value
+                                        )
                                     );
                                 }}
                             >
-                                {data?.unitMany.map((unit) => (
-                                    <option key={unit._id} value={unit._id}>
-                                        {unit.longSingular}
+                                {data?.prepMethodMany.map((prep) => (
+                                    <option key={prep._id} value={prep._id}>
+                                        {prep.value}
                                     </option>
                                 ))}
                             </Select>
                         </FormControl>
-                        <UnitForm
-                            mutation={MODIFY_UNIT}
-                            mutationVars={currentUnit ? { id: currentUnit._id } : undefined}
-                            initData={currentUnit}
-                            disabled={!currentUnit}
+                        <PrepMethodForm
+                            mutation={MODIFY_PREP_METHOD}
+                            mutationVars={
+                                currentPrepMethod ? { id: currentPrepMethod._id } : undefined
+                            }
+                            initData={currentPrepMethod}
+                            disabled={!currentPrepMethod}
                             handleComplete={() => {
                                 toast({
-                                    title: 'Unit saved',
-                                    description: `${currentUnit?.longSingular} saved`,
+                                    title: 'Prep method saved',
+                                    description: `${currentPrepMethod!.value} saved`,
                                     status: 'success',
                                     position: 'top',
                                     duration: 3000,
                                 });
                             }}
+                            minW={296}
                         />
                     </VStack>
                 </form>

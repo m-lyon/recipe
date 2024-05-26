@@ -6,15 +6,15 @@ import { CREATE_UNIT } from '@recipe/graphql/mutations/unit';
 import { CreateUnitMutation } from '@recipe/graphql/generated';
 
 import { UnitSuggestion } from './UnitDropdown';
-import { SubmitUnitForm } from './SubmitUnitForm';
+import { UnitForm } from './UnitForm';
 
-export interface NewUnitPopoverProps {
-    firstFieldRef: React.MutableRefObject<HTMLInputElement | null>;
+interface Props {
+    fieldRef: React.MutableRefObject<HTMLInputElement | null>;
     onClose: () => void;
     handleSelect: (item: UnitSuggestion) => void;
 }
-export function NewUnitPopover(props: NewUnitPopoverProps) {
-    const { firstFieldRef, onClose, handleSelect } = props;
+export function NewUnitPopover(props: Props) {
+    const { fieldRef, onClose, handleSelect } = props;
     const toast = useToast();
 
     const handleComplete = (data: CreateUnitMutation) => {
@@ -36,10 +36,11 @@ export function NewUnitPopover(props: NewUnitPopoverProps) {
             <PopoverArrow />
             <PopoverCloseButton />
             <PopoverHeader border='hidden'>Add new unit</PopoverHeader>
-            <SubmitUnitForm
-                firstFieldRef={firstFieldRef}
+            <UnitForm
+                fieldRef={fieldRef}
                 mutation={CREATE_UNIT}
                 handleComplete={handleComplete}
+                pl={2}
             />
         </PopoverContent>
     );

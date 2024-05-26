@@ -7,7 +7,7 @@ import { UseAsIngredientReturnType } from './useAsIngredient';
 import { UseTagListReturnType, useTagList } from '../../tags/hooks/useTagList';
 import { EditableNotesProps } from '../components/EditableNotes';
 import { UseItemListReturnType, useItemList } from '../../../common/hooks/useItemList';
-import { UseEditableReturnType, useEditable } from './useEditable';
+import { UseEditableReturnType, useEditable } from '../../../common/hooks/useEditable';
 import { EditableSourceProps } from '../components/EditableSource';
 import {
     UseIngredientListReturnType,

@@ -116,7 +116,7 @@ export function UnitDropdown(props: Props) {
         >
             <LayoutGroup>{listItems}</LayoutGroup>
             <NewUnitPopover
-                firstFieldRef={firstFieldRef}
+                fieldRef={firstFieldRef}
                 onClose={onClose}
                 handleSelect={handleSelect}
             />
