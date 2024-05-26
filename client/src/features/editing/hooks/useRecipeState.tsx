@@ -4,12 +4,15 @@ import { useAsIngredient } from './useAsIngredient';
 import { ServingsProps } from '../../../components/Servings';
 import { ImageUploadProps } from '../components/ImageUpload';
 import { UseAsIngredientReturnType } from './useAsIngredient';
-import { UseTagListReturnType, useTagList } from './useTagList';
+import { UseTagListReturnType, useTagList } from '../../tags/hooks/useTagList';
 import { EditableNotesProps } from '../components/EditableNotes';
-import { UseItemListReturnType, useItemList } from './useItemList';
+import { UseItemListReturnType, useItemList } from '../../../common/hooks/useItemList';
 import { UseEditableReturnType, useEditable } from './useEditable';
 import { EditableSourceProps } from '../components/EditableSource';
-import { UseIngredientListReturnType, useIngredientList } from './useIngredientList';
+import {
+    UseIngredientListReturnType,
+    useIngredientList,
+} from '../../recipeIngredient/hooks/useIngredientList';
 
 export interface RecipeState {
     numServings: ServingsProps;

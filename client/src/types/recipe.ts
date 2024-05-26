@@ -1,6 +1,7 @@
+import { GetPrepMethodsQuery } from '@recipe/graphql/generated';
 import { EnumRecipeIngredientType, Unit } from '@recipe/graphql/generated';
+import { GetIngredientsQuery, GetUnitsQuery } from '@recipe/graphql/generated';
 import { Ingredient, IngredientCreate, PrepMethod } from '@recipe/graphql/generated';
-import { GetIngredientsQuery } from '@recipe/graphql/generated';
 
 export type Quantity = string | null;
 export type EditableQuantity = Quantity;
@@ -40,3 +41,9 @@ export interface FinishedRecipeIngredient {
     key: string;
 }
 export type LikeFinishedRecipeIngredient = Omit<FinishedRecipeIngredient, 'key'>;
+export interface RecipeIngredientQueryData {
+    unit?: GetUnitsQuery['unitMany'];
+    ingredient?: GetIngredientsQuery['ingredientMany'];
+    recipe?: GetIngredientsQuery['recipeMany'];
+    prepMethod?: GetPrepMethodsQuery['prepMethodMany'];
+}

@@ -2,7 +2,7 @@ import { Box, ListItem, OrderedList, Text, useBreakpointValue } from '@chakra-ui
 
 import { Recipe } from '@recipe/graphql/generated';
 
-import { tagsHeight } from './TagList';
+import { tagsHeight } from '../../tags/components/TagList';
 import { instrSpacing } from './InstructionsTab';
 import { imageCardWidth, sliderBarHeight } from './ImageViewerRecipe';
 

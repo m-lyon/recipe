@@ -4,11 +4,11 @@ import { CloseIcon, EditIcon } from '@chakra-ui/icons';
 import { LinkBox, LinkOverlay, VStack, useBreakpointValue } from '@chakra-ui/react';
 import { Card, CardBody, CardHeader, Heading, IconButton, Spacer } from '@chakra-ui/react';
 
+import { ROOT_PATH } from '@recipe/constants';
+import { TagList } from '@recipe/features/tags';
 import { Recipe } from '@recipe/graphql/generated';
 
-import { TagList } from './TagList';
 import { getCardTitle } from './RecipeCard';
-import { ROOT_PATH } from '../../../constants';
 import { ImageViewerHome } from './ImageViewerHome';
 
 interface Props {
@@ -58,18 +58,24 @@ export function ImageRecipeCard(props: Props) {
                         transition='opacity 0.3s, transform 0.3s'
                         width='1'
                         as={Link}
-                        to={`${ROOT_PATH}/edit/${recipe.titleIdentifier}`}
+                        to={`${ROOT_PATH}/edit/recipe/${recipe.titleIdentifier}`}
                     />
                 ) : null}
                 <CardHeader>
                     <Heading size='md' color='blackAlpha.700'>
-                        <LinkOverlay as={Link} to={`${ROOT_PATH}/view/${recipe.titleIdentifier}`}>
+                        <LinkOverlay
+                            as={Link}
+                            to={`${ROOT_PATH}/view/recipe/${recipe.titleIdentifier}`}
+                        >
                             {getCardTitle(recipe)}
                         </LinkOverlay>
                     </Heading>
                 </CardHeader>
                 <CardBody p='0'>
-                    <LinkOverlay as={Link} to={`${ROOT_PATH}/view/${recipe.titleIdentifier}`}>
+                    <LinkOverlay
+                        as={Link}
+                        to={`${ROOT_PATH}/view/recipe/${recipe.titleIdentifier}`}
+                    >
                         <VStack
                             height='100%'
                             justifyContent='space-between'

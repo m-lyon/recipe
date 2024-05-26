@@ -3,8 +3,7 @@ import { useBreakpointValue } from '@chakra-ui/react';
 import { UseMeasureRef } from 'react-use/lib/useMeasure';
 
 import { Image, Recipe } from '@recipe/graphql/generated';
-
-import { ImageCarousel } from '../../../components/ImageCarousel';
+import { ImageCarousel } from '@recipe/common/components';
 
 export const imageCardWidth = 360;
 export const sliderBarHeight = 36;

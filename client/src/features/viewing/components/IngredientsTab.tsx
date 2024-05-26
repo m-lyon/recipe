@@ -3,19 +3,16 @@ import { TbWeight } from 'react-icons/tb';
 import { HStack, IconButton } from '@chakra-ui/react';
 import { useContext, useEffect, useState } from 'react';
 
+import { TagList } from '@recipe/features/tags';
+import { UserContext } from '@recipe/features/user';
+import { IngredientsTabLayout } from '@recipe/layouts';
 import { changeQuantity } from '@recipe/utils/quantity';
 import { Recipe, RecipeIngredient } from '@recipe/graphql/generated';
+import { Servings, useUnitConversion } from '@recipe/features/servings';
+import { StarRating, useViewStarRating } from '@recipe/features/starRating';
 
-import { useUnitConversion } from 'hooks/useUnitConversion';
-
-import { Notes } from './Notes';
-import { TagList } from './TagList';
 import { IngredientList } from './IngredientList';
-import { Servings } from '../../../components/Servings';
-import { UserContext } from '../../../context/UserContext';
-import { StarRating } from '../../../components/StarRating';
-import { useViewStarRating } from '../../../hooks/useViewStarRating';
-import { IngredientsTabLayout } from '../../../layouts/IngredientsTabLayout';
+import { Notes } from './Notes';
 
 interface Props {
     recipeId: string;

@@ -1,21 +1,21 @@
 import { useContext } from 'react';
 import { Container, Grid, GridItem, useBreakpointValue, useToast } from '@chakra-ui/react';
 
+import { UserContext } from '@recipe/features/user';
+import { Servings } from '@recipe/features/servings';
+import { IngredientsTabLayout } from '@recipe/layouts';
+import { EditableTagList } from '@recipe/features/tags';
 import { EnumRecipeIngredientType } from '@recipe/graphql/generated';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
+import { StarRating, StarRatingProps } from '@recipe/features/starRating';
 
 import { ImageUpload } from './ImageUpload';
 import { SubmitButton } from './SubmitButton';
 import { EditableNotes } from './EditableNotes';
 import { EditableTitle } from './EditableTitle';
-import { EditableTagList } from './EditableTagList';
 import { RecipeState } from '../hooks/useRecipeState';
-import { Servings } from '../../../components/Servings';
-import { UserContext } from '../../../context/UserContext';
 import { EditableIngredientList } from './EditableIngredientList';
 import { EditableInstructionsTab } from './EditableInstructionsTab';
-import { IngredientsTabLayout } from '../../../layouts/IngredientsTabLayout';
-import { StarRating, StarRatingProps } from '../../../components/StarRating';
 
 interface SubmitButtonProps {
     submitText: string;

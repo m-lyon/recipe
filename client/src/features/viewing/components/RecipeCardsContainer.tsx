@@ -3,11 +3,11 @@ import { Wrap, WrapItem } from '@chakra-ui/react';
 
 import { Recipe } from '@recipe/graphql/generated';
 import { groupIntoPairs } from '@recipe/utils/array';
+import { ConfirmDeleteModal } from '@recipe/features/editing';
+import { IUserContext, UserContext } from '@recipe/features/user';
 
 import { RecipeCard } from './RecipeCard';
 import { ImageRecipeCard } from './ImageRecipeCard';
-import { IUserContext, UserContext } from '../../../context/UserContext';
-import { ConfirmDeleteModal } from '../../editing/components/ConfirmDeleteModal';
 
 function hasPermission(user: IUserContext, recipe: Recipe) {
     if (!user) {

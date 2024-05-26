@@ -6,7 +6,7 @@ import { Box, Button, FormControl, FormLabel, Input, useToast } from '@chakra-ui
 import { LOGIN } from '@recipe/graphql/mutations/user';
 
 import { ROOT_PATH } from '../constants';
-import { UserContext } from '../context/UserContext';
+import { UserContext } from '../features/user/context/UserContext';
 
 export function Login() {
     const [email, setEmail] = useState('');

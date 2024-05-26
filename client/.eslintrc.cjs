@@ -17,7 +17,7 @@ module.exports = {
     ],
     noInlineConfig: true,
     rules: {
-        'no-restricted-imports': ['error', { 'patterns': ['@recipe/features/*/*'] }],
+        'no-restricted-imports': ['error', { patterns: ['@recipe/features/*/*'] }],
         'prettier/prettier': [
             'error',
             {

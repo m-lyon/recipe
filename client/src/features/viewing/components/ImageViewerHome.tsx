@@ -1,6 +1,5 @@
 import { Image, Recipe } from '@recipe/graphql/generated';
-
-import { ImageCarousel } from '../../../components/ImageCarousel';
+import { ImageCarousel } from '@recipe/common/components';
 
 interface Props {
     images: Recipe['images'];

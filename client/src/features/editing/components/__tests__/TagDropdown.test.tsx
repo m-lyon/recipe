@@ -5,7 +5,7 @@ import { cleanup, configure, render, screen } from '@testing-library/react';
 
 import { mockGetManyTags, mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
 
-import { TagDropdown } from '../TagDropdown';
+import { TagDropdown } from '../../../tags/components/TagDropdown';
 
 configure({ asyncUtilTimeout: 3000 });
 

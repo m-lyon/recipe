@@ -8,8 +8,8 @@ import { Route, createBrowserRouter, createRoutesFromElements } from 'react-rout
 
 import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
 
-import { useTagList } from '../../hooks/useTagList';
-import { EditableTagList } from '../EditableTagList';
+import { useTagList } from '../../../tags/hooks/useTagList';
+import { EditableTagList } from '../../../tags/components/EditableTagList';
 
 const MockCreateRecipe = () => {
     const props = useTagList();

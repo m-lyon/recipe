@@ -2,9 +2,8 @@ import { useRef } from 'react';
 import { ListItem, OrderedList } from '@chakra-ui/react';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 
-import { EditableItemArea } from 'components/EditableItemArea';
-
-import { UseItemListReturnType } from '../hooks/useItemList';
+import { EditableItemArea } from '@recipe/common/components';
+import type { UseItemListReturnType } from '@recipe/common/hooks';
 
 export function EditableInstructionList(props: UseItemListReturnType) {
     const { items, actionHandler } = props;

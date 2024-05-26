@@ -5,21 +5,21 @@ import createUploadLink from 'apollo-upload-client/createUploadLink.mjs';
 import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client';
 import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
 
-import { CreateUnitConversion } from 'pages/CreateUnitConversion';
+import { Navbar } from '@recipe/features/navbar';
+import { RequireAuth, UserProvider } from '@recipe/features/user';
+import { GRAPHQL_ENDPOINT, ROOT_PATH } from '@recipe/constants';
 
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
 import { Search } from './pages/Search';
-import { RequireAuth } from './RequireAuth';
 import { theme } from './theme/chakraTheme';
-import { Navbar } from './components/Navbar';
+import { EditUnit } from './pages/EditUnit';
 import { ErrorBoundary } from './pages/Error';
 import { ViewRecipe } from './pages/ViewRecipe';
 import { EditRecipe } from './pages/EditRecipe';
 import { CreateRecipe } from './pages/CreateRecipe';
-import { UserProvider } from './context/UserContext';
-import { GRAPHQL_ENDPOINT, ROOT_PATH } from './constants';
+import { CreateUnitConversion } from './pages/CreateUnitConversion';
 
 const domNode = document.getElementById('root')!;
 const root = createRoot(domNode);
@@ -34,7 +34,7 @@ const routes = createBrowserRouter(
         <Route path={ROOT_PATH} errorElement={<ErrorBoundary />}>
             <Route element={<Navbar />}>
                 <Route index element={<Home />} />
-                <Route path='view/:titleIdentifier' element={<ViewRecipe />} />
+                <Route path='view/recipe/:titleIdentifier' element={<ViewRecipe />} />
                 <Route
                     path='create/recipe'
                     element={
@@ -43,9 +43,10 @@ const routes = createBrowserRouter(
                         </RequireAuth>
                     }
                 />
+                <Route path='edit/unit' element={<EditUnit />} />
                 <Route path='create/unit-conversion' element={<CreateUnitConversion />} />
                 <Route
-                    path='edit/:titleIdentifier'
+                    path='edit/recipe/:titleIdentifier'
                     element={
                         <RequireAuth>
                             <EditRecipe />

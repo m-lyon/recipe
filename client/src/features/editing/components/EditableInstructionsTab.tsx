@@ -1,6 +1,6 @@
 import { Flex, Spacer, useBreakpointValue } from '@chakra-ui/react';
 
-import { UseItemListReturnType } from '../hooks/useItemList';
+import { UseItemListReturnType } from '../../../common/hooks/useItemList';
 import { AsIngredientCheckbox } from './AsIngredientCheckbox';
 import { EditableInstructionList } from './EditableInstructionList';
 import { UseAsIngredientReturnType } from '../hooks/useAsIngredient';

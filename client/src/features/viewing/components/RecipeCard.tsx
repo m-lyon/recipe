@@ -4,10 +4,9 @@ import { CloseIcon, EditIcon } from '@chakra-ui/icons';
 import { IconButton, LinkOverlay, useBreakpointValue } from '@chakra-ui/react';
 import { Card, CardBody, CardHeader, Heading, LinkBox } from '@chakra-ui/react';
 
+import { ROOT_PATH } from '@recipe/constants';
+import { TagList } from '@recipe/features/tags';
 import { Recipe } from '@recipe/graphql/generated';
-
-import { TagList } from './TagList';
-import { ROOT_PATH } from '../../../constants';
 
 export function getCardTitle(recipe: Recipe): string {
     const title = recipe.isIngredient
@@ -48,7 +47,7 @@ export function RecipeCard(props: Props) {
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
-                <LinkOverlay as={Link} to={`${ROOT_PATH}/view/${recipe.titleIdentifier}`} />
+                <LinkOverlay as={Link} to={`${ROOT_PATH}/view/recipe/${recipe.titleIdentifier}`} />
                 {hasEditPermission ? (
                     <IconButton
                         variant='solid'
@@ -66,7 +65,7 @@ export function RecipeCard(props: Props) {
                         transition='opacity 0.3s, transform 0.3s'
                         width='1'
                         as={Link}
-                        to={`${ROOT_PATH}/edit/${recipe.titleIdentifier}`}
+                        to={`${ROOT_PATH}/edit/recipe/${recipe.titleIdentifier}`}
                     />
                 ) : null}
                 <CardHeader>

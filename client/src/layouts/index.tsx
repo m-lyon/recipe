@@ -1,0 +1,1 @@
+export { IngredientsTabLayout } from './IngredientsTabLayout';

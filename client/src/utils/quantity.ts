@@ -1,8 +1,7 @@
 import { Fraction, fraction, multiply } from 'mathjs';
 
+import { UnitConversionArgs } from '@recipe/features/servings';
 import { EnumUnitPreferredNumberFormat, RecipeIngredient } from '@recipe/graphql/generated';
-
-import { UnitConversionArgs } from '../hooks/useUnitConversion';
 
 export function changeQuantity(
     ingr: RecipeIngredient,

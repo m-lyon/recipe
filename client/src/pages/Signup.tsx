@@ -7,7 +7,7 @@ import { Box, Button, FormControl, HStack, Heading, Input, useToast } from '@cha
 import { SIGNUP } from '@recipe/graphql/mutations/user';
 
 import { ROOT_PATH } from '../constants';
-import { UserContext } from '../context/UserContext';
+import { UserContext } from '../features/user/context/UserContext';
 
 export function Signup() {
     const [email, setEmail] = useState('');

@@ -1,8 +1,8 @@
 import { gql } from '../../__generated__';
 
 export const GET_UNITS = gql(`
-    query GetUnits {
-        unitMany(limit: 5000) {
+    query GetUnits($filter: FilterFindManyUnitInput) {
+        unitMany(limit: 5000, filter: $filter) {
             _id
             shortSingular
             shortPlural

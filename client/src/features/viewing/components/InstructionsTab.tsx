@@ -4,7 +4,7 @@ import { Box, Flex, Spacer, VStack, useBreakpointValue } from '@chakra-ui/react'
 import { Recipe } from '@recipe/graphql/generated';
 
 import { Source } from './Source';
-import { TagList } from './TagList';
+import { TagList } from '../../tags/components/TagList';
 import { InstructionList } from './InstructionList';
 import { ImageViewerRecipe } from './ImageViewerRecipe';
 

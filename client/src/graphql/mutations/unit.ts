@@ -15,3 +15,19 @@ export const CREATE_UNIT = gql(`
         }
     }
 `);
+
+export const MODIFY_UNIT = gql(`
+    mutation ModifyUnit($id: MongoID!, $record: UpdateByIdUnitInput!) {
+        unitUpdateById(_id: $id, record: $record) {
+            record {
+                _id
+                longSingular
+                longPlural
+                shortSingular
+                shortPlural
+                preferredNumberFormat
+                hasSpace
+            }
+        }
+    }
+`);

@@ -1,6 +1,6 @@
 import { Text } from '@chakra-ui/react';
 
-import { EditableItemArea } from 'components/EditableItemArea';
+import { EditableItemArea } from '@recipe/common/components';
 
 export interface EditableNotesProps {
     notes: string;

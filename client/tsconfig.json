@@ -29,6 +29,10 @@
       "@recipe/features/*": ["features/*"],
       "@recipe/types": ["types/recipe.ts"],
       "@recipe/utils/*": ["utils/*"],
+      "@recipe/layouts": ["layouts"],
+      "@recipe/constants": ["constants.ts"],
+      "@recipe/common/components": ["common/components"],
+      "@recipe/common/hooks": ["common/hooks"],
     }
   },
   "include": ["src"],

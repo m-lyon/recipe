@@ -5,13 +5,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useRecipeState } from '@recipe/features/editing';
 import { EditableRecipe } from '@recipe/features/editing';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
+import { useViewStarRating } from '@recipe/features/starRating';
+import { GRAPHQL_ENDPOINT, ROOT_PATH } from '@recipe/constants';
 import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
-import { dbIngredientToFinished } from '@recipe/features/editing';
+import { dbIngredientToFinished } from '@recipe/features/recipeIngredient';
 import { DELETE_IMAGES, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
 import { RecipeIngredient, UpdateByIdRecipeModifyInput } from '@recipe/graphql/generated';
-
-import { GRAPHQL_ENDPOINT, ROOT_PATH } from '../constants';
-import { useViewStarRating } from '../hooks/useViewStarRating';
 
 export function EditRecipe() {
     const toast = useToast();
