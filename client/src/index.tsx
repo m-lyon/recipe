@@ -9,6 +9,10 @@ import { Navbar } from '@recipe/features/navbar';
 import { GRAPHQL_ENDPOINT, ROOT_PATH } from '@recipe/constants';
 import { RequireAuth, UserProvider } from '@recipe/features/user';
 
+import { CreateUnit } from 'pages/CreateUnit';
+import { CreateIngredient } from 'pages/CreateIngredient';
+import { CreatePrepMethod } from 'pages/CreatePrepMethod';
+
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
@@ -41,7 +45,10 @@ const routes = createBrowserRouter(
                 </Route>
                 <Route path='create' element={<RequireAuth />}>
                     <Route path='recipe' element={<CreateRecipe />} />
+                    <Route path='unit' element={<CreateUnit />} />
                     <Route path='unit-conversion' element={<CreateUnitConversion />} />
+                    <Route path='ingredient' element={<CreateIngredient />} />
+                    <Route path='prep-method' element={<CreatePrepMethod />} />
                 </Route>
                 <Route path='edit' element={<RequireAuth />}>
                     <Route path='unit' element={<EditUnit />} />

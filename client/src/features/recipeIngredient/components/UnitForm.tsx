@@ -215,7 +215,7 @@ export function UnitForm(props: UnitFormProps) {
                     hasError && setHasError(false);
                 }}
             />
-            <FormControl isDisabled={disabled}>
+            <FormControl isDisabled={disabled} isInvalid={hasError}>
                 <FormHelperText>Preferred number format</FormHelperText>
                 <RadioGroup onChange={setpreferredNumberFormat} value={preferredNumberFormat}>
                     <HStack spacing='12px'>
@@ -226,6 +226,7 @@ export function UnitForm(props: UnitFormProps) {
             </FormControl>
             <Checkbox
                 isDisabled={disabled}
+                isInvalid={hasError}
                 onChange={(e) => setHasSpace(e.target.checked)}
                 isChecked={hasSpace}
             >

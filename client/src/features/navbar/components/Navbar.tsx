@@ -245,6 +245,18 @@ const USER_NAV_ITEMS: Array<NavItem> = [
                 href: `${ROOT_PATH}/create/recipe`,
             },
             {
+                label: 'Unit',
+                href: `${ROOT_PATH}/create/unit`,
+            },
+            {
+                label: 'Ingredient',
+                href: `${ROOT_PATH}/create/ingredient`,
+            },
+            {
+                label: 'Prep Method',
+                href: `${ROOT_PATH}/create/prep-method`,
+            },
+            {
                 label: 'Unit Conversion',
                 href: `${ROOT_PATH}/create/unit-conversion`,
             },
