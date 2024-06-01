@@ -1,11 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 
+import axios from 'axios';
 import { GraphQLNonNull, GraphQLObjectType } from 'graphql';
 import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
 import { GraphQLError, GraphQLList, GraphQLString } from 'graphql';
 
-import { IMAGE_DIR } from '../constants.js';
+import { IMAGE_DIR, LOCAL_URL, PORT } from '../constants.js';
 import { Image, ImageTC, saveImageToDb } from '../models/Image.js';
 import { FileUpload, storeUpload, validateImageFile } from '../utils/upload.js';
 
@@ -91,7 +92,7 @@ ImageTC.addResolver({
         num: { type: 'Int', description: 'Number of images to generate' },
     },
     resolve: async ({ args }) => {
-        // recipe authorisation check is handled by middleware
+        // Recipe authorisation check is handled by middleware
         if (!args.num) {
             args.num = 3;
         }
@@ -100,7 +101,22 @@ ImageTC.addResolver({
                 extensions: { code: 'BAD_REQUEST' },
             });
         }
-
+        // Send a request to the image generation service at localhost:8000
+        // with the recipe ID and number of images to generate
+        // The image generation service will return a list of image URLs
+        // which will be saved to the database
+        const dummyUUID = '00000000-0000-0000-0000-000000000000';
+        const prompt = 'A tasty dish with a side of vegetables.';
+        const url = `http://localhost:8000/generate?_id=${args._id}&num=${args.num}`;
+        const response = await axios.post(url, {
+            prompt,
+            callback_url: `${LOCAL_URL}:${PORT}/hooks/${dummyUUID}`,
+        });
+        if (response.status !== 200) {
+            throw new GraphQLError('Failed to generate images.', {
+                extensions: { code: 'INTERNAL_SERVER_ERROR' },
+            });
+        }
         return 'Images queued for generation.';
     },
 });
