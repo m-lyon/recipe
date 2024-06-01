@@ -101,6 +101,7 @@ ImageTC.addResolver({
                 extensions: { code: 'BAD_REQUEST' },
             });
         }
+        console.log('starting image generation');
         // Send a request to the image generation service at localhost:8000
         // with the recipe ID and number of images to generate
         // The image generation service will return a list of image URLs
@@ -108,10 +109,16 @@ ImageTC.addResolver({
         const dummyUUID = '00000000-0000-0000-0000-000000000000';
         const prompt = 'A tasty dish with a side of vegetables.';
         const url = `${IMAGE_GEN_SERVER}/generate/`;
-        const response = await axios.post(url, {
-            prompt,
-            callback_url: `${LOCAL_URL}:${PORT}/hooks/${dummyUUID}`,
-        });
+        const response = await axios.post(
+            url,
+            {
+                prompt,
+                callback_url: `${LOCAL_URL}:${PORT}/hooks/${dummyUUID}`,
+            },
+            {
+                timeout: 3000, // Timeout in milliseconds
+            }
+        );
         if (response.status !== 200) {
             throw new GraphQLError('Failed to generate images.', {
                 extensions: { code: 'INTERNAL_SERVER_ERROR' },
