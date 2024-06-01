@@ -35,7 +35,7 @@ export const isDocumentOwnerOrAdmin =
         }
         const document = await Model.findById(rp.args._id);
         if (!document) {
-            throw new GraphQLError('Document not found!', {
+            throw new GraphQLError(`${Model.modelName} not found!`, {
                 extensions: { code: 'NOT_FOUND' },
             });
         }

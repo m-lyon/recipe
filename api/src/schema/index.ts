@@ -63,6 +63,7 @@ const isRecipeOwnerOrAdminMutations = composeResolvers(
             recipeRemoveById: RecipeMutation.recipeRemoveById,
             imageUploadOne: ImageMutation.imageUploadOne,
             imageUploadMany: ImageMutation.imageUploadMany,
+            generateImages: ImageMutation.generateImages,
         },
     },
     { 'Mutation.*': [isDocumentOwnerOrAdmin(Recipe)] }

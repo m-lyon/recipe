@@ -1,8 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 
+import { GraphQLNonNull, GraphQLObjectType } from 'graphql';
 import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
-import { GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
+import { GraphQLError, GraphQLList, GraphQLString } from 'graphql';
 
 import { IMAGE_DIR } from '../constants.js';
 import { Image, ImageTC, saveImageToDb } from '../models/Image.js';
@@ -82,6 +83,28 @@ ImageTC.addResolver({
     },
 });
 
+ImageTC.addResolver({
+    name: 'generateImages',
+    type: 'String',
+    args: {
+        _id: { type: 'MongoID!', description: 'Recipe ID to generate images for' },
+        num: { type: 'Int', description: 'Number of images to generate' },
+    },
+    resolve: async ({ args }) => {
+        // recipe authorisation check is handled by middleware
+        if (!args.num) {
+            args.num = 3;
+        }
+        if (args.num < 1 || args.num > 10) {
+            throw new GraphQLError('Invalid number of images.', {
+                extensions: { code: 'BAD_REQUEST' },
+            });
+        }
+
+        return 'Images queued for generation.';
+    },
+});
+
 export const ImageQuery = {
     imageById: ImageTC.mongooseResolvers.findById(),
     imageByIds: ImageTC.mongooseResolvers.findByIds(),
@@ -93,4 +116,5 @@ export const ImageMutation = {
     imageUploadOne: ImageTC.getResolver('imageUploadOne'),
     imageUploadMany: ImageTC.getResolver('imageUploadMany'),
     imageRemoveMany: ImageTC.getResolver('imageRemoveManyByIds'),
+    generateImages: ImageTC.getResolver('generateImages'),
 };
