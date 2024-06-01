@@ -6,7 +6,7 @@ import { GraphQLNonNull, GraphQLObjectType } from 'graphql';
 import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
 import { GraphQLError, GraphQLList, GraphQLString } from 'graphql';
 
-import { IMAGE_DIR, LOCAL_URL, PORT } from '../constants.js';
+import { IMAGE_DIR, IMAGE_GEN_SERVER, LOCAL_URL, PORT } from '../constants.js';
 import { Image, ImageTC, saveImageToDb } from '../models/Image.js';
 import { FileUpload, storeUpload, validateImageFile } from '../utils/upload.js';
 
@@ -107,7 +107,7 @@ ImageTC.addResolver({
         // which will be saved to the database
         const dummyUUID = '00000000-0000-0000-0000-000000000000';
         const prompt = 'A tasty dish with a side of vegetables.';
-        const url = `http://localhost:8000/generate?_id=${args._id}&num=${args.num}`;
+        const url = `${IMAGE_GEN_SERVER}/generate/`;
         const response = await axios.post(url, {
             prompt,
             callback_url: `${LOCAL_URL}:${PORT}/hooks/${dummyUUID}`,

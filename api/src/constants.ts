@@ -14,3 +14,4 @@ export const FULLCHAIN_PEM = process.env.FULLCHAIN_PEM;
 export const HTTPS = process.env.HTTPS === 'true';
 export const IMAGE_DIR = process.env.IMAGE_DIR ? process.env.IMAGE_DIR : '/data/recipe/images';
 export const LOCAL_URL = process.env.LOCAL_URL;
+export const IMAGE_GEN_SERVER = process.env.IMAGE_GEN_SERVER;
