@@ -131,6 +131,7 @@ export const mockGetRecipe = {
                         value: 'lunch',
                     },
                 ],
+                calculatedTags: ['vegan', 'vegetarian'],
                 numServings: 4,
                 isIngredient: false,
                 notes: null,

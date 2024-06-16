@@ -7,7 +7,7 @@ import { TagList } from '@recipe/features/tags';
 import { UserContext } from '@recipe/features/user';
 import { IngredientsTabLayout } from '@recipe/layouts';
 import { changeQuantity } from '@recipe/utils/quantity';
-import { Recipe, RecipeIngredient } from '@recipe/graphql/generated';
+import { Recipe, RecipeIngredient, Tag } from '@recipe/graphql/generated';
 import { Servings, useUnitConversion } from '@recipe/features/servings';
 import { StarRating, useViewStarRating } from '@recipe/features/starRating';
 
@@ -20,9 +20,10 @@ interface Props {
     notes: Recipe['notes'];
     numServings: Recipe['numServings'];
     tags: Recipe['tags'];
+    calculatedTags: Recipe['calculatedTags'];
 }
 export function IngredientsTab(props: Props) {
-    const { recipeId, ingredients, notes, numServings, tags } = props;
+    const { recipeId, ingredients, notes, numServings, tags, calculatedTags } = props;
     const [userContext] = useContext(UserContext);
     const [servings, setServings] = useState(numServings);
     const { avgRating, getRatings, setRating } = useViewStarRating();
@@ -50,7 +51,12 @@ export function IngredientsTab(props: Props) {
             }
             IngredientList={<IngredientList ingredients={modifiedIngredients} />}
             Notes={<Notes notes={notes} />}
-            Tags={<TagList tags={tags} pb='24px' />}
+            Tags={
+                <TagList
+                    tags={tags.concat(calculatedTags.map((tag) => ({ value: tag }) as Tag))}
+                    pb='24px'
+                />
+            }
         />
     );
 }

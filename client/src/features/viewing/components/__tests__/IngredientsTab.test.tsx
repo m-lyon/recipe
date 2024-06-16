@@ -34,6 +34,7 @@ const MockIngredientsTab = () => {
         notes: null as Recipe['notes'],
         numServings: 4,
         tags: [] as Recipe['tags'],
+        calculatedTags: [] as Recipe['calculatedTags'],
     };
     return <IngredientsTab {...props} />;
 };

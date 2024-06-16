@@ -60,7 +60,7 @@ async function createRecipeData() {
 }
 
 const parseCreatedRating = (response) => {
-    assert(response.body.kind === 'single');
+    assert.equal(response.body.kind, 'single');
     assert.isUndefined(response.body.singleResult.errors);
     const record = (
         response.body.singleResult.data as {
@@ -86,7 +86,7 @@ describe('ratingCreateOne', () => {
         const record = { value: 5, recipe: recipe._id };
         const response = await createRating(this, user, record);
         const createdRating = parseCreatedRating(response);
-        assert(createdRating.value === record.value);
+        assert.equal(createdRating.value, record.value);
     });
 
     it('should not create a rating with a value less than 0', async function () {
@@ -94,11 +94,11 @@ describe('ratingCreateOne', () => {
         const recipe = await Recipe.findOne({ title: 'Chicken Soup' });
         const record = { value: -1, recipe: recipe._id };
         const response = await createRating(this, user, record);
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert(response.body.singleResult.errors, 'Validation error should occur');
-        assert(
-            response.body.singleResult.errors[0].message ===
-                'Rating validation failed: value: The rating must be between 0 and 10.'
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Rating validation failed: value: The rating must be between 0 and 10.'
         );
     });
 
@@ -107,7 +107,7 @@ describe('ratingCreateOne', () => {
         const recipe = await Recipe.findOne({ title: 'Chicken Soup' });
         const record = { value: 11, recipe: recipe._id };
         const response = await createRating(this, user, record);
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert(response.body.singleResult.errors, 'Validation error should occur');
         assert(
             response.body.singleResult.errors[0].message ===
@@ -123,7 +123,7 @@ describe('ratingCreateOne', () => {
         assert.isNull(deletedRecipe);
         const record = { value: 5, recipe: recipe._id };
         const response = await createRating(this, user, record);
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert(response.body.singleResult.errors, 'Validation error should occur');
         assert(
             response.body.singleResult.errors[0].message ===

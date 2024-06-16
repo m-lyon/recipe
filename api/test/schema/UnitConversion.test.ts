@@ -104,7 +104,7 @@ async function createConversionRule(context, user, record) {
 }
 
 const parseCreatedConversionRule = (response) => {
-    assert(response.body.kind === 'single');
+    assert.equal(response.body.kind, 'single');
     assert.isUndefined(response.body.singleResult.errors);
     const record = (
         response.body.singleResult.data as {
@@ -155,7 +155,7 @@ describe('conversionRuleCreateOne', () => {
         };
         await createConversionRule(this, user, record);
         const response = await createConversionRule(this, user, record);
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors);
         assert.equal(
             response.body.singleResult.errors[0].message,
@@ -173,7 +173,7 @@ describe('conversionRuleCreateOne', () => {
             baseUnitThreshold: 1,
         };
         const response = await createConversionRule(this, user, record);
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors);
         assert.equal(
             response.body.singleResult.errors[0].message,
@@ -192,7 +192,7 @@ describe('conversionRuleCreateOne', () => {
             baseUnitThreshold: 0,
         };
         const response = await createConversionRule(this, user, record);
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors);
         assert.equal(
             response.body.singleResult.errors[0].message,
@@ -209,7 +209,7 @@ describe('conversionRuleCreateOne', () => {
             baseUnitThreshold: 1,
         };
         const response = await createConversionRule(this, user, record);
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors);
         assert.equal(
             response.body.singleResult.errors[0].message,
@@ -228,7 +228,7 @@ describe('conversionRuleCreateOne', () => {
             baseUnitThreshold: 1,
         };
         const response = await createConversionRule(this, user, record);
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors);
         assert.equal(
             response.body.singleResult.errors[0].message,
@@ -299,7 +299,7 @@ describe('conversionRuleUpdateById', () => {
             createdConversionRule._id,
             update
         );
-        assert(updateResponse.body.kind === 'single');
+        assert.equal(updateResponse.body.kind, 'single');
         assert.isUndefined(updateResponse.body.singleResult.errors);
         const updatedConversionRule = (
             updateResponse.body.singleResult.data as {
@@ -338,7 +338,7 @@ describe('conversionRuleUpdateById', () => {
             createdConversionRule._id,
             update
         );
-        assert(updateResponse.body.kind === 'single');
+        assert.equal(updateResponse.body.kind, 'single');
         assert.isDefined(updateResponse.body.singleResult.errors);
         assert.equal(
             updateResponse.body.singleResult.errors[0].message,
@@ -367,7 +367,7 @@ describe('conversionRuleUpdateById', () => {
             createdConversionRule._id,
             update
         );
-        assert(updateResponse.body.kind === 'single');
+        assert.equal(updateResponse.body.kind, 'single');
         assert.isDefined(updateResponse.body.singleResult.errors);
         assert.equal(
             updateResponse.body.singleResult.errors[0].message,
@@ -396,7 +396,7 @@ describe('conversionRuleUpdateById', () => {
             createdConversionRule._id,
             update
         );
-        assert(updateResponse.body.kind === 'single');
+        assert.equal(updateResponse.body.kind, 'single');
         assert.isDefined(updateResponse.body.singleResult.errors);
         assert.equal(
             updateResponse.body.singleResult.errors[0].message,
@@ -425,7 +425,7 @@ describe('conversionRuleUpdateById', () => {
             createdConversionRule._id,
             update
         );
-        assert(updateResponse.body.kind === 'single');
+        assert.equal(updateResponse.body.kind, 'single');
         assert.isDefined(updateResponse.body.singleResult.errors);
         assert.equal(
             updateResponse.body.singleResult.errors[0].message,
@@ -454,7 +454,7 @@ describe('conversionRuleUpdateById', () => {
             '60a9c5d4d3f6c1c1e8a3c1c1',
             update
         );
-        assert(updateResponse.body.kind === 'single');
+        assert.equal(updateResponse.body.kind, 'single');
         assert.isDefined(updateResponse.body.singleResult.errors);
         assert.equal(updateResponse.body.singleResult.errors[0].message, 'Document not found');
     });
@@ -486,7 +486,7 @@ describe('conversionRuleUpdateById', () => {
             createdConversionRule._id,
             update
         );
-        assert(updateResponse.body.kind === 'single');
+        assert.equal(updateResponse.body.kind, 'single');
         assert.isDefined(updateResponse.body.singleResult.errors);
         assert.equal(
             updateResponse.body.singleResult.errors[0].message,
@@ -577,7 +577,7 @@ async function findUnitConversions(context, user, filter) {
             },
         }
     );
-    assert(response.body.kind === 'single');
+    assert.equal(response.body.kind, 'single');
     assert.isUndefined(response.body.singleResult.errors);
     return (
         response.body.singleResult.data as {
@@ -636,7 +636,7 @@ describe('unitConversionCreateOne', () => {
     afterEach(removeData);
 
     const parseCreatedUnitConversion = (response) => {
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert.isUndefined(response.body.singleResult.errors);
         const record = (
             response.body.singleResult.data as {
@@ -701,7 +701,7 @@ describe('unitConversionCreateOne', () => {
         const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
         const record = { baseUnit: baseUnit._id, rules: [] };
         const response = await createUnitConversion(this, user, record);
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors);
         assert.equal(
             response.body.singleResult.errors[0].message,
@@ -719,7 +719,7 @@ describe('unitConversionCreateOne', () => {
         await rule2.save();
         const record = { baseUnit: baseUnit._id, rules: [rule1._id, rule2._id] };
         const response = await createUnitConversion(this, user, record);
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors);
         assert.equal(
             response.body.singleResult.errors[0].message,
@@ -738,7 +738,7 @@ describe('unitConversionCreateOne', () => {
         await rule2.save();
         const record = { baseUnit: baseUnit._id, rules: [rule1._id, rule2._id] };
         const response = await createUnitConversion(this, user, record);
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors);
         assert.equal(
             response.body.singleResult.errors[0].message,
@@ -787,7 +787,7 @@ describe('unitConversionUpdateById', () => {
     }
 
     function parseCreatedUnitConversion(response) {
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert.isUndefined(response.body.singleResult.errors);
         const record = (
             response.body.singleResult.data as {
@@ -804,7 +804,7 @@ describe('unitConversionUpdateById', () => {
     }
 
     function parseUpdatedUnitConversion(response) {
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert.isUndefined(response.body.singleResult.errors);
         const record = (
             response.body.singleResult.data as {
@@ -838,7 +838,7 @@ describe('unitConversionUpdateById', () => {
             createdUnitConversion._id,
             update
         );
-        assert(updateResponse.body.kind === 'single');
+        assert.equal(updateResponse.body.kind, 'single');
         assert.isUndefined(updateResponse.body.singleResult.errors);
         const updatedUnitConversion = parseUpdatedUnitConversion(updateResponse);
         assert.equal(updatedUnitConversion.baseUnit._id, unit1._id);
@@ -862,7 +862,7 @@ describe('unitConversionUpdateById', () => {
             createdUnitConversion._id,
             update
         );
-        assert(updateResponse.body.kind === 'single');
+        assert.equal(updateResponse.body.kind, 'single');
         assert.isUndefined(updateResponse.body.singleResult.errors);
         const updatedUnitConversion = parseUpdatedUnitConversion(updateResponse);
         assert.equal(updatedUnitConversion.baseUnit._id, baseUnit._id);
@@ -892,7 +892,7 @@ describe('unitConversionUpdateById', () => {
             createdUnitConversion._id,
             update
         );
-        assert(updateResponse.body.kind === 'single');
+        assert.equal(updateResponse.body.kind, 'single');
         assert.isUndefined(updateResponse.body.singleResult.errors);
         const updatedUnitConversion = parseUpdatedUnitConversion(updateResponse);
         assert.equal(updatedUnitConversion.rules.length, 2);

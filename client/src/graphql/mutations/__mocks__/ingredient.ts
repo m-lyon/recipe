@@ -8,6 +8,7 @@ export const mockCreateIngredient = {
                 name: 'beef',
                 pluralName: 'beef',
                 isCountable: false,
+                tags: [],
             },
         },
     },

@@ -1,5 +1,5 @@
 import { useToast } from '@chakra-ui/react';
-import { useMutation, useQuery } from '@apollo/client';
+import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useRecipeState } from '@recipe/features/editing';
@@ -14,19 +14,29 @@ import { RecipeIngredient, UpdateByIdRecipeModifyInput } from '@recipe/graphql/g
 
 export function EditRecipe() {
     const toast = useToast();
+    const client = useApolloClient();
     const state = useRecipeState();
     const navigate = useNavigate();
     const { titleIdentifier } = useParams();
     const { avgRating: rating, getRatings, setRating } = useViewStarRating();
     const [saveRecipe, { data: response, loading: recipeLoading }] = useMutation(UPDATE_RECIPE, {
-        refetchQueries: ['GetRecipe', 'GetRecipes'],
+        refetchQueries: ['GetRecipe'],
+        onCompleted: () => {
+            client.cache.evict({ fieldName: 'recipeMany' });
+        },
     });
     const [deleteImages] = useMutation(DELETE_IMAGES, {
-        refetchQueries: ['GetRecipe', 'GetRecipes'],
+        refetchQueries: ['GetRecipe'],
+        onCompleted: () => {
+            client.cache.evict({ fieldName: 'recipeMany' });
+        },
     });
     const [uploadImages, { loading: uploadLoading }] = useMutation(UPLOAD_IMAGES, {
         context: { headers: { 'apollo-require-preflight': true } },
-        refetchQueries: ['GetRecipe', 'GetRecipes'],
+        refetchQueries: ['GetRecipe'],
+        onCompleted: () => {
+            client.cache.evict({ fieldName: 'recipeMany' });
+        },
     });
     const { data, loading, error } = useQuery(GET_RECIPE, {
         variables: { filter: { titleIdentifier: titleIdentifier } },
@@ -115,6 +125,10 @@ export function EditRecipe() {
                 (img) => !originalImages.map((img) => img!.origUrl).includes(img.name)
             );
             if (imagesToDelete.length > 0) {
+                console.log(
+                    'deleting image ids',
+                    imagesToDelete.map((img) => img!._id)
+                );
                 await deleteImages({ variables: { ids: imagesToDelete.map((img) => img!._id) } });
             }
             if (imagesToAdd.length > 0) {

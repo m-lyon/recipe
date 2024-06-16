@@ -6,7 +6,7 @@ import { Card, CardBody, CardHeader, Heading, IconButton, Spacer } from '@chakra
 
 import { ROOT_PATH } from '@recipe/constants';
 import { TagList } from '@recipe/features/tags';
-import { Recipe } from '@recipe/graphql/generated';
+import { Recipe, Tag } from '@recipe/graphql/generated';
 
 import { getCardTitle } from './RecipeCard';
 import { ImageViewerHome } from './ImageViewerHome';
@@ -82,7 +82,12 @@ export function ImageRecipeCard(props: Props) {
                             spacing='20px'
                             alignItems='flex-start'
                         >
-                            <TagList tags={recipe.tags} paddingX='20px' />
+                            <TagList
+                                tags={recipe.tags.concat(
+                                    recipe.calculatedTags.map((tag) => ({ value: tag }) as Tag)
+                                )}
+                                paddingX='20px'
+                            />
                             <Spacer />
                             <ImageViewerHome images={recipe.images} />
                         </VStack>

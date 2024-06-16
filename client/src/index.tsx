@@ -9,10 +9,6 @@ import { Navbar } from '@recipe/features/navbar';
 import { GRAPHQL_ENDPOINT, ROOT_PATH } from '@recipe/constants';
 import { RequireAuth, UserProvider } from '@recipe/features/user';
 
-import { CreateUnit } from 'pages/CreateUnit';
-import { CreateIngredient } from 'pages/CreateIngredient';
-import { CreatePrepMethod } from 'pages/CreatePrepMethod';
-
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
@@ -22,9 +18,12 @@ import { EditUnit } from './pages/EditUnit';
 import { ErrorBoundary } from './pages/Error';
 import { ViewRecipe } from './pages/ViewRecipe';
 import { EditRecipe } from './pages/EditRecipe';
+import { CreateUnit } from './pages/CreateUnit';
 import { CreateRecipe } from './pages/CreateRecipe';
 import { EditIngredient } from './pages/EditIngredient';
 import { EditPrepMethod } from './pages/EditPrepMethod';
+import { CreateIngredient } from './pages/CreateIngredient';
+import { CreatePrepMethod } from './pages/CreatePrepMethod';
 import { CreateUnitConversion } from './pages/CreateUnitConversion';
 
 const domNode = document.getElementById('root')!;

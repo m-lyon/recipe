@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { ApolloError, useMutation } from '@apollo/client';
-import { ValidationError, boolean, number, object, string } from 'yup';
-import { Button, ButtonGroup, Checkbox, Stack, StackProps, useToast } from '@chakra-ui/react';
+import { Button, ButtonGroup, Checkbox } from '@chakra-ui/react';
+import { HStack, Stack, StackProps, useToast } from '@chakra-ui/react';
+import { ValidationError, array, boolean, mixed, number, object, string } from 'yup';
 
 import { FloatingLabelInput } from '@recipe/common/components';
 import { Ingredient, Scalars } from '@recipe/graphql/generated';
 import { DELETE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
+import { EnumIngredientCreateTags, EnumIngredientTags } from '@recipe/graphql/generated';
 import { CREATE_INGREDIENT, MODIFY_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 import { CreateIngredientMutation, ModifyIngredientMutation } from '@recipe/graphql/generated';
 
@@ -50,6 +52,8 @@ export function IngredientForm(props: IngredientFormProps) {
     const [pluralName, setPluralName] = useState('');
     const [isCountable, setIsCountable] = useState(false);
     const [density, setDensity] = useState('');
+    const [vegan, setVegan] = useState(false);
+    const [vegetarian, setVegetarian] = useState(false);
     const toast = useToast();
     const [isFocused, setIsFocused] = useState(false);
     const [deleteIngredient] = useMutation(DELETE_INGREDIENT, {
@@ -87,6 +91,8 @@ export function IngredientForm(props: IngredientFormProps) {
             setPluralName(initData.pluralName);
             setIsCountable(initData.isCountable);
             setDensity(initData.density ? initData.density.toString() : '');
+            setVegan(initData.tags.includes('vegan' as EnumIngredientTags));
+            setVegetarian(initData.tags.includes('vegetarian' as EnumIngredientTags));
         }
         if (disabled) {
             setHasError(false);
@@ -94,6 +100,8 @@ export function IngredientForm(props: IngredientFormProps) {
             setPluralName('');
             setIsCountable(false);
             setDensity('');
+            setVegan(false);
+            setVegetarian(false);
         }
     }, [initData, disabled]);
 
@@ -102,6 +110,13 @@ export function IngredientForm(props: IngredientFormProps) {
         pluralName: string().required(),
         isCountable: boolean().required(),
         density: number(),
+        tags: array()
+            .required()
+            .of(
+                mixed<EnumIngredientCreateTags>()
+                    .required()
+                    .oneOf(Object.values(EnumIngredientCreateTags), 'Invalid tag')
+            ),
     });
 
     const handleSubmit = () => {
@@ -111,6 +126,7 @@ export function IngredientForm(props: IngredientFormProps) {
                 pluralName: pluralName === '' ? name : pluralName,
                 isCountable,
                 density: density === '' ? undefined : density,
+                tags: (vegan ? ['vegan'] : []).concat(vegetarian ? ['vegetarian'] : []),
             });
             saveIngredient({ variables: { record: { ...validated }, ...mutationVars } });
         } catch (e: unknown) {
@@ -187,6 +203,37 @@ export function IngredientForm(props: IngredientFormProps) {
             <Checkbox onChange={(e) => setIsCountable(e.target.checked)} isDisabled={disabled}>
                 Countable
             </Checkbox>
+            <HStack>
+                <Checkbox
+                    isDisabled={disabled}
+                    pr={6}
+                    isChecked={vegan}
+                    onChange={(e) => {
+                        if (e.target.checked) {
+                            setVegetarian(true);
+                            setVegan(true);
+                        } else {
+                            setVegan(false);
+                        }
+                    }}
+                >
+                    Vegan
+                </Checkbox>
+                <Checkbox
+                    isChecked={vegetarian}
+                    isDisabled={disabled}
+                    onChange={(e) => {
+                        if (e.target.checked) {
+                            setVegetarian(true);
+                        } else {
+                            setVegetarian(false);
+                            setVegan(false);
+                        }
+                    }}
+                >
+                    Vegetarian
+                </Checkbox>
+            </HStack>
             <ButtonGroup display='flex' justifyContent='flex-end' isDisabled={disabled}>
                 {mutationVars && (
                     <Button

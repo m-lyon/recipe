@@ -1,7 +1,7 @@
 import { useMeasure } from 'react-use';
 import { Box, Flex, Spacer, VStack, useBreakpointValue } from '@chakra-ui/react';
 
-import { Recipe } from '@recipe/graphql/generated';
+import { Recipe, Tag } from '@recipe/graphql/generated';
 
 import { Source } from './Source';
 import { TagList } from '../../tags/components/TagList';
@@ -14,9 +14,10 @@ interface Props {
     instructions: Recipe['instructions'];
     source: Recipe['source'];
     images: Recipe['images'];
+    calculatedTags: Recipe['calculatedTags'];
 }
 export function InstructionsTab(props: Props) {
-    const { tags, instructions, source, images } = props;
+    const { tags, instructions, source, images, calculatedTags } = props;
     const [ref, { height }] = useMeasure();
 
     const styles = useBreakpointValue(
@@ -36,7 +37,14 @@ export function InstructionsTab(props: Props) {
                         spacing={styles?.showImages ? `${instrSpacing}px` : undefined}
                         align='left'
                     >
-                        {styles?.showImages && <TagList tags={tags} displayBoxMargin={true} />}
+                        {styles?.showImages && (
+                            <TagList
+                                tags={tags.concat(
+                                    calculatedTags.map((tag) => ({ value: tag }) as Tag)
+                                )}
+                                displayBoxMargin={true}
+                            />
+                        )}
                         <InstructionList
                             instructions={instructions}
                             numImages={images ? images.length : 0}

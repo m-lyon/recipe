@@ -6,7 +6,7 @@ import { Card, CardBody, CardHeader, Heading, LinkBox } from '@chakra-ui/react';
 
 import { ROOT_PATH } from '@recipe/constants';
 import { TagList } from '@recipe/features/tags';
-import { Recipe } from '@recipe/graphql/generated';
+import { Recipe, Tag } from '@recipe/graphql/generated';
 
 export function getCardTitle(recipe: Recipe): string {
     const title = recipe.isIngredient
@@ -74,7 +74,11 @@ export function RecipeCard(props: Props) {
                     </Heading>
                 </CardHeader>
                 <CardBody>
-                    <TagList tags={recipe.tags} />
+                    <TagList
+                        tags={recipe.tags.concat(
+                            recipe.calculatedTags.map((tag) => ({ value: tag }) as Tag)
+                        )}
+                    />
                 </CardBody>
                 {hasEditPermission ? (
                     <IconButton

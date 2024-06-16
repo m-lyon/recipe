@@ -50,6 +50,7 @@ export function ViewRecipe() {
         instructions,
         ingredients,
         tags,
+        calculatedTags,
         notes,
         source,
         numServings,
@@ -91,6 +92,7 @@ export function ViewRecipe() {
                         notes={notes}
                         numServings={numServings}
                         tags={tags}
+                        calculatedTags={calculatedTags}
                     />
                 </GridItem>
                 <GridItem boxShadow='lg' py='6' pl='6' area='instructions' minH='600px'>
@@ -99,6 +101,7 @@ export function ViewRecipe() {
                         instructions={instructions}
                         source={source}
                         images={images as Recipe['images']}
+                        calculatedTags={calculatedTags}
                     />
                 </GridItem>
             </Grid>

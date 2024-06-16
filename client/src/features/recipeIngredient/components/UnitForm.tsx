@@ -111,10 +111,7 @@ export function UnitForm(props: UnitFormProps) {
         preferredNumberFormat: mixed<EnumUnitCreatePreferredNumberFormat>()
             .required()
             .oneOf(
-                [
-                    EnumUnitCreatePreferredNumberFormat.Decimal,
-                    EnumUnitCreatePreferredNumberFormat.Fraction,
-                ],
+                Object.values(EnumUnitCreatePreferredNumberFormat),
                 'You must select a number format'
             ),
         hasSpace: boolean().required(),

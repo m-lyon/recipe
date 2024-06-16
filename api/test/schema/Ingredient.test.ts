@@ -31,7 +31,7 @@ async function createIngredient(context, user, record) {
 }
 
 const parseCreatedIngredient = (response) => {
-    assert(response.body.kind === 'single');
+    assert.equal(response.body.kind, 'single');
     assert.isUndefined(response.body.singleResult.errors);
     const record = (
         response.body.singleResult.data as {
@@ -61,7 +61,11 @@ describe('ingredientCreateOne', () => {
     afterEach(function (done) {
         mongoose.connection.collections.users
             .drop()
-            .then(() => mongoose.connection.collections.ingredients.drop())
+            .then(() => {
+                if (mongoose.connection.collections.ingredients) {
+                    mongoose.connection.collections.ingredients.drop();
+                }
+            })
             .then(() => done())
             .catch((error) => {
                 console.log(error);
@@ -71,23 +75,63 @@ describe('ingredientCreateOne', () => {
 
     it('should create an ingredient', async function () {
         const user = await User.findOne({ username: 'testuser1' });
-        const newRecord = { name: 'chicken', pluralName: 'chickens', isCountable: true };
+        const newRecord = {
+            name: 'chicken',
+            pluralName: 'chickens',
+            isCountable: true,
+            tags: ['vegetarian'],
+        };
         const response = await createIngredient(this, user, newRecord);
         const record = parseCreatedIngredient(response);
         assert.equal(record.name, 'chicken');
     });
 
-    it('should NOT create an ingredient', async function () {
+    it('should create an ingredient with an empty tags list', async function () {
         const user = await User.findOne({ username: 'testuser1' });
-        const newRecordOne = { name: 'chicken', pluralName: 'chickens', isCountable: true };
-        const newRecordTwo = { name: 'chicken', pluralName: 'chickeny', isCountable: true };
+        const newRecord = { name: 'chicken', pluralName: 'chickens', isCountable: true, tags: [] };
+        const response = await createIngredient(this, user, newRecord);
+        const record = parseCreatedIngredient(response);
+        assert.equal(record.name, 'chicken');
+    });
+
+    it('should NOT create an ingredient because of non unique name', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const newRecordOne = {
+            name: 'chicken',
+            pluralName: 'chickens',
+            isCountable: true,
+            tags: [],
+        };
+        const newRecordTwo = {
+            name: 'chicken',
+            pluralName: 'chickeny',
+            isCountable: true,
+            tags: [],
+        };
         await createIngredient(this, user, newRecordOne);
         const response = await createIngredient(this, user, newRecordTwo);
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert(response.body.singleResult.errors, 'Validation Error should occur');
-        assert(
-            response.body.singleResult.errors[0].message ===
-                'Ingredient validation failed: name: The ingredient name must be unique.'
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Ingredient validation failed: name: The ingredient name must be unique.'
+        );
+    });
+
+    it('should NOT create an ingredient because of incorrect tag', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const newRecord = {
+            name: 'chicken',
+            pluralName: 'chickens',
+            isCountable: true,
+            tags: ['fish'],
+        };
+        const response = await createIngredient(this, user, newRecord);
+        assert.equal(response.body.kind, 'single');
+        assert(response.body.singleResult.errors, 'Validation Error should occur');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Variable "$record" got invalid value "fish" at "record.tags[0]"; Value "fish" does not exist in "EnumIngredientCreateTags" enum.'
         );
     });
 });
@@ -112,7 +156,11 @@ describe('ingredientUpdateById', () => {
     afterEach(function (done) {
         mongoose.connection.collections.users
             .drop()
-            .then(() => mongoose.connection.collections.ingredients.drop())
+            .then(() => {
+                if (mongoose.connection.collections.ingredients) {
+                    mongoose.connection.collections.ingredients.drop();
+                }
+            })
             .then(() => done())
             .catch((error) => {
                 console.log(error);
@@ -127,6 +175,7 @@ describe('ingredientUpdateById', () => {
               record {
                 _id
                 name
+                tags
               }
             }
           }`;
@@ -145,14 +194,24 @@ describe('ingredientUpdateById', () => {
     it('should update an ingredient', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         // Create the ingredients
-        const recordOneVars = { name: 'chicken', pluralName: 'chickens', isCountable: true };
-        const recordTwoVars = { name: 'beef', pluralName: 'beefs', isCountable: true };
+        const recordOneVars = {
+            name: 'chicken',
+            pluralName: 'chickens',
+            isCountable: true,
+            tags: ['vegetarian'],
+        };
+        const recordTwoVars = {
+            name: 'beef',
+            pluralName: 'beefs',
+            isCountable: true,
+            tags: ['vegan'],
+        };
         const recordOneResponse = await createIngredient(this, user, recordOneVars);
         const recordOne = parseCreatedIngredient(recordOneResponse);
         await createIngredient(this, user, recordTwoVars);
         // Update the ingredient
         const response = await updateIngredient(this, user, recordOne._id, { name: 'chickeny' });
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert.isUndefined(response.body.singleResult.errors);
         const updatedRecord = (
             response.body.singleResult.data as {
@@ -162,21 +221,87 @@ describe('ingredientUpdateById', () => {
         assert.equal(updatedRecord.name, 'chickeny');
     });
 
-    it('should NOT update an ingredient', async function () {
+    it('should update an ingredient with an empty tag list', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         // Create the ingredients
-        const recordOneVars = { name: 'chicken', pluralName: 'chickens', isCountable: true };
-        const recordTwoVars = { name: 'beef', pluralName: 'beefs', isCountable: true };
+        const recordOneVars = {
+            name: 'chicken',
+            pluralName: 'chickens',
+            isCountable: true,
+            tags: ['vegetarian'],
+        };
+        const recordTwoVars = {
+            name: 'beef',
+            pluralName: 'beefs',
+            isCountable: true,
+            tags: ['vegan'],
+        };
+        const recordOneResponse = await createIngredient(this, user, recordOneVars);
+        const recordOne = parseCreatedIngredient(recordOneResponse);
+        await createIngredient(this, user, recordTwoVars);
+        // Update the ingredient
+        const response = await updateIngredient(this, user, recordOne._id, {
+            name: 'chickeny',
+            tags: [],
+        });
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(response.body.singleResult.errors);
+        const updatedRecord = (
+            response.body.singleResult.data as {
+                ingredientUpdateById: { record: { _id: string; name: string; tags: string[] } };
+            }
+        ).ingredientUpdateById.record;
+        assert.equal(updatedRecord.name, 'chickeny');
+        assert.equal(updatedRecord.tags.length, 0);
+    });
+
+    it('should NOT update an ingredient with a duplicate name', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        // Create the ingredients
+        const recordOneVars = {
+            name: 'chicken',
+            pluralName: 'chickens',
+            isCountable: true,
+            tags: [],
+        };
+        const recordTwoVars = { name: 'beef', pluralName: 'beefs', isCountable: true, tags: [] };
         const recordOneResponse = await createIngredient(this, user, recordOneVars);
         const recordOne = parseCreatedIngredient(recordOneResponse);
         await createIngredient(this, user, recordTwoVars);
         // Update the ingredient
         const response = await updateIngredient(this, user, recordOne._id, { name: 'beef' });
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert(response.body.singleResult.errors);
-        assert(
-            response.body.singleResult.errors[0].message ===
-                'Ingredient validation failed: name: The ingredient name must be unique.'
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Ingredient validation failed: name: The ingredient name must be unique.'
+        );
+    });
+
+    it('should NOT update an ingredient with an invalid tag', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        // Create the ingredients
+        const recordOneVars = {
+            name: 'chicken',
+            pluralName: 'chickens',
+            isCountable: true,
+            tags: [],
+        };
+        const recordTwoVars = { name: 'beef', pluralName: 'beefs', isCountable: true, tags: [] };
+        const recordOneResponse = await createIngredient(this, user, recordOneVars);
+        const recordOne = parseCreatedIngredient(recordOneResponse);
+        await createIngredient(this, user, recordTwoVars);
+        // Update the ingredient
+        const response = await updateIngredient(this, user, recordOne._id, {
+            name: 'chickeny',
+            tags: ['beef'],
+        });
+        assert.equal(response.body.kind, 'single');
+        assert(response.body.singleResult.errors);
+
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Variable "$record" got invalid value "beef" at "record.tags[0]"; Value "beef" does not exist in "EnumIngredientTags" enum.'
         );
     });
 });

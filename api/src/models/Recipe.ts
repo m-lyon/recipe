@@ -1,17 +1,18 @@
-import { Document, Schema, Types, model } from 'mongoose';
+import { Document, PopulatedDoc, Schema, Types, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 
 import { Unit } from './Unit.js';
-import { Ingredient } from './Ingredient.js';
+import { ALLOWED_TAGS, Ingredient } from './Ingredient.js';
 import { PrepMethod } from './PrepMethod.js';
 import { generateRandomString } from '../utils/random.js';
 import { ownerExists, tagsExist, unique, uniqueInAdminsAndUser } from './validation.js';
+import type { Ingredient as IngredientType } from './Ingredient.js';
 
 const quantityRegex = /^(?:(?:[+-]?\d+\.\d+)|(?:[+-]?\d+)|(?:[+-]?\d+\/[1-9]\d*))$/;
-
+type RecipeIngredientEnum = 'ingredient' | 'recipe';
 export interface RecipeIngredientType extends Document {
-    ingredient: Types.ObjectId;
-    type: 'ingredient' | 'recipe';
+    ingredient: PopulatedDoc<Document<Types.ObjectId> & IngredientType>;
+    type: RecipeIngredientEnum;
     quantity?: string;
     unit?: Types.ObjectId;
     prepMethod?: Types.ObjectId;
@@ -31,7 +32,7 @@ export function generateRecipeIdentifier(title: string): string {
 const recipeIngredientSchema = new Schema<RecipeIngredientType>({
     ingredient: {
         type: Schema.Types.ObjectId,
-        refPath: function () {
+        ref: function () {
             return this.type === 'ingredient' ? 'Ingredient' : 'Recipe';
         },
         required: true,
@@ -96,6 +97,7 @@ export interface Recipe extends Document {
     titleIdentifier: string;
     pluralTitle?: string;
     subTitle?: string;
+    calculatedTags: string[];
     tags?: Types.ObjectId[];
     ingredients: RecipeIngredientType[];
     instructions: string[];
@@ -119,6 +121,7 @@ const recipeSchema = new Schema<Recipe>({
     },
     pluralTitle: { type: String },
     subTitle: { type: String },
+    calculatedTags: { type: [String], required: true },
     tags: {
         type: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
         validate: [
@@ -162,6 +165,25 @@ const recipeSchema = new Schema<Recipe>({
     isIngredient: { type: Boolean, required: true },
 });
 
+recipeSchema.pre('save', async function () {
+    await this.populate('ingredients.ingredient');
+    this.calculatedTags = [];
+    for (const tag of ALLOWED_TAGS) {
+        const allMembers = this.ingredients.every((recipeIngr) => {
+            if (recipeIngr.type === 'recipe') {
+                const recipe: Recipe = recipeIngr.ingredient;
+                return recipe.calculatedTags.includes(tag);
+            } else {
+                const ingr: IngredientType = recipeIngr.ingredient;
+                return ingr.tags.includes(tag);
+            }
+        });
+        if (allMembers) {
+            this.calculatedTags.push(tag);
+        }
+    }
+});
+
 export const RecipeIngredient = model<RecipeIngredientType>(
     'RecipeIngredient',
     recipeIngredientSchema
@@ -169,11 +191,11 @@ export const RecipeIngredient = model<RecipeIngredientType>(
 export const RecipeIngredientTC = composeMongoose(RecipeIngredient);
 export const Recipe = model<Recipe>('Recipe', recipeSchema);
 export const RecipeModifyTC = composeMongoose(Recipe, {
-    removeFields: ['titleIdentifier'],
+    removeFields: ['titleIdentifier', 'calculatedTags'],
     name: 'RecipeModify',
 });
 export const RecipeCreateTC = composeMongoose(Recipe, {
-    removeFields: ['owner', 'titleIdentifier'],
+    removeFields: ['owner', 'titleIdentifier', 'calculatedTags'],
     name: 'RecipeCreate',
 });
 export const RecipeQueryTC = composeMongoose(Recipe);

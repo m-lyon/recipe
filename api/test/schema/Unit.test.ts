@@ -31,7 +31,7 @@ async function createUnit(context, user, record) {
 }
 
 const parseCreatedUnit = (response) => {
-    assert(response.body.kind === 'single');
+    assert.equal(response.body.kind, 'single');
     assert.isUndefined(response.body.singleResult.errors);
     const record = (
         response.body.singleResult.data as {
@@ -104,7 +104,7 @@ describe('unitCreateOne', function () {
         newRecord.longPlural = 'teaspoonss';
         newRecord.longSingular = 'teaspoonn';
         const response = await createUnit(this, user, newRecord);
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert(response.body.singleResult.errors, 'Validation error should occur');
         assert(
             response.body.singleResult.errors[0].message ===
@@ -127,7 +127,7 @@ describe('unitCreateOne', function () {
         const deletedUser = await User.findOne({ username: 'testuser1' });
         assert.isNull(deletedUser);
         const response = await createUnit(this, user, newRecord);
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert(response.body.singleResult.errors, 'Validation error should occur');
         assert(
             response.body.singleResult.errors[0].message ===
@@ -210,7 +210,7 @@ describe('unitUpdateById', () => {
         await createUnit(this, user, recordTwoVars);
         // Update the ingredient
         const response = await updateUnit(this, user, recordOne._id, { shortSingular: 'tspy' });
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert.isUndefined(response.body.singleResult.errors);
         const updatedRecord = (
             response.body.singleResult.data as {
@@ -244,7 +244,7 @@ describe('unitUpdateById', () => {
         await createUnit(this, user, recordTwoVars);
         // Update the unit
         const response = await updateUnit(this, user, recordOne._id, { shortPlural: 'tbsp' });
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert(response.body.singleResult.errors);
         assert(
             response.body.singleResult.errors[0].message ===
@@ -279,7 +279,7 @@ describe('unitUpdateById', () => {
         const deletedUser = await User.findOne({ username: 'testuser1' });
         assert.isNull(deletedUser);
         const response = await updateUnit(this, user, recordOne._id, { shortSingular: 'tspy' });
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert(response.body.singleResult.errors);
         assert(
             response.body.singleResult.errors[0].message ===

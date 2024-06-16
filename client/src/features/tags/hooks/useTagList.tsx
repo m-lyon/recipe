@@ -2,7 +2,7 @@ import { produce } from 'immer';
 import { useReducer } from 'react';
 
 export const DEFAULT_TAG_STR = 'Add a tag...';
-
+const FORBIDDEN_TAGS = ['vegan', 'vegetarian'];
 export interface FinishedTag {
     _id: string;
     value: string;
@@ -62,6 +62,9 @@ function reducer(state: TagState, action: Action) {
                 if (action.value === '') {
                     draft.editable.value = null;
                 } else {
+                    if (FORBIDDEN_TAGS.includes(action.value.toLowerCase())) {
+                        throw new Error('Forbidden tag.');
+                    }
                     draft.editable.value = action.value.toLowerCase();
                 }
                 draft.editable._id = action._id;
@@ -72,11 +75,14 @@ function reducer(state: TagState, action: Action) {
                 if (typeof action.value === 'undefined') {
                     throw new Error('value is required to set editable value');
                 }
-                draft.editable.value = action.value.toLowerCase();
-                draft.editable._id = action._id;
-                if (draft.editable.value === '') {
+                if (action.value === '') {
                     draft.editable = { value: null, show: false };
                 } else {
+                    if (FORBIDDEN_TAGS.includes(action.value.toLowerCase())) {
+                        throw new Error('Forbidden tag.');
+                    }
+                    draft.editable.value = action.value.toLowerCase();
+                    draft.editable._id = action._id;
                     if (!draft.editable._id) {
                         throw new Error('Tag ID is required for submission.');
                     }

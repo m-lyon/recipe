@@ -40,6 +40,7 @@ export const GET_RECIPE = gql(`
                 _id
                 value
             }
+            calculatedTags
             numServings
             isIngredient
             pluralTitle
@@ -63,6 +64,7 @@ export const GET_RECIPES = gql(`
                 _id
                 value
             }
+            calculatedTags
             isIngredient
             numServings
             pluralTitle

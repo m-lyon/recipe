@@ -31,7 +31,7 @@ async function createPrepMethod(context, user, record) {
 }
 
 const parseCreatedPrepMethod = (response) => {
-    assert(response.body.kind === 'single');
+    assert.equal(response.body.kind, 'single');
     assert.isUndefined(response.body.singleResult.errors);
     const record = (
         response.body.singleResult.data as {
@@ -82,7 +82,7 @@ describe('prepMethodCreateOne', () => {
         const newRecord = { value: 'chopped' };
         await createPrepMethod(this, user, newRecord);
         const response = await createPrepMethod(this, user, newRecord);
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert(response.body.singleResult.errors, 'Validation error should occur');
         assert(
             response.body.singleResult.errors[0].message ===
@@ -151,7 +151,7 @@ describe('prepMethodUpdateById', () => {
         await createPrepMethod(this, user, recordTwoVars);
         // Update the ingredient
         const response = await updatePrepMethod(this, user, recordOne._id, { value: 'minced' });
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert.isUndefined(response.body.singleResult.errors);
         const updatedRecord = (
             response.body.singleResult.data as {
@@ -171,7 +171,7 @@ describe('prepMethodUpdateById', () => {
         await createPrepMethod(this, user, recordTwoVars);
         // Update the unit
         const response = await updatePrepMethod(this, user, recordOne._id, { value: 'diced' });
-        assert(response.body.kind === 'single');
+        assert.equal(response.body.kind, 'single');
         assert(response.body.singleResult.errors);
         assert(
             response.body.singleResult.errors[0].message ===

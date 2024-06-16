@@ -129,6 +129,7 @@ export async function populateIngredients() {
                 isCountable: true,
                 density: 0.8,
                 owner: admin._id,
+                tags: ['vegan', 'vegetarian'],
             },
             {
                 name: 'chicken',
@@ -136,8 +137,16 @@ export async function populateIngredients() {
                 isCountable: false,
                 density: 1.0,
                 owner: admin._id,
+                tags: [],
             },
-            { name: 'beef', pluralName: 'beef', isCountable: false, density: 1.0, owner: user._id },
+            {
+                name: 'beef',
+                pluralName: 'beef',
+                isCountable: false,
+                density: 1.0,
+                owner: user._id,
+                tags: [],
+            },
         ];
         const createdIngredients = await Ingredient.create(dummyIngredients);
 
@@ -165,6 +174,7 @@ export async function populateRecipes() {
                     (await Tag.findOne({ value: 'dinner' }))._id,
                     (await Tag.findOne({ value: 'freezes' }))._id,
                 ],
+                calculatedTags: [],
                 ingredients: [
                     {
                         ingredient: (await Ingredient.findOne({ name: 'onion' }))._id,
@@ -254,6 +264,45 @@ export async function populateRecipes() {
                 owner: user._id,
                 numServings: 3,
                 isIngredient: true,
+            },
+            {
+                title: 'Vegetarian Chili',
+                titleIdentifier: 'vegetarian-chili',
+                subTitle: 'A hearty and comforting dish',
+                tags: [
+                    (await Tag.findOne({ value: 'lunch' }))._id,
+                    (await Tag.findOne({ value: 'dinner' }))._id,
+                    (await Tag.findOne({ value: 'freezes' }))._id,
+                ],
+                ingredients: [
+                    {
+                        ingredient: (await Ingredient.findOne({ name: 'onion' }))._id,
+                        type: 'ingredient',
+                        quantity: '1',
+                        unit: null,
+                        prepMethod: (await PrepMethod.findOne({ value: 'chopped' }))._id,
+                    },
+                    {
+                        ingredient: (await Ingredient.findOne({ name: 'tomato' }))._id,
+                        type: 'ingredient',
+                        quantity: '400',
+                        unit: (await Unit.findOne({ shortSingular: 'cup' }))._id,
+                        prepMethod: (await PrepMethod.findOne({ value: 'chopped' }))._id,
+                    },
+                ],
+                instructions: [
+                    'Heat a large pot or Dutch oven over medium heat. Add a drizzle of olive oil.',
+                    'Once the oil is hot, add the chopped onion, bell pepper, and garlic. Sauté until softened, about 5-7 minutes.',
+                    'Add the diced tomatoes, tomato paste, and vegetable broth to the pot. Stir well to combine.',
+                    'Next, add the drained and rinsed beans, corn, and diced bell pepper to the pot. Stir well to combine.',
+                    'Season the chili with chili powder, cumin, paprika, oregano, and red pepper flakes. Stir well to combine.',
+                    'Let the chili simmer over low heat for about 30-40 minutes, stirring occasionally, until it thickens and the flavors meld together. Season with salt and pepper to taste.',
+                    'Serve the vegetarian chili hot with your favorite toppings like shredded cheese, sour cream, avocado, or fresh cilantro. Enjoy!',
+                ],
+                notes: 'This is a great recipe to make in bulk and freeze.',
+                owner: user._id,
+                numServings: 4,
+                isIngredient: false,
             },
         ];
 

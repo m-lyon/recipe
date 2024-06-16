@@ -70,8 +70,9 @@ ImageTC.addResolver({
     resolve: async (rp) => {
         const { args, context } = rp;
         const images = context.images;
+        console.log('images', images);
         // Remove the images from the database
-        await Image.deleteMany(args.filter);
+        await Image.deleteMany({ _id: { $in: args.ids } });
         // Remove files from disk
         images.forEach((image: Image) => {
             const filepath = path.join(IMAGE_DIR, path.basename(image.origUrl));

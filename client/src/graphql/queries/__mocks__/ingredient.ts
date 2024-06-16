@@ -14,6 +14,7 @@ export const mockGetIngredients = {
                     pluralName: 'apples',
                     isCountable: true,
                     owner: '60f4d2e5c3d5a0a4f1b9c0ec',
+                    tags: ['vegan', 'vegetarian'],
                 },
                 {
                     _id: '60f4d2e5c3d5a0a4f1b9c0e9',
@@ -22,6 +23,7 @@ export const mockGetIngredients = {
                     pluralName: 'chickens',
                     isCountable: false,
                     owner: '60f4d2e5c3d5a0a4f1b9c0ec',
+                    tags: [],
                 },
                 {
                     _id: '60f4d2e5c3d5a0a4f1b9c0ea',
@@ -30,6 +32,7 @@ export const mockGetIngredients = {
                     pluralName: 'carrots',
                     isCountable: true,
                     owner: '60f4d2e5c3d5a0a4f1b9c0ec',
+                    tags: ['vegan', 'vegetarian'],
                 },
                 {
                     _id: '60f4d2e5c3d5a0a4f1b9c0f0',
@@ -38,6 +41,7 @@ export const mockGetIngredients = {
                     pluralName: 'iceberg lettuces',
                     isCountable: false,
                     owner: '60f4d2e5c3d5a0a4f1b9c0ec',
+                    tags: ['vegan', 'vegetarian'],
                 },
             ],
             recipeMany: [],
@@ -57,6 +61,7 @@ export const mockGetIngredientsWithRecipe = {
                     title: 'rhubarb pie',
                     pluralTitle: 'rhubarb pies',
                     owner: '60f4d2e5c3d5a0a4f1b9c0ec',
+                    calculatedTags: ['vegetarian'],
                 },
             ],
         },
