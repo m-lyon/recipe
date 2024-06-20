@@ -9,11 +9,11 @@ import { PrepMethodTC } from '../models/PrepMethod.js';
 import { Ingredient, IngredientTC } from '../models/Ingredient.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
 import { RecipeModifyTC, generateRecipeIdentifier } from '../models/Recipe.js';
-import { Recipe, RecipeCreateTC, RecipeIngredientTC, RecipeQueryTC } from '../models/Recipe.js';
+import { Recipe, RecipeCreateTC, RecipeIngredientTC, RecipeTC } from '../models/Recipe.js';
 
 const IngredientOrRecipeTC = schemaComposer.createUnionTC({
     name: 'IngredientOrRecipe',
-    types: [IngredientTC.getType(), RecipeQueryTC.getType()],
+    types: [IngredientTC.getType(), RecipeTC.getType()],
     resolveType: (value: Ingredient & { constructor: typeof Model }) => {
         if (value && value.constructor) {
             return value.constructor.modelName;
@@ -25,7 +25,7 @@ const IngredientOrRecipeTC = schemaComposer.createUnionTC({
 RecipeModifyTC.addResolver({
     name: 'updateById',
     description: 'Update a recipe by its ID',
-    type: RecipeModifyTC.mongooseResolvers.updateById().getType(),
+    type: RecipeTC.mongooseResolvers.updateById().getType(),
     args: RecipeModifyTC.mongooseResolvers.updateById().getArgs(),
     resolve: updateByIdResolver(Recipe, RecipeModifyTC),
 });
@@ -33,7 +33,7 @@ RecipeModifyTC.addResolver({
 RecipeCreateTC.addResolver({
     name: 'createOne',
     description: 'Create a new recipe',
-    type: RecipeCreateTC.mongooseResolvers.createOne().getType(),
+    type: RecipeTC.mongooseResolvers.createOne().getType(),
     args: RecipeCreateTC.mongooseResolvers.createOne().getArgs(),
     resolve: createOneResolver(Recipe, RecipeCreateTC),
 });
@@ -58,9 +58,7 @@ RecipeIngredientTC.addResolver({
         if (ingredientDoc) {
             return ingredientDoc;
         }
-        const recipeDoc = await RecipeQueryTC.mongooseResolvers
-            .findById()
-            .resolve({ args: { _id } });
+        const recipeDoc = await RecipeTC.mongooseResolvers.findById().resolve({ args: { _id } });
         if (recipeDoc) {
             return recipeDoc;
         }
@@ -68,7 +66,7 @@ RecipeIngredientTC.addResolver({
     },
 });
 
-RecipeQueryTC.addRelation('tags', {
+RecipeTC.addRelation('tags', {
     resolver: () => TagTC.mongooseResolvers.findByIds(),
     prepareArgs: {
         _ids: (source: Recipe) => source.tags?.map((o) => o._id),
@@ -97,7 +95,7 @@ RecipeIngredientTC.addRelation('prepMethod', {
     projection: { prepMethod: true },
 });
 
-RecipeQueryTC.addFields({
+RecipeTC.addFields({
     images: {
         type: new GraphQLList(ImageTC.getType()),
         resolve: async (source) => {
@@ -108,15 +106,24 @@ RecipeQueryTC.addFields({
     },
 });
 
+RecipeModifyTC.addResolver({
+    name: 'removeById',
+    description: 'Remove a recipe by its ID',
+    type: RecipeTC.mongooseResolvers.removeById().getType(),
+    args: RecipeModifyTC.mongooseResolvers.removeById().getArgs(),
+    resolve: RecipeModifyTC.mongooseResolvers.removeById().resolve,
+});
+
 export const RecipeQuery = {
-    recipeById: RecipeQueryTC.mongooseResolvers
+    recipeById: RecipeTC.mongooseResolvers
         .findById()
         .setDescription('Get a single recipe by its ID'),
-    recipeByIds: RecipeQueryTC.mongooseResolvers
+    recipeByIds: RecipeTC.mongooseResolvers
         .findByIds()
         .setDescription('Get multiple recipes by their IDs'),
-    recipeOne: RecipeQueryTC.mongooseResolvers.findOne().setDescription('Get a single recipe'),
-    recipeMany: RecipeQueryTC.mongooseResolvers.findMany().setDescription('Get multiple recipes'),
+    recipeOne: RecipeTC.mongooseResolvers.findOne().setDescription('Get a single recipe'),
+    recipeMany: RecipeTC.mongooseResolvers.findMany().setDescription('Get multiple recipes'),
+    recipeCount: RecipeTC.mongooseResolvers.count().setDescription('Count the number of recipes'),
 };
 
 export const RecipeMutation = {

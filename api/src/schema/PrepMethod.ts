@@ -14,7 +14,7 @@ PrepMethodTC.addResolver({
 PrepMethodCreateTC.addResolver({
     name: 'createOne',
     description: 'Create a new prep method',
-    type: PrepMethodCreateTC.mongooseResolvers.createOne().getType(),
+    type: PrepMethodTC.mongooseResolvers.createOne().getType(),
     args: PrepMethodCreateTC.mongooseResolvers.createOne().getArgs(),
     resolve: createOneResolver(PrepMethod, PrepMethodCreateTC),
 });

@@ -21,6 +21,8 @@ export const mockCreateIngredient = {
                     name: 'beef',
                     pluralName: 'beef',
                     isCountable: false,
+                    owner: '60f4d2e5c3d5a0a4f1b9d0f7',
+                    tags: [],
                 },
             },
         },

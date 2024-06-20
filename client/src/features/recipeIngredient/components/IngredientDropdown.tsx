@@ -6,12 +6,12 @@ import { Popover, PopoverAnchor, useDisclosure } from '@chakra-ui/react';
 import { Quantity, Recipe } from '@recipe/types';
 import { DropdownItem } from '@recipe/common/components';
 import { useNavigatableList } from '@recipe/common/hooks';
+import { Ingredient, Unit } from '@recipe/graphql/generated';
 import { ingredientDisplayStr } from '@recipe/utils/formatting';
-import { Ingredient, IngredientCreate, Unit } from '@recipe/graphql/generated';
 
 import { NewIngredientPopover } from './NewIngredientPopover';
 
-export type IngredientOrRecipe = Ingredient | IngredientCreate | Recipe;
+export type IngredientOrRecipe = Ingredient | Recipe;
 export interface IngredientSuggestion {
     value: string | IngredientOrRecipe;
     colour?: string;

@@ -6,6 +6,7 @@ export const CREATE_PREP_METHOD = gql(`
             record {
                 _id
                 value
+                owner
             }
         }
     }
@@ -17,6 +18,7 @@ export const MODIFY_PREP_METHOD = gql(`
             record {
                 _id
                 value
+                owner
             }
         }
     }

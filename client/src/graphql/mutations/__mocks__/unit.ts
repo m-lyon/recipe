@@ -25,6 +25,7 @@ export const mockCreateUnit = {
                     shortPlural: 'cut',
                     preferredNumberFormat: 'decimal',
                     hasSpace: true,
+                    owner: '60f4d2e5c3d5a0a4f1b9d0f7',
                 },
             },
         },

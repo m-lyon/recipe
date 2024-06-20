@@ -8,6 +8,8 @@ export const CREATE_INGREDIENT = gql(`
                 name
                 pluralName
                 isCountable
+                owner
+                tags
             }
         }
     }
@@ -21,6 +23,8 @@ export const MODIFY_INGREDIENT = gql(`
                 name
                 pluralName
                 isCountable
+                owner
+                tags
             }
         }
     }

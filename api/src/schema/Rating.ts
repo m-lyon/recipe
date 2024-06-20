@@ -13,7 +13,7 @@ RatingTC.addResolver({
 RatingCreateTC.addResolver({
     name: 'createOne',
     description: 'Create a new rating',
-    type: RatingCreateTC.mongooseResolvers.createOne().getType(),
+    type: RatingTC.mongooseResolvers.createOne().getType(),
     args: RatingCreateTC.mongooseResolvers.createOne().getArgs(),
     resolve: createOneResolver(Rating, RatingCreateTC),
 });

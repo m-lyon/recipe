@@ -7,16 +7,14 @@ import { isPlural } from '@recipe/utils/plural';
 import { GET_UNITS } from '@recipe/graphql/queries/unit';
 import { GetUnitsQuery } from '@recipe/graphql/generated';
 import { VALID_NUMBER_REGEX } from '@recipe/utils/number';
-import { Unit, UnitCreate } from '@recipe/graphql/generated';
 import { useUnitConversion } from '@recipe/features/servings';
 import { GET_INGREDIENTS } from '@recipe/graphql/queries/ingredient';
 import { GET_PREP_METHODS } from '@recipe/graphql/queries/prepMethod';
 import { getEditableRecipeIngredientStr } from '@recipe/utils/formatting';
-import { PrepMethodCreate, RecipeIngredient } from '@recipe/graphql/generated';
 import { ingredientDisplayStr, unitDisplayValue } from '@recipe/utils/formatting';
-import { Ingredient, IngredientCreate, PrepMethod } from '@recipe/graphql/generated';
 import { EditableRecipeIngredient, FinishedQuantity, Quantity } from '@recipe/types';
 import { FinishedIngredient, FinishedRecipeIngredient, FinishedUnit } from '@recipe/types';
+import { Ingredient, PrepMethod, RecipeIngredient, Unit } from '@recipe/graphql/generated';
 import { FinishedPrepMethod, InputState, Recipe, RecipeIngredientQueryData } from '@recipe/types';
 
 export const DEFAULT_INGREDIENT_STR = 'Enter ingredient';
@@ -533,15 +531,7 @@ interface SetShow {
     off: () => void;
     toggle: () => void;
 }
-type SetAttr =
-    | Quantity
-    | Unit
-    | UnitCreate
-    | Ingredient
-    | IngredientCreate
-    | Recipe
-    | PrepMethod
-    | PrepMethodCreate;
+type SetAttr = Quantity | Unit | Ingredient | Recipe | PrepMethod;
 export interface IngredientActionHandler {
     editableStringValue: () => string;
     resetEditable: () => void;

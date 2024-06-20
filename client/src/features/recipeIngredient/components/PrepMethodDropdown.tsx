@@ -3,21 +3,20 @@ import { LayoutGroup } from 'framer-motion';
 import { MutableRefObject, useRef } from 'react';
 import { Popover, PopoverAnchor, useDisclosure } from '@chakra-ui/react';
 
+import { PrepMethod } from '@recipe/graphql/generated';
 import { DropdownItem } from '@recipe/common/components';
 import { useNavigatableList } from '@recipe/common/hooks';
-import { PrepMethod, PrepMethodCreate } from '@recipe/graphql/generated';
 
 import { NewPrepMethodPopover } from './NewPrepMethodPopover';
 
-type PrepMethodType = PrepMethod | PrepMethodCreate;
 export interface PrepMethodSuggestion {
-    value: string | PrepMethodType;
+    value: string | PrepMethod;
     colour?: string;
 }
 interface Props {
     strValue: string;
-    data: PrepMethodType[];
-    setItem: (value: PrepMethodType | null, _id?: string) => void;
+    data: PrepMethod[];
+    setItem: (value: PrepMethod | null, _id?: string) => void;
     handleSubmit: () => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
@@ -29,8 +28,8 @@ export function PrepMethodDropdown(props: Props) {
     const { isOpen, onOpen, onClose } = useDisclosure({
         onClose: () => previewRef.current?.focus(),
     });
-    const filter = (data: PrepMethodType[], value: string): PrepMethodSuggestion[] => {
-        const items = matchSorter<PrepMethodType>(data, value, {
+    const filter = (data: PrepMethod[], value: string): PrepMethodSuggestion[] => {
+        const items = matchSorter<PrepMethod>(data, value, {
             keys: ['value'],
         }).map((item) => ({ value: item })) as PrepMethodSuggestion[];
         if (value === '') {

@@ -14,7 +14,7 @@ IngredientTC.addResolver({
 IngredientCreateTC.addResolver({
     name: 'createOne',
     description: 'Create a new ingredient',
-    type: IngredientCreateTC.mongooseResolvers.createOne().getType(),
+    type: IngredientTC.mongooseResolvers.createOne().getType(),
     args: IngredientCreateTC.mongooseResolvers.createOne().getArgs(),
     resolve: createOneResolver(Ingredient, IngredientCreateTC),
 });

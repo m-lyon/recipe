@@ -11,6 +11,7 @@ export const CREATE_UNIT = gql(`
                 shortPlural
                 preferredNumberFormat
                 hasSpace
+                owner
             }
         }
     }
@@ -27,6 +28,7 @@ export const MODIFY_UNIT = gql(`
                 shortPlural
                 preferredNumberFormat
                 hasSpace
+                owner
             }
         }
     }

@@ -5,7 +5,19 @@ mutation UpdateRecipe($id: MongoID!, $recipe: UpdateByIdRecipeModifyInput!) {
     recipeUpdateById(_id: $id, record: $recipe) {
         record {
             _id
+            titleIdentifier
             title
+            tags {
+                _id
+                value
+            }
+            calculatedTags
+            isIngredient
+            numServings
+            pluralTitle
+            images {
+                origUrl
+            }
         }
     }
 }
@@ -16,7 +28,19 @@ export const CREATE_RECIPE = gql(`
         recipeCreateOne(record: $recipe) {
             record {
                 _id
+                titleIdentifier
                 title
+                tags {
+                    _id
+                    value
+                }
+                calculatedTags
+                isIngredient
+                numServings
+                pluralTitle
+                images {
+                    origUrl
+                }
             }
         }
     }

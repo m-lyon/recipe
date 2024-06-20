@@ -14,7 +14,7 @@ UnitTC.addResolver({
 UnitCreateTC.addResolver({
     name: 'createOne',
     description: 'Create a new unit',
-    type: UnitCreateTC.mongooseResolvers.createOne().getType(),
+    type: UnitTC.mongooseResolvers.createOne().getType(),
     args: UnitCreateTC.mongooseResolvers.createOne().getArgs(),
     resolve: createOneResolver(Unit, UnitCreateTC),
 });

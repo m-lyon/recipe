@@ -15,6 +15,7 @@ export const mockCreatePrepMethod = {
                 record: {
                     _id: '60f4d2e5c3d5a0a4f1b9c0f7',
                     value: 'pipped',
+                    owner: '60f4d2e5c3d5a0a4f1b9d0f7',
                 },
             },
         },
