@@ -1,9 +1,9 @@
-import { useContext } from 'react';
-import { Outlet } from 'react-router-dom';
-import { Popover, PopoverContent, PopoverTrigger } from '@chakra-ui/react';
+import { useContext, useRef } from 'react';
+import { Outlet, Link as ReactRouterLink } from 'react-router-dom';
 import { useBreakpointValue, useColorModeValue, useDisclosure } from '@chakra-ui/react';
+import { Box, Collapse, Flex, Icon, IconButton, Slide, Stack, Text } from '@chakra-ui/react';
+import { Link as ChakraLink, Popover, PopoverContent, PopoverTrigger } from '@chakra-ui/react';
 import { ChevronDownIcon, ChevronRightIcon, CloseIcon, HamburgerIcon } from '@chakra-ui/icons';
-import { Box, Collapse, Flex, Icon, IconButton, Link, Slide, Stack, Text } from '@chakra-ui/react';
 
 import { ROOT_PATH } from '@recipe/constants';
 import { UserContext, UserOptions } from '@recipe/features/user';
@@ -46,15 +46,16 @@ export function Navbar() {
                         />
                     </Flex>
                     <Flex flex={{ base: 1 }} justify={{ base: 'center', md: 'start' }}>
-                        <Link
+                        <ChakraLink
                             textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
                             fontFamily='heading'
                             color={useColorModeValue('gray.800', 'white')}
                             _hover={{ textDecoration: 'none' }}
-                            href={ROOT_PATH}
+                            to={ROOT_PATH}
+                            as={ReactRouterLink}
                         >
                             Home
-                        </Link>
+                        </ChakraLink>
 
                         <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
                             <DesktopNav isLoggedIn={isLoggedIn} />
@@ -63,7 +64,7 @@ export function Navbar() {
                     <UserOptions />
                 </Flex>
                 <Slide in={isOpen} direction='top' style={{ zIndex: 2, marginTop: '60px' }}>
-                    <MobileNav isLoggedIn={isLoggedIn} />
+                    <MobileNav isLoggedIn={isLoggedIn} parentOnToggle={onToggle} />
                 </Slide>
             </Box>
             <Outlet />
@@ -76,20 +77,22 @@ interface DesktopNavProps {
 }
 function DesktopNav(props: DesktopNavProps) {
     const { isLoggedIn } = props;
+    const ref = useRef<HTMLAnchorElement>(null);
     const linkColor = useColorModeValue('gray.600', 'gray.200');
     const linkHoverColor = useColorModeValue('gray.800', 'white');
     const popoverContentBgColor = useColorModeValue('white', 'gray.800');
     const navItems = isLoggedIn ? USER_NAV_ITEMS : PUBLIC_NAV_ITEMS;
 
     return (
-        <Stack direction={'row'} spacing={4}>
+        <Stack direction='row' spacing={4}>
             {navItems.map((navItem) => (
                 <Box key={navItem.label}>
-                    <Popover trigger={'hover'} placement={'bottom-start'}>
+                    <Popover trigger='hover' placement='bottom-start' closeOnBlur>
                         <PopoverTrigger>
-                            <Link
+                            <ChakraLink
                                 p={2}
-                                href={navItem.href ?? '#'}
+                                as={ReactRouterLink}
+                                to={navItem.href ?? '#'}
                                 fontSize='sm'
                                 fontWeight={500}
                                 color={linkColor}
@@ -97,9 +100,11 @@ function DesktopNav(props: DesktopNavProps) {
                                     textDecoration: 'none',
                                     color: linkHoverColor,
                                 }}
+                                ref={ref}
+                                onClick={() => ref.current?.blur()}
                             >
                                 {navItem.label}
-                            </Link>
+                            </ChakraLink>
                         </PopoverTrigger>
 
                         {navItem.children && (
@@ -126,14 +131,19 @@ function DesktopNav(props: DesktopNavProps) {
 }
 
 function DesktopSubNav({ label, href, subLabel }: NavItem) {
+    const ref = useRef<HTMLAnchorElement>(null);
+
     return (
-        <Link
-            href={href}
+        <ChakraLink
+            as={ReactRouterLink}
+            to={href}
             role='group'
             display='block'
             p={2}
             rounded='md'
             _hover={{ bg: useColorModeValue('white', 'gray.900') }}
+            ref={ref}
+            onClick={() => ref.current?.blur()}
         >
             <Stack direction='row' align='center'>
                 <Box>
@@ -158,26 +168,27 @@ function DesktopSubNav({ label, href, subLabel }: NavItem) {
                     <Icon color='teal.400' w={5} h={5} as={ChevronRightIcon} />
                 </Flex>
             </Stack>
-        </Link>
+        </ChakraLink>
     );
 }
 
 interface MobileNavProps {
     isLoggedIn: boolean;
+    parentOnToggle: () => void;
 }
 function MobileNav(props: MobileNavProps) {
-    const { isLoggedIn } = props;
+    const { isLoggedIn, parentOnToggle } = props;
     const navItems = isLoggedIn ? USER_NAV_ITEMS : PUBLIC_NAV_ITEMS;
     return (
         <Stack bg={useColorModeValue('white', 'gray.800')} display={{ md: 'none' }} width='100%'>
             {navItems.map((navItem) => (
-                <MobileNavItem key={navItem.label} {...navItem} />
+                <MobileNavItem key={navItem.label} parentOnToggle={parentOnToggle} {...navItem} />
             ))}
         </Stack>
     );
 }
 
-function MobileNavItem({ label, children, href }: NavItem) {
+function MobileNavItem({ label, children, href, parentOnToggle }: NavItem) {
     const { isOpen, onToggle } = useDisclosure();
 
     return (
@@ -185,7 +196,7 @@ function MobileNavItem({ label, children, href }: NavItem) {
             <Flex
                 py={2}
                 px={4}
-                as={Link}
+                as={ChakraLink}
                 href={href ?? '#'}
                 justify='space-between'
                 align='center'
@@ -218,9 +229,15 @@ function MobileNavItem({ label, children, href }: NavItem) {
                 >
                     {children &&
                         children.map((child) => (
-                            <Link key={child.label} py={2} href={child.href}>
+                            <ChakraLink
+                                key={child.label}
+                                py={2}
+                                to={child.href}
+                                as={ReactRouterLink}
+                                onClick={parentOnToggle}
+                            >
                                 {child.label}
-                            </Link>
+                            </ChakraLink>
                         ))}
                 </Stack>
             </Collapse>
@@ -233,6 +250,7 @@ interface NavItem {
     subLabel?: string;
     children?: Array<NavItem>;
     href?: string;
+    parentOnToggle?: () => void;
 }
 
 const USER_NAV_ITEMS: Array<NavItem> = [
