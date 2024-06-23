@@ -1,18 +1,16 @@
 import { useState } from 'react';
 
+import { ServingsProps } from '@recipe/features/servings';
+import { UseTagListReturnType, useTagList } from '@recipe/features/tags';
+import { UseItemListReturnType, useItemList } from '@recipe/common/hooks';
+import { UseEditableReturnType, useEditable } from '@recipe/common/hooks';
+import { UseIngredientListReturnType, useIngredientList } from '@recipe/features/recipeIngredient';
+
 import { useAsIngredient } from './useAsIngredient';
-import { ServingsProps } from '../../../components/Servings';
 import { ImageUploadProps } from '../components/ImageUpload';
 import { UseAsIngredientReturnType } from './useAsIngredient';
-import { UseTagListReturnType, useTagList } from '../../tags/hooks/useTagList';
 import { EditableNotesProps } from '../components/EditableNotes';
-import { UseItemListReturnType, useItemList } from '../../../common/hooks/useItemList';
-import { UseEditableReturnType, useEditable } from '../../../common/hooks/useEditable';
 import { EditableSourceProps } from '../components/EditableSource';
-import {
-    UseIngredientListReturnType,
-    useIngredientList,
-} from '../../recipeIngredient/hooks/useIngredientList';
 
 export interface RecipeState {
     numServings: ServingsProps;

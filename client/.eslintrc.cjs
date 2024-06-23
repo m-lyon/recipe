@@ -38,6 +38,7 @@ module.exports = {
                 allowSeparatedGroups: true,
             },
         ],
+        '@typescript-eslint/no-explicit-any': 'off',
         'import/no-duplicates': 'off',
         'import/no-unresolved': 'off',
         'import/order': [

@@ -3,15 +3,15 @@ import { LayoutGroup } from 'framer-motion';
 import { MutableRefObject, useRef } from 'react';
 import { Popover, PopoverAnchor, useDisclosure } from '@chakra-ui/react';
 
-import { Quantity, Recipe } from '@recipe/types';
 import { DropdownItem } from '@recipe/common/components';
 import { useNavigatableList } from '@recipe/common/hooks';
 import { Ingredient, Unit } from '@recipe/graphql/generated';
 import { ingredientDisplayStr } from '@recipe/utils/formatting';
+import { Quantity, RecipeFromIngredientsMany } from '@recipe/types';
 
 import { NewIngredientPopover } from './NewIngredientPopover';
 
-export type IngredientOrRecipe = Ingredient | Recipe;
+export type IngredientOrRecipe = Ingredient | RecipeFromIngredientsMany;
 export interface IngredientSuggestion {
     value: string | IngredientOrRecipe;
     colour?: string;

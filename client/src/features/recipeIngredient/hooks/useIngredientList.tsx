@@ -8,14 +8,15 @@ import { GET_UNITS } from '@recipe/graphql/queries/unit';
 import { GetUnitsQuery } from '@recipe/graphql/generated';
 import { VALID_NUMBER_REGEX } from '@recipe/utils/number';
 import { useUnitConversion } from '@recipe/features/servings';
+import { FinishedPrepMethod, InputState } from '@recipe/types';
 import { GET_INGREDIENTS } from '@recipe/graphql/queries/ingredient';
 import { GET_PREP_METHODS } from '@recipe/graphql/queries/prepMethod';
 import { getEditableRecipeIngredientStr } from '@recipe/utils/formatting';
 import { ingredientDisplayStr, unitDisplayValue } from '@recipe/utils/formatting';
 import { EditableRecipeIngredient, FinishedQuantity, Quantity } from '@recipe/types';
+import { RecipeFromIngredientsMany, RecipeIngredientQueryData } from '@recipe/types';
 import { FinishedIngredient, FinishedRecipeIngredient, FinishedUnit } from '@recipe/types';
 import { Ingredient, PrepMethod, RecipeIngredient, Unit } from '@recipe/graphql/generated';
-import { FinishedPrepMethod, InputState, Recipe, RecipeIngredientQueryData } from '@recipe/types';
 
 export const DEFAULT_INGREDIENT_STR = 'Enter ingredient';
 
@@ -318,7 +319,7 @@ function setUnit(state: IngredientState, action: SetUnitAction): IngredientState
 }
 interface SetIngredientAction {
     type: 'set_editable_ingredient';
-    payload: Ingredient | Recipe;
+    payload: Ingredient | RecipeFromIngredientsMany;
 }
 function setIngredient(state: IngredientState, action: SetIngredientAction): IngredientState {
     return produce(state, (draft) => {
@@ -531,7 +532,7 @@ interface SetShow {
     off: () => void;
     toggle: () => void;
 }
-type SetAttr = Quantity | Unit | Ingredient | Recipe | PrepMethod;
+type SetAttr = Quantity | Unit | Ingredient | RecipeFromIngredientsMany | PrepMethod;
 export interface IngredientActionHandler {
     editableStringValue: () => string;
     resetEditable: () => void;
@@ -593,7 +594,7 @@ export function useIngredientList(): UseIngredientListReturnType {
                     dispatch({ type: 'append_editable_unit', payload: value }),
             },
             ingredient: {
-                set: (ingredient: Ingredient | Recipe) =>
+                set: (ingredient: Ingredient | RecipeFromIngredientsMany) =>
                     dispatch({ type: 'set_editable_ingredient', payload: ingredient }),
                 append: (value: string) =>
                     dispatch({ type: 'append_editable_ingredient', payload: value }),
