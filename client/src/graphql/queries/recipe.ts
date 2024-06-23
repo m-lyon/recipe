@@ -1,5 +1,11 @@
 import { gql } from '../../__generated__';
 
+export const COUNT_RECIPES = gql(`
+    query CountRecipes {
+        recipeCount
+    }
+`);
+
 export const GET_RECIPE = gql(`
     query GetRecipe($filter: FilterFindOneRecipeInput!) {
         recipeOne(filter: $filter) {
@@ -55,8 +61,8 @@ export const GET_RECIPE = gql(`
 `);
 
 export const GET_RECIPES = gql(`
-    query GetRecipes {
-        recipeMany {
+    query GetRecipes($offset: Int = 0, $limit: Int = 1000) {
+        recipeMany(skip: $offset, limit: $limit) {
             _id
             titleIdentifier
             title
@@ -69,6 +75,7 @@ export const GET_RECIPES = gql(`
             numServings
             pluralTitle
             images {
+                _id
                 origUrl
             }
         }

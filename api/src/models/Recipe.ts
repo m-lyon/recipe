@@ -198,4 +198,4 @@ export const RecipeCreateTC = composeMongoose(Recipe, {
     removeFields: ['owner', 'titleIdentifier', 'calculatedTags'],
     name: 'RecipeCreate',
 });
-export const RecipeQueryTC = composeMongoose(Recipe);
+export const RecipeTC = composeMongoose(Recipe);

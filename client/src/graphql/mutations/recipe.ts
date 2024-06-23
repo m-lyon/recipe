@@ -16,6 +16,7 @@ mutation UpdateRecipe($id: MongoID!, $recipe: UpdateByIdRecipeModifyInput!) {
             numServings
             pluralTitle
             images {
+                _id
                 origUrl
             }
         }
@@ -39,6 +40,7 @@ export const CREATE_RECIPE = gql(`
                 numServings
                 pluralTitle
                 images {
+                    _id
                     origUrl
                 }
             }

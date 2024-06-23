@@ -14,7 +14,8 @@ ImageTC.addResolver({
     type: new GraphQLObjectType({
         name: 'ImageUploadPayload',
         fields: {
-            recordId: { type: GraphQLString },
+            record: { type: ImageTC.getType(), description: 'The added image.' },
+            recordId: { type: GraphQLString, description: 'The ID of the added image.' },
         },
     }),
     args: {
@@ -26,14 +27,22 @@ ImageTC.addResolver({
         await validateImageFile(args.file);
         const origFilepath = storeUpload(args.file);
         const image = await saveImageToDb(origFilepath, args._id, args.note);
-        return { recordId: image._id };
+        return { record: image, recordId: image._id };
     },
 });
 
 ImageTC.addResolver({
     name: 'imageUploadMany',
     description: 'Upload multiple images',
-    type: '[ImageUploadPayload]',
+    type: new GraphQLObjectType({
+        name: 'ImageUploadManyPayload',
+        fields: {
+            records: {
+                type: new GraphQLList(new GraphQLNonNull(ImageTC.getType())),
+                description: 'The uploaded images.',
+            },
+        },
+    }),
     args: {
         files: {
             description: 'Files to store.',
@@ -47,21 +56,24 @@ ImageTC.addResolver({
             args.files.map(async (file: Promise<FileUpload>) => {
                 await validateImageFile(file);
                 const origFilepath = storeUpload(file);
-                return await saveImageToDb(origFilepath, args._id, args.note);
+                const image = await saveImageToDb(origFilepath, args._id, args.note);
+                return image;
             })
         );
-        return images.map((image) => ({ recordId: image._id }));
+        return { records: images };
     },
 });
 
-// TODO: figure out the correct return type for this
 ImageTC.addResolver({
     name: 'imageRemoveManyByIds',
     description: 'Remove multiple images by their IDs',
     type: new GraphQLObjectType({
-        name: 'ImageRemovePayload',
+        name: 'ImageRemoveManyPayload',
         fields: {
-            recordIds: { type: new GraphQLList(GraphQLString) },
+            records: {
+                type: new GraphQLList(new GraphQLNonNull(ImageTC.getType())),
+                description: 'The deleted images.',
+            },
         },
     }),
     args: {
@@ -69,17 +81,17 @@ ImageTC.addResolver({
     },
     resolve: async (rp) => {
         const { args, context } = rp;
-        const images = context.images;
-        console.log('images', images);
+        const images: Image[] = context.images;
         // Remove the images from the database
         await Image.deleteMany({ _id: { $in: args.ids } });
         // Remove files from disk
-        images.forEach((image: Image) => {
+        images.forEach((image) => {
             const filepath = path.join(IMAGE_DIR, path.basename(image.origUrl));
             fs.unlink(filepath, (err) => {
                 if (err) throw err;
             });
         });
+        return { records: images };
     },
 });
 

@@ -1,12 +1,13 @@
+import { useState } from 'react';
 import { useToast } from '@chakra-ui/react';
-import { useMutation, useQuery } from '@apollo/client';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Reference, gql, useMutation, useQuery } from '@apollo/client';
 
-import { useRecipeState } from '@recipe/features/editing';
-import { EditableRecipe } from '@recipe/features/editing';
+import { RecipeFromOne } from '@recipe/types';
+import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { useViewStarRating } from '@recipe/features/starRating';
 import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
-import { GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
+import { EditableRecipe, useRecipeState } from '@recipe/features/editing';
 import { dbIngredientToFinished } from '@recipe/features/recipeIngredient';
 import { DELETE_IMAGES, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
 import { DELAY_LONG, DELAY_SHORT, GRAPHQL_ENDPOINT, ROOT_PATH } from '@recipe/constants';
@@ -15,25 +16,69 @@ import { RecipeIngredient, UpdateByIdRecipeModifyInput } from '@recipe/graphql/g
 export function EditRecipe() {
     const toast = useToast();
     const state = useRecipeState();
+    const [recipe, setRecipe] = useState<RecipeFromOne | null>(null);
     const navigate = useNavigate();
     const { titleIdentifier } = useParams();
     const { avgRating: rating, getRatings, setRating } = useViewStarRating();
-    const [saveRecipe, { data: response, loading: recipeLoading }] = useMutation(UPDATE_RECIPE, {
-        refetchQueries: ['GetRecipe', 'GetRecipes'],
-    });
+    const [saveRecipe, { data: response, loading: recipeLoading }] = useMutation(UPDATE_RECIPE);
     const [deleteImages] = useMutation(DELETE_IMAGES, {
-        refetchQueries: ['GetRecipe', 'GetRecipes'],
+        update(cache, { data }) {
+            if (!data?.imageRemoveMany?.records || !recipe) {
+                return;
+            }
+            cache.modify({
+                id: cache.identify(recipe),
+                fields: {
+                    images(existing: ReadonlyArray<Reference>, { readField }) {
+                        const newRefs = existing.filter(
+                            (ref) =>
+                                !data.imageRemoveMany?.records?.some(
+                                    (deleted) => deleted._id === readField('_id', ref)
+                                )
+                        );
+                        return newRefs;
+                    },
+                },
+            });
+        },
     });
     const [uploadImages, { loading: uploadLoading }] = useMutation(UPLOAD_IMAGES, {
         context: { headers: { 'apollo-require-preflight': true } },
-        refetchQueries: ['GetRecipe', 'GetRecipes'],
+        update(cache, { data }) {
+            if (!data?.imageUploadMany?.records || !recipe) {
+                return;
+            }
+            cache.modify({
+                id: cache.identify(recipe),
+                fields: {
+                    images(existing) {
+                        if (!data.imageUploadMany?.records) {
+                            return existing;
+                        }
+                        const refs = data.imageUploadMany.records.map((img) =>
+                            cache.writeFragment({
+                                data: img,
+                                fragment: gql`
+                                    fragment NewImage on Image {
+                                        _id
+                                        origUrl
+                                    }
+                                `,
+                            })
+                        );
+                        const newRefs = refs.filter((ref) => !existing.includes(ref));
+                        return [...existing, ...newRefs];
+                    },
+                },
+            });
+        },
     });
-    useQuery(GET_RECIPES); // query recipes so this list gets correctly updated
     const { data, loading, error } = useQuery(GET_RECIPE, {
         variables: { filter: { titleIdentifier: titleIdentifier } },
         onCompleted: async (data) => {
             getRatings(data.recipeOne!._id);
             const recipe = data.recipeOne!;
+            setRecipe(recipe);
             state.title.actionHandler.set(recipe.title);
             state.numServings.setNum(recipe.numServings);
             const ingredients = recipe.ingredients.map((ing) => {

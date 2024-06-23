@@ -6,7 +6,9 @@ import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { RecipeCardsContainer } from '@recipe/features/viewing';
 
 export function Home() {
-    const { data, loading, error } = useQuery(GET_RECIPES);
+    const { data, loading, error, fetchMore } = useQuery(GET_RECIPES, {
+        variables: { offset: 0, limit: 10 },
+    });
 
     if (loading) {
         return <div>Loading...</div>;
@@ -30,13 +32,18 @@ export function Home() {
                 color='blackAlpha.700'
                 fontWeight='bold'
             >
-                <GridItem pl='2' boxShadow='lg' padding='6' area='title'>
+                <GridItem boxShadow='lg' padding='6' area='title'>
                     <Text fontSize='3xl' textAlign='center'>
                         Recipes
                     </Text>
                 </GridItem>
-                <GridItem pl='2' boxShadow='lg' padding='6' area='recipes'>
-                    <RecipeCardsContainer recipes={data!.recipeMany as Recipe[]} />
+                <GridItem boxShadow='lg' area='recipes'>
+                    <RecipeCardsContainer
+                        recipes={data!.recipeMany as Recipe[]}
+                        fetchMore={() => {
+                            fetchMore({ variables: { offset: data!.recipeMany.length } });
+                        }}
+                    />
                 </GridItem>
             </Grid>
         </Container>
