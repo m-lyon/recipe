@@ -106,6 +106,7 @@ export interface Recipe extends Document {
     source?: string;
     numServings: number;
     isIngredient: boolean;
+    // creationDate: Date; // TODO: Add this to the schema
 }
 
 const recipeSchema = new Schema<Recipe>({

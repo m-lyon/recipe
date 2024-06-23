@@ -9,6 +9,7 @@ export const mockGetRatings = {
         data: {
             ratingMany: [
                 {
+                    __typename: 'Rating',
                     _id: '60f4d2e5c3d5a0a4f1b9c0ec',
                     value: 3.0,
                 },

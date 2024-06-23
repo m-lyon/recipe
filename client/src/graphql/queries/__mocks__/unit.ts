@@ -1,6 +1,7 @@
 import { GET_UNITS } from '@recipe/graphql/queries/unit';
 
 export const mockTeaspoon = {
+    __typename: 'Unit',
     _id: '60f4d2e5c3d5a0a4f1b9c0f2',
     shortSingular: 'tsp',
     shortPlural: 'tsp',
@@ -11,6 +12,7 @@ export const mockTeaspoon = {
     hasSpace: true,
 };
 export const mockGram = {
+    __typename: 'Unit',
     _id: '60f4d2e5c3d5a0a4f1b9c0f3',
     shortSingular: 'g',
     shortPlural: 'g',
@@ -21,6 +23,7 @@ export const mockGram = {
     hasSpace: false,
 };
 export const mockKilogram = {
+    __typename: 'Unit',
     _id: '60f4d2e5c3d5a0a4f1b9c0f5',
     shortSingular: 'kg',
     shortPlural: 'kg',
@@ -31,6 +34,7 @@ export const mockKilogram = {
     hasSpace: false,
 };
 export const mockOunce = {
+    __typename: 'Unit',
     _id: '60f4d2e5c3d5a0a4f1b9c0f4',
     shortSingular: 'oz',
     shortPlural: 'oz',
@@ -41,6 +45,7 @@ export const mockOunce = {
     hasSpace: true,
 };
 export const mockCup = {
+    __typename: 'Unit',
     _id: '60f4d2e5c3d5a0a4f1b9c0f6',
     shortSingular: 'cup',
     shortPlural: 'cups',
