@@ -3,6 +3,8 @@ import { Dispatch, SetStateAction } from 'react';
 import { AddIcon, MinusIcon } from '@chakra-ui/icons';
 import { Button, IconButton, useToast } from '@chakra-ui/react';
 
+import { DELAY_LONG } from '@recipe/constants';
+
 export interface ServingsProps {
     num: number;
     setNum: Dispatch<SetStateAction<number>>;
@@ -34,7 +36,7 @@ export function Servings(props: ServingsProps) {
                                 title: 'Error',
                                 description: err.message,
                                 status: 'error',
-                                duration: 3000,
+                                duration: DELAY_LONG,
                                 isClosable: false,
                             });
                         });
@@ -74,7 +76,7 @@ export function Servings(props: ServingsProps) {
                                 title: 'Error',
                                 description: err.message,
                                 status: 'error',
-                                duration: 3000,
+                                duration: DELAY_LONG,
                                 isClosable: false,
                             });
                         });

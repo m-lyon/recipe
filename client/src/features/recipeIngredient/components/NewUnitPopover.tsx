@@ -2,11 +2,12 @@ import { useToast } from '@chakra-ui/react';
 import { PopoverArrow, PopoverHeader } from '@chakra-ui/react';
 import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 
+import { DELAY_LONG } from '@recipe/constants';
 import { CREATE_UNIT } from '@recipe/graphql/mutations/unit';
 import { CreateUnitMutation } from '@recipe/graphql/generated';
 
-import { UnitSuggestion } from './UnitDropdown';
 import { UnitForm } from './UnitForm';
+import { UnitSuggestion } from './UnitDropdown';
 
 interface Props {
     fieldRef: React.MutableRefObject<HTMLInputElement | null>;
@@ -28,7 +29,7 @@ export function NewUnitPopover(props: Props) {
             description: `${data?.unitCreateOne?.record?.longSingular} saved`,
             status: 'success',
             position: 'top',
-            duration: 3000,
+            duration: DELAY_LONG,
         });
     };
     return (

@@ -1,7 +1,7 @@
 import { ChakraProvider } from '@chakra-ui/react';
 import { RouterProvider } from 'react-router-dom';
 import { MockedProvider } from '@apollo/client/testing';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
@@ -14,8 +14,6 @@ import { ViewRecipe } from '../ViewRecipe';
 
 loadErrorMessages();
 loadDevMessages();
-
-vi.mock('../../constants.ts');
 
 const routes = createBrowserRouter(
     createRoutesFromElements(<Route path='/' element={<ViewRecipe />} />)

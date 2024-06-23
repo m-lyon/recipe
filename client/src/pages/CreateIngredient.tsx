@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Box, Heading, VStack, useToast } from '@chakra-ui/react';
 
-import { ROOT_PATH } from '@recipe/constants';
+import { DELAY_LONG, ROOT_PATH } from '@recipe/constants';
 import { IngredientForm } from '@recipe/features/recipeIngredient';
 import { CreateIngredientMutation } from '@recipe/graphql/generated';
 import { CREATE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
@@ -15,9 +15,9 @@ export function CreateIngredient() {
             description: `${data?.ingredientCreateOne?.record?.name} saved, redirecting to the home page.`,
             status: 'success',
             position: 'top',
-            duration: 3000,
+            duration: DELAY_LONG,
         });
-        return setTimeout(() => navigate(ROOT_PATH), 3000);
+        return setTimeout(() => navigate(ROOT_PATH), DELAY_LONG);
     };
 
     return (

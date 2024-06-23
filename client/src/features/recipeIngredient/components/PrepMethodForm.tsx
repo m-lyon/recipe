@@ -3,6 +3,7 @@ import { ValidationError, object, string } from 'yup';
 import { ApolloError, useMutation } from '@apollo/client';
 import { Button, ButtonGroup, Stack, StackProps, useToast } from '@chakra-ui/react';
 
+import { DELAY_LONG } from '@recipe/constants';
 import { FloatingLabelInput } from '@recipe/common/components';
 import { PrepMethod, Scalars } from '@recipe/graphql/generated';
 import { DELETE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
@@ -58,7 +59,7 @@ export function PrepMethodForm(props: PrepMethoFormProps) {
                 description: formatError(error),
                 status: 'error',
                 position: 'top',
-                duration: 3000,
+                duration: DELAY_LONG,
             });
         },
         refetchQueries: ['GetPrepMethods'],
@@ -71,7 +72,7 @@ export function PrepMethodForm(props: PrepMethoFormProps) {
                 description: formatError(error),
                 status: 'error',
                 position: 'top',
-                duration: 3000,
+                duration: DELAY_LONG,
             });
         },
         refetchQueries: ['GetPrepMethods'],
@@ -101,7 +102,7 @@ export function PrepMethodForm(props: PrepMethoFormProps) {
                     description: e.message,
                     status: 'error',
                     position: 'top',
-                    duration: 3000,
+                    duration: DELAY_LONG,
                 });
             }
         }

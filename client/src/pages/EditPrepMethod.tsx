@@ -3,6 +3,7 @@ import { useContext, useState } from 'react';
 import { FormLabel, Select } from '@chakra-ui/react';
 import { Box, FormControl, Heading, VStack, useToast } from '@chakra-ui/react';
 
+import { DELAY_LONG } from '@recipe/constants';
 import { UserContext } from '@recipe/features/user';
 import { PrepMethod } from '@recipe/graphql/generated';
 import { PrepMethodForm } from '@recipe/features/recipeIngredient';
@@ -62,7 +63,7 @@ export function EditPrepMethod() {
                                     description: `${currentPrepMethod!.value} saved`,
                                     status: 'success',
                                     position: 'top',
-                                    duration: 3000,
+                                    duration: DELAY_LONG,
                                 });
                             }}
                             handleDelete={() => {
@@ -70,7 +71,7 @@ export function EditPrepMethod() {
                                     title: 'Prep method deleted',
                                     status: 'success',
                                     position: 'top',
-                                    duration: 3000,
+                                    duration: DELAY_LONG,
                                 });
                                 setCurrentPrepMethod(undefined);
                             }}

@@ -5,11 +5,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useRecipeState } from '@recipe/features/editing';
 import { EditableRecipe } from '@recipe/features/editing';
 import { useViewStarRating } from '@recipe/features/starRating';
-import { GRAPHQL_ENDPOINT, ROOT_PATH } from '@recipe/constants';
 import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { dbIngredientToFinished } from '@recipe/features/recipeIngredient';
 import { DELETE_IMAGES, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
+import { DELAY_LONG, DELAY_SHORT, GRAPHQL_ENDPOINT, ROOT_PATH } from '@recipe/constants';
 import { RecipeIngredient, UpdateByIdRecipeModifyInput } from '@recipe/graphql/generated';
 
 export function EditRecipe() {
@@ -77,7 +77,7 @@ export function EditRecipe() {
                         description: (error as Error).message,
                         status: 'error',
                         position: 'top',
-                        duration: 3000,
+                        duration: DELAY_LONG,
                     });
                 }
             }
@@ -102,7 +102,7 @@ export function EditRecipe() {
                 description: (error as Error).message,
                 status: 'error',
                 position: 'top',
-                duration: 3000,
+                duration: DELAY_LONG,
             });
         }
         try {
@@ -129,19 +129,18 @@ export function EditRecipe() {
                 description: (error as Error).message,
                 status: 'error',
                 position: 'top',
-                duration: 3000,
+                duration: DELAY_LONG,
             });
-            return setTimeout(() => navigate(ROOT_PATH), 3000);
+            return setTimeout(() => navigate(ROOT_PATH), DELAY_LONG);
         }
         toast({
             title: 'Recipe saved',
             description: 'Your recipe has been saved, redirecting you to the home page',
             status: 'success',
             position: 'top',
-            duration: 1500,
+            duration: DELAY_SHORT,
         });
-
-        setTimeout(() => navigate(ROOT_PATH), 1500);
+        setTimeout(() => navigate(ROOT_PATH), DELAY_SHORT);
     };
 
     return (

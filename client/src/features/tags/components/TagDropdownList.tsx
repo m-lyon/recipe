@@ -4,6 +4,7 @@ import { LayoutGroup } from 'framer-motion';
 import { useToast } from '@chakra-ui/react';
 import { useMutation } from '@apollo/client';
 
+import { DELAY_LONG } from '@recipe/constants';
 import { Tag } from '@recipe/graphql/generated';
 import { DropdownItem } from '@recipe/common/components';
 import { useNavigatableList } from '@recipe/common/hooks';
@@ -39,7 +40,7 @@ export function TagDropdownList(props: Props) {
                 description: `Tag ${data?.tagCreateOne?.record?.value} created`,
                 status: 'success',
                 position: 'top',
-                duration: 3000,
+                duration: DELAY_LONG,
                 isClosable: true,
             });
         },
@@ -67,7 +68,7 @@ export function TagDropdownList(props: Props) {
                 description: `Cannot add duplicate tags.`,
                 status: 'warning',
                 position: 'top',
-                duration: 3000,
+                duration: DELAY_LONG,
                 isClosable: true,
             });
         } else {

@@ -7,12 +7,11 @@ import { List, Tag, TagCloseButton, TagLabel } from '@chakra-ui/react';
 import { Box, Button, FormControl, HStack, Heading, VStack, useToast } from '@chakra-ui/react';
 
 import { GET_UNITS } from '@recipe/graphql/queries/unit';
+import { DELAY_LONG, DELAY_SHORT, ROOT_PATH } from '@recipe/constants';
 import { CREATE_CONVERSION_RULE } from '@recipe/graphql/mutations/unitConversion';
 import { CREATE_UNIT_CONVERSION } from '@recipe/graphql/mutations/unitConversion';
 import { REMOVE_CONVERSION_RULE } from '@recipe/graphql/mutations/unitConversion';
 import { CreateConversionRuleMutation, GetUnitsQuery, Unit } from '@recipe/graphql/generated';
-
-import { ROOT_PATH } from '../constants';
 
 type ConversionRule = NonNullable<
     NonNullable<CreateConversionRuleMutation['conversionRuleCreateOne']>['record']
@@ -59,7 +58,7 @@ function CreateConversionRule(props: CreateConversionRuleProps) {
                     title: 'An error occurred.',
                     description: err.message,
                     status: 'error',
-                    duration: 3000,
+                    duration: DELAY_LONG,
                     isClosable: true,
                 });
             }
@@ -147,9 +146,9 @@ export function CreateUnitConversion() {
                     'The unit conversion has been created, redirecting you to the home page',
                 status: 'success',
                 position: 'top',
-                duration: 1500,
+                duration: DELAY_SHORT,
             });
-            setTimeout(() => navigate(ROOT_PATH), 1500);
+            setTimeout(() => navigate(ROOT_PATH), DELAY_SHORT);
         } catch (err) {
             if (err instanceof Error) {
                 console.error(err);

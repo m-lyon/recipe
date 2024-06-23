@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Box, Heading, VStack, useToast } from '@chakra-ui/react';
 
-import { ROOT_PATH } from '@recipe/constants';
+import { DELAY_LONG, ROOT_PATH } from '@recipe/constants';
 import { CREATE_UNIT } from '@recipe/graphql/mutations/unit';
 import { UnitForm } from '@recipe/features/recipeIngredient';
 import { CreateUnitMutation } from '@recipe/graphql/generated';
@@ -15,9 +15,9 @@ export function CreateUnit() {
             description: `${data?.unitCreateOne?.record?.longSingular} saved, redirecting to the home page.`,
             status: 'success',
             position: 'top',
-            duration: 3000,
+            duration: DELAY_LONG,
         });
-        return setTimeout(() => navigate(ROOT_PATH), 3000);
+        return setTimeout(() => navigate(ROOT_PATH), DELAY_LONG);
     };
 
     return (

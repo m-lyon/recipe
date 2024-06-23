@@ -1,6 +1,7 @@
 import { useContext } from 'react';
 import { Container, Grid, GridItem, useBreakpointValue, useToast } from '@chakra-ui/react';
 
+import { DELAY_LONG } from '@recipe/constants';
 import { UserContext } from '@recipe/features/user';
 import { Servings } from '@recipe/features/servings';
 import { IngredientsTabLayout } from '@recipe/layouts';
@@ -74,7 +75,7 @@ export function EditableRecipe(props: Props) {
                 title: 'Please enter a title',
                 status: 'error',
                 position: 'top',
-                duration: 3000,
+                duration: DELAY_LONG,
             });
             return false;
         }
@@ -83,7 +84,7 @@ export function EditableRecipe(props: Props) {
                 title: 'Please enter at least one ingredient',
                 status: 'error',
                 position: 'top',
-                duration: 3000,
+                duration: DELAY_LONG,
             });
             return false;
         }
@@ -92,7 +93,7 @@ export function EditableRecipe(props: Props) {
                 title: 'Please enter at least one instruction',
                 status: 'error',
                 position: 'top',
-                duration: 3000,
+                duration: DELAY_LONG,
             });
             return false;
         }
@@ -126,7 +127,7 @@ export function EditableRecipe(props: Props) {
                 title: 'Please log in to create a recipe',
                 status: 'error',
                 position: 'top',
-                duration: 3000,
+                duration: DELAY_LONG,
             });
             return;
         }

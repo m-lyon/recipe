@@ -2,7 +2,7 @@ import { ChakraProvider } from '@chakra-ui/react';
 import { RouterProvider } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import { MockedProvider } from '@apollo/client/testing';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
@@ -17,8 +17,6 @@ import { CreateRecipe } from '../CreateRecipe';
 
 loadErrorMessages();
 loadDevMessages();
-
-vi.mock('../../constants.ts');
 
 const routes = createBrowserRouter(
     createRoutesFromElements(<Route path='/' element={<CreateRecipe />} />)
@@ -41,23 +39,6 @@ const renderComponent = () => {
         </MockedProvider>
     );
 };
-
-describe('placeholder test', () => {
-    afterEach(() => {
-        cleanup();
-    });
-    it('should pass', async () => {
-        // Render
-        const user = userEvent.setup();
-        renderComponent();
-
-        // Act
-        const ingredientInput = screen.getByText('Ingredients');
-        await user.click(ingredientInput);
-
-        expect(true).toBe(true);
-    });
-});
 
 describe('Title', () => {
     afterEach(() => {

@@ -3,6 +3,7 @@ import { useContext, useState } from 'react';
 import { FormLabel, Select } from '@chakra-ui/react';
 import { Box, FormControl, Heading, VStack, useToast } from '@chakra-ui/react';
 
+import { DELAY_LONG } from '@recipe/constants';
 import { Unit } from '@recipe/graphql/generated';
 import { UserContext } from '@recipe/features/user';
 import { GET_UNITS } from '@recipe/graphql/queries/unit';
@@ -58,7 +59,7 @@ export function EditUnit() {
                                     description: `${currentUnit?.longSingular} saved`,
                                     status: 'success',
                                     position: 'top',
-                                    duration: 3000,
+                                    duration: DELAY_LONG,
                                 });
                             }}
                             handleDelete={() => {
@@ -66,7 +67,7 @@ export function EditUnit() {
                                     title: 'Unit deleted',
                                     status: 'success',
                                     position: 'top',
-                                    duration: 3000,
+                                    duration: DELAY_LONG,
                                 });
                                 setCurrentUnit(undefined);
                             }}

@@ -3,14 +3,12 @@ import { useToast } from '@chakra-ui/react';
 import { useMutation } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
 
-import { useRecipeState } from '@recipe/features/editing';
-import { EditableRecipe } from '@recipe/features/editing';
 import { ADD_RATING } from '@recipe/graphql/mutations/rating';
 import { UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
 import { CREATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
-
-import { ROOT_PATH } from '../constants';
+import { DELAY_LONG, DELAY_SHORT, ROOT_PATH } from '@recipe/constants';
+import { EditableRecipe, useRecipeState } from '@recipe/features/editing';
 
 export function CreateRecipe() {
     const toast = useToast();
@@ -37,7 +35,7 @@ export function CreateRecipe() {
                 description: (error as Error).message,
                 status: 'error',
                 position: 'top',
-                duration: 3000,
+                duration: DELAY_LONG,
             });
         }
         try {
@@ -51,9 +49,9 @@ export function CreateRecipe() {
                 description: (error as Error).message,
                 status: 'error',
                 position: 'top',
-                duration: 5000,
+                duration: DELAY_LONG,
             });
-            return setTimeout(() => navigate(ROOT_PATH), 5000);
+            return setTimeout(() => navigate(ROOT_PATH), DELAY_LONG);
         }
 
         try {
@@ -67,9 +65,9 @@ export function CreateRecipe() {
                 description: (error as Error).message,
                 status: 'error',
                 position: 'top',
-                duration: 5000,
+                duration: DELAY_LONG,
             });
-            return setTimeout(() => navigate(ROOT_PATH), 5000);
+            return setTimeout(() => navigate(ROOT_PATH), DELAY_LONG);
         }
         toast({
             title: 'Recipe created',
@@ -78,7 +76,7 @@ export function CreateRecipe() {
             position: 'top',
             duration: 1500,
         });
-        setTimeout(() => navigate(ROOT_PATH), 1500);
+        setTimeout(() => navigate(ROOT_PATH), DELAY_SHORT);
     };
     return (
         <EditableRecipe

@@ -1,4 +1,6 @@
 // Expose environment variables here
 const GRAPHQL_ENDPOINT = import.meta.env.VITE_GRAPHQL_ENDPOINT;
 const ROOT_PATH = import.meta.env.VITE_ROOT_PATH || '/recipe';
-export { GRAPHQL_ENDPOINT, ROOT_PATH };
+const DELAY_SHORT = import.meta.env.VITE_DELAY_SHORT || 1500;
+const DELAY_LONG = import.meta.env.VITE_DELAY_LONG || 3000;
+export { GRAPHQL_ENDPOINT, ROOT_PATH, DELAY_SHORT, DELAY_LONG };

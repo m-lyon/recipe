@@ -1,11 +1,12 @@
 import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 import { PopoverArrow, PopoverHeader, useToast } from '@chakra-ui/react';
 
+import { DELAY_LONG } from '@recipe/constants';
 import { CreateIngredientMutation } from '@recipe/graphql/generated';
 import { CREATE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 
-import { IngredientSuggestion } from './IngredientDropdown';
 import { IngredientForm } from './IngredientForm';
+import { IngredientSuggestion } from './IngredientDropdown';
 
 interface Props {
     fieldRef: React.MutableRefObject<HTMLInputElement | null>;
@@ -27,7 +28,7 @@ export function NewIngredientPopover(props: Props) {
             description: `${data?.ingredientCreateOne?.record?.name} saved`,
             status: 'success',
             position: 'top',
-            duration: 3000,
+            duration: DELAY_LONG,
         });
     };
 

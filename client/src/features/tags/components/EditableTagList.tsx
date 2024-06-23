@@ -2,6 +2,8 @@ import { useMutation } from '@apollo/client';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 import { Tag, TagCloseButton, TagLabel, VStack, Wrap, WrapItem, useToast } from '@chakra-ui/react';
 
+import { DELAY_LONG } from '@recipe/constants';
+
 import { EditableTag } from './EditableTag';
 import { gql } from '../../../__generated__';
 import { UseTagListReturnType } from '../hooks/useTagList';
@@ -29,7 +31,7 @@ export function EditableTagList(props: UseTagListReturnType) {
                 description: `Tag ${data?.tagRemoveById?.record?.value} removed`,
                 status: 'success',
                 position: 'top',
-                duration: 3000,
+                duration: DELAY_LONG,
                 isClosable: true,
             });
         },
@@ -39,7 +41,7 @@ export function EditableTagList(props: UseTagListReturnType) {
                 description: error.message,
                 status: 'error',
                 position: 'top',
-                duration: 3000,
+                duration: DELAY_LONG,
                 isClosable: true,
             });
         },

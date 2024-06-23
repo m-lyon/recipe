@@ -1,6 +1,7 @@
 import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 import { PopoverArrow, PopoverHeader, useToast } from '@chakra-ui/react';
 
+import { DELAY_LONG } from '@recipe/constants';
 import { CreatePrepMethodMutation } from '@recipe/graphql/generated';
 import { CREATE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 
@@ -27,7 +28,7 @@ export function NewPrepMethodPopover(props: Props) {
             description: `${data?.prepMethodCreateOne?.record?.value} saved`,
             status: 'success',
             position: 'top',
-            duration: 3000,
+            duration: DELAY_LONG,
         });
     };
 

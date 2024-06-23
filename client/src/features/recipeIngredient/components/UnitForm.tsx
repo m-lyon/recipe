@@ -5,9 +5,10 @@ import { ValidationError, boolean, mixed, object, string } from 'yup';
 import { Button, ButtonGroup, HStack, useToast } from '@chakra-ui/react';
 import { Checkbox, Radio, RadioGroup, Stack, StackProps } from '@chakra-ui/react';
 
+import { DELAY_LONG } from '@recipe/constants';
 import { FloatingLabelInput } from '@recipe/common/components';
-import { CREATE_UNIT, DELETE_UNIT, MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
 import { EnumUnitCreatePreferredNumberFormat, Unit } from '@recipe/graphql/generated';
+import { CREATE_UNIT, DELETE_UNIT, MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
 import { CreateUnitMutation, ModifyUnitMutation, Scalars } from '@recipe/graphql/generated';
 
 function formatError(error: ApolloError) {
@@ -63,7 +64,7 @@ export function UnitForm(props: UnitFormProps) {
                 description: formatError(error),
                 status: 'error',
                 position: 'top',
-                duration: 3000,
+                duration: DELAY_LONG,
             });
         },
         refetchQueries: ['GetUnits'],
@@ -76,7 +77,7 @@ export function UnitForm(props: UnitFormProps) {
                 description: formatError(error),
                 status: 'error',
                 position: 'top',
-                duration: 3000,
+                duration: DELAY_LONG,
             });
             setHasError(true);
         },
@@ -136,7 +137,7 @@ export function UnitForm(props: UnitFormProps) {
                     description: e.message,
                     status: 'error',
                     position: 'top',
-                    duration: 3000,
+                    duration: DELAY_LONG,
                 });
             }
         }

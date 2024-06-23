@@ -4,6 +4,7 @@ import { Button, ButtonGroup, Checkbox } from '@chakra-ui/react';
 import { HStack, Stack, StackProps, useToast } from '@chakra-ui/react';
 import { ValidationError, array, boolean, mixed, number, object, string } from 'yup';
 
+import { DELAY_LONG } from '@recipe/constants';
 import { FloatingLabelInput } from '@recipe/common/components';
 import { Ingredient, Scalars } from '@recipe/graphql/generated';
 import { DELETE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
@@ -65,7 +66,7 @@ export function IngredientForm(props: IngredientFormProps) {
                 description: formatError(error),
                 status: 'error',
                 position: 'top',
-                duration: 3000,
+                duration: DELAY_LONG,
             });
         },
         refetchQueries: ['GetIngredients'],
@@ -79,7 +80,7 @@ export function IngredientForm(props: IngredientFormProps) {
                 description: formatError(error),
                 status: 'error',
                 position: 'top',
-                duration: 3000,
+                duration: DELAY_LONG,
             });
         },
         refetchQueries: ['GetIngredients'],
@@ -137,7 +138,7 @@ export function IngredientForm(props: IngredientFormProps) {
                     description: e.message,
                     status: 'error',
                     position: 'top',
-                    duration: 3000,
+                    duration: DELAY_LONG,
                 });
             }
         }
