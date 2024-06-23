@@ -47,12 +47,16 @@ export function RecipeCard(props: Props) {
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
-                <LinkOverlay as={Link} to={`${ROOT_PATH}/view/recipe/${recipe.titleIdentifier}`} />
+                <LinkOverlay
+                    as={Link}
+                    to={`${ROOT_PATH}/view/recipe/${recipe.titleIdentifier}`}
+                    aria-label={`View ${recipe.title}`}
+                />
                 {hasEditPermission ? (
                     <IconButton
                         variant='solid'
                         colorScheme='gray'
-                        aria-label='Edit recipe'
+                        aria-label={`Edit ${recipe.title}`}
                         icon={<EditIcon />}
                         isRound={true}
                         position='absolute'
@@ -84,7 +88,7 @@ export function RecipeCard(props: Props) {
                     <IconButton
                         variant='solid'
                         colorScheme='gray'
-                        aria-label='Delete recipe'
+                        aria-label={`Delete ${recipe.title}`}
                         icon={<CloseIcon />}
                         isRound={true}
                         position='absolute'
