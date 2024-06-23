@@ -15,6 +15,7 @@ export function SubmitButton(props: Props) {
                 <Button
                     size='lg'
                     borderRadius='full'
+                    aria-label='Save recipe'
                     border='1px'
                     borderColor='gray.200'
                     onClick={handleSubmit}

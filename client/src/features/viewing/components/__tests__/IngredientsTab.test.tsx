@@ -73,7 +73,7 @@ describe('IngredientsTab unit conversion', () => {
         renderComponent();
 
         // Act
-        const plusButton = screen.getByLabelText('plus');
+        const plusButton = screen.getByLabelText('Increase serving size');
         await user.click(plusButton);
 
         // Expect
@@ -86,7 +86,7 @@ describe('IngredientsTab unit conversion', () => {
         renderComponent();
 
         // Act
-        const minusButton = screen.getByLabelText('minus');
+        const minusButton = screen.getByLabelText('Decrease serving size');
         await user.click(minusButton);
 
         // Expect

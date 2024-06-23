@@ -24,7 +24,7 @@ export function Servings(props: ServingsProps) {
                 variant='outline'
                 borderRight={0}
                 borderRightRadius={0}
-                aria-label='minus'
+                aria-label='Decrease serving size'
                 icon={<MinusIcon />}
                 size='xs'
                 onClick={() => {
@@ -64,7 +64,7 @@ export function Servings(props: ServingsProps) {
                 variant='outline'
                 borderLeft={0}
                 borderLeftRadius={0}
-                aria-label='plus'
+                aria-label='Increase serving size'
                 icon={<AddIcon />}
                 size='xs'
                 onClick={() => {

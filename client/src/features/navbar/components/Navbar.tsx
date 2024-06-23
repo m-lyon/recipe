@@ -53,6 +53,7 @@ export function Navbar() {
                             _hover={{ textDecoration: 'none' }}
                             to={ROOT_PATH}
                             as={ReactRouterLink}
+                            aria-label='Navigate to home page'
                         >
                             Home
                         </ChakraLink>
