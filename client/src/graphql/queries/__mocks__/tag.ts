@@ -1,29 +1,65 @@
 import { GET_TAGS } from '../tag';
 
+export const mockDinnerTag = {
+    _id: '60f4d2e5c3d5a0a4f1b9c0e8',
+    value: 'dinner',
+};
+export const mockLunchTag = {
+    _id: '60f4d2e5c3d5a0a4f1b9c0e9',
+    value: 'lunch',
+};
+export const mockFreezableTag = {
+    _id: '60f4d2e5c3d5a0a4f1b9c0ea',
+    value: 'freezable',
+};
+export const mockSpicyTag = {
+    _id: '60f4d2e5c3d5a0a4f1b9c0f0',
+    value: 'spicy',
+};
+export const mockGlutenFreeTag = {
+    _id: '60f4d2e5c3d5a0a4f1b9c0f3',
+    value: 'gluten-free',
+};
+export const mockDairyFreeTag = {
+    _id: '60f4d2e5c3d5a0a4f1b9c0f4',
+    value: 'dairy-free',
+};
+export const mockLowCarbTag = {
+    _id: '60f4d2e5c3d5a0a4f1b9c0f5',
+    value: 'low-carb',
+};
+export const mockLowFatTag = {
+    _id: '60f4d2e5c3d5a0a4f1b9c0f6',
+    value: 'low-fat',
+};
+export const mockLowSugarTag = {
+    _id: '60f4d2e5c3d5a0a4f1b9c0f7',
+    value: 'low-sugar',
+};
+export const mockHighProteinTag = {
+    _id: '60f4d2e5c3d5a0a4f1b9c0f8',
+    value: 'high-protein',
+};
+export const mockQuickTag = {
+    _id: '60f4d2e5c3d5a0a4f1b9c0f9',
+    value: 'quick',
+};
+export const mockBreakfastTag = {
+    _id: '60f4d2e5c3d5a0a4f1b9c0fa',
+    value: 'breakfast',
+};
+export const mockBrunchTag = {
+    _id: '60f4d2e5c3d5a0a4f1b9c0fb',
+    value: 'brunch',
+};
+
 export const mockGetTags = {
     request: {
         query: GET_TAGS,
     },
     result: {
         data: {
-            tagMany: [
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0e8',
-                    value: 'dinner',
-                },
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0e9',
-                    value: 'lunch',
-                },
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0ea',
-                    value: 'freezable',
-                },
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0f0',
-                    value: 'spicy',
-                },
-            ],
+            tagMany: [mockDinnerTag, mockLunchTag, mockFreezableTag, mockSpicyTag],
         },
     },
 };
@@ -46,70 +82,19 @@ export const mockGetManyTags = {
     result: {
         data: {
             tagMany: [
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0e8',
-                    value: 'dinner',
-                },
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0e9',
-                    value: 'lunch',
-                },
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0ea',
-                    value: 'freezable',
-                },
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0f0',
-                    value: 'spicy',
-                },
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0f1',
-                    value: 'vegan',
-                },
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0f2',
-                    value: 'vegetarian',
-                },
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0f3',
-                    value: 'gluten-free',
-                },
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0f4',
-                    value: 'dairy-free',
-                },
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0f5',
-                    value: 'low-carb',
-                },
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0f6',
-                    value: 'low-fat',
-                },
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0f7',
-                    value: 'low-sugar',
-                },
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0f8',
-                    value: 'high-protein',
-                },
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0f9',
-                    value: 'quick',
-                },
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0fa',
-                    value: 'breakfast',
-                },
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0fb',
-                    value: 'brunch',
-                },
-                {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0fc',
-                    value: 'lunch',
-                },
+                mockDinnerTag,
+                mockLunchTag,
+                mockFreezableTag,
+                mockSpicyTag,
+                mockGlutenFreeTag,
+                mockDairyFreeTag,
+                mockLowCarbTag,
+                mockLowFatTag,
+                mockLowSugarTag,
+                mockHighProteinTag,
+                mockQuickTag,
+                mockBreakfastTag,
+                mockBrunchTag,
             ],
         },
     },
