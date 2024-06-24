@@ -15,7 +15,7 @@ module.exports = {
         'plugin:import/recommended',
         'plugin:import/typescript',
     ],
-    noInlineConfig: true,
+    noInlineConfig: false,
     rules: {
         'no-restricted-imports': ['error', { patterns: ['@recipe/features/*/*'] }],
         'prettier/prettier': [

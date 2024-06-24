@@ -1,7 +1,8 @@
 import { EditableField } from '@recipe/common/components';
-
-import { UseEditableReturnType } from '../../../common/hooks/useEditable';
+import { UseEditableReturnType } from '@recipe/common/hooks';
 
 export function EditableTitle(props: UseEditableReturnType) {
-    return <EditableField {...props} fontSize='3xl' textAlign='center' />;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { value, ...rest } = props;
+    return <EditableField {...rest} fontSize='3xl' textAlign='center' ariaLabel='Recipe title' />;
 }

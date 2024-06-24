@@ -3,7 +3,7 @@ import { GET_INGREDIENTS } from '@recipe/graphql/queries/ingredient';
 // Ingredients
 export const mockApple = {
     _id: '60f4d2e5c3d5a0a4f1b9c0e8',
-    __typename: 'Ingredient',
+    __typename: 'Ingredient' as const,
     name: 'apple',
     pluralName: 'apples',
     isCountable: true,
@@ -12,7 +12,7 @@ export const mockApple = {
 };
 export const mockChicken = {
     _id: '60f4d2e5c3d5a0a4f1b9c0e9',
-    __typename: 'Ingredient',
+    __typename: 'Ingredient' as const,
     name: 'chicken',
     pluralName: 'chickens',
     isCountable: false,
@@ -21,7 +21,7 @@ export const mockChicken = {
 };
 export const mockCarrot = {
     _id: '60f4d2e5c3d5a0a4f1b9c0ea',
-    __typename: 'Ingredient',
+    __typename: 'Ingredient' as const,
     name: 'carrot',
     pluralName: 'carrots',
     isCountable: true,
@@ -30,7 +30,7 @@ export const mockCarrot = {
 };
 export const mockLettuce = {
     _id: '60f4d2e5c3d5a0a4f1b9c0f0',
-    __typename: 'Ingredient',
+    __typename: 'Ingredient' as const,
     name: 'iceberg lettuce',
     pluralName: 'iceberg lettuces',
     isCountable: false,
@@ -40,7 +40,7 @@ export const mockLettuce = {
 // Recipes
 export const mockRhurbarbPie = {
     _id: '60f4d2e5c3d5a0a4f1b9c0eb',
-    __typename: 'Recipe',
+    __typename: 'Recipe' as const,
     title: 'rhubarb pie',
     pluralTitle: 'rhubarb pies',
     owner: '60f4d2e5c3d5a0a4f1b9c0ec',

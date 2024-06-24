@@ -1,16 +1,12 @@
-import * as CSS from 'csstype';
-import { Editable, EditableInput, EditablePreview } from '@chakra-ui/react';
+import { Editable, EditableInput, EditablePreview, EditableProps } from '@chakra-ui/react';
 
 import type { UseEditableReturnType } from '@recipe/common/hooks';
 
-interface EditableField extends UseEditableReturnType {
-    fontSize?: string;
-    fontWeight?: string;
-    textAlign: CSS.Property.TextAlign;
+interface EditableField extends Omit<UseEditableReturnType, 'value'>, Omit<EditableProps, 'value'> {
+    ariaLabel: string;
 }
 export function EditableField(props: EditableField) {
-    const { displayStr, inputRef, isEdited, actionHandler, fontSize, fontWeight, textAlign } =
-        props;
+    const { displayStr, inputRef, isEdited, actionHandler, ariaLabel, ...rest } = props;
 
     return (
         <Editable
@@ -19,11 +15,9 @@ export function EditableField(props: EditableField) {
             onEdit={actionHandler.edit}
             onSubmit={actionHandler.submit}
             onChange={actionHandler.change}
-            fontSize={fontSize}
-            textAlign={textAlign}
-            fontWeight={fontWeight}
+            {...rest}
         >
-            <EditablePreview color={isEdited ? '' : 'gray.400'} />
+            <EditablePreview color={isEdited ? '' : 'gray.400'} aria-label={ariaLabel} />
             <EditableInput
                 ref={inputRef}
                 value={displayStr}

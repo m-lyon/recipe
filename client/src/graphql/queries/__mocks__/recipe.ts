@@ -1,4 +1,5 @@
 import { COUNT_RECIPES, GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
+import { EnumRecipeIngredientType } from '@recipe/graphql/generated';
 
 import { mockApple } from './ingredient';
 import { mockDiced } from './prepMethod';
@@ -6,7 +7,7 @@ import { mockCup, mockOunce, mockTeaspoon } from './unit';
 import { mockDinnerTag, mockLunchTag } from './tag';
 
 export const mockRecipeOne = {
-    __typename: 'Recipe',
+    __typename: 'Recipe' as const,
     _id: '60f4d2e5c3d5a0a4f1b9c0eb',
     title: 'Mock Recipe',
     pluralTitle: null,
@@ -15,7 +16,7 @@ export const mockRecipeOne = {
     ingredients: [
         {
             // normal ingredient
-            type: 'ingredient',
+            type: 'ingredient' as EnumRecipeIngredientType,
             quantity: '1',
             unit: mockTeaspoon,
             ingredient: mockApple,
@@ -23,7 +24,7 @@ export const mockRecipeOne = {
         },
         {
             // ingredient with no unit
-            type: 'ingredient',
+            type: 'ingredient' as EnumRecipeIngredientType,
             quantity: '1',
             unit: null,
             ingredient: mockApple,
@@ -31,7 +32,7 @@ export const mockRecipeOne = {
         },
         {
             // ingredient with no unit and plural quantity
-            type: 'ingredient',
+            type: 'ingredient' as EnumRecipeIngredientType,
             quantity: '2',
             unit: null,
             ingredient: mockApple,
@@ -39,7 +40,7 @@ export const mockRecipeOne = {
         },
         {
             // ingredient with fraction quantity
-            type: 'ingredient',
+            type: 'ingredient' as EnumRecipeIngredientType,
             quantity: '1/3',
             unit: mockCup,
             ingredient: mockApple,
@@ -47,7 +48,7 @@ export const mockRecipeOne = {
         },
         {
             // ingredient with no prep method
-            type: 'ingredient',
+            type: 'ingredient' as EnumRecipeIngredientType,
             quantity: '1',
             unit: mockOunce,
             ingredient: mockApple,
@@ -67,6 +68,8 @@ export const mockRecipeTwo = {
     _id: '60f4d2e5c3d5a0a4f1b9c0ec',
     title: 'Mock Recipe Two',
     titleIdentifier: 'mock-recipe-two',
+    isIngredient: true,
+    pluralTitle: 'Mock Recipes Two',
 };
 
 // GetRecipe
