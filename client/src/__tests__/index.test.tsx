@@ -7,7 +7,7 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { MockedProvider, MockedResponse } from '@apollo/client/testing';
 // import { debug } from 'vitest-preview';
 
-import { cache } from '@recipe/utils/cache';
+import { getCache } from '@recipe/utils/cache';
 import { ROOT_PATH } from '@recipe/constants';
 import { UserProvider } from '@recipe/features/user';
 import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
@@ -44,7 +44,7 @@ const renderComponent = (
                 mockGetRatings,
                 ...mockedResponses,
             ]}
-            cache={cache}
+            cache={getCache()}
         >
             <ChakraProvider>
                 <UserProvider>

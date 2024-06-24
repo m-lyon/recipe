@@ -4,7 +4,7 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { ApolloClient, ApolloProvider } from '@apollo/client';
 import createUploadLink from 'apollo-upload-client/createUploadLink.mjs';
 
-import { cache } from '@recipe/utils/cache';
+import { getCache } from '@recipe/utils/cache';
 import { GRAPHQL_ENDPOINT } from '@recipe/constants';
 import { UserProvider } from '@recipe/features/user';
 
@@ -15,7 +15,7 @@ const domNode = document.getElementById('root')!;
 const root = createRoot(domNode);
 
 const client = new ApolloClient({
-    cache: cache,
+    cache: getCache(),
     link: createUploadLink({ uri: GRAPHQL_ENDPOINT, credentials: 'include' }),
 });
 
