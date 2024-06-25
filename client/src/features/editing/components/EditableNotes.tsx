@@ -34,6 +34,7 @@ export function EditableNotes(props: EditableNotesProps) {
                 fontSize='md'
                 fontWeight='medium'
                 textAlign='left'
+                aria-label='Edit recipe notes'
             />
         </>
     );

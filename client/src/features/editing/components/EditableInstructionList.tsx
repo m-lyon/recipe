@@ -59,6 +59,7 @@ export function EditableInstructionList(props: UseItemListReturnType) {
                         optionalRef={index === items.length - 1 ? lastInputRef : null}
                         fontSize='lg'
                         fontWeight='600'
+                        aria-label={`Edit instruction ${index + 1}`}
                     />
                 </ListItem>
             </motion.div>

@@ -44,6 +44,7 @@ export function EditableSource(props: EditableSourceProps) {
                     onChange={(e) => setSource(e.target.value)}
                     alignSelf='flex-end'
                     height='auto'
+                    aria-label='Edit recipe source'
                 />
             </InputGroup>
         </VStack>

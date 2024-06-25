@@ -67,6 +67,7 @@ export function EditableTagList(props: UseTagListReturnType) {
                                     removeTagMutation({ variables: { recordId: tag._id } });
                                 }
                             }}
+                            aria-label={`Remove ${tag.value} tag`}
                         />
                     </Tag>
                 </WrapItem>

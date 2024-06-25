@@ -39,7 +39,7 @@ export function EditableTag(props: Props) {
                 paddingLeft='6px'
                 placeholder={DEFAULT_TAG_STR}
             >
-                <EditablePreview />
+                <EditablePreview aria-label='Add a tag' />
                 <EditableInput ref={inputRef} value={tagStr} _focusVisible={{ outline: 'none' }} />
             </Editable>
             <TagDropdown

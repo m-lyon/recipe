@@ -2,8 +2,7 @@ import { Reorder } from 'framer-motion';
 import { Tag, TagCloseButton, TagLabel } from '@chakra-ui/react';
 
 import { FinishedRecipeIngredient } from '@recipe/types';
-
-import { getFinishedRecipeIngredientStr } from 'utils/formatting';
+import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 
 interface Props {
     index: number;
@@ -22,7 +21,10 @@ export function FinishedIngredient(props: Props) {
         >
             <Tag size='lg' marginBottom='5px'>
                 <TagLabel>{ingrStr}</TagLabel>
-                <TagCloseButton onClick={() => removeFinished(index)} />
+                <TagCloseButton
+                    onClick={() => removeFinished(index)}
+                    aria-label={`Remove ${ingrStr}`}
+                />
             </Tag>
         </Reorder.Item>
     );
