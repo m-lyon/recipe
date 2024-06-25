@@ -1,10 +1,10 @@
-import { COUNT_RECIPES, GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { EnumRecipeIngredientType } from '@recipe/graphql/generated';
+import { COUNT_RECIPES, GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
 
 import { mockApple } from './ingredient';
 import { mockDiced } from './prepMethod';
-import { mockCup, mockOunce, mockTeaspoon } from './unit';
 import { mockDinnerTag, mockLunchTag } from './tag';
+import { mockCup, mockOunce, mockTeaspoon } from './unit';
 
 export const mockRecipeOne = {
     __typename: 'Recipe' as const,
@@ -86,6 +86,13 @@ export const mockGetRecipeOne = {
         variables: { filter: { titleIdentifier: 'mock-recipe-one' } },
     },
     result: { data: { recipeOne: mockRecipeOne } },
+};
+export const mockGetRecipeTwo = {
+    request: {
+        query: GET_RECIPE,
+        variables: { filter: { titleIdentifier: 'mock-recipe-two' } },
+    },
+    result: { data: { recipeOne: mockRecipeTwo } },
 };
 // GetRecipes
 export const mockGetRecipes = {

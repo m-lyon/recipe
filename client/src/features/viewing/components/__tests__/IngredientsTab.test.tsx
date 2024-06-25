@@ -9,8 +9,8 @@ import { Route, createBrowserRouter, createRoutesFromElements } from 'react-rout
 
 import { Recipe, RecipeIngredient } from '@recipe/graphql/generated';
 import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
-import { mockGetRatings } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
+import { mockGetRatingsRecipeOne } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
 
 import { IngredientsTab } from '../IngredientsTab';
@@ -46,7 +46,7 @@ const routes = createBrowserRouter(
 const renderComponent = () => {
     // Multiple mocks of the same query are needed due to refetch calls
     render(
-        <MockedProvider mocks={[mockGetUnits, mockGetUnitConversions, mockGetRatings]}>
+        <MockedProvider mocks={[mockGetUnits, mockGetUnitConversions, mockGetRatingsRecipeOne]}>
             <ChakraProvider>
                 <RouterProvider router={routes} />
             </ChakraProvider>

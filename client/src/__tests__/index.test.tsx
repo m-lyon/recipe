@@ -10,18 +10,19 @@ import { MockedProvider, MockedResponse } from '@apollo/client/testing';
 import { getCache } from '@recipe/utils/cache';
 import { ROOT_PATH } from '@recipe/constants';
 import { UserProvider } from '@recipe/features/user';
+import { GetRecipeQuery } from '@recipe/graphql/generated';
 import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
 import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
-import { mockGetRatings } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockGetCurrentUser } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetPrepMethods } from '@recipe/graphql/queries/__mocks__/prepMethod';
 import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
-import { mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockGetRatingsRecipeOne } from '@recipe/graphql/queries/__mocks__/rating';
+import { mockGetRatingsRecipeTwo } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockRecipeOne, mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
+import { mockGetRecipeTwo, mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCountRecipes, mockGetRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
-import { GetRecipeQuery } from '@recipe/graphql/generated';
 
 import { routes } from '../routes';
 
@@ -43,7 +44,7 @@ const renderComponent = (
                 mockGetRecipes,
                 mockGetRecipeOne,
                 mockCountRecipes,
-                mockGetRatings,
+                mockGetRatingsRecipeOne,
                 ...mockedResponses,
             ]}
             cache={getCache()}
@@ -100,7 +101,7 @@ describe('Update Recipe Workflow', () => {
             id: mockRecipe._id,
             recipe: {
                 title: mockRecipe.title,
-                pluralTitle: undefined,
+                pluralTitle: mockRecipe.pluralTitle ?? undefined,
                 instructions: mockRecipe.instructions,
                 ingredients: mockRecipe.ingredients.map((ingr: any) => ({
                     quantity: ingr.quantity,
@@ -110,8 +111,8 @@ describe('Update Recipe Workflow', () => {
                     type: ingr.type,
                 })),
                 tags: mockRecipe.tags.map((tag: any) => tag._id),
-                notes: undefined,
-                source: undefined,
+                notes: mockRecipe.notes ?? undefined,
+                source: mockRecipe.source ?? undefined,
                 numServings: 4,
                 isIngredient: mockRecipe.isIngredient,
             },
@@ -266,13 +267,12 @@ describe('Update Recipe Workflow', () => {
                 },
             },
         };
-        renderComponent([mockUpdateRecipe]);
+        renderComponent([mockUpdateRecipe, mockGetRecipeTwo, mockGetRatingsRecipeTwo]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
         await user.hover(await screen.findByLabelText('View Mock Recipe Two'));
         await user.click(screen.getByLabelText('Edit Mock Recipe Two'));
-        debug();
         expect(await screen.findByText('Instruction one')).not.toBeNull();
         await user.click(screen.getByLabelText('Recipe title'));
         await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Mock '

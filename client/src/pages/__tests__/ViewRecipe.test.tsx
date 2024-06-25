@@ -7,7 +7,7 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
 
 import { mockGetRecipe } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockGetRatings } from '@recipe/graphql/queries/__mocks__/rating';
+import { mockGetRatingsRecipeOne } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
 
 import { ViewRecipe } from '../ViewRecipe';
@@ -21,7 +21,7 @@ const routes = createBrowserRouter(
 
 const renderComponent = () => {
     render(
-        <MockedProvider mocks={[mockGetRecipe, mockGetRatings, mockGetUnitConversions]}>
+        <MockedProvider mocks={[mockGetRecipe, mockGetRatingsRecipeOne, mockGetUnitConversions]}>
             <ChakraProvider>
                 <RouterProvider router={routes} />
             </ChakraProvider>
