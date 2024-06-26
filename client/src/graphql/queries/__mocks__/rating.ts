@@ -9,7 +9,7 @@ export const mockGetRatingsRecipeOne = {
         data: {
             ratingMany: [
                 {
-                    __typename: 'Rating',
+                    __typename: 'Rating' as const,
                     _id: '60f4d2e5c4d5a0a4f1b9c0ec',
                     value: 3.0,
                 },
@@ -27,7 +27,7 @@ export const mockGetRatingsRecipeTwo = {
         data: {
             ratingMany: [
                 {
-                    __typename: 'Rating',
+                    __typename: 'Rating' as const,
                     _id: '60f4d2e5c5d5a0a4f1b9c0ec',
                     value: 4.0,
                 },

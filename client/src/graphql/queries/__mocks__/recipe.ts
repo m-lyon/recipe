@@ -1,4 +1,4 @@
-import { EnumRecipeIngredientType } from '@recipe/graphql/generated';
+import { EnumRecipeIngredientType, GetRecipesQuery } from '@recipe/graphql/generated';
 import { COUNT_RECIPES, GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
 
 import { mockApple } from './ingredient';
@@ -102,7 +102,7 @@ export const mockGetRecipes = {
     },
     result: {
         data: {
-            recipeMany: [mockRecipeOne, mockRecipeTwo],
+            recipeMany: [mockRecipeOne, mockRecipeTwo] as GetRecipesQuery['recipeMany'],
         },
     },
 };

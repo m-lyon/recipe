@@ -5,19 +5,21 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { MockedProvider, MockedResponse } from '@apollo/client/testing';
-import { debug } from 'vitest-preview';
 
 import { ROOT_PATH } from '@recipe/constants';
 import { getCache } from '@recipe/utils/cache';
 import { UserProvider } from '@recipe/features/user';
+import { GET_RATINGS } from '@recipe/graphql/queries/rating';
 import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
+import { EnumRecipeIngredientType } from '@recipe/graphql/generated';
 import { mockCreateTag } from '@recipe/graphql/mutations/__mocks__/tag';
+import { GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
+import { GetRecipeQuery, GetRecipesQuery } from '@recipe/graphql/generated';
 import { mockGetCurrentUser } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetRatingsRecipeOne } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockGetRatingsRecipeTwo } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockGetUnits, mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
-import { EnumRecipeIngredientType, GetRecipeQuery } from '@recipe/graphql/generated';
 import { mockRecipeOne, mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
 import { mockGetRecipeTwo, mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -42,7 +44,6 @@ const renderComponent = (
                 mockGetPrepMethods,
                 mockGetTags,
                 mockGetUnitConversions,
-                mockGetRecipes,
                 mockGetRecipeOne,
                 mockCountRecipes,
                 mockGetRatingsRecipeOne,
@@ -145,7 +146,7 @@ describe('Update Recipe Workflow', () => {
 
     it('should navigate to the edit recipe page', async () => {
         // Render -----------------------------------------------
-        renderComponent();
+        renderComponent([mockGetRecipes]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -175,7 +176,7 @@ describe('Update Recipe Workflow', () => {
                 },
             },
         };
-        renderComponent([mockUpdateRecipe]);
+        renderComponent([mockGetRecipes, mockUpdateRecipe]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -219,7 +220,7 @@ describe('Update Recipe Workflow', () => {
                 },
             },
         };
-        renderComponent([mockUpdateRecipe]);
+        renderComponent([mockGetRecipes, mockUpdateRecipe]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -268,7 +269,12 @@ describe('Update Recipe Workflow', () => {
                 },
             },
         };
-        renderComponent([mockUpdateRecipe, mockGetRecipeTwo, mockGetRatingsRecipeTwo]);
+        renderComponent([
+            mockGetRecipes,
+            mockUpdateRecipe,
+            mockGetRecipeTwo,
+            mockGetRatingsRecipeTwo,
+        ]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -284,9 +290,6 @@ describe('Update Recipe Workflow', () => {
 
         // Expect ------------------------------------------------
         // ------ Home Page --------------------------------------
-        // wait for 500ms for the page to load
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        debug();
         expect(await screen.findByText('Recipes')).not.toBeNull();
         expect(await screen.findByText('New Title')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
@@ -327,7 +330,7 @@ describe('Update Recipe Workflow', () => {
                 },
             },
         };
-        renderComponent([mockUpdateRecipe]);
+        renderComponent([mockGetRecipes, mockUpdateRecipe]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -347,9 +350,6 @@ describe('Update Recipe Workflow', () => {
         expect(await screen.findByText('Recipes')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
-        // wait 500ms
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        debug();
         expect(await screen.findByText('New Instruction.')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
@@ -358,7 +358,7 @@ describe('Update Recipe Workflow', () => {
         expect(await screen.findByText('New Instruction.')).not.toBeNull();
     });
 
-    it('should update the notes', async () => {
+    it('should add a note', async () => {
         // Render -----------------------------------------------
         const vars = getMockUpdateRecipeVariables();
         const data = getMockUpdateReturn();
@@ -376,7 +376,7 @@ describe('Update Recipe Workflow', () => {
                 },
             },
         };
-        renderComponent([mockUpdateRecipe]);
+        renderComponent([mockGetRecipes, mockUpdateRecipe]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -392,9 +392,6 @@ describe('Update Recipe Workflow', () => {
         expect(await screen.findByText('Recipes')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
-        // wait 500ms
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        debug();
         expect(await screen.findByText('A new note.')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
@@ -403,7 +400,7 @@ describe('Update Recipe Workflow', () => {
         expect(await screen.findByText('A new note.')).not.toBeNull();
     });
 
-    it('should update the source', async () => {
+    it('should add a source', async () => {
         // Render -----------------------------------------------
         const vars = getMockUpdateRecipeVariables();
         const data = getMockUpdateReturn();
@@ -421,7 +418,7 @@ describe('Update Recipe Workflow', () => {
                 },
             },
         };
-        renderComponent([mockUpdateRecipe]);
+        renderComponent([mockGetRecipes, mockUpdateRecipe]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -437,7 +434,7 @@ describe('Update Recipe Workflow', () => {
         expect(await screen.findByText('Recipes')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
-        expect(await screen.findByText('A new source')).not.toBeNull();
+        expect(await screen.findByText('Source: A new source')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await user.hover(await screen.findByLabelText('View Mock Recipe'));
@@ -490,7 +487,7 @@ describe('Update Recipe Workflow', () => {
                 },
             },
         };
-        renderComponent([mockUpdateRecipe]);
+        renderComponent([mockGetRecipes, mockUpdateRecipe]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -511,9 +508,6 @@ describe('Update Recipe Workflow', () => {
         expect(await screen.findByText('Recipes')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
-        // wait 500ms
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        debug();
         expect(await screen.findByText('4 tsp apples, diced')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
@@ -522,7 +516,7 @@ describe('Update Recipe Workflow', () => {
         expect(await screen.findByText('4 tsp apples, diced')).not.toBeNull();
     });
 
-    it('should update the tags by removing one', async () => {
+    it('should remove a tag', async () => {
         // Render -----------------------------------------------
         const vars = getMockUpdateRecipeVariables();
         const data = getMockUpdateReturn();
@@ -548,7 +542,7 @@ describe('Update Recipe Workflow', () => {
                 },
             },
         };
-        renderComponent([mockUpdateRecipe]);
+        renderComponent([mockGetRecipes, mockUpdateRecipe]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -573,7 +567,7 @@ describe('Update Recipe Workflow', () => {
         expect(screen.getByText('lunch')).toBeNull();
     });
 
-    it('should update the tags by adding one', async () => {
+    it('should add a new tag', async () => {
         // Render -----------------------------------------------
         const vars = getMockUpdateRecipeVariables();
         const data = getMockUpdateReturn();
@@ -605,7 +599,7 @@ describe('Update Recipe Workflow', () => {
                 },
             },
         };
-        renderComponent([mockUpdateRecipe, mockCreateTag]);
+        renderComponent([mockGetRecipes, mockUpdateRecipe, mockCreateTag]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------

@@ -3,7 +3,7 @@ import { GET_UNIT_CONVERSIONS } from '@recipe/graphql/queries/unitConversion';
 import { mockGram, mockKilogram } from './unit';
 
 export const mockConversionRule = {
-    __typename: 'UnitConversionRule',
+    __typename: 'UnitConversionRule' as const,
     _id: '60f4d2e5c3d5a0a4f1b9c0f8',
     unit: mockKilogram,
     baseUnitThreshold: 1000,
@@ -11,7 +11,7 @@ export const mockConversionRule = {
 };
 
 export const mockUnitConversion = {
-    __typename: 'UnitConversion',
+    __typename: 'UnitConversion' as const,
     _id: '60f4d2e5c3d5a0a4f1b9c0f1',
     baseUnit: mockGram,
     rules: [mockConversionRule],
