@@ -7,9 +7,9 @@ import { Card, CardBody, CardHeader, Heading, IconButton, Spacer } from '@chakra
 import { ROOT_PATH } from '@recipe/constants';
 import { TagList } from '@recipe/features/tags';
 import { Recipe, Tag } from '@recipe/graphql/generated';
+import { ImageViewerHome } from '@recipe/features/images';
 
 import { getCardTitle } from './RecipeCard';
-import { ImageViewerHome } from './ImageViewerHome';
 
 interface Props {
     recipe: Recipe;

@@ -1,8 +1,7 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react';
 import { Box, Container, HStack, useToast } from '@chakra-ui/react';
 
-import { UploadBox } from './components/UploadBox';
-import { ImagePreview } from './components/ImageView';
+import { ImageUploadPreview, UploadBox } from '@recipe/features/images';
 
 export interface ImageUploadProps {
     images: File[];
@@ -30,7 +29,7 @@ export function ImageUpload(props: ImageUploadProps) {
 
     const imagePreviews = images.map((image, index) => {
         return (
-            <ImagePreview
+            <ImageUploadPreview
                 key={index}
                 image={image}
                 handleRemoveImage={() => setImages((prev) => prev.filter((_, i) => i !== index))}

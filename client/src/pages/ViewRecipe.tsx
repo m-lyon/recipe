@@ -6,7 +6,7 @@ import { Title } from '@recipe/features/viewing';
 import { IngredientsTab } from '@recipe/features/viewing';
 import { InstructionsTab } from '@recipe/features/viewing';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
-import { ImageViewerRecipe } from '@recipe/features/viewing';
+import { ImageViewerRecipe } from '@recipe/features/images';
 import { Recipe, RecipeIngredient } from '@recipe/graphql/generated';
 
 export function ViewRecipe() {

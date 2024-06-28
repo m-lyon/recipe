@@ -1,10 +1,10 @@
 import { Box, ListItem, OrderedList, Text, useBreakpointValue } from '@chakra-ui/react';
 
 import { Recipe } from '@recipe/graphql/generated';
+import { tagsHeight } from '@recipe/features/tags';
+import { imageCardWidth, sliderBarHeight } from '@recipe/features/images';
 
-import { tagsHeight } from '../../tags/components/TagList';
 import { instrSpacing } from './InstructionsTab';
-import { imageCardWidth, sliderBarHeight } from './ImageViewerRecipe';
 
 interface Props {
     instructions: Recipe['instructions'];

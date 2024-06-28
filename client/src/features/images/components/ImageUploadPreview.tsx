@@ -5,7 +5,7 @@ interface Props {
     image: File;
     handleRemoveImage: () => void;
 }
-export function ImagePreview(props: Props) {
+export function ImageUploadPreview(props: Props) {
     const { image, handleRemoveImage } = props;
     const imgSource = URL.createObjectURL(image);
 
@@ -15,7 +15,7 @@ export function ImagePreview(props: Props) {
                 <IconButton
                     variant='solid'
                     colorScheme='gray'
-                    aria-label='Edit image'
+                    aria-label={`Edit ${image.name}`}
                     icon={<EditIcon />}
                     isRound={true}
                     position='absolute'
@@ -34,7 +34,7 @@ export function ImagePreview(props: Props) {
                 <IconButton
                     variant='solid'
                     colorScheme='gray'
-                    aria-label='Remove image'
+                    aria-label={`Remove ${image.name}`}
                     shadow='base'
                     icon={<CloseIcon />}
                     isRound={true}

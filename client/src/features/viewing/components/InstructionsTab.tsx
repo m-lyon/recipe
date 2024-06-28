@@ -1,12 +1,12 @@
 import { useMeasure } from 'react-use';
 import { Box, Flex, Spacer, VStack, useBreakpointValue } from '@chakra-ui/react';
 
+import { TagList } from '@recipe/features/tags';
 import { Recipe, Tag } from '@recipe/graphql/generated';
+import { ImageViewerRecipe } from '@recipe/features/images';
 
 import { Source } from './Source';
-import { TagList } from '../../tags/components/TagList';
 import { InstructionList } from './InstructionList';
-import { ImageViewerRecipe } from './ImageViewerRecipe';
 
 export const instrSpacing = 24;
 interface Props {
