@@ -1,13 +1,13 @@
 import { useState } from 'react';
 
 import { ServingsProps } from '@recipe/features/servings';
+import { ImageUploadProps } from '@recipe/features/images';
 import { UseTagListReturnType, useTagList } from '@recipe/features/tags';
 import { UseItemListReturnType, useItemList } from '@recipe/common/hooks';
 import { UseEditableReturnType, useEditable } from '@recipe/common/hooks';
 import { UseIngredientListReturnType, useIngredientList } from '@recipe/features/recipeIngredient';
 
 import { useAsIngredient } from './useAsIngredient';
-import { ImageUploadProps } from '../components/ImageUpload';
 import { UseAsIngredientReturnType } from './useAsIngredient';
 import { EditableNotesProps } from '../components/EditableNotes';
 import { EditableSourceProps } from '../components/EditableSource';
