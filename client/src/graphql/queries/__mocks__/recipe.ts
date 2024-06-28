@@ -67,11 +67,20 @@ export const mockRecipeTwo = {
     ...mockRecipeOne,
     _id: '60f4d2e5c3d5a0a4f1b9c0ec',
     title: 'Mock Recipe Two',
+    tags: [],
     titleIdentifier: 'mock-recipe-two',
     isIngredient: true,
     pluralTitle: 'Mock Recipes Two',
 };
-
+export const mockRecipeThree = {
+    ...mockRecipeOne,
+    _id: '60f4d3e5c3d5a0a4f1b9c0ec',
+    title: 'Mock Recipe Three',
+    titleIdentifier: 'mock-recipe-three',
+    tags: [],
+    source: 'Example',
+    notes: 'Notes',
+};
 // GetRecipe
 export const mockGetRecipe = {
     request: {
@@ -94,6 +103,13 @@ export const mockGetRecipeTwo = {
     },
     result: { data: { recipeOne: mockRecipeTwo } },
 };
+export const mockGetRecipeThree = {
+    request: {
+        query: GET_RECIPE,
+        variables: { filter: { titleIdentifier: 'mock-recipe-three' } },
+    },
+    result: { data: { recipeOne: mockRecipeThree } },
+};
 // GetRecipes
 export const mockGetRecipes = {
     request: {
@@ -102,7 +118,11 @@ export const mockGetRecipes = {
     },
     result: {
         data: {
-            recipeMany: [mockRecipeOne, mockRecipeTwo] as GetRecipesQuery['recipeMany'],
+            recipeMany: [
+                mockRecipeOne,
+                mockRecipeTwo,
+                mockRecipeThree,
+            ] as GetRecipesQuery['recipeMany'],
         },
     },
 };

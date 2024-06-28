@@ -5,16 +5,49 @@ mutation UpdateRecipe($id: MongoID!, $recipe: UpdateByIdRecipeModifyInput!) {
     recipeUpdateById(_id: $id, record: $recipe) {
         record {
             _id
-            titleIdentifier
             title
+            titleIdentifier
+            instructions
+            ingredients {
+                type
+                quantity
+                unit {
+                    _id
+                    shortSingular
+                    shortPlural
+                    longSingular
+                    longPlural
+                    preferredNumberFormat
+                    hasSpace
+                }
+                ingredient {
+                    ... on Recipe {
+                        _id
+                        title
+                        pluralTitle
+                    }
+                    ... on Ingredient {
+                        _id
+                        name
+                        pluralName
+                        isCountable
+                    }
+                }
+                prepMethod {
+                    _id
+                    value
+                }
+            }
             tags {
                 _id
                 value
             }
             calculatedTags
-            isIngredient
             numServings
+            isIngredient
             pluralTitle
+            source
+            notes
             images {
                 _id
                 origUrl
@@ -29,16 +62,48 @@ export const CREATE_RECIPE = gql(`
         recipeCreateOne(record: $recipe) {
             record {
                 _id
-                titleIdentifier
                 title
+                instructions
+                ingredients {
+                    type
+                    quantity
+                    unit {
+                        _id
+                        shortSingular
+                        shortPlural
+                        longSingular
+                        longPlural
+                        preferredNumberFormat
+                        hasSpace
+                    }
+                    ingredient {
+                        ... on Recipe {
+                            _id
+                            title
+                            pluralTitle
+                        }
+                        ... on Ingredient {
+                            _id
+                            name
+                            pluralName
+                            isCountable
+                        }
+                    }
+                    prepMethod {
+                        _id
+                        value
+                    }
+                }
                 tags {
                     _id
                     value
                 }
                 calculatedTags
-                isIngredient
                 numServings
+                isIngredient
                 pluralTitle
+                source
+                notes
                 images {
                     _id
                     origUrl
