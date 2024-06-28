@@ -285,6 +285,7 @@ describe('Update Recipe Workflow', () => {
         await user.hover(await screen.findByLabelText('View Mock Recipe Three'));
         await user.click(screen.getByLabelText('Edit Mock Recipe Three'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
+        expect(screen.getByLabelText('Edit recipe notes')).toHaveProperty('value', 'Notes');
         await user.click(screen.getByLabelText('Edit recipe notes'));
         await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}');
         await user.click(screen.getByLabelText('Save recipe'));
@@ -295,12 +296,13 @@ describe('Update Recipe Workflow', () => {
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe Three'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
-        expect(screen.getByText('Notes:')).toBeNull();
+        expect(screen.queryByText('Notes:')).toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await user.hover(await screen.findByLabelText('View Mock Recipe Three'));
         await user.click(screen.getByLabelText('Edit Mock Recipe Three'));
-        expect(screen.getByDisplayValue('')).not.toBeNull();
+        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        expect(screen.getByLabelText('Edit recipe notes')).toHaveProperty('value', '');
     });
 
     it('should update the notes', async () => {
@@ -365,6 +367,7 @@ describe('Update Recipe Workflow', () => {
         await user.hover(await screen.findByLabelText('View Mock Recipe Three'));
         await user.click(screen.getByLabelText('Edit Mock Recipe Three'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
+        expect(screen.getByLabelText('Edit recipe source')).toHaveProperty('value', 'Example');
         await user.click(screen.getByLabelText('Edit recipe source'));
         await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}');
         await user.keyboard('{Backspace}{Backspace}{Backspace}');
@@ -375,12 +378,13 @@ describe('Update Recipe Workflow', () => {
         expect(await screen.findByText('Recipes')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe Three'));
-        expect(screen.getByText('Source:')).toBeNull();
+        expect(screen.queryByText('Source:')).toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await user.hover(await screen.findByLabelText('View Mock Recipe Three'));
         await user.click(screen.getByLabelText('Edit Mock Recipe Three'));
-        expect(screen.getByDisplayValue('')).not.toBeNull();
+        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        expect(screen.getByLabelText('Edit recipe source')).toHaveProperty('value', '');
     });
 
     it('should update the source', async () => {
@@ -401,12 +405,12 @@ describe('Update Recipe Workflow', () => {
         expect(await screen.findByText('Recipes')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe Three'));
-        expect(screen.getByText('Source: Exa')).not.toBeNull();
+        expect(screen.queryByText('Source: Exa')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await user.hover(await screen.findByLabelText('View Mock Recipe Three'));
         await user.click(screen.getByLabelText('Edit Mock Recipe Three'));
-        expect(screen.getByDisplayValue('Exa')).not.toBeNull();
+        expect(screen.queryByDisplayValue('Exa')).not.toBeNull();
     });
 
     it('should update the ingredients', async () => {
@@ -455,20 +459,20 @@ describe('Update Recipe Workflow', () => {
         // Expect ------------------------------------------------
         // ------ Home Page --------------------------------------
         expect(await screen.findByText('Recipes')).not.toBeNull();
-        expect(screen.getByText('dinner')).not.toBeNull();
-        expect(screen.getByText('lunch')).toBeNull();
+        expect(screen.queryByText('dinner')).not.toBeNull();
+        expect(screen.queryByText('lunch')).toBeNull();
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
-        expect(screen.getByText('dinner')).not.toBeNull();
-        expect(screen.getByText('lunch')).toBeNull();
+        expect(screen.queryByText('dinner')).not.toBeNull();
+        expect(screen.queryByText('lunch')).toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await user.hover(await screen.findByLabelText('View Mock Recipe'));
         await user.click(screen.getByLabelText('Edit Mock Recipe'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
-        expect(screen.getByText('dinner')).not.toBeNull();
-        expect(screen.getByText('lunch')).toBeNull();
+        expect(screen.queryByText('dinner')).not.toBeNull();
+        expect(screen.queryByText('lunch')).toBeNull();
     });
 
     it('should add a new tag', async () => {
@@ -487,25 +491,25 @@ describe('Update Recipe Workflow', () => {
         // Expect ------------------------------------------------
         // ------ Home Page --------------------------------------
         expect(await screen.findByText('Recipes')).not.toBeNull();
-        expect(screen.getByText('dinner')).not.toBeNull();
-        expect(screen.getByText('mock tag')).not.toBeNull();
+        expect(screen.queryByText('dinner')).not.toBeNull();
+        expect(screen.queryByText('mock tag')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
-        expect(screen.getByText('dinner')).not.toBeNull();
-        expect(screen.getByText('mock tag')).not.toBeNull();
+        expect(screen.queryByText('dinner')).not.toBeNull();
+        expect(screen.queryByText('mock tag')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await user.hover(await screen.findByLabelText('View Mock Recipe'));
         await user.click(screen.getByLabelText('Edit Mock Recipe'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
-        expect(screen.getByText('dinner')).not.toBeNull();
-        expect(screen.getByText('mock tag')).not.toBeNull();
+        expect(screen.queryByText('dinner')).not.toBeNull();
+        expect(screen.queryByText('mock tag')).not.toBeNull();
     });
 
     it('should add an existing tag', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockUpdateRecipeAddExistingTag, mockGetTags]);
+        renderComponent([mockUpdateRecipeAddExistingTag]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -513,26 +517,32 @@ describe('Update Recipe Workflow', () => {
         await user.click(screen.getByLabelText('Edit Mock Recipe'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
         await user.click(screen.getByLabelText('Add a tag'));
-        await user.click(await screen.findByText('low-carb'));
+        await user.click(await screen.findByText('spicy'));
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
         // ------ Home Page --------------------------------------
         expect(await screen.findByText('Recipes')).not.toBeNull();
-        expect(screen.getByText('dinner')).not.toBeNull();
-        expect(screen.getByText('low-carb')).not.toBeNull();
+        expect(screen.queryByText('dinner')).not.toBeNull();
+        expect(screen.queryByText('spicy')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
-        expect(screen.getByText('dinner')).not.toBeNull();
-        expect(screen.getByText('low-carb')).not.toBeNull();
+        expect(screen.queryByText('dinner')).not.toBeNull();
+        expect(screen.queryByText('spicy')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await user.hover(await screen.findByLabelText('View Mock Recipe'));
         await user.click(screen.getByLabelText('Edit Mock Recipe'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
-        expect(screen.getByText('dinner')).not.toBeNull();
-        expect(screen.getByText('low-carb')).not.toBeNull();
+        expect(screen.queryByText('dinner')).not.toBeNull();
+        expect(screen.queryByText('spicy')).not.toBeNull();
+    });
+});
+
+describe('Update Image Workflow', () => {
+    afterEach(() => {
+        cleanup();
     });
 
     it('should add an image', async () => {

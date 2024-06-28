@@ -68,33 +68,24 @@ RecipeIngredientTC.addResolver({
 
 RecipeTC.addRelation('tags', {
     resolver: () => TagTC.mongooseResolvers.findByIds(),
-    prepareArgs: {
-        _ids: (source: Recipe) => source.tags?.map((o) => o._id),
-    },
+    prepareArgs: { _ids: (source: Recipe) => source.tags?.map((o) => o._id) },
     projection: { tags: true },
 });
 RecipeIngredientTC.addRelation('unit', {
     resolver: () => UnitTC.mongooseResolvers.findById(),
-    prepareArgs: {
-        _id: (source) => source.unit?._id,
-    },
+    prepareArgs: { _id: (source) => source.unit },
     projection: { unit: true },
 });
 RecipeIngredientTC.addRelation('ingredient', {
     resolver: () => RecipeIngredientTC.getResolver('ingredientOrRecipe'),
-    prepareArgs: {
-        _id: (source) => source.ingredient._id,
-    },
+    prepareArgs: { _id: (source) => source.ingredient },
     projection: { ingredient: true },
 });
 RecipeIngredientTC.addRelation('prepMethod', {
     resolver: () => PrepMethodTC.mongooseResolvers.findById(),
-    prepareArgs: {
-        _id: (source) => source.prepMethod?._id,
-    },
+    prepareArgs: { _id: (source) => source.prepMethod },
     projection: { prepMethod: true },
 });
-
 RecipeTC.addFields({
     images: {
         type: new GraphQLList(ImageTC.getType()),

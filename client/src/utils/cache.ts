@@ -14,5 +14,14 @@ export const getCache = () =>
                     },
                 },
             },
+            Recipe: {
+                fields: {
+                    tags: {
+                        merge(existing, incoming) {
+                            return incoming;
+                        },
+                    },
+                },
+            },
         },
     });

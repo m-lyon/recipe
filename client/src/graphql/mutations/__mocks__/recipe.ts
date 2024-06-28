@@ -1,6 +1,6 @@
 import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
-import { mockLowCarbTag } from '@recipe/graphql/queries/__mocks__/tag';
+import { mockSpicyTag } from '@recipe/graphql/queries/__mocks__/tag';
 import { mockApple } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockDiced } from '@recipe/graphql/queries/__mocks__/prepMethod';
 import { mockRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -16,7 +16,7 @@ const getMockUpdateRecipeVariables = (
         id: mockRecipe._id,
         recipe: {
             title: mockRecipe.title,
-            pluralTitle: mockRecipe.pluralTitle ?? undefined,
+            pluralTitle: mockRecipe.pluralTitle ?? null,
             instructions: mockRecipe.instructions,
             ingredients: mockRecipe.ingredients.map((ingr: any) => ({
                 quantity: ingr.quantity,
@@ -26,8 +26,8 @@ const getMockUpdateRecipeVariables = (
                 type: ingr.type,
             })),
             tags: mockRecipe.tags.map((tag: any) => tag._id),
-            notes: mockRecipe.notes ?? undefined,
-            source: mockRecipe.source ?? undefined,
+            notes: mockRecipe.notes ?? null,
+            source: mockRecipe.source ?? null,
             numServings: 4,
             isIngredient: mockRecipe.isIngredient,
         },
@@ -115,7 +115,7 @@ export const mockUpdateRecipeAddExistingTag = {
             id: recipeOneVars.id,
             recipe: {
                 ...recipeOneVars.recipe,
-                tags: [...recipeOneVars.recipe.tags, mockLowCarbTag._id],
+                tags: [...recipeOneVars.recipe.tags, mockSpicyTag._id],
             },
         },
     },
@@ -124,7 +124,7 @@ export const mockUpdateRecipeAddExistingTag = {
             recipeUpdateById: {
                 record: {
                     ...recipeOneData.record,
-                    tags: [...recipeOneData.record.tags, mockLowCarbTag],
+                    tags: [...recipeOneData.record.tags, mockSpicyTag],
                 },
             },
         },
@@ -275,12 +275,12 @@ export const mockUpdateRecipeRemoveNotes = {
         query: UPDATE_RECIPE,
         variables: {
             id: recipeThreeVars.id,
-            recipe: { ...recipeThreeVars.recipe, notes: undefined },
+            recipe: { ...recipeThreeVars.recipe, notes: null },
         },
     },
     result: {
         data: {
-            recipeUpdateById: { record: { ...recipeThreeData.record, notes: undefined } },
+            recipeUpdateById: { record: { ...recipeThreeData.record, notes: null } },
         },
     },
 };
@@ -317,12 +317,12 @@ export const mockUpdateRecipeRemoveSource = {
         query: UPDATE_RECIPE,
         variables: {
             id: recipeThreeVars.id,
-            recipe: { ...recipeThreeVars.recipe, source: undefined },
+            recipe: { ...recipeThreeVars.recipe, source: null },
         },
     },
     result: {
         data: {
-            recipeUpdateById: { record: { ...recipeThreeData.record, source: undefined } },
+            recipeUpdateById: { record: { ...recipeThreeData.record, source: null } },
         },
     },
 };

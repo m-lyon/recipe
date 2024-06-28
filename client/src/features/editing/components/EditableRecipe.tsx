@@ -131,8 +131,6 @@ export function EditableRecipe(props: Props) {
             });
             return;
         }
-        const notes = state.notes.notes ? state.notes.notes : undefined;
-        const source = state.source.source ? state.source.source : undefined;
         const isIngredient = state.asIngredient.state.isIngredient;
         const recipe = {
             numServings: state.numServings.num,
@@ -141,12 +139,12 @@ export function EditableRecipe(props: Props) {
                 ? state.asIngredient.state.pluralTitle
                     ? state.asIngredient.state.pluralTitle
                     : state.title.value
-                : undefined,
+                : null,
             instructions,
             ingredients,
             tags,
-            notes,
-            source,
+            notes: state.notes.notes ? state.notes.notes : null,
+            source: state.source.source ? state.source.source : null,
             isIngredient,
         };
         handleSubmitMutation(recipe);

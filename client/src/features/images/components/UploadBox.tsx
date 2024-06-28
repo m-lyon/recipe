@@ -30,7 +30,7 @@ export function UploadBox(props: Props) {
                 type='file'
                 style={{ display: 'none' }}
                 onChange={handleAddFile}
-                aria-label={'Upload image'}
+                aria-label='Upload image'
             />
         </Box>
     );
