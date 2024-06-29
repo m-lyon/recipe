@@ -3,23 +3,10 @@ import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 import { Tag, TagCloseButton, TagLabel, VStack, Wrap, WrapItem, useToast } from '@chakra-ui/react';
 
 import { DELAY_LONG } from '@recipe/constants';
+import { REMOVE_TAG } from '@recipe/graphql/mutations/tag';
 
 import { EditableTag } from './EditableTag';
-import { gql } from '../../../__generated__';
 import { UseTagListReturnType } from '../hooks/useTagList';
-
-// NOTE: This REMOVE_TAG cannot be moved to the mutation/tags.ts file because it
-// causes an undefined error.
-const REMOVE_TAG = gql(`
-    mutation RemoveTag($recordId: MongoID!) {
-        tagRemoveById(_id: $recordId) {
-            record {
-                _id
-                value
-            }
-        }
-    }
-`);
 
 export function EditableTagList(props: UseTagListReturnType) {
     const { state, removeTag, actions, tagStr } = props;
