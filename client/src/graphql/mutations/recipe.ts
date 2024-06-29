@@ -51,6 +51,9 @@ mutation UpdateRecipe($id: MongoID!, $recipe: UpdateByIdRecipeModifyInput!) {
             images {
                 _id
                 origUrl
+                recipe {
+                    title
+                }
             }
         }
     }
@@ -107,6 +110,9 @@ export const CREATE_RECIPE = gql(`
                 images {
                     _id
                     origUrl
+                    recipe {
+                        title
+                    }
                 }
             }
         }

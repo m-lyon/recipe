@@ -45,7 +45,7 @@ export function ImageRecipeCard(props: Props) {
                     <IconButton
                         variant='solid'
                         colorScheme='gray'
-                        aria-label='Edit recipe'
+                        aria-label={`Edit ${recipe.title}`}
                         icon={<EditIcon />}
                         isRound={true}
                         position='absolute'
@@ -75,6 +75,7 @@ export function ImageRecipeCard(props: Props) {
                     <LinkOverlay
                         as={Link}
                         to={`${ROOT_PATH}/view/recipe/${recipe.titleIdentifier}`}
+                        aria-label={`View ${recipe.title}`}
                     >
                         <VStack
                             height='100%'
@@ -97,7 +98,7 @@ export function ImageRecipeCard(props: Props) {
                     <IconButton
                         variant='solid'
                         colorScheme='gray'
-                        aria-label='Delete recipe'
+                        aria-label={`Delete ${recipe.title}`}
                         icon={<CloseIcon />}
                         isRound={true}
                         position='absolute'

@@ -1,6 +1,6 @@
 import { ChakraProvider } from '@chakra-ui/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
@@ -12,6 +12,7 @@ import { UserProvider } from '@recipe/features/user';
 import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
 import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockCreateTag } from '@recipe/graphql/mutations/__mocks__/tag';
+import { mockImageFile } from '@recipe/graphql/mutations/__mocks__/image';
 import { mockGetCurrentUser } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockUpdateRecipeOne } from '@recipe/graphql/mutations/__mocks__/recipe';
@@ -40,6 +41,10 @@ import { mockUpdateRecipeUpdateIngredients } from '@recipe/graphql/mutations/__m
 import { mockUpdateRecipeNewTitleAsIngredient } from '@recipe/graphql/mutations/__mocks__/recipe';
 
 import { routes } from '../routes';
+
+vi.mock('global', () => ({
+    fetch: vi.fn(),
+}));
 
 loadErrorMessages();
 loadDevMessages();
@@ -543,10 +548,13 @@ describe('Update Recipe Workflow', () => {
 describe('Update Image Workflow', () => {
     afterEach(() => {
         cleanup();
+        vi.clearAllMocks();
     });
 
     it('should add an image', async () => {
         // Render -----------------------------------------------
+        const mockBlob = new Blob(['dummy image data'], { type: 'image/jpeg' });
+        global.fetch = vi.fn().mockResolvedValue({ blob: () => Promise.resolve(mockBlob) });
         renderComponent([mockUpdateRecipeOne, mockUploadImages]);
         const user = userEvent.setup();
 
@@ -554,21 +562,23 @@ describe('Update Image Workflow', () => {
         await user.hover(await screen.findByLabelText('View Mock Recipe'));
         await user.click(screen.getByLabelText('Edit Mock Recipe'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
-        await user.click(screen.getByLabelText('Upload image'));
-        await user.keyboard('http://example.com/image.jpg');
+        user.upload(screen.getByLabelText('Upload image'), mockImageFile);
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
         // ------ Home Page --------------------------------------
         expect(await screen.findByText('Recipes')).not.toBeNull();
+        expect(screen.queryByAltText('Image 1 for Mock Recipe')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
-        expect(await screen.findByAltText('Mock Recipe')).not.toBeNull();
+        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        expect(screen.queryByAltText('Image 1 for Mock Recipe')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await user.hover(await screen.findByLabelText('View Mock Recipe'));
         await user.click(screen.getByLabelText('Edit Mock Recipe'));
-        expect(await screen.findByAltText('Mock Recipe')).not.toBeNull();
+        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        expect(screen.queryByAltText('test_image.png')).not.toBeNull();
     });
 
     it('should remove an image', async () => {
@@ -597,9 +607,6 @@ describe('Update Image Workflow', () => {
     });
 });
 
-// TODO: FIRST: ensure that a removed source still erroneously appears on the view recipe page
-//  this happens because the source isnt being 'unset' in the update recipe mutation, as it can be
-//  missing.
 // TODO: check that calculatedTags updates appear on View and Home pages
 
 // describe('Create Recipe Workflow', () => {

@@ -31,6 +31,7 @@ export function ImageCarousel(props: ImageCarouselProps) {
                         borderBottomRadius={images.length === 1 ? 'md' : 0}
                         borderBottomRightRadius={images.length === 1 ? imgBottomRightRadius : 0}
                         ref={index === 0 ? (ref as LegacyRef<HTMLImageElement>) : undefined}
+                        alt={`Image ${index + 1} for ${image.recipe?.title}`}
                     />
                 </AspectRatio>
             </CardBody>

@@ -55,6 +55,9 @@ export const GET_RECIPE = gql(`
             images {
                 _id
                 origUrl
+                recipe {
+                    title
+                }
             }
         }
     }
@@ -77,6 +80,9 @@ export const GET_RECIPES = gql(`
             images {
                 _id
                 origUrl
+                recipe {
+                    title
+                }
             }
         }
     }

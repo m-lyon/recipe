@@ -6,7 +6,9 @@ export const UPLOAD_IMAGES = gql(`
             records {
                 _id
                 origUrl
-                recipe
+                recipe {
+                    title
+                }
             }
         }
     }
@@ -19,6 +21,16 @@ export const DELETE_IMAGES = gql(`
                 _id
                 recipe
             }
+        }
+    }
+`);
+
+export const IMG_FRAGMENT = gql(`
+    fragment NewImage on Image {
+        _id
+        origUrl
+        recipe {
+            title
         }
     }
 `);

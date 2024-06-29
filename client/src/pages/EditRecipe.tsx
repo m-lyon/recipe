@@ -45,27 +45,31 @@ export function EditRecipe() {
     const [uploadImages, { loading: uploadLoading }] = useMutation(UPLOAD_IMAGES, {
         context: { headers: { 'apollo-require-preflight': true } },
         update(cache, { data }) {
-            if (!data?.imageUploadMany?.records || !recipe) {
+            const { records } = data?.imageUploadMany || {};
+            if (!records || !recipe) {
                 return;
             }
             cache.modify({
                 id: cache.identify(recipe),
                 fields: {
                     images(existing) {
-                        if (!data.imageUploadMany?.records) {
+                        if (!records) {
                             return existing;
                         }
-                        const refs = data.imageUploadMany.records.map((img) =>
-                            cache.writeFragment({
+                        const refs = records.map((img) => {
+                            return cache.writeFragment({
                                 data: img,
                                 fragment: gql`
                                     fragment NewImage on Image {
                                         _id
                                         origUrl
+                                        recipe {
+                                            title
+                                        }
                                     }
                                 `,
-                            })
-                        );
+                            });
+                        });
                         const newRefs = refs.filter((ref) => !existing.includes(ref));
                         return [...existing, ...newRefs];
                     },

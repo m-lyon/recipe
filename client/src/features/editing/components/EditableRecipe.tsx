@@ -4,13 +4,13 @@ import { Container, Grid, GridItem, useBreakpointValue, useToast } from '@chakra
 import { DELAY_LONG } from '@recipe/constants';
 import { UserContext } from '@recipe/features/user';
 import { Servings } from '@recipe/features/servings';
+import { ImageUpload } from '@recipe/features/images';
 import { IngredientsTabLayout } from '@recipe/layouts';
 import { EditableTagList } from '@recipe/features/tags';
 import { EnumRecipeIngredientType } from '@recipe/graphql/generated';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
 import { StarRating, StarRatingProps } from '@recipe/features/starRating';
 
-import { ImageUpload } from './ImageUpload';
 import { SubmitButton } from './SubmitButton';
 import { EditableNotes } from './EditableNotes';
 import { EditableTitle } from './EditableTitle';

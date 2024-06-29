@@ -5,6 +5,7 @@ import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
 import { GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
 
 import { IMAGE_DIR } from '../constants.js';
+import { RecipeTC } from '../models/Recipe.js';
 import { Image, ImageTC, saveImageToDb } from '../models/Image.js';
 import { FileUpload, storeUpload, validateImageFile } from '../utils/upload.js';
 
@@ -93,6 +94,12 @@ ImageTC.addResolver({
         });
         return { records: images };
     },
+});
+
+ImageTC.addRelation('recipe', {
+    resolver: () => RecipeTC.mongooseResolvers.findById(),
+    prepareArgs: { _id: (source) => source.recipe },
+    projection: { recipe: true },
 });
 
 export const ImageQuery = {
