@@ -1,5 +1,7 @@
+import { mockImageTwo } from '@recipe/graphql/mutations/__mocks__/image';
 import { EnumRecipeIngredientType, GetRecipesQuery } from '@recipe/graphql/generated';
 import { COUNT_RECIPES, GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
+import { mockIdOne, mockTitleOne, mockTitleTwo } from '@recipe/graphql/__mocks__/common';
 
 import { mockApple } from './ingredient';
 import { mockDiced } from './prepMethod';
@@ -8,8 +10,8 @@ import { mockCup, mockOunce, mockTeaspoon } from './unit';
 
 export const mockRecipeOne = {
     __typename: 'Recipe' as const,
-    _id: '60f4d2e5c3d5a0a4f1b9c0eb',
-    title: 'Mock Recipe',
+    _id: mockIdOne,
+    title: mockTitleOne,
     pluralTitle: null,
     titleIdentifier: 'mock-recipe-one',
     instructions: ['Instruction one', 'Instruction two'],
@@ -63,14 +65,16 @@ export const mockRecipeOne = {
     images: [],
     source: null,
 };
+
 export const mockRecipeTwo = {
     ...mockRecipeOne,
     _id: '60f4d2e5c3d5a0a4f1b9c0ec',
-    title: 'Mock Recipe Two',
+    title: mockTitleTwo,
     tags: [],
     titleIdentifier: 'mock-recipe-two',
     isIngredient: true,
     pluralTitle: 'Mock Recipes Two',
+    images: [mockImageTwo],
 };
 export const mockRecipeThree = {
     ...mockRecipeOne,

@@ -1,6 +1,6 @@
 import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
-import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockSpicyTag } from '@recipe/graphql/queries/__mocks__/tag';
+import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockApple } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockDiced } from '@recipe/graphql/queries/__mocks__/prepMethod';
 import { mockRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -252,6 +252,20 @@ export const mockUpdateRecipeUpdateIngredients = {
 };
 const recipeTwoVars = getMockUpdateRecipeVariables(mockRecipeTwo);
 const recipeTwoData = getMockUpdateReturn(mockRecipeTwo);
+export const mockUpdateRecipeTwo = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeTwoVars.id,
+            recipe: recipeTwoVars.recipe,
+        },
+    },
+    result: {
+        data: {
+            recipeUpdateById: { record: recipeTwoData.record },
+        },
+    },
+};
 export const mockUpdateRecipeNewTitleAsIngredient = {
     request: {
         query: UPDATE_RECIPE,

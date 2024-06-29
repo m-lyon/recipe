@@ -16,6 +16,7 @@ import { mockImageFile } from '@recipe/graphql/mutations/__mocks__/image';
 import { mockGetCurrentUser } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockUpdateRecipeOne } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockUpdateRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetPrepMethods } from '@recipe/graphql/queries/__mocks__/prepMethod';
 import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockGetRatingsRecipeOne } from '@recipe/graphql/queries/__mocks__/rating';
@@ -89,6 +90,7 @@ const renderComponent = (
 describe('Home Page', () => {
     afterEach(() => {
         cleanup();
+        vi.clearAllMocks();
     });
     it('should load the home page', async () => {
         // Render -----------------------------------------------
@@ -195,6 +197,8 @@ describe('Update Recipe Workflow', () => {
 
     it('should update the title when recipe is an ingredient', async () => {
         // Render -----------------------------------------------
+        const mockBlob = new Blob(['dummy image data'], { type: 'image/jpeg' });
+        global.fetch = vi.fn().mockResolvedValue({ blob: () => Promise.resolve(mockBlob) });
         renderComponent([mockUpdateRecipeNewTitleAsIngredient]);
         const user = userEvent.setup();
 
@@ -583,27 +587,32 @@ describe('Update Image Workflow', () => {
 
     it('should remove an image', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockUpdateRecipeOne, mockDeleteImages]);
+        const mockBlob = new Blob(['dummy image data'], { type: 'image/jpeg' });
+        global.fetch = vi.fn().mockResolvedValue({ blob: () => Promise.resolve(mockBlob) });
+        renderComponent([mockUpdateRecipeTwo, mockDeleteImages]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe'));
+        await user.hover(await screen.findByLabelText('View Mock Recipe Two'));
+        await user.click(screen.getByLabelText('Edit Mock Recipe Two'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
-        await user.click(screen.getByLabelText('Remove image imgName'));
+        await user.click(screen.getByLabelText('Remove test_image.png'));
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
         // ------ Home Page --------------------------------------
         expect(await screen.findByText('Recipes')).not.toBeNull();
+        expect(screen.queryByAltText('Image 1 for Mock Recipe Two')).toBeNull();
         // ------ View Recipe Page -------------------------------
-        await user.click(screen.getByLabelText('View Mock Recipe'));
-        expect(screen.queryByAltText('Mock Recipe')).toBeNull();
+        await user.click(screen.getByLabelText('View Mock Recipe Two'));
+        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        expect(screen.queryByAltText('Image 1 for Mock Recipe Two')).toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe'));
+        await user.hover(await screen.findByLabelText('View Mock Recipe Two'));
         await user.click(screen.getByLabelText('Edit Mock Recipe'));
-        expect(screen.queryByAltText('Mock Recipe')).toBeNull();
+        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        expect(screen.queryByAltText('test_image.png')).toBeNull();
     });
 });
 

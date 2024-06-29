@@ -13,24 +13,16 @@ export const UPLOAD_IMAGES = gql(`
         }
     }
 `);
-
 export const DELETE_IMAGES = gql(`
     mutation DeleteImages($ids: [MongoID!]!) {
         imageRemoveMany(ids: $ids) {
             records {
                 _id
-                recipe
+                origUrl
+                recipe {
+                    title
+                }
             }
-        }
-    }
-`);
-
-export const IMG_FRAGMENT = gql(`
-    fragment NewImage on Image {
-        _id
-        origUrl
-        recipe {
-            title
         }
     }
 `);
