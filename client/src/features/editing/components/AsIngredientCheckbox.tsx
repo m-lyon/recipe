@@ -31,6 +31,7 @@ export function AsIngredientCheckbox(props: UseAsIngredientReturnType) {
                         value={state.pluralTitle}
                         onChange={(e) => actionHandler.setPluralTitle(e.target.value)}
                         variant='unstyled'
+                        aria-label='Edit recipe plural title'
                     />
                 )}
             </VStack>

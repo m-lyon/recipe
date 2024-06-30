@@ -127,7 +127,8 @@ describe('Update Recipe Workflow', () => {
         expect(await screen.findByText('Instruction one')).not.toBeNull();
         await user.click(screen.getByLabelText('Edit recipe title'));
         await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Mock '
-        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Recipe '
+        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Recip'
+        await user.keyboard('{Backspace}{Backspace}'); // remove 'e
         await user.keyboard('New Title');
         await user.click(screen.getByLabelText('Save recipe'));
 
@@ -160,29 +161,39 @@ describe('Update Recipe Workflow', () => {
         expect(await screen.findByText('Instruction one')).not.toBeNull();
         await user.click(screen.getByLabelText('Edit recipe title'));
         await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Mock '
-        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Recipe '
+        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Recip'
+        await user.keyboard('{Backspace}{Backspace}'); // remove 'e '
         await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Two'
         await user.keyboard('New Title');
+        await user.click(screen.getByLabelText('Edit recipe plural title'));
+        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Mock '
+        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Recip'
+        await user.keyboard('{Backspace}{Backspace}'); // remove 'es'
+        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}'); // remove ' Two'
+        await user.keyboard('New Titles');
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
         // ------ Home Page --------------------------------------
         expect(await screen.findByText('Recipes')).not.toBeNull();
-        expect(await screen.findByText('New Title')).not.toBeNull();
+        expect(screen.queryByText('New Titles')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View New Title'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
-        expect(await screen.findByText('New Title')).not.toBeNull();
+        expect(screen.queryByText('New Titles')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await user.hover(await screen.findByLabelText('View New Title'));
         await user.click(screen.getByLabelText('Edit New Title'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
-        expect(await screen.findByText('New Title')).not.toBeNull();
+        expect(screen.queryByText('New Title')).not.toBeNull();
+        expect(screen.getByLabelText('Edit recipe plural title')).toHaveProperty(
+            'value',
+            'New Titles'
+        );
     });
 });
 
-// TODO: fix the pluralName recipe is ingredient test
 // TODO: check that calculatedTags updates appear on View and Home pages
 
 // describe('Create Recipe Workflow', () => {

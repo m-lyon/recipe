@@ -271,13 +271,13 @@ export const mockUpdateRecipeNewTitleAsIngredient = {
         query: UPDATE_RECIPE,
         variables: {
             id: recipeTwoVars.id,
-            recipe: { ...recipeTwoVars.recipe, title: 'New Title' },
+            recipe: { ...recipeTwoVars.recipe, title: 'New Title', pluralTitle: 'New Titles' },
         },
     },
     result: {
         data: {
             recipeUpdateById: {
-                record: { ...recipeTwoData.record, title: 'New Title' },
+                record: { ...recipeTwoData.record, title: 'New Title', pluralTitle: 'New Titles' },
             },
         },
     },
