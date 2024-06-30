@@ -139,14 +139,6 @@ describe('Update Recipe Workflow', () => {
     });
 });
 
-// TODO: check that calculatedTags updates appear on View and Home pages
-
-// describe('Create Recipe Workflow', () => {
-//     afterEach(() => {
-//         cleanup();
-//     });
-// });
-
 // describe('Delete Recipe Workflow', () => {
 //     afterEach(() => {
 //         cleanup();

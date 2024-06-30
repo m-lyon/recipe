@@ -58,3 +58,22 @@ describe('Update Recipe Workflow', () => {
         expect(await screen.findByText('Instruction one')).not.toBeNull();
     });
 });
+
+describe('Create Recipe Workflow', () => {
+    afterEach(() => {
+        cleanup();
+    });
+
+    it('should navigate to the create recipe page', async () => {
+        // Render -----------------------------------------------
+        renderComponent();
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        expect(await screen.findByText('Recipes'));
+        await user.click(screen.getAllByLabelText('Create new recipe')[0]);
+
+        // Expect ------------------------------------------------
+        expect(await screen.findByText('Ingredients')).not.toBeNull();
+    });
+});

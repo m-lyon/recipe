@@ -75,6 +75,7 @@ export const mockRecipeTwo = {
     isIngredient: true,
     pluralTitle: 'Mock Recipes Two',
     images: [mockImageTwo],
+    calculatedTags: [],
 };
 export const mockRecipeThree = {
     ...mockRecipeOne,
@@ -84,6 +85,7 @@ export const mockRecipeThree = {
     tags: [],
     source: 'Example',
     notes: 'Notes',
+    calculatedTags: [],
 };
 // GetRecipe
 export const mockGetRecipe = {

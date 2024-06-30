@@ -93,6 +93,7 @@ function DesktopNav(props: DesktopNavProps) {
                             <ChakraLink
                                 p={2}
                                 as={ReactRouterLink}
+                                aria-label={navItem.ariaLabel}
                                 to={navItem.href ?? '#'}
                                 fontSize='sm'
                                 fontWeight={500}
@@ -131,13 +132,14 @@ function DesktopNav(props: DesktopNavProps) {
     );
 }
 
-function DesktopSubNav({ label, href, subLabel }: NavItem) {
+function DesktopSubNav({ label, ariaLabel, href, subLabel }: NavItem) {
     const ref = useRef<HTMLAnchorElement>(null);
 
     return (
         <ChakraLink
             as={ReactRouterLink}
             to={href}
+            aria-label={ariaLabel}
             role='group'
             display='block'
             p={2}
@@ -189,7 +191,7 @@ function MobileNav(props: MobileNavProps) {
     );
 }
 
-function MobileNavItem({ label, children, href, parentOnToggle }: NavItem) {
+function MobileNavItem({ label, ariaLabel, children, href, parentOnToggle }: NavItem) {
     const { isOpen, onToggle } = useDisclosure();
 
     return (
@@ -198,6 +200,7 @@ function MobileNavItem({ label, children, href, parentOnToggle }: NavItem) {
                 py={2}
                 px={4}
                 as={ChakraLink}
+                aria-label={ariaLabel}
                 href={href ?? '#'}
                 justify='space-between'
                 align='center'
@@ -234,6 +237,7 @@ function MobileNavItem({ label, children, href, parentOnToggle }: NavItem) {
                                 key={child.label}
                                 py={2}
                                 to={child.href}
+                                aria-label={child.ariaLabel}
                                 as={ReactRouterLink}
                                 onClick={parentOnToggle}
                             >
@@ -248,6 +252,7 @@ function MobileNavItem({ label, children, href, parentOnToggle }: NavItem) {
 
 interface NavItem {
     label: string;
+    ariaLabel?: string;
     subLabel?: string;
     children?: Array<NavItem>;
     href?: string;
@@ -261,22 +266,27 @@ const USER_NAV_ITEMS: Array<NavItem> = [
         children: [
             {
                 label: 'Recipe',
+                ariaLabel: 'Create new recipe',
                 href: `${ROOT_PATH}/create/recipe`,
             },
             {
                 label: 'Unit',
+                ariaLabel: 'Create new unit',
                 href: `${ROOT_PATH}/create/unit`,
             },
             {
                 label: 'Ingredient',
+                ariaLabel: 'Create new ingredient',
                 href: `${ROOT_PATH}/create/ingredient`,
             },
             {
                 label: 'Prep Method',
+                ariaLabel: 'Create new prep method',
                 href: `${ROOT_PATH}/create/prep-method`,
             },
             {
                 label: 'Unit Conversion',
+                ariaLabel: 'Create new unit conversion rule',
                 href: `${ROOT_PATH}/create/unit-conversion`,
             },
         ],
@@ -286,20 +296,24 @@ const USER_NAV_ITEMS: Array<NavItem> = [
         children: [
             {
                 label: 'Unit',
+                ariaLabel: 'Edit existing unit',
                 href: `${ROOT_PATH}/edit/unit`,
             },
             {
                 label: 'Ingredient',
+                ariaLabel: 'Edit existing ingredient',
                 href: `${ROOT_PATH}/edit/ingredient`,
             },
             {
                 label: 'Prep Method',
+                ariaLabel: 'Edit existing prep method',
                 href: `${ROOT_PATH}/edit/prep-method`,
             },
         ],
     },
     {
         label: 'Search',
+        ariaLabel: 'Search for recipes',
         href: `${ROOT_PATH}/search`,
     },
 ];
@@ -307,6 +321,7 @@ const USER_NAV_ITEMS: Array<NavItem> = [
 const PUBLIC_NAV_ITEMS: Array<NavItem> = [
     {
         label: 'Search',
+        ariaLabel: 'Search for recipes',
         href: `${ROOT_PATH}/search`,
     },
 ];
