@@ -5,11 +5,11 @@ import { cleanup, configure, render, screen } from '@testing-library/react';
 
 import { mockGetTagsEmpty } from '@recipe/graphql/queries/__mocks__/tag';
 
-import { TagDropdown } from '../../../tags/components/TagDropdown';
+import { TagDropdown } from '../TagDropdown';
 
 // This test is split up into two because the delayed timeout causes
 // other tests to erroneously fail.
-configure({ asyncUtilTimeout: 3000 });
+configure({ asyncUtilTimeout: 1500 });
 
 describe('TagDropdown', () => {
     afterEach(() => {
