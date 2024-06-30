@@ -6,59 +6,59 @@ export const COUNT_RECIPES = gql(`
     }
 `);
 
-export const GET_RECIPE = gql(`
-    query GetRecipe($filter: FilterFindOneRecipeInput!) {
-        recipeOne(filter: $filter) {
+export const RECIPE_FIELDS_SUBSET = gql(`
+    fragment RecipeFieldsSubset on Recipe {
+        _id
+        title
+        titleIdentifier
+        tags {
             _id
-            title
-            instructions
-            ingredients {
-                type
-                quantity
-                unit {
+            value
+        }
+        calculatedTags
+        isIngredient
+        numServings
+        pluralTitle
+        images {
+            ...ImageFields
+        }
+    }
+`);
+
+export const RECIPE_FIELDS_FULL = gql(`
+    fragment RecipeFieldsFull on Recipe {
+        ...RecipeFieldsSubset
+        instructions
+        ingredients {
+            type
+            quantity
+            unit {
+                ...UnitFields
+            }
+            ingredient {
+                ... on Recipe {
                     _id
-                    shortSingular
-                    shortPlural
-                    longSingular
-                    longPlural
-                    preferredNumberFormat
-                    hasSpace
+                    title
+                    pluralTitle
                 }
-                ingredient {
-                    ... on Recipe {
-                        _id
-                        title
-                        pluralTitle
-                    }
-                    ... on Ingredient {
-                        _id
-                        name
-                        pluralName
-                        isCountable
-                    }
-                }
-                prepMethod {
-                    _id
-                    value
+                ... on Ingredient {
+                    ...IngredientFields
                 }
             }
-            tags {
+            prepMethod {
                 _id
                 value
             }
-            calculatedTags
-            numServings
-            isIngredient
-            pluralTitle
-            source
-            notes
-            images {
-                _id
-                origUrl
-                recipe {
-                    title
-                }
-            }
+        }
+        source
+        notes
+    }
+`);
+
+export const GET_RECIPE = gql(`
+    query GetRecipe($filter: FilterFindOneRecipeInput!) {
+        recipeOne(filter: $filter) {
+            ...RecipeFieldsFull
         }
     }
 `);
@@ -66,24 +66,7 @@ export const GET_RECIPE = gql(`
 export const GET_RECIPES = gql(`
     query GetRecipes($offset: Int = 0, $limit: Int = 1000) {
         recipeMany(skip: $offset, limit: $limit) {
-            _id
-            titleIdentifier
-            title
-            tags {
-                _id
-                value
-            }
-            calculatedTags
-            isIngredient
-            numServings
-            pluralTitle
-            images {
-                _id
-                origUrl
-                recipe {
-                    title
-                }
-            }
+            ...RecipeFieldsSubset
         }
     }
 `);

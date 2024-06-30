@@ -64,56 +64,7 @@ export const CREATE_RECIPE = gql(`
     mutation CreateRecipe($recipe: CreateOneRecipeCreateInput!) {
         recipeCreateOne(record: $recipe) {
             record {
-                _id
-                title
-                instructions
-                ingredients {
-                    type
-                    quantity
-                    unit {
-                        _id
-                        shortSingular
-                        shortPlural
-                        longSingular
-                        longPlural
-                        preferredNumberFormat
-                        hasSpace
-                    }
-                    ingredient {
-                        ... on Recipe {
-                            _id
-                            title
-                            pluralTitle
-                        }
-                        ... on Ingredient {
-                            _id
-                            name
-                            pluralName
-                            isCountable
-                        }
-                    }
-                    prepMethod {
-                        _id
-                        value
-                    }
-                }
-                tags {
-                    _id
-                    value
-                }
-                calculatedTags
-                numServings
-                isIngredient
-                pluralTitle
-                source
-                notes
-                images {
-                    _id
-                    origUrl
-                    recipe {
-                        title
-                    }
-                }
+                ...RecipeFieldsFull
             }
         }
     }

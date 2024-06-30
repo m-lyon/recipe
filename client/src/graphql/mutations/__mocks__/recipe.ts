@@ -385,7 +385,9 @@ export const mockCreateRecipe = {
             recipeCreateOne: {
                 record: {
                     _id: '60f4d4e5c3d5a0a4f1b9c0ec',
+                    __typename: 'Recipe' as const,
                     title: 'New Recipe',
+                    titleIdentifier: 'new-recipe',
                     pluralTitle: null,
                     instructions: ['Instr #1.', 'Instr #2.'],
                     ingredients: [
