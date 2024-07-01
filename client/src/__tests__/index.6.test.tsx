@@ -3,7 +3,7 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { mockImageFile } from '@recipe/graphql/mutations/__mocks__/image';
+import { mockImageFileOne } from '@recipe/graphql/mutations/__mocks__/image';
 import { mockUpdateRecipeOne } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockDeleteImages, mockUploadImages } from '@recipe/graphql/mutations/__mocks__/image';
@@ -34,7 +34,7 @@ describe('Update Image Workflow', () => {
         await user.hover(await screen.findByLabelText('View Mock Recipe'));
         await user.click(screen.getByLabelText('Edit Mock Recipe'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
-        user.upload(screen.getByLabelText('Upload image'), mockImageFile);
+        user.upload(screen.getByLabelText('Upload image'), mockImageFileOne);
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------

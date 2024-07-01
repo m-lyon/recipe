@@ -1,11 +1,11 @@
+import { mockSpicyTag } from '@recipe/graphql/queries/__mocks__/tag';
 import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockApple } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockDiced } from '@recipe/graphql/queries/__mocks__/prepMethod';
-import { mockRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
 import { CREATE_RECIPE, UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { EnumRecipeIngredientType, GetRecipeQuery } from '@recipe/graphql/generated';
-import { mockFreezableTag, mockSpicyTag } from '@recipe/graphql/queries/__mocks__/tag';
 import { mockRecipeOne, mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockRecipeNew, mockRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
 
 import { mockCreateTag } from './tag';
 
@@ -28,7 +28,7 @@ const getMockUpdateRecipeVariables = (
             tags: mockRecipe.tags.map((tag: any) => tag._id),
             notes: mockRecipe.notes ?? null,
             source: mockRecipe.source ?? null,
-            numServings: 4,
+            numServings: mockRecipe.numServings,
             isIngredient: mockRecipe.isIngredient,
         },
     };
@@ -354,60 +354,16 @@ export const mockUpdateRecipeRemoveSource = {
         },
     },
 };
-
+const mockCreateRecipeVars = getMockUpdateRecipeVariables(mockRecipeNew);
+const mockCreateRecipeData = getMockUpdateReturn(mockRecipeNew);
 export const mockCreateRecipe = {
     request: {
         query: CREATE_RECIPE,
-        variables: {
-            recipe: {
-                title: 'New Recipe',
-                pluralTitle: null,
-                instructions: ['Instr #1.', 'Instr #2.'],
-                ingredients: [
-                    {
-                        quantity: '2',
-                        unit: mockTeaspoon._id,
-                        ingredient: mockApple._id,
-                        prepMethod: mockDiced._id,
-                        type: 'ingredient',
-                    },
-                ],
-                tags: [mockFreezableTag._id],
-                numServings: 2,
-                isIngredient: false,
-                notes: 'Recipe Notes.',
-                source: 'Recipe Source',
-            },
-        },
+        variables: { recipe: mockCreateRecipeVars.recipe },
     },
     result: {
         data: {
-            recipeCreateOne: {
-                record: {
-                    _id: '60f4d4e5c3d5a0a4f1b9c0ec',
-                    __typename: 'Recipe' as const,
-                    title: 'New Recipe',
-                    titleIdentifier: 'new-recipe',
-                    pluralTitle: null,
-                    instructions: ['Instr #1.', 'Instr #2.'],
-                    ingredients: [
-                        {
-                            quantity: '2',
-                            unit: mockTeaspoon,
-                            ingredient: mockApple,
-                            prepMethod: mockDiced,
-                            type: 'ingredient',
-                        },
-                    ],
-                    tags: [mockFreezableTag],
-                    calculatedTags: [],
-                    numServings: 2,
-                    isIngredient: false,
-                    notes: 'Recipe Notes.',
-                    source: 'Recipe Source',
-                    images: [],
-                },
-            },
+            recipeCreateOne: { record: mockCreateRecipeData.record },
         },
     },
 };

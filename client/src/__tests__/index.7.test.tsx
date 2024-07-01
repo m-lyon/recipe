@@ -1,6 +1,6 @@
 import userEvent from '@testing-library/user-event';
 import { cleanup, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { mockUpdateRecipeCalculatedTags } from '@recipe/graphql/mutations/__mocks__/recipe';
@@ -8,17 +8,12 @@ import { mockUpdateRecipeUpdateIngredients } from '@recipe/graphql/mutations/__m
 
 import { renderComponent } from './utils';
 
-vi.mock('global', () => ({
-    fetch: vi.fn(),
-}));
-
 loadErrorMessages();
 loadDevMessages();
 
 describe('Update Recipe Workflow', () => {
     afterEach(() => {
         cleanup();
-        vi.clearAllMocks();
     });
 
     it('should update the ingredients', async () => {

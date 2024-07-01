@@ -1,12 +1,12 @@
-import { mockImageTwo } from '@recipe/graphql/mutations/__mocks__/image';
+import { mockImageThree } from '@recipe/graphql/mutations/__mocks__/image';
 import { EnumRecipeIngredientType, GetRecipesQuery } from '@recipe/graphql/generated';
 import { COUNT_RECIPES, GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
-import { mockIdOne, mockTitleOne, mockTitleTwo } from '@recipe/graphql/__mocks__/common';
+import { mockIdNew, mockIdOne, mockTitleOne, mockTitleTwo } from '@recipe/graphql/__mocks__/common';
 
 import { mockApple } from './ingredient';
 import { mockDiced } from './prepMethod';
-import { mockDinnerTag, mockLunchTag } from './tag';
 import { mockCup, mockOunce, mockTeaspoon } from './unit';
+import { mockDinnerTag, mockFreezableTag, mockLunchTag } from './tag';
 
 export const mockRecipeOne = {
     __typename: 'Recipe' as const,
@@ -74,7 +74,7 @@ export const mockRecipeTwo = {
     titleIdentifier: 'mock-recipe-two',
     isIngredient: true,
     pluralTitle: 'Mock Recipes Two',
-    images: [mockImageTwo],
+    images: [mockImageThree],
     calculatedTags: [],
 };
 export const mockRecipeThree = {
@@ -86,6 +86,30 @@ export const mockRecipeThree = {
     source: 'Example',
     notes: 'Notes',
     calculatedTags: [],
+};
+export const mockRecipeNew = {
+    _id: mockIdNew,
+    __typename: 'Recipe' as const,
+    title: 'New Recipe',
+    pluralTitle: null,
+    titleIdentifier: 'new-recipe',
+    instructions: ['Instr #1.', 'Instr #2.'],
+    ingredients: [
+        {
+            type: 'ingredient' as EnumRecipeIngredientType,
+            quantity: '2',
+            unit: mockTeaspoon,
+            ingredient: mockApple,
+            prepMethod: mockDiced,
+        },
+    ],
+    tags: [mockFreezableTag],
+    calculatedTags: [],
+    numServings: 2,
+    isIngredient: false,
+    notes: 'Recipe Notes.',
+    source: 'Recipe Source',
+    images: [],
 };
 // GetRecipe
 export const mockGetRecipe = {
@@ -115,6 +139,13 @@ export const mockGetRecipeThree = {
         variables: { filter: { titleIdentifier: 'mock-recipe-three' } },
     },
     result: { data: { recipeOne: mockRecipeThree } },
+};
+export const mockGetRecipeNew = {
+    request: {
+        query: GET_RECIPE,
+        variables: { filter: { titleIdentifier: 'new-recipe' } },
+    },
+    result: { data: { recipeOne: mockRecipeNew } },
 };
 // GetRecipes
 export const mockGetRecipes = {

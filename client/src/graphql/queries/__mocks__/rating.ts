@@ -1,6 +1,6 @@
 import { GET_RATINGS } from '@recipe/graphql/queries/rating';
 
-import { mockRecipeOne, mockRecipeThree, mockRecipeTwo } from './recipe';
+import { mockRecipeNew, mockRecipeOne, mockRecipeThree, mockRecipeTwo } from './recipe';
 
 export const mockGetRatingsRecipeOne = {
     request: {
@@ -50,6 +50,17 @@ export const mockGetRatingsRecipeThree = {
                     value: 5.0,
                 },
             ],
+        },
+    },
+};
+export const mockGetRatingsNewRecipe = {
+    request: {
+        query: GET_RATINGS,
+        variables: { recipeId: mockRecipeNew._id },
+    },
+    result: {
+        data: {
+            ratingMany: [],
         },
     },
 };
