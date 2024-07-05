@@ -7,9 +7,9 @@ import { TagList } from '@recipe/features/tags';
 import { UserContext } from '@recipe/features/user';
 import { IngredientsTabLayout } from '@recipe/layouts';
 import { changeQuantity } from '@recipe/utils/quantity';
-import { Recipe, RecipeIngredient, Tag } from '@recipe/graphql/generated';
 import { Servings, useUnitConversion } from '@recipe/features/servings';
-import { StarRating, useViewStarRating } from '@recipe/features/starRating';
+import { StarRating, useViewStarRating } from '@recipe/features/rating';
+import { Recipe, RecipeIngredient, Tag } from '@recipe/graphql/generated';
 
 import { IngredientList } from './IngredientList';
 import { Notes } from './Notes';

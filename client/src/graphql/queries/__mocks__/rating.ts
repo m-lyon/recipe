@@ -60,7 +60,13 @@ export const mockGetRatingsNewRecipe = {
     },
     result: {
         data: {
-            ratingMany: [],
+            ratingMany: [
+                {
+                    __typename: 'Rating' as const,
+                    _id: '60f4d2e5c7d5a0a4f1b9c0ec',
+                    value: 1.5,
+                },
+            ],
         },
     },
 };

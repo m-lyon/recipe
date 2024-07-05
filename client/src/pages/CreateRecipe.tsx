@@ -4,12 +4,12 @@ import { useMutation } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
 
 import { ADD_RATING } from '@recipe/graphql/mutations/rating';
-import { UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
 import { CREATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { RECIPE_FIELDS_SUBSET } from '@recipe/graphql/queries/recipe';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
 import { DELAY_LONG, DELAY_SHORT, ROOT_PATH } from '@recipe/constants';
 import { EditableRecipe, useRecipeState } from '@recipe/features/editing';
+import { IMAGE_FIELDS, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
 
 export function CreateRecipe() {
     const toast = useToast();
@@ -44,6 +44,36 @@ export function CreateRecipe() {
     const [addRating, { loading: ratingLoading }] = useMutation(ADD_RATING);
     const [uploadImages, { loading: uploadLoading }] = useMutation(UPLOAD_IMAGES, {
         context: { headers: { 'apollo-require-preflight': true } },
+        update(cache, { data }) {
+            const { records } = data?.imageUploadMany || {};
+            const { record: recipe } = response?.recipeCreateOne || { record: undefined };
+            if (!records || !recipe) {
+                return;
+            }
+            cache.modify({
+                id: cache.identify(recipe),
+                fields: {
+                    images(existing) {
+                        if (!records) {
+                            return existing;
+                        }
+                        try {
+                            const refs = records.map((img) => {
+                                return cache.writeFragment({
+                                    data: img,
+                                    fragment: IMAGE_FIELDS,
+                                    fragmentName: 'ImageFields',
+                                });
+                            });
+                            return refs;
+                        } catch (error) {
+                            console.error('Error writing fragments to cache', error);
+                            return existing;
+                        }
+                    },
+                },
+            });
+        },
     });
 
     const handleSubmitMutation = async (recipe: CreateOneRecipeCreateInput) => {
@@ -101,6 +131,7 @@ export function CreateRecipe() {
         });
         setTimeout(() => navigate(ROOT_PATH), DELAY_SHORT);
     };
+
     return (
         <EditableRecipe
             state={state}

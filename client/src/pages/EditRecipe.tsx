@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import { useToast } from '@chakra-ui/react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Reference, gql, useMutation, useQuery } from '@apollo/client';
+import { Reference, useMutation, useQuery } from '@apollo/client';
 
 import { RecipeFromOne } from '@recipe/types';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
-import { useViewStarRating } from '@recipe/features/starRating';
+import { useViewStarRating } from '@recipe/features/rating';
 import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { EditableRecipe, useRecipeState } from '@recipe/features/editing';
 import { dbIngredientToFinished } from '@recipe/features/recipeIngredient';
-import { DELETE_IMAGES, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
 import { DELAY_LONG, DELAY_SHORT, GRAPHQL_ENDPOINT, ROOT_PATH } from '@recipe/constants';
 import { RecipeIngredient, UpdateByIdRecipeModifyInput } from '@recipe/graphql/generated';
+import { DELETE_IMAGES, IMAGE_FIELDS, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
 
 export function EditRecipe() {
     const toast = useToast();
@@ -59,15 +59,8 @@ export function EditRecipe() {
                         const refs = records.map((img) => {
                             return cache.writeFragment({
                                 data: img,
-                                fragment: gql`
-                                    fragment NewImage on Image {
-                                        _id
-                                        origUrl
-                                        recipe {
-                                            title
-                                        }
-                                    }
-                                `,
+                                fragment: IMAGE_FIELDS,
+                                fragmentName: 'ImageFields',
                             });
                         });
                         const newRefs = refs.filter((ref) => !existing.includes(ref));

@@ -9,7 +9,7 @@ import { IngredientsTabLayout } from '@recipe/layouts';
 import { EditableTagList } from '@recipe/features/tags';
 import { EnumRecipeIngredientType } from '@recipe/graphql/generated';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
-import { StarRating, StarRatingProps } from '@recipe/features/starRating';
+import { StarRating, StarRatingProps } from '@recipe/features/rating';
 
 import { SubmitButton } from './SubmitButton';
 import { EditableNotes } from './EditableNotes';

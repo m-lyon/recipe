@@ -44,10 +44,11 @@ export function useViewStarRating() {
                 });
             });
     };
-
-    const avgRating = data
-        ? data.ratingMany.reduce((sum, record) => sum + record.value, 0) / data.ratingMany.length
-        : 0;
+    const avgRating =
+        data && data.ratingMany.length > 0
+            ? data.ratingMany.reduce((sum, record) => sum + record.value, 0) /
+              data.ratingMany.length
+            : 0;
 
     return { avgRating, getRatings, setRating };
 }
