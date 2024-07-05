@@ -252,6 +252,46 @@ export const mockUpdateRecipeAddNewTag = {
         },
     },
 };
+export const mockUpdateRecipeIngredientsAdd = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: {
+                ...recipeOneVars.recipe,
+                ingredients: [
+                    ...recipeOneVars.recipe.ingredients,
+                    {
+                        quantity: '4',
+                        unit: mockTeaspoon._id,
+                        ingredient: mockApple._id,
+                        prepMethod: mockDiced._id,
+                        type: 'ingredient' as EnumRecipeIngredientType,
+                    },
+                ],
+            },
+        },
+    },
+    result: {
+        data: {
+            recipeUpdateById: {
+                record: {
+                    ...recipeOneData.record,
+                    ingredients: [
+                        ...recipeOneData.record.ingredients,
+                        {
+                            quantity: '4',
+                            unit: mockTeaspoon,
+                            ingredient: mockApple,
+                            prepMethod: mockDiced,
+                            type: 'ingredient' as EnumRecipeIngredientType,
+                        },
+                    ],
+                },
+            },
+        },
+    },
+};
 export const mockUpdateRecipeIngredientsEdit = {
     request: {
         query: UPDATE_RECIPE,
@@ -289,6 +329,32 @@ export const mockUpdateRecipeIngredientsEdit = {
                             type: 'ingredient' as EnumRecipeIngredientType,
                         },
                     ],
+                },
+            },
+        },
+    },
+};
+export const mockUpdateRecipeIngredientsRemove = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: {
+                ...recipeOneVars.recipe,
+                ingredients: recipeOneVars.recipe.ingredients.filter(
+                    (ingr) => ingr.quantity !== '2'
+                ),
+            },
+        },
+    },
+    result: {
+        data: {
+            recipeUpdateById: {
+                record: {
+                    ...recipeOneData.record,
+                    ingredients: recipeOneData.record.ingredients.filter(
+                        (ingr) => ingr?.quantity !== '2'
+                    ),
                 },
             },
         },

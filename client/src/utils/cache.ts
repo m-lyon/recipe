@@ -16,6 +16,11 @@ export const getCache = () =>
             },
             Recipe: {
                 fields: {
+                    ingredients: {
+                        merge(existing, incoming) {
+                            return incoming;
+                        },
+                    },
                     tags: {
                         merge(existing, incoming) {
                             return incoming;
