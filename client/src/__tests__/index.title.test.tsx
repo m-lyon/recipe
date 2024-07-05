@@ -4,7 +4,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { mockUpdateRecipeNewTitle } from '@recipe/graphql/mutations/__mocks__/recipe';
-import { mockUpdateRecipeNumServings } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeNewTitleAsIngredient } from '@recipe/graphql/mutations/__mocks__/recipe';
 
 import { renderComponent } from './utils';
@@ -19,46 +18,6 @@ loadDevMessages();
 describe('Update Recipe Workflow', () => {
     afterEach(() => {
         cleanup();
-    });
-
-    it('should navigate to the edit recipe page', async () => {
-        // Render -----------------------------------------------
-        renderComponent();
-        const user = userEvent.setup();
-
-        // Act --------------------------------------------------
-        const recipe = await screen.findByLabelText('View Mock Recipe');
-        await user.hover(recipe);
-        await user.click(screen.getByLabelText('Edit Mock Recipe'));
-
-        // Expect ------------------------------------------------
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
-    });
-
-    it('should update the servings', async () => {
-        // Render -----------------------------------------------
-        renderComponent([mockUpdateRecipeNumServings]);
-        const user = userEvent.setup();
-
-        // Act --------------------------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
-        await user.click(screen.getByLabelText('Increase serving size'));
-        expect(await screen.findByText('5 Servings')).not.toBeNull();
-        await user.click(screen.getByLabelText('Save recipe'));
-
-        // Expect ------------------------------------------------
-        // ------ Home Page --------------------------------------
-        expect(await screen.findByText('Recipes')).not.toBeNull();
-        // ------ View Recipe Page -------------------------------
-        await user.click(screen.getByLabelText('View Mock Recipe'));
-        expect(await screen.findByText('5 Servings')).not.toBeNull();
-        await user.click(screen.getByLabelText('Navigate to home page'));
-        // ------ Edit Recipe Page -------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe'));
-        expect(await screen.findByText('5 Servings')).not.toBeNull();
     });
 
     it('should update the title', async () => {
@@ -138,9 +97,3 @@ describe('Update Recipe Workflow', () => {
         );
     });
 });
-
-// describe('Delete Recipe Workflow', () => {
-//     afterEach(() => {
-//         cleanup();
-//     });
-// });

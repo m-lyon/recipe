@@ -3,11 +3,12 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
+import { mockAddRating } from '@recipe/graphql/mutations/__mocks__/rating';
+import { mockGetRecipeNew } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCreateRecipe } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
-import { mockGetRecipeNew } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRatingsNewRecipe } from '@recipe/graphql/queries/__mocks__/rating';
-import { mockImageFileTwo, mockUploadImagesTwo } from '@recipe/graphql/mutations/__mocks__/image';
+import { mockImageFileNew, mockUploadImagesNew } from '@recipe/graphql/mutations/__mocks__/image';
 
 import { renderComponent } from './utils';
 
@@ -19,9 +20,12 @@ loadErrorMessages();
 loadDevMessages();
 
 describe('Create Recipe Workflow', () => {
+    const originalGetBoundingClientRect = window.HTMLElement.prototype.getBoundingClientRect;
+
     afterEach(() => {
         cleanup();
         vi.clearAllMocks();
+        window.HTMLElement.prototype.getBoundingClientRect = originalGetBoundingClientRect;
     });
 
     it('should create a recipe', async () => {
