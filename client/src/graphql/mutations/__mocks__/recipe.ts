@@ -86,7 +86,7 @@ export const mockUpdateRecipeNewTitle = {
         },
     },
 };
-export const mockUpdateRecipeInstructions = {
+export const mockUpdateRecipeInstructionsUpdate = {
     request: {
         query: UPDATE_RECIPE,
         variables: {
@@ -103,6 +103,50 @@ export const mockUpdateRecipeInstructions = {
                 record: {
                     ...recipeOneData.record,
                     instructions: ['Instruction one', 'New instruction.'],
+                },
+            },
+        },
+    },
+};
+export const mockUpdateRecipeInstructionsAdd = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: {
+                ...recipeOneVars.recipe,
+                instructions: ['Instruction one', 'Instruction two.', 'New instruction.'],
+            },
+        },
+    },
+    result: {
+        data: {
+            recipeUpdateById: {
+                record: {
+                    ...recipeOneData.record,
+                    instructions: ['Instruction one', 'Instruction two.', 'New instruction.'],
+                },
+            },
+        },
+    },
+};
+export const mockUpdateRecipeInstructionsRemove = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: {
+                ...recipeOneVars.recipe,
+                instructions: ['Instruction one'],
+            },
+        },
+    },
+    result: {
+        data: {
+            recipeUpdateById: {
+                record: {
+                    ...recipeOneData.record,
+                    instructions: ['Instruction one'],
                 },
             },
         },
