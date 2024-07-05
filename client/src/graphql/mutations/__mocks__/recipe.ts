@@ -86,7 +86,7 @@ export const mockUpdateRecipeNewTitle = {
         },
     },
 };
-export const mockUpdateRecipeInstructionsUpdate = {
+export const mockUpdateRecipeInstructionsEdit = {
     request: {
         query: UPDATE_RECIPE,
         variables: {
@@ -252,7 +252,7 @@ export const mockUpdateRecipeAddNewTag = {
         },
     },
 };
-export const mockUpdateRecipeUpdateIngredients = {
+export const mockUpdateRecipeIngredientsEdit = {
     request: {
         query: UPDATE_RECIPE,
         variables: {
@@ -294,7 +294,7 @@ export const mockUpdateRecipeUpdateIngredients = {
         },
     },
 };
-export const mockUpdateRecipeCalculatedTags = {
+export const mockUpdateRecipeCalculatedTagsAdd = {
     request: {
         query: UPDATE_RECIPE,
         variables: {
@@ -304,7 +304,47 @@ export const mockUpdateRecipeCalculatedTags = {
     },
     result: {
         data: {
-            recipeUpdateById: { record: { ...recipeOneData.record, calculatedTags: ['special'] } },
+            recipeUpdateById: {
+                record: {
+                    ...recipeOneData.record,
+                    calculatedTags: ['vegan', 'vegetarian', 'special'],
+                },
+            },
+        },
+    },
+};
+export const mockUpdateRecipeCalculatedTagsEdit = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: recipeOneVars.recipe,
+        },
+    },
+    result: {
+        data: {
+            recipeUpdateById: {
+                record: { ...recipeOneData.record, calculatedTags: ['vegetarian', 'special'] },
+            },
+        },
+    },
+};
+export const mockUpdateRecipeCalculatedTagsRemove = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: recipeOneVars.recipe,
+        },
+    },
+    result: {
+        data: {
+            recipeUpdateById: {
+                record: {
+                    ...recipeOneData.record,
+                    calculatedTags: ['vegetarian'],
+                },
+            },
         },
     },
 };

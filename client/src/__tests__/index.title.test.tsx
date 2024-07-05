@@ -15,7 +15,7 @@ vi.mock('global', () => ({
 loadErrorMessages();
 loadDevMessages();
 
-describe('Update Recipe Workflow', () => {
+describe('Update Recipe Workflow: Title', () => {
     afterEach(() => {
         cleanup();
     });

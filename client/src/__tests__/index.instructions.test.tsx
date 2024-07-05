@@ -4,7 +4,7 @@ import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { mockUpdateRecipeInstructionsAdd } from '@recipe/graphql/mutations/__mocks__/recipe';
-import { mockUpdateRecipeInstructionsUpdate } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockUpdateRecipeInstructionsEdit } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeInstructionsRemove } from '@recipe/graphql/mutations/__mocks__/recipe';
 
 import { renderComponent } from './utils';
@@ -12,7 +12,7 @@ import { renderComponent } from './utils';
 loadErrorMessages();
 loadDevMessages();
 
-describe('Update Recipe Workflow', () => {
+describe('Update Recipe Workflow: Instructions', () => {
     afterEach(() => {
         cleanup();
     });
@@ -51,7 +51,7 @@ describe('Update Recipe Workflow', () => {
 
     it('should edit the instructions', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockUpdateRecipeInstructionsUpdate]);
+        renderComponent([mockUpdateRecipeInstructionsEdit]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------

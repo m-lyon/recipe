@@ -13,7 +13,7 @@ import { renderComponent } from './utils';
 loadErrorMessages();
 loadDevMessages();
 
-describe('Update Recipe Workflow', () => {
+describe('Update Recipe Workflow: Tags', () => {
     afterEach(() => {
         cleanup();
     });
