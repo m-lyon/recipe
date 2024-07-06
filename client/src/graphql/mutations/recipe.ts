@@ -4,57 +4,7 @@ export const UPDATE_RECIPE = gql(`
 mutation UpdateRecipe($id: MongoID!, $recipe: UpdateByIdRecipeModifyInput!) {
     recipeUpdateById(_id: $id, record: $recipe) {
         record {
-            _id
-            title
-            titleIdentifier
-            instructions
-            ingredients {
-                type
-                quantity
-                unit {
-                    _id
-                    shortSingular
-                    shortPlural
-                    longSingular
-                    longPlural
-                    preferredNumberFormat
-                    hasSpace
-                }
-                ingredient {
-                    ... on Recipe {
-                        _id
-                        title
-                        pluralTitle
-                    }
-                    ... on Ingredient {
-                        _id
-                        name
-                        pluralName
-                        isCountable
-                    }
-                }
-                prepMethod {
-                    _id
-                    value
-                }
-            }
-            tags {
-                _id
-                value
-            }
-            calculatedTags
-            numServings
-            isIngredient
-            pluralTitle
-            source
-            notes
-            images {
-                _id
-                origUrl
-                recipe {
-                    title
-                }
-            }
+            ...RecipeFieldsFull
         }
     }
 }

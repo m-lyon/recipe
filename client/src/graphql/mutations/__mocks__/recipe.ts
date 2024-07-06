@@ -2,14 +2,14 @@ import { mockSpicyTag } from '@recipe/graphql/queries/__mocks__/tag';
 import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockApple } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockDiced } from '@recipe/graphql/queries/__mocks__/prepMethod';
-import { CREATE_RECIPE, UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
+import { CREATE_RECIPE, DELETE_RECIPE, UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { EnumRecipeIngredientType, GetRecipeQuery } from '@recipe/graphql/generated';
 import { mockRecipeOne, mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockRecipeNew, mockRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
 
 import { mockCreateTag } from './tag';
 
-const getMockUpdateRecipeVariables = (
+const getMockRecipeVariables = (
     mockRecipe: NonNullable<GetRecipeQuery['recipeOne']> = mockRecipeOne
 ) => {
     return {
@@ -36,12 +36,12 @@ const getMockUpdateRecipeVariables = (
 interface UpdateReturn extends NonNullable<GetRecipeQuery['recipeOne']> {
     titleIdentifier: string;
 }
-const getMockUpdateReturn = (mockRecipe: UpdateReturn = mockRecipeOne) => {
+const getMockRecipeReturn = (mockRecipe: UpdateReturn = mockRecipeOne) => {
     return { record: mockRecipe };
 };
 
-const recipeOneVars = getMockUpdateRecipeVariables();
-const recipeOneData = getMockUpdateReturn();
+const recipeOneVars = getMockRecipeVariables();
+const recipeOneData = getMockRecipeReturn();
 export const mockUpdateRecipeOne = {
     request: {
         query: UPDATE_RECIPE,
@@ -414,8 +414,8 @@ export const mockUpdateRecipeCalculatedTagsRemove = {
         },
     },
 };
-const recipeTwoVars = getMockUpdateRecipeVariables(mockRecipeTwo);
-const recipeTwoData = getMockUpdateReturn(mockRecipeTwo);
+const recipeTwoVars = getMockRecipeVariables(mockRecipeTwo);
+const recipeTwoData = getMockRecipeReturn(mockRecipeTwo);
 export const mockUpdateRecipeTwo = {
     request: {
         query: UPDATE_RECIPE,
@@ -446,8 +446,8 @@ export const mockUpdateRecipeNewTitleAsIngredient = {
         },
     },
 };
-const recipeThreeVars = getMockUpdateRecipeVariables(mockRecipeThree);
-const recipeThreeData = getMockUpdateReturn(mockRecipeThree);
+const recipeThreeVars = getMockRecipeVariables(mockRecipeThree);
+const recipeThreeData = getMockRecipeReturn(mockRecipeThree);
 export const mockUpdateRecipeRemoveNotes = {
     request: {
         query: UPDATE_RECIPE,
@@ -504,8 +504,8 @@ export const mockUpdateRecipeRemoveSource = {
         },
     },
 };
-const mockCreateRecipeVars = getMockUpdateRecipeVariables(mockRecipeNew);
-const mockCreateRecipeData = getMockUpdateReturn(mockRecipeNew);
+const mockCreateRecipeVars = getMockRecipeVariables(mockRecipeNew);
+const mockCreateRecipeData = getMockRecipeReturn(mockRecipeNew);
 export const mockCreateRecipe = {
     request: {
         query: CREATE_RECIPE,
@@ -514,6 +514,17 @@ export const mockCreateRecipe = {
     result: {
         data: {
             recipeCreateOne: { record: mockCreateRecipeData.record },
+        },
+    },
+};
+export const mockDeleteRecipe = {
+    request: {
+        query: DELETE_RECIPE,
+        variables: { id: recipeOneVars.id },
+    },
+    result: {
+        data: {
+            recipeRemoveById: { recordId: recipeOneVars.id },
         },
     },
 };

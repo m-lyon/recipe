@@ -13,7 +13,9 @@ export function ConfirmDeleteModal(props: Props) {
     const { show, setShow, recipeId } = props;
     const [deleteRecipe] = useMutation(DELETE_RECIPE, {
         variables: { id: recipeId },
-        refetchQueries: ['GetRecipes'],
+        update(cache) {
+            cache.evict({ id: `Recipe:${recipeId}` });
+        },
     });
     return (
         <Modal isOpen={show} onClose={() => setShow(false)}>
@@ -22,7 +24,12 @@ export function ConfirmDeleteModal(props: Props) {
                 <ModalHeader>Delete Recipe</ModalHeader>
                 <ModalBody>Are you sure you want to delete this recipe?</ModalBody>
                 <ModalFooter>
-                    <Button variant='outline' mr={3} onClick={() => setShow(false)}>
+                    <Button
+                        variant='outline'
+                        mr={3}
+                        onClick={() => setShow(false)}
+                        aria-label='Cancel delete action'
+                    >
                         Cancel
                     </Button>
                     <Button
@@ -31,6 +38,7 @@ export function ConfirmDeleteModal(props: Props) {
                             deleteRecipe();
                             setShow(false);
                         }}
+                        aria-label='Confirm delete action'
                     >
                         Confirm
                     </Button>
