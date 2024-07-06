@@ -2,14 +2,37 @@ import { useState } from 'react';
 import { useToast } from '@chakra-ui/react';
 import { useLazyQuery, useMutation } from '@apollo/client';
 
-import { GET_RATINGS } from '@recipe/graphql/queries/rating';
 import { ADD_RATING } from '@recipe/graphql/mutations/rating';
+import { GET_RATINGS, RATING_FIELDS } from '@recipe/graphql/queries/rating';
 
 export function useViewStarRating() {
     const toast = useToast();
     const [recipeId, setRecipeId] = useState<string | undefined>(undefined);
     const [handleGetRatings, { data }] = useLazyQuery(GET_RATINGS);
-    const [addRating] = useMutation(ADD_RATING, { refetchQueries: ['GetRatings'] });
+    const [addRating] = useMutation(ADD_RATING, {
+        update(cache, { data }) {
+            const { record } = data?.ratingCreateOne || {};
+            if (!record || !recipeId) {
+                return;
+            }
+            cache.modify({
+                fields: {
+                    ratingMany(existing = []) {
+                        try {
+                            const newRatingRef = cache.writeFragment({
+                                data: record,
+                                fragment: RATING_FIELDS,
+                            });
+                            return [...existing, newRatingRef];
+                        } catch (error) {
+                            console.error('Error writing fragment to cache', error);
+                            return existing;
+                        }
+                    },
+                },
+            });
+        },
+    });
 
     const getRatings = (recipeId: string) => {
         setRecipeId(recipeId);
