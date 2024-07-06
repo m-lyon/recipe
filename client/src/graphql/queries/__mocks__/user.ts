@@ -1,8 +1,9 @@
+import { mockAdminId } from '@recipe/graphql/__mocks__/ids';
 import { CURRENT_USER } from '@recipe/graphql/queries/user';
 
 export const mockAdmin = {
     __typename: 'User' as const,
-    _id: '60f4d2e5c3d5a0a4f1b9c0eb',
+    _id: mockAdminId,
     role: 'admin',
     firstName: 'Mock',
     lastName: 'User',

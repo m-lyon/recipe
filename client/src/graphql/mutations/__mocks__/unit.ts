@@ -1,15 +1,29 @@
 import { CREATE_UNIT } from '@recipe/graphql/mutations/unit';
+import { EnumUnitPreferredNumberFormat } from '@recipe/graphql/generated';
+import { mockAdminId, mockCuttingId } from '@recipe/graphql/__mocks__/ids';
+
+export const mockUnit = {
+    __typename: 'Unit' as const,
+    _id: mockCuttingId,
+    longSingular: 'cutting',
+    longPlural: 'cutting',
+    shortSingular: 'cut',
+    shortPlural: 'cut',
+    preferredNumberFormat: 'decimal' as EnumUnitPreferredNumberFormat,
+    hasSpace: true,
+    owner: mockAdminId,
+};
 
 export const mockCreateUnit = {
     request: {
         query: CREATE_UNIT,
         variables: {
             record: {
-                longSingular: 'cutting',
-                longPlural: 'cutting',
-                shortSingular: 'cut',
-                shortPlural: 'cut',
-                preferredNumberFormat: 'decimal',
+                longSingular: mockUnit.longSingular,
+                longPlural: mockUnit.longPlural,
+                shortSingular: mockUnit.shortSingular,
+                shortPlural: mockUnit.shortPlural,
+                preferredNumberFormat: mockUnit.preferredNumberFormat,
                 hasSpace: true,
             },
         },
@@ -17,16 +31,7 @@ export const mockCreateUnit = {
     result: {
         data: {
             unitCreateOne: {
-                record: {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0f7',
-                    longSingular: 'cutting',
-                    longPlural: 'cutting',
-                    shortSingular: 'cut',
-                    shortPlural: 'cut',
-                    preferredNumberFormat: 'decimal',
-                    hasSpace: true,
-                    owner: '60f4d2e5c3d5a0a4f1b9d0f7',
-                },
+                record: mockUnit,
             },
         },
     },

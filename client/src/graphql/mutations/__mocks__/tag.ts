@@ -1,8 +1,9 @@
+import { mockTagId } from '@recipe/graphql/__mocks__/ids';
 import { CREATE_TAG } from '@recipe/graphql/mutations/tag';
 
 export const mockTag = {
     __typename: 'Tag' as const,
-    _id: '60f4d2e5c3d5a0a4f1b9c0eb',
+    _id: mockTagId,
     value: 'mock tag',
 };
 

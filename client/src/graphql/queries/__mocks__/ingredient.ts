@@ -1,49 +1,51 @@
 import { GET_INGREDIENTS } from '@recipe/graphql/queries/ingredient';
+import { mockAppleId, mockCarrotId, mockChickenId } from '@recipe/graphql/__mocks__/ids';
+import { mockAdminId, mockLettuceId, mockRhubarbPieId } from '@recipe/graphql/__mocks__/ids';
 
 // Ingredients
 export const mockApple = {
-    _id: '60f4d2e5c3d5a0a4f1b9c0e8',
+    _id: mockAppleId,
     __typename: 'Ingredient' as const,
     name: 'apple',
     pluralName: 'apples',
     isCountable: true,
-    owner: '60f4d2e5c3d5a0a4f1b9c0ec',
+    owner: mockAdminId,
     tags: ['vegan', 'vegetarian'],
 };
 export const mockChicken = {
-    _id: '60f4d2e5c3d5a0a4f1b9c0e9',
+    _id: mockChickenId,
     __typename: 'Ingredient' as const,
     name: 'chicken',
     pluralName: 'chickens',
     isCountable: false,
-    owner: '60f4d2e5c3d5a0a4f1b9c0ec',
+    owner: mockAdminId,
     tags: [],
 };
 export const mockCarrot = {
-    _id: '60f4d2e5c3d5a0a4f1b9c0ea',
+    _id: mockCarrotId,
     __typename: 'Ingredient' as const,
     name: 'carrot',
     pluralName: 'carrots',
     isCountable: true,
-    owner: '60f4d2e5c3d5a0a4f1b9c0ec',
+    owner: mockAdminId,
     tags: ['vegan', 'vegetarian'],
 };
 export const mockLettuce = {
-    _id: '60f4d2e5c3d5a0a4f1b9c0f0',
+    _id: mockLettuceId,
     __typename: 'Ingredient' as const,
     name: 'iceberg lettuce',
     pluralName: 'iceberg lettuces',
     isCountable: false,
-    owner: '60f4d2e5c3d5a0a4f1b9c0ec',
+    owner: mockAdminId,
     tags: ['vegan', 'vegetarian'],
 };
 // Recipes
 export const mockRhurbarbPie = {
-    _id: '60f4d2e5c3d5a0a4f1b9c0eb',
+    _id: mockRhubarbPieId,
     __typename: 'Recipe' as const,
     title: 'rhubarb pie',
     pluralTitle: 'rhubarb pies',
-    owner: '60f4d2e5c3d5a0a4f1b9c0ec',
+    owner: mockAdminId,
     calculatedTags: ['vegetarian'],
 };
 

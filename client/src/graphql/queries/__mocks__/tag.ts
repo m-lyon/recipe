@@ -1,68 +1,75 @@
+import { mockHighProteinTagId } from '@recipe/graphql/__mocks__/ids';
+import { mockLowCarbTagId, mockSpicyTagId } from '@recipe/graphql/__mocks__/ids';
+import { mockBreakfastTagId, mockBrunchTagId } from '@recipe/graphql/__mocks__/ids';
+import { mockDairyFreeTagId, mockGlutenFreeTagId } from '@recipe/graphql/__mocks__/ids';
+import { mockLowFatTagId, mockLowSugarTagId, mockQuickTagId } from '@recipe/graphql/__mocks__/ids';
+import { mockDinnerTagId, mockFreezableTagId, mockLunchTagId } from '@recipe/graphql/__mocks__/ids';
+
 import { GET_TAGS } from '../tag';
 
 export const mockDinnerTag = {
     __typename: 'Tag' as const,
-    _id: '60f4d2e5c3d5a0a4f1b9c0e8',
+    _id: mockDinnerTagId,
     value: 'dinner',
 };
 export const mockLunchTag = {
     __typename: 'Tag' as const,
-    _id: '60f4d2e5c3d5a0a4f1b9c0e9',
+    _id: mockLunchTagId,
     value: 'lunch',
 };
 export const mockFreezableTag = {
     __typename: 'Tag' as const,
-    _id: '60f4d2e5c3d5a0a4f1b9c0ea',
+    _id: mockFreezableTagId,
     value: 'freezable',
 };
 export const mockSpicyTag = {
     __typename: 'Tag' as const,
-    _id: '60f4d2e5c3d5a0a4f1b9c0f0',
+    _id: mockSpicyTagId,
     value: 'spicy',
 };
 export const mockGlutenFreeTag = {
     __typename: 'Tag' as const,
-    _id: '60f4d2e5c3d5a0a4f1b9c0f3',
+    _id: mockGlutenFreeTagId,
     value: 'gluten-free',
 };
 export const mockDairyFreeTag = {
     __typename: 'Tag' as const,
-    _id: '60f4d2e5c3d5a0a4f1b9c0f4',
+    _id: mockDairyFreeTagId,
     value: 'dairy-free',
 };
 export const mockLowCarbTag = {
     __typename: 'Tag' as const,
-    _id: '60f4d2e5c3d5a0a4f1b9c0f5',
+    _id: mockLowCarbTagId,
     value: 'low-carb',
 };
 export const mockLowFatTag = {
     __typename: 'Tag' as const,
-    _id: '60f4d2e5c3d5a0a4f1b9c0f6',
+    _id: mockLowFatTagId,
     value: 'low-fat',
 };
 export const mockLowSugarTag = {
     __typename: 'Tag' as const,
-    _id: '60f4d2e5c3d5a0a4f1b9c0f7',
+    _id: mockLowSugarTagId,
     value: 'low-sugar',
 };
 export const mockHighProteinTag = {
     __typename: 'Tag' as const,
-    _id: '60f4d2e5c3d5a0a4f1b9c0f8',
+    _id: mockHighProteinTagId,
     value: 'high-protein',
 };
 export const mockQuickTag = {
     __typename: 'Tag' as const,
-    _id: '60f4d2e5c3d5a0a4f1b9c0f9',
+    _id: mockQuickTagId,
     value: 'quick',
 };
 export const mockBreakfastTag = {
     __typename: 'Tag' as const,
-    _id: '60f4d2e5c3d5a0a4f1b9c0fa',
+    _id: mockBreakfastTagId,
     value: 'breakfast',
 };
 export const mockBrunchTag = {
     __typename: 'Tag' as const,
-    _id: '60f4d2e5c3d5a0a4f1b9c0fb',
+    _id: mockBrunchTagId,
     value: 'brunch',
 };
 

@@ -1,4 +1,5 @@
 import { CREATE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
+import { PrepMethodCreateOneId, mockAdminId } from '@recipe/graphql/__mocks__/ids';
 
 export const mockCreatePrepMethod = {
     request: {
@@ -13,9 +14,9 @@ export const mockCreatePrepMethod = {
         data: {
             prepMethodCreateOne: {
                 record: {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0f7',
+                    _id: PrepMethodCreateOneId,
                     value: 'pipped',
-                    owner: '60f4d2e5c3d5a0a4f1b9d0f7',
+                    owner: mockAdminId,
                 },
             },
         },

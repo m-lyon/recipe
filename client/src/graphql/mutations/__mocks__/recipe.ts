@@ -2,10 +2,10 @@ import { mockSpicyTag } from '@recipe/graphql/queries/__mocks__/tag';
 import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockApple } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockDiced } from '@recipe/graphql/queries/__mocks__/prepMethod';
-import { CREATE_RECIPE, DELETE_RECIPE, UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { EnumRecipeIngredientType, GetRecipeQuery } from '@recipe/graphql/generated';
 import { mockRecipeOne, mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockRecipeNew, mockRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
+import { CREATE_RECIPE, DELETE_RECIPE, UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 
 import { mockCreateTag } from './tag';
 

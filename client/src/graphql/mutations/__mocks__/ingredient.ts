@@ -1,4 +1,5 @@
 import { CREATE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
+import { mockAdminId, mockCreateRecipeId } from '@recipe/graphql/__mocks__/ids';
 
 export const mockCreateIngredient = {
     request: {
@@ -17,11 +18,11 @@ export const mockCreateIngredient = {
             ingredientCreateOne: {
                 record: {
                     __typename: 'IngredientCreate',
-                    _id: '60f4d2e5c3d5a0a4f1b9c0f7',
+                    _id: mockCreateRecipeId,
                     name: 'beef',
                     pluralName: 'beef',
                     isCountable: false,
-                    owner: '60f4d2e5c3d5a0a4f1b9d0f7',
+                    owner: mockAdminId,
                     tags: [],
                 },
             },

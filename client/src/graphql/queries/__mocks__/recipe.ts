@@ -1,7 +1,9 @@
+import { mockTitleOne, mockTitleTwo } from '@recipe/graphql/__mocks__/common';
+import { mockRecipeIdNew, mockRecipeIdOne } from '@recipe/graphql/__mocks__/ids';
+import { mockRecipeIdThree, mockRecipeIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { EnumRecipeIngredientType, GetRecipesQuery } from '@recipe/graphql/generated';
 import { mockImageNew, mockImageTwo } from '@recipe/graphql/mutations/__mocks__/image';
 import { COUNT_RECIPES, GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
-import { mockIdNew, mockIdOne, mockTitleOne, mockTitleTwo } from '@recipe/graphql/__mocks__/common';
 
 import { mockApple } from './ingredient';
 import { mockDiced } from './prepMethod';
@@ -10,7 +12,7 @@ import { mockDinnerTag, mockFreezableTag, mockLunchTag } from './tag';
 
 export const mockRecipeOne = {
     __typename: 'Recipe' as const,
-    _id: mockIdOne,
+    _id: mockRecipeIdOne,
     title: mockTitleOne,
     pluralTitle: null,
     titleIdentifier: 'mock-recipe-one',
@@ -68,7 +70,7 @@ export const mockRecipeOne = {
 
 export const mockRecipeTwo = {
     ...mockRecipeOne,
-    _id: '60f4d2e5c3d5a0a4f1b9c0ec',
+    _id: mockRecipeIdTwo,
     title: mockTitleTwo,
     tags: [],
     titleIdentifier: 'mock-recipe-two',
@@ -79,7 +81,7 @@ export const mockRecipeTwo = {
 };
 export const mockRecipeThree = {
     ...mockRecipeOne,
-    _id: '60f4d3e5c3d5a0a4f1b9c0ec',
+    _id: mockRecipeIdThree,
     title: 'Mock Recipe Three',
     titleIdentifier: 'mock-recipe-three',
     tags: [],
@@ -88,7 +90,7 @@ export const mockRecipeThree = {
     calculatedTags: [],
 };
 export const mockRecipeNew = {
-    _id: mockIdNew,
+    _id: mockRecipeIdNew,
     __typename: 'Recipe' as const,
     title: 'New Recipe',
     pluralTitle: null,

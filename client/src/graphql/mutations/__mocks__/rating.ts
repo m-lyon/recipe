@@ -1,20 +1,27 @@
-import { mockIdNew } from '@recipe/graphql/__mocks__/common';
+import { mockRecipeIdNew, mockRecipeIdOne } from '@recipe/graphql/__mocks__/ids';
+import { mockRatingNewOne, mockRatingNewTwo } from '@recipe/graphql/queries/__mocks__/rating';
 
 import { ADD_RATING } from '../rating';
 
-export const mockNewRating = {
-    __typename: 'Rating' as const,
-    _id: '60f4d2e5c4d5a0a4f1b9c0ec',
-    value: 1.5,
-};
-export const mockAddRating = {
+export const mockAddRatingNewRecipe = {
     request: {
         query: ADD_RATING,
-        variables: { recipeId: mockIdNew, rating: mockNewRating.value },
+        variables: { recipeId: mockRecipeIdNew, rating: mockRatingNewOne.value },
     },
     result: {
         data: {
-            ratingCreateOne: { record: mockNewRating },
+            ratingCreateOne: { record: mockRatingNewOne },
+        },
+    },
+};
+export const mockAddRatingRecipeOne = {
+    request: {
+        query: ADD_RATING,
+        variables: { recipeId: mockRecipeIdOne, rating: mockRatingNewTwo.value },
+    },
+    result: {
+        data: {
+            ratingCreateOne: { record: mockRatingNewTwo },
         },
     },
 };

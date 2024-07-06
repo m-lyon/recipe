@@ -1,12 +1,14 @@
+import { mockTitleNew } from '@recipe/graphql/__mocks__/common';
 import { mockTitleOne, mockTitleTwo } from '@recipe/graphql/__mocks__/common';
 import { DELETE_IMAGES, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
-import { mockIdNew, mockIdOne, mockTitleNew } from '@recipe/graphql/__mocks__/common';
+import { mockRecipeIdNew, mockRecipeIdOne } from '@recipe/graphql/__mocks__/ids';
+import { mockImageIdNew, mockImageIdOne, mockImageIdTwo } from '@recipe/graphql/__mocks__/ids';
 
 export const mockImageFileOne = new File(['hello there'], 'test_image.png', { type: 'image/png' });
 export const mockImageFileNew = new File(['hello'], 'test_image_new.png', { type: 'image/png' });
 export const mockImageOne = {
     __typename: 'Image' as const,
-    _id: '60f4d2e5c4d5a0a4f1b9c0ec',
+    _id: mockImageIdOne,
     origUrl: 'test_image.png',
     recipe: {
         __typename: 'Recipe' as const,
@@ -15,7 +17,7 @@ export const mockImageOne = {
 };
 export const mockImageTwo = {
     ...mockImageOne,
-    _id: '60f4d2e5c4d5a0a4f1b9c0ed',
+    _id: mockImageIdTwo,
     recipe: {
         __typename: 'Recipe' as const,
         title: mockTitleTwo,
@@ -23,7 +25,7 @@ export const mockImageTwo = {
 };
 export const mockImageNew = {
     __typename: 'Image' as const,
-    _id: '60f4d2e5c4d5a0a4d1b9c0ed',
+    _id: mockImageIdNew,
     origUrl: 'test_image_new.png',
     recipe: {
         __typename: 'Recipe' as const,
@@ -33,7 +35,7 @@ export const mockImageNew = {
 export const mockUploadImages = {
     request: {
         query: UPLOAD_IMAGES,
-        variables: { images: [mockImageFileOne], recipeId: mockIdOne },
+        variables: { images: [mockImageFileOne], recipeId: mockRecipeIdOne },
     },
     result: {
         data: {
@@ -44,7 +46,7 @@ export const mockUploadImages = {
 export const mockUploadImagesNew = {
     request: {
         query: UPLOAD_IMAGES,
-        variables: { images: [mockImageFileNew], recipeId: mockIdNew },
+        variables: { images: [mockImageFileNew], recipeId: mockRecipeIdNew },
     },
     result: {
         data: {

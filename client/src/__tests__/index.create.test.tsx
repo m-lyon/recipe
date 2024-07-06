@@ -3,11 +3,11 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { mockAddRating } from '@recipe/graphql/mutations/__mocks__/rating';
 import { mockGetRecipeNew } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCreateRecipe } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockGetRatingsNewRecipe } from '@recipe/graphql/queries/__mocks__/rating';
+import { mockAddRatingNewRecipe } from '@recipe/graphql/mutations/__mocks__/rating';
 import { mockImageFileNew, mockUploadImagesNew } from '@recipe/graphql/mutations/__mocks__/image';
 
 import { renderComponent } from './utils';
@@ -109,7 +109,7 @@ describe('Create Recipe Workflow', () => {
             mockGetIngredients,
             mockGetRatingsNewRecipe,
             mockUploadImagesNew,
-            mockAddRating,
+            mockAddRatingNewRecipe,
             mockGetRecipeNew,
         ]);
         const user = userEvent.setup();
