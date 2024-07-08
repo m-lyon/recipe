@@ -1,6 +1,7 @@
 import { GET_RATINGS } from '@recipe/graphql/queries/rating';
-import { mockRecipeIdNew, mockRecipeIdOne } from '@recipe/graphql/__mocks__/ids';
-import { mockRatingIdNewOne, mockRatingIdNewTwo } from '@recipe/graphql/__mocks__/ids';
+import { mockRatingIdNewTwo } from '@recipe/graphql/__mocks__/ids';
+import { mockRatingIdNewOne, mockRecipeIdOne } from '@recipe/graphql/__mocks__/ids';
+import { mockRecipeIdNew, mockRecipeIdNewAsIngr } from '@recipe/graphql/__mocks__/ids';
 import { mockRatingIdOne, mockRatingIdThree, mockRatingIdTwo } from '@recipe/graphql/__mocks__/ids';
 
 import { mockRecipeThree, mockRecipeTwo } from './recipe';
@@ -71,6 +72,17 @@ export const mockGetRatingsNewRecipe = {
     result: {
         data: {
             ratingMany: [mockRatingNewOne],
+        },
+    },
+};
+export const mockGetRatingsNewRecipeAsIngr = {
+    request: {
+        query: GET_RATINGS,
+        variables: { recipeId: mockRecipeIdNewAsIngr },
+    },
+    result: {
+        data: {
+            ratingMany: [],
         },
     },
 };

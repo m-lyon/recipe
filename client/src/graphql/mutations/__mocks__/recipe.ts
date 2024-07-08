@@ -2,6 +2,7 @@ import { mockSpicyTag } from '@recipe/graphql/queries/__mocks__/tag';
 import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockApple } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockDiced } from '@recipe/graphql/queries/__mocks__/prepMethod';
+import { mockRecipeNewAsIngr } from '@recipe/graphql/queries/__mocks__/recipe';
 import { EnumRecipeIngredientType, GetRecipeQuery } from '@recipe/graphql/generated';
 import { mockRecipeOne, mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockRecipeNew, mockRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -514,6 +515,19 @@ export const mockCreateRecipe = {
     result: {
         data: {
             recipeCreateOne: { record: mockCreateRecipeData.record },
+        },
+    },
+};
+const mockCreateRecipeAsIngrVars = getMockRecipeVariables(mockRecipeNewAsIngr);
+const mockCreateRecipeAsIngrData = getMockRecipeReturn(mockRecipeNewAsIngr);
+export const mockCreateRecipeAsIngr = {
+    request: {
+        query: CREATE_RECIPE,
+        variables: { recipe: mockCreateRecipeAsIngrVars.recipe },
+    },
+    result: {
+        data: {
+            recipeCreateOne: { record: mockCreateRecipeAsIngrData.record },
         },
     },
 };

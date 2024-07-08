@@ -3,12 +3,14 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { mockGetRecipeNew } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCreateRecipe } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockGetRatingsNewRecipe } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockAddRatingNewRecipe } from '@recipe/graphql/mutations/__mocks__/rating';
+import { mockCreateRecipeAsIngr } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockGetRatingsNewRecipeAsIngr } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockImageFileNew, mockUploadImagesNew } from '@recipe/graphql/mutations/__mocks__/image';
+import { mockGetRecipeNew, mockGetRecipeNewAsIngr } from '@recipe/graphql/queries/__mocks__/recipe';
 
 import { renderComponent } from './utils';
 
@@ -28,7 +30,7 @@ describe('Create Recipe Workflow', () => {
         window.HTMLElement.prototype.getBoundingClientRect = originalGetBoundingClientRect;
     });
 
-    it('should create a recipe', async () => {
+    it('should create a recipe only', async () => {
         // Render -----------------------------------------------
         renderComponent([
             mockCreateRecipe,
@@ -192,5 +194,66 @@ describe('Create Recipe Workflow', () => {
             'title',
             '1.5 out of 5'
         );
+    });
+
+    it('should create a recipe as an ingredient', async () => {
+        // Render -----------------------------------------------
+        renderComponent([
+            mockCreateRecipeAsIngr,
+            mockGetIngredients,
+            mockGetRecipeNewAsIngr,
+            mockGetRatingsNewRecipeAsIngr,
+        ]);
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        expect(await screen.findByText('Recipes'));
+        await user.click(screen.getAllByLabelText('Create new recipe')[0]);
+        expect(await screen.findByText('Ingredients')).not.toBeNull();
+        // --- Add Title ----------------------------------------
+        await user.click(screen.getByLabelText('Edit recipe title'));
+        await user.keyboard('New Ingredient Recipe');
+        // --- Add Instructions ----------------------------------
+        await user.click(screen.getByLabelText('Edit instruction 1'));
+        await user.keyboard('Instr #1.{Enter}Instr #2.{Enter}');
+        // --- Add Ingredients -----------------------------------
+        await user.click(screen.getByLabelText('Enter ingredient'));
+        await user.keyboard('{2}{ }');
+        await user.click(await screen.findByText('teaspoons'));
+        await user.click(await screen.findByText('apples'));
+        await user.click(await screen.findByText('diced'));
+        // --- Register as ingredient ----------------------------
+        await user.click(screen.getByLabelText('Toggle recipe as ingredient'));
+        await user.click(screen.getByLabelText('Edit recipe plural title'));
+        await user.keyboard('New Ingredient Recipes');
+        // --- Save Recipe ---------------------------------------
+        await user.click(screen.getByLabelText('Save recipe'));
+
+        // // Expect ------------------------------------------------
+        // ------ Home Page --------------------------------------
+        expect(await screen.findByText('Recipes')).not.toBeNull();
+        expect(screen.queryByText('New Ingredient Recipe')).not.toBeNull();
+
+        // ------ View Recipe Page -------------------------------
+        await user.click(screen.getByLabelText('View New Ingredient Recipe'));
+        expect(await screen.findByText('Instr #1.')).not.toBeNull();
+        expect(screen.queryByText('Instr #2.')).not.toBeNull();
+        expect(screen.queryByText('2 tsp apples, diced')).not.toBeNull();
+        await user.click(screen.getByLabelText('Navigate to home page'));
+
+        // ------ Edit Recipe Page -------------------------------
+        await user.hover(await screen.findByLabelText('View New Ingredient Recipe'));
+        await user.click(screen.getByLabelText('Edit New Ingredient Recipe'));
+        expect(await screen.findByText('Instr #1.')).not.toBeNull();
+        expect(screen.queryByText('Instr #2.')).not.toBeNull();
+        expect(screen.queryByText('2 tsp apples, diced')).not.toBeNull();
+        await user.click(screen.getAllByLabelText('Create new recipe')[0]);
+
+        // ------ Ingredients List ------------------------------
+        expect(await screen.findByText('Ingredients')).not.toBeNull();
+        await user.click(screen.getByLabelText('Enter ingredient'));
+        await user.keyboard('{2}{ }');
+        await user.click(await screen.findByText('skip unit'));
+        expect(screen.findByText('new ingredient recipes')).not.toBeNull();
     });
 });

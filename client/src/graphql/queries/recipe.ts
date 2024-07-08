@@ -6,19 +6,26 @@ export const COUNT_RECIPES = gql(`
     }
 `);
 
-export const RECIPE_FIELDS_SUBSET = gql(`
-    fragment RecipeFieldsSubset on Recipe {
+export const RECIPE_INGR_FIELDS = gql(`
+    fragment RecipeIngrFields on Recipe {
         _id
         title
+        pluralTitle
+        calculatedTags
+        owner
+    }
+`);
+
+export const RECIPE_FIELDS_SUBSET = gql(`
+    fragment RecipeFieldsSubset on Recipe {
+        ...RecipeIngrFields
         titleIdentifier
         tags {
             _id
             value
         }
-        calculatedTags
         isIngredient
         numServings
-        pluralTitle
         images {
             ...ImageFields
         }

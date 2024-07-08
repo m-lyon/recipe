@@ -20,6 +20,7 @@ export function AsIngredientCheckbox(props: UseAsIngredientReturnType) {
                         isChecked={state.isIngredient}
                         onChange={() => actionHandler.toggleIsIngredient()}
                         colorScheme='teal'
+                        aria-label='Toggle recipe as ingredient'
                     />
                     <Text fontWeight='medium' color={state.isIngredient ? undefined : 'gray.400'}>
                         Register recipe as ingredient
@@ -28,7 +29,7 @@ export function AsIngredientCheckbox(props: UseAsIngredientReturnType) {
                 {state.isIngredient && (
                     <Input
                         placeholder='Plural title'
-                        value={state.pluralTitle}
+                        value={state.pluralTitle ?? ''}
                         onChange={(e) => actionHandler.setPluralTitle(e.target.value)}
                         variant='unstyled'
                         aria-label='Edit recipe plural title'

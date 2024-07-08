@@ -1,3 +1,4 @@
+import { mockRecipeIdNewAsIngr } from '@recipe/graphql/__mocks__/ids';
 import { mockTitleOne, mockTitleTwo } from '@recipe/graphql/__mocks__/common';
 import { mockRecipeIdNew, mockRecipeIdOne } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIdThree, mockRecipeIdTwo } from '@recipe/graphql/__mocks__/ids';
@@ -5,6 +6,7 @@ import { EnumRecipeIngredientType, GetRecipesQuery } from '@recipe/graphql/gener
 import { mockImageNew, mockImageTwo } from '@recipe/graphql/mutations/__mocks__/image';
 import { COUNT_RECIPES, GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
 
+import { mockAdmin } from './user';
 import { mockApple } from './ingredient';
 import { mockDiced } from './prepMethod';
 import { mockCup, mockOunce, mockTeaspoon } from './unit';
@@ -66,6 +68,7 @@ export const mockRecipeOne = {
     notes: null,
     images: [],
     source: null,
+    owner: mockAdmin,
 };
 
 export const mockRecipeTwo = {
@@ -112,6 +115,19 @@ export const mockRecipeNew = {
     notes: 'Recipe Notes.',
     source: 'Recipe Source',
     images: [],
+    owner: mockAdmin,
+};
+export const mockRecipeNewAsIngr = {
+    ...mockRecipeNew,
+    _id: mockRecipeIdNewAsIngr,
+    isIngredient: true,
+    title: 'New Ingredient Recipe',
+    titleIdentifier: 'new-ingredient-recipe',
+    pluralTitle: 'New Ingredient Recipes',
+    tags: [],
+    numServings: 1,
+    notes: null,
+    source: null,
 };
 // GetRecipe
 export const mockGetRecipe = {
@@ -148,6 +164,13 @@ export const mockGetRecipeNew = {
         variables: { filter: { titleIdentifier: 'new-recipe' } },
     },
     result: { data: { recipeOne: { ...mockRecipeNew, images: [mockImageNew] } } },
+};
+export const mockGetRecipeNewAsIngr = {
+    request: {
+        query: GET_RECIPE,
+        variables: { filter: { titleIdentifier: 'new-ingredient-recipe' } },
+    },
+    result: { data: { recipeOne: mockRecipeNewAsIngr } },
 };
 // GetRecipes
 export const mockGetRecipes = {

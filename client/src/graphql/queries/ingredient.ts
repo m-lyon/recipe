@@ -17,11 +17,7 @@ export const GET_INGREDIENTS = gql(`
             tags
         }
         recipeMany(limit: 5000, filter: {isIngredient: true}) {
-            _id
-            title
-            pluralTitle
-            owner
-            calculatedTags
+            ...RecipeIngrFields
         }
     }
 `);

@@ -5,11 +5,11 @@ import { useNavigate } from 'react-router-dom';
 
 import { ADD_RATING } from '@recipe/graphql/mutations/rating';
 import { CREATE_RECIPE } from '@recipe/graphql/mutations/recipe';
-import { RECIPE_FIELDS_SUBSET } from '@recipe/graphql/queries/recipe';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
 import { DELAY_LONG, DELAY_SHORT, ROOT_PATH } from '@recipe/constants';
 import { EditableRecipe, useRecipeState } from '@recipe/features/editing';
 import { IMAGE_FIELDS, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
+import { RECIPE_FIELDS_SUBSET, RECIPE_INGR_FIELDS } from '@recipe/graphql/queries/recipe';
 
 export function CreateRecipe() {
     const toast = useToast();
@@ -17,17 +17,33 @@ export function CreateRecipe() {
     const navigate = useNavigate();
     const [rating, setRating] = useState<number>(0);
     const [createRecipe, { loading: recipeLoading, data: response }] = useMutation(CREATE_RECIPE, {
-        refetchQueries: ['GetIngredients'],
         update(cache, { data }) {
-            if (!data?.recipeCreateOne?.record) {
+            const { record } = data?.recipeCreateOne || { record: undefined };
+            if (!record) {
                 return;
             }
             cache.modify({
                 fields: {
-                    recipeMany(existingRecipes = []) {
+                    recipeMany(existingRecipes = [], { storeFieldName }) {
+                        if (storeFieldName === 'recipeMany:{"filter":{"isIngredient":true}}') {
+                            if (!record.isIngredient) {
+                                return existingRecipes;
+                            }
+                            try {
+                                const newRecipeRef = cache.writeFragment({
+                                    data: record,
+                                    fragment: RECIPE_INGR_FIELDS,
+                                    fragmentName: 'RecipeIngrFields',
+                                });
+                                return [...existingRecipes, newRecipeRef];
+                            } catch (error) {
+                                console.error('Error writing fragment to cache', error);
+                                return existingRecipes;
+                            }
+                        }
                         try {
                             const newRecipeRef = cache.writeFragment({
-                                data: data!.recipeCreateOne!.record,
+                                data: record,
                                 fragment: RECIPE_FIELDS_SUBSET,
                                 fragmentName: 'RecipeFieldsSubset',
                             });
