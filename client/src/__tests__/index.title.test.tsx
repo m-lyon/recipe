@@ -39,17 +39,17 @@ describe('Update Recipe Workflow: Title', () => {
         // Expect ------------------------------------------------
         // ------ Home Page --------------------------------------
         expect(await screen.findByText('Recipes')).not.toBeNull();
-        expect(await screen.findByText('New Title')).not.toBeNull();
+        expect(screen.queryByText('New Title')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View New Title'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
-        expect(await screen.findByText('New Title')).not.toBeNull();
+        expect(screen.queryByText('New Title')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await user.hover(await screen.findByLabelText('View New Title'));
         await user.click(screen.getByLabelText('Edit New Title'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
-        expect(await screen.findByText('New Title')).not.toBeNull();
+        expect(screen.queryByText('New Title')).not.toBeNull();
     });
 
     it('should update the title when recipe is an ingredient', async () => {

@@ -254,6 +254,6 @@ describe('Create Recipe Workflow', () => {
         await user.click(screen.getByLabelText('Enter ingredient'));
         await user.keyboard('{2}{ }');
         await user.click(await screen.findByText('skip unit'));
-        expect(screen.findByText('new ingredient recipes')).not.toBeNull();
+        expect(screen.queryByText('new ingredient recipes')).not.toBeNull();
     });
 });

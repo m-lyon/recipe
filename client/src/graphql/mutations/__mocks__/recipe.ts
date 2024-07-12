@@ -415,6 +415,26 @@ export const mockUpdateRecipeCalculatedTagsRemove = {
         },
     },
 };
+export const mockUpdateRecipeAddIsIngredient = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: { ...recipeOneVars.recipe, isIngredient: true, pluralTitle: 'Mock Recipes' },
+        },
+    },
+    result: {
+        data: {
+            recipeUpdateById: {
+                record: {
+                    ...recipeOneData.record,
+                    isIngredient: true,
+                    pluralTitle: 'Mock Recipes',
+                },
+            },
+        },
+    },
+};
 const recipeTwoVars = getMockRecipeVariables(mockRecipeTwo);
 const recipeTwoData = getMockRecipeReturn(mockRecipeTwo);
 export const mockUpdateRecipeTwo = {
@@ -443,6 +463,22 @@ export const mockUpdateRecipeNewTitleAsIngredient = {
         data: {
             recipeUpdateById: {
                 record: { ...recipeTwoData.record, title: 'New Title', pluralTitle: 'New Titles' },
+            },
+        },
+    },
+};
+export const mockUpdateRecipeRemoveAsIngredient = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeTwoVars.id,
+            recipe: { ...recipeTwoVars.recipe, isIngredient: false, pluralTitle: null },
+        },
+    },
+    result: {
+        data: {
+            recipeUpdateById: {
+                record: { ...recipeTwoData.record, isIngredient: false, pluralTitle: null },
             },
         },
     },

@@ -70,7 +70,6 @@ export const mockRecipeOne = {
     source: null,
     owner: mockAdmin,
 };
-
 export const mockRecipeTwo = {
     ...mockRecipeOne,
     _id: mockRecipeIdTwo,

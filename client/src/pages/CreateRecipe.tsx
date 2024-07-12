@@ -18,7 +18,7 @@ export function CreateRecipe() {
     const [rating, setRating] = useState<number>(0);
     const [createRecipe, { loading: recipeLoading, data: response }] = useMutation(CREATE_RECIPE, {
         update(cache, { data }) {
-            const { record } = data?.recipeCreateOne || { record: undefined };
+            const { record } = data?.recipeCreateOne || {};
             if (!record) {
                 return;
             }

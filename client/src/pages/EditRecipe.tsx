@@ -4,11 +4,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Reference, useMutation, useQuery } from '@apollo/client';
 
 import { RecipeFromOne } from '@recipe/types';
-import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { useViewStarRating } from '@recipe/features/rating';
 import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
+import { RECIPE_FIELDS_SUBSET } from '@recipe/graphql/queries/recipe';
 import { EditableRecipe, useRecipeState } from '@recipe/features/editing';
 import { dbIngredientToFinished } from '@recipe/features/recipeIngredient';
+import { GET_RECIPE, RECIPE_INGR_FIELDS } from '@recipe/graphql/queries/recipe';
 import { DELAY_LONG, DELAY_SHORT, GRAPHQL_ENDPOINT, ROOT_PATH } from '@recipe/constants';
 import { RecipeIngredient, UpdateByIdRecipeModifyInput } from '@recipe/graphql/generated';
 import { DELETE_IMAGES, IMAGE_FIELDS, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
@@ -20,7 +21,54 @@ export function EditRecipe() {
     const navigate = useNavigate();
     const { titleIdentifier } = useParams();
     const { avgRating: rating, getRatings, setRating } = useViewStarRating();
-    const [saveRecipe, { data: response, loading: recipeLoading }] = useMutation(UPDATE_RECIPE);
+    const [saveRecipe, { data: response, loading: recipeLoading }] = useMutation(UPDATE_RECIPE, {
+        update(cache, { data }) {
+            const { record } = data?.recipeUpdateById || {};
+            if (!record) {
+                return;
+            }
+            cache.modify({
+                fields: {
+                    recipeMany(existingRecipes = [], { storeFieldName, readField }) {
+                        if (storeFieldName === 'recipeMany:{"filter":{"isIngredient":true}}') {
+                            if (!record.isIngredient) {
+                                return existingRecipes;
+                            }
+                            try {
+                                const newRecipeRef = cache.writeFragment({
+                                    data: record,
+                                    fragment: RECIPE_INGR_FIELDS,
+                                    fragmentName: 'RecipeIngrFields',
+                                });
+                                return [...existingRecipes, newRecipeRef];
+                            } catch (error) {
+                                console.error('Error writing fragment to cache', error);
+                                return existingRecipes;
+                            }
+                        }
+                        try {
+                            const newRecipeRef = cache.writeFragment({
+                                data: record,
+                                fragment: RECIPE_FIELDS_SUBSET,
+                                fragmentName: 'RecipeFieldsSubset',
+                            });
+                            if (
+                                existingRecipes.some(
+                                    (ref: Reference) => readField('_id', ref) === record._id
+                                )
+                            ) {
+                                return existingRecipes;
+                            }
+                            return [...existingRecipes, newRecipeRef];
+                        } catch (error) {
+                            console.error('Error writing fragment to cache', error);
+                            return existingRecipes;
+                        }
+                    },
+                },
+            });
+        },
+    });
     const [deleteImages] = useMutation(DELETE_IMAGES, {
         update(cache, { data }) {
             if (!data?.imageRemoveMany?.records || !recipe) {
