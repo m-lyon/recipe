@@ -567,7 +567,7 @@ export const mockCreateRecipeAsIngr = {
         },
     },
 };
-export const mockDeleteRecipe = {
+export const mockDeleteRecipeOne = {
     request: {
         query: DELETE_RECIPE,
         variables: { id: recipeOneVars.id },
@@ -575,6 +575,17 @@ export const mockDeleteRecipe = {
     result: {
         data: {
             recipeRemoveById: { recordId: recipeOneVars.id },
+        },
+    },
+};
+export const mockDeleteRecipeTwo = {
+    request: {
+        query: DELETE_RECIPE,
+        variables: { id: recipeTwoVars.id },
+    },
+    result: {
+        data: {
+            recipeRemoveById: { recordId: recipeTwoVars.id },
         },
     },
 };

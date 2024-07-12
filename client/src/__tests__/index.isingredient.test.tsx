@@ -50,9 +50,9 @@ describe('Update Recipe Workflow: Is Ingredient', () => {
             'value',
             'Mock Recipes'
         );
-        await user.click(screen.getAllByLabelText('Create new recipe')[0]);
 
         // ------ Ingredient List --------------------------------
+        await user.click(screen.getAllByLabelText('Create new recipe')[0]);
         expect(await screen.findByText('Ingredients')).not.toBeNull();
         await user.click(screen.getByLabelText('Enter ingredient'));
         await user.keyboard('{2}{ }');
@@ -92,9 +92,9 @@ describe('Update Recipe Workflow: Is Ingredient', () => {
         expect(await screen.findByText('Instruction one')).not.toBeNull();
         expect(screen.queryByText('Mock Recipe Two')).not.toBeNull();
         expect(screen.queryByLabelText('Edit recipe plural title')).toBeNull();
-        await user.click(screen.getAllByLabelText('Create new recipe')[0]);
 
         // ------ Ingredient List --------------------------------
+        await user.click(screen.getAllByLabelText('Create new recipe')[0]);
         expect(await screen.findByText('Ingredients')).not.toBeNull();
         await user.click(screen.getByLabelText('Enter ingredient'));
         await user.keyboard('{2}{ }');

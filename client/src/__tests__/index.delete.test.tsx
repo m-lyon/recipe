@@ -3,8 +3,8 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
-import { mockCreateRecipe, mockDeleteRecipe } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockDeleteRecipeOne } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockDeleteRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
 
 import { renderComponent } from './utils';
 
@@ -16,9 +16,9 @@ describe('Delete Recipe Workflow', () => {
         cleanup();
     });
 
-    it('should delete a recipe', async () => {
+    it('should delete a recipe only', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockCreateRecipe, mockGetIngredients, mockDeleteRecipe]);
+        renderComponent([mockDeleteRecipeOne]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -32,9 +32,34 @@ describe('Delete Recipe Workflow', () => {
         expect(screen.queryByText('Mock Recipe')).toBeNull();
     });
 
+    it('should delete a recipe that is an ingredient', async () => {
+        // Render -----------------------------------------------
+        renderComponent([mockDeleteRecipeTwo]);
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        expect(await screen.findByText('Recipes'));
+        await user.hover(await screen.findByLabelText('View Mock Recipe Two'));
+        await user.click(screen.getByLabelText('Delete Mock Recipe Two'));
+        await user.click(screen.getByLabelText('Confirm delete action'));
+
+        // Expect ------------------------------------------------
+        // ------ Home Page --------------------------------------
+        expect(await screen.findByText('Recipes')).not.toBeNull();
+        expect(screen.queryByText('Mock Recipe Two')).toBeNull();
+
+        // ------ Ingredient List --------------------------------
+        await user.click(screen.getAllByLabelText('Create new recipe')[0]);
+        expect(await screen.findByText('Ingredients')).not.toBeNull();
+        await user.click(screen.getByLabelText('Enter ingredient'));
+        await user.keyboard('{2}{ }');
+        await user.click(await screen.findByText('skip unit'));
+        expect(screen.queryByText('mock recipes two')).toBeNull();
+    });
+
     it('should delete a recipe after viewing', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockCreateRecipe, mockGetIngredients, mockDeleteRecipe]);
+        renderComponent([mockDeleteRecipeOne]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------

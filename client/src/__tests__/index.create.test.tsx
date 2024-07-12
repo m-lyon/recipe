@@ -247,9 +247,9 @@ describe('Create Recipe Workflow', () => {
         expect(await screen.findByText('Instr #1.')).not.toBeNull();
         expect(screen.queryByText('Instr #2.')).not.toBeNull();
         expect(screen.queryByText('2 tsp apples, diced')).not.toBeNull();
-        await user.click(screen.getAllByLabelText('Create new recipe')[0]);
 
         // ------ Ingredients List ------------------------------
+        await user.click(screen.getAllByLabelText('Create new recipe')[0]);
         expect(await screen.findByText('Ingredients')).not.toBeNull();
         await user.click(screen.getByLabelText('Enter ingredient'));
         await user.keyboard('{2}{ }');
