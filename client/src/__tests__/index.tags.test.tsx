@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { mockCreateTag } from '@recipe/graphql/mutations/__mocks__/tag';
+import { mockCreateTag, mockRemoveTag } from '@recipe/graphql/mutations/__mocks__/tag';
 import { mockUpdateRecipeRemoveTag } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeAddNewTag } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeAddExistingTag } from '@recipe/graphql/mutations/__mocks__/recipe';
@@ -111,5 +111,55 @@ describe('Update Recipe Workflow: Tags', () => {
         expect(await screen.findByText('Instruction one')).not.toBeNull();
         expect(screen.queryByText('dinner')).not.toBeNull();
         expect(screen.queryByText('spicy')).not.toBeNull();
+    });
+});
+
+describe('Tag Workflow', () => {
+    afterEach(() => {
+        cleanup();
+    });
+
+    it('should create a new tag', async () => {
+        // Render -----------------------------------------------
+        renderComponent([mockCreateTag]);
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        expect(await screen.findByText('Recipes'));
+        await user.click(screen.getAllByLabelText('Create new recipe')[0]);
+        expect(await screen.findByText('Ingredients')).not.toBeNull();
+        await user.click(screen.getByLabelText('Add a tag'));
+        await user.keyboard('mock tag{Enter}');
+        await user.click(screen.getByLabelText('Navigate to home page'));
+        await user.click(screen.getAllByLabelText('Create new recipe')[0]);
+
+        // Expect ------------------------------------------------
+        expect(await screen.findByText('Ingredients')).not.toBeNull();
+        await user.click(screen.getByLabelText('Add a tag'));
+        expect(await screen.findByText('dinner')).not.toBeNull();
+        expect(screen.queryByText('mock tag')).not.toBeNull();
+    });
+
+    it('should remove a new tag', async () => {
+        // Render -----------------------------------------------
+        renderComponent([mockCreateTag, mockRemoveTag]);
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        expect(await screen.findByText('Recipes'));
+        await user.click(screen.getAllByLabelText('Create new recipe')[0]);
+        expect(await screen.findByText('Ingredients')).not.toBeNull();
+        await user.click(screen.getByLabelText('Add a tag'));
+        await user.keyboard('mock tag{Enter}');
+        await user.click(screen.getByLabelText('Remove mock tag tag'));
+        await user.click(screen.getByLabelText('Navigate to home page'));
+        await user.click(screen.getAllByLabelText('Create new recipe')[0]);
+        await user.click(screen.getByLabelText('Add a tag'));
+
+        // Expect ------------------------------------------------
+        expect(await screen.findByText('Ingredients')).not.toBeNull();
+        await user.click(screen.getByLabelText('Add a tag'));
+        expect(await screen.findByText('dinner')).not.toBeNull();
+        expect(screen.queryByText('mock tag')).toBeNull();
     });
 });

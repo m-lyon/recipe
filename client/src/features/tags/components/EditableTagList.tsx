@@ -32,7 +32,9 @@ export function EditableTagList(props: UseTagListReturnType) {
                 isClosable: true,
             });
         },
-        refetchQueries: ['GetTags'],
+        update: (cache, { data }) => {
+            cache.evict({ id: `Tag:${data?.tagRemoveById?.record?._id}` });
+        },
     });
 
     const tagsList = state.finished.map((tag, index) => {

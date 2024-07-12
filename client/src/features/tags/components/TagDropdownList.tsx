@@ -6,6 +6,7 @@ import { useMutation } from '@apollo/client';
 
 import { DELAY_LONG } from '@recipe/constants';
 import { Tag } from '@recipe/graphql/generated';
+import { TAG_FIELDS } from '@recipe/graphql/queries/tag';
 import { DropdownItem } from '@recipe/common/components';
 import { useNavigatableList } from '@recipe/common/hooks';
 import { CREATE_TAG } from '@recipe/graphql/mutations/tag';
@@ -44,7 +45,25 @@ export function TagDropdownList(props: Props) {
                 isClosable: true,
             });
         },
-        refetchQueries: ['GetTags'],
+        update: (cache, { data }) => {
+            cache.modify({
+                fields: {
+                    tagMany(existingTags = []) {
+                        try {
+                            const newTagRef = cache.writeFragment({
+                                data: data?.tagCreateOne?.record,
+                                fragment: TAG_FIELDS,
+                                fragmentName: 'TagFields',
+                            });
+                            return [...existingTags, newTagRef];
+                        } catch (error) {
+                            console.error('Error writing fragment to cache', error);
+                            return existingTags;
+                        }
+                    },
+                },
+            });
+        },
     });
     const suggestions = matchSorter<Tag>(
         tags.filter((tag) => {
