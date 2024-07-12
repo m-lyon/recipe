@@ -19,24 +19,6 @@ export function TagDropdown(props: Props) {
     const { data } = useQuery(GET_TAGS);
     const strValue = tag.value !== null ? tag.value : '';
 
-    const getSuggestionsList = () => {
-        if (!data) {
-            return [];
-        }
-        return (
-            <TagDropdownList
-                strValue={strValue}
-                tags={data.tagMany}
-                setAndSubmit={(value: string, _id: string, isNew?: boolean) => {
-                    actions.setAndSubmit(value, _id, isNew);
-                    actions.setShow('off');
-                }}
-                inputRef={inputRef}
-                selectedTags={selectedTags}
-            />
-        );
-    };
-
     return (
         tag.show && (
             <motion.div
@@ -56,8 +38,20 @@ export function TagDropdown(props: Props) {
                     position='absolute'
                     maxHeight='14em'
                     overflowY='auto'
+                    aria-label='Tag suggestions'
                 >
-                    <LayoutGroup>{getSuggestionsList()}</LayoutGroup>
+                    <LayoutGroup>
+                        <TagDropdownList
+                            strValue={strValue}
+                            tags={data ? data.tagMany : []}
+                            setAndSubmit={(value: string, _id: string, isNew?: boolean) => {
+                                actions.setAndSubmit(value, _id, isNew);
+                                actions.setShow('off');
+                            }}
+                            inputRef={inputRef}
+                            selectedTags={selectedTags}
+                        />
+                    </LayoutGroup>
                 </List>
             </motion.div>
         )
