@@ -26,6 +26,7 @@ export const DropdownItem = forwardRef(
                     color={color}
                     background={isHighlighted ? 'gray.100' : undefined}
                     ref={ref}
+                    aria-label={value}
                 >
                     {value}
                 </ListItem>

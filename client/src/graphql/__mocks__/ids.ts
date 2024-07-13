@@ -4,7 +4,6 @@ export const mockRecipeIdTwo = '60f4d2e5c3d5a0a4f1b9c0ec';
 export const mockRecipeIdThree = '60f4d3e5c3d5a0a4f1b9c0ec';
 export const mockRecipeIdNew = '60f4d4e5c3d5a0a4f1b9c0ec';
 export const mockRecipeIdNewAsIngr = '60f4d5e9c3d5a0a4f1b9c0ec';
-export const mockCreateRecipeId = '60f4d5e5c3d5a0a4f1b9c0ec';
 
 // Units
 export const mockTeaspoonId = '60f4d2e5c3d5a0a4f1b3c0ec';
@@ -20,6 +19,7 @@ export const mockChickenId = '60f4d2e5c3d5a0a4f1b9c0e9';
 export const mockCarrotId = '60f4d2e5c3d5a0a4f1b9c0ea';
 export const mockLettuceId = '60f4d2e5c3d5a0a4f1b9c0f0';
 export const mockRhubarbPieId = '60f4d3e5c3d5a0a4f1b9c0eb';
+export const mockBeefId = '60f4d5e5c3d5a0a4f1b9c0ec';
 
 // Prep Method
 export const mockChoppedId = '60f4d2efc3d5a0a4f1b9c0ec';

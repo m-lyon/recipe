@@ -96,6 +96,13 @@ describe('Creating new items', () => {
             screen.queryByText('1 beef, ', { normalizer: getDefaultNormalizer({ trim: false }) })
         ).not.toBeNull();
         expect(screen.queryByText('skip prep method')).not.toBeNull();
+        // ------ Available as new ingredient -----------------------------------
+        await user.keyboard('{Escape}');
+        await user.click(screen.getByLabelText('Enter ingredient'));
+        await user.keyboard('{2}{ }');
+        await user.click(screen.getByText('skip unit'));
+        expect(await screen.findByLabelText('apples')).not.toBeNull();
+        expect(screen.queryByLabelText('beef')).not.toBeNull();
     });
     it('should create a new prepMethod', async () => {
         const user = userEvent.setup();

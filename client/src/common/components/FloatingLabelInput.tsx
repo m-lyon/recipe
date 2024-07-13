@@ -21,6 +21,7 @@ export function FloatingLabelInput(props: Props) {
                 id={id}
                 value={value}
                 onChange={onChange}
+                aria-label={label}
             />
             <FormLabel htmlFor={id} color='gray.400' fontWeight={600}>
                 {label}

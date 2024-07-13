@@ -4,9 +4,7 @@ export const CREATE_INGREDIENT = gql(`
     mutation CreateIngredient($record: CreateOneIngredientCreateInput!) {
         ingredientCreateOne(record: $record) {
             record {
-                ...IngredientFields
-                owner
-                tags
+                ...IngredientFieldsFull
             }
         }
     }
@@ -16,9 +14,7 @@ export const MODIFY_INGREDIENT = gql(`
     mutation ModifyIngredient($id: MongoID!, $record: UpdateByIdIngredientInput!) {
         ingredientUpdateById(_id: $id, record: $record) {
             record {
-                ...IngredientFields
-                owner
-                tags
+                ...IngredientFieldsFull
             }
         }
     }

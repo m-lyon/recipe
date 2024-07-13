@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ApolloError, useMutation } from '@apollo/client';
 import { Button, ButtonGroup, Checkbox } from '@chakra-ui/react';
+import { ApolloError, Reference, useMutation } from '@apollo/client';
 import { HStack, Stack, StackProps, useToast } from '@chakra-ui/react';
 import { ValidationError, array, boolean, mixed, number, object, string } from 'yup';
 
@@ -8,6 +8,7 @@ import { DELAY_LONG } from '@recipe/constants';
 import { FloatingLabelInput } from '@recipe/common/components';
 import { Ingredient, Scalars } from '@recipe/graphql/generated';
 import { DELETE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
+import { INGREDIENT_FIELDS_FULL } from '@recipe/graphql/queries/ingredient';
 import { EnumIngredientCreateTags, EnumIngredientTags } from '@recipe/graphql/generated';
 import { CREATE_INGREDIENT, MODIFY_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 import { CreateIngredientMutation, ModifyIngredientMutation } from '@recipe/graphql/generated';
@@ -69,7 +70,9 @@ export function IngredientForm(props: IngredientFormProps) {
                 duration: DELAY_LONG,
             });
         },
-        refetchQueries: ['GetIngredients'],
+        update: (cache, { data }) => {
+            cache.evict({ id: `Ingredient:${data?.ingredientRemoveById?.recordId}` });
+        },
     });
     const [saveIngredient] = useMutation(mutation, {
         onCompleted: handleComplete,
@@ -83,7 +86,33 @@ export function IngredientForm(props: IngredientFormProps) {
                 duration: DELAY_LONG,
             });
         },
-        refetchQueries: ['GetIngredients'],
+        update: (cache, { data }) => {
+            cache.modify({
+                fields: {
+                    ingredientMany(existingRefs = [], { readField }) {
+                        const record =
+                            (data as CreateIngredientMutation).ingredientCreateOne?.record ??
+                            (data as ModifyIngredientMutation).ingredientUpdateById?.record;
+                        if (!record) {
+                            return existingRefs;
+                        }
+                        const newRef = cache.writeFragment({
+                            data: record,
+                            fragment: INGREDIENT_FIELDS_FULL,
+                            fragmentName: 'IngredientFieldsFull',
+                        });
+                        if (
+                            existingRefs.some(
+                                (ref: Reference) => readField('_id', ref) === record._id
+                            )
+                        ) {
+                            return existingRefs;
+                        }
+                        return [...existingRefs, newRef];
+                    },
+                },
+            });
+        },
     });
 
     useEffect(() => {
@@ -240,11 +269,12 @@ export function IngredientForm(props: IngredientFormProps) {
                     <Button
                         colorScheme='red'
                         onClick={() => deleteIngredient({ variables: mutationVars })}
+                        aria-label='Delete ingredient'
                     >
                         Delete
                     </Button>
                 )}
-                <Button colorScheme='teal' onClick={handleSubmit}>
+                <Button colorScheme='teal' onClick={handleSubmit} aria-label='Save ingredient'>
                     Save
                 </Button>
             </ButtonGroup>

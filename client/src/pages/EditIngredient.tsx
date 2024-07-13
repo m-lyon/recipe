@@ -34,6 +34,7 @@ export function EditIngredient() {
                             <FormLabel>Select ingredient</FormLabel>
                             <Select
                                 placeholder='-'
+                                aria-label='Select ingredient'
                                 value={currentIngredient?._id}
                                 onChange={(e) => {
                                     setCurrentIngredient(
@@ -44,7 +45,7 @@ export function EditIngredient() {
                                 }}
                             >
                                 {data?.ingredientMany.map((ingr) => (
-                                    <option key={ingr._id} value={ingr._id}>
+                                    <option key={ingr._id} value={ingr._id} aria-label={ingr.name}>
                                         {ingr.name}
                                     </option>
                                 ))}
