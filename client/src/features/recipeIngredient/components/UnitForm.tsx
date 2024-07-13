@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ApolloError, useMutation } from '@apollo/client';
+import { ApolloError, Reference, useMutation } from '@apollo/client';
 import { FormControl, FormHelperText } from '@chakra-ui/react';
 import { ValidationError, boolean, mixed, object, string } from 'yup';
 import { Button, ButtonGroup, HStack, useToast } from '@chakra-ui/react';
@@ -7,6 +7,7 @@ import { Checkbox, Radio, RadioGroup, Stack, StackProps } from '@chakra-ui/react
 
 import { DELAY_LONG } from '@recipe/constants';
 import { FloatingLabelInput } from '@recipe/common/components';
+import { UNIT_FIELDS_FULL } from '@recipe/graphql/queries/unit';
 import { EnumUnitCreatePreferredNumberFormat, Unit } from '@recipe/graphql/generated';
 import { CREATE_UNIT, DELETE_UNIT, MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
 import { CreateUnitMutation, ModifyUnitMutation, Scalars } from '@recipe/graphql/generated';
@@ -67,7 +68,9 @@ export function UnitForm(props: UnitFormProps) {
                 duration: DELAY_LONG,
             });
         },
-        refetchQueries: ['GetUnits'],
+        update: (cache, { data }) => {
+            cache.evict({ id: `Unit:${data?.unitRemoveById?.recordId}` });
+        },
     });
     const [saveUnit] = useMutation(mutation, {
         onCompleted: handleComplete,
@@ -81,7 +84,33 @@ export function UnitForm(props: UnitFormProps) {
             });
             setHasError(true);
         },
-        refetchQueries: ['GetUnits'],
+        update: (cache, { data }) => {
+            cache.modify({
+                fields: {
+                    unitMany(existingRefs = [], { readField }) {
+                        const record =
+                            (data as CreateUnitMutation).unitCreateOne?.record ??
+                            (data as ModifyUnitMutation).unitUpdateById?.record;
+                        if (!record) {
+                            return existingRefs;
+                        }
+                        const newRef = cache.writeFragment({
+                            data: record,
+                            fragment: UNIT_FIELDS_FULL,
+                            fragmentName: 'UnitFieldsFull',
+                        });
+                        if (
+                            existingRefs.some(
+                                (ref: Reference) => readField('_id', ref) === record._id
+                            )
+                        ) {
+                            return existingRefs;
+                        }
+                        return [...existingRefs, newRef];
+                    },
+                },
+            });
+        },
     });
 
     useEffect(() => {
@@ -240,11 +269,12 @@ export function UnitForm(props: UnitFormProps) {
                     <Button
                         colorScheme='red'
                         onClick={() => deleteUnit({ variables: mutationVars })}
+                        aria-label='Delete unit'
                     >
                         Delete
                     </Button>
                 )}
-                <Button colorScheme='teal' onClick={handleSubmit}>
+                <Button colorScheme='teal' onClick={handleSubmit} aria-label='Save unit'>
                     Save
                 </Button>
             </ButtonGroup>

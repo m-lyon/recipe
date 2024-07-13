@@ -31,14 +31,11 @@ const routes = createBrowserRouter(
 );
 
 const renderComponent = () => {
-    // Multiple mocks of the same query are needed due to refetch calls
     render(
         <MockedProvider
             mocks={[
                 mockGetUnits,
-                mockGetUnits,
                 mockGetIngredientsWithRecipe,
-                mockGetPrepMethods,
                 mockGetPrepMethods,
                 mockCreateUnit,
                 mockCreateIngredient,
@@ -70,13 +67,19 @@ describe('Creating new items', () => {
         await user.click(screen.getByText('Long singular name'));
         await user.keyboard('{c}{u}{t}{t}{i}{n}{g}');
         await user.click(screen.getByText('decimal'));
-        await user.click(screen.getByText('Save'));
+        await user.click(screen.getByLabelText('Save unit'));
 
-        // Expect
+        // Expect --------------------------------------------------------------
         expect(
             screen.queryByText('1 cut ', { normalizer: getDefaultNormalizer({ trim: false }) })
         ).not.toBeNull();
         expect(screen.queryByText('add new ingredient')).not.toBeNull();
+        // ------ Available as new unit ----------------------------------------
+        await user.keyboard('{Escape}');
+        await user.click(screen.getByLabelText('Enter ingredient'));
+        await user.keyboard('{2}{ }');
+        expect(await screen.findByLabelText('teaspoons')).not.toBeNull();
+        expect(screen.queryByLabelText('cutting')).not.toBeNull();
     });
     it('should create a new ingredient', async () => {
         const user = userEvent.setup();
@@ -89,7 +92,7 @@ describe('Creating new items', () => {
         await user.click(screen.getByText('skip unit'));
         await user.click(screen.getByText('add new ingredient'));
         await user.keyboard('beef');
-        await user.click(screen.getByText('Save'));
+        await user.click(screen.getByLabelText('Save ingredient'));
 
         // Expect --------------------------------------------------------------
         expect(
@@ -104,7 +107,7 @@ describe('Creating new items', () => {
         expect(await screen.findByLabelText('apples')).not.toBeNull();
         expect(screen.queryByLabelText('beef')).not.toBeNull();
     });
-    it('should create a new prepMethod', async () => {
+    it('should create a new prep method', async () => {
         const user = userEvent.setup();
         // Render
         renderComponent();
@@ -116,11 +119,18 @@ describe('Creating new items', () => {
         await user.click(screen.getByText('chicken'));
         await user.keyboard('{p}');
         await user.click(screen.getByText('add new prep method'));
-        await user.keyboard('{p}{i}{p}{p}{e}{d}');
-        await user.click(screen.getByText('Save'));
+        await user.keyboard('pipped');
+        await user.click(screen.getByLabelText('Save prep method'));
 
-        // Expect
+        // Expect --------------------------------------------------------------
         expect(screen.queryByText('1 chicken, pipped')).not.toBeNull();
         expect(screen.queryByText('Enter ingredient')).not.toBeNull();
+        // ------ Available as new prepMethod -----------------------------------
+        expect(await screen.findByLabelText('skip quantity')).not.toBeNull();
+        await user.keyboard('{2}{ }');
+        await user.click(screen.getByText('skip unit'));
+        await user.click(screen.getByText('chickens'));
+        expect(await screen.findByLabelText('skip prep method')).not.toBeNull();
+        expect(screen.queryByLabelText('pipped')).not.toBeNull();
     });
 });

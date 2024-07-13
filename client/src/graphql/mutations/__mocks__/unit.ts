@@ -1,6 +1,7 @@
-import { CREATE_UNIT } from '@recipe/graphql/mutations/unit';
+import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 import { EnumUnitPreferredNumberFormat } from '@recipe/graphql/generated';
 import { mockAdminId, mockCuttingId } from '@recipe/graphql/__mocks__/ids';
+import { CREATE_UNIT, DELETE_UNIT, MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
 
 export const mockUnit = {
     __typename: 'Unit' as const,
@@ -32,6 +33,47 @@ export const mockCreateUnit = {
         data: {
             unitCreateOne: {
                 record: mockUnit,
+            },
+        },
+    },
+};
+export const mockUpdateUnit = {
+    request: {
+        query: MODIFY_UNIT,
+        variables: {
+            id: mockTeaspoon._id,
+            record: {
+                longSingular: mockTeaspoon.longSingular,
+                longPlural: 'teaspoonz',
+                shortSingular: mockTeaspoon.shortSingular,
+                shortPlural: mockTeaspoon.shortPlural,
+                preferredNumberFormat: mockTeaspoon.preferredNumberFormat,
+                hasSpace: mockTeaspoon.hasSpace,
+            },
+        },
+    },
+    result: {
+        data: {
+            unitUpdateById: {
+                record: {
+                    ...mockTeaspoon,
+                    longPlural: 'teaspoonz',
+                },
+            },
+        },
+    },
+};
+export const mockDeleteUnit = {
+    request: {
+        query: DELETE_UNIT,
+        variables: {
+            id: mockTeaspoon._id,
+        },
+    },
+    result: {
+        data: {
+            unitRemoveById: {
+                recordId: mockTeaspoon._id,
             },
         },
     },

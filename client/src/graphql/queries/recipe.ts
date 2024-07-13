@@ -53,8 +53,7 @@ export const RECIPE_FIELDS_FULL = gql(`
                 }
             }
             prepMethod {
-                _id
-                value
+                ...PrepMethodFields
             }
         }
         source

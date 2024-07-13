@@ -4,8 +4,7 @@ export const CREATE_UNIT = gql(`
     mutation CreateUnit($record: CreateOneUnitCreateInput!) {
         unitCreateOne(record: $record) {
             record {
-                ...UnitFields
-                owner
+                ...UnitFieldsFull
             }
         }
     }
@@ -15,8 +14,7 @@ export const MODIFY_UNIT = gql(`
     mutation ModifyUnit($id: MongoID!, $record: UpdateByIdUnitInput!) {
         unitUpdateById(_id: $id, record: $record) {
             record {
-                ...UnitFields
-                owner
+                ...UnitFieldsFull
             }
         }
     }

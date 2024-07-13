@@ -12,11 +12,17 @@ export const UNIT_FIELDS = gql(`
     }
 `);
 
+export const UNIT_FIELDS_FULL = gql(`
+    fragment UnitFieldsFull on Unit {
+        ...UnitFields
+        owner
+    }
+`);
+
 export const GET_UNITS = gql(`
     query GetUnits($filter: FilterFindManyUnitInput) {
         unitMany(limit: 5000, filter: $filter) {
-            ...UnitFields
-            owner
+            ...UnitFieldsFull
         }
     }
 `);

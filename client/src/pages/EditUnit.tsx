@@ -34,6 +34,7 @@ export function EditUnit() {
                             <FormLabel>Select unit</FormLabel>
                             <Select
                                 placeholder='-'
+                                aria-label='Select unit'
                                 value={currentUnit?._id}
                                 onChange={(e) => {
                                     setCurrentUnit(
@@ -42,7 +43,11 @@ export function EditUnit() {
                                 }}
                             >
                                 {data?.unitMany.map((unit) => (
-                                    <option key={unit._id} value={unit._id}>
+                                    <option
+                                        key={unit._id}
+                                        value={unit._id}
+                                        aria-label={unit.longSingular}
+                                    >
                                         {unit.longSingular}
                                     </option>
                                 ))}

@@ -34,6 +34,7 @@ export function EditPrepMethod() {
                             <FormLabel>Select prep method</FormLabel>
                             <Select
                                 placeholder='-'
+                                aria-label='Select prep method'
                                 value={currentPrepMethod?._id}
                                 onChange={(e) => {
                                     setCurrentPrepMethod(
@@ -44,7 +45,7 @@ export function EditPrepMethod() {
                                 }}
                             >
                                 {data?.prepMethodMany.map((prep) => (
-                                    <option key={prep._id} value={prep._id}>
+                                    <option key={prep._id} value={prep._id} aria-label={prep.value}>
                                         {prep.value}
                                     </option>
                                 ))}

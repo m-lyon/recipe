@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { ValidationError, object, string } from 'yup';
-import { ApolloError, useMutation } from '@apollo/client';
+import { ApolloError, Reference, useMutation } from '@apollo/client';
 import { Button, ButtonGroup, Stack, StackProps, useToast } from '@chakra-ui/react';
 
 import { DELAY_LONG } from '@recipe/constants';
 import { FloatingLabelInput } from '@recipe/common/components';
 import { PrepMethod, Scalars } from '@recipe/graphql/generated';
 import { DELETE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
+import { PREP_METHOD_FIELDS_FULL } from '@recipe/graphql/queries/prepMethod';
 import { CREATE_PREP_METHOD, MODIFY_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 import { CreatePrepMethodMutation, ModifyPrepMethodMutation } from '@recipe/graphql/generated';
 
@@ -62,7 +63,9 @@ export function PrepMethodForm(props: PrepMethoFormProps) {
                 duration: DELAY_LONG,
             });
         },
-        refetchQueries: ['GetPrepMethods'],
+        update: (cache, { data }) => {
+            cache.evict({ id: `PrepMethod:${data?.prepMethodRemoveById?.recordId}` });
+        },
     });
     const [savePrepMethod] = useMutation(mutation, {
         onCompleted: handleComplete,
@@ -75,7 +78,33 @@ export function PrepMethodForm(props: PrepMethoFormProps) {
                 duration: DELAY_LONG,
             });
         },
-        refetchQueries: ['GetPrepMethods'],
+        update: (cache, { data }) => {
+            cache.modify({
+                fields: {
+                    prepMethodMany(existingRefs = [], { readField }) {
+                        const record =
+                            (data as CreatePrepMethodMutation).prepMethodCreateOne?.record ??
+                            (data as ModifyPrepMethodMutation).prepMethodUpdateById?.record;
+                        if (!record) {
+                            return existingRefs;
+                        }
+                        const newRef = cache.writeFragment({
+                            data: record,
+                            fragment: PREP_METHOD_FIELDS_FULL,
+                            fragmentName: 'PrepMethodFieldsFull',
+                        });
+                        if (
+                            existingRefs.some(
+                                (ref: Reference) => readField('_id', ref) === record._id
+                            )
+                        ) {
+                            return existingRefs;
+                        }
+                        return [...existingRefs, newRef];
+                    },
+                },
+            });
+        },
     });
 
     useEffect(() => {
@@ -148,11 +177,12 @@ export function PrepMethodForm(props: PrepMethoFormProps) {
                     <Button
                         colorScheme='red'
                         onClick={() => deletePrepMethod({ variables: mutationVars })}
+                        aria-label='Delete prep method'
                     >
                         Delete
                     </Button>
                 )}
-                <Button colorScheme='teal' onClick={handleSubmit}>
+                <Button colorScheme='teal' onClick={handleSubmit} aria-label='Save prep method'>
                     Save
                 </Button>
             </ButtonGroup>

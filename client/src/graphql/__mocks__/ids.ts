@@ -26,7 +26,7 @@ export const mockChoppedId = '60f4d2efc3d5a0a4f1b9c0ec';
 export const mockDicedId = '60f4d2e5c3d6a0a4f1b9c0eb';
 export const mockSlicedId = '60f4d22c3d5a0a4f1b9c0eb';
 export const mockWholeId = '60f4d2e5c3d5a0a4c1b9c0ed';
-export const PrepMethodCreateOneId = '60f4d2e5c3d5a0a4f1b9c0ef';
+export const mockPippedId = '60f4d2e5c3d5a0a4f1b9c0ef';
 
 // Users
 export const mockAdminId = '60f4d2e5c3d5a0a4f1b9c0e0';
