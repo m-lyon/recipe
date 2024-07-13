@@ -20,8 +20,6 @@ jobs:
   api-test:
     needs: update
     runs-on: self-hosted
-    env:
-      MONGOMS_DISTRO: ubuntu-20.04
     steps:
       - name: Test
         working-directory: ./api
@@ -44,7 +42,10 @@ jobs:
       - name: Create client environment file
         working-directory: ./client
         run: |
-          echo "VITE_GRAPHQL_ENDPOINT = ${{ secrets.VITE_GRAPHQL_ENDPOINT }}" >> .env.development.local
+          echo "VITE_GRAPHQL_ENDPOINT = ${{ secrets.VITE_GRAPHQL_ENDPOINT }}" > .env.development.local
+          echo "VITE_ROOT_PATH = ${{ secrets.VITE_ROOT_PATH }}" >> .env.development.local
+          echo "VITE_DELAY_SHORT = ${{ secrets.VITE_DELAY_SHORT }}" >> .env.development.local
+          echo "VITE_DELAY_LONG = ${{ secrets.VITE_DELAY_LONG }}" >> .env.development.local
       - name: Start server in development mode
         working-directory: ./api
         run: npm run dev &
@@ -57,7 +58,15 @@ jobs:
   client-test:
     needs: client-generate
     runs-on: self-hosted
+    environment: test
     steps:
+      - name: Create client environment file
+        working-directory: ./client
+        run: |
+          echo "VITE_GRAPHQL_ENDPOINT = ${{ secrets.VITE_GRAPHQL_ENDPOINT }}" > .env.test.local
+          echo "VITE_ROOT_PATH = ${{ secrets.VITE_ROOT_PATH }}" >> .env.test.local
+          echo "VITE_DELAY_SHORT = ${{ secrets.VITE_DELAY_SHORT }}" >> .env.test.local
+          echo "VITE_DELAY_LONG = ${{ secrets.VITE_DELAY_LONG }}" >> .env.test.local
       - name: Test
         working-directory: ./client
         run: npm run test -- run --test-timeout=15000
@@ -73,6 +82,9 @@ jobs:
         working-directory: ./client
         run: |
           echo "VITE_GRAPHQL_ENDPOINT = ${{ secrets.VITE_GRAPHQL_ENDPOINT }}" > .env.production.local
+          echo "VITE_ROOT_PATH = ${{ secrets.VITE_ROOT_PATH }}" >> .env.production.local
+          echo "VITE_DELAY_SHORT = ${{ secrets.VITE_DELAY_SHORT }}" >> .env.production.local
+          echo "VITE_DELAY_LONG = ${{ secrets.VITE_DELAY_LONG }}" >> .env.production.local
       - name: Build
         working-directory: ./client
         run: npm run build
