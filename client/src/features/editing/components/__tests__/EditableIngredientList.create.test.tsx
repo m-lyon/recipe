@@ -21,13 +21,13 @@ import { EditableIngredientList } from '../EditableIngredientList';
 loadErrorMessages();
 loadDevMessages();
 
-const MockCreateRecipe = () => {
+const MockEditableIngredientList = () => {
     const props = useIngredientList();
     return <EditableIngredientList {...props} />;
 };
 
 const routes = createBrowserRouter(
-    createRoutesFromElements(<Route path='/' element={<MockCreateRecipe />} />)
+    createRoutesFromElements(<Route path='/' element={<MockEditableIngredientList />} />)
 );
 
 const renderComponent = () => {
@@ -37,7 +37,6 @@ const renderComponent = () => {
             mocks={[
                 mockGetUnits,
                 mockGetUnits,
-                mockGetIngredientsWithRecipe,
                 mockGetIngredientsWithRecipe,
                 mockGetPrepMethods,
                 mockGetPrepMethods,
@@ -89,10 +88,10 @@ describe('Creating new items', () => {
         await user.keyboard('{1}{ }');
         await user.click(screen.getByText('skip unit'));
         await user.click(screen.getByText('add new ingredient'));
-        await user.keyboard('{b}{e}{e}{f}');
+        await user.keyboard('beef');
         await user.click(screen.getByText('Save'));
 
-        // Expect
+        // Expect --------------------------------------------------------------
         expect(
             screen.queryByText('1 beef, ', { normalizer: getDefaultNormalizer({ trim: false }) })
         ).not.toBeNull();
