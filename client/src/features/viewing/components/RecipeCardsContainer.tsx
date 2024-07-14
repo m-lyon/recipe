@@ -1,10 +1,10 @@
+import { Box } from '@chakra-ui/react';
 import { useQuery } from '@apollo/client';
 import { useContext, useState } from 'react';
-import { Wrap, WrapItem } from '@chakra-ui/react';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
 import { Recipe } from '@recipe/graphql/generated';
-import { groupIntoPairs } from '@recipe/utils/array';
 import { ConfirmDeleteModal } from '@recipe/features/editing';
 import { COUNT_RECIPES } from '@recipe/graphql/queries/recipe';
 import { IUserContext, UserContext } from '@recipe/features/user';
@@ -19,6 +19,21 @@ function hasPermission(user: IUserContext, recipe: Recipe) {
     return user._id === recipe._id || user.role === 'admin';
 }
 
+const gutter = 24;
+const padding = 24;
+const cardWidth = 288;
+const getBreakpointWidths = (columns: number): number => {
+    return columns * cardWidth + (columns - 1) * gutter + padding * 2;
+};
+const generateBreakPoints = (maxColumns: number): { [key: number]: number } => {
+    const breakpoints: { [key: number]: number } = {};
+    for (let columns = 1; columns <= maxColumns; columns++) {
+        breakpoints[getBreakpointWidths(columns)] = columns;
+    }
+    return breakpoints;
+};
+const breakPoints: { [key: number]: number } = generateBreakPoints(4);
+
 interface Props {
     recipes: Recipe[];
     fetchMore: () => void;
@@ -30,56 +45,29 @@ export function RecipeCardsContainer(props: Props) {
     const [user] = useContext(UserContext);
     const { data } = useQuery(COUNT_RECIPES);
 
-    const recipeWithImages = recipes.filter((recipe) => recipe.images && recipe.images.length > 0);
-    const recipeWithoutImages = recipes.filter(
-        (recipe) => !recipe.images || recipe.images.length === 0
-    );
-    const { pairs, remainder } = groupIntoPairs(recipeWithoutImages);
     const handleDelete = (id: string) => {
         setRecipeId(id);
         setShow(true);
     };
 
-    const imageCards = recipeWithImages.map((recipe) => {
+    const recipeCards = recipes.map((recipe) => {
+        if (recipe.images && recipe.images.length > 0) {
+            return (
+                <ImageRecipeCard
+                    recipe={recipe}
+                    hasEditPermission={hasPermission(user, recipe)}
+                    handleDelete={handleDelete}
+                />
+            );
+        }
         return (
-            <ImageRecipeCard
+            <RecipeCard
                 recipe={recipe}
                 hasEditPermission={hasPermission(user, recipe)}
                 handleDelete={handleDelete}
             />
         );
     });
-    const recipeCardPairs = pairs.map((pair) => {
-        const [first, second] = pair;
-        return (
-            <Wrap spacing='30px' direction='column'>
-                <WrapItem>
-                    <RecipeCard
-                        recipe={first}
-                        hasEditPermission={hasPermission(user, first)}
-                        handleDelete={handleDelete}
-                    />
-                </WrapItem>
-                <WrapItem>
-                    <RecipeCard
-                        recipe={second}
-                        hasEditPermission={hasPermission(user, second)}
-                        handleDelete={handleDelete}
-                    />
-                </WrapItem>
-            </Wrap>
-        );
-    });
-    const recipeCardRemainder = remainder
-        ? [
-              <RecipeCard
-                  recipe={remainder}
-                  hasEditPermission={hasPermission(user, remainder)}
-                  handleDelete={handleDelete}
-              />,
-          ]
-        : [];
-    const recipeCards = [...imageCards, ...recipeCardPairs, ...recipeCardRemainder];
 
     return (
         <InfiniteScroll
@@ -88,11 +76,16 @@ export function RecipeCardsContainer(props: Props) {
             hasMore={data?.recipeCount ? data?.recipeCount > recipes.length : false}
             loader={<h4 style={{ textAlign: 'center' }}>Loading...</h4>}
         >
-            <Wrap spacing='30px' padding={6} zIndex={1}>
-                {recipeCards.map((card, index) => (
-                    <WrapItem key={index}>{card}</WrapItem>
-                ))}
-            </Wrap>
+            <ResponsiveMasonry
+                columnsCountBreakPoints={breakPoints}
+                style={{ padding: `${padding}px` }}
+            >
+                <Masonry gutter={`${gutter}px`}>
+                    {recipeCards.map((card, index) => (
+                        <Box key={index}>{card}</Box>
+                    ))}
+                </Masonry>
+            </ResponsiveMasonry>
             <ConfirmDeleteModal show={show} setShow={setShow} recipeId={recipeId} />
         </InfiniteScroll>
     );

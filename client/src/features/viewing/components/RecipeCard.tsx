@@ -40,10 +40,10 @@ export function RecipeCard(props: Props) {
     );
 
     return (
-        <LinkBox>
+        <LinkBox display='flex' flexDirection='column' alignItems='center'>
             <Card
                 minH='10em'
-                width='18em'
+                width='18rem'
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >

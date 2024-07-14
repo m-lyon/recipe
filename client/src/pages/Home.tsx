@@ -19,7 +19,7 @@ export function Home() {
     }
 
     return (
-        <Container maxW='container.xl' pt='60px'>
+        <Container maxW='container.xl' pt='60px' px='16px'>
             <Grid
                 templateAreas={`'title'
                                 'recipes'`}

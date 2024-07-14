@@ -35,9 +35,9 @@ export function ImageRecipeCard(props: Props) {
     );
 
     return (
-        <LinkBox>
+        <LinkBox display='flex' flexDirection='column' alignItems='center'>
             <Card
-                width='18em'
+                width='18rem'
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
