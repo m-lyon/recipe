@@ -71,6 +71,7 @@ describe('Create Recipe Workflow', () => {
 
         // Act --------------------------------------------------
         expect(await screen.findByText('Recipes'));
+        expect(await screen.findByText('Logout'));
         await user.click(screen.getAllByLabelText('Create new recipe')[0]);
 
         // Expect ------------------------------------------------

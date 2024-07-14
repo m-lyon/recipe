@@ -126,6 +126,7 @@ describe('Tag Workflow', () => {
 
         // Act --------------------------------------------------
         expect(await screen.findByText('Recipes'));
+        expect(await screen.findByText('Logout'));
         await user.click(screen.getAllByLabelText('Create new recipe')[0]);
         expect(await screen.findByText('Ingredients')).not.toBeNull();
         await user.click(screen.getByLabelText('Add a tag'));
