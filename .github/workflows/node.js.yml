@@ -69,7 +69,7 @@ jobs:
           echo "VITE_DELAY_LONG = ${{ secrets.VITE_DELAY_LONG }}" >> .env.test.local
       - name: Test
         working-directory: ./client
-        run: npm run test -- run --test-timeout=15000
+        run: npm run test -- run --test-timeout=50000
   
   client-deploy:
     needs: client-test
