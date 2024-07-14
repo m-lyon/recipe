@@ -55,6 +55,8 @@ async function createRecipeData() {
         numServings: 4,
         isIngredient: false,
         owner: user._id,
+        createdAt: new Date(),
+        lastModified: new Date(),
     }).save();
     assert(recipe);
 }

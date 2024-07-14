@@ -335,6 +335,8 @@ describe('recipeUpdateById', () => {
             numServings: 4,
             isIngredient: false,
             owner: user._id,
+            createdAt: new Date(),
+            lastModified: new Date(),
         });
         const recipe = await newRecipe.save();
         const response = await updateRecipe(this, user, recipe._id, {
@@ -372,6 +374,8 @@ describe('recipeUpdateById', () => {
             numServings: 4,
             isIngredient: false,
             owner: user._id,
+            createdAt: new Date(),
+            lastModified: new Date(),
         });
         const recipe = await newRecipe.save();
         const response = await updateRecipe(this, user, recipe._id, {
@@ -418,6 +422,8 @@ describe('recipeUpdateById', () => {
             numServings: 4,
             isIngredient: false,
             owner: user._id,
+            createdAt: new Date(),
+            lastModified: new Date(),
         });
         const recipe = await newRecipe.save();
         const response = await updateRecipe(this, user, recipe._id, {
@@ -463,6 +469,8 @@ describe('recipeUpdateById', () => {
             numServings: 4,
             isIngredient: false,
             owner: user._id,
+            createdAt: new Date(),
+            lastModified: new Date(),
         });
         const recipe = await newRecipe.save();
         const response = await updateRecipe(this, user, recipe._id, { title: 'Chicken broth' });
@@ -501,6 +509,8 @@ describe('recipeUpdateById', () => {
             numServings: 4,
             isIngredient: false,
             owner: user._id,
+            createdAt: new Date(),
+            lastModified: new Date(),
         });
         const recipe = await recipeOne.save();
         const recipeTwo = new Recipe({
@@ -519,6 +529,8 @@ describe('recipeUpdateById', () => {
             numServings: 2,
             isIngredient: false,
             owner: user._id,
+            createdAt: new Date(),
+            lastModified: new Date(),
         });
         await recipeTwo.save();
         const response = await updateRecipe(this, user, recipe._id, { title: 'Chicken Broth' });
@@ -552,6 +564,8 @@ describe('recipeUpdateById', () => {
             numServings: 4,
             isIngredient: false,
             owner: user._id,
+            createdAt: new Date(),
+            lastModified: new Date(),
         });
         await recipe.save();
         await Tag.deleteOne({ _id: tag._id });
