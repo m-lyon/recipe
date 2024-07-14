@@ -25,34 +25,26 @@ export function CreateRecipe() {
             cache.modify({
                 fields: {
                     recipeMany(existingRecipes = [], { storeFieldName }) {
+                        let newRef;
                         if (storeFieldName === 'recipeMany:{"filter":{"isIngredient":true}}') {
                             if (!record.isIngredient) {
                                 return existingRecipes;
                             }
-                            try {
-                                const newRecipeRef = cache.writeFragment({
-                                    data: record,
-                                    fragment: RECIPE_INGR_FIELDS,
-                                    fragmentName: 'RecipeIngrFields',
-                                });
-                                return [...existingRecipes, newRecipeRef];
-                            } catch (error) {
-                                console.error('Error writing fragment to cache', error);
-                                return existingRecipes;
-                            }
-                        }
-                        try {
-                            const newRecipeRef = cache.writeFragment({
+                            newRef = cache.writeFragment({
+                                data: record,
+                                fragment: RECIPE_INGR_FIELDS,
+                                fragmentName: 'RecipeIngrFields',
+                            });
+                        } else {
+                            newRef = cache.writeFragment({
                                 data: record,
                                 fragment: RECIPE_FIELDS_SUBSET,
                                 fragmentName: 'RecipeFieldsSubset',
                             });
-                            return [...existingRecipes, newRecipeRef];
-                        } catch (error) {
-                            console.error('Error writing fragment to cache', error);
-                            return existingRecipes;
                         }
+                        return [newRef, ...existingRecipes];
                     },
+                    recipeCount: (existingCount) => existingCount + 1,
                 },
             });
         },

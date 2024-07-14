@@ -174,7 +174,6 @@ export async function populateRecipes() {
                     (await Tag.findOne({ value: 'dinner' }))._id,
                     (await Tag.findOne({ value: 'freezes' }))._id,
                 ],
-                calculatedTags: [],
                 ingredients: [
                     {
                         ingredient: (await Ingredient.findOne({ name: 'onion' }))._id,
@@ -264,6 +263,8 @@ export async function populateRecipes() {
                 owner: user._id,
                 numServings: 3,
                 isIngredient: true,
+                createdAt: '2023-09-01T00:00:00.000Z',
+                lastModified: '2023-09-01T00:00:00.000Z',
             },
             {
                 title: 'Vegetarian Chili',
@@ -303,6 +304,8 @@ export async function populateRecipes() {
                 owner: user._id,
                 numServings: 4,
                 isIngredient: false,
+                createdAt: '2023-09-02T00:00:00.000Z',
+                lastModified: '2023-09-02T00:00:00.000Z',
             },
         ];
 

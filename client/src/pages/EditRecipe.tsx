@@ -29,41 +29,30 @@ export function EditRecipe() {
             }
             cache.modify({
                 fields: {
-                    recipeMany(existingRecipes = [], { storeFieldName, readField }) {
+                    recipeMany(existing = [], { storeFieldName, readField }) {
+                        let newRef;
                         if (storeFieldName === 'recipeMany:{"filter":{"isIngredient":true}}') {
                             if (!record.isIngredient) {
-                                return existingRecipes;
+                                return existing;
                             }
-                            try {
-                                const newRecipeRef = cache.writeFragment({
-                                    data: record,
-                                    fragment: RECIPE_INGR_FIELDS,
-                                    fragmentName: 'RecipeIngrFields',
-                                });
-                                return [...existingRecipes, newRecipeRef];
-                            } catch (error) {
-                                console.error('Error writing fragment to cache', error);
-                                return existingRecipes;
-                            }
-                        }
-                        try {
-                            const newRecipeRef = cache.writeFragment({
+                            newRef = cache.writeFragment({
+                                data: record,
+                                fragment: RECIPE_INGR_FIELDS,
+                                fragmentName: 'RecipeIngrFields',
+                            });
+                        } else {
+                            newRef = cache.writeFragment({
                                 data: record,
                                 fragment: RECIPE_FIELDS_SUBSET,
                                 fragmentName: 'RecipeFieldsSubset',
                             });
-                            if (
-                                existingRecipes.some(
-                                    (ref: Reference) => readField('_id', ref) === record._id
-                                )
-                            ) {
-                                return existingRecipes;
-                            }
-                            return [...existingRecipes, newRecipeRef];
-                        } catch (error) {
-                            console.error('Error writing fragment to cache', error);
-                            return existingRecipes;
                         }
+                        if (
+                            existing.some((ref: Reference) => readField('_id', ref) === record._id)
+                        ) {
+                            return existing;
+                        }
+                        return [newRef, ...existing];
                     },
                 },
             });

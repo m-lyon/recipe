@@ -193,7 +193,7 @@ export const mockCountRecipes = {
     },
     result: {
         data: {
-            recipeCount: 2,
+            recipeCount: 3,
         },
     },
 };

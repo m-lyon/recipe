@@ -113,7 +113,29 @@ export const RecipeQuery = {
         .findByIds()
         .setDescription('Get multiple recipes by their IDs'),
     recipeOne: RecipeTC.mongooseResolvers.findOne().setDescription('Get a single recipe'),
-    recipeMany: RecipeTC.mongooseResolvers.findMany().setDescription('Get multiple recipes'),
+    recipeMany: RecipeTC.mongooseResolvers
+        .findMany()
+        .setDescription('Get multiple recipes')
+        .addSortArg({
+            name: 'CREATED_DESC',
+            value: { createdAt: -1 },
+            description: 'Sort by creation date in descending order',
+        })
+        .addSortArg({
+            name: 'CREATED_ASC',
+            value: { createdAt: 1 },
+            description: 'Sort by creation date in ascending order',
+        })
+        .addSortArg({
+            name: 'MODIFIED_DESC',
+            value: { lastModified: -1 },
+            description: 'Sort by last modified date in descending order',
+        })
+        .addSortArg({
+            name: 'MODIFIED_ASC',
+            value: { lastModified: 1 },
+            description: 'Sort by last modified date in ascending order',
+        }),
     recipeCount: RecipeTC.mongooseResolvers.count().setDescription('Count the number of recipes'),
 };
 
@@ -121,12 +143,15 @@ export const RecipeMutation = {
     recipeCreateOne: RecipeCreateTC.getResolver('createOne').wrapResolve((next) => (rp) => {
         rp.args.record.owner = rp.context.getUser();
         rp.args.record.titleIdentifier = generateRecipeIdentifier(rp.args.record.title);
+        rp.args.record.createdAt = new Date();
+        rp.args.record.lastModified = new Date();
         return next(rp);
     }),
     recipeUpdateById: RecipeModifyTC.getResolver('updateById').wrapResolve((next) => (rp) => {
         if (rp.args.record.title) {
             rp.args.record.titleIdentifier = generateRecipeIdentifier(rp.args.record.title);
         }
+        rp.args.record.lastModified = new Date();
         return next(rp);
     }),
     recipeRemoveById: RecipeModifyTC.mongooseResolvers

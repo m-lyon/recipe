@@ -71,7 +71,7 @@ export const GET_RECIPE = gql(`
 
 export const GET_RECIPES = gql(`
     query GetRecipes($offset: Int = 0, $limit: Int = 1000) {
-        recipeMany(skip: $offset, limit: $limit) {
+        recipeMany(skip: $offset, limit: $limit, sort: MODIFIED_DESC) {
             ...RecipeFieldsSubset
         }
     }

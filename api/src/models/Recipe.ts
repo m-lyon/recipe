@@ -106,7 +106,8 @@ export interface Recipe extends Document {
     source?: string;
     numServings: number;
     isIngredient: boolean;
-    // creationDate: Date; // TODO: Add this to the schema
+    createdAt: Date;
+    lastModified: Date;
 }
 
 const recipeSchema = new Schema<Recipe>({
@@ -164,6 +165,8 @@ const recipeSchema = new Schema<Recipe>({
     source: { type: String },
     numServings: { type: Number, required: true },
     isIngredient: { type: Boolean, required: true },
+    createdAt: { type: Date, required: true },
+    lastModified: { type: Date, required: true },
 });
 
 recipeSchema.pre('save', async function () {
@@ -192,11 +195,11 @@ export const RecipeIngredient = model<RecipeIngredientType>(
 export const RecipeIngredientTC = composeMongoose(RecipeIngredient);
 export const Recipe = model<Recipe>('Recipe', recipeSchema);
 export const RecipeModifyTC = composeMongoose(Recipe, {
-    removeFields: ['titleIdentifier', 'calculatedTags'],
+    removeFields: ['titleIdentifier', 'calculatedTags', 'createdAt', 'lastModified'],
     name: 'RecipeModify',
 });
 export const RecipeCreateTC = composeMongoose(Recipe, {
-    removeFields: ['owner', 'titleIdentifier', 'calculatedTags'],
+    removeFields: ['owner', 'titleIdentifier', 'calculatedTags', 'createdAt', 'lastModified'],
     name: 'RecipeCreate',
 });
 export const RecipeTC = composeMongoose(Recipe);

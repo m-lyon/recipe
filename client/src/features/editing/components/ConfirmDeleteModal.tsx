@@ -15,6 +15,11 @@ export function ConfirmDeleteModal(props: Props) {
         variables: { id: recipeId },
         update(cache) {
             cache.evict({ id: `Recipe:${recipeId}` });
+            cache.modify({
+                fields: {
+                    recipeCount: (existingCount) => existingCount - 1,
+                },
+            });
         },
     });
     return (
