@@ -175,7 +175,7 @@ export const mockGetRecipeNewAsIngr = {
 export const mockGetRecipes = {
     request: {
         query: GET_RECIPES,
-        variables: { offset: 0, limit: 10 },
+        variables: { offset: 0, limit: 25 },
     },
     result: {
         data: {

@@ -7,7 +7,7 @@ import { RecipeCardsContainer } from '@recipe/features/viewing';
 
 export function Home() {
     const { data, loading, error, fetchMore } = useQuery(GET_RECIPES, {
-        variables: { offset: 0, limit: 10 },
+        variables: { offset: 0, limit: 25 },
     });
 
     if (loading) {
@@ -41,7 +41,9 @@ export function Home() {
                     <RecipeCardsContainer
                         recipes={data!.recipeMany as Recipe[]}
                         fetchMore={() => {
-                            fetchMore({ variables: { offset: data!.recipeMany.length } });
+                            fetchMore({
+                                variables: { offset: data!.recipeMany.length, limit: 10 },
+                            });
                         }}
                     />
                 </GridItem>

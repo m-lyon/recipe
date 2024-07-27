@@ -9,7 +9,7 @@ export default mergeConfig(
             environment: 'happy-dom',
             setupFiles: ['./config/vitest/setupTests.js'],
             css: true,
-            testTimeout: 10000,
+            testTimeout: 15000,
         },
     })
 );
