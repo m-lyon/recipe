@@ -1,15 +1,15 @@
 import { useContext } from 'react';
-import { Container, Grid, GridItem, useBreakpointValue, useToast } from '@chakra-ui/react';
+import { Container, Grid, GridItem, useBreakpointValue } from '@chakra-ui/react';
 
-import { DELAY_LONG } from '@recipe/constants';
 import { UserContext } from '@recipe/features/user';
+import { useErrorToast } from '@recipe/common/hooks';
 import { Servings } from '@recipe/features/servings';
 import { ImageUpload } from '@recipe/features/images';
 import { IngredientsTabLayout } from '@recipe/layouts';
 import { EditableTagList } from '@recipe/features/tags';
 import { EnumRecipeIngredientType } from '@recipe/graphql/generated';
-import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
 import { StarRating, StarRatingProps } from '@recipe/features/rating';
+import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
 
 import { SubmitButton } from './SubmitButton';
 import { EditableNotes } from './EditableNotes';
@@ -33,7 +33,7 @@ interface Props {
 export function EditableRecipe(props: Props) {
     const { state, rating, handleSubmitMutation, submitButtonProps } = props;
     const [userContext] = useContext(UserContext);
-    const toast = useToast();
+    const toast = useErrorToast();
     const styles = useBreakpointValue(
         {
             base: {
@@ -71,30 +71,15 @@ export function EditableRecipe(props: Props) {
 
     const validate = () => {
         if (state.title.value === null) {
-            toast({
-                title: 'Please enter a title',
-                status: 'error',
-                position: 'top',
-                duration: DELAY_LONG,
-            });
+            toast({ title: 'Please enter a title', position: 'top' });
             return false;
         }
         if (state.ingredient.state.finished.length === 0) {
-            toast({
-                title: 'Please enter at least one ingredient',
-                status: 'error',
-                position: 'top',
-                duration: DELAY_LONG,
-            });
+            toast({ title: 'Please enter at least one ingredient', position: 'top' });
             return false;
         }
         if (state.instructions.items.length === 0) {
-            toast({
-                title: 'Please enter at least one instruction',
-                status: 'error',
-                position: 'top',
-                duration: DELAY_LONG,
-            });
+            toast({ title: 'Please enter at least one instruction', position: 'top' });
             return false;
         }
         return true;
@@ -123,12 +108,7 @@ export function EditableRecipe(props: Props) {
             };
         });
         if (userContext === false) {
-            toast({
-                title: 'Please log in to create a recipe',
-                status: 'error',
-                position: 'top',
-                duration: DELAY_LONG,
-            });
+            toast({ title: 'Please log in to create a recipe', position: 'top' });
             return;
         }
         const isIngredient = state.asIngredient.state.isIngredient;

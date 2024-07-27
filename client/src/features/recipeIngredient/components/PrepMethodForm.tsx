@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { ValidationError, object, string } from 'yup';
 import { ApolloError, Reference, useMutation } from '@apollo/client';
-import { Button, ButtonGroup, Stack, StackProps, useToast } from '@chakra-ui/react';
+import { Button, ButtonGroup, Stack, StackProps } from '@chakra-ui/react';
 
-import { DELAY_LONG } from '@recipe/constants';
+import { useErrorToast } from '@recipe/common/hooks';
 import { FloatingLabelInput } from '@recipe/common/components';
 import { PrepMethod, Scalars } from '@recipe/graphql/generated';
 import { DELETE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
@@ -47,7 +47,7 @@ export function PrepMethodForm(props: PrepMethoFormProps) {
         disabled,
         ...rest
     } = props;
-    const toast = useToast();
+    const toast = useErrorToast();
     const [hasError, setHasError] = useState(false);
     const [value, setValue] = useState('');
     const [isFocused, setIsFocused] = useState(false);
@@ -58,9 +58,7 @@ export function PrepMethodForm(props: PrepMethoFormProps) {
             toast({
                 title: 'Error deleting prep method',
                 description: formatError(error),
-                status: 'error',
                 position: 'top',
-                duration: DELAY_LONG,
             });
         },
         update: (cache, { data }) => {
@@ -73,9 +71,7 @@ export function PrepMethodForm(props: PrepMethoFormProps) {
             toast({
                 title: 'Error saving prep method',
                 description: formatError(error),
-                status: 'error',
                 position: 'top',
-                duration: DELAY_LONG,
             });
         },
         update: (cache, { data }) => {
@@ -129,9 +125,7 @@ export function PrepMethodForm(props: PrepMethoFormProps) {
                 toast({
                     title: 'Error saving prep method',
                     description: e.message,
-                    status: 'error',
                     position: 'top',
-                    duration: DELAY_LONG,
                 });
             }
         }

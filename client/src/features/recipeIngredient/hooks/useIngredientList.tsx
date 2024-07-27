@@ -1,9 +1,9 @@
 import { produce } from 'immer';
 import { useReducer } from 'react';
 import { useQuery } from '@apollo/client';
-import { useToast } from '@chakra-ui/react';
 
 import { isPlural } from '@recipe/utils/plural';
+import { useErrorToast } from '@recipe/common/hooks';
 import { GET_UNITS } from '@recipe/graphql/queries/unit';
 import { GetUnitsQuery } from '@recipe/graphql/generated';
 import { VALID_NUMBER_REGEX } from '@recipe/utils/number';
@@ -560,7 +560,7 @@ export function useIngredientList(): UseIngredientListReturnType {
         finished: [],
         editable: getEmptyIngredient(),
     });
-    const toast = useToast();
+    const toast = useErrorToast();
 
     const getIngredientActionHandler = (): IngredientActionHandler => {
         const editableActions: InternalActionHandler = {
@@ -658,12 +658,7 @@ export function useIngredientList(): UseIngredientListReturnType {
                 }
             } catch (e: unknown) {
                 if (e instanceof Error) {
-                    toast({
-                        title: 'Invalid input',
-                        description: e.message,
-                        status: 'error',
-                        duration: 2000,
-                    });
+                    toast({ title: 'Invalid input', description: e.message });
                 }
             }
         };

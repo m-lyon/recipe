@@ -1,8 +1,7 @@
-import { useToast } from '@chakra-ui/react';
 import { PopoverArrow, PopoverHeader } from '@chakra-ui/react';
 import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 
-import { DELAY_LONG } from '@recipe/constants';
+import { useSuccessToast } from '@recipe/common/hooks';
 import { CREATE_UNIT } from '@recipe/graphql/mutations/unit';
 import { CreateUnitMutation } from '@recipe/graphql/generated';
 
@@ -16,7 +15,7 @@ interface Props {
 }
 export function NewUnitPopover(props: Props) {
     const { fieldRef, onClose, handleSelect } = props;
-    const toast = useToast();
+    const toast = useSuccessToast();
 
     const handleComplete = (data: CreateUnitMutation) => {
         onClose();
@@ -27,9 +26,7 @@ export function NewUnitPopover(props: Props) {
         toast({
             title: 'Unit saved',
             description: `${data?.unitCreateOne?.record?.longSingular} saved`,
-            status: 'success',
             position: 'top',
-            duration: DELAY_LONG,
         });
     };
     return (

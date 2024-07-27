@@ -1,9 +1,9 @@
 import { number, object } from 'yup';
 import { Dispatch, SetStateAction } from 'react';
 import { AddIcon, MinusIcon } from '@chakra-ui/icons';
-import { Button, IconButton, useToast } from '@chakra-ui/react';
+import { Button, IconButton } from '@chakra-ui/react';
 
-import { DELAY_LONG } from '@recipe/constants';
+import { useErrorToast } from '@recipe/common/hooks';
 
 export interface ServingsProps {
     num: number;
@@ -11,7 +11,7 @@ export interface ServingsProps {
 }
 export function Servings(props: ServingsProps) {
     const { num, setNum } = props;
-    const toast = useToast();
+    const toast = useErrorToast();
     const schema = object().shape({
         numServings: number()
             .min(1, 'Number of servings must be a positive number')
@@ -32,13 +32,7 @@ export function Servings(props: ServingsProps) {
                         .validate({ numServings: num - 1 })
                         .then(() => setNum((num) => num - 1))
                         .catch((err) => {
-                            toast({
-                                title: 'Error',
-                                description: err.message,
-                                status: 'error',
-                                duration: DELAY_LONG,
-                                isClosable: false,
-                            });
+                            toast({ title: 'Error', description: err.message });
                         });
                 }}
             />
@@ -72,13 +66,7 @@ export function Servings(props: ServingsProps) {
                         .validate({ numServings: num + 1 })
                         .then(() => setNum((num) => num + 1))
                         .catch((err) => {
-                            toast({
-                                title: 'Error',
-                                description: err.message,
-                                status: 'error',
-                                duration: DELAY_LONG,
-                                isClosable: false,
-                            });
+                            toast({ title: 'Error', description: err.message });
                         });
                 }}
             />

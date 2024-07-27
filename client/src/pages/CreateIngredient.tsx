@@ -1,21 +1,20 @@
 import { useNavigate } from 'react-router-dom';
-import { Box, Heading, VStack, useToast } from '@chakra-ui/react';
+import { Box, Heading, VStack } from '@chakra-ui/react';
 
+import { useSuccessToast } from '@recipe/common/hooks';
 import { DELAY_LONG, ROOT_PATH } from '@recipe/constants';
 import { IngredientForm } from '@recipe/features/recipeIngredient';
 import { CreateIngredientMutation } from '@recipe/graphql/generated';
 import { CREATE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 
 export function CreateIngredient() {
-    const toast = useToast();
+    const toast = useSuccessToast();
     const navigate = useNavigate();
     const handleComplete = (data: CreateIngredientMutation) => {
         toast({
             title: 'Ingredient saved',
             description: `${data?.ingredientCreateOne?.record?.name} saved, redirecting to the home page.`,
-            status: 'success',
             position: 'top',
-            duration: DELAY_LONG,
         });
         return setTimeout(() => navigate(ROOT_PATH), DELAY_LONG);
     };

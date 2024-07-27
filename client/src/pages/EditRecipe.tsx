@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useToast } from '@chakra-ui/react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Reference, useMutation, useQuery } from '@apollo/client';
 
@@ -7,6 +6,7 @@ import { RecipeFromOne } from '@recipe/types';
 import { useViewStarRating } from '@recipe/features/rating';
 import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { RECIPE_FIELDS_SUBSET } from '@recipe/graphql/queries/recipe';
+import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 import { EditableRecipe, useRecipeState } from '@recipe/features/editing';
 import { dbIngredientToFinished } from '@recipe/features/recipeIngredient';
 import { GET_RECIPE, RECIPE_INGR_FIELDS } from '@recipe/graphql/queries/recipe';
@@ -15,7 +15,8 @@ import { RecipeIngredient, UpdateByIdRecipeModifyInput } from '@recipe/graphql/g
 import { DELETE_IMAGES, IMAGE_FIELDS, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
 
 export function EditRecipe() {
-    const toast = useToast();
+    const errorToast = useErrorToast();
+    const successToast = useSuccessToast();
     const state = useRecipeState();
     const [recipe, setRecipe] = useState<RecipeFromOne | null>(null);
     const navigate = useNavigate();
@@ -151,12 +152,10 @@ export function EditRecipe() {
                     );
                     state.images.setImages(images);
                 } catch (error) {
-                    toast({
+                    errorToast({
                         title: 'Error loading images',
                         description: (error as Error).message,
-                        status: 'error',
                         position: 'top',
-                        duration: DELAY_LONG,
                     });
                 }
             }
@@ -176,12 +175,10 @@ export function EditRecipe() {
             // Save Recipe
             await saveRecipe({ variables: { id: data!.recipeOne!._id, recipe } });
         } catch (error) {
-            return toast({
+            return errorToast({
                 title: 'Error saving recipe',
                 description: (error as Error).message,
-                status: 'error',
                 position: 'top',
-                duration: DELAY_LONG,
             });
         }
         try {
@@ -203,21 +200,17 @@ export function EditRecipe() {
                 });
             }
         } catch (error) {
-            toast({
+            errorToast({
                 title: 'Error uploading images, redirecting you to the home page',
                 description: (error as Error).message,
-                status: 'error',
                 position: 'top',
-                duration: DELAY_LONG,
             });
             return setTimeout(() => navigate(ROOT_PATH), DELAY_LONG);
         }
-        toast({
+        successToast({
             title: 'Recipe saved',
             description: 'Your recipe has been saved, redirecting you to the home page',
-            status: 'success',
             position: 'top',
-            duration: DELAY_SHORT,
         });
         setTimeout(() => navigate(ROOT_PATH), DELAY_SHORT);
     };

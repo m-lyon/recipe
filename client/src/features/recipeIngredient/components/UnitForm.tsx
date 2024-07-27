@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { ApolloError, Reference, useMutation } from '@apollo/client';
 import { FormControl, FormHelperText } from '@chakra-ui/react';
+import { Button, ButtonGroup, HStack } from '@chakra-ui/react';
+import { ApolloError, Reference, useMutation } from '@apollo/client';
 import { ValidationError, boolean, mixed, object, string } from 'yup';
-import { Button, ButtonGroup, HStack, useToast } from '@chakra-ui/react';
 import { Checkbox, Radio, RadioGroup, Stack, StackProps } from '@chakra-ui/react';
 
-import { DELAY_LONG } from '@recipe/constants';
+import { useErrorToast } from '@recipe/common/hooks';
 import { FloatingLabelInput } from '@recipe/common/components';
 import { UNIT_FIELDS_FULL } from '@recipe/graphql/queries/unit';
 import { EnumUnitCreatePreferredNumberFormat, Unit } from '@recipe/graphql/generated';
@@ -48,7 +48,7 @@ export function UnitForm(props: UnitFormProps) {
         disabled,
         ...rest
     } = props;
-    const toast = useToast();
+    const toast = useErrorToast();
     const [hasError, setHasError] = useState(false);
     const [shortSingular, setShortSingular] = useState('');
     const [shortPlural, setShortPlural] = useState('');
@@ -63,9 +63,7 @@ export function UnitForm(props: UnitFormProps) {
             toast({
                 title: 'Error deleting unit',
                 description: formatError(error),
-                status: 'error',
                 position: 'top',
-                duration: DELAY_LONG,
             });
         },
         update: (cache, { data }) => {
@@ -78,9 +76,7 @@ export function UnitForm(props: UnitFormProps) {
             toast({
                 title: 'Error saving unit',
                 description: formatError(error),
-                status: 'error',
                 position: 'top',
-                duration: DELAY_LONG,
             });
             setHasError(true);
         },
@@ -164,9 +160,7 @@ export function UnitForm(props: UnitFormProps) {
                 toast({
                     title: 'Error saving unit',
                     description: e.message,
-                    status: 'error',
                     position: 'top',
-                    duration: DELAY_LONG,
                 });
             }
         }

@@ -1,35 +1,30 @@
 import { useMutation } from '@apollo/client';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
-import { Tag, TagCloseButton, TagLabel, VStack, Wrap, WrapItem, useToast } from '@chakra-ui/react';
+import { Tag, TagCloseButton, TagLabel, VStack, Wrap, WrapItem } from '@chakra-ui/react';
 
-import { DELAY_LONG } from '@recipe/constants';
 import { REMOVE_TAG } from '@recipe/graphql/mutations/tag';
+import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 
 import { EditableTag } from './EditableTag';
 import { UseTagListReturnType } from '../hooks/useTagList';
 
 export function EditableTagList(props: UseTagListReturnType) {
     const { state, removeTag, actions, tagStr } = props;
-    const toast = useToast();
+    const errorToast = useErrorToast();
+    const successToast = useSuccessToast();
     const [removeTagMutation] = useMutation(REMOVE_TAG, {
         onCompleted: (data) => {
-            toast({
+            successToast({
                 title: 'Tag removed',
                 description: `Tag ${data?.tagRemoveById?.record?.value} removed`,
-                status: 'success',
                 position: 'top',
-                duration: DELAY_LONG,
-                isClosable: true,
             });
         },
         onError: (error) => {
-            toast({
+            errorToast({
                 title: 'Error removing tag',
                 description: error.message,
-                status: 'error',
                 position: 'top',
-                duration: DELAY_LONG,
-                isClosable: true,
             });
         },
         update: (cache, { data }) => {

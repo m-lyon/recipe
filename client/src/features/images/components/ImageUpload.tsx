@@ -1,6 +1,7 @@
+import { Box, Container, HStack } from '@chakra-ui/react';
 import { ChangeEvent, Dispatch, SetStateAction } from 'react';
-import { Box, Container, HStack, useToast } from '@chakra-ui/react';
 
+import { useErrorToast } from '@recipe/common/hooks';
 import { ImageUploadPreview, UploadBox } from '@recipe/features/images';
 
 export interface ImageUploadProps {
@@ -9,19 +10,14 @@ export interface ImageUploadProps {
 }
 export function ImageUpload(props: ImageUploadProps) {
     const { images, setImages } = props;
-    const toast = useToast();
+    const toast = useErrorToast();
     const handleAddFile = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) {
             return;
         }
         if (!/\.(jpeg|jpg|png)$/i.test(file.name) || file.type.split('/')[0] !== 'image') {
-            toast({
-                title: 'Invalid file type',
-                description: 'Please upload an image file',
-                status: 'error',
-                duration: 2000,
-            });
+            toast({ title: 'Invalid file type', description: 'Please upload an image file' });
             return;
         }
         setImages((prevImages) => [...prevImages, file]);

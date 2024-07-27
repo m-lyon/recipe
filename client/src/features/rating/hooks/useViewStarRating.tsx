@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { useToast } from '@chakra-ui/react';
 import { useLazyQuery, useMutation } from '@apollo/client';
 
 import { ADD_RATING } from '@recipe/graphql/mutations/rating';
+import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 import { GET_RATINGS, RATING_FIELDS } from '@recipe/graphql/queries/rating';
 
 export function useViewStarRating() {
-    const toast = useToast();
+    const errorToast = useErrorToast();
+    const successToast = useSuccessToast();
     const [recipeId, setRecipeId] = useState<string | undefined>(undefined);
     const [handleGetRatings, { data }] = useLazyQuery(GET_RATINGS);
     const [addRating] = useMutation(ADD_RATING, {
@@ -41,30 +42,15 @@ export function useViewStarRating() {
 
     const setRating = (rating: number) => {
         if (!recipeId) {
-            toast({
-                title: 'Error adding rating',
-                status: 'error',
-                position: 'top',
-                duration: 1500,
-            });
+            errorToast({ title: 'Error adding rating', position: 'top' });
             return;
         }
         addRating({ variables: { recipeId, rating } })
             .then(() => {
-                toast({
-                    title: 'Rating added',
-                    status: 'success',
-                    position: 'top',
-                    duration: 1500,
-                });
+                successToast({ title: 'Rating added', position: 'top' });
             })
             .catch(() => {
-                toast({
-                    title: 'Error adding rating',
-                    status: 'error',
-                    position: 'top',
-                    duration: 1500,
-                });
+                errorToast({ title: 'Error adding rating', position: 'top' });
             });
     };
     const avgRating =

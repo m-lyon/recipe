@@ -1,7 +1,7 @@
+import { PopoverArrow, PopoverHeader } from '@chakra-ui/react';
 import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
-import { PopoverArrow, PopoverHeader, useToast } from '@chakra-ui/react';
 
-import { DELAY_LONG } from '@recipe/constants';
+import { useSuccessToast } from '@recipe/common/hooks';
 import { CreatePrepMethodMutation } from '@recipe/graphql/generated';
 import { CREATE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 
@@ -15,7 +15,7 @@ interface Props {
 }
 export function NewPrepMethodPopover(props: Props) {
     const { fieldRef, onClose, handleSelect } = props;
-    const toast = useToast();
+    const toast = useSuccessToast();
 
     const handleComplete = (data: CreatePrepMethodMutation) => {
         onClose();
@@ -26,9 +26,7 @@ export function NewPrepMethodPopover(props: Props) {
         toast({
             title: 'Prep method saved',
             description: `${data?.prepMethodCreateOne?.record?.value} saved`,
-            status: 'success',
             position: 'top',
-            duration: DELAY_LONG,
         });
     };
 

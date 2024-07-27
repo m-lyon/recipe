@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
+import { HStack, Stack, StackProps } from '@chakra-ui/react';
 import { Button, ButtonGroup, Checkbox } from '@chakra-ui/react';
 import { ApolloError, Reference, useMutation } from '@apollo/client';
-import { HStack, Stack, StackProps, useToast } from '@chakra-ui/react';
 import { ValidationError, array, boolean, mixed, number, object, string } from 'yup';
 
-import { DELAY_LONG } from '@recipe/constants';
+import { useErrorToast } from '@recipe/common/hooks';
 import { FloatingLabelInput } from '@recipe/common/components';
 import { Ingredient, Scalars } from '@recipe/graphql/generated';
 import { DELETE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
@@ -49,6 +49,7 @@ export function IngredientForm(props: IngredientFormProps) {
         disabled,
         ...rest
     } = props;
+    const toast = useErrorToast();
     const [hasError, setHasError] = useState(false);
     const [name, setName] = useState('');
     const [pluralName, setPluralName] = useState('');
@@ -56,7 +57,6 @@ export function IngredientForm(props: IngredientFormProps) {
     const [density, setDensity] = useState('');
     const [vegan, setVegan] = useState(false);
     const [vegetarian, setVegetarian] = useState(false);
-    const toast = useToast();
     const [isFocused, setIsFocused] = useState(false);
     const [deleteIngredient] = useMutation(DELETE_INGREDIENT, {
         onCompleted: handleDelete,
@@ -65,9 +65,7 @@ export function IngredientForm(props: IngredientFormProps) {
             toast({
                 title: 'Error deleting ingredient',
                 description: formatError(error),
-                status: 'error',
                 position: 'top',
-                duration: DELAY_LONG,
             });
         },
         update: (cache, { data }) => {
@@ -81,9 +79,7 @@ export function IngredientForm(props: IngredientFormProps) {
             toast({
                 title: 'Error saving ingredient',
                 description: formatError(error),
-                status: 'error',
                 position: 'top',
-                duration: DELAY_LONG,
             });
         },
         update: (cache, { data }) => {
@@ -165,9 +161,7 @@ export function IngredientForm(props: IngredientFormProps) {
                 toast({
                     title: 'Error saving ingredient',
                     description: e.message,
-                    status: 'error',
                     position: 'top',
-                    duration: DELAY_LONG,
                 });
             }
         }

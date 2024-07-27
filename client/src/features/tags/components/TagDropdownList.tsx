@@ -1,15 +1,13 @@
 import { MutableRefObject } from 'react';
 import { matchSorter } from 'match-sorter';
 import { LayoutGroup } from 'framer-motion';
-import { useToast } from '@chakra-ui/react';
 import { useMutation } from '@apollo/client';
 
-import { DELAY_LONG } from '@recipe/constants';
 import { Tag } from '@recipe/graphql/generated';
 import { TAG_FIELDS } from '@recipe/graphql/queries/tag';
 import { DropdownItem } from '@recipe/common/components';
-import { useNavigatableList } from '@recipe/common/hooks';
 import { CREATE_TAG } from '@recipe/graphql/mutations/tag';
+import { useNavigatableList, useSuccessToast, useWarningToast } from '@recipe/common/hooks';
 
 import { FinishedTag, SetAndSubmit } from '../hooks/useTagList';
 
@@ -27,7 +25,8 @@ interface Props {
 }
 export function TagDropdownList(props: Props) {
     const { strValue, tags, setAndSubmit, inputRef, selectedTags } = props;
-    const toast = useToast();
+    const successToast = useSuccessToast();
+    const warningToast = useWarningToast();
     const [createNewTag] = useMutation(CREATE_TAG, {
         variables: {
             record: {
@@ -36,13 +35,10 @@ export function TagDropdownList(props: Props) {
         },
         onCompleted: (data) => {
             setAndSubmit(data!.tagCreateOne!.record!.value, data?.tagCreateOne?.record?._id, true);
-            toast({
+            successToast({
                 title: 'Tag created',
                 description: `Tag ${data?.tagCreateOne?.record?.value} created`,
-                status: 'success',
                 position: 'top',
-                duration: DELAY_LONG,
-                isClosable: true,
             });
         },
         update: (cache, { data }) => {
@@ -82,13 +78,10 @@ export function TagDropdownList(props: Props) {
 
     const handleOutsideEnter = () => {
         if (selectedTags.map((tag) => tag.value).includes(strValue)) {
-            toast({
+            warningToast({
                 title: 'Tag already exists',
                 description: `Cannot add duplicate tags.`,
-                status: 'warning',
                 position: 'top',
-                duration: DELAY_LONG,
-                isClosable: true,
             });
         } else {
             createNewTag();

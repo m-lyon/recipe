@@ -1,18 +1,18 @@
 import { useQuery } from '@apollo/client';
 import { useContext, useState } from 'react';
 import { FormLabel, Select } from '@chakra-ui/react';
-import { Box, FormControl, Heading, VStack, useToast } from '@chakra-ui/react';
+import { Box, FormControl, Heading, VStack } from '@chakra-ui/react';
 
-import { DELAY_LONG } from '@recipe/constants';
 import { UserContext } from '@recipe/features/user';
 import { Ingredient } from '@recipe/graphql/generated';
+import { useSuccessToast } from '@recipe/common/hooks';
 import { IngredientForm } from '@recipe/features/recipeIngredient';
 import { GET_INGREDIENTS } from '@recipe/graphql/queries/ingredient';
 import { MODIFY_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 
 export function EditIngredient() {
     const [userContext] = useContext(UserContext);
-    const toast = useToast();
+    const toast = useSuccessToast();
     const [currentIngredient, setCurrentIngredient] = useState<Ingredient>();
     const { data } = useQuery(GET_INGREDIENTS, {
         variables: {
@@ -62,16 +62,11 @@ export function EditIngredient() {
                                 toast({
                                     title: 'Ingredient saved',
                                     description: `${currentIngredient!.name} saved`,
-                                    status: 'success',
                                     position: 'top',
-                                    duration: DELAY_LONG,
                                 });
                             }}
                             handleDelete={() => {
-                                toast({
-                                    title: 'Ingredient deleted',
-                                    status: 'success',
-                                });
+                                toast({ title: 'Ingredient deleted' });
                                 setCurrentIngredient(undefined);
                             }}
                         />

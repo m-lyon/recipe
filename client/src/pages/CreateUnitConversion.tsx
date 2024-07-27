@@ -4,10 +4,11 @@ import { useMutation, useQuery } from '@apollo/client';
 import { FormLabel, Input, ListItem, Select } from '@chakra-ui/react';
 import { Dispatch, FormEvent, SetStateAction, useState } from 'react';
 import { List, Tag, TagCloseButton, TagLabel } from '@chakra-ui/react';
-import { Box, Button, FormControl, HStack, Heading, VStack, useToast } from '@chakra-ui/react';
+import { Box, Button, FormControl, HStack, Heading, VStack } from '@chakra-ui/react';
 
 import { GET_UNITS } from '@recipe/graphql/queries/unit';
-import { DELAY_LONG, DELAY_SHORT, ROOT_PATH } from '@recipe/constants';
+import { DELAY_SHORT, ROOT_PATH } from '@recipe/constants';
+import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 import { CREATE_CONVERSION_RULE } from '@recipe/graphql/mutations/unitConversion';
 import { CREATE_UNIT_CONVERSION } from '@recipe/graphql/mutations/unitConversion';
 import { REMOVE_CONVERSION_RULE } from '@recipe/graphql/mutations/unitConversion';
@@ -27,7 +28,7 @@ function CreateConversionRule(props: CreateConversionRuleProps) {
     const [unit, setUnit] = useState<Unit | undefined>(undefined);
     const [baseToUnitConversion, setbaseToUnitConversion] = useState(0);
     const [createConversionRule, { loading }] = useMutation(CREATE_CONVERSION_RULE);
-    const toast = useToast();
+    const toast = useErrorToast();
 
     const formSchema = object({
         baseUnitThreshold: number().required(),
@@ -54,13 +55,7 @@ function CreateConversionRule(props: CreateConversionRuleProps) {
             }
         } catch (err) {
             if (err instanceof Error) {
-                toast({
-                    title: 'An error occurred.',
-                    description: err.message,
-                    status: 'error',
-                    duration: DELAY_LONG,
-                    isClosable: true,
-                });
+                toast({ title: 'An error occurred.', description: err.message });
             }
         }
     };
@@ -125,7 +120,8 @@ export function CreateUnitConversion() {
     const [removeConversionRule] = useMutation(REMOVE_CONVERSION_RULE);
     const [createUnitConversion, { loading }] = useMutation(CREATE_UNIT_CONVERSION);
     const navigate = useNavigate();
-    const toast = useToast();
+    const errorToast = useErrorToast();
+    const successToast = useSuccessToast();
 
     const formSchema = object({
         baseUnit: string().required(),
@@ -140,25 +136,17 @@ export function CreateUnitConversion() {
                 rules: rules.map((r) => r._id),
             });
             await createUnitConversion({ variables: { record: { ...validated } } });
-            toast({
+            successToast({
                 title: 'Unit conversion created',
                 description:
                     'The unit conversion has been created, redirecting you to the home page',
-                status: 'success',
                 position: 'top',
-                duration: DELAY_SHORT,
             });
             setTimeout(() => navigate(ROOT_PATH), DELAY_SHORT);
         } catch (err) {
             if (err instanceof Error) {
                 console.error(err);
-                toast({
-                    title: 'An error occurred.',
-                    description: err.message,
-                    status: 'error',
-                    duration: 9000,
-                    isClosable: true,
-                });
+                errorToast({ title: 'An error occurred.', description: err.message });
             }
         }
     };
@@ -183,12 +171,9 @@ export function CreateUnitConversion() {
                             .catch((err) => {
                                 if (err instanceof Error) {
                                     console.error(err);
-                                    toast({
+                                    errorToast({
                                         title: 'An error occurred.',
                                         description: err.message,
-                                        status: 'error',
-                                        duration: 9000,
-                                        isClosable: true,
                                     });
                                 }
                             });

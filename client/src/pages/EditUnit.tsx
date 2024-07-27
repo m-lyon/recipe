@@ -1,18 +1,18 @@
 import { useQuery } from '@apollo/client';
 import { useContext, useState } from 'react';
 import { FormLabel, Select } from '@chakra-ui/react';
-import { Box, FormControl, Heading, VStack, useToast } from '@chakra-ui/react';
+import { Box, FormControl, Heading, VStack } from '@chakra-ui/react';
 
-import { DELAY_LONG } from '@recipe/constants';
 import { Unit } from '@recipe/graphql/generated';
 import { UserContext } from '@recipe/features/user';
+import { useSuccessToast } from '@recipe/common/hooks';
 import { GET_UNITS } from '@recipe/graphql/queries/unit';
 import { MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
 import { UnitForm } from '@recipe/features/recipeIngredient';
 
 export function EditUnit() {
     const [userContext] = useContext(UserContext);
-    const toast = useToast();
+    const toast = useSuccessToast();
     const [currentUnit, setCurrentUnit] = useState<Unit>();
     const { data } = useQuery(GET_UNITS, {
         variables: {
@@ -62,18 +62,11 @@ export function EditUnit() {
                                 toast({
                                     title: 'Unit saved',
                                     description: `${currentUnit?.longSingular} saved`,
-                                    status: 'success',
                                     position: 'top',
-                                    duration: DELAY_LONG,
                                 });
                             }}
                             handleDelete={() => {
-                                toast({
-                                    title: 'Unit deleted',
-                                    status: 'success',
-                                    position: 'top',
-                                    duration: DELAY_LONG,
-                                });
+                                toast({ title: 'Unit deleted', position: 'top' });
                                 setCurrentUnit(undefined);
                             }}
                         />

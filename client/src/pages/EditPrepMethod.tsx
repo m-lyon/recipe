@@ -1,10 +1,10 @@
 import { useQuery } from '@apollo/client';
 import { useContext, useState } from 'react';
 import { FormLabel, Select } from '@chakra-ui/react';
-import { Box, FormControl, Heading, VStack, useToast } from '@chakra-ui/react';
+import { Box, FormControl, Heading, VStack } from '@chakra-ui/react';
 
-import { DELAY_LONG } from '@recipe/constants';
 import { UserContext } from '@recipe/features/user';
+import { useSuccessToast } from '@recipe/common/hooks';
 import { PrepMethod } from '@recipe/graphql/generated';
 import { PrepMethodForm } from '@recipe/features/recipeIngredient';
 import { GET_PREP_METHODS } from '@recipe/graphql/queries/prepMethod';
@@ -12,7 +12,7 @@ import { MODIFY_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 
 export function EditPrepMethod() {
     const [userContext] = useContext(UserContext);
-    const toast = useToast();
+    const toast = useSuccessToast();
     const [currentPrepMethod, setCurrentPrepMethod] = useState<PrepMethod>();
     const { data } = useQuery(GET_PREP_METHODS, {
         variables: {
@@ -62,18 +62,11 @@ export function EditPrepMethod() {
                                 toast({
                                     title: 'Prep method saved',
                                     description: `${currentPrepMethod!.value} saved`,
-                                    status: 'success',
                                     position: 'top',
-                                    duration: DELAY_LONG,
                                 });
                             }}
                             handleDelete={() => {
-                                toast({
-                                    title: 'Prep method deleted',
-                                    status: 'success',
-                                    position: 'top',
-                                    duration: DELAY_LONG,
-                                });
+                                toast({ title: 'Prep method deleted', position: 'top' });
                                 setCurrentPrepMethod(undefined);
                             }}
                             minW={296}

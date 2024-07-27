@@ -1,19 +1,19 @@
 import { useContext, useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, FormControl, FormLabel, Input, useToast } from '@chakra-ui/react';
+import { Box, Button, FormControl, FormLabel, Input } from '@chakra-ui/react';
 
+import { ROOT_PATH } from '@recipe/constants';
+import { UserContext } from '@recipe/features/user';
+import { useErrorToast } from '@recipe/common/hooks';
 import { LOGIN } from '@recipe/graphql/mutations/user';
-
-import { ROOT_PATH } from '../constants';
-import { UserContext } from '../features/user/context/UserContext';
 
 export function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [login, { loading }] = useMutation(LOGIN);
     const navigate = useNavigate();
-    const toast = useToast();
+    const toast = useErrorToast();
     const setUserContext = useContext(UserContext)[1];
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -29,13 +29,7 @@ export function Login() {
         } catch (err) {
             if (err instanceof Error) {
                 console.error(err);
-                toast({
-                    title: 'An error occurred.',
-                    description: err.message,
-                    status: 'error',
-                    duration: 9000,
-                    isClosable: true,
-                });
+                toast({ title: 'An error occurred.', description: err.message });
             }
         }
     };

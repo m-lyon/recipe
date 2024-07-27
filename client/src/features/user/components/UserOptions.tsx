@@ -1,9 +1,10 @@
 import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Button, Stack } from '@chakra-ui/react';
 import { useMutation, useQuery } from '@apollo/client';
-import { Button, Stack, useToast } from '@chakra-ui/react';
 
 import { ROOT_PATH } from '@recipe/constants';
+import { useErrorToast } from '@recipe/common/hooks';
 import { LOGOUT } from '@recipe/graphql/mutations/user';
 import { CURRENT_USER } from '@recipe/graphql/queries/user';
 
@@ -13,7 +14,7 @@ export function UserOptions() {
     const [userContext, setUserContext] = useContext(UserContext);
     const [logout] = useMutation(LOGOUT);
     const navigate = useNavigate();
-    const toast = useToast();
+    const toast = useErrorToast();
     const { loading } = useQuery(CURRENT_USER, {
         pollInterval: 1000 * 60 * 5,
         onCompleted: (data) => {
@@ -25,13 +26,7 @@ export function UserOptions() {
         },
         onError: (err) => {
             console.log(err);
-            toast({
-                title: 'An error occurred.',
-                description: err.message,
-                status: 'error',
-                duration: 9000,
-                isClosable: true,
-            });
+            toast({ title: 'An error occurred.', description: err.message });
         },
     });
 
@@ -45,13 +40,7 @@ export function UserOptions() {
         } catch (err) {
             if (err instanceof Error) {
                 console.error(err);
-                toast({
-                    title: 'An error occurred.',
-                    description: err.message,
-                    status: 'error',
-                    duration: 9000,
-                    isClosable: true,
-                });
+                toast({ title: 'An error occurred.', description: err.message });
             }
         }
     };

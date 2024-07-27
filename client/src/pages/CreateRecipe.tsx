@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { useToast } from '@chakra-ui/react';
 import { useMutation } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
 
 import { ADD_RATING } from '@recipe/graphql/mutations/rating';
 import { CREATE_RECIPE } from '@recipe/graphql/mutations/recipe';
+import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
 import { DELAY_LONG, DELAY_SHORT, ROOT_PATH } from '@recipe/constants';
 import { EditableRecipe, useRecipeState } from '@recipe/features/editing';
@@ -12,7 +12,8 @@ import { IMAGE_FIELDS, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
 import { RECIPE_FIELDS_SUBSET, RECIPE_INGR_FIELDS } from '@recipe/graphql/queries/recipe';
 
 export function CreateRecipe() {
-    const toast = useToast();
+    const errorToast = useErrorToast();
+    const successToast = useSuccessToast();
     const state = useRecipeState();
     const navigate = useNavigate();
     const [rating, setRating] = useState<number>(0);
@@ -91,12 +92,10 @@ export function CreateRecipe() {
             const result = await createRecipe({ variables: { recipe } });
             recipeId = result.data?.recipeCreateOne?.record?._id;
         } catch (error) {
-            return toast({
+            return errorToast({
                 title: 'Error creating recipe',
                 description: (error as Error).message,
-                status: 'error',
                 position: 'top',
-                duration: DELAY_LONG,
             });
         }
         try {
@@ -105,12 +104,10 @@ export function CreateRecipe() {
                 await addRating({ variables: { recipeId, rating } });
             }
         } catch (error) {
-            toast({
+            errorToast({
                 title: 'Error adding rating to recipe, redirecting you to the home page',
                 description: (error as Error).message,
-                status: 'error',
                 position: 'top',
-                duration: DELAY_LONG,
             });
             return setTimeout(() => navigate(ROOT_PATH), DELAY_LONG);
         }
@@ -121,21 +118,17 @@ export function CreateRecipe() {
                 await uploadImages({ variables: { recipeId, images: state.images.images } });
             }
         } catch (error) {
-            toast({
+            errorToast({
                 title: 'Error uploading images, redirecting you to the home page',
                 description: (error as Error).message,
-                status: 'error',
                 position: 'top',
-                duration: DELAY_LONG,
             });
             return setTimeout(() => navigate(ROOT_PATH), DELAY_LONG);
         }
-        toast({
+        successToast({
             title: 'Recipe created',
             description: 'Your recipe has been created, redirecting you to the home page',
-            status: 'success',
             position: 'top',
-            duration: 1500,
         });
         setTimeout(() => navigate(ROOT_PATH), DELAY_SHORT);
     };
