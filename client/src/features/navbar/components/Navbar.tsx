@@ -201,7 +201,7 @@ function MobileNavItem({ label, ariaLabel, children, href, parentOnToggle }: Nav
                 px={4}
                 as={ChakraLink}
                 aria-label={ariaLabel}
-                href={href ?? '#'}
+                href={children ? undefined : href}
                 justify='space-between'
                 align='center'
                 _hover={{ textDecoration: 'none' }}
@@ -258,7 +258,6 @@ interface NavItem {
     href?: string;
     parentOnToggle?: () => void;
 }
-
 const USER_NAV_ITEMS: Array<NavItem> = [
     {
         label: 'Create',
