@@ -81,7 +81,7 @@ UnitConversionTC.addRelation('baseUnit', {
     prepareArgs: {
         _id: (source) => source.baseUnit,
     },
-    projection: { unit: true },
+    projection: { baseUnit: true },
 });
 
 UnitConversionTC.addRelation('rules', {

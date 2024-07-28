@@ -21,9 +21,21 @@ export async function startServer() {
 
 export async function stopServer() {
     try {
-        await mongoose.connection.close();
-        await this.mongoServer.stop();
-        await this.apolloServer.stop();
+        if (mongoose.connection) {
+            console.log('closing connection');
+            await mongoose.connection.close();
+            console.log('connection closed');
+        }
+        if (this.mongoServer) {
+            console.log('closing mongo');
+            await this.mongoServer.stop();
+            console.log('mongo closed');
+        }
+        if (this.apolloServer) {
+            console.log('closing apollo');
+            await this.apolloServer.stop();
+            console.log('apollo closed');
+        }
     } catch (error) {
         console.log(error);
         assert.fail('Connection not closed');
