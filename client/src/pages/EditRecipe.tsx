@@ -121,6 +121,7 @@ export function EditRecipe() {
             });
             state.ingredient.actionHandler.setFinishedArray(ingredients);
             state.instructions.actionHandler.setItems(recipe.instructions as string[]);
+            state.instructions.actionHandler.addItem();
             if (recipe.notes) {
                 state.notes.setNotes(recipe.notes);
             }
