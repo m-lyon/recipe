@@ -9,7 +9,7 @@ import { ROOT_PATH } from '@recipe/constants';
 import { UserContext, UserOptions } from '@recipe/features/user';
 
 export function Navbar() {
-    const { isOpen, onToggle } = useDisclosure();
+    const { isOpen, onToggle, onClose } = useDisclosure();
     const [userContext] = useContext(UserContext);
     const isLoggedIn = userContext !== null && userContext !== false;
 
@@ -54,6 +54,7 @@ export function Navbar() {
                             to={ROOT_PATH}
                             as={ReactRouterLink}
                             aria-label='Navigate to home page'
+                            onClick={onClose}
                         >
                             Home
                         </ChakraLink>
@@ -195,36 +196,40 @@ function MobileNavItem({ label, ariaLabel, children, href, parentOnToggle }: Nav
     const { isOpen, onToggle } = useDisclosure();
 
     return (
-        <Stack spacing={4} onClick={children && onToggle}>
-            <Flex
-                py={2}
-                px={4}
-                as={ChakraLink}
-                aria-label={ariaLabel}
-                href={children ? undefined : href}
-                justify='space-between'
-                align='center'
+        <Stack spacing={0} onClick={children && onToggle}>
+            <ChakraLink
                 _hover={{ textDecoration: 'none' }}
-                background={useColorModeValue('gray.100', 'gray.900')}
-                minH='60px'
+                as={children ? undefined : ReactRouterLink}
+                to={children ? undefined : href}
             >
-                <Text fontWeight={500} color={useColorModeValue('gray.600', 'gray.200')}>
-                    {label}
-                </Text>
-                {children && (
-                    <Icon
-                        as={ChevronDownIcon}
-                        transition='all .25s ease-in-out'
-                        transform={isOpen ? 'rotate(180deg)' : ''}
-                        w={6}
-                        h={6}
-                    />
-                )}
-            </Flex>
+                <Flex
+                    py={2}
+                    px={4}
+                    aria-label={ariaLabel}
+                    justify='space-between'
+                    align='center'
+                    background={useColorModeValue('gray.100', 'gray.900')}
+                    minH='60px'
+                >
+                    <Text fontWeight={500} color={useColorModeValue('gray.600', 'gray.200')}>
+                        {label}
+                    </Text>
+                    {children && (
+                        <Icon
+                            as={ChevronDownIcon}
+                            transition='all .25s ease-in-out'
+                            transform={isOpen ? 'rotate(180deg)' : ''}
+                            w={6}
+                            h={6}
+                        />
+                    )}
+                </Flex>
+            </ChakraLink>
 
             <Collapse in={isOpen} animateOpacity style={{ marginTop: '0!important' }}>
                 <Stack
                     mt={2}
+                    mb={2}
                     pl={4}
                     borderLeft={1}
                     borderStyle='solid'
@@ -240,6 +245,7 @@ function MobileNavItem({ label, ariaLabel, children, href, parentOnToggle }: Nav
                                 aria-label={child.ariaLabel}
                                 as={ReactRouterLink}
                                 onClick={parentOnToggle}
+                                _hover={{ textDecoration: 'none' }}
                             >
                                 {child.label}
                             </ChakraLink>
