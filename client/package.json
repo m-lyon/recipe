@@ -13,6 +13,7 @@
     "test-ui": "vitest --ui",
     "coverage": "vitest run --coverage",
     "generate": "npm run rm-generated && NODE_ENV=development graphql-codegen",
+    "test:generate": "npm run rm-generated && NODE_ENV=test graphql-codegen",
     "rm-generated": "[ -d src/__generated__/ ] && rm -r src/__generated__/ || true",
     "vitest-preview": "vitest-preview"
   },
