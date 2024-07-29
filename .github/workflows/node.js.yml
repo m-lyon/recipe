@@ -48,9 +48,9 @@ jobs:
           echo "VITE_DELAY_LONG = ${{ secrets.VITE_DELAY_LONG }}" >> .env.development.local
       - name: Start server in development mode
         working-directory: ./api
-        run: npm run dev &
+        run: NODE_ENV=development npm run start &
       - name: Wait for server compilation
-        run: sleep 60s
+        run: sleep 10s
       - name: Generate GraphQL types
         working-directory: ./client
         run: npm run generate

@@ -10,9 +10,9 @@ env:
   NODE_VERSION: 18.x
 
 jobs:
-  deploy-api:
+  test:
     runs-on: ubuntu-latest
-    environment: development
+    environment: test
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -31,6 +31,10 @@ jobs:
         working-directory: ./api
         run: npm install
 
+      - name: Install client dependencies
+        working-directory: ./client
+        run: npm install
+
       - name: Load MongoDB binary cache
         id: cache-mongodb-binaries
         uses: actions/cache@v3
@@ -45,9 +49,100 @@ jobs:
       - name: Create API environment file
         working-directory: ./api
         run: |
-          echo "HTTPS = ${{ secrets.HTTPS }}" > .env.development.local
-          echo "MONGODB_URI = ${{ secrets.MONGODB_URI }}" >> .env.development.local
-          echo "PORT = ${{ secrets.PORT }}" >> .env.development.local
-          echo "SESSION_SECRET = ${{ secrets.SESSION_SECRET }}" >> .env.development.local
-          echo "SESSION_URI = ${{ secrets.SESSION_URI }}" >> .env.development.local
-          echo "WHITELISTED_DOMAINS = ${{ secrets.WHITELISTED_DOMAINS }}" >> .env.development.local
+          echo "HTTPS = ${{ secrets.HTTPS }}" > .env.test.local
+          echo "MONGODB_URI = ${{ secrets.MONGODB_URI }}" >> .env.test.local
+          echo "PORT = ${{ secrets.PORT }}" >> .env.test.local
+          echo "SESSION_SECRET = ${{ secrets.SESSION_SECRET }}" >> .env.test.local
+          echo "SESSION_URI = ${{ secrets.SESSION_URI }}" >> .env.test.local
+          echo "WHITELISTED_DOMAINS = ${{ secrets.WHITELISTED_DOMAINS }}" >> .env.test.local
+
+      - name: Create client environment file
+        working-directory: ./client
+        run: |
+          echo "VITE_GRAPHQL_ENDPOINT = ${{ secrets.VITE_GRAPHQL_ENDPOINT }}" > .env.test.local
+          echo "VITE_ROOT_PATH = ${{ secrets.VITE_ROOT_PATH }}" >> .env.test.local
+          echo "VITE_DELAY_SHORT = ${{ secrets.VITE_DELAY_SHORT }}" >> .env.test.local
+          echo "VITE_DELAY_LONG = ${{ secrets.VITE_DELAY_LONG }}" >> .env.test.local
+
+      - name: Start server in development mode
+        working-directory: ./api
+        run: NODE_ENV=test npm run start &
+
+      - name: Wait for server start
+        run: sleep 3s
+
+      - name: Generate GraphQL types
+        working-directory: ./client
+        run: npm run generate
+
+      - name: Test client
+        working-directory: ./client
+        run: npm run test -- run
+
+      - name: Upload GraphQL types
+        uses: actions/upload-artifact@v2
+        with:
+          name: graphql-types
+          path: ./client/src/__generated__/
+
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install API dependencies
+        working-directory: ./api
+        run: npm install
+
+      - name: Install client dependencies
+        working-directory: ./client
+        run: npm install
+
+      - name: Create client environment file
+        working-directory: ./client
+        run: |
+          echo "VITE_GRAPHQL_ENDPOINT = ${{ secrets.VITE_GRAPHQL_ENDPOINT }}" > .env.production.local
+          echo "VITE_ROOT_PATH = ${{ secrets.VITE_ROOT_PATH }}" >> .env.production.local
+          echo "VITE_DELAY_SHORT = ${{ secrets.VITE_DELAY_SHORT }}" >> .env.production.local
+          echo "VITE_DELAY_LONG = ${{ secrets.VITE_DELAY_LONG }}" >> .env.production.local
+
+      - name: Compile API
+        working-directory: ./api
+        run: npm run compile
+
+      - name: Download GraphQL types
+        uses: actions/download-artifact@v2
+        with:
+          name: graphql-types
+
+      - name: Compile client
+        working-directory: ./client
+        run: npm run build
+
+      - name: Deploy API to server
+        uses: easingthemes/ssh-deploy@v2
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-avzr"
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
+          TARGET: ${{ secrets.API_REMOTE_TARGET }}
+
+      - name: Deploy client to server
+        uses: easingthemes/ssh-deploy@v2
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-avzr"
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
+          TARGET: ${{ secrets.CLIENT_REMOTE_TARGET }}
