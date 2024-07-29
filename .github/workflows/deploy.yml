@@ -100,7 +100,7 @@ jobs:
 
       - name: Install API dependencies
         working-directory: ./api
-        run: npm install
+        run: npm install --production
 
       - name: Install client dependencies
         working-directory: ./client
@@ -132,7 +132,8 @@ jobs:
         uses: easingthemes/ssh-deploy@v2
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          ARGS: "-avzr"
+          ARGS: "-avzr --delete"
+          SOURCE: ./api/
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
@@ -142,7 +143,8 @@ jobs:
         uses: easingthemes/ssh-deploy@v2
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          ARGS: "-avzr"
+          ARGS: "-avzr --delete"
+          SOURCE: ./client/dist/
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
