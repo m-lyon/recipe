@@ -116,7 +116,7 @@ jobs:
 
       - name: Compile API
         working-directory: ./api
-        run: npm run compile -- -p tsconfig.prod.json
+        run: npm run prod:compile
 
       - name: Download GraphQL types
         uses: actions/download-artifact@v2
