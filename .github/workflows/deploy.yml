@@ -132,12 +132,32 @@ jobs:
         uses: easingthemes/ssh-deploy@v2
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          ARGS: "-avzr --delete"
-          SOURCE: ./api/dist/
+          ARGS: "-avzr --delete --include='dist/' --include='dist/**' --include='package.json' --include='package-lock.json' --exclude='*'"
+          SOURCE: ./api/
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
           TARGET: ${{ secrets.API_REMOTE_TARGET }}
+
+      - name: Install API dependencies on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.REMOTE_PORT }}
+          script: |
+            cd ${{ secrets.API_REMOTE_TARGET }}
+            npm ci --production
+
+      - name: Start API server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.REMOTE_PORT }}
+          script: sudo systemctl restart recipe
 
       - name: Deploy client to server
         uses: easingthemes/ssh-deploy@v2
