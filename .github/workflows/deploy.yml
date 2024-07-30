@@ -7,7 +7,7 @@ on:
 
 env:
   MONGODB_VERSION: "4.4.18"
-  NODE_VERSION: 18.x
+  NODE_VERSION: 18
 
 jobs:
   test:
@@ -80,7 +80,7 @@ jobs:
         run: npm run test -- run
 
       - name: Upload GraphQL types
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: graphql-types
           path: ./client/src/__generated__/
@@ -119,7 +119,7 @@ jobs:
         run: npm run prod:compile
 
       - name: Download GraphQL types
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: graphql-types
           path: ./client/src/__generated__/
