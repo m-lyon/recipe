@@ -116,7 +116,7 @@ jobs:
 
       - name: Compile API
         working-directory: ./api
-        run: npm run compile
+        run: npm run compile -- -p tsconfig.prod.json
 
       - name: Download GraphQL types
         uses: actions/download-artifact@v2
@@ -133,7 +133,7 @@ jobs:
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           ARGS: "-avzr --delete"
-          SOURCE: ./api/
+          SOURCE: ./api/dist/
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
