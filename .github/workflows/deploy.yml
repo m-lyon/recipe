@@ -15,7 +15,7 @@ jobs:
     environment: test
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup node
         uses: actions/setup-node@v4
@@ -37,7 +37,7 @@ jobs:
 
       - name: Load MongoDB binary cache
         id: cache-mongodb-binaries
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache/mongodb-binaries
           key: ${{ runner.os }}-mongodb-${{ env.MONGODB_VERSION }}
@@ -91,7 +91,7 @@ jobs:
     needs: test
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup node
         uses: actions/setup-node@v4
@@ -129,7 +129,7 @@ jobs:
         run: npm run build
 
       - name: Deploy API to server
-        uses: easingthemes/ssh-deploy@v2
+        uses: easingthemes/ssh-deploy@v5.1.0
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           ARGS: "-avzr --delete --include='dist/' --include='dist/**' --include='package.json' --include='package-lock.json' --exclude='*'"
@@ -160,7 +160,7 @@ jobs:
           script: sudo systemctl restart recipe
 
       - name: Deploy client to server
-        uses: easingthemes/ssh-deploy@v2
+        uses: easingthemes/ssh-deploy@v5.1.0
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           ARGS: "-avzr --delete"
