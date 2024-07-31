@@ -8,14 +8,14 @@ import { GET_UNITS } from '@recipe/graphql/queries/unit';
 import { GetUnitsQuery } from '@recipe/graphql/generated';
 import { VALID_NUMBER_REGEX } from '@recipe/utils/number';
 import { useUnitConversion } from '@recipe/features/servings';
-import { FinishedPrepMethod, InputState } from '@recipe/types';
 import { GET_INGREDIENTS } from '@recipe/graphql/queries/ingredient';
 import { GET_PREP_METHODS } from '@recipe/graphql/queries/prepMethod';
 import { getEditableRecipeIngredientStr } from '@recipe/utils/formatting';
+import { FinishedIngredient, FinishedRecipeIngredient } from '@recipe/types';
+import { FinishedPrepMethod, FinishedUnit, InputState } from '@recipe/types';
 import { ingredientDisplayStr, unitDisplayValue } from '@recipe/utils/formatting';
 import { EditableRecipeIngredient, FinishedQuantity, Quantity } from '@recipe/types';
 import { RecipeFromIngredientsMany, RecipeIngredientQueryData } from '@recipe/types';
-import { FinishedIngredient, FinishedRecipeIngredient, FinishedUnit } from '@recipe/types';
 import { Ingredient, PrepMethod, RecipeIngredient, Unit } from '@recipe/graphql/generated';
 
 export const DEFAULT_INGREDIENT_STR = 'Enter ingredient';
