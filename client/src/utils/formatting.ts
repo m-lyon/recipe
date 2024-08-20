@@ -1,5 +1,5 @@
+import { Unit } from '@recipe/graphql/generated';
 import { LikeFinishedRecipeIngredient } from '@recipe/types';
-import { Unit, UnitCreate } from '@recipe/graphql/generated';
 import { EditableRecipeIngredient, FinishedQuantity } from '@recipe/types';
 import { FinishedIngredient, FinishedPrepMethod, FinishedUnit } from '@recipe/types';
 
@@ -21,11 +21,7 @@ function getEditableQuantityStr(item: EditableRecipeIngredient): string {
     }
     return getFinishedQuantityStr(item.quantity);
 }
-export function unitDisplayValue(
-    quantity: FinishedQuantity,
-    unit: Unit | UnitCreate,
-    short: boolean
-): string {
+export function unitDisplayValue(quantity: FinishedQuantity, unit: Unit, short: boolean): string {
     if (short) {
         return isPlural(quantity) ? unit.shortPlural : unit.shortSingular;
     }
@@ -58,10 +54,8 @@ export function ingredientDisplayStr(
 ): string {
     const plural =
         (isPlural(quantity) && unit === null) ||
-        ((ingredient.__typename === 'Ingredient' || ingredient.__typename === 'IngredientCreate') &&
-            ingredient.isCountable &&
-            unit !== null);
-    if (ingredient.__typename === 'Ingredient' || ingredient.__typename === 'IngredientCreate') {
+        (ingredient.__typename === 'Ingredient' && ingredient.isCountable && unit !== null);
+    if (ingredient.__typename === 'Ingredient') {
         return plural ? ingredient.pluralName : ingredient.name;
     } else if (ingredient.__typename === 'Recipe') {
         return plural ? ingredient.pluralTitle!.toLowerCase() : ingredient.title.toLowerCase();
