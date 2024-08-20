@@ -37,6 +37,7 @@ export const RECIPE_FIELDS_FULL = gql(`
         ...RecipeFieldsSubset
         instructions
         ingredients {
+            _id
             type
             quantity
             unit {
@@ -47,6 +48,24 @@ export const RECIPE_FIELDS_FULL = gql(`
                     _id
                     title
                     pluralTitle
+                    ingredients {
+                        _id
+                        type
+                        quantity
+                        unit {
+                            ...UnitFields
+                        }
+                        ingredient {
+                            ... on Ingredient {
+                                ...IngredientFields
+                            }
+                        }
+                        prepMethod {
+                            ...PrepMethodFields
+                        }
+                    }
+                    instructions
+                    numServings
                 }
                 ... on Ingredient {
                     ...IngredientFields

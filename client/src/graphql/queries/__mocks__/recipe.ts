@@ -1,10 +1,15 @@
-import { mockRecipeIdNewAsIngr } from '@recipe/graphql/__mocks__/ids';
+import { mockRecipeIngredientIdOne } from '@recipe/graphql/__mocks__/ids';
+import { mockRecipeIngredientIdTwo } from '@recipe/graphql/__mocks__/ids';
+import { mockRecipeIngredientIdFour } from '@recipe/graphql/__mocks__/ids';
+import { mockRecipeIngredientIdFive } from '@recipe/graphql/__mocks__/ids';
+import { mockRecipeIngredientIdThree } from '@recipe/graphql/__mocks__/ids';
 import { mockTitleOne, mockTitleTwo } from '@recipe/graphql/__mocks__/common';
 import { mockRecipeIdNew, mockRecipeIdOne } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIdThree, mockRecipeIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { EnumRecipeIngredientType, GetRecipesQuery } from '@recipe/graphql/generated';
 import { mockImageNew, mockImageTwo } from '@recipe/graphql/mutations/__mocks__/image';
 import { COUNT_RECIPES, GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
+import { mockRecipeIdNewAsIngr, mockRecipeIngredientIdSix } from '@recipe/graphql/__mocks__/ids';
 
 import { mockAdmin } from './user';
 import { mockApple } from './ingredient';
@@ -22,6 +27,7 @@ export const mockRecipeOne = {
     ingredients: [
         {
             // normal ingredient
+            _id: mockRecipeIngredientIdOne,
             type: 'ingredient' as EnumRecipeIngredientType,
             quantity: '1',
             unit: mockTeaspoon,
@@ -30,6 +36,7 @@ export const mockRecipeOne = {
         },
         {
             // ingredient with no unit
+            _id: mockRecipeIngredientIdTwo,
             type: 'ingredient' as EnumRecipeIngredientType,
             quantity: '1',
             unit: null,
@@ -38,6 +45,7 @@ export const mockRecipeOne = {
         },
         {
             // ingredient with no unit and plural quantity
+            _id: mockRecipeIngredientIdThree,
             type: 'ingredient' as EnumRecipeIngredientType,
             quantity: '2',
             unit: null,
@@ -46,6 +54,7 @@ export const mockRecipeOne = {
         },
         {
             // ingredient with fraction quantity
+            _id: mockRecipeIngredientIdFour,
             type: 'ingredient' as EnumRecipeIngredientType,
             quantity: '1/3',
             unit: mockCup,
@@ -54,6 +63,7 @@ export const mockRecipeOne = {
         },
         {
             // ingredient with no prep method
+            _id: mockRecipeIngredientIdFive,
             type: 'ingredient' as EnumRecipeIngredientType,
             quantity: '1',
             unit: mockOunce,
@@ -100,6 +110,7 @@ export const mockRecipeNew = {
     instructions: ['Instr #1.', 'Instr #2.'],
     ingredients: [
         {
+            _id: mockRecipeIngredientIdSix,
             type: 'ingredient' as EnumRecipeIngredientType,
             quantity: '2',
             unit: mockTeaspoon,

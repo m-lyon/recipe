@@ -2,8 +2,10 @@ import { useMeasure } from 'react-use';
 import { Box, Flex, Spacer, VStack, useBreakpointValue } from '@chakra-ui/react';
 
 import { TagList } from '@recipe/features/tags';
+import { tagsHeight } from '@recipe/features/tags';
 import { Recipe, Tag } from '@recipe/graphql/generated';
 import { ImageViewerRecipe } from '@recipe/features/images';
+import { imageCardWidth, sliderBarHeight } from '@recipe/features/images';
 
 import { Source } from './Source';
 import { InstructionList } from './InstructionList';
@@ -28,6 +30,9 @@ export function InstructionsTab(props: Props) {
         { fallback: 'md' }
     );
 
+    const boxHeight = (height ? height : 0) - tagsHeight - instrSpacing;
+    const numImages = images ? images.length : 0;
+
     return (
         <Flex direction='column' justifyContent='space-between' height='100%'>
             <Flex direction='row'>
@@ -45,11 +50,19 @@ export function InstructionsTab(props: Props) {
                                 displayBoxMargin={true}
                             />
                         )}
-                        <InstructionList
-                            instructions={instructions}
-                            numImages={images ? images.length : 0}
-                            imageHeight={height}
-                        />
+                        <Box pr='24px'>
+                            {styles?.showImages && numImages ? (
+                                <Box
+                                    h={numImages > 1 ? boxHeight + sliderBarHeight : boxHeight}
+                                    w={imageCardWidth - 24}
+                                    marginLeft='4'
+                                    marginBottom='4'
+                                    float='right'
+                                    position='relative'
+                                />
+                            ) : undefined}
+                            <InstructionList instructions={instructions} />
+                        </Box>
                     </VStack>
                 </Box>
             </Flex>

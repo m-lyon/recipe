@@ -5,6 +5,15 @@ export const mockRecipeIdThree = '60f4d3e5c3d5a0a4f1b9c0ec';
 export const mockRecipeIdNew = '60f4d4e5c3d5a0a4f1b9c0ec';
 export const mockRecipeIdNewAsIngr = '60f4d5e9c3d5a0a4f1b9c0ec';
 
+// RecipeIngredients
+export const mockRecipeIngredientIdOne = '60f4d2y5c3d5a0a4f1b9c0ec';
+export const mockRecipeIngredientIdTwo = '60f4d2e5c3t5a0a4f1b9c0ed';
+export const mockRecipeIngredientIdThree = '60f4d3e5c3d5a0a4f1b9c0ed';
+export const mockRecipeIngredientIdFour = '60f4d4e5c3d5a0a4f1b9c0ed';
+export const mockRecipeIngredientIdFive = '60f4d5e5c3d5a0a4f1b9c0ed';
+export const mockRecipeIngredientIdSix = '60f4d6e5c3d5a0a4f1b9c0ed';
+export const mockRecipeIngredientIdSeven = '40f4d2e5c3d5a0a4f1b9c0ed';
+
 // Units
 export const mockTeaspoonId = '60f4d2e5c3d5a0a4f1b3c0ec';
 export const mockGramId = '60f4d2e5c3d5a0a4g1b9c0ed';
