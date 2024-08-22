@@ -10,6 +10,7 @@ import type { Ingredient as IngredientType } from './Ingredient.js';
 
 const quantityRegex = /^(?:(?:[+-]?\d+\.\d+)|(?:[+-]?\d+)|(?:[+-]?\d+\/[1-9]\d*))$/;
 type RecipeIngredientEnum = 'ingredient' | 'recipe';
+
 export interface RecipeIngredientType extends Document {
     ingredient: PopulatedDoc<Document<Types.ObjectId> & IngredientType>;
     type: RecipeIngredientEnum;
@@ -99,7 +100,10 @@ export interface Recipe extends Document {
     subTitle?: string;
     calculatedTags: string[];
     tags?: Types.ObjectId[];
-    ingredients: RecipeIngredientType[];
+    ingredientSubsections: {
+        name?: string;
+        ingredients: RecipeIngredientType[];
+    }[];
     instructions: string[];
     notes?: string;
     owner: Types.ObjectId;
@@ -140,16 +144,21 @@ const recipeSchema = new Schema<Recipe>({
             },
         ],
     },
-    ingredients: {
-        type: [{ type: recipeIngredientSchema }],
-        required: true,
-        validate: {
-            validator: function (ingredients: RecipeIngredientType[]) {
-                return ingredients.length > 0;
+    ingredientSubsections: [
+        {
+            name: { type: String },
+            ingredients: {
+                type: [{ type: recipeIngredientSchema }],
+                required: true,
+                validate: {
+                    validator: function (ingredients: RecipeIngredientType[]) {
+                        return ingredients.length > 0;
+                    },
+                    message: 'At least one ingredient is required.',
+                },
             },
-            message: 'At least one ingredient is required.',
         },
-    },
+    ],
     instructions: {
         type: [{ type: String }],
         required: true,
@@ -170,17 +179,19 @@ const recipeSchema = new Schema<Recipe>({
 });
 
 recipeSchema.pre('save', async function () {
-    await this.populate('ingredients.ingredient');
+    await this.populate('ingredientSubsections.ingredients.ingredient');
     this.calculatedTags = [];
     for (const tag of ALLOWED_TAGS) {
-        const allMembers = this.ingredients.every((recipeIngr) => {
-            if (recipeIngr.type === 'recipe') {
-                const recipe: Recipe = recipeIngr.ingredient;
-                return recipe.calculatedTags.includes(tag);
-            } else {
-                const ingr: IngredientType = recipeIngr.ingredient;
-                return ingr.tags.includes(tag);
-            }
+        const allMembers = this.ingredientSubsections.every((collection) => {
+            return collection.ingredients.every((recipeIngr) => {
+                if (recipeIngr.type === 'recipe') {
+                    const recipe: Recipe = recipeIngr.ingredient;
+                    return recipe.calculatedTags.includes(tag);
+                } else {
+                    const ingr: IngredientType = recipeIngr.ingredient;
+                    return ingr.tags.includes(tag);
+                }
+            });
         });
         if (allMembers) {
             this.calculatedTags.push(tag);
