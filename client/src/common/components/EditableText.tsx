@@ -1,23 +1,26 @@
-import { Input, InputProps } from '@chakra-ui/react';
+import { useRef } from 'react';
+import { Input, InputProps, useMergeRefs } from '@chakra-ui/react';
 
 interface Props extends InputProps {
-    defaultStr: string;
-    value: string;
-    handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    handleSubmit: () => void;
-    handleEnter?: () => void;
     optionalRef?: React.RefObject<HTMLInputElement> | null;
 }
 export function EditableText(props: Props) {
-    const { defaultStr, value, handleChange, handleSubmit, optionalRef, ...rest } = props;
+    const { optionalRef, ...rest } = props;
+    const ref = useRef<HTMLInputElement | null>(null);
+    const refs = useMergeRefs(ref, optionalRef);
 
     return (
         <Input
-            ref={optionalRef}
-            value={value}
-            placeholder={defaultStr}
-            onChange={handleChange}
-            onBlur={handleSubmit}
+            ref={refs}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                    if (rest.onSubmit) {
+                        rest.onSubmit(e);
+                    }
+                    ref.current?.blur();
+                }
+            }}
+            onBlur={rest.onSubmit}
             minH='unset'
             border='none'
             px={0}

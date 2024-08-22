@@ -24,51 +24,61 @@ export const mockRecipeOne = {
     pluralTitle: null,
     titleIdentifier: 'mock-recipe-one',
     instructions: ['Instruction one', 'Instruction two'],
-    ingredients: [
+    ingredientSubsections: [
         {
-            // normal ingredient
-            _id: mockRecipeIngredientIdOne,
-            type: 'ingredient' as EnumRecipeIngredientType,
-            quantity: '1',
-            unit: mockTeaspoon,
-            ingredient: mockApple,
-            prepMethod: mockDiced,
+            name: 'Section One',
+            ingredients: [
+                {
+                    // normal ingredient
+                    _id: mockRecipeIngredientIdOne,
+                    type: 'ingredient' as EnumRecipeIngredientType,
+                    quantity: '1',
+                    unit: mockTeaspoon,
+                    ingredient: mockApple,
+                    prepMethod: mockDiced,
+                },
+                {
+                    // ingredient with no unit
+                    _id: mockRecipeIngredientIdTwo,
+                    type: 'ingredient' as EnumRecipeIngredientType,
+                    quantity: '1',
+                    unit: null,
+                    ingredient: mockApple,
+                    prepMethod: mockDiced,
+                },
+                {
+                    // ingredient with no unit and plural quantity
+                    _id: mockRecipeIngredientIdThree,
+                    type: 'ingredient' as EnumRecipeIngredientType,
+                    quantity: '2',
+                    unit: null,
+                    ingredient: mockApple,
+                    prepMethod: mockDiced,
+                },
+            ],
         },
         {
-            // ingredient with no unit
-            _id: mockRecipeIngredientIdTwo,
-            type: 'ingredient' as EnumRecipeIngredientType,
-            quantity: '1',
-            unit: null,
-            ingredient: mockApple,
-            prepMethod: mockDiced,
-        },
-        {
-            // ingredient with no unit and plural quantity
-            _id: mockRecipeIngredientIdThree,
-            type: 'ingredient' as EnumRecipeIngredientType,
-            quantity: '2',
-            unit: null,
-            ingredient: mockApple,
-            prepMethod: mockDiced,
-        },
-        {
-            // ingredient with fraction quantity
-            _id: mockRecipeIngredientIdFour,
-            type: 'ingredient' as EnumRecipeIngredientType,
-            quantity: '1/3',
-            unit: mockCup,
-            ingredient: mockApple,
-            prepMethod: mockDiced,
-        },
-        {
-            // ingredient with no prep method
-            _id: mockRecipeIngredientIdFive,
-            type: 'ingredient' as EnumRecipeIngredientType,
-            quantity: '1',
-            unit: mockOunce,
-            ingredient: mockApple,
-            prepMethod: null,
+            name: 'Section Two',
+            ingredients: [
+                {
+                    // ingredient with fraction quantity
+                    _id: mockRecipeIngredientIdFour,
+                    type: 'ingredient' as EnumRecipeIngredientType,
+                    quantity: '1/3',
+                    unit: mockCup,
+                    ingredient: mockApple,
+                    prepMethod: mockDiced,
+                },
+                {
+                    // ingredient with no prep method
+                    _id: mockRecipeIngredientIdFive,
+                    type: 'ingredient' as EnumRecipeIngredientType,
+                    quantity: '1',
+                    unit: mockOunce,
+                    ingredient: mockApple,
+                    prepMethod: null,
+                },
+            ],
         },
     ],
     tags: [mockDinnerTag, mockLunchTag],
@@ -108,14 +118,19 @@ export const mockRecipeNew = {
     pluralTitle: null,
     titleIdentifier: 'new-recipe',
     instructions: ['Instr #1.', 'Instr #2.'],
-    ingredients: [
+    ingredientSubsections: [
         {
-            _id: mockRecipeIngredientIdSix,
-            type: 'ingredient' as EnumRecipeIngredientType,
-            quantity: '2',
-            unit: mockTeaspoon,
-            ingredient: mockApple,
-            prepMethod: mockDiced,
+            name: null,
+            ingredients: [
+                {
+                    _id: mockRecipeIngredientIdSix,
+                    type: 'ingredient' as EnumRecipeIngredientType,
+                    quantity: '2',
+                    unit: mockTeaspoon,
+                    ingredient: mockApple,
+                    prepMethod: mockDiced,
+                },
+            ],
         },
     ],
     tags: [mockFreezableTag],

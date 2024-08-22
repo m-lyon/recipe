@@ -44,7 +44,7 @@ describe('Create Recipe Workflow', () => {
         expect(await screen.findByText('Recipes'));
         expect(await screen.findByText('Logout'));
         await user.click(screen.getAllByLabelText('Create new recipe')[0]);
-        expect(await screen.findByText('Ingredients')).not.toBeNull();
+        expect(await screen.findByText('Enter Recipe Title')).not.toBeNull();
         // --- Add Title ----------------------------------------
         await user.click(screen.getByLabelText('Edit recipe title'));
         await user.keyboard('New Recipe');
@@ -122,7 +122,7 @@ describe('Create Recipe Workflow', () => {
         expect(await screen.findByText('Recipes'));
         expect(await screen.findByText('Logout'));
         await user.click(screen.getAllByLabelText('Create new recipe')[0]);
-        expect(await screen.findByText('Ingredients')).not.toBeNull();
+        expect(await screen.findByText('Enter Recipe Title')).not.toBeNull();
         // --- Add Title -----------------------------------------
         await user.click(screen.getByLabelText('Edit recipe title'));
         await user.keyboard('New Recipe');
@@ -212,7 +212,7 @@ describe('Create Recipe Workflow', () => {
         expect(await screen.findByText('Recipes'));
         expect(await screen.findByText('Logout'));
         await user.click(screen.getAllByLabelText('Create new recipe')[0]);
-        expect(await screen.findByText('Ingredients')).not.toBeNull();
+        expect(await screen.findByText('Enter Recipe Title')).not.toBeNull();
         // --- Add Title ----------------------------------------
         await user.click(screen.getByLabelText('Edit recipe title'));
         await user.keyboard('New Ingredient Recipe');
@@ -253,7 +253,7 @@ describe('Create Recipe Workflow', () => {
 
         // ------ Ingredients List ------------------------------
         await user.click(screen.getAllByLabelText('Create new recipe')[0]);
-        expect(await screen.findByText('Ingredients')).not.toBeNull();
+        expect(await screen.findByText('Enter Recipe Title')).not.toBeNull();
         await user.click(screen.getByLabelText('Enter ingredient'));
         await user.keyboard('{2}{ }');
         await user.click(await screen.findByText('skip unit'));

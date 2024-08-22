@@ -75,6 +75,6 @@ describe('Create Recipe Workflow', () => {
         await user.click(screen.getAllByLabelText('Create new recipe')[0]);
 
         // Expect ------------------------------------------------
-        expect(await screen.findByText('Ingredients')).not.toBeNull();
+        expect(await screen.findByText('Enter Recipe Title')).not.toBeNull();
     });
 });

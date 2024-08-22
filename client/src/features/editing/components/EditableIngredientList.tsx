@@ -1,9 +1,9 @@
 import { Reorder } from 'framer-motion';
-import { Box, VStack } from '@chakra-ui/react';
-import { EditableText } from 'common/components/EditableText';
+import { VStack } from '@chakra-ui/react';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 
 import { FinishedRecipeIngredient } from '@recipe/types';
+import { EditableText } from '@recipe/common/components';
 import { UseIngredientListReturnType } from '@recipe/features/recipeIngredient';
 import { EditableIngredient, FinishedIngredient } from '@recipe/features/recipeIngredient';
 
@@ -24,30 +24,43 @@ export function EditableIngredientList(props: UseIngredientListReturnType) {
             }
         );
 
-        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             actionHandler.subsection.setTitle(sectionIndex, e.target.value);
         };
-        const handleSubmit = () => {
-            if (subsections.length > 1 && sectionIndex !== subsections.length - 1) {
+        const onSubmit = () => {
+            if (state.length > 1 && sectionIndex !== state.length - 1) {
                 if (!subsection.name || subsection.name.trim() === '') {
                     actionHandler.subsection.remove(sectionIndex);
                 }
             }
+            if (
+                subsection.name &&
+                subsection.name.trim() !== '' &&
+                state.at(-1)?.name &&
+                state.at(-1)?.name?.trim() !== ''
+            ) {
+                actionHandler.subsection.add();
+            }
         };
 
         return (
-            <Box key={sectionIndex}>
-                <EditableText
-                    defaultStr='Enter Subsection Title'
-                    value={subsection.name ?? ''}
-                    handleChange={handleChange}
-                    handleSubmit={handleSubmit}
-                    fontSize='2xl'
-                    textAlign='left'
-                    pb='8px'
-                    fontWeight={600}
-                />
+            <motion.div
+                key={sectionIndex}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+            >
                 <LayoutGroup>
+                    <EditableText
+                        placeholder='Enter Subsection'
+                        value={subsection.name ?? ''}
+                        onChange={onChange}
+                        onSubmit={onSubmit}
+                        fontSize='2xl'
+                        textAlign='left'
+                        pb='8px'
+                        fontWeight={600}
+                    />
                     <Reorder.Group
                         values={subsection.finished}
                         onReorder={(finished) =>
@@ -68,13 +81,13 @@ export function EditableIngredientList(props: UseIngredientListReturnType) {
                         />
                     </motion.div>
                 </LayoutGroup>
-            </Box>
+            </motion.div>
         );
     });
 
     return (
-        <VStack spacing='0px' align='left'>
-            {subsections}
+        <VStack spacing='24px' align='left'>
+            <AnimatePresence>{subsections}</AnimatePresence>
         </VStack>
     );
 }

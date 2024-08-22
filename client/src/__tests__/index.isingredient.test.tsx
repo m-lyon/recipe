@@ -53,7 +53,7 @@ describe('Update Recipe Workflow: Is Ingredient', () => {
 
         // ------ Ingredient List --------------------------------
         await user.click(screen.getAllByLabelText('Create new recipe')[0]);
-        expect(await screen.findByText('Ingredients')).not.toBeNull();
+        expect(await screen.findByText('Enter Recipe Title')).not.toBeNull();
         await user.click(screen.getByLabelText('Enter ingredient'));
         await user.keyboard('{2}{ }');
         await user.click(await screen.findByText('skip unit'));
@@ -95,7 +95,7 @@ describe('Update Recipe Workflow: Is Ingredient', () => {
 
         // ------ Ingredient List --------------------------------
         await user.click(screen.getAllByLabelText('Create new recipe')[0]);
-        expect(await screen.findByText('Ingredients')).not.toBeNull();
+        expect(await screen.findByText('Enter Recipe Title')).not.toBeNull();
         await user.click(screen.getByLabelText('Enter ingredient'));
         await user.keyboard('{2}{ }');
         await user.click(await screen.findByText('skip unit'));

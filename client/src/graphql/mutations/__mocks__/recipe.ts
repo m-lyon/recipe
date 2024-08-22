@@ -1,11 +1,12 @@
+import { EnumRecipeIngredientType } from '@recipe/graphql/generated';
 import { mockSpicyTag } from '@recipe/graphql/queries/__mocks__/tag';
 import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockApple } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockDiced } from '@recipe/graphql/queries/__mocks__/prepMethod';
 import { mockRecipeIngredientIdThree } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdSeven } from '@recipe/graphql/__mocks__/ids';
+import { GetRecipeQuery, RecipeIngredient } from '@recipe/graphql/generated';
 import { mockRecipeNewAsIngr } from '@recipe/graphql/queries/__mocks__/recipe';
-import { EnumRecipeIngredientType, GetRecipeQuery } from '@recipe/graphql/generated';
 import { mockRecipeOne, mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockRecipeNew, mockRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
 import { CREATE_RECIPE, DELETE_RECIPE, UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
@@ -19,18 +20,21 @@ const getMockRecipeVariables = (
         id: mockRecipe._id,
         recipe: {
             title: mockRecipe.title,
-            pluralTitle: mockRecipe.pluralTitle ?? null,
+            pluralTitle: mockRecipe.pluralTitle ?? undefined,
             instructions: mockRecipe.instructions,
-            ingredients: mockRecipe.ingredients.map((ingr: any) => ({
-                quantity: ingr.quantity,
-                unit: ingr.unit?._id,
-                ingredient: ingr.ingredient._id,
-                prepMethod: ingr.prepMethod?._id,
-                type: ingr.type,
+            ingredientSubsections: mockRecipe.ingredientSubsections?.map((subsect: any) => ({
+                name: subsect.name ?? undefined,
+                ingredients: subsect.ingredients.map((ingr: RecipeIngredient) => ({
+                    quantity: ingr.quantity,
+                    unit: ingr.unit?._id,
+                    ingredient: ingr.ingredient?._id,
+                    prepMethod: ingr.prepMethod?._id,
+                    type: ingr.type,
+                })),
             })),
             tags: mockRecipe.tags.map((tag: any) => tag._id),
-            notes: mockRecipe.notes ?? null,
-            source: mockRecipe.source ?? null,
+            notes: mockRecipe.notes ?? undefined,
+            source: mockRecipe.source ?? undefined,
             numServings: mockRecipe.numServings,
             isIngredient: mockRecipe.isIngredient,
         },
@@ -262,14 +266,20 @@ export const mockUpdateRecipeIngredientsAdd = {
             id: recipeOneVars.id,
             recipe: {
                 ...recipeOneVars.recipe,
-                ingredients: [
-                    ...recipeOneVars.recipe.ingredients,
+                ingredientSubsections: [
+                    recipeOneVars.recipe.ingredientSubsections![0],
                     {
-                        quantity: '4',
-                        unit: mockTeaspoon._id,
-                        ingredient: mockApple._id,
-                        prepMethod: mockDiced._id,
-                        type: 'ingredient' as EnumRecipeIngredientType,
+                        name: recipeOneVars.recipe.ingredientSubsections![1].name,
+                        ingredients: [
+                            ...recipeOneVars.recipe.ingredientSubsections![1].ingredients,
+                            {
+                                quantity: '4',
+                                unit: mockTeaspoon._id,
+                                ingredient: mockApple._id,
+                                prepMethod: mockDiced._id,
+                                type: 'ingredient' as EnumRecipeIngredientType,
+                            },
+                        ],
                     },
                 ],
             },
@@ -280,15 +290,21 @@ export const mockUpdateRecipeIngredientsAdd = {
             recipeUpdateById: {
                 record: {
                     ...recipeOneData.record,
-                    ingredients: [
-                        ...recipeOneData.record.ingredients,
+                    ingredientSubsections: [
+                        recipeOneData.record.ingredientSubsections![0],
                         {
-                            _id: mockRecipeIngredientIdSeven,
-                            quantity: '4',
-                            unit: mockTeaspoon,
-                            ingredient: mockApple,
-                            prepMethod: mockDiced,
-                            type: 'ingredient' as EnumRecipeIngredientType,
+                            name: recipeOneData.record.ingredientSubsections![1]!.name,
+                            ingredients: [
+                                ...recipeOneData.record.ingredientSubsections![1]!.ingredients,
+                                {
+                                    _id: mockRecipeIngredientIdSeven,
+                                    quantity: '4',
+                                    unit: mockTeaspoon,
+                                    ingredient: mockApple,
+                                    prepMethod: mockDiced,
+                                    type: 'ingredient' as EnumRecipeIngredientType,
+                                },
+                            ],
                         },
                     ],
                 },
@@ -303,15 +319,23 @@ export const mockUpdateRecipeIngredientsEdit = {
             id: recipeOneVars.id,
             recipe: {
                 ...recipeOneVars.recipe,
-                ingredients: [
-                    ...recipeOneVars.recipe.ingredients.filter((ingr) => ingr.quantity !== '2'),
+                ingredientSubsections: [
                     {
-                        quantity: '4',
-                        unit: mockTeaspoon._id,
-                        ingredient: mockApple._id,
-                        prepMethod: mockDiced._id,
-                        type: 'ingredient' as EnumRecipeIngredientType,
+                        name: recipeOneVars.recipe.ingredientSubsections![0].name,
+                        ingredients: [
+                            ...recipeOneVars.recipe.ingredientSubsections![0].ingredients.filter(
+                                (ingr: RecipeIngredient) => ingr.quantity !== '2'
+                            ),
+                            {
+                                quantity: '4',
+                                unit: mockTeaspoon._id,
+                                ingredient: mockApple._id,
+                                prepMethod: mockDiced._id,
+                                type: 'ingredient' as EnumRecipeIngredientType,
+                            },
+                        ],
                     },
+                    recipeOneVars.recipe.ingredientSubsections![1],
                 ],
             },
         },
@@ -321,18 +345,24 @@ export const mockUpdateRecipeIngredientsEdit = {
             recipeUpdateById: {
                 record: {
                     ...recipeOneData.record,
-                    ingredients: [
-                        ...recipeOneData.record.ingredients.filter(
-                            (ingr) => ingr?.quantity !== '2'
-                        ),
+                    ingredientSubsections: [
                         {
-                            _id: mockRecipeIngredientIdThree,
-                            quantity: '4',
-                            unit: mockTeaspoon,
-                            ingredient: mockApple,
-                            prepMethod: mockDiced,
-                            type: 'ingredient' as EnumRecipeIngredientType,
+                            name: recipeOneData.record.ingredientSubsections![0]!.name,
+                            ingredients: [
+                                ...recipeOneData.record.ingredientSubsections![0]!.ingredients.filter(
+                                    (ingr) => ingr!.quantity !== '2'
+                                ),
+                                {
+                                    _id: mockRecipeIngredientIdThree,
+                                    quantity: '4',
+                                    unit: mockTeaspoon,
+                                    ingredient: mockApple,
+                                    prepMethod: mockDiced,
+                                    type: 'ingredient' as EnumRecipeIngredientType,
+                                },
+                            ],
                         },
+                        recipeOneData.record.ingredientSubsections![1],
                     ],
                 },
             },
@@ -346,9 +376,17 @@ export const mockUpdateRecipeIngredientsRemove = {
             id: recipeOneVars.id,
             recipe: {
                 ...recipeOneVars.recipe,
-                ingredients: recipeOneVars.recipe.ingredients.filter(
-                    (ingr) => ingr.quantity !== '2'
-                ),
+                ingredientSubsections: [
+                    {
+                        name: recipeOneVars.recipe.ingredientSubsections![0].name,
+                        ingredients: [
+                            ...recipeOneVars.recipe.ingredientSubsections![0].ingredients.filter(
+                                (ingr: RecipeIngredient) => ingr.quantity !== '2'
+                            ),
+                        ],
+                    },
+                    recipeOneVars.recipe.ingredientSubsections![1],
+                ],
             },
         },
     },
@@ -357,9 +395,17 @@ export const mockUpdateRecipeIngredientsRemove = {
             recipeUpdateById: {
                 record: {
                     ...recipeOneData.record,
-                    ingredients: recipeOneData.record.ingredients.filter(
-                        (ingr) => ingr?.quantity !== '2'
-                    ),
+                    ingredientSubsections: [
+                        {
+                            name: recipeOneData.record.ingredientSubsections![0]!.name,
+                            ingredients: [
+                                ...recipeOneData.record.ingredientSubsections![0]!.ingredients.filter(
+                                    (ingr) => ingr!.quantity !== '2'
+                                ),
+                            ],
+                        },
+                        recipeOneData.record.ingredientSubsections![1],
+                    ],
                 },
             },
         },

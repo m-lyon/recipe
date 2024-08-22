@@ -128,14 +128,14 @@ describe('Tag Workflow', () => {
         expect(await screen.findByText('Recipes'));
         expect(await screen.findByText('Logout'));
         await user.click(screen.getAllByLabelText('Create new recipe')[0]);
-        expect(await screen.findByText('Ingredients')).not.toBeNull();
+        expect(await screen.findByText('Enter Recipe Title')).not.toBeNull();
         await user.click(screen.getByLabelText('Add a tag'));
         await user.keyboard('mock tag{Enter}');
         await user.click(screen.getByLabelText('Navigate to home page'));
         await user.click(screen.getAllByLabelText('Create new recipe')[0]);
 
         // Expect ------------------------------------------------
-        expect(await screen.findByText('Ingredients')).not.toBeNull();
+        expect(await screen.findByText('Enter Recipe Title')).not.toBeNull();
         await user.click(screen.getByLabelText('Add a tag'));
         expect(await screen.findByText('dinner')).not.toBeNull();
         expect(screen.queryByText('mock tag')).not.toBeNull();
@@ -150,7 +150,7 @@ describe('Tag Workflow', () => {
         expect(await screen.findByText('Recipes'));
         expect(await screen.findByText('Logout'));
         await user.click(screen.getAllByLabelText('Create new recipe')[0]);
-        expect(await screen.findByText('Ingredients')).not.toBeNull();
+        expect(await screen.findByText('Enter Recipe Title')).not.toBeNull();
         await user.click(screen.getByLabelText('Add a tag'));
         await user.keyboard('mock tag{Enter}');
         await user.click(screen.getByLabelText('Remove mock tag tag'));
@@ -159,7 +159,7 @@ describe('Tag Workflow', () => {
         await user.click(screen.getByLabelText('Add a tag'));
 
         // Expect ------------------------------------------------
-        expect(await screen.findByText('Ingredients')).not.toBeNull();
+        expect(await screen.findByText('Enter Recipe Title')).not.toBeNull();
         await user.click(screen.getByLabelText('Add a tag'));
         expect(await screen.findByText('dinner')).not.toBeNull();
         expect(screen.queryByText('mock tag')).toBeNull();

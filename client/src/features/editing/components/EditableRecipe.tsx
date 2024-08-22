@@ -93,20 +93,22 @@ export function EditableRecipe(props: Props) {
         const instructions = state.instructions.items
             .filter((item) => item.value !== '')
             .map((item) => item.value);
-        const ingredients = state.ingredient.state.finished.map((item) => {
-            const typename = {
-                Recipe: EnumRecipeIngredientType.Recipe,
-                Ingredient: EnumRecipeIngredientType.Ingredient,
-                IngredientCreate: EnumRecipeIngredientType.Ingredient,
-            };
-            return {
-                quantity: item.quantity ? item.quantity : undefined,
-                unit: item.unit ? item.unit._id : undefined,
-                ingredient: item.ingredient._id,
-                prepMethod: item.prepMethod ? item.prepMethod._id : undefined,
-                type: typename[item.ingredient.__typename!],
-            };
-        });
+        const ingredientSubsections = state.ingredient.state
+            .filter((section) => section.name || section.finished.length > 0)
+            .map((section) => {
+                return {
+                    name: section.name,
+                    ingredients: section.finished.map((item) => {
+                        return {
+                            quantity: item.quantity ? item.quantity : undefined,
+                            unit: item.unit ? item.unit._id : undefined,
+                            ingredient: item.ingredient._id,
+                            prepMethod: item.prepMethod ? item.prepMethod._id : undefined,
+                            type: EnumRecipeIngredientType[item.ingredient.__typename!],
+                        };
+                    }),
+                };
+            });
         if (userContext === false) {
             toast({ title: 'Please log in to create a recipe', position: 'top' });
             return;
@@ -119,12 +121,12 @@ export function EditableRecipe(props: Props) {
                 ? state.asIngredient.state.pluralTitle
                     ? state.asIngredient.state.pluralTitle
                     : state.title.value
-                : null,
+                : undefined,
             instructions,
-            ingredients,
+            ingredientSubsections,
             tags,
-            notes: state.notes.notes ? state.notes.notes : null,
-            source: state.source.source ? state.source.source : null,
+            notes: state.notes.notes ? state.notes.notes : undefined,
+            source: state.source.source ? state.source.source : undefined,
             isIngredient,
         };
         handleSubmitMutation(recipe);
