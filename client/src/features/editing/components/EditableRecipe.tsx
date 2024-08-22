@@ -7,13 +7,13 @@ import { Servings } from '@recipe/features/servings';
 import { ImageUpload } from '@recipe/features/images';
 import { IngredientsTabLayout } from '@recipe/layouts';
 import { EditableTagList } from '@recipe/features/tags';
+import { EditableField } from '@recipe/common/components';
 import { EnumRecipeIngredientType } from '@recipe/graphql/generated';
 import { StarRating, StarRatingProps } from '@recipe/features/rating';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
 
 import { SubmitButton } from './SubmitButton';
 import { EditableNotes } from './EditableNotes';
-import { EditableTitle } from './EditableTitle';
 import { RecipeState } from '../hooks/useRecipeState';
 import { EditableIngredientList } from './EditableIngredientList';
 import { EditableInstructionsTab } from './EditableInstructionsTab';
@@ -129,6 +129,8 @@ export function EditableRecipe(props: Props) {
         };
         handleSubmitMutation(recipe);
     };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { value: titleValue, ...titleState } = state.title;
 
     return (
         <Container maxW='container.xl' pt='60px'>
@@ -144,7 +146,12 @@ export function EditableRecipe(props: Props) {
                 fontWeight='bold'
             >
                 <GridItem boxShadow='lg' padding='6' area='title' maxH='100px'>
-                    <EditableTitle {...state.title} />
+                    <EditableField
+                        {...titleState}
+                        fontSize='3xl'
+                        textAlign='center'
+                        ariaLabel='Edit recipe title'
+                    />
                 </GridItem>
                 <GridItem
                     area='tags'
