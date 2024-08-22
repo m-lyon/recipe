@@ -38,7 +38,7 @@ export function EditableRecipe(props: Props) {
         {
             base: {
                 templateAreas: `'title'
-                            'tags'
+                            'tags' 
                             'ingredients'
                             'instructions'
                             'images'
@@ -74,7 +74,7 @@ export function EditableRecipe(props: Props) {
             toast({ title: 'Please enter a title', position: 'top' });
             return false;
         }
-        if (state.ingredient.state.finished.length === 0) {
+        if (state.ingredient.state[0].finished.length === 0) {
             toast({ title: 'Please enter at least one ingredient', position: 'top' });
             return false;
         }

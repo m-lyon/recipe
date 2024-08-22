@@ -2,12 +2,11 @@ import { useQuery } from '@apollo/client';
 import { useParams } from 'react-router-dom';
 import { Box, Container, Grid, GridItem, useBreakpointValue } from '@chakra-ui/react';
 
-import { Title } from '@recipe/features/viewing';
-import { IngredientsTab } from '@recipe/features/viewing';
-import { InstructionsTab } from '@recipe/features/viewing';
+import { Recipe } from '@recipe/graphql/generated';
+import { IngredientSubsection } from '@recipe/types';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { ImageViewerRecipe } from '@recipe/features/images';
-import { Recipe, RecipeIngredient } from '@recipe/graphql/generated';
+import { IngredientsTab, InstructionsTab, Title } from '@recipe/features/viewing';
 
 export function ViewRecipe() {
     const { titleIdentifier } = useParams();
@@ -48,7 +47,7 @@ export function ViewRecipe() {
     const {
         title,
         instructions,
-        ingredients,
+        ingredientSubsections,
         tags,
         calculatedTags,
         notes,
@@ -88,7 +87,7 @@ export function ViewRecipe() {
                 <GridItem area='ingredients' boxShadow='lg' p='6'>
                     <IngredientsTab
                         recipeId={data!.recipeOne!._id}
-                        ingredients={ingredients as RecipeIngredient[]}
+                        ingredients={ingredientSubsections as IngredientSubsection[]}
                         notes={notes}
                         numServings={numServings}
                         tags={tags}

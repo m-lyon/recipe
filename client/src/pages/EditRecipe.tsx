@@ -116,10 +116,17 @@ export function EditRecipe() {
             setRecipe(recipe);
             state.title.actionHandler.set(recipe.title);
             state.numServings.setNum(recipe.numServings);
-            const ingredients = recipe.ingredients.map((ing) => {
-                return dbIngredientToFinished(ing as RecipeIngredient);
+            recipe.ingredientSubsections!.forEach((sub, index) => {
+                if (!sub) {
+                    return;
+                }
+                state.ingredient.actionHandler.subsection.add();
+                state.ingredient.actionHandler.subsection.setTitle(index, sub.name);
+                const ingredients = sub.ingredients.map((ing) => {
+                    return dbIngredientToFinished(ing as RecipeIngredient);
+                });
+                state.ingredient.actionHandler.setFinishedArray(index, ingredients);
             });
-            state.ingredient.actionHandler.setFinishedArray(ingredients);
             state.instructions.actionHandler.setItems(recipe.instructions as string[]);
             state.instructions.actionHandler.addItem();
             if (recipe.notes) {

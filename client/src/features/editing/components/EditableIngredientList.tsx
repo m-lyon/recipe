@@ -1,5 +1,6 @@
 import { Reorder } from 'framer-motion';
-import { VStack } from '@chakra-ui/react';
+import { Box, VStack } from '@chakra-ui/react';
+import { EditableText } from 'common/components/EditableText';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 
 import { FinishedRecipeIngredient } from '@recipe/types';
@@ -9,39 +10,71 @@ import { EditableIngredient, FinishedIngredient } from '@recipe/features/recipeI
 export function EditableIngredientList(props: UseIngredientListReturnType) {
     const { state, actionHandler, queryData } = props;
 
-    const finishedIngredients = state.finished.map(
-        (item: FinishedRecipeIngredient, index: number) => {
-            return (
-                <FinishedIngredient
-                    key={item.key}
-                    index={index}
-                    item={item}
-                    removeFinished={actionHandler.removeFinished}
+    const subsections = state.map((subsection, sectionIndex) => {
+        const finishedIngredients = subsection.finished.map(
+            (item: FinishedRecipeIngredient, itemIndex: number) => {
+                return (
+                    <FinishedIngredient
+                        key={item.key}
+                        index={itemIndex}
+                        item={item}
+                        removeFinished={() => actionHandler.removeFinished(sectionIndex, itemIndex)}
+                    />
+                );
+            }
+        );
+
+        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+            actionHandler.subsection.setTitle(sectionIndex, e.target.value);
+        };
+        const handleSubmit = () => {
+            if (subsections.length > 1 && sectionIndex !== subsections.length - 1) {
+                if (!subsection.name || subsection.name.trim() === '') {
+                    actionHandler.subsection.remove(sectionIndex);
+                }
+            }
+        };
+
+        return (
+            <Box key={sectionIndex}>
+                <EditableText
+                    defaultStr='Enter Subsection Title'
+                    value={subsection.name ?? ''}
+                    handleChange={handleChange}
+                    handleSubmit={handleSubmit}
+                    fontSize='2xl'
+                    textAlign='left'
+                    pb='8px'
+                    fontWeight={600}
                 />
-            );
-        }
-    );
+                <LayoutGroup>
+                    <Reorder.Group
+                        values={subsection.finished}
+                        onReorder={(finished) =>
+                            actionHandler.setFinishedArray(sectionIndex, finished)
+                        }
+                        as='ul'
+                        axis='y'
+                        style={{ listStyle: 'none' }}
+                    >
+                        <AnimatePresence>{finishedIngredients}</AnimatePresence>
+                    </Reorder.Group>
+                    <motion.div layout='position' transition={{ duration: 0.3 }}>
+                        <EditableIngredient
+                            subsection={sectionIndex}
+                            item={subsection.editable}
+                            actionHandler={actionHandler}
+                            queryData={queryData}
+                        />
+                    </motion.div>
+                </LayoutGroup>
+            </Box>
+        );
+    });
 
     return (
         <VStack spacing='0px' align='left'>
-            <LayoutGroup>
-                <Reorder.Group
-                    values={state.finished}
-                    onReorder={actionHandler.setFinishedArray}
-                    as='ul'
-                    axis='y'
-                    style={{ listStyle: 'none' }}
-                >
-                    <AnimatePresence>{finishedIngredients}</AnimatePresence>
-                </Reorder.Group>
-                <motion.div layout='position' transition={{ duration: 0.3 }}>
-                    <EditableIngredient
-                        item={state.editable}
-                        actionHandler={actionHandler}
-                        queryData={queryData}
-                    />
-                </motion.div>
-            </LayoutGroup>
+            {subsections}
         </VStack>
     );
 }

@@ -49,7 +49,7 @@ export function RecipeModal(props: Props) {
                 <ModalBody>
                     <Grid templateColumns='repeat(20, 1fr)' pb='12px'>
                         <GridItem colSpan={styles?.ingrColSpan}>
-                            <IngredientList ingredients={recipe.ingredients} />
+                            <IngredientList subsections={recipe.ingredients} />
                         </GridItem>
                         <GridItem colSpan={styles?.dividerColSpan} py={styles?.dividerPy}>
                             <Divider orientation={styles?.dividerOrientation} />

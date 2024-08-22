@@ -9,12 +9,14 @@ import { RecipeIngredientDropdown } from './RecipeIngredientDropdown';
 import { DEFAULT_INGREDIENT_STR, IngredientActionHandler } from '../hooks/useIngredientList';
 
 interface Props {
+    subsection: number;
     item: EditableRecipeIngredient;
     actionHandler: IngredientActionHandler;
     queryData: RecipeIngredientQueryData;
     fontSize?: string;
 }
-export function EditableIngredient({ item, actionHandler, fontSize, queryData }: Props) {
+export function EditableIngredient(props: Props) {
+    const { subsection, item, actionHandler, queryData, fontSize } = props;
     const previewRef = useRef<HTMLInputElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null);
     const parentRef = useRef<HTMLDivElement | null>(null);
@@ -22,12 +24,12 @@ export function EditableIngredient({ item, actionHandler, fontSize, queryData }:
         ref: parentRef,
         handler: () => {
             if (item.quantity !== null || item.show) {
-                actionHandler.resetEditable();
+                actionHandler.resetEditable(subsection);
             }
         },
     });
 
-    const ingredientStr = actionHandler.editableStringValue();
+    const ingredientStr = actionHandler.editableStringValue(subsection);
 
     return (
         // Position relative is needed for the dropdown to be positioned correctly
@@ -47,16 +49,16 @@ export function EditableIngredient({ item, actionHandler, fontSize, queryData }:
                         ingredientStr === '' &&
                         item.state !== 'quantity'
                     ) {
-                        actionHandler.decrementEditableState();
+                        actionHandler.decrementEditableState(subsection);
                     }
                 }}
-                onChange={actionHandler.handleEditableChange}
-                onCancel={actionHandler.resetEditable}
-                onEdit={actionHandler.setEditableShow.on}
+                onChange={(value: string) => actionHandler.handleEditableChange(subsection, value)}
+                onCancel={() => actionHandler.resetEditable(subsection)}
+                onEdit={() => actionHandler.setEditableShow.on(subsection)}
                 textAlign='left'
                 fontSize={fontSize}
                 color={item.quantity !== null || item.ingredient.value !== null ? '' : 'gray.400'}
-                paddingLeft='6px'
+                pl='0px'
                 placeholder={DEFAULT_INGREDIENT_STR}
             >
                 <EditablePreview ref={previewRef} width='100%' aria-label='Enter ingredient' />
@@ -67,6 +69,7 @@ export function EditableIngredient({ item, actionHandler, fontSize, queryData }:
                 />
             </Editable>
             <RecipeIngredientDropdown
+                subsection={subsection}
                 item={item}
                 actionHandler={actionHandler}
                 queryData={queryData}

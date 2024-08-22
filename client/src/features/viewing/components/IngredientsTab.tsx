@@ -1,22 +1,19 @@
-import { CgBowl } from 'react-icons/cg';
-import { TbWeight } from 'react-icons/tb';
-import { HStack, IconButton } from '@chakra-ui/react';
 import { useContext, useEffect, useState } from 'react';
 
 import { TagList } from '@recipe/features/tags';
 import { UserContext } from '@recipe/features/user';
+import { Servings } from '@recipe/features/servings';
+import { IngredientSubsection } from '@recipe/types';
 import { IngredientsTabLayout } from '@recipe/layouts';
-import { changeQuantity } from '@recipe/utils/quantity';
-import { Servings, useUnitConversion } from '@recipe/features/servings';
+import { Recipe, Tag } from '@recipe/graphql/generated';
 import { StarRating, useViewStarRating } from '@recipe/features/rating';
-import { Recipe, RecipeIngredient, Tag } from '@recipe/graphql/generated';
 
-import { IngredientList } from './IngredientList';
 import { Notes } from './Notes';
+import { IngredientList } from './IngredientList';
 
 interface Props {
     recipeId: string;
-    ingredients: RecipeIngredient[];
+    ingredients: IngredientSubsection[];
     notes: Recipe['notes'];
     numServings: Recipe['numServings'];
     tags: Recipe['tags'];
@@ -27,15 +24,10 @@ export function IngredientsTab(props: Props) {
     const [userContext] = useContext(UserContext);
     const [servings, setServings] = useState(numServings);
     const { avgRating, getRatings, setRating } = useViewStarRating();
-    const { apply } = useUnitConversion();
 
     useEffect(() => {
         getRatings(recipeId);
     }, [recipeId]);
-
-    const modifiedIngredients = ingredients.map((ingredient) => {
-        return changeQuantity(ingredient, servings, numServings, apply);
-    });
 
     return (
         <IngredientsTabLayout
@@ -43,13 +35,13 @@ export function IngredientsTab(props: Props) {
             StarRating={
                 <StarRating rating={avgRating} setRating={setRating} readonly={!userContext} />
             }
-            UnitOptions={
-                <HStack spacing={2}>
-                    <IconButton aria-label='weight' icon={<TbWeight />} />
-                    <IconButton aria-label='volume' icon={<CgBowl />} />
-                </HStack>
+            IngredientList={
+                <IngredientList
+                    subsections={ingredients}
+                    origServings={numServings}
+                    currentServings={servings}
+                />
             }
-            IngredientList={<IngredientList ingredients={modifiedIngredients} />}
             Notes={<Notes notes={notes} />}
             Tags={
                 <TagList

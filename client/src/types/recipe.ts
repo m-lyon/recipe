@@ -53,3 +53,7 @@ export type IngredientListRecipe = Pick<
     Recipe,
     '_id' | 'title' | 'pluralTitle' | 'instructions' | 'numServings'
 > & { ingredients: RecipeIngredient[] };
+export interface IngredientSubsection {
+    name?: string;
+    ingredients: RecipeIngredient[];
+}

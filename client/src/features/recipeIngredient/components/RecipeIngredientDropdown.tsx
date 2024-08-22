@@ -8,10 +8,11 @@ import { RecipeIngredientQueryData } from '@recipe/types';
 import { UnitDropdown } from './UnitDropdown';
 import { PrepMethodDropdown } from './PrepMethodDropdown';
 import { QuantityDropdownList } from './QuantityDropdownList';
-import { IngredientActionHandler } from '../hooks/useIngredientList';
+import { IngredientActionHandler, SetAttr } from '../hooks/useIngredientList';
 import { IngredientDropdown, IngredientOrRecipe } from './IngredientDropdown';
 
 interface Props {
+    subsection: number;
     item: EditableRecipeIngredient;
     actionHandler: IngredientActionHandler;
     queryData: RecipeIngredientQueryData;
@@ -19,13 +20,13 @@ interface Props {
     previewRef: MutableRefObject<HTMLDivElement | null>;
 }
 export function RecipeIngredientDropdown(props: Props) {
-    const { item, actionHandler, queryData, inputRef, previewRef } = props;
-    const currentValue = actionHandler.currentEditableAttributeValue();
+    const { subsection, item, actionHandler, queryData, inputRef, previewRef } = props;
+    const currentValue = actionHandler.currentEditableAttributeValue(subsection);
 
     const getSuggestionsList = () => {
         const dropdownProps = {
             strValue: currentValue ? currentValue : '',
-            setItem: actionHandler.setCurrentEditableAttribute,
+            setItem: (attr: SetAttr) => actionHandler.setCurrentEditableAttribute(subsection, attr),
             inputRef,
             previewRef,
         };
@@ -65,8 +66,8 @@ export function RecipeIngredientDropdown(props: Props) {
                         data={queryData.prepMethod}
                         {...dropdownProps}
                         handleSubmit={() => {
-                            actionHandler.setEditableShow.off();
-                            actionHandler.handleEditableSubmit();
+                            actionHandler.setEditableShow.off(subsection);
+                            actionHandler.handleEditableSubmit(subsection);
                         }}
                     />
                 );

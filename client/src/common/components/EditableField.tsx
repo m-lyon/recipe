@@ -2,8 +2,10 @@ import { Editable, EditableInput, EditablePreview, EditableProps } from '@chakra
 
 import type { UseEditableReturnType } from '@recipe/common/hooks';
 
-interface EditableField extends Omit<UseEditableReturnType, 'value'>, Omit<EditableProps, 'value'> {
-    ariaLabel: string;
+export interface EditableField
+    extends Omit<UseEditableReturnType, 'value'>,
+        Omit<EditableProps, 'value'> {
+    ariaLabel?: string;
 }
 export function EditableField(props: EditableField) {
     const { displayStr, inputRef, isEdited, actionHandler, ariaLabel, ...rest } = props;

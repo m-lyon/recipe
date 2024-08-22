@@ -36,43 +36,49 @@ export const RECIPE_FIELDS_FULL = gql(`
     fragment RecipeFieldsFull on Recipe {
         ...RecipeFieldsSubset
         instructions
-        ingredients {
-            _id
-            type
-            quantity
-            unit {
-                ...UnitFields
-            }
-            ingredient {
-                ... on Recipe {
-                    _id
-                    title
-                    pluralTitle
-                    ingredients {
+        ingredientSubsections {
+            name
+            ingredients {
+                _id
+                type
+                quantity
+                unit {
+                    ...UnitFields
+                }
+                ingredient {
+                    ... on Recipe {
                         _id
-                        type
-                        quantity
-                        unit {
-                            ...UnitFields
-                        }
-                        ingredient {
-                            ... on Ingredient {
-                                ...IngredientFields
+                        title
+                        pluralTitle
+                        ingredientSubsections {
+                            name
+                            ingredients {
+                                _id
+                                type
+                                quantity
+                                unit {
+                                    ...UnitFields
+                                }
+                                ingredient {
+                                    ... on Ingredient {
+                                        ...IngredientFields
+                                    }
+                                }
+                                prepMethod {
+                                    ...PrepMethodFields
+                                }
                             }
                         }
-                        prepMethod {
-                            ...PrepMethodFields
-                        }
+                        instructions
+                        numServings
                     }
-                    instructions
-                    numServings
+                    ... on Ingredient {
+                        ...IngredientFields
+                    }
                 }
-                ... on Ingredient {
-                    ...IngredientFields
+                prepMethod {
+                    ...PrepMethodFields
                 }
-            }
-            prepMethod {
-                ...PrepMethodFields
             }
         }
         source

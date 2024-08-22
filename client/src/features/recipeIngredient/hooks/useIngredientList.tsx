@@ -32,38 +32,39 @@ export function dbIngredientToFinished(ingr: RecipeIngredient): FinishedRecipeIn
 
 type NewChar = string | number;
 function handleQuantityChange(
+    subsection: number,
     char: NewChar,
     item: EditableRecipeIngredient,
     actionHandler: InternalActionHandler
 ) {
     if (typeof char === 'number') {
-        actionHandler.truncate(char);
+        actionHandler.truncate(subsection, char);
     } else {
         // Validate quantity upon completion
         if (char === ' ' && item.quantity !== null) {
             if (!VALID_NUMBER_REGEX.test(item.quantity)) {
                 throw new Error('Invalid quantity.');
             } else {
-                actionHandler.incrementState();
-                actionHandler.setShow.on();
+                actionHandler.incrementState(subsection);
+                actionHandler.setShow.on(subsection);
             }
             // Skip quantity with alphabetical characters
         } else if (item.quantity === null && /^[a-zA-Z]$/.test(char)) {
-            actionHandler.incrementState();
-            actionHandler.setShow.on();
-            actionHandler.unit.set(null);
-            handleIngredientChange(char, actionHandler);
+            actionHandler.incrementState(subsection);
+            actionHandler.setShow.on(subsection);
+            actionHandler.unit.set(subsection, null);
+            handleIngredientChange(subsection, char, actionHandler);
             // Starting input should be a number
         } else if (item.quantity === null && /^[\d]$/.test(char)) {
-            actionHandler.quantity.append(char);
+            actionHandler.quantity.append(subsection, char);
             if (item.show) {
-                actionHandler.setShow.off();
+                actionHandler.setShow.off(subsection);
             }
             // Valid numerical input
         } else if (item.quantity !== null && /^[\d/.-]$/.test(char)) {
-            actionHandler.quantity.append(char);
+            actionHandler.quantity.append(subsection, char);
             if (item.show) {
-                actionHandler.setShow.off();
+                actionHandler.setShow.off(subsection);
             }
             // Throw error for invalid input
         } else {
@@ -73,13 +74,14 @@ function handleQuantityChange(
 }
 
 function handleUnitChange(
+    subsection: number,
     char: NewChar,
     item: EditableRecipeIngredient,
     unitData: GetUnitsQuery | undefined,
     actionHandler: InternalActionHandler
 ) {
     if (typeof char === 'number') {
-        actionHandler.truncate(char);
+        actionHandler.truncate(subsection, char);
     } else {
         if (/^[a-zA-Z ]$/.test(char)) {
             if (char === ' ' && item.unit.value !== null) {
@@ -90,18 +92,18 @@ function handleUnitChange(
                 for (const unit of unitData.unitMany) {
                     if (isPlural(item.quantity)) {
                         if (unit.longPlural === unitValue || unit.shortPlural === unitValue) {
-                            actionHandler.unit.set(unit);
-                            return actionHandler.incrementState();
+                            actionHandler.unit.set(subsection, unit);
+                            return actionHandler.incrementState(subsection);
                         }
                     } else {
                         if (unit.longSingular === unitValue || unit.shortSingular === unitValue) {
-                            actionHandler.unit.set(unit);
-                            return actionHandler.incrementState();
+                            actionHandler.unit.set(subsection, unit);
+                            return actionHandler.incrementState(subsection);
                         }
                     }
                 }
             } else {
-                actionHandler.unit.append(char);
+                actionHandler.unit.append(subsection, char);
             }
         } else {
             throw new Error('Only letters and spaces are allowed when inputting unit.');
@@ -109,24 +111,32 @@ function handleUnitChange(
     }
 }
 
-function handleIngredientChange(char: NewChar, actionHandler: InternalActionHandler) {
+function handleIngredientChange(
+    subsection: number,
+    char: NewChar,
+    actionHandler: InternalActionHandler
+) {
     if (typeof char === 'number') {
-        actionHandler.truncate(char);
+        actionHandler.truncate(subsection, char);
     } else {
         if (/^[a-zA-Z -]$/.test(char)) {
-            actionHandler.ingredient.append(char);
+            actionHandler.ingredient.append(subsection, char);
         } else {
             throw new Error('Only letters and spaces are allowed when inputting an ingredient.');
         }
     }
 }
 
-function handlePrepMethodChange(char: NewChar, actionHandler: InternalActionHandler) {
+function handlePrepMethodChange(
+    subsection: number,
+    char: NewChar,
+    actionHandler: InternalActionHandler
+) {
     if (typeof char === 'number') {
-        actionHandler.truncate(char);
+        actionHandler.truncate(subsection, char);
     } else {
         if (/^[a-zA-Z ]$/.test(char)) {
-            actionHandler.prepMethod.append(char);
+            actionHandler.prepMethod.append(subsection, char);
         } else {
             throw new Error(`Only letters and spaces are allowed when inputting a prep method.`);
         }
@@ -146,7 +156,9 @@ export function getTextDiff(value: string, origStr: string): NewChar {
 export type DBInputState = Extract<InputState, 'unit' | 'ingredient' | 'prepMethod'>;
 
 type ShowStates = 'on' | 'off' | 'toggle';
-interface IngredientState {
+type IngredientListState = Subsection[];
+interface Subsection {
+    name?: string;
     finished: FinishedRecipeIngredient[];
     editable: EditableRecipeIngredient;
 }
@@ -218,6 +230,15 @@ function removeFromProperty(
     item[currentState].value = val.slice(0, val.length - num);
     return [0, item];
 }
+function getActionSubsection(state: IngredientListState, action: GetSubsectionAction) {
+    return getSubsection(state, action.subsection);
+}
+function getSubsection(state: IngredientListState, subsection: number) {
+    if (state.length <= subsection) {
+        throw new Error('Invalid subsection index');
+    }
+    return state[subsection];
+}
 // Actions ---------------------------------------------------------------------
 type Action =
     | RemoveFinishedItemAction
@@ -233,42 +254,55 @@ type Action =
     | IncrementEditableStateAction
     | DecrementEditableStateAction
     | SubmitEditableAction
-    | TruncateEditableAction;
+    | TruncateEditableAction
+    | AddSubsectionAction
+    | RemoveSubsectionAction
+    | SetSubsectionTitleAction;
+type GetSubsectionAction = Exclude<Action, AddSubsectionAction | RemoveSubsectionAction>;
 interface RemoveFinishedItemAction {
     type: 'remove_finished_item';
+    subsection: number;
     index: number;
 }
 function removeFinishedItem(
-    state: IngredientState,
+    state: IngredientListState,
     action: RemoveFinishedItemAction
-): IngredientState {
+): IngredientListState {
     return produce(state, (draft) => {
-        draft.finished.splice(action.index, 1);
+        const subsection = getActionSubsection(draft, action);
+        subsection.finished.splice(action.index, 1);
     });
 }
 interface ResetEditableAction {
     type: 'reset_editable';
+    subsection: number;
 }
-function resetEditable(state: IngredientState): IngredientState {
+function resetEditable(
+    state: IngredientListState,
+    action: ResetEditableAction
+): IngredientListState {
     return produce(state, (draft) => {
-        draft.editable = getEmptyIngredient();
+        const subsection = getActionSubsection(draft, action);
+        subsection.editable = getEmptyIngredient();
     });
 }
 interface SetShowAction {
     type: 'set_editable_show';
     payload: ShowStates;
+    subsection: number;
 }
-function setEditableShow(state: IngredientState, action: SetShowAction): IngredientState {
+function setEditableShow(state: IngredientListState, action: SetShowAction): IngredientListState {
     return produce(state, (draft) => {
+        const subsection = getActionSubsection(draft, action);
         switch (action.payload) {
             case 'on':
-                draft.editable.show = true;
+                subsection.editable.show = true;
                 break;
             case 'off':
-                draft.editable.show = false;
+                subsection.editable.show = false;
                 break;
             case 'toggle':
-                draft.editable.show = !draft.editable.show;
+                subsection.editable.show = !subsection.editable.show;
                 break;
             default:
                 throw new Error('Invalid show state');
@@ -278,40 +312,46 @@ function setEditableShow(state: IngredientState, action: SetShowAction): Ingredi
 interface SetFinishedAction {
     type: 'set_finished';
     finished: FinishedRecipeIngredient[];
+    subsection: number;
 }
-function setFinished(state: IngredientState, action: SetFinishedAction): IngredientState {
+function setFinished(state: IngredientListState, action: SetFinishedAction): IngredientListState {
     return produce(state, (draft) => {
-        draft.finished = action.finished;
+        const subsection = getActionSubsection(draft, action);
+        subsection.finished = action.finished;
     });
 }
 interface SetQuantityAction {
     type: 'set_editable_quantity';
     payload: string | null;
+    subsection: number;
 }
-function setQuantity(state: IngredientState, action: SetQuantityAction): IngredientState {
+function setQuantity(state: IngredientListState, action: SetQuantityAction): IngredientListState {
     return produce(state, (draft) => {
-        draft.editable.quantity = action.payload;
-        if (draft.editable.quantity === null) {
-            draft.editable.unit.value = null;
-            draft.editable.unit.data = null;
+        const subsection = getActionSubsection(draft, action);
+        subsection.editable.quantity = action.payload;
+        if (subsection.editable.quantity === null) {
+            subsection.editable.unit.value = null;
+            subsection.editable.unit.data = null;
         }
     });
 }
 interface SetUnitAction {
     type: 'set_editable_unit';
     payload: Unit | null;
+    subsection: number;
 }
-function setUnit(state: IngredientState, action: SetUnitAction): IngredientState {
+function setUnit(state: IngredientListState, action: SetUnitAction): IngredientListState {
     return produce(state, (draft) => {
+        const subsection = getActionSubsection(draft, action);
         // Set data
-        draft.editable.unit.data = action.payload;
+        subsection.editable.unit.data = action.payload;
         // Set value
-        if (draft.editable.unit.data === null) {
-            draft.editable.unit.value = draft.editable.unit.data;
+        if (subsection.editable.unit.data === null) {
+            subsection.editable.unit.value = subsection.editable.unit.data;
         } else {
-            draft.editable.unit.value = unitDisplayValue(
-                draft.editable.quantity,
-                draft.editable.unit.data!,
+            subsection.editable.unit.value = unitDisplayValue(
+                subsection.editable.quantity,
+                subsection.editable.unit.data!,
                 true
             );
         }
@@ -320,19 +360,24 @@ function setUnit(state: IngredientState, action: SetUnitAction): IngredientState
 interface SetIngredientAction {
     type: 'set_editable_ingredient';
     payload: Ingredient | RecipeFromIngredientsMany;
+    subsection: number;
 }
-function setIngredient(state: IngredientState, action: SetIngredientAction): IngredientState {
+function setIngredient(
+    state: IngredientListState,
+    action: SetIngredientAction
+): IngredientListState {
     return produce(state, (draft) => {
+        const subsection = getActionSubsection(draft, action);
         // Set data
-        draft.editable.ingredient.data = action.payload;
+        subsection.editable.ingredient.data = action.payload;
         // Set value
-        if (draft.editable.ingredient.data === null) {
-            draft.editable.ingredient.value = null;
+        if (subsection.editable.ingredient.data === null) {
+            subsection.editable.ingredient.value = null;
         } else {
-            draft.editable.ingredient.value = ingredientDisplayStr(
-                draft.editable.quantity,
-                draft.editable.unit.data!,
-                draft.editable.ingredient.data
+            subsection.editable.ingredient.value = ingredientDisplayStr(
+                subsection.editable.quantity,
+                subsection.editable.unit.data!,
+                subsection.editable.ingredient.data
             );
         }
     });
@@ -340,128 +385,172 @@ function setIngredient(state: IngredientState, action: SetIngredientAction): Ing
 interface SetPrepMethodAction {
     type: 'set_editable_prepMethod';
     payload: PrepMethod | null;
+    subsection: number;
 }
-function setPrepMethod(state: IngredientState, action: SetPrepMethodAction): IngredientState {
+function setPrepMethod(
+    state: IngredientListState,
+    action: SetPrepMethodAction
+): IngredientListState {
     return produce(state, (draft) => {
+        const subsection = getActionSubsection(draft, action);
         // Set data
-        draft.editable.prepMethod.data = action.payload;
+        subsection.editable.prepMethod.data = action.payload;
         // Set value
-        if (draft.editable.prepMethod.data === null) {
-            draft.editable.prepMethod.value = null;
+        if (subsection.editable.prepMethod.data === null) {
+            subsection.editable.prepMethod.value = null;
         } else {
-            draft.editable.prepMethod.value = draft.editable.prepMethod.data.value;
+            subsection.editable.prepMethod.value = subsection.editable.prepMethod.data.value;
         }
     });
 }
 interface AppendQuantityAction {
     type: 'append_editable_quantity';
     payload: string;
+    subsection: number;
 }
-function appendQuantity(state: IngredientState, action: AppendQuantityAction): IngredientState {
+function appendQuantity(
+    state: IngredientListState,
+    action: AppendQuantityAction
+): IngredientListState {
     return produce(state, (draft) => {
-        if (draft.editable.quantity === null) {
-            draft.editable.quantity = action.payload;
+        const subsection = getActionSubsection(draft, action);
+        if (subsection.editable.quantity === null) {
+            subsection.editable.quantity = action.payload;
         } else {
-            draft.editable.quantity += action.payload;
+            subsection.editable.quantity += action.payload;
         }
     });
 }
 interface AppendOtherIngredientAction {
     type: 'append_editable_unit' | 'append_editable_ingredient' | 'append_editable_prepMethod';
     payload: string;
+    subsection: number;
 }
 function appendOtherIngredient(
-    state: IngredientState,
+    state: IngredientListState,
     action: AppendOtherIngredientAction,
     property: DBInputState
-): IngredientState {
+): IngredientListState {
     return produce(state, (draft) => {
-        if (draft.editable[property].value === null) {
-            draft.editable[property] = { value: action.payload.toLowerCase() };
+        const subsection = getActionSubsection(draft, action);
+        if (subsection.editable[property].value === null) {
+            subsection.editable[property] = { value: action.payload.toLowerCase() };
         } else {
-            draft.editable[property].value += action.payload.toLowerCase();
+            subsection.editable[property].value += action.payload.toLowerCase();
         }
     });
 }
 interface IncrementEditableStateAction {
     type: 'increment_editable_state';
+    subsection: number;
 }
-function incrementEditableState(state: IngredientState): IngredientState {
+function incrementEditableState(
+    state: IngredientListState,
+    action: IncrementEditableStateAction
+): IngredientListState {
     return produce(state, (draft) => {
+        const subsection = getActionSubsection(draft, action);
         const nextState = {
-            quantity: draft.editable.quantity === null ? 'ingredient' : 'unit',
+            quantity: subsection.editable.quantity === null ? 'ingredient' : 'unit',
             unit: 'ingredient',
             ingredient: 'prepMethod',
         };
-        if (draft.editable.state === 'prepMethod') {
+        if (subsection.editable.state === 'prepMethod') {
             return;
         }
-        draft.editable.state = nextState[draft.editable.state] as InputState;
+        subsection.editable.state = nextState[subsection.editable.state] as InputState;
     });
 }
 interface DecrementEditableStateAction {
     type: 'decrement_editable_state';
+    subsection: number;
 }
-function decrementEditableState(state: IngredientState): IngredientState {
+function decrementEditableState(
+    state: IngredientListState,
+    action: DecrementEditableStateAction
+): IngredientListState {
     return produce(state, (draft) => {
+        const subsection = getActionSubsection(draft, action);
         const nextState = {
             unit: 'quantity',
-            ingredient: draft.editable.quantity === null ? 'quantity' : 'unit',
+            ingredient: subsection.editable.quantity === null ? 'quantity' : 'unit',
             prepMethod: 'ingredient',
         };
-        if (draft.editable.state === 'quantity') {
+        if (subsection.editable.state === 'quantity') {
             return;
         }
-        draft.editable.state = nextState[draft.editable.state] as InputState;
+        subsection.editable.state = nextState[subsection.editable.state] as InputState;
     });
 }
 interface TruncateEditableAction {
     type: 'truncate_editable';
     payload: number;
+    subsection: number;
 }
-function truncateEditable(state: IngredientState, action: TruncateEditableAction): IngredientState {
+function truncateEditable(
+    state: IngredientListState,
+    action: TruncateEditableAction
+): IngredientListState {
     return produce(state, (draft) => {
-        let newItem = { ...draft.editable };
+        const subsection = getActionSubsection(draft, action);
+        let newItem = { ...subsection.editable };
         [action.payload, newItem] = removeFromProperty(action.payload, newItem, 'prepMethod');
         [action.payload, newItem] = removeFromProperty(action.payload, newItem, 'ingredient');
         [action.payload, newItem] = removeFromProperty(action.payload, newItem, 'unit');
         newItem = removeFromQuantity(action.payload, newItem);
-        draft.editable = newItem;
+        subsection.editable = newItem;
     });
 }
 interface SubmitEditableAction {
     type: 'submit_editable';
+    subsection: number;
 }
-function submitEditable(state: IngredientState): IngredientState {
+function submitEditable(
+    state: IngredientListState,
+    action: SubmitEditableAction
+): IngredientListState {
     return produce(state, (draft) => {
-        if (draft.editable.unit.data === undefined) {
+        const subsection = getActionSubsection(draft, action);
+        if (subsection.editable.unit.data === undefined) {
             throw new Error('Cannot submit an item with undefined unit.');
         }
-        if (draft.editable.ingredient.data === undefined) {
+        if (subsection.editable.ingredient.data === undefined) {
             throw new Error('Cannot submit an item with null ingredient.');
         }
-        if (draft.editable.prepMethod.data === undefined) {
+        if (subsection.editable.prepMethod.data === undefined) {
             throw new Error('Cannot submit an item with null prep method.');
         }
         const finished = {
-            key: draft.editable.key,
-            quantity: draft.editable.quantity,
-            unit: draft.editable.unit.data,
-            ingredient: draft.editable.ingredient.data,
-            prepMethod: draft.editable.prepMethod.data,
+            key: subsection.editable.key,
+            quantity: subsection.editable.quantity,
+            unit: subsection.editable.unit.data,
+            ingredient: subsection.editable.ingredient.data,
+            prepMethod: subsection.editable.prepMethod.data,
         };
-        draft.finished.push(finished);
-        draft.editable = getEmptyIngredient();
+        subsection.finished.push(finished);
+        subsection.editable = getEmptyIngredient();
     });
 }
+interface AddSubsectionAction {
+    type: 'add_subsection';
+}
+interface RemoveSubsectionAction {
+    type: 'remove_subsection';
+    subsection: number;
+}
+interface SetSubsectionTitleAction {
+    type: 'set_subsection_title';
+    payload: string | undefined | null;
+    subsection: number;
+}
 // Reducer ---------------------------------------------------------------------
-function reducer(state: IngredientState, action: Action): IngredientState {
+function reducer(state: IngredientListState, action: Action): IngredientListState {
     switch (action.type) {
         case 'remove_finished_item': {
             return removeFinishedItem(state, action);
         }
         case 'reset_editable': {
-            return resetEditable(state);
+            return resetEditable(state, action);
         }
         case 'set_editable_show': {
             return setEditableShow(state, action);
@@ -494,16 +583,39 @@ function reducer(state: IngredientState, action: Action): IngredientState {
             return appendOtherIngredient(state, action, 'prepMethod');
         }
         case 'increment_editable_state': {
-            return incrementEditableState(state);
+            return incrementEditableState(state, action);
         }
         case 'decrement_editable_state': {
-            return decrementEditableState(state);
+            return decrementEditableState(state, action);
         }
         case 'truncate_editable': {
             return truncateEditable(state, action);
         }
         case 'submit_editable': {
-            return submitEditable(state);
+            return submitEditable(state, action);
+        }
+        case 'add_subsection': {
+            return produce(state, (draft) => {
+                draft.push({
+                    finished: [],
+                    editable: getEmptyIngredient(),
+                });
+            });
+        }
+        case 'remove_subsection': {
+            return produce(state, (draft) => {
+                draft.splice(action.subsection, 1);
+            });
+        }
+        case 'set_subsection_title': {
+            return produce(state, (draft) => {
+                const subsection = getActionSubsection(draft, action);
+                if (action.payload) {
+                    subsection.name = action.payload;
+                } else {
+                    subsection.name = undefined;
+                }
+            });
         }
         default: {
             throw Error('Unknown action type');
@@ -512,42 +624,47 @@ function reducer(state: IngredientState, action: Action): IngredientState {
 }
 
 interface RecipeIngredientActionHandler<T> {
-    set: (attr: T) => void;
-    append: (value: string) => void;
+    set: (subsection: number, attr: T) => void;
+    append: (subsection: number, value: string) => void;
 }
 interface InternalActionHandler {
-    incrementState: () => void;
-    decrementState: () => void;
-    submit: () => void;
-    truncate: (num: number) => void;
+    incrementState: (subsection: number) => void;
+    decrementState: (subsection: number) => void;
+    submit: (subsection: number) => void;
+    truncate: (subsection: number, num: number) => void;
     quantity: RecipeIngredientActionHandler<Quantity>;
     unit: RecipeIngredientActionHandler<Unit | null>;
     ingredient: RecipeIngredientActionHandler<Ingredient>;
     prepMethod: RecipeIngredientActionHandler<PrepMethod | null>;
-    reset: () => void;
+    reset: (subsection: number) => void;
     setShow: SetShow;
 }
 interface SetShow {
-    on: () => void;
-    off: () => void;
-    toggle: () => void;
+    on: (subsection: number) => void;
+    off: (subsection: number) => void;
+    toggle: (subsection: number) => void;
 }
-type SetAttr = Quantity | Unit | Ingredient | RecipeFromIngredientsMany | PrepMethod;
+interface SubsectionActions {
+    add: () => void;
+    remove: (subsection: number) => void;
+    setTitle: (subsection: number, title: SetSubsectionTitleAction['payload']) => void;
+}
+export type SetAttr = Quantity | Unit | Ingredient | RecipeFromIngredientsMany | PrepMethod;
 export interface IngredientActionHandler {
-    editableStringValue: () => string;
-    resetEditable: () => void;
-    setCurrentEditableAttribute: (attr: SetAttr) => void;
-    currentEditableAttributeValue: () => string | null;
+    editableStringValue: (subsection: number) => string;
+    resetEditable: (subsection: number) => void;
+    setCurrentEditableAttribute: (subsection: number, attr: SetAttr) => void;
+    currentEditableAttributeValue: (subsection: number) => string | null;
     setEditableShow: SetShow;
-    handleEditableSubmit: () => void;
-    handleEditableChange: (value: string) => void;
-    decrementEditableState: () => void;
-    setFinishedArray: (finished: FinishedRecipeIngredient[]) => void;
-    removeFinished: (index: number) => void;
+    handleEditableSubmit: (subsection: number) => void;
+    handleEditableChange: (subsection: number, value: string) => void;
+    decrementEditableState: (subsection: number) => void;
+    setFinishedArray: (subsection: number, finished: FinishedRecipeIngredient[]) => void;
+    removeFinished: (subsection: number, index: number) => void;
+    subsection: SubsectionActions;
 }
-
 export interface UseIngredientListReturnType {
-    state: IngredientState;
+    state: IngredientListState;
     actionHandler: IngredientActionHandler;
     queryData: RecipeIngredientQueryData;
 }
@@ -556,105 +673,133 @@ export function useIngredientList(): UseIngredientListReturnType {
     const { data: ingredientData } = useQuery(GET_INGREDIENTS);
     const { data: prepMethodData } = useQuery(GET_PREP_METHODS);
     const { apply } = useUnitConversion();
-    const [state, dispatch] = useReducer(reducer, {
-        finished: [],
-        editable: getEmptyIngredient(),
-    });
+    const [state, dispatch] = useReducer(reducer, [
+        {
+            finished: [],
+            editable: getEmptyIngredient(),
+        },
+    ]);
     const toast = useErrorToast();
-
     const getIngredientActionHandler = (): IngredientActionHandler => {
         const editableActions: InternalActionHandler = {
-            reset: () => dispatch({ type: 'reset_editable' }),
-            submit: () => dispatch({ type: 'submit_editable' }),
-            truncate: (num: number) => dispatch({ type: 'truncate_editable', payload: num }),
-            incrementState: () => dispatch({ type: 'increment_editable_state' }),
-            decrementState: () => dispatch({ type: 'decrement_editable_state' }),
+            reset: (subsection: number) => dispatch({ type: 'reset_editable', subsection }),
+            submit: (subsection: number) => dispatch({ type: 'submit_editable', subsection }),
+            truncate: (subsection: number, num: number) =>
+                dispatch({ type: 'truncate_editable', payload: num, subsection }),
+            incrementState: (subsection: number) =>
+                dispatch({ type: 'increment_editable_state', subsection }),
+            decrementState: (subsection: number) =>
+                dispatch({ type: 'decrement_editable_state', subsection }),
             quantity: {
-                set: (quantity: string | null) =>
-                    dispatch({ type: 'set_editable_quantity', payload: quantity }),
-                append: (value: string) =>
-                    dispatch({ type: 'append_editable_quantity', payload: value }),
+                set: (subsection: number, quantity: string | null) =>
+                    dispatch({ type: 'set_editable_quantity', payload: quantity, subsection }),
+                append: (subsection: number, value: string) =>
+                    dispatch({ type: 'append_editable_quantity', payload: value, subsection }),
             },
             unit: {
-                set: (unit: Unit | null) => {
+                set: (subsection: number, unit: Unit | null) => {
+                    const sub = getSubsection(state, subsection);
                     const { quantity, unit: newUnit } = apply({
-                        quantity: state.editable.quantity,
+                        quantity: sub.editable.quantity,
                         unit,
                     });
                     dispatch({
                         type: 'set_editable_quantity',
                         payload: quantity as SetQuantityAction['payload'],
+                        subsection,
                     });
                     dispatch({
                         type: 'set_editable_unit',
                         payload: newUnit as SetUnitAction['payload'],
+                        subsection,
                     });
                 },
-                append: (value: string) =>
-                    dispatch({ type: 'append_editable_unit', payload: value }),
+                append: (subsection: number, value: string) =>
+                    dispatch({ type: 'append_editable_unit', payload: value, subsection }),
             },
             ingredient: {
-                set: (ingredient: Ingredient | RecipeFromIngredientsMany) =>
-                    dispatch({ type: 'set_editable_ingredient', payload: ingredient }),
-                append: (value: string) =>
-                    dispatch({ type: 'append_editable_ingredient', payload: value }),
+                set: (subsection: number, ingredient: Ingredient | RecipeFromIngredientsMany) =>
+                    dispatch({ type: 'set_editable_ingredient', payload: ingredient, subsection }),
+                append: (subsection: number, value: string) =>
+                    dispatch({ type: 'append_editable_ingredient', payload: value, subsection }),
             },
             prepMethod: {
-                set: (prepMethod: PrepMethod | null) =>
-                    dispatch({ type: 'set_editable_prepMethod', payload: prepMethod }),
-                append: (value: string) =>
-                    dispatch({ type: 'append_editable_prepMethod', payload: value }),
+                set: (subsection: number, prepMethod: PrepMethod | null) =>
+                    dispatch({ type: 'set_editable_prepMethod', payload: prepMethod, subsection }),
+                append: (subsection: number, value: string) =>
+                    dispatch({ type: 'append_editable_prepMethod', payload: value, subsection }),
             },
             setShow: {
-                on: () => dispatch({ type: 'set_editable_show', payload: 'on' }),
-                off: () => dispatch({ type: 'set_editable_show', payload: 'off' }),
-                toggle: () => dispatch({ type: 'set_editable_show', payload: 'toggle' }),
+                on: (subsection: number) =>
+                    dispatch({ type: 'set_editable_show', payload: 'on', subsection }),
+                off: (subsection: number) =>
+                    dispatch({ type: 'set_editable_show', payload: 'off', subsection }),
+                toggle: (subsection: number) =>
+                    dispatch({ type: 'set_editable_show', payload: 'toggle', subsection }),
             },
         };
 
         // Public functions
-        const editableStringValue = () => getEditableRecipeIngredientStr(state.editable);
-        const currentEditableAttributeValue = () => {
-            if (state.editable.state === 'quantity') {
-                return state.editable.quantity;
+        const editableStringValue = (subsection: number) => {
+            const sub = getSubsection(state, subsection);
+            return getEditableRecipeIngredientStr(sub.editable);
+        };
+        const currentEditableAttributeValue = (subsection: number) => {
+            const sub = getSubsection(state, subsection);
+            if (sub.editable.state === 'quantity') {
+                return sub.editable.quantity;
             } else {
-                return state.editable[state.editable.state].value;
+                return sub.editable[sub.editable.state].value;
             }
         };
-        const handleEditableSubmit = () => {
-            if (state.editable.state !== 'prepMethod') {
-                editableActions.reset();
+        const handleEditableSubmit = (subsection: number) => {
+            const sub = getSubsection(state, subsection);
+            if (sub.editable.state !== 'prepMethod') {
+                editableActions.reset(subsection);
             } else {
-                editableActions.setShow.off();
-                editableActions.submit();
+                editableActions.setShow.off(subsection);
+                editableActions.submit(subsection);
             }
         };
-        const setCurrentEditableAttribute = (attr: SetAttr) => {
-            if (state.editable.state === 'quantity') {
-                editableActions.quantity.set(attr as Quantity);
-            } else if (state.editable.state === 'unit') {
-                editableActions.unit.set(attr as Unit);
-            } else if (state.editable.state === 'ingredient') {
-                editableActions.ingredient.set(attr as Ingredient);
-            } else if (state.editable.state === 'prepMethod') {
-                editableActions.prepMethod.set(attr as PrepMethod);
+        const setCurrentEditableAttribute = (subsection: number, attr: SetAttr) => {
+            const sub = getSubsection(state, subsection);
+            if (sub.editable.state === 'quantity') {
+                editableActions.quantity.set(subsection, attr as Quantity);
+            } else if (sub.editable.state === 'unit') {
+                editableActions.unit.set(subsection, attr as Unit);
+            } else if (sub.editable.state === 'ingredient') {
+                editableActions.ingredient.set(subsection, attr as Ingredient);
+            } else if (sub.editable.state === 'prepMethod') {
+                editableActions.prepMethod.set(subsection, attr as PrepMethod);
             }
-            editableActions.incrementState();
+            editableActions.incrementState(subsection);
         };
-        const handleEditableChange = (value: string) => {
-            const diff = getTextDiff(value, getEditableRecipeIngredientStr(state.editable));
+        const handleEditableChange = (subsection: number, value: string) => {
+            const sub = getSubsection(state, subsection);
+            const diff = getTextDiff(value, getEditableRecipeIngredientStr(sub.editable));
             try {
-                switch (state.editable.state) {
+                switch (sub.editable.state) {
                     case 'quantity':
-                        return handleQuantityChange(diff, state.editable, editableActions);
+                        return handleQuantityChange(
+                            subsection,
+                            diff,
+                            sub.editable,
+                            editableActions
+                        );
                     case 'unit':
-                        return handleUnitChange(diff, state.editable, unitData, editableActions);
+                        return handleUnitChange(
+                            subsection,
+                            diff,
+                            sub.editable,
+                            unitData,
+                            editableActions
+                        );
                     case 'ingredient':
-                        return handleIngredientChange(diff, editableActions);
+                        return handleIngredientChange(subsection, diff, editableActions);
                     case 'prepMethod':
-                        return handlePrepMethodChange(diff, editableActions);
+                        return handlePrepMethodChange(subsection, diff, editableActions);
                     default:
-                        throw new Error(`Unknown state: ${state.editable.state}`);
+                        throw new Error(`Unknown state: ${sub.editable.state}`);
                 }
             } catch (e: unknown) {
                 if (e instanceof Error) {
@@ -662,11 +807,18 @@ export function useIngredientList(): UseIngredientListReturnType {
                 }
             }
         };
-        const setFinishedArray = (finished: FinishedRecipeIngredient[]) => {
-            return dispatch({ type: 'set_finished', finished });
+        const setFinishedArray = (subsection: number, finished: FinishedRecipeIngredient[]) => {
+            return dispatch({ type: 'set_finished', finished, subsection });
         };
-        const removeFinished = (index: number) => {
-            return dispatch({ type: 'remove_finished_item', index });
+        const removeFinished = (subsection: number, index: number) => {
+            return dispatch({ type: 'remove_finished_item', index, subsection });
+        };
+
+        const subsection: SubsectionActions = {
+            add: () => dispatch({ type: 'add_subsection' }),
+            remove: (subsection) => dispatch({ type: 'remove_subsection', subsection }),
+            setTitle: (subsection, payload) =>
+                dispatch({ type: 'set_subsection_title', payload, subsection }),
         };
 
         return {
@@ -680,6 +832,7 @@ export function useIngredientList(): UseIngredientListReturnType {
             decrementEditableState: editableActions.decrementState,
             setFinishedArray,
             removeFinished,
+            subsection,
         };
     };
     const actionHandler = getIngredientActionHandler();
@@ -690,9 +843,5 @@ export function useIngredientList(): UseIngredientListReturnType {
         recipe: ingredientData?.recipeMany,
     };
 
-    return {
-        state,
-        actionHandler,
-        queryData,
-    };
+    return { state, actionHandler, queryData };
 }
