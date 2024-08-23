@@ -522,7 +522,7 @@ export const mockUpdateRecipeRemoveAsIngredient = {
         query: UPDATE_RECIPE,
         variables: {
             id: recipeTwoVars.id,
-            recipe: { ...recipeTwoVars.recipe, isIngredient: false, pluralTitle: null },
+            recipe: { ...recipeTwoVars.recipe, isIngredient: false, pluralTitle: undefined },
         },
     },
     result: {
@@ -540,7 +540,7 @@ export const mockUpdateRecipeRemoveNotes = {
         query: UPDATE_RECIPE,
         variables: {
             id: recipeThreeVars.id,
-            recipe: { ...recipeThreeVars.recipe, notes: null },
+            recipe: { ...recipeThreeVars.recipe, notes: undefined },
         },
     },
     result: {
@@ -582,7 +582,7 @@ export const mockUpdateRecipeRemoveSource = {
         query: UPDATE_RECIPE,
         variables: {
             id: recipeThreeVars.id,
-            recipe: { ...recipeThreeVars.recipe, source: null },
+            recipe: { ...recipeThreeVars.recipe, source: undefined },
         },
     },
     result: {

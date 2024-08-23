@@ -76,7 +76,7 @@ describe('Creating new items', () => {
         expect(screen.queryByText('add new ingredient')).not.toBeNull();
         // ------ Available as new unit ----------------------------------------
         await user.keyboard('{Escape}');
-        await user.click(screen.getByLabelText('Enter ingredient'));
+        await user.click(screen.getByLabelText('Enter ingredient for subsection 1'));
         await user.keyboard('{2}{ }');
         expect(await screen.findByLabelText('teaspoons')).not.toBeNull();
         expect(screen.queryByLabelText('cutting')).not.toBeNull();
@@ -101,7 +101,7 @@ describe('Creating new items', () => {
         expect(screen.queryByText('skip prep method')).not.toBeNull();
         // ------ Available as new ingredient -----------------------------------
         await user.keyboard('{Escape}');
-        await user.click(screen.getByLabelText('Enter ingredient'));
+        await user.click(screen.getByLabelText('Enter ingredient for subsection 1'));
         await user.keyboard('{2}{ }');
         await user.click(screen.getByText('skip unit'));
         expect(await screen.findByLabelText('apples')).not.toBeNull();

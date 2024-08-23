@@ -60,6 +60,7 @@ export function EditableIngredientList(props: UseIngredientListReturnType) {
                         textAlign='left'
                         pb='8px'
                         fontWeight={600}
+                        aria-label={`Enter title for subsection ${sectionIndex + 1}`}
                     />
                     <Reorder.Group
                         values={subsection.finished}

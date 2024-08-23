@@ -61,7 +61,11 @@ export function EditableIngredient(props: Props) {
                 pl='0px'
                 placeholder={DEFAULT_INGREDIENT_STR}
             >
-                <EditablePreview ref={previewRef} width='100%' aria-label='Enter ingredient' />
+                <EditablePreview
+                    ref={previewRef}
+                    width='100%'
+                    aria-label={`Enter ingredient for subsection ${subsection + 1}`}
+                />
                 <EditableInput
                     ref={inputRef}
                     value={ingredientStr}

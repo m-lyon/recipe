@@ -23,14 +23,19 @@ const MockIngredientsTab = () => {
         recipeId: '60f4d2e5c3d5a0a4f1b9c0eb',
         ingredients: [
             {
-                _id: '60f4d2e5c3d5afa4f1b9c0f8',
-                quantity: '1',
-                unit: mockGetUnits.result.data.unitMany[2], // kilogram
-                ingredient: mockGetIngredients.result.data.ingredientMany[1], // chicken
-                prepMethod: null,
-                type: 'ingredient',
+                name: 'Section One',
+                ingredients: [
+                    {
+                        _id: '60f4d2e5c3d5afa4f1b9c0f8',
+                        quantity: '1',
+                        unit: mockGetUnits.result.data.unitMany[2], // kilogram
+                        ingredient: mockGetIngredients.result.data.ingredientMany[1], // chicken
+                        prepMethod: null,
+                        type: 'ingredient',
+                    },
+                ] as RecipeIngredient[],
             },
-        ] as RecipeIngredient[],
+        ],
         notes: null as Recipe['notes'],
         numServings: 4,
         tags: [] as Recipe['tags'],

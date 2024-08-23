@@ -53,7 +53,7 @@ describe('Title', () => {
         // Act
         const element = screen.getByText('Enter Recipe Title');
         await user.click(element);
-        await user.click(screen.getByText('Ingredients'));
+        await user.click(screen.getByLabelText('Enter title for subsection 1'));
         await user.click(element);
         await user.keyboard('g');
 
@@ -75,7 +75,7 @@ describe('Notes', () => {
         // Act
         const element = screen.getByPlaceholderText('Enter notes...');
         await user.click(element);
-        await user.click(screen.getByText('Ingredients'));
+        await user.click(screen.getByLabelText('Enter title for subsection 1'));
         await user.click(element);
         await user.keyboard('g');
 
