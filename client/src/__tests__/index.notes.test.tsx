@@ -7,7 +7,7 @@ import { mockUpdateRecipeAddNote } from '@recipe/graphql/mutations/__mocks__/rec
 import { mockUpdateRecipeRemoveNotes } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeUpdateNotes } from '@recipe/graphql/mutations/__mocks__/recipe';
 
-import { renderComponent } from './utils';
+import { enterEditRecipePage, renderComponent } from './utils';
 
 loadErrorMessages();
 loadDevMessages();
@@ -23,9 +23,7 @@ describe('Update Recipe Workflow: Notes', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         await user.click(screen.getByLabelText('Edit recipe notes'));
         await user.keyboard('A new note{Enter}');
         await user.click(screen.getByLabelText('Save recipe'));
@@ -38,8 +36,7 @@ describe('Update Recipe Workflow: Notes', () => {
         expect(await screen.findByText('A new note.')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe'));
+        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         expect(await screen.findByText('A new note.')).not.toBeNull();
     });
 
@@ -49,9 +46,7 @@ describe('Update Recipe Workflow: Notes', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe Three'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe Three'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('Mock Recipe Three', 'Instruction one', screen, user);
         expect(screen.getByLabelText('Edit recipe notes')).toHaveProperty('value', 'Notes');
         await user.click(screen.getByLabelText('Edit recipe notes'));
         await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}');
@@ -66,9 +61,7 @@ describe('Update Recipe Workflow: Notes', () => {
         expect(screen.queryByText('Notes:')).toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe Three'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe Three'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('Mock Recipe Three', 'Instruction one', screen, user);
         expect(screen.getByLabelText('Edit recipe notes')).toHaveProperty('value', '');
     });
 
@@ -78,9 +71,7 @@ describe('Update Recipe Workflow: Notes', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe Three'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe Three'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('Mock Recipe Three', 'Instruction one', screen, user);
         await user.click(screen.getByLabelText('Edit recipe notes'));
         await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}');
         await user.keyboard('A new note.');
@@ -94,8 +85,7 @@ describe('Update Recipe Workflow: Notes', () => {
         expect(await screen.findByText('A new note.')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe Three'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe Three'));
+        await enterEditRecipePage('Mock Recipe Three', 'Instruction one', screen, user);
         expect(await screen.findByText('A new note.')).not.toBeNull();
     });
 });

@@ -8,7 +8,7 @@ import { mockUpdateRecipeOne } from '@recipe/graphql/mutations/__mocks__/recipe'
 import { mockUpdateRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockDeleteImages, mockUploadImages } from '@recipe/graphql/mutations/__mocks__/image';
 
-import { renderComponent } from './utils';
+import { enterEditRecipePage, renderComponent } from './utils';
 
 vi.mock('global', () => ({
     fetch: vi.fn(),
@@ -31,9 +31,7 @@ describe('Update Image Workflow', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         user.upload(screen.getByLabelText('Upload image'), mockImageFileOne);
         await user.click(screen.getByLabelText('Save recipe'));
 
@@ -47,9 +45,7 @@ describe('Update Image Workflow', () => {
         expect(screen.queryByAltText('Image 1 for Mock Recipe')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         expect(screen.queryByAltText('test_image.png')).not.toBeNull();
     });
 
@@ -61,9 +57,7 @@ describe('Update Image Workflow', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe Two'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe Two'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('Mock Recipe Two', 'Instruction one', screen, user);
         await user.click(screen.getByLabelText('Remove test_image.png'));
         await user.click(screen.getByLabelText('Save recipe'));
 
@@ -77,9 +71,7 @@ describe('Update Image Workflow', () => {
         expect(screen.queryByAltText('Image 1 for Mock Recipe Two')).toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe Two'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('Mock Recipe Two', 'Instruction one', screen, user);
         expect(screen.queryByAltText('test_image.png')).toBeNull();
     });
 });

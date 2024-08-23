@@ -12,7 +12,7 @@ import { mockGetRatingsNewRecipeAsIngr } from '@recipe/graphql/queries/__mocks__
 import { mockImageFileNew, mockUploadImagesNew } from '@recipe/graphql/mutations/__mocks__/image';
 import { mockGetRecipeNew, mockGetRecipeNewAsIngr } from '@recipe/graphql/queries/__mocks__/recipe';
 
-import { renderComponent } from './utils';
+import { enterCreateNewRecipePage, enterEditRecipePage, renderComponent } from './utils';
 
 vi.mock('global', () => ({
     fetch: vi.fn(),
@@ -41,10 +41,7 @@ describe('Create Recipe Workflow', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        expect(await screen.findByText('Recipes'));
-        expect(await screen.findByText('Logout'));
-        await user.click(screen.getAllByLabelText('Create new recipe')[0]);
-        expect(await screen.findByText('Enter Recipe Title')).not.toBeNull();
+        await enterCreateNewRecipePage(screen, user);
         // --- Add Title ----------------------------------------
         await user.click(screen.getByLabelText('Edit recipe title'));
         await user.keyboard('New Recipe');
@@ -89,9 +86,7 @@ describe('Create Recipe Workflow', () => {
         await user.click(screen.getByLabelText('Navigate to home page'));
 
         // ------ Edit Recipe Page -------------------------------
-        await user.hover(await screen.findByLabelText('View New Recipe'));
-        await user.click(screen.getByLabelText('Edit New Recipe'));
-        expect(await screen.findByText('Instr #1.')).not.toBeNull();
+        await enterEditRecipePage('New Recipe', 'Instr #1.', screen, user);
         expect(screen.queryByText('Instr #2.')).not.toBeNull();
         expect(screen.queryByText('2 Servings')).not.toBeNull();
         expect(screen.queryByText('Recipe Notes.')).not.toBeNull();
@@ -119,10 +114,7 @@ describe('Create Recipe Workflow', () => {
         window.HTMLElement.prototype.getBoundingClientRect = () =>
             ({ width: 100, left: 0, right: 100 }) as DOMRect;
         // Act ---------------------------------------------------
-        expect(await screen.findByText('Recipes'));
-        expect(await screen.findByText('Logout'));
-        await user.click(screen.getAllByLabelText('Create new recipe')[0]);
-        expect(await screen.findByText('Enter Recipe Title')).not.toBeNull();
+        await enterCreateNewRecipePage(screen, user);
         // --- Add Title -----------------------------------------
         await user.click(screen.getByLabelText('Edit recipe title'));
         await user.keyboard('New Recipe');
@@ -179,9 +171,7 @@ describe('Create Recipe Workflow', () => {
         await user.click(screen.getByLabelText('Navigate to home page'));
 
         // ------ Edit Recipe Page -------------------------------
-        await user.hover(await screen.findByLabelText('View New Recipe'));
-        await user.click(screen.getByLabelText('Edit New Recipe'));
-        expect(await screen.findByText('Instr #1.')).not.toBeNull();
+        await enterEditRecipePage('New Recipe', 'Instr #1.', screen, user);
         expect(screen.queryByText('Instr #2.')).not.toBeNull();
         expect(screen.queryByText('2 Servings')).not.toBeNull();
         expect(screen.queryByText('Recipe Notes.')).not.toBeNull();
@@ -209,10 +199,7 @@ describe('Create Recipe Workflow', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        expect(await screen.findByText('Recipes'));
-        expect(await screen.findByText('Logout'));
-        await user.click(screen.getAllByLabelText('Create new recipe')[0]);
-        expect(await screen.findByText('Enter Recipe Title')).not.toBeNull();
+        await enterCreateNewRecipePage(screen, user);
         // --- Add Title ----------------------------------------
         await user.click(screen.getByLabelText('Edit recipe title'));
         await user.keyboard('New Ingredient Recipe');
@@ -245,9 +232,7 @@ describe('Create Recipe Workflow', () => {
         await user.click(screen.getByLabelText('Navigate to home page'));
 
         // ------ Edit Recipe Page -------------------------------
-        await user.hover(await screen.findByLabelText('View New Ingredient Recipe'));
-        await user.click(screen.getByLabelText('Edit New Ingredient Recipe'));
-        expect(await screen.findByText('Instr #1.')).not.toBeNull();
+        await enterEditRecipePage('New Ingredient Recipe', 'Instr #1.', screen, user);
         expect(screen.queryByText('Instr #2.')).not.toBeNull();
         expect(screen.queryByText('2 tsp apples, diced')).not.toBeNull();
 

@@ -6,7 +6,7 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { mockUpdateRecipeNewTitle } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeNewTitleAsIngredient } from '@recipe/graphql/mutations/__mocks__/recipe';
 
-import { renderComponent } from './utils';
+import { enterEditRecipePage, renderComponent } from './utils';
 
 vi.mock('global', () => ({
     fetch: vi.fn(),
@@ -26,9 +26,7 @@ describe('Update Recipe Workflow: Title', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         await user.click(screen.getByLabelText('Edit recipe title'));
         await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Mock '
         await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Recip'
@@ -46,9 +44,7 @@ describe('Update Recipe Workflow: Title', () => {
         expect(screen.queryByText('New Title')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await user.hover(await screen.findByLabelText('View New Title'));
-        await user.click(screen.getByLabelText('Edit New Title'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('New Title', 'Instruction one', screen, user);
         expect(screen.queryByText('New Title')).not.toBeNull();
     });
 
@@ -60,9 +56,7 @@ describe('Update Recipe Workflow: Title', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe Two'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe Two'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('Mock Recipe Two', 'Instruction one', screen, user);
         await user.click(screen.getByLabelText('Edit recipe title'));
         await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Mock '
         await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Recip'
@@ -87,9 +81,7 @@ describe('Update Recipe Workflow: Title', () => {
         expect(screen.queryByText('New Titles')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await user.hover(await screen.findByLabelText('View New Title'));
-        await user.click(screen.getByLabelText('Edit New Title'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('New Title', 'Instruction one', screen, user);
         expect(screen.queryByText('New Title')).not.toBeNull();
         expect(screen.getByLabelText('Edit recipe plural title')).toHaveProperty(
             'value',

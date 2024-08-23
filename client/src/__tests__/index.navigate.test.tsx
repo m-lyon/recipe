@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { renderComponent } from './utils';
+import { enterCreateNewRecipePage, renderComponent } from './utils';
 
 loadErrorMessages();
 loadDevMessages();
@@ -70,11 +70,6 @@ describe('Create Recipe Workflow', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        expect(await screen.findByText('Recipes'));
-        expect(await screen.findByText('Logout'));
-        await user.click(screen.getAllByLabelText('Create new recipe')[0]);
-
-        // Expect ------------------------------------------------
-        expect(await screen.findByText('Enter Recipe Title')).not.toBeNull();
+        await enterCreateNewRecipePage(screen, user);
     });
 });

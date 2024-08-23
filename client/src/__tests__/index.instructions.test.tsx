@@ -7,7 +7,7 @@ import { mockUpdateRecipeInstructionsAdd } from '@recipe/graphql/mutations/__moc
 import { mockUpdateRecipeInstructionsEdit } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeInstructionsRemove } from '@recipe/graphql/mutations/__mocks__/recipe';
 
-import { renderComponent } from './utils';
+import { enterEditRecipePage, renderComponent } from './utils';
 
 loadErrorMessages();
 loadDevMessages();
@@ -23,9 +23,7 @@ describe('Update Recipe Workflow: Instructions', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         await user.click(screen.getByLabelText('Edit instruction 2'));
         await user.keyboard('{Enter}');
         await user.click(screen.getByLabelText('Edit instruction 3'));
@@ -42,9 +40,7 @@ describe('Update Recipe Workflow: Instructions', () => {
         expect(screen.queryByText('New instruction.')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         expect(screen.queryByText('Instruction two.')).not.toBeNull();
         expect(screen.queryByText('New instruction.')).not.toBeNull();
     });
@@ -55,9 +51,7 @@ describe('Update Recipe Workflow: Instructions', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         await user.click(screen.getByLabelText('Edit instruction 2'));
         await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Inst'
         await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'ruct'
@@ -76,9 +70,7 @@ describe('Update Recipe Workflow: Instructions', () => {
         expect(screen.queryByText('New instruction.')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         expect(screen.queryByText('Instruction two')).toBeNull();
         expect(screen.queryByText('New instruction.')).not.toBeNull();
     });
@@ -89,9 +81,7 @@ describe('Update Recipe Workflow: Instructions', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         await user.click(screen.getByLabelText('Edit instruction 2'));
         await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Inst'
         await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'ruct'
@@ -108,9 +98,7 @@ describe('Update Recipe Workflow: Instructions', () => {
         expect(screen.queryByText('Instruction two')).toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         expect(screen.queryByText('Instruction two')).toBeNull();
     });
 });

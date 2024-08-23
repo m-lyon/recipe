@@ -7,7 +7,7 @@ import { mockUpdateRecipeCalculatedTagsAdd } from '@recipe/graphql/mutations/__m
 import { mockUpdateRecipeCalculatedTagsEdit } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeCalculatedTagsRemove } from '@recipe/graphql/mutations/__mocks__/recipe';
 
-import { renderComponent } from './utils';
+import { enterEditRecipePage, renderComponent } from './utils';
 
 loadErrorMessages();
 loadDevMessages();
@@ -23,9 +23,7 @@ describe('Update Recipe Workflow: Calculated Tags', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
@@ -48,9 +46,7 @@ describe('Update Recipe Workflow: Calculated Tags', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
@@ -73,9 +69,7 @@ describe('Update Recipe Workflow: Calculated Tags', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await user.hover(await screen.findByLabelText('View Mock Recipe'));
-        await user.click(screen.getByLabelText('Edit Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
