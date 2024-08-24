@@ -485,6 +485,121 @@ export const mockUpdateRecipeAddIsIngredient = {
         },
     },
 };
+export const mockUpdateRecipeAddSubsection = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: {
+                ...recipeOneVars.recipe,
+                ingredientSubsections: [
+                    ...recipeOneVars.recipe.ingredientSubsections!,
+                    {
+                        name: 'New Section',
+                        ingredients: [
+                            {
+                                quantity: '5',
+                                unit: mockTeaspoon._id,
+                                ingredient: mockApple._id,
+                                prepMethod: mockDiced._id,
+                                type: 'ingredient' as EnumRecipeIngredientType,
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+    },
+    result: {
+        data: {
+            recipeUpdateById: {
+                record: {
+                    ...recipeOneData.record,
+                    ingredientSubsections: [
+                        ...recipeOneData.record.ingredientSubsections!,
+                        {
+                            name: 'New Section',
+                            ingredients: [
+                                {
+                                    _id: mockRecipeIngredientIdSeven,
+                                    quantity: '5',
+                                    unit: mockTeaspoon,
+                                    ingredient: mockApple,
+                                    prepMethod: mockDiced,
+                                    type: 'ingredient' as EnumRecipeIngredientType,
+                                },
+                            ],
+                        },
+                    ],
+                },
+            },
+        },
+    },
+};
+export const mockUpdateRecipeEditSubsection = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: {
+                ...recipeOneVars.recipe,
+                ingredientSubsections: [
+                    {
+                        name: recipeOneVars.recipe.ingredientSubsections![0].name,
+                        ingredients: recipeOneVars.recipe.ingredientSubsections![0].ingredients,
+                    },
+                    {
+                        name: 'Section Four',
+                        ingredients: recipeOneVars.recipe.ingredientSubsections![1].ingredients,
+                    },
+                ],
+            },
+        },
+    },
+    result: {
+        data: {
+            recipeUpdateById: {
+                record: {
+                    ...recipeOneData.record,
+                    ingredientSubsections: [
+                        {
+                            name: recipeOneData.record.ingredientSubsections![0]!.name,
+                            ingredients:
+                                recipeOneData.record.ingredientSubsections![0]!.ingredients,
+                        },
+                        {
+                            name: 'Section Four',
+                            ingredients:
+                                recipeOneData.record.ingredientSubsections![1]!.ingredients,
+                        },
+                    ],
+                },
+            },
+        },
+    },
+};
+export const mockUpdateRecipeRemoveSubsection = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: {
+                ...recipeOneVars.recipe,
+                ingredientSubsections: [recipeOneVars.recipe.ingredientSubsections![0]],
+            },
+        },
+    },
+    result: {
+        data: {
+            recipeUpdateById: {
+                record: {
+                    ...recipeOneData.record,
+                    ingredientSubsections: [recipeOneData.record.ingredientSubsections![0]],
+                },
+            },
+        },
+    },
+};
 const recipeTwoVars = getMockRecipeVariables(mockRecipeTwo);
 const recipeTwoData = getMockRecipeReturn(mockRecipeTwo);
 export const mockUpdateRecipeTwo = {
@@ -529,6 +644,51 @@ export const mockUpdateRecipeRemoveAsIngredient = {
         data: {
             recipeUpdateById: {
                 record: { ...recipeTwoData.record, isIngredient: false, pluralTitle: null },
+            },
+        },
+    },
+};
+export const mockUpdateRecipeEditAsIngredient = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeTwoVars.id,
+            recipe: {
+                ...recipeTwoVars.recipe,
+                ingredientSubsections: [
+                    {
+                        name: recipeTwoVars.recipe.ingredientSubsections![0].name,
+                        ingredients: recipeTwoVars.recipe.ingredientSubsections![0].ingredients,
+                    },
+                    {
+                        name: 'Section TwoTwo',
+                        ingredients: [
+                            recipeTwoVars.recipe.ingredientSubsections![1].ingredients[0],
+                        ],
+                    },
+                ],
+            },
+        },
+    },
+    result: {
+        data: {
+            recipeUpdateById: {
+                record: {
+                    ...recipeTwoData.record,
+                    ingredientSubsections: [
+                        {
+                            name: recipeTwoData.record.ingredientSubsections![0]!.name,
+                            ingredients:
+                                recipeTwoData.record.ingredientSubsections![0]!.ingredients,
+                        },
+                        {
+                            name: 'Section TwoTwo',
+                            ingredients: [
+                                recipeTwoData.record.ingredientSubsections![1]!.ingredients[0],
+                            ],
+                        },
+                    ],
+                },
             },
         },
     },

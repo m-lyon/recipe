@@ -52,8 +52,12 @@ export interface RecipeIngredientQueryData {
 export type IngredientListRecipe = Pick<
     Recipe,
     '_id' | 'title' | 'pluralTitle' | 'instructions' | 'numServings'
-> & { ingredients: RecipeIngredient[] };
+> & { ingredientSubsections: IngredientSubsection[] };
 export interface IngredientSubsection {
     name?: string;
     ingredients: RecipeIngredient[];
+}
+export interface RecipeAsIngredient extends RecipeIngredient {
+    type: EnumRecipeIngredientType.Recipe;
+    ingredient: Recipe;
 }

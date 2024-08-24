@@ -26,6 +26,11 @@ export const getCache = () =>
                             return incoming;
                         },
                     },
+                    ingredientSubsections: {
+                        merge(existing, incoming) {
+                            return incoming;
+                        },
+                    },
                 },
             },
         },

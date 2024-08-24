@@ -40,6 +40,7 @@ export function IngredientsTab(props: Props) {
                     subsections={ingredients}
                     origServings={numServings}
                     currentServings={servings}
+                    weightAndVolumeBtns
                 />
             }
             Notes={<Notes notes={notes} />}

@@ -86,3 +86,7 @@ export async function notNullByText(screen: Screen, ...text: string[]) {
         expect(screen.queryByText(t)).not.toBeNull();
     }
 }
+
+export function haveValueByLabelText(screen: Screen, label: string, value: string) {
+    expect(screen.getByLabelText(label)).toHaveProperty('value', value);
+}

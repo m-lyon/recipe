@@ -1,14 +1,14 @@
 import { ChevronRightIcon } from '@chakra-ui/icons';
 import { Box, Flex, ListItem, Spacer, useDisclosure } from '@chakra-ui/react';
 
+import { LikeFinishedRecipeIngredient } from '@recipe/types';
+import { IngredientListRecipe, RecipeAsIngredient } from '@recipe/types';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
-import { IngredientListRecipe, LikeFinishedRecipeIngredient } from '@recipe/types';
-import { RecipeIngredient as RecipeIngredientType } from '@recipe/graphql/generated';
 
 import { RecipeModal } from './RecipeModal';
 
 interface Props {
-    ingredient: RecipeIngredientType;
+    ingredient: RecipeAsIngredient;
 }
 export function RecipeIngredient({ ingredient }: Props) {
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -37,6 +37,7 @@ export function RecipeIngredient({ ingredient }: Props) {
                         cursor: 'pointer',
                     }}
                     onClick={onOpen}
+                    aria-label={`View ${ingredient.ingredient.title}`}
                 >
                     {getFinishedRecipeIngredientStr(ingredient as LikeFinishedRecipeIngredient)}
                     <ChevronRightIcon style={{ marginLeft: 5 }} />

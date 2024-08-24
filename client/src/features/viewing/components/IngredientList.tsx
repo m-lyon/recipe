@@ -8,6 +8,7 @@ import { changeQuantity } from '@recipe/utils/quantity';
 import { useUnitConversion } from '@recipe/features/servings';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 import { IngredientSubsection, LikeFinishedRecipeIngredient } from '@recipe/types';
+import { RecipeAsIngredient } from '@recipe/types';
 
 import { RecipeIngredient } from './RecipeIngredient';
 
@@ -15,9 +16,10 @@ export interface IngredientListProps {
     subsections: IngredientSubsection[];
     currentServings: number;
     origServings: number;
+    weightAndVolumeBtns?: boolean;
 }
 export function IngredientList(props: IngredientListProps) {
-    const { subsections, currentServings, origServings } = props;
+    const { subsections, currentServings, origServings, weightAndVolumeBtns } = props;
     const { apply } = useUnitConversion();
     const toast = useToast();
 
@@ -37,7 +39,7 @@ export function IngredientList(props: IngredientListProps) {
                     </ListItem>
                 );
             }
-            return <RecipeIngredient key={item._id} ingredient={item} />;
+            return <RecipeIngredient key={item._id} ingredient={item as RecipeAsIngredient} />;
         });
         if (index === 0) {
             return (
@@ -62,34 +64,36 @@ export function IngredientList(props: IngredientListProps) {
             <Flex pb='10px'>
                 <Text fontSize='2xl'>{modifiedSubsections[0].name ?? 'Ingredients'}</Text>
                 <Spacer />
-                <HStack spacing={2}>
-                    <IconButton
-                        aria-label='weight'
-                        icon={<TbWeight />}
-                        onClick={() =>
-                            toast({
-                                title: 'Weight',
-                                description: 'Weight conversion is not supported yet',
-                                status: 'info',
-                                duration: DELAY_SHORT,
-                                isClosable: true,
-                            })
-                        }
-                    />
-                    <IconButton
-                        aria-label='volume'
-                        icon={<CgBowl />}
-                        onClick={() =>
-                            toast({
-                                title: 'Volume',
-                                description: 'Volume conversion is not supported yet',
-                                status: 'info',
-                                duration: DELAY_SHORT,
-                                isClosable: true,
-                            })
-                        }
-                    />
-                </HStack>
+                {weightAndVolumeBtns ? (
+                    <HStack spacing={2}>
+                        <IconButton
+                            aria-label='weight'
+                            icon={<TbWeight />}
+                            onClick={() =>
+                                toast({
+                                    title: 'Weight',
+                                    description: 'Weight conversion is not supported yet',
+                                    status: 'info',
+                                    duration: DELAY_SHORT,
+                                    isClosable: true,
+                                })
+                            }
+                        />
+                        <IconButton
+                            aria-label='volume'
+                            icon={<CgBowl />}
+                            onClick={() =>
+                                toast({
+                                    title: 'Volume',
+                                    description: 'Volume conversion is not supported yet',
+                                    status: 'info',
+                                    duration: DELAY_SHORT,
+                                    isClosable: true,
+                                })
+                            }
+                        />
+                    </HStack>
+                ) : undefined}
             </Flex>
             <VStack spacing='24px' align='left'>
                 {subsectionsList}

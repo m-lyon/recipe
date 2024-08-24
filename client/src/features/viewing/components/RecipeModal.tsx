@@ -45,11 +45,15 @@ export function RecipeModal(props: Props) {
                     >{`${recipe.numServings} Serving${recipe.numServings === 1 ? '' : 's'}`}</Badge>
                     <Divider orientation='horizontal' pt='12px' />
                 </ModalHeader>
-                <ModalCloseButton />
+                <ModalCloseButton aria-label={`Close ${recipe.title} modal`} />
                 <ModalBody>
                     <Grid templateColumns='repeat(20, 1fr)' pb='12px'>
                         <GridItem colSpan={styles?.ingrColSpan}>
-                            <IngredientList subsections={recipe.ingredients} />
+                            <IngredientList
+                                subsections={recipe.ingredientSubsections}
+                                currentServings={recipe.numServings}
+                                origServings={recipe.numServings}
+                            />
                         </GridItem>
                         <GridItem colSpan={styles?.dividerColSpan} py={styles?.dividerPy}>
                             <Divider orientation={styles?.dividerOrientation} />
