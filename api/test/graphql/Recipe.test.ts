@@ -145,7 +145,12 @@ describe('recipeCreateOne', () => {
                     ],
                 },
             ],
-            instructions: ['Cook the chicken in the broth.', 'Add the noodles.'],
+            instructionSubsections: [
+                {
+                    name: 'Main',
+                    instructions: ['Cook the chicken in the broth.', 'Add the noodles.'],
+                },
+            ],
             numServings: 4,
             tags: [],
             isIngredient: false,
@@ -189,7 +194,12 @@ describe('recipeCreateOne', () => {
                     ],
                 },
             ],
-            instructions: ['Cook the chicken in the broth.', 'Add the noodles.'],
+            instructionSubsections: [
+                {
+                    name: 'Main',
+                    instructions: ['Cook the chicken in the broth.', 'Add the noodles.'],
+                },
+            ],
             numServings: 4,
             tags: [tag._id],
             isIngredient: false,
@@ -230,7 +240,12 @@ describe('recipeCreateOne', () => {
                     ],
                 },
             ],
-            instructions: ['Cook the chicken in the broth.', 'Add the noodles.'],
+            instructionSubsections: [
+                {
+                    name: 'Main',
+                    instructions: ['Cook the chicken in the broth.', 'Add the noodles.'],
+                },
+            ],
             numServings: 4,
             tags: [tag._id],
             isIngredient: false,
@@ -277,7 +292,7 @@ describe('recipeCreateOne', () => {
         );
     });
 
-    it('should NOT create a recipe, one unnamed subsection', async function () {
+    it('should NOT create a recipe, one unnamed ingredient subsection', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         const ingredient1 = await Ingredient.findOne({ name: 'tomato' });
         const ingredient2 = await Ingredient.findOne({ name: 'chicken' });
@@ -318,7 +333,12 @@ describe('recipeCreateOne', () => {
                     ],
                 },
             ],
-            instructions: ['Cook the chicken in the broth.', 'Add the noodles.'],
+            instructionSubsections: [
+                {
+                    name: 'Main',
+                    instructions: ['Cook the chicken in the broth.', 'Add the noodles.'],
+                },
+            ],
             numServings: 4,
             tags: [tag._id],
             isIngredient: false,
@@ -350,7 +370,7 @@ describe('recipeCreateOne', () => {
         );
     });
 
-    it('should NOT create a recipe, no subsections', async function () {
+    it('should NOT create a recipe, no ingredient subsections', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         const ingredient = await Ingredient.findOne({ name: 'chicken' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
@@ -364,6 +384,67 @@ describe('recipeCreateOne', () => {
         assert.equal(
             response.body.singleResult.errors[0].message,
             'Recipe validation failed: ingredientSubsections: At least one ingredient subsection is required.'
+        );
+    });
+
+    it('should NOT create a recipe, one unnamed instruction subsection', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const tag = await Tag.findOne({ value: 'dinner' });
+        const newRecord = {
+            ...getDefaultRecipeRecord(ingredient, unit, prepMethod, tag),
+            instructionSubsections: [
+                {
+                    instructions: ['Cook the chicken in the broth.', 'Add the noodles.'],
+                },
+                {
+                    name: 'Main',
+                    instructions: ['Let them cool.'],
+                },
+            ],
+        };
+        const response = await createRecipe(this, user, newRecord);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Recipe validation failed: instructionSubsections: All instruction subsections must be named.'
+        );
+    });
+
+    it('should NOT create a recipe, no instructions in subsection', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const tag = await Tag.findOne({ value: 'dinner' });
+        const newRecord = getDefaultRecipeRecord(ingredient, unit, prepMethod, tag);
+        newRecord.instructionSubsections[0].instructions = [];
+        const response = await createRecipe(this, user, newRecord);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Recipe validation failed: instructions: At least one instruction is required.'
+        );
+    });
+
+    it('should NOT create a recipe, no instruction subsections', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const tag = await Tag.findOne({ value: 'dinner' });
+        const newRecord = getDefaultRecipeRecord(ingredient, unit, prepMethod, tag);
+        newRecord.instructionSubsections = [];
+        const response = await createRecipe(this, user, newRecord);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Recipe validation failed: instructionSubsections: At least one instruction subsection is required.'
         );
     });
 });
@@ -414,7 +495,12 @@ describe('recipeUpdateById', () => {
                     ],
                 },
             ],
-            instructions: ['Cook the chicken in the broth.', 'Add the noodles.'],
+            instructionSubsections: [
+                {
+                    name: 'Main',
+                    instructions: ['Cook the chicken in the broth.', 'Add the noodles.'],
+                },
+            ],
             numServings: 4,
             tags: [],
             isIngredient: false,
@@ -664,6 +750,57 @@ describe('recipeUpdateById', () => {
         assert.equal(
             response.body.singleResult.errors[0].message,
             'Recipe validation failed: ingredientSubsections: At least one ingredient subsection is required.'
+        );
+    });
+
+    it('should NOT update a recipe, one unnamed instruction subsection', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const tag = await Tag.findOne({ value: 'dinner' });
+        const recipe = new Recipe(getDefaultRecipeRecord(user, ingredient, unit, prepMethod, tag));
+        await recipe.save();
+        const response = await updateRecipe(this, user, recipe._id, {
+            instructionSubsections: [
+                {
+                    instructions: ['Cook the chicken in the broth.', 'Add the noodles.'],
+                },
+                {
+                    name: 'Main',
+                    instructions: ['Let them cool.'],
+                },
+            ],
+        });
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Recipe validation failed: instructionSubsections: All instruction subsections must be named.'
+        );
+    });
+
+    it('should NOT update a recipe, no instructions in subsection', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const tag = await Tag.findOne({ value: 'dinner' });
+        const recipe = new Recipe(getDefaultRecipeRecord(user, ingredient, unit, prepMethod, tag));
+        await recipe.save();
+        const response = await updateRecipe(this, user, recipe._id, {
+            instructionSubsections: [
+                {
+                    name: 'Main',
+                    instructions: [],
+                },
+            ],
+        });
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Recipe validation failed: instructions: At least one instruction is required.'
         );
     });
 });

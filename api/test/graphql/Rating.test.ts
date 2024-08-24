@@ -56,7 +56,12 @@ async function createRecipeData() {
                 ],
             },
         ],
-        instructions: ['Cook the chicken in the broth.', 'Add the noodles.'],
+        instructionSubsections: [
+            {
+                name: 'Main',
+                instructions: ['Cook the chicken in the broth.', 'Add the noodles.'],
+            },
+        ],
         numServings: 4,
         isIngredient: false,
         owner: user._id,

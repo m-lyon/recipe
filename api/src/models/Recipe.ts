@@ -92,28 +92,7 @@ const recipeIngredientSchema = new Schema<RecipeIngredientType>({
         },
     },
 });
-
-export interface Recipe extends Document {
-    title: string;
-    titleIdentifier: string;
-    pluralTitle?: string;
-    subTitle?: string;
-    calculatedTags: string[];
-    tags?: Types.ObjectId[];
-    ingredientSubsections: {
-        name?: string;
-        ingredients: RecipeIngredientType[];
-    }[];
-    instructions: string[];
-    notes?: string;
-    owner: Types.ObjectId;
-    source?: string;
-    numServings: number;
-    isIngredient: boolean;
-    createdAt: Date;
-    lastModified: Date;
-}
-export interface IngredientSubsection {
+interface IngredientSubsection {
     name?: string;
     ingredients: RecipeIngredientType[];
 }
@@ -130,7 +109,41 @@ const ingredientSubsection = new Schema<IngredientSubsection>({
         },
     },
 });
+interface InstructionSubsection {
+    name?: string;
+    instructions: string[];
+}
+const instructionSubsection = new Schema({
+    name: { type: String },
+    instructions: {
+        type: [String],
+        required: true,
+        validate: {
+            validator: function (instructions: string[]) {
+                return instructions.length > 0;
+            },
+            message: 'At least one instruction is required.',
+        },
+    },
+});
 
+export interface Recipe extends Document {
+    title: string;
+    titleIdentifier: string;
+    pluralTitle?: string;
+    subTitle?: string;
+    calculatedTags: string[];
+    tags?: Types.ObjectId[];
+    ingredientSubsections: IngredientSubsection[];
+    instructionSubsections: InstructionSubsection[];
+    notes?: string;
+    owner: Types.ObjectId;
+    source?: string;
+    numServings: number;
+    isIngredient: boolean;
+    createdAt: Date;
+    lastModified: Date;
+}
 const recipeSchema = new Schema<Recipe>({
     title: {
         type: String,
@@ -182,15 +195,28 @@ const recipeSchema = new Schema<Recipe>({
             },
         ],
     },
-    instructions: {
-        type: [{ type: String }],
+    instructionSubsections: {
+        type: [instructionSubsection],
         required: true,
-        validate: {
-            validator: function (instructions: string[]) {
-                return instructions.length > 0;
+        validate: [
+            {
+                validator: function (instructionSubsections: InstructionSubsection[]) {
+                    return instructionSubsections.length > 0;
+                },
+                message: 'At least one instruction subsection is required.',
             },
-            message: 'At least one instruction is required.',
-        },
+            {
+                validator: function (instructionSubsections: InstructionSubsection[]) {
+                    // If there is more than one subsection, all subsections must be named
+                    if (instructionSubsections.length > 1) {
+                        return instructionSubsections.every(
+                            (subsection) => subsection.name != null
+                        );
+                    }
+                },
+                message: 'All instruction subsections must be named.',
+            },
+        ],
     },
     notes: { type: String },
     owner: { type: Schema.Types.ObjectId, required: true, ref: 'User', validate: ownerExists() },
