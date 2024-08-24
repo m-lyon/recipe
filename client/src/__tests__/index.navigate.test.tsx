@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { enterCreateNewRecipePage, renderComponent } from './utils';
+import { enterCreateNewRecipePage, renderComponent } from '@recipe/utils/tests';
 
 loadErrorMessages();
 loadDevMessages();

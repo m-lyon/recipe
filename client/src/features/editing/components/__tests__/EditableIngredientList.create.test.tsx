@@ -7,6 +7,7 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { cleanup, getDefaultNormalizer, render, screen } from '@testing-library/react';
 import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
 
+import { clickGetByText } from '@recipe/utils/tests';
 import { useIngredientList } from '@recipe/features/recipeIngredient';
 import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockCreateUnit } from '@recipe/graphql/mutations/__mocks__/unit';
@@ -89,8 +90,7 @@ describe('Creating new items', () => {
         // Act
         await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{ }');
-        await user.click(screen.getByText('skip unit'));
-        await user.click(screen.getByText('add new ingredient'));
+        await clickGetByText(screen, user, 'skip unit', 'add new ingredient');
         await user.keyboard('beef');
         await user.click(screen.getByLabelText('Save ingredient'));
 
@@ -115,8 +115,7 @@ describe('Creating new items', () => {
         // Act
         await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{ }');
-        await user.click(screen.getByText('skip unit'));
-        await user.click(screen.getByText('chicken'));
+        await clickGetByText(screen, user, 'skip unit', 'chicken');
         await user.keyboard('{p}');
         await user.click(screen.getByText('add new prep method'));
         await user.keyboard('pipped');
@@ -128,8 +127,7 @@ describe('Creating new items', () => {
         // ------ Available as new prepMethod -----------------------------------
         expect(await screen.findByLabelText('skip quantity')).not.toBeNull();
         await user.keyboard('{2}{ }');
-        await user.click(screen.getByText('skip unit'));
-        await user.click(screen.getByText('chickens'));
+        await clickGetByText(screen, user, 'skip unit', 'chickens');
         expect(await screen.findByLabelText('skip prep method')).not.toBeNull();
         expect(screen.queryByLabelText('pipped')).not.toBeNull();
     });

@@ -7,6 +7,7 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { cleanup, getDefaultNormalizer, render, screen } from '@testing-library/react';
 import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
 
+import { notNullByText, nullByText } from '@recipe/utils/tests';
 import { useIngredientList } from '@recipe/features/recipeIngredient';
 import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockCreateUnit } from '@recipe/graphql/mutations/__mocks__/unit';
@@ -66,8 +67,7 @@ describe('EditableIngredient Unit Keyboard', () => {
         // Act
         const ingredientInput = screen.getByText('Enter ingredient');
         await user.click(ingredientInput);
-        await user.keyboard('{1}{ }');
-        await user.keyboard('{Escape}');
+        await user.keyboard('{1}{ }{Escape}');
 
         // Expect
         expect(screen.queryByText('1 ')).toBeNull();
@@ -136,10 +136,7 @@ describe('EditableIngredient Unit Keyboard', () => {
         expect(
             screen.queryByText('1 ', { normalizer: getDefaultNormalizer({ trim: false }) })
         ).not.toBeNull();
-        expect(screen.queryByText('teaspoon')).not.toBeNull();
-        expect(screen.queryByText('gram')).not.toBeNull();
-        expect(screen.queryByText('ounce')).not.toBeNull();
-        expect(screen.queryByText('cup')).not.toBeNull();
+        await notNullByText(screen, 'teaspoon', 'gram', 'ounce', 'cup');
     });
     it('should display add new unit', async () => {
         const user = userEvent.setup();
@@ -149,8 +146,7 @@ describe('EditableIngredient Unit Keyboard', () => {
         // Act
         const ingredientInput = screen.getByText('Enter ingredient');
         await user.click(ingredientInput);
-        await user.keyboard('{1}{ }');
-        await user.keyboard('{c}{u}{t}{z}');
+        await user.keyboard('{1}{ }{c}{u}{t}{z}');
 
         // Expect
         expect(screen.queryByText('Add new unit')).not.toBeNull();
@@ -163,8 +159,7 @@ describe('EditableIngredient Unit Keyboard', () => {
         // Act
         const ingredientInput = screen.getByText('Enter ingredient');
         await user.click(ingredientInput);
-        await user.keyboard('{1}{ }');
-        await user.keyboard('{1}');
+        await user.keyboard('{1}{ }{1}');
 
         // Expect
         expect(screen.queryByText('Invalid input')).not.toBeNull();
@@ -194,13 +189,10 @@ describe('EditableIngredient Unit Keyboard', () => {
         // Act
         const quantityInput = screen.getByText('Enter ingredient');
         await user.click(quantityInput);
-        await user.keyboard('{1}{ }');
-        await user.keyboard('{c}{u}{t}{z}');
-        await user.keyboard('{ArrowDown}{Enter}');
+        await user.keyboard('{1}{ }{c}{u}{t}{z}{ArrowDown}{Enter}');
 
         // Expect
-        expect(screen.queryByText('Add new unit')).not.toBeNull();
-        expect(screen.queryByText('Save')).not.toBeNull();
+        await notNullByText(screen, 'Add new unit', 'Save');
     });
 
     it('should reset back to the quantity state', async () => {
@@ -210,15 +202,11 @@ describe('EditableIngredient Unit Keyboard', () => {
 
         // Act
         const quantityInput = screen.getByText('Enter ingredient');
-
         await user.click(quantityInput);
-        await user.keyboard('{1}{ }');
-        await user.keyboard('{g}{ }');
-        await user.keyboard('{Backspace}{Backspace}');
+        await user.keyboard('{1}{ }{g}{ }{Backspace>2/}');
 
         // Expect
-        expect(screen.queryByText('chicken')).toBeNull();
-        expect(screen.queryByText('1 g')).toBeNull();
+        await nullByText(screen, 'chicken', '1 g');
     });
 });
 describe('EditableIngredient Unit Spacebar', () => {
@@ -233,8 +221,7 @@ describe('EditableIngredient Unit Spacebar', () => {
         // Act
         const quantityInput = screen.getByText('Enter ingredient');
         await user.click(quantityInput);
-        await user.keyboard('{1}{ }');
-        await user.keyboard('{c}{u}{p}{ }');
+        await user.keyboard('{1}{ }{c}{u}{p}{ }');
 
         // Expect
         expect(
@@ -255,8 +242,7 @@ describe('EditableIngredient Unit Spacebar', () => {
         // Act
         const quantityInput = screen.getByText('Enter ingredient');
         await user.click(quantityInput);
-        await user.keyboard('{2}{ }');
-        await user.keyboard('{c}{u}{p}{s}{ }');
+        await user.keyboard('{2}{ }{c}{u}{p}{s}{ }');
 
         // Expect
         expect(
@@ -342,12 +328,10 @@ describe('EditableIngredient Unit Click', () => {
         // Act
         const quantityInput = screen.getByText('Enter ingredient');
         await user.click(quantityInput);
-        await user.keyboard('{1}{ }');
-        await user.keyboard('{c}{u}{t}{z}');
+        await user.keyboard('{1}{ }{c}{u}{t}{z}');
         await user.click(screen.getByText('add new unit'));
 
         // Expect
-        expect(screen.queryByText('Add new unit')).not.toBeNull();
-        expect(screen.queryByText('Save')).not.toBeNull();
+        await notNullByText(screen, 'Add new unit', 'Save');
     });
 });

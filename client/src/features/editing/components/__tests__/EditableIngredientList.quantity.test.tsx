@@ -80,8 +80,7 @@ describe('EditableIngredient Quantity Keyboard', () => {
         // Act
         const ingredientInput = screen.getByText('Enter ingredient');
         await user.click(ingredientInput);
-        await user.keyboard('{1}');
-        await user.keyboard('{Escape}');
+        await user.keyboard('{1}{Escape}');
 
         // Expect
         expect(screen.queryByText('Enter ingredient')).not.toBeNull();
@@ -140,8 +139,7 @@ describe('EditableIngredient Quantity Keyboard', () => {
         // Act
         const quantityInput = screen.getByText('Enter ingredient');
         await user.click(quantityInput);
-        await user.keyboard('{1}{{/}}{2}{ }');
-        await user.keyboard('{Backspace}');
+        await user.keyboard('{1}{{/}}{2}{ }{Backspace}');
 
         // Expect
         expect(

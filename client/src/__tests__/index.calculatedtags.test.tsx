@@ -3,11 +3,10 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
+import { enterEditRecipePage, notNullByText, renderComponent } from '@recipe/utils/tests';
 import { mockUpdateRecipeCalculatedTagsAdd } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeCalculatedTagsEdit } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeCalculatedTagsRemove } from '@recipe/graphql/mutations/__mocks__/recipe';
-
-import { enterEditRecipePage, renderComponent } from './utils';
 
 loadErrorMessages();
 loadDevMessages();
@@ -28,16 +27,10 @@ describe('Update Recipe Workflow: Calculated Tags', () => {
 
         // Expect ------------------------------------------------
         // ------ Home Page --------------------------------------
-        expect(await screen.findByText('Recipes')).not.toBeNull();
-        expect(screen.queryByText('vegetarian')).not.toBeNull();
-        expect(screen.queryByText('special')).not.toBeNull();
-        expect(screen.queryByText('vegan')).not.toBeNull();
+        await notNullByText(screen, 'Recipes', 'vegetarian', 'special', 'vegan');
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
-        expect(screen.queryByText('vegetarian')).not.toBeNull();
-        expect(screen.queryByText('special')).not.toBeNull();
-        expect(screen.queryByText('vegan')).not.toBeNull();
+        await notNullByText(screen, 'Instruction one', 'vegetarian', 'special', 'vegan');
     });
 
     it('should display edit calculated tags', async () => {
@@ -51,15 +44,11 @@ describe('Update Recipe Workflow: Calculated Tags', () => {
 
         // Expect ------------------------------------------------
         // ------ Home Page --------------------------------------
-        expect(await screen.findByText('Recipes')).not.toBeNull();
-        expect(screen.queryByText('vegetarian')).not.toBeNull();
-        expect(screen.queryByText('special')).not.toBeNull();
+        await notNullByText(screen, 'Recipes', 'vegetarian', 'special');
         expect(screen.queryByText('vegan')).toBeNull();
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
-        expect(screen.queryByText('vegetarian')).not.toBeNull();
-        expect(screen.queryByText('special')).not.toBeNull();
+        await notNullByText(screen, 'Instruction one', 'vegetarian', 'special');
         expect(screen.queryByText('vegan')).toBeNull();
     });
 
@@ -74,13 +63,11 @@ describe('Update Recipe Workflow: Calculated Tags', () => {
 
         // Expect ------------------------------------------------
         // ------ Home Page --------------------------------------
-        expect(await screen.findByText('Recipes')).not.toBeNull();
-        expect(screen.queryByText('vegetarian')).not.toBeNull();
+        await notNullByText(screen, 'Recipes', 'vegetarian');
         expect(screen.queryByText('vegan')).toBeNull();
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
-        expect(screen.queryByText('vegetarian')).not.toBeNull();
+        await notNullByText(screen, 'Instruction one', 'vegetarian');
         expect(screen.queryByText('vegan')).toBeNull();
     });
 });

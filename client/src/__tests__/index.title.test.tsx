@@ -3,10 +3,9 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
+import { enterEditRecipePage, renderComponent } from '@recipe/utils/tests';
 import { mockUpdateRecipeNewTitle } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeNewTitleAsIngredient } from '@recipe/graphql/mutations/__mocks__/recipe';
-
-import { enterEditRecipePage, renderComponent } from './utils';
 
 vi.mock('global', () => ({
     fetch: vi.fn(),
@@ -28,10 +27,7 @@ describe('Update Recipe Workflow: Title', () => {
         // Act --------------------------------------------------
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         await user.click(screen.getByLabelText('Edit recipe title'));
-        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Mock '
-        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Recip'
-        await user.keyboard('{Backspace}{Backspace}'); // remove 'e
-        await user.keyboard('New Title');
+        await user.keyboard('{Backspace>11/}New Title');
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
@@ -58,17 +54,9 @@ describe('Update Recipe Workflow: Title', () => {
         // Act --------------------------------------------------
         await enterEditRecipePage('Mock Recipe Two', 'Instruction one', screen, user);
         await user.click(screen.getByLabelText('Edit recipe title'));
-        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Mock '
-        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Recip'
-        await user.keyboard('{Backspace}{Backspace}'); // remove 'e '
-        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Two'
-        await user.keyboard('New Title');
+        await user.keyboard('{Backspace>15/}New Title');
         await user.click(screen.getByLabelText('Edit recipe plural title'));
-        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Mock '
-        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Recip'
-        await user.keyboard('{Backspace}{Backspace}'); // remove 'es'
-        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}'); // remove ' Two'
-        await user.keyboard('New Titles');
+        await user.keyboard('{Backspace>16/}New Titles');
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------

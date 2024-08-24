@@ -7,6 +7,7 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { cleanup, getDefaultNormalizer, render, screen } from '@testing-library/react';
 import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
 
+import { clickGetByText } from '@recipe/utils/tests';
 import { useIngredientList } from '@recipe/features/recipeIngredient';
 import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockCreateUnit } from '@recipe/graphql/mutations/__mocks__/unit';
@@ -82,8 +83,7 @@ describe('Unit conversion', () => {
 
         // Act
         await user.click(screen.getByText('Enter ingredient'));
-        await user.keyboard('{0}{.}{5}{ }');
-        await user.keyboard('{k}{g}{ }');
+        await user.keyboard('{0}{.}{5}{ }{k}{g}{ }');
 
         // Expect
         expect(
@@ -99,9 +99,7 @@ describe('Unit conversion', () => {
         // Act
         await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{0}{.}{5}{ }');
-        await user.click(screen.getByText('kilograms'));
-        await user.click(screen.getByText('chicken'));
-        await user.click(screen.getByText('chopped'));
+        await clickGetByText(screen, user, 'kilograms', 'chicken', 'chopped');
 
         // Expect
         expect(screen.queryByText('500g chicken, chopped')).not.toBeNull();

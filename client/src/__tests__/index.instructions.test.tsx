@@ -3,11 +3,10 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
+import { enterEditRecipePage, notNullByText, renderComponent } from '@recipe/utils/tests';
 import { mockUpdateRecipeInstructionsAdd } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeInstructionsEdit } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeInstructionsRemove } from '@recipe/graphql/mutations/__mocks__/recipe';
-
-import { enterEditRecipePage, renderComponent } from './utils';
 
 loadErrorMessages();
 loadDevMessages();
@@ -35,14 +34,11 @@ describe('Update Recipe Workflow: Instructions', () => {
         expect(await screen.findByText('Recipes')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
-        expect(screen.queryByText('Instruction two.')).not.toBeNull();
-        expect(screen.queryByText('New instruction.')).not.toBeNull();
+        await notNullByText(screen, 'Instruction one', 'Instruction two.', 'New instruction.');
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
-        expect(screen.queryByText('Instruction two.')).not.toBeNull();
-        expect(screen.queryByText('New instruction.')).not.toBeNull();
+        await notNullByText(screen, 'Instruction two.', 'New instruction.');
     });
 
     it('should edit the instructions', async () => {
@@ -53,11 +49,7 @@ describe('Update Recipe Workflow: Instructions', () => {
         // Act --------------------------------------------------
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         await user.click(screen.getByLabelText('Edit instruction 2'));
-        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Inst'
-        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'ruct'
-        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'ion '
-        await user.keyboard('{Backspace}{Backspace}{Backspace}'); // remove 'Two'
-        await user.keyboard('New instruction');
+        await user.keyboard('{Backspace>15/}New instruction');
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
@@ -65,9 +57,8 @@ describe('Update Recipe Workflow: Instructions', () => {
         expect(await screen.findByText('Recipes')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await notNullByText(screen, 'Instruction one', 'New instruction.');
         expect(screen.queryByText('Instruction two')).toBeNull();
-        expect(screen.queryByText('New instruction.')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
@@ -83,10 +74,7 @@ describe('Update Recipe Workflow: Instructions', () => {
         // Act --------------------------------------------------
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         await user.click(screen.getByLabelText('Edit instruction 2'));
-        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'Inst'
-        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'ruct'
-        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}'); // remove 'ion '
-        await user.keyboard('{Backspace}{Backspace}{Backspace}'); // remove 'Two'
+        await user.keyboard('{Backspace>15/}');
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------

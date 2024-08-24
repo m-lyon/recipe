@@ -60,3 +60,29 @@ export async function clickFindByText(
         await user.click(await screen.findByText(t));
     }
 }
+
+export async function clickGetByText(
+    screen: Screen,
+    user: ReturnType<typeof userEvent.setup>,
+    ...text: string[]
+) {
+    for (const t of text) {
+        await user.click(screen.getByText(t));
+    }
+}
+
+export async function nullByText(screen: Screen, ...text: string[]) {
+    for (const t of text) {
+        expect(screen.queryByText(t)).toBeNull();
+    }
+}
+
+export async function notNullByText(screen: Screen, ...text: string[]) {
+    expect(await screen.findByText(text[0])).not.toBeNull();
+    if (text.length === 1) {
+        return;
+    }
+    for (const t of text.slice(1)) {
+        expect(screen.queryByText(t)).not.toBeNull();
+    }
+}

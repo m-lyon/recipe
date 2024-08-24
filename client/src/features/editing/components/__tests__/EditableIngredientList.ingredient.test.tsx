@@ -7,6 +7,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
 
+import { notNullByText } from '@recipe/utils/tests';
 import { useIngredientList } from '@recipe/features/recipeIngredient';
 import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockCreateUnit } from '@recipe/graphql/mutations/__mocks__/unit';
@@ -66,8 +67,7 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         // Act
         const ingredientInput = screen.getByText('Enter ingredient');
         await user.click(ingredientInput);
-        await user.keyboard('{1}{ }{ArrowDown}{Enter}');
-        await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
+        await user.keyboard('{1}{ }{ArrowDown}{Enter}{ArrowDown>2/}{Enter}');
 
         // Expect
         expect(screen.queryByText('1 cup chicken,')).not.toBeNull();
@@ -99,10 +99,7 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         await user.click(screen.getByText('cup'));
 
         // Expect
-        expect(screen.queryByText('apples')).not.toBeNull();
-        expect(screen.queryByText('carrots')).not.toBeNull();
-        expect(screen.queryByText('chicken')).not.toBeNull();
-        expect(screen.queryByText('iceberg lettuce')).not.toBeNull();
+        await notNullByText(screen, 'apples', 'carrots', 'chicken', 'iceberg lettuce');
     });
     it('should display add new ingredient', async () => {
         const user = userEvent.setup();
@@ -144,8 +141,7 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         await user.click(quantityInput);
         await user.keyboard('{1}{ }');
         await user.click(screen.getByText('cup'));
-        await user.keyboard('{a}{p}{f}');
-        await user.keyboard('{ArrowDown}{Enter}');
+        await user.keyboard('{a}{p}{f}{ArrowDown}{Enter}');
 
         // Expect
         expect(screen.queryByText('Add new ingredient')).not.toBeNull();
@@ -161,8 +157,7 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         await user.click(quantityInput);
         await user.keyboard('{2}{ }');
         await user.click(screen.getByText('skip unit'));
-        await user.keyboard('{a}{p}{p}');
-        await user.keyboard('{Enter}');
+        await user.keyboard('{a}{p}{p}{Enter}');
 
         // Expect
         expect(screen.queryByText('2 apples,')).not.toBeNull();

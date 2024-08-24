@@ -3,11 +3,10 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
+import { enterEditRecipePage, renderComponent } from '@recipe/utils/tests';
 import { mockUpdateRecipeAddSource } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeRemoveSource } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeUpdateSource } from '@recipe/graphql/mutations/__mocks__/recipe';
-
-import { enterEditRecipePage, renderComponent } from './utils';
 
 loadErrorMessages();
 loadDevMessages();
@@ -49,8 +48,7 @@ describe('Update Recipe Workflow: Source', () => {
         await enterEditRecipePage('Mock Recipe Three', 'Instruction one', screen, user);
         expect(screen.getByLabelText('Edit recipe source')).toHaveProperty('value', 'Example');
         await user.click(screen.getByLabelText('Edit recipe source'));
-        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}');
-        await user.keyboard('{Backspace}{Backspace}{Backspace}');
+        await user.keyboard('{Backspace>7/}');
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
@@ -73,7 +71,7 @@ describe('Update Recipe Workflow: Source', () => {
         // Act --------------------------------------------------
         await enterEditRecipePage('Mock Recipe Three', 'Instruction one', screen, user);
         await user.click(screen.getByLabelText('Edit recipe source'));
-        await user.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}');
+        await user.keyboard('{Backspace>4/}');
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
