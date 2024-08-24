@@ -83,10 +83,10 @@ describe('prepMethodCreateOne', () => {
         await createPrepMethod(this, user, newRecord);
         const response = await createPrepMethod(this, user, newRecord);
         assert.equal(response.body.kind, 'single');
-        assert(response.body.singleResult.errors, 'Validation error should occur');
-        assert(
-            response.body.singleResult.errors[0].message ===
-                'PrepMethod validation failed: value: The prep method must be unique.'
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'PrepMethod validation failed: value: The prep method must be unique.'
         );
     });
 });
@@ -172,10 +172,10 @@ describe('prepMethodUpdateById', () => {
         // Update the unit
         const response = await updatePrepMethod(this, user, recordOne._id, { value: 'diced' });
         assert.equal(response.body.kind, 'single');
-        assert(response.body.singleResult.errors);
-        assert(
-            response.body.singleResult.errors[0].message ===
-                'PrepMethod validation failed: value: The prep method must be unique.'
+        assert.isDefined(response.body.singleResult.errors);
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'PrepMethod validation failed: value: The prep method must be unique.'
         );
     });
 });

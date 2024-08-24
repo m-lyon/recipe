@@ -113,6 +113,23 @@ export interface Recipe extends Document {
     createdAt: Date;
     lastModified: Date;
 }
+export interface IngredientSubsection {
+    name?: string;
+    ingredients: RecipeIngredientType[];
+}
+const ingredientSubsection = new Schema<IngredientSubsection>({
+    name: { type: String },
+    ingredients: {
+        type: [recipeIngredientSchema],
+        required: true,
+        validate: {
+            validator: function (ingredients: RecipeIngredientType[]) {
+                return ingredients.length > 0;
+            },
+            message: 'At least one ingredient is required.',
+        },
+    },
+});
 
 const recipeSchema = new Schema<Recipe>({
     title: {
@@ -144,21 +161,27 @@ const recipeSchema = new Schema<Recipe>({
             },
         ],
     },
-    ingredientSubsections: [
-        {
-            name: { type: String },
-            ingredients: {
-                type: [{ type: recipeIngredientSchema }],
-                required: true,
-                validate: {
-                    validator: function (ingredients: RecipeIngredientType[]) {
-                        return ingredients.length > 0;
-                    },
-                    message: 'At least one ingredient is required.',
+    ingredientSubsections: {
+        type: [ingredientSubsection],
+        required: true,
+        validate: [
+            {
+                validator: function (ingredientSubsections: IngredientSubsection[]) {
+                    return ingredientSubsections.length > 0;
                 },
+                message: 'At least one ingredient subsection is required.',
             },
-        },
-    ],
+            {
+                validator: function (ingredientSubsections: IngredientSubsection[]) {
+                    // If there is more than one subsection, all subsections must be named
+                    if (ingredientSubsections.length > 1) {
+                        return ingredientSubsections.every((subsection) => subsection.name != null);
+                    }
+                },
+                message: 'All ingredient subsections must be named.',
+            },
+        ],
+    },
     instructions: {
         type: [{ type: String }],
         required: true,

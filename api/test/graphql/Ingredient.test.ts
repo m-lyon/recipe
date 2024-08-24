@@ -111,7 +111,7 @@ describe('ingredientCreateOne', () => {
         await createIngredient(this, user, newRecordOne);
         const response = await createIngredient(this, user, newRecordTwo);
         assert.equal(response.body.kind, 'single');
-        assert(response.body.singleResult.errors, 'Validation Error should occur');
+        assert.isDefined(response.body.singleResult.errors, 'Validation Error should occur');
         assert.equal(
             response.body.singleResult.errors[0].message,
             'Ingredient validation failed: name: The ingredient name must be unique.'
@@ -128,7 +128,7 @@ describe('ingredientCreateOne', () => {
         };
         const response = await createIngredient(this, user, newRecord);
         assert.equal(response.body.kind, 'single');
-        assert(response.body.singleResult.errors, 'Validation Error should occur');
+        assert.isDefined(response.body.singleResult.errors, 'Validation Error should occur');
         assert.equal(
             response.body.singleResult.errors[0].message,
             'Variable "$record" got invalid value "fish" at "record.tags[0]"; Value "fish" does not exist in "EnumIngredientCreateTags" enum.'
@@ -271,7 +271,7 @@ describe('ingredientUpdateById', () => {
         // Update the ingredient
         const response = await updateIngredient(this, user, recordOne._id, { name: 'beef' });
         assert.equal(response.body.kind, 'single');
-        assert(response.body.singleResult.errors);
+        assert.isDefined(response.body.singleResult.errors);
         assert.equal(
             response.body.singleResult.errors[0].message,
             'Ingredient validation failed: name: The ingredient name must be unique.'
@@ -297,7 +297,7 @@ describe('ingredientUpdateById', () => {
             tags: ['beef'],
         });
         assert.equal(response.body.kind, 'single');
-        assert(response.body.singleResult.errors);
+        assert.isDefined(response.body.singleResult.errors);
 
         assert.equal(
             response.body.singleResult.errors[0].message,

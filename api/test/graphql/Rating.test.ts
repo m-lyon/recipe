@@ -42,13 +42,18 @@ async function createRecipeData() {
     const recipe = await new Recipe({
         title: 'Chicken Soup',
         titleIdentifier: 'chicken-soup',
-        ingredients: [
+        ingredientSubsections: [
             {
-                ingredient: ingredient._id,
-                quantity: '500',
-                unit: unit._id,
-                type: 'ingredient',
-                prepMethod: prepMethod._id,
+                name: 'Main',
+                ingredients: [
+                    {
+                        ingredient: ingredient._id,
+                        quantity: '500',
+                        unit: unit._id,
+                        type: 'ingredient',
+                        prepMethod: prepMethod._id,
+                    },
+                ],
             },
         ],
         instructions: ['Cook the chicken in the broth.', 'Add the noodles.'],
@@ -97,7 +102,7 @@ describe('ratingCreateOne', () => {
         const record = { value: -1, recipe: recipe._id };
         const response = await createRating(this, user, record);
         assert.equal(response.body.kind, 'single');
-        assert(response.body.singleResult.errors, 'Validation error should occur');
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
         assert.equal(
             response.body.singleResult.errors[0].message,
             'Rating validation failed: value: The rating must be between 0 and 10.'
@@ -110,10 +115,10 @@ describe('ratingCreateOne', () => {
         const record = { value: 11, recipe: recipe._id };
         const response = await createRating(this, user, record);
         assert.equal(response.body.kind, 'single');
-        assert(response.body.singleResult.errors, 'Validation error should occur');
-        assert(
-            response.body.singleResult.errors[0].message ===
-                'Rating validation failed: value: The rating must be between 0 and 10.'
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Rating validation failed: value: The rating must be between 0 and 10.'
         );
     });
 
@@ -126,10 +131,10 @@ describe('ratingCreateOne', () => {
         const record = { value: 5, recipe: recipe._id };
         const response = await createRating(this, user, record);
         assert.equal(response.body.kind, 'single');
-        assert(response.body.singleResult.errors, 'Validation error should occur');
-        assert(
-            response.body.singleResult.errors[0].message ===
-                'Rating validation failed: recipe: Recipe does not exist.'
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Rating validation failed: recipe: Recipe does not exist.'
         );
     });
 });

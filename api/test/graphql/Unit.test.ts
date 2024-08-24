@@ -105,11 +105,10 @@ describe('unitCreateOne', function () {
         newRecord.longSingular = 'teaspoonn';
         const response = await createUnit(this, user, newRecord);
         assert.equal(response.body.kind, 'single');
-        assert(response.body.singleResult.errors, 'Validation error should occur');
-        assert(
-            response.body.singleResult.errors[0].message ===
-                'Unit validation failed: shortPlural: The short plural unit name must be unique.',
-            `Validation error message mismatch: ${response.body.singleResult.errors[0].message}`
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Unit validation failed: shortPlural: The short plural unit name must be unique.'
         );
     });
 
@@ -128,10 +127,10 @@ describe('unitCreateOne', function () {
         assert.isNull(deletedUser);
         const response = await createUnit(this, user, newRecord);
         assert.equal(response.body.kind, 'single');
-        assert(response.body.singleResult.errors, 'Validation error should occur');
-        assert(
-            response.body.singleResult.errors[0].message ===
-                'Unit validation failed: owner: The owner must be a valid user.'
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Unit validation failed: owner: The owner must be a valid user.'
         );
     });
 });
@@ -245,10 +244,10 @@ describe('unitUpdateById', () => {
         // Update the unit
         const response = await updateUnit(this, user, recordOne._id, { shortPlural: 'tbsp' });
         assert.equal(response.body.kind, 'single');
-        assert(response.body.singleResult.errors);
-        assert(
-            response.body.singleResult.errors[0].message ===
-                'Unit validation failed: shortPlural: The short plural unit name must be unique.'
+        assert.isDefined(response.body.singleResult.errors);
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Unit validation failed: shortPlural: The short plural unit name must be unique.'
         );
     });
 
@@ -280,10 +279,10 @@ describe('unitUpdateById', () => {
         assert.isNull(deletedUser);
         const response = await updateUnit(this, user, recordOne._id, { shortSingular: 'tspy' });
         assert.equal(response.body.kind, 'single');
-        assert(response.body.singleResult.errors);
-        assert(
-            response.body.singleResult.errors[0].message ===
-                'Unit validation failed: owner: The owner must be a valid user.'
+        assert.isDefined(response.body.singleResult.errors);
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Unit validation failed: owner: The owner must be a valid user.'
         );
     });
 });
