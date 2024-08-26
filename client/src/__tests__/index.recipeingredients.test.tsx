@@ -24,7 +24,7 @@ describe('Update Recipe Workflow: Ingredients', () => {
 
         // Act --------------------------------------------------
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
-        await user.click(screen.getByLabelText('Enter ingredient for subsection 2'));
+        await user.click(screen.getByLabelText('Enter ingredient #3 for subsection 2'));
         await user.keyboard('{4}{ }');
         await clickFindByText(screen, user, 'teaspoons', 'apples', 'diced');
         expect(await screen.findByText('4 tsp apples, diced')).not.toBeNull();
@@ -50,7 +50,7 @@ describe('Update Recipe Workflow: Ingredients', () => {
         // Act --------------------------------------------------
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         await user.click(screen.getByLabelText('Remove 2 apples, diced'));
-        await user.click(screen.getByLabelText('Enter ingredient for subsection 1'));
+        await user.click(screen.getByLabelText('Enter ingredient #3 for subsection 1'));
         await user.keyboard('{4}{ }');
         await clickFindByText(screen, user, 'teaspoons', 'apples', 'diced');
         expect(await screen.findByText('4 tsp apples, diced')).not.toBeNull();

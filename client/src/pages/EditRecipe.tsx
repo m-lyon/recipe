@@ -127,8 +127,22 @@ export function EditRecipe() {
                 });
                 state.ingredient.actionHandler.setFinishedArray(index, ingredients);
             });
-            state.instructions.actionHandler.setItems(recipe.instructions as string[]);
-            state.instructions.actionHandler.addItem();
+            recipe.instructionSubsections!.forEach((sub, index) => {
+                if (!sub) {
+                    return;
+                }
+                state.instructions.actionHandler.setSubsection(
+                    index,
+                    sub.instructions as string[],
+                    sub.name || undefined
+                );
+                if (
+                    recipe.instructionSubsections.length > 1 ||
+                    recipe.instructionSubsections[0]!.name
+                ) {
+                    state.instructions.actionHandler.addSubsection();
+                }
+            });
             if (recipe.notes) {
                 state.notes.setNotes(recipe.notes);
             }

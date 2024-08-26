@@ -24,7 +24,7 @@ export const mockRecipeOne = {
     title: mockTitleOne,
     pluralTitle: null,
     titleIdentifier: 'mock-recipe-one',
-    instructions: ['Instruction one', 'Instruction two'],
+    instructionSubsections: [{ name: null, instructions: ['Instruction one', 'Instruction two'] }],
     ingredientSubsections: [
         {
             name: 'Section One',
@@ -98,6 +98,9 @@ export const mockRecipeTwo = {
     tags: [],
     titleIdentifier: 'mock-recipe-two',
     isIngredient: true,
+    instructionSubsections: [
+        { name: 'Instruct One', instructions: ['Instruction one', 'Instruction two'] },
+    ],
     pluralTitle: 'Mock Recipes Two',
     images: [mockImageTwo],
     calculatedTags: [],
@@ -111,6 +114,40 @@ export const mockRecipeThree = {
     source: 'Example',
     notes: 'Notes',
     calculatedTags: [],
+    ingredientSubsections: [
+        {
+            name: null,
+            ingredients: [
+                {
+                    // normal ingredient
+                    _id: mockRecipeIngredientIdOne,
+                    type: 'ingredient' as EnumRecipeIngredientType,
+                    quantity: '1',
+                    unit: mockTeaspoon,
+                    ingredient: mockApple,
+                    prepMethod: mockDiced,
+                },
+                {
+                    // ingredient with no unit
+                    _id: mockRecipeIngredientIdTwo,
+                    type: 'ingredient' as EnumRecipeIngredientType,
+                    quantity: '1',
+                    unit: null,
+                    ingredient: mockApple,
+                    prepMethod: mockDiced,
+                },
+                {
+                    // ingredient with no unit and plural quantity
+                    _id: mockRecipeIngredientIdThree,
+                    type: 'ingredient' as EnumRecipeIngredientType,
+                    quantity: '2',
+                    unit: null,
+                    ingredient: mockApple,
+                    prepMethod: mockDiced,
+                },
+            ],
+        },
+    ],
 };
 export const mockRecipeFour = {
     ...mockRecipeOne,
@@ -119,7 +156,10 @@ export const mockRecipeFour = {
     titleIdentifier: 'mock-recipe-four',
     tags: [],
     calculatedTags: [],
-    instructions: ['Instr #1.', 'Instr #2.', 'Instr #3.'],
+    instructionSubsections: [
+        { name: 'Instruct One', instructions: ['Instr #1.', 'Instr #2.'] },
+        { name: 'Instruct Two', instructions: ['Instr #3.'] },
+    ],
     ingredientSubsections: [
         {
             name: 'First Section',
@@ -142,7 +182,7 @@ export const mockRecipeNew = {
     title: 'New Recipe',
     pluralTitle: null,
     titleIdentifier: 'new-recipe',
-    instructions: ['Instr #1.', 'Instr #2.'],
+    instructionSubsections: [{ name: 'Instruct One', instructions: ['Instr #1.', 'Instr #2.'] }],
     ingredientSubsections: [
         {
             name: null,

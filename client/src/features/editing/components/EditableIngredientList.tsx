@@ -60,7 +60,7 @@ export function EditableIngredientList(props: UseIngredientListReturnType) {
                         textAlign='left'
                         pb='8px'
                         fontWeight={600}
-                        aria-label={`Enter title for subsection ${sectionIndex + 1}`}
+                        aria-label={`Enter title for ingredient subsection ${sectionIndex + 1}`}
                     />
                     <Reorder.Group
                         values={subsection.finished}
@@ -79,6 +79,7 @@ export function EditableIngredientList(props: UseIngredientListReturnType) {
                             item={subsection.editable}
                             actionHandler={actionHandler}
                             queryData={queryData}
+                            ingredientNum={subsection.finished.length + 1}
                         />
                     </motion.div>
                 </LayoutGroup>

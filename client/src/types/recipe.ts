@@ -51,7 +51,7 @@ export interface RecipeIngredientQueryData {
 }
 export type IngredientListRecipe = Pick<
     Recipe,
-    '_id' | 'title' | 'pluralTitle' | 'instructions' | 'numServings'
+    '_id' | 'title' | 'pluralTitle' | 'instructionSubsections' | 'numServings'
 > & { ingredientSubsections: IngredientSubsection[] };
 export interface IngredientSubsection {
     name?: string;

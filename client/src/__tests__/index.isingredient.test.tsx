@@ -3,9 +3,9 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { enterEditRecipePage, renderComponent } from '@recipe/utils/tests';
 import { mockUpdateRecipeAddIsIngredient } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeRemoveAsIngredient } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { enterEditRecipePage, haveValueByLabelText, renderComponent } from '@recipe/utils/tests';
 
 loadErrorMessages();
 loadDevMessages();
@@ -41,15 +41,12 @@ describe('Update Recipe Workflow: Is Ingredient', () => {
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         expect(screen.queryByText('Mock Recipe')).not.toBeNull();
-        expect(screen.getByLabelText('Edit recipe plural title')).toHaveProperty(
-            'value',
-            'Mock Recipes'
-        );
+        haveValueByLabelText(screen, 'Edit recipe plural title', 'Mock Recipes');
 
         // ------ Ingredient List --------------------------------
         await user.click(screen.getAllByLabelText('Create new recipe')[0]);
         expect(await screen.findByText('Enter Recipe Title')).not.toBeNull();
-        await user.click(screen.getByLabelText('Enter ingredient for subsection 1'));
+        await user.click(screen.getByLabelText('Enter ingredient #1 for subsection 1'));
         await user.keyboard('{2}{ }');
         await user.click(await screen.findByText('skip unit'));
         expect(screen.queryByText('mock recipes')).not.toBeNull();
@@ -87,7 +84,7 @@ describe('Update Recipe Workflow: Is Ingredient', () => {
         // ------ Ingredient List --------------------------------
         await user.click(screen.getAllByLabelText('Create new recipe')[0]);
         expect(await screen.findByText('Enter Recipe Title')).not.toBeNull();
-        await user.click(screen.getByLabelText('Enter ingredient for subsection 1'));
+        await user.click(screen.getByLabelText('Enter ingredient #1 for subsection 1'));
         await user.keyboard('{2}{ }');
         await user.click(await screen.findByText('skip unit'));
         expect(screen.queryByText('mock recipes two')).toBeNull();

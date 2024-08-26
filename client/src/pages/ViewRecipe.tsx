@@ -46,7 +46,7 @@ export function ViewRecipe() {
     }
     const {
         title,
-        instructions,
+        instructionSubsections,
         ingredientSubsections,
         tags,
         calculatedTags,
@@ -97,7 +97,7 @@ export function ViewRecipe() {
                 <GridItem boxShadow='lg' py='6' pl='6' area='instructions' minH='600px'>
                     <InstructionsTab
                         tags={tags}
-                        instructions={instructions}
+                        instructions={instructionSubsections as Recipe['instructionSubsections']}
                         source={source}
                         images={images as Recipe['images']}
                         calculatedTags={calculatedTags}

@@ -13,10 +13,11 @@ interface Props {
     item: EditableRecipeIngredient;
     actionHandler: IngredientActionHandler;
     queryData: RecipeIngredientQueryData;
+    ingredientNum: number;
     fontSize?: string;
 }
 export function EditableIngredient(props: Props) {
-    const { subsection, item, actionHandler, queryData, fontSize } = props;
+    const { subsection, item, actionHandler, queryData, ingredientNum, fontSize } = props;
     const previewRef = useRef<HTMLInputElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null);
     const parentRef = useRef<HTMLDivElement | null>(null);
@@ -64,7 +65,7 @@ export function EditableIngredient(props: Props) {
                 <EditablePreview
                     ref={previewRef}
                     width='100%'
-                    aria-label={`Enter ingredient for subsection ${subsection + 1}`}
+                    aria-label={`Enter ingredient #${ingredientNum} for subsection ${subsection + 1}`}
                 />
                 <EditableInput
                     ref={inputRef}

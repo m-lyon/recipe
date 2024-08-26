@@ -56,7 +56,7 @@ describe('Recipe Modal', () => {
 
         // Act --------------------------------------------------
         await enterEditRecipePage('Mock Recipe Two', 'Instruction one', screen, user);
-        await user.click(screen.getByLabelText('Enter title for subsection 2'));
+        await user.click(screen.getByLabelText('Enter title for ingredient subsection 2'));
         await user.keyboard('Two');
         await user.click(screen.getByLabelText('Remove 1 oz apples'));
         await user.click(screen.getByLabelText('Save recipe'));

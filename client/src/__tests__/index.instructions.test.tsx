@@ -23,9 +23,9 @@ describe('Update Recipe Workflow: Instructions', () => {
 
         // Act --------------------------------------------------
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
-        await user.click(screen.getByLabelText('Edit instruction 2'));
+        await user.click(screen.getByLabelText('Enter instruction #2 for subsection 1'));
         await user.keyboard('{Enter}');
-        await user.click(screen.getByLabelText('Edit instruction 3'));
+        await user.click(screen.getByLabelText('Enter instruction #3 for subsection 1'));
         await user.keyboard('New instruction');
         await user.click(screen.getByLabelText('Save recipe'));
 
@@ -48,7 +48,7 @@ describe('Update Recipe Workflow: Instructions', () => {
 
         // Act --------------------------------------------------
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
-        await user.click(screen.getByLabelText('Edit instruction 2'));
+        await user.click(screen.getByLabelText('Enter instruction #2 for subsection 1'));
         await user.keyboard('{Backspace>15/}New instruction');
         await user.click(screen.getByLabelText('Save recipe'));
 
@@ -73,7 +73,7 @@ describe('Update Recipe Workflow: Instructions', () => {
 
         // Act --------------------------------------------------
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
-        await user.click(screen.getByLabelText('Edit instruction 2'));
+        await user.click(screen.getByLabelText('Enter instruction #2 for subsection 1'));
         await user.keyboard('{Backspace>15/}');
         await user.click(screen.getByLabelText('Save recipe'));
 

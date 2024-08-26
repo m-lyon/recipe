@@ -7,7 +7,7 @@ module.exports = {
     env: {
         node: true,
     },
-    plugins: ['@typescript-eslint', 'prettier', 'import'],
+    plugins: ['@typescript-eslint', 'prettier', 'import', 'react-hooks'],
     extends: [
         'eslint:recommended',
         'plugin:@typescript-eslint/recommended',
@@ -63,6 +63,8 @@ module.exports = {
                 'newlines-between': 'always',
             },
         ],
+        'react-hooks/rules-of-hooks': 'error',
+        'react-hooks/exhaustive-deps': 'warn',
     },
     settings: {
         'import/resolver': {

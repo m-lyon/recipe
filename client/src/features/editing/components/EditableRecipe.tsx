@@ -78,7 +78,7 @@ export function EditableRecipe(props: Props) {
             toast({ title: 'Please enter at least one ingredient', position: 'top' });
             return false;
         }
-        if (state.instructions.items.length === 0) {
+        if (state.instructions.state[0].instructions.length === 0) {
             toast({ title: 'Please enter at least one instruction', position: 'top' });
             return false;
         }
@@ -90,9 +90,20 @@ export function EditableRecipe(props: Props) {
             return;
         }
         const tags = state.tags.state.finished.map((tag) => tag._id);
-        const instructions = state.instructions.items
-            .filter((item) => item.value !== '')
-            .map((item) => item.value);
+        const instructionSubsections = state.instructions.state
+            .filter(
+                (section) =>
+                    section.name ||
+                    section.instructions.filter((line) => line.value.trim() !== '').length > 0
+            )
+            .map((section) => {
+                return {
+                    name: section.name,
+                    instructions: section.instructions
+                        .filter((line) => line.value.trim() !== '')
+                        .map((line) => line.value),
+                };
+            });
         const ingredientSubsections = state.ingredient.state
             .filter((section) => section.name || section.finished.length > 0)
             .map((section) => {
@@ -122,7 +133,7 @@ export function EditableRecipe(props: Props) {
                     ? state.asIngredient.state.pluralTitle
                     : state.title.value
                 : undefined,
-            instructions,
+            instructionSubsections,
             ingredientSubsections,
             tags,
             notes: state.notes.notes ? state.notes.notes : undefined,

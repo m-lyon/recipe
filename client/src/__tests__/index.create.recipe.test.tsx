@@ -9,8 +9,8 @@ import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient
 import { mockGetRatingsNewRecipe } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockAddRatingNewRecipe } from '@recipe/graphql/mutations/__mocks__/rating';
 import { mockCreateRecipeAsIngr } from '@recipe/graphql/mutations/__mocks__/recipe';
-import { enterEditRecipePage, notNullByText, renderComponent } from '@recipe/utils/tests';
 import { mockGetRatingsNewRecipeAsIngr } from '@recipe/graphql/queries/__mocks__/rating';
+import { enterEditRecipePage, notNullByText, renderComponent } from '@recipe/utils/tests';
 import { mockImageFileNew, mockUploadImagesNew } from '@recipe/graphql/mutations/__mocks__/image';
 import { mockGetRecipeNew, mockGetRecipeNewAsIngr } from '@recipe/graphql/queries/__mocks__/recipe';
 
@@ -49,7 +49,9 @@ describe('Create Recipe Workflow', () => {
         await user.click(screen.getByLabelText('Add a tag'));
         await user.click(await screen.findByText('freezable'));
         // --- Add Instructions ----------------------------------
-        await user.click(screen.getByLabelText('Edit instruction 1'));
+        await user.click(screen.getByLabelText('Enter title for instruction subsection 1'));
+        await user.keyboard('Instruct One');
+        await user.click(screen.getByLabelText('Enter instruction #1 for subsection 1'));
         await user.keyboard('Instr #1.{Enter}Instr #2.{Enter}');
         // --- Change servings -----------------------------------
         await user.click(screen.getByLabelText('Increase serving size'));
@@ -60,7 +62,7 @@ describe('Create Recipe Workflow', () => {
         await user.click(screen.getByLabelText('Edit recipe source'));
         await user.keyboard('Recipe Source');
         // --- Add Ingredients -----------------------------------
-        await user.click(screen.getByLabelText('Enter ingredient for subsection 1'));
+        await user.click(screen.getByLabelText('Enter ingredient #1 for subsection 1'));
         await user.keyboard('{2}{ }');
         await clickFindByText(screen, user, 'teaspoons', 'apples', 'diced');
         // --- Save Recipe ---------------------------------------
@@ -110,7 +112,9 @@ describe('Create Recipe Workflow', () => {
         await user.click(screen.getByLabelText('Add a tag'));
         await user.click(await screen.findByText('freezable'));
         // --- Add Instructions ----------------------------------
-        await user.click(screen.getByLabelText('Edit instruction 1'));
+        await user.click(screen.getByLabelText('Enter title for instruction subsection 1'));
+        await user.keyboard('Instruct One');
+        await user.click(screen.getByLabelText('Enter instruction #1 for subsection 1'));
         await user.keyboard('Instr #1.{Enter}Instr #2.{Enter}');
         // --- Change servings -----------------------------------
         await user.click(screen.getByLabelText('Increase serving size'));
@@ -121,7 +125,7 @@ describe('Create Recipe Workflow', () => {
         await user.click(screen.getByLabelText('Edit recipe source'));
         await user.keyboard('Recipe Source');
         // --- Add Ingredients -----------------------------------
-        await user.click(screen.getByLabelText('Enter ingredient for subsection 1'));
+        await user.click(screen.getByLabelText('Enter ingredient #1 for subsection 1'));
         await user.keyboard('{2}{ }');
         await clickFindByText(screen, user, 'teaspoons', 'apples', 'diced');
         // --- Add Image -----------------------------------------
@@ -180,10 +184,12 @@ describe('Create Recipe Workflow', () => {
         await user.click(screen.getByLabelText('Edit recipe title'));
         await user.keyboard('New Ingredient Recipe');
         // --- Add Instructions ----------------------------------
-        await user.click(screen.getByLabelText('Edit instruction 1'));
+        await user.click(screen.getByLabelText('Enter title for instruction subsection 1'));
+        await user.keyboard('Instruct One');
+        await user.click(screen.getByLabelText('Enter instruction #1 for subsection 1'));
         await user.keyboard('Instr #1.{Enter}Instr #2.{Enter}');
         // --- Add Ingredients -----------------------------------
-        await user.click(screen.getByLabelText('Enter ingredient for subsection 1'));
+        await user.click(screen.getByLabelText('Enter ingredient #1 for subsection 1'));
         await user.keyboard('{2}{ }');
         await clickFindByText(screen, user, 'teaspoons', 'apples', 'diced');
         // --- Register as ingredient ----------------------------
@@ -210,7 +216,7 @@ describe('Create Recipe Workflow', () => {
         // ------ Ingredients List ------------------------------
         await user.click(screen.getAllByLabelText('Create new recipe')[0]);
         expect(await screen.findByText('Enter Recipe Title')).not.toBeNull();
-        await user.click(screen.getByLabelText('Enter ingredient for subsection 1'));
+        await user.click(screen.getByLabelText('Enter ingredient #1 for subsection 1'));
         await user.keyboard('{2}{ }');
         await user.click(await screen.findByText('skip unit'));
         expect(screen.queryByText('new ingredient recipes')).not.toBeNull();

@@ -35,7 +35,10 @@ export const RECIPE_FIELDS_SUBSET = gql(`
 export const RECIPE_FIELDS_FULL = gql(`
     fragment RecipeFieldsFull on Recipe {
         ...RecipeFieldsSubset
-        instructions
+        instructionSubsections {
+            name
+            instructions
+        }
         ingredientSubsections {
             name
             ingredients {
@@ -69,7 +72,10 @@ export const RECIPE_FIELDS_FULL = gql(`
                                 }
                             }
                         }
-                        instructions
+                        instructionSubsections {
+                            name
+                            instructions
+                        }
                         numServings
                     }
                     ... on Ingredient {

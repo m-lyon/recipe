@@ -59,7 +59,10 @@ export function RecipeModal(props: Props) {
                             <Divider orientation={styles?.dividerOrientation} />
                         </GridItem>
                         <GridItem colSpan={styles?.instrColSpan}>
-                            <InstructionList instructions={recipe.instructions} fontSize='md' />
+                            <InstructionList
+                                instructions={recipe.instructionSubsections}
+                                fontSize='md'
+                            />
                         </GridItem>
                     </Grid>
                 </ModalBody>

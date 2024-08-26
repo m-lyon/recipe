@@ -13,7 +13,7 @@ import { InstructionList } from './InstructionList';
 export const instrSpacing = 24;
 interface Props {
     tags: Recipe['tags'];
-    instructions: Recipe['instructions'];
+    instructions: Recipe['instructionSubsections'];
     source: Recipe['source'];
     images: Recipe['images'];
     calculatedTags: Recipe['calculatedTags'];
