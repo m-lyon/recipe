@@ -1,35 +1,43 @@
 import { useRef } from 'react';
 import { ListItem, OrderedList } from '@chakra-ui/react';
-import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import { EditableItemArea } from '@recipe/common/components';
-import type { UseItemListReturnType } from '@recipe/common/hooks';
 
-export function EditableInstructionList(props: UseItemListReturnType) {
-    const { items, actionHandler } = props;
+import { UseInstructionListReturnType } from '../hooks/useInstructionsList';
+
+interface Props {
+    instructions: UseInstructionListReturnType['state'][0]['instructions'];
+    addLine: () => void;
+    removeLine: (index: number) => void;
+    setLine: (index: number, value: string) => void;
+    sectionNum: number;
+}
+export function EditableInstructionList(props: Props) {
+    const { instructions, addLine, removeLine, setLine, sectionNum } = props;
     const lastInputRef = useRef<HTMLTextAreaElement | null>(null);
 
-    const instructionsList = items.map((instr, index) => {
-        const isLast = index + 1 === items.length;
+    const instructionsList = instructions.map((instr, index) => {
+        const isLast = index + 1 === instructions.length;
 
         const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-            actionHandler.setValue(index, e.target.value);
+            setLine(index, e.target.value);
         };
         const handleSubmit = () => {
             // Reset the value to the default text when the field is empty, if last
             // in list, or remove item if not
             if (instr.value.trim() === '') {
                 if (!isLast) {
-                    actionHandler.removeItem(index);
+                    removeLine(index);
                 } else {
-                    actionHandler.setValue(index, '');
+                    setLine(index, '');
                 }
             } else {
                 if (!instr.value.endsWith('.')) {
-                    actionHandler.setValue(index, instr.value + '.');
+                    setLine(index, instr.value + '.');
                 }
                 if (isLast) {
-                    actionHandler.addItem();
+                    addLine();
                 }
             }
         };
@@ -47,7 +55,7 @@ export function EditableInstructionList(props: UseItemListReturnType) {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 key={instr.key}
-                layout
+                layout='position'
             >
                 <ListItem color={instr.value ? '' : 'gray.400'}>
                     <EditableItemArea
@@ -56,21 +64,15 @@ export function EditableInstructionList(props: UseItemListReturnType) {
                         handleChange={handleChange}
                         handleSubmit={handleSubmit}
                         handleEnter={handleEnter}
-                        optionalRef={index === items.length - 1 ? lastInputRef : null}
+                        optionalRef={index === instructions.length - 1 ? lastInputRef : null}
                         fontSize='lg'
                         fontWeight='600'
-                        aria-label={`Edit instruction ${index + 1}`}
+                        aria-label={`Enter instruction #${index + 1} for subsection ${sectionNum}`}
                     />
                 </ListItem>
             </motion.div>
         );
     });
 
-    return (
-        <OrderedList>
-            <AnimatePresence>
-                <LayoutGroup>{instructionsList}</LayoutGroup>
-            </AnimatePresence>
-        </OrderedList>
-    );
+    return <OrderedList>{instructionsList}</OrderedList>;
 }

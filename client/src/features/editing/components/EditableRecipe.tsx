@@ -74,12 +74,64 @@ export function EditableRecipe(props: Props) {
             toast({ title: 'Please enter a title', position: 'top' });
             return false;
         }
+        // first ingredient section must have at least one ingredient
         if (state.ingredient.state[0].finished.length === 0) {
             toast({ title: 'Please enter at least one ingredient', position: 'top' });
             return false;
         }
+        // first instruction section must have at least one instruction
         if (state.instructions.state[0].instructions.length === 0) {
             toast({ title: 'Please enter at least one instruction', position: 'top' });
+            return false;
+        }
+        const validIngredientSections = state.ingredient.state.filter(
+            (section) => section.name || section.finished.length > 0
+        );
+        const validInstructionSections = state.instructions.state.filter(
+            (section) =>
+                section.name ||
+                section.instructions.filter((line) => line.value.trim() !== '').length > 0
+        );
+        // if there are two or more non empty sections, they must all have names
+        if (
+            validIngredientSections.length > 1 &&
+            validIngredientSections.some((section) => !section.name || section.name.trim() === '')
+        ) {
+            toast({ title: 'Please enter a name for each ingredient subsection', position: 'top' });
+            return false;
+        }
+        if (
+            validInstructionSections.length > 1 &&
+            validInstructionSections.some((section) => !section.name || section.name.trim() === '')
+        ) {
+            toast({
+                title: 'Please enter a name for each instruction subsection',
+                position: 'top',
+            });
+            return false;
+        }
+        // if there are two or more non empty sections, they must all have at least one ingredient
+        if (
+            validIngredientSections.length > 1 &&
+            validIngredientSections.some((section) => section.finished.length === 0)
+        ) {
+            toast({
+                title: 'Please enter at least one ingredient for each subsection',
+                position: 'top',
+            });
+            return false;
+        }
+        if (
+            validInstructionSections.length > 1 &&
+            validInstructionSections.some(
+                (section) =>
+                    section.instructions.filter((line) => line.value.trim() !== '').length === 0
+            )
+        ) {
+            toast({
+                title: 'Please enter at least one instruction for each subsection',
+                position: 'top',
+            });
             return false;
         }
         return true;
@@ -90,20 +142,6 @@ export function EditableRecipe(props: Props) {
             return;
         }
         const tags = state.tags.state.finished.map((tag) => tag._id);
-        const instructionSubsections = state.instructions.state
-            .filter(
-                (section) =>
-                    section.name ||
-                    section.instructions.filter((line) => line.value.trim() !== '').length > 0
-            )
-            .map((section) => {
-                return {
-                    name: section.name,
-                    instructions: section.instructions
-                        .filter((line) => line.value.trim() !== '')
-                        .map((line) => line.value),
-                };
-            });
         const ingredientSubsections = state.ingredient.state
             .filter((section) => section.name || section.finished.length > 0)
             .map((section) => {
@@ -118,6 +156,20 @@ export function EditableRecipe(props: Props) {
                             type: EnumRecipeIngredientType[item.ingredient.__typename!],
                         };
                     }),
+                };
+            });
+        const instructionSubsections = state.instructions.state
+            .filter(
+                (section) =>
+                    section.name ||
+                    section.instructions.filter((line) => line.value.trim() !== '').length > 0
+            )
+            .map((section) => {
+                return {
+                    name: section.name,
+                    instructions: section.instructions
+                        .filter((line) => line.value.trim() !== '')
+                        .map((line) => line.value),
                 };
             });
         if (userContext === false) {
@@ -163,7 +215,7 @@ export function EditableRecipe(props: Props) {
                         {...titleState}
                         fontSize='3xl'
                         textAlign='center'
-                        ariaLabel='Edit recipe title'
+                        ariaLabel='Enter recipe title'
                     />
                 </GridItem>
                 <GridItem

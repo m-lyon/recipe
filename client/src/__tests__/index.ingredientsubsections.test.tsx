@@ -1,10 +1,12 @@
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, screen } from '@testing-library/react';
+import { cleanup, screen, waitFor } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { enterCreateNewRecipePage } from '@recipe/utils/tests';
+import { mockGetRecipeFour } from '@recipe/graphql/queries/__mocks__/recipe';
 import { notNullByText, nullByText, renderComponent } from '@recipe/utils/tests';
+import { mockGetRatingsRecipeFour } from '@recipe/graphql/queries/__mocks__/rating';
 import { clickFindByText, enterEditRecipePage, haveValueByLabelText } from '@recipe/utils/tests';
 import { mockUpdateRecipeAddIngredientSubsection } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeEditIngredientSubsection } from '@recipe/graphql/mutations/__mocks__/recipe';
@@ -55,9 +57,13 @@ describe('Ingredient Subsections', () => {
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 1', 'Section One');
+        expect(screen.queryByLabelText('Enter ingredient #4 for subsection 1')).not.toBeNull();
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 2', 'Section Two');
+        expect(screen.queryByLabelText('Enter ingredient #3 for subsection 2')).not.toBeNull();
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 3', 'New Section');
-        expect(screen.queryByLabelText('Enter title for subsection 4')).not.toBeNull();
+        expect(screen.queryByLabelText('Enter ingredient #2 for subsection 3')).not.toBeNull();
+        expect(screen.queryByLabelText('Enter title for ingredient subsection 4')).not.toBeNull();
+        expect(screen.queryByLabelText('Enter ingredient #1 for subsection 4')).not.toBeNull();
     });
 
     it('should edit an ingredient subsection name', async () => {
@@ -81,7 +87,11 @@ describe('Ingredient Subsections', () => {
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 1', 'Section One');
+        expect(screen.queryByLabelText('Enter ingredient #4 for subsection 1')).not.toBeNull();
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 2', 'Section Four');
+        expect(screen.queryByLabelText('Enter ingredient #3 for subsection 2')).not.toBeNull();
+        expect(screen.queryByLabelText('Enter title for ingredient subsection 3')).not.toBeNull();
+        expect(screen.queryByLabelText('Enter ingredient #1 for subsection 3')).not.toBeNull();
     });
 
     it('should remove an ingredient subsection', async () => {
@@ -93,7 +103,7 @@ describe('Ingredient Subsections', () => {
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 2', 'Section Two');
         await notNullByText(screen, '⅓ cup apples, diced', '1 oz apples');
-        await user.click(screen.getByLabelText('Enter title for subsection 2'));
+        await user.click(screen.getByLabelText('Enter title for ingredient subsection 2'));
         await user.keyboard('{Backspace>11/}{Enter}');
         await user.click(screen.getByLabelText('Save recipe'));
 
@@ -103,12 +113,15 @@ describe('Ingredient Subsections', () => {
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
         await notNullByText(screen, 'Instruction one', 'Section One');
-        await nullByText(screen, 'Section Two', '⅓ cup apples, diced', '1 oz apples');
+        nullByText(screen, 'Section Two', '⅓ cup apples, diced', '1 oz apples');
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 1', 'Section One');
-        await nullByText(screen, 'Section Two', '⅓ cup apples, diced', '1 oz apples');
+        expect(screen.queryByLabelText('Enter ingredient #4 for subsection 1')).not.toBeNull();
+        nullByText(screen, 'Section Two', '⅓ cup apples, diced', '1 oz apples');
+        expect(screen.queryByLabelText('Enter title for ingredient subsection 2')).not.toBeNull();
+        expect(screen.queryByLabelText('Enter ingredient #1 for subsection 2')).not.toBeNull();
     });
 
     it('should add one new empty ingredient subsection after writing title and entering', async () => {
@@ -122,7 +135,7 @@ describe('Ingredient Subsections', () => {
         await user.keyboard('New Section{Enter}');
 
         // Expect ------------------------------------------------
-        haveValueByLabelText(screen, 'Enter title for subsection 1', 'New Section');
+        haveValueByLabelText(screen, 'Enter title for ingredient subsection 1', 'New Section');
         expect(screen.queryByLabelText('Enter title for ingredient subsection 2')).not.toBeNull();
         expect(screen.queryByLabelText('Enter title for ingredient subsection 3')).toBeNull();
     });
@@ -136,7 +149,7 @@ describe('Ingredient Subsections', () => {
         await enterCreateNewRecipePage(screen, user);
         await user.click(screen.getByLabelText('Enter title for ingredient subsection 1'));
         await user.keyboard('New Section');
-        await user.click(screen.getByLabelText('Enter ingredient for subsection 3'));
+        await user.click(screen.getByLabelText('Enter recipe title'));
 
         // Expect -----------------------------------------------
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 1', 'New Section');
@@ -150,26 +163,26 @@ describe('Ingredient Subsections', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        enterEditRecipePage('Mock Recipe Three', 'Instruction one', screen, user);
+        await enterEditRecipePage('Mock Recipe Three', 'Instruction one', screen, user);
 
         // Expect -----------------------------------------------
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 1', '');
-        expect(screen.queryByLabelText('1 tsp apple, diced')).not.toBeNull();
+        expect(screen.queryByText('1 tsp apples, diced')).not.toBeNull();
         expect(screen.queryByLabelText('Enter title for ingredient subsection 2')).toBeNull();
         expect(screen.queryByLabelText('Enter ingredient #1 for subsection 2')).toBeNull();
     });
 
     it('should have exactly two ingredient subsections, one empty', async () => {
         // Render -----------------------------------------------
-        renderComponent();
+        renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        enterEditRecipePage('Mock Recipe Four', 'Instr #1.', screen, user);
+        await enterEditRecipePage('Mock Recipe Four', 'Instr #1.', screen, user);
 
         // Expect -----------------------------------------------
-        haveValueByLabelText(screen, 'Enter title for ingredient subsection 1', 'Section One');
-        expect(screen.queryByLabelText('1 tsp mock recipe two')).not.toBeNull();
+        haveValueByLabelText(screen, 'Enter title for ingredient subsection 1', 'First Section');
+        expect(screen.queryByText('1 tsp mock recipe two')).not.toBeNull();
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 2', '');
         expect(screen.queryByLabelText('Enter ingredient #1 for subsection 2')).not.toBeNull();
         expect(screen.queryByLabelText('Enter title for ingredient subsection 3')).toBeNull();
@@ -182,13 +195,13 @@ describe('Ingredient Subsections', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
+        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
 
         // Expect -----------------------------------------------
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 1', 'Section One');
-        expect(screen.queryByLabelText('1 tsp mock recipe two')).not.toBeNull();
+        expect(screen.queryByLabelText('Enter ingredient #4 for subsection 1')).not.toBeNull();
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 2', 'Section Two');
-        expect(screen.queryByLabelText('Enter ingredient #1 for subsection 2')).not.toBeNull();
+        expect(screen.queryByLabelText('Enter ingredient #3 for subsection 2')).not.toBeNull();
         expect(screen.queryByLabelText('Enter title for ingredient subsection 3')).not.toBeNull();
         expect(screen.queryByLabelText('Enter ingredient #1 for subsection 3')).not.toBeNull();
         expect(screen.queryByLabelText('Enter title for ingredient subsection 4')).toBeNull();
@@ -197,18 +210,19 @@ describe('Ingredient Subsections', () => {
 
     it('should keep ingredient list items after removing only subsection name, enter', async () => {
         // Render -----------------------------------------------
-        renderComponent();
+        renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        enterEditRecipePage('Mock Recipe Four', 'Instr #1.', screen, user);
+        await enterEditRecipePage('Mock Recipe Four', 'Instr #1.', screen, user);
         await user.click(screen.getByLabelText('Enter title for ingredient subsection 1'));
         await user.keyboard('{Backspace>13/}{Enter}');
-
         // Expect -----------------------------------------------
+        await waitFor(() =>
+            expect(screen.queryByLabelText('Enter title for ingredient subsection 2')).toBeNull()
+        );
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 1', '');
-        expect(screen.queryByLabelText('1 tsp mock recipe two')).not.toBeNull();
-        expect(screen.queryByLabelText('Enter title for ingredient subsection 2')).toBeNull();
+        expect(screen.queryByText('1 tsp mock recipe two')).not.toBeNull();
         expect(screen.queryByLabelText('Enter ingredient #1 for subsection 2')).toBeNull();
         expect(screen.queryByLabelText('Enter title for ingredient subsection 3')).toBeNull();
         expect(screen.queryByLabelText('Enter ingredient #1 for subsection 3')).toBeNull();
@@ -216,19 +230,21 @@ describe('Ingredient Subsections', () => {
 
     it('should keep ingredient list items after removing only subsection name, click', async () => {
         // Render -----------------------------------------------
-        renderComponent();
+        renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        enterEditRecipePage('Mock Recipe Four', 'Instr #1.', screen, user);
+        await enterEditRecipePage('Mock Recipe Four', 'Instr #1.', screen, user);
         await user.click(screen.getByLabelText('Enter title for ingredient subsection 1'));
         await user.keyboard('{Backspace>13/}');
-        await user.click(screen.getByLabelText('Edit recipe title'));
+        await user.click(screen.getByLabelText('Enter recipe title'));
 
         // Expect -----------------------------------------------
+        await waitFor(() =>
+            expect(screen.queryByLabelText('Enter title for ingredient subsection 2')).toBeNull()
+        );
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 1', '');
-        expect(screen.queryByLabelText('1 tsp mock recipe two')).not.toBeNull();
-        expect(screen.queryByLabelText('Enter title for ingredient subsection 2')).toBeNull();
+        expect(screen.queryByText('1 tsp mock recipe two')).not.toBeNull();
         expect(screen.queryByLabelText('Enter ingredient #1 for subsection 2')).toBeNull();
         expect(screen.queryByLabelText('Enter title for ingredient subsection 3')).toBeNull();
         expect(screen.queryByLabelText('Enter ingredient #1 for subsection 3')).toBeNull();
@@ -240,18 +256,20 @@ describe('Ingredient Subsections', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
+        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         await user.click(screen.getByLabelText('Enter title for ingredient subsection 1'));
         await user.keyboard('{Backspace>11/}{Enter}');
 
         // Expect -----------------------------------------------
+        await waitFor(() =>
+            expect(screen.queryByLabelText('Enter title for ingredient subsection 3')).toBeNull()
+        );
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 1', 'Section Two');
         expect(screen.queryByLabelText('Enter title for ingredient subsection 2')).not.toBeNull();
         expect(screen.queryByLabelText('Enter ingredient #1 for subsection 2')).not.toBeNull();
-        expect(screen.queryByLabelText('Enter title for ingredient subsection 3')).toBeNull();
         expect(screen.queryByLabelText('Enter ingredient #1 for subsection 3')).toBeNull();
         nullByText(screen, '2 tsp apple, diced', '1 apple, diced', '2 apples, diced');
-        notNullByText(screen, '⅓ cup apples, diced', '1 oz apples');
+        await notNullByText(screen, '⅓ cup apples, diced', '1 oz apples');
     });
 
     it('should delete ingredient list items after removing first subsection name, click', async () => {
@@ -260,18 +278,59 @@ describe('Ingredient Subsections', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
+        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         await user.click(screen.getByLabelText('Enter title for ingredient subsection 1'));
         await user.keyboard('{Backspace>11/}');
-        await user.click(screen.getByLabelText('Edit recipe title'));
+        await user.click(screen.getByLabelText('Enter recipe title'));
 
         // Expect -----------------------------------------------
+        await waitFor(() =>
+            expect(screen.queryByLabelText('Enter title for ingredient subsection 3')).toBeNull()
+        );
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 1', 'Section Two');
         expect(screen.queryByLabelText('Enter title for ingredient subsection 2')).not.toBeNull();
         expect(screen.queryByLabelText('Enter ingredient #1 for subsection 2')).not.toBeNull();
-        expect(screen.queryByLabelText('Enter title for ingredient subsection 3')).toBeNull();
         expect(screen.queryByLabelText('Enter ingredient #1 for subsection 3')).toBeNull();
         nullByText(screen, '2 tsp apple, diced', '1 apple, diced', '2 apples, diced');
-        notNullByText(screen, '⅓ cup apples, diced', '1 oz apples');
+        await notNullByText(screen, '⅓ cup apples, diced', '1 oz apples');
+    });
+
+    it('should stop recipe submission if there is a second non-named ingredient subsection', async () => {
+        // Render -----------------------------------------------
+        renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        await enterEditRecipePage('Mock Recipe Four', 'Instr #1.', screen, user);
+        await user.click(screen.getByLabelText('Enter ingredient #1 for subsection 2'));
+        await user.keyboard('{6}{ }');
+        await clickFindByText(screen, user, 'teaspoons', 'apples', 'diced');
+        await user.click(screen.getByLabelText('Save recipe'));
+
+        // Expect -----------------------------------------------
+        await waitFor(() =>
+            expect(
+                screen.queryByText('Please enter a name for each ingredient subsection')
+            ).not.toBeNull()
+        );
+    });
+
+    it('should stop recipe submission if there is a second named subsection with no ingredients', async () => {
+        // Render -----------------------------------------------
+        renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        await enterEditRecipePage('Mock Recipe Four', 'Instr #1.', screen, user);
+        await user.click(screen.getByLabelText('Enter title for ingredient subsection 2'));
+        await user.keyboard('Second Section');
+        await user.click(screen.getByLabelText('Save recipe'));
+
+        // Expect -----------------------------------------------
+        await waitFor(() =>
+            expect(
+                screen.queryByText('Please enter at least one ingredient for each subsection')
+            ).not.toBeNull()
+        );
     });
 });

@@ -206,7 +206,7 @@ describe('EditableIngredient Unit Keyboard', () => {
         await user.keyboard('{1}{ }{g}{ }{Backspace>2/}');
 
         // Expect
-        await nullByText(screen, 'chicken', '1 g');
+        nullByText(screen, 'chicken', '1 g');
     });
 });
 describe('EditableIngredient Unit Spacebar', () => {

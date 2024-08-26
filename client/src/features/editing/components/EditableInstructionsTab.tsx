@@ -1,14 +1,13 @@
 import { Flex, Spacer, useBreakpointValue } from '@chakra-ui/react';
 
-import { UseItemListReturnType } from '@recipe/common/hooks';
-
 import { AsIngredientCheckbox } from './AsIngredientCheckbox';
-import { EditableInstructionList } from './EditableInstructionList';
 import { UseAsIngredientReturnType } from '../hooks/useAsIngredient';
 import { EditableSource, EditableSourceProps } from './EditableSource';
+import { UseInstructionListReturnType } from '../hooks/useInstructionsList';
+import { EditableInstructionSubsections } from './EditableInstructionSubsections';
 
 interface Props {
-    instructionsProps: UseItemListReturnType;
+    instructionsProps: UseInstructionListReturnType;
     asIngredientProps: UseAsIngredientReturnType;
     sourceProps: EditableSourceProps;
 }
@@ -27,7 +26,7 @@ export function EditableInstructionsTab(props: Props) {
     );
     return (
         <Flex direction='column' justifyContent='space-between' height='100%'>
-            <EditableInstructionList {...instructionsProps} />
+            <EditableInstructionSubsections {...instructionsProps} />
             <Spacer />
             <Flex direction={styles?.flexDirection} justifyContent='space-between'>
                 <AsIngredientCheckbox {...asIngredientProps} />

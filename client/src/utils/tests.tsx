@@ -71,7 +71,7 @@ export async function clickGetByText(
     }
 }
 
-export async function nullByText(screen: Screen, ...text: string[]) {
+export function nullByText(screen: Screen, ...text: string[]) {
     for (const t of text) {
         expect(screen.queryByText(t)).toBeNull();
     }

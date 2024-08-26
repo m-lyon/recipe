@@ -29,7 +29,9 @@ export function EditableIngredientList(props: UseIngredientListReturnType) {
         };
         const onSubmit = () => {
             if (state.length > 1 && sectionIndex !== state.length - 1) {
-                if (!subsection.name || subsection.name.trim() === '') {
+                if (state.length === 2 && !state.at(-1)?.name) {
+                    actionHandler.subsection.remove(sectionIndex + 1);
+                } else if (!subsection.name || subsection.name.trim() === '') {
                     actionHandler.subsection.remove(sectionIndex);
                 }
             }

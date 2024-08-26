@@ -120,12 +120,17 @@ export function EditRecipe() {
                 if (!sub) {
                     return;
                 }
-                state.ingredient.actionHandler.subsection.add();
                 state.ingredient.actionHandler.subsection.setTitle(index, sub.name);
                 const ingredients = sub.ingredients.map((ing) => {
                     return dbIngredientToFinished(ing as RecipeIngredient);
                 });
                 state.ingredient.actionHandler.setFinishedArray(index, ingredients);
+                if (
+                    recipe.ingredientSubsections.length > 1 ||
+                    recipe.ingredientSubsections[0]!.name
+                ) {
+                    state.ingredient.actionHandler.subsection.add();
+                }
             });
             recipe.instructionSubsections!.forEach((sub, index) => {
                 if (!sub) {
@@ -133,7 +138,7 @@ export function EditRecipe() {
                 }
                 state.instructions.actionHandler.setSubsection(
                     index,
-                    sub.instructions as string[],
+                    [...sub.instructions, ''] as string[],
                     sub.name || undefined
                 );
                 if (

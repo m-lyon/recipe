@@ -26,7 +26,7 @@ describe('Recipe Modal', () => {
         expect(await screen.findByText('Recipes')).not.toBeNull();
         await user.click(screen.getByLabelText('View Mock Recipe Four'));
         expect(await screen.findByText('Instr #1.')).not.toBeNull();
-        await nullByText(screen, 'Section One', '2 apples, diced', 'Instruction one');
+        nullByText(screen, 'Section One', '2 apples, diced', 'Instruction one');
         await user.click(screen.getByLabelText('View Mock Recipe Two'));
 
         // Expect ------------------------------------------------
@@ -48,7 +48,7 @@ describe('Recipe Modal', () => {
         expect(await screen.findByText('Recipes'));
         await user.click(screen.getByLabelText('View Mock Recipe Four'));
         expect(await screen.findByText('Instr #1.')).not.toBeNull();
-        await nullByText(screen, 'Section One', '2 apples, diced');
+        nullByText(screen, 'Section One', '2 apples, diced');
         await user.click(screen.getByLabelText('View Mock Recipe Two'));
         await notNullByText(screen, '2 apples, diced');
         await user.click(screen.getByLabelText('Close Mock Recipe Two modal'));
@@ -67,10 +67,10 @@ describe('Recipe Modal', () => {
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe Four'));
         expect(await screen.findByText('Instr #1.')).not.toBeNull();
-        await nullByText(screen, 'Section One', '2 apples, diced', 'Section TwoTwo');
+        nullByText(screen, 'Section One', '2 apples, diced', 'Section TwoTwo');
         await user.click(screen.getByLabelText('View Mock Recipe Two'));
         await notNullByText(screen, '2 apples, diced');
         await notNullByText(screen, 'Instruction one', 'Section TwoTwo');
-        await nullByText(screen, 'Section Two', '1 oz apples');
+        nullByText(screen, 'Section Two', '1 oz apples');
     });
 });

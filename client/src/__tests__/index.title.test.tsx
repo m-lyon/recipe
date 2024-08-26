@@ -26,7 +26,7 @@ describe('Update Recipe Workflow: Title', () => {
 
         // Act --------------------------------------------------
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
-        await user.click(screen.getByLabelText('Edit recipe title'));
+        await user.click(screen.getByLabelText('Enter recipe title'));
         await user.keyboard('{Backspace>11/}New Title');
         await user.click(screen.getByLabelText('Save recipe'));
 
@@ -53,7 +53,7 @@ describe('Update Recipe Workflow: Title', () => {
 
         // Act --------------------------------------------------
         await enterEditRecipePage('Mock Recipe Two', 'Instruction one', screen, user);
-        await user.click(screen.getByLabelText('Edit recipe title'));
+        await user.click(screen.getByLabelText('Enter recipe title'));
         await user.keyboard('{Backspace>15/}New Title');
         await user.click(screen.getByLabelText('Edit recipe plural title'));
         await user.keyboard('{Backspace>16/}New Titles');

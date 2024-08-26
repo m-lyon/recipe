@@ -43,7 +43,7 @@ describe('Create Recipe Workflow', () => {
         // Act --------------------------------------------------
         await enterCreateNewRecipePage(screen, user);
         // --- Add Title ----------------------------------------
-        await user.click(screen.getByLabelText('Edit recipe title'));
+        await user.click(screen.getByLabelText('Enter recipe title'));
         await user.keyboard('New Recipe');
         // --- Add Tag -------------------------------------------
         await user.click(screen.getByLabelText('Add a tag'));
@@ -106,7 +106,7 @@ describe('Create Recipe Workflow', () => {
         // Act ---------------------------------------------------
         await enterCreateNewRecipePage(screen, user);
         // --- Add Title -----------------------------------------
-        await user.click(screen.getByLabelText('Edit recipe title'));
+        await user.click(screen.getByLabelText('Enter recipe title'));
         await user.keyboard('New Recipe');
         // --- Add Tag -------------------------------------------
         await user.click(screen.getByLabelText('Add a tag'));
@@ -181,7 +181,7 @@ describe('Create Recipe Workflow', () => {
         // Act --------------------------------------------------
         await enterCreateNewRecipePage(screen, user);
         // --- Add Title ----------------------------------------
-        await user.click(screen.getByLabelText('Edit recipe title'));
+        await user.click(screen.getByLabelText('Enter recipe title'));
         await user.keyboard('New Ingredient Recipe');
         // --- Add Instructions ----------------------------------
         await user.click(screen.getByLabelText('Enter title for instruction subsection 1'));
