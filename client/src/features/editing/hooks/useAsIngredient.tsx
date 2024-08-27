@@ -1,10 +1,14 @@
 import { produce } from 'immer';
 import { useReducer } from 'react';
 
-interface Action {
-    type: string;
-    value?: string;
+interface SetPluralTitleAction {
+    type: 'set_plural_title';
+    value: string;
 }
+interface ToggleIsIngredientAction {
+    type: 'toggle_is_ingredient';
+}
+type Action = SetPluralTitleAction | ToggleIsIngredientAction;
 interface State {
     pluralTitle?: string;
     isIngredient: boolean;
@@ -22,7 +26,7 @@ function reducer(state: State, action: Action) {
             });
         }
         default: {
-            throw Error('Unknown action: ' + action.type);
+            throw Error('Unknown action');
         }
     }
 }

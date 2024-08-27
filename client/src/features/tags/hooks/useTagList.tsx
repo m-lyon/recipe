@@ -1,6 +1,8 @@
 import { produce } from 'immer';
 import { useReducer } from 'react';
 
+import { useWarningToast } from '@recipe/common/hooks';
+
 export const DEFAULT_TAG_STR = 'Add a tag...';
 const FORBIDDEN_TAGS = ['vegan', 'vegetarian'];
 export interface FinishedTag {
@@ -19,21 +21,47 @@ interface TagState {
     editable: EditableTag;
 }
 type ShowStates = 'on' | 'off' | 'toggle';
-interface Action {
-    type: string;
-    index?: number;
-    value?: string;
-    tags?: FinishedTag[];
+interface RemoveFinishedTagAction {
+    type: 'remove_finished_tag';
+    index: number;
+}
+interface ResetEditableAction {
+    type: 'reset_editable';
+}
+interface SetEditableShowAction {
+    type: 'set_editable_show';
+    value: ShowStates;
+}
+interface SetEditableValueAction {
+    type: 'set_editable_value';
+    value: string;
     _id?: string;
+}
+interface SetEditableValueAndSubmitAction {
+    type: 'set_editable_value_and_submit';
+    value: string;
+    _id: string;
     isNew?: boolean;
 }
+interface SetFinishedTagsAction {
+    type: 'set_finished_tags';
+    tags: FinishedTag[];
+}
+interface SubmitEditableAction {
+    type: 'submit_editable';
+}
+type Action =
+    | RemoveFinishedTagAction
+    | ResetEditableAction
+    | SetEditableShowAction
+    | SetEditableValueAction
+    | SetEditableValueAndSubmitAction
+    | SetFinishedTagsAction
+    | SubmitEditableAction;
 function reducer(state: TagState, action: Action) {
     switch (action.type) {
         case 'remove_finished_tag': {
             return produce(state, (draft) => {
-                if (typeof action.index === 'undefined') {
-                    throw new Error('index is required to remove finished ingredient.');
-                }
                 draft.finished.splice(action.index, 1);
             });
         }
@@ -44,27 +72,15 @@ function reducer(state: TagState, action: Action) {
         }
         case 'set_editable_show': {
             return produce(state, (draft) => {
-                if (typeof action.value === 'undefined') {
-                    throw new Error('value is required to set editable show state');
-                }
-                if (!['on', 'off', 'toggle'].includes(action.value)) {
-                    throw new Error('invalid show value given');
-                }
                 const newState = { on: true, off: false, toggle: !draft.editable.show };
-                draft.editable.show = newState[action.value as ShowStates];
+                draft.editable.show = newState[action.value];
             });
         }
         case 'set_editable_value': {
             return produce(state, (draft) => {
-                if (typeof action.value === 'undefined') {
-                    throw new Error('value is required to set editable value');
-                }
                 if (action.value === '') {
                     draft.editable.value = null;
                 } else {
-                    if (FORBIDDEN_TAGS.includes(action.value.toLowerCase())) {
-                        throw new Error('Forbidden tag.');
-                    }
                     draft.editable.value = action.value.toLowerCase();
                 }
                 draft.editable._id = action._id;
@@ -72,20 +88,11 @@ function reducer(state: TagState, action: Action) {
         }
         case 'set_editable_value_and_submit': {
             return produce(state, (draft) => {
-                if (typeof action.value === 'undefined') {
-                    throw new Error('value is required to set editable value');
-                }
                 if (action.value === '') {
                     draft.editable = { value: null, show: false };
                 } else {
-                    if (FORBIDDEN_TAGS.includes(action.value.toLowerCase())) {
-                        throw new Error('Forbidden tag.');
-                    }
                     draft.editable.value = action.value.toLowerCase();
                     draft.editable._id = action._id;
-                    if (!draft.editable._id) {
-                        throw new Error('Tag ID is required for submission.');
-                    }
                     draft.finished.push({
                         _id: draft.editable._id,
                         value: draft.editable.value,
@@ -98,23 +105,14 @@ function reducer(state: TagState, action: Action) {
         }
         case 'set_finished_tags': {
             return produce(state, (draft) => {
-                if (action.tags === undefined) {
-                    throw new Error('tags is required to set finished tags');
-                }
                 draft.finished = action.tags;
             });
         }
         case 'submit_editable': {
             return produce(state, (draft) => {
-                if (draft.editable.value === null) {
-                    throw new Error('Editable value must not be null when submitting');
-                }
-                if (!draft.editable._id) {
-                    throw new Error('Tag ID is required for submission.');
-                }
                 draft.finished.push({
-                    _id: draft.editable._id,
-                    value: draft.editable.value,
+                    _id: draft.editable._id!,
+                    value: draft.editable.value!,
                     key: crypto.randomUUID(),
                     isNew: false,
                 });
@@ -122,7 +120,7 @@ function reducer(state: TagState, action: Action) {
             });
         }
         default:
-            throw Error('Unknown action: ' + action.type);
+            throw Error('Unknown action');
     }
 }
 export type SetAndSubmit = (value: string, _id: string, isNew?: boolean) => void;
@@ -145,23 +143,43 @@ export function useTagList(): UseTagListReturnType {
         finished: [],
         editable: { value: null, show: false },
     });
-
+    const toast = useWarningToast();
     const removeTag = (index: number) => dispatch({ type: 'remove_finished_tag', index });
     const setTags = (tags: FinishedTag[]) => dispatch({ type: 'set_finished_tags', tags });
     const actions = {
         reset: () => dispatch({ type: 'reset_editable' }),
         setShow: (value: ShowStates) => dispatch({ type: 'set_editable_show', value }),
         setValue: (value: string, _id?: string) => {
+            if (FORBIDDEN_TAGS.includes(value.toLowerCase())) {
+                return toast({
+                    title: 'Forbidden tag',
+                    description: `${value} tag is automatically determined from ingredients.`,
+                    position: 'top',
+                });
+            }
             dispatch({ type: 'set_editable_value', value, _id });
         },
         submit: () => {
             if (state.editable.value === null || state.editable.value === '') {
                 dispatch({ type: 'reset_editable' });
             } else {
+                if (state.editable.value === null) {
+                    throw new Error('Editable value must not be null when submitting');
+                }
+                if (!state.editable._id) {
+                    throw new Error('Tag ID is required for submission.');
+                }
                 dispatch({ type: 'submit_editable' });
             }
         },
         setAndSubmit: (value: string, _id: string, isNew?: boolean) => {
+            if (FORBIDDEN_TAGS.includes(value.toLowerCase())) {
+                return toast({
+                    title: 'Forbidden tag',
+                    description: `${value} tag is automatically determined from ingredients.`,
+                    position: 'top',
+                });
+            }
             dispatch({ type: 'set_editable_value_and_submit', value, _id, isNew });
         },
     };

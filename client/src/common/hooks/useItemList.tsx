@@ -1,11 +1,23 @@
 import { useReducer } from 'react';
 
-interface Action {
-    type: string;
-    index?: number;
-    value?: string;
-    items?: string[];
+interface AddItemAction {
+    type: 'add_item';
+    value: string;
 }
+interface RemoveItemAction {
+    type: 'remove_item';
+    index: number;
+}
+interface SetValueAction {
+    type: 'set_value';
+    index: number;
+    value: string;
+}
+interface SetItemsAction {
+    type: 'set_items';
+    items: string[];
+}
+type Action = AddItemAction | RemoveItemAction | SetValueAction | SetItemsAction;
 interface EditableItem {
     value: string;
     key: string;
@@ -14,9 +26,6 @@ interface EditableItem {
 function itemsReducer(state: EditableItem[], action: Action): EditableItem[] {
     switch (action.type) {
         case 'add_item': {
-            if (typeof action.value === 'undefined') {
-                throw new Error('Cannot add an item with undefined value.');
-            }
             return [...state, { value: action.value, key: crypto.randomUUID() }];
         }
         case 'remove_item': {
@@ -24,9 +33,6 @@ function itemsReducer(state: EditableItem[], action: Action): EditableItem[] {
         }
         case 'set_value': {
             return state.map((item, idx) => {
-                if (typeof action.value === 'undefined') {
-                    throw new Error('Cannot add an item with undefined value.');
-                }
                 if (action.index === idx) {
                     return { ...item, value: action.value };
                 } else {
@@ -35,15 +41,12 @@ function itemsReducer(state: EditableItem[], action: Action): EditableItem[] {
             });
         }
         case 'set_items': {
-            if (typeof action.items === 'undefined') {
-                throw new Error('Cannot set items to undefined.');
-            }
             return action.items.map((item) => {
                 return { value: item, key: crypto.randomUUID() };
             });
         }
         default: {
-            throw Error('Unknown action: ' + action.type);
+            throw Error('Unknown action');
         }
     }
 }
