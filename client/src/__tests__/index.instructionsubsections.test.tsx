@@ -1,5 +1,5 @@
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, screen, waitFor } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
@@ -35,6 +35,8 @@ describe('Instruction Subsections', () => {
 
     it('should add a new instruction subsection', async () => {
         // Render -----------------------------------------------
+        const mockBlob = new Blob(['dummy image data'], { type: 'image/jpeg' });
+        global.fetch = vi.fn().mockResolvedValue({ blob: () => Promise.resolve(mockBlob) });
         renderComponent([mockUpdateAddInstructionSubsection]);
         const user = userEvent.setup();
 

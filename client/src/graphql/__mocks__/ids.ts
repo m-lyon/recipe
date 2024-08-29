@@ -18,6 +18,7 @@ export const mockRecipeIngredientIdEight = '10f4d2e5c3d5a0a4f1b9c0ed';
 
 // Units
 export const mockTeaspoonId = '60f4d2e5c3d5a0a4f1b3c0ec';
+export const mockTablespoonId = '60f4d2e5c3d0a0a4f1b9c0ec';
 export const mockGramId = '60f4d2e5c3d5a0a4g1b9c0ed';
 export const mockKilogramId = '60f4d2e5c3d5b0a4f1b9c0ee';
 export const mockOunceId = '60f4d2e5c3d5a0a4f1b9c0ee';
@@ -71,5 +72,7 @@ export const mockBrunchTagId = '60f4d2e5c3d5a0a4f1b9c0f9';
 export const mockTagId = '60f4d2e5cgd5a0a4f1b9c0f0';
 
 // Unit Conversion
-export const mockConversionRuleId = '60f4d2e5c4d5a0a4f1b9c0f0';
-export const mockUnitConversionId = '60f4d2e5c3d5a0a4f1b9c0q1';
+export const mockConversionRuleIdOne = '60f4d2e5c4d5a0a4f1b9c0f0';
+export const mockUnitConversionIdOne = '60f4d2e5c3d5a0a4f1b9c0q1';
+export const mockConversionRuleIdTwo = '60f4d2e5c3d5a1a4f1b9c0f1';
+export const mockUnitConversionIdTwo = '60f4d2e5c3d5a0a4f1b9c0q2';

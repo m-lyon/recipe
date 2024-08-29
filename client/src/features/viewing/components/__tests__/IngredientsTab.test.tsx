@@ -8,9 +8,9 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
 
 import { Recipe, RecipeIngredient } from '@recipe/graphql/generated';
-import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
-import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
+import { mockChicken } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockGetRatingsRecipeOne } from '@recipe/graphql/queries/__mocks__/rating';
+import { mockGetUnits, mockKilogram } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
 
 import { IngredientsTab } from '../IngredientsTab';
@@ -28,8 +28,8 @@ const MockIngredientsTab = () => {
                     {
                         _id: '60f4d2e5c3d5afa4f1b9c0f8',
                         quantity: '1',
-                        unit: mockGetUnits.result.data.unitMany[2], // kilogram
-                        ingredient: mockGetIngredients.result.data.ingredientMany[1], // chicken
+                        unit: mockKilogram,
+                        ingredient: mockChicken,
                         prepMethod: null,
                         type: 'ingredient',
                     },

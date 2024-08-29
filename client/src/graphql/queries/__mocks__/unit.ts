@@ -1,6 +1,6 @@
 import { GET_UNITS } from '@recipe/graphql/queries/unit';
 import { EnumUnitPreferredNumberFormat } from '@recipe/graphql/generated';
-import { mockAdminId, mockTeaspoonId } from '@recipe/graphql/__mocks__/ids';
+import { mockAdminId, mockTablespoonId, mockTeaspoonId } from '@recipe/graphql/__mocks__/ids';
 import { mockCupId, mockGramId, mockKilogramId, mockOunceId } from '@recipe/graphql/__mocks__/ids';
 
 export const mockTeaspoon = {
@@ -10,6 +10,17 @@ export const mockTeaspoon = {
     shortPlural: 'tsp',
     longSingular: 'teaspoon',
     longPlural: 'teaspoons',
+    preferredNumberFormat: 'fraction' as EnumUnitPreferredNumberFormat,
+    owner: mockAdminId,
+    hasSpace: true,
+};
+export const mockTablespoon = {
+    __typename: 'Unit' as const,
+    _id: mockTablespoonId,
+    shortSingular: 'tbsp',
+    shortPlural: 'tbsp',
+    longSingular: 'tablespoon',
+    longPlural: 'tablespoons',
     preferredNumberFormat: 'fraction' as EnumUnitPreferredNumberFormat,
     owner: mockAdminId,
     hasSpace: true,
@@ -65,7 +76,7 @@ export const mockGetUnits = {
     },
     result: {
         data: {
-            unitMany: [mockTeaspoon, mockGram, mockKilogram, mockOunce, mockCup],
+            unitMany: [mockTeaspoon, mockTablespoon, mockGram, mockKilogram, mockOunce, mockCup],
         },
     },
 };
