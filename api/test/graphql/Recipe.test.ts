@@ -3,24 +3,16 @@ import mongoose from 'mongoose';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { Tag } from '../../src/models/Tag.js';
+import { createUser } from '../utils/data.js';
 import { User } from '../../src/models/User.js';
 import { Unit } from '../../src/models/Unit.js';
-import { startServer, stopServer } from '../utils/mongodb.js';
 import { Recipe } from '../../src/models/Recipe.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
+import { startServer, stopServer } from '../utils/mongodb.js';
 
 export async function createRecipeIngredientData() {
-    const user = await User.register(
-        new User({
-            username: 'testuser1',
-            firstName: 'Tester1',
-            lastName: 'McTestFace',
-            role: 'user',
-        }),
-        'password'
-    );
-    assert(user);
+    const user = await createUser();
     const ingr1 = await new Ingredient({
         name: 'chicken',
         pluralName: 'chickens',
@@ -45,10 +37,12 @@ export async function createRecipeIngredientData() {
         preferredNumberFormat: 'decimal',
         owner: user._id,
         hasSpace: false,
+        unique: true,
     }).save();
     assert(unit);
     const prepMethod = await new PrepMethod({
         value: 'chopped',
+        unique: true,
         owner: user._id,
     }).save();
     assert(prepMethod);

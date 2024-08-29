@@ -7,12 +7,15 @@ import { Recipe } from './Recipe.js';
 
 export function uniqueInAdminsAndUser(model: string, attribute: string, message?: string) {
     async function validator(value: string) {
-        const owner = this.owner;
+        if (this.unique !== undefined && !this.unique) {
+            return true;
+        }
         const admins = await User.find({ role: 'admin' });
         const count = await this.model(model).countDocuments({
             $and: [
-                { $or: [{ owner }, { owner: { $in: admins } }] },
+                { $or: [{ owner: this.owner }, { owner: { $in: admins } }] },
                 { _id: { $ne: this._id } }, // Exclude the current document
+                { $or: [{ unique: true }, { unique: { $exists: false } }] },
                 { [attribute]: value },
             ],
         });

@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { User } from '../../src/models/User.js';
+import { createAdmin, createUser } from '../utils/data.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 
 async function createTag(context, user, record) {
@@ -46,26 +47,8 @@ describe('tagCreateOne', function () {
     after(stopServer);
 
     beforeEach(async function () {
-        const user = await User.register(
-            new User({
-                username: 'testuser1',
-                firstName: 'Tester1',
-                lastName: 'McTestFace',
-                role: 'user',
-            }),
-            'password'
-        );
-        assert(user);
-        const admin = await User.register(
-            new User({
-                username: 'testuser2',
-                firstName: 'Tester2',
-                lastName: 'McTestFace',
-                role: 'admin',
-            }),
-            'password'
-        );
-        assert(admin);
+        await createUser();
+        await createAdmin();
     });
 
     afterEach(function (done) {
@@ -131,26 +114,8 @@ describe('tagUpdateById', function () {
     after(stopServer);
 
     beforeEach(async function () {
-        const user = await User.register(
-            new User({
-                username: 'testuser1',
-                firstName: 'Tester1',
-                lastName: 'McTestFace',
-                role: 'user',
-            }),
-            'password'
-        );
-        assert(user);
-        const admin = await User.register(
-            new User({
-                username: 'testuser2',
-                firstName: 'Tester2',
-                lastName: 'McTestFace',
-                role: 'admin',
-            }),
-            'password'
-        );
-        assert(admin);
+        await createUser();
+        await createAdmin();
     });
 
     afterEach(function (done) {

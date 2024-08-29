@@ -2,6 +2,7 @@ import { assert } from 'chai';
 import mongoose from 'mongoose';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
+import { createUser } from '../utils/data.js';
 import { User } from '../../src/models/User.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 
@@ -30,6 +31,25 @@ async function createUnit(context, user, record) {
     return response;
 }
 
+const mockTeaspoon = {
+    shortPlural: 'tsp',
+    shortSingular: 'tsp',
+    longPlural: 'teaspoons',
+    longSingular: 'teaspoon',
+    preferredNumberFormat: 'fraction',
+    hasSpace: true,
+    unique: true,
+};
+const mockTablespoon = {
+    shortPlural: 'tbsp',
+    shortSingular: 'tbsp',
+    longPlural: 'tablespoons',
+    longSingular: 'tablespoon',
+    preferredNumberFormat: 'fraction',
+    hasSpace: true,
+    unique: true,
+};
+
 const parseCreatedUnit = (response) => {
     assert.equal(response.body.kind, 'single');
     assert.isUndefined(response.body.singleResult.errors);
@@ -45,18 +65,7 @@ describe('unitCreateOne', function () {
     before(startServer);
     after(stopServer);
 
-    beforeEach(async function () {
-        const user = await User.register(
-            new User({
-                username: 'testuser1',
-                firstName: 'Tester1',
-                lastName: 'McTestFace',
-                role: 'user',
-            }),
-            'password'
-        );
-        assert(user);
-    });
+    beforeEach(createUser);
 
     afterEach(function (done) {
         mongoose.connection.collections.users
@@ -75,34 +84,21 @@ describe('unitCreateOne', function () {
 
     it('should create a unit', async function () {
         const user = await User.findOne({ username: 'testuser1' });
-        const newRecord = {
-            shortPlural: 'tsp',
-            shortSingular: 'tsp',
-            longPlural: 'teaspoons',
-            longSingular: 'teaspoon',
-            preferredNumberFormat: 'fraction',
-            hasSpace: false,
-        };
-        const response = await createUnit(this, user, newRecord);
+        const response = await createUnit(this, user, mockTeaspoon);
         const record = parseCreatedUnit(response);
         assert.equal(record.longSingular, 'teaspoon');
     });
 
     it('should NOT create a unit, duplicate data', async function () {
         const user = await User.findOne({ username: 'testuser1' });
-        const newRecord = {
-            shortPlural: 'tsp',
-            shortSingular: 'tsp',
-            longPlural: 'teaspoons',
-            longSingular: 'teaspoon',
-            preferredNumberFormat: 'fraction',
-            hasSpace: false,
-        };
-        await createUnit(this, user, newRecord);
+        await createUnit(this, user, mockTeaspoon);
         // Modify the record to only have the same shortPlural
-        newRecord.shortSingular = 'tspp';
-        newRecord.longPlural = 'teaspoonss';
-        newRecord.longSingular = 'teaspoonn';
+        const newRecord = {
+            ...mockTeaspoon,
+            shortSingular: 'tspp',
+            longPlural: 'teaspoonss',
+            longSingular: 'teaspoonn',
+        };
         const response = await createUnit(this, user, newRecord);
         assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
@@ -114,18 +110,10 @@ describe('unitCreateOne', function () {
 
     it('should NOT create a unit, owner does not exist', async function () {
         const user = await User.findOne({ username: 'testuser1' });
-        const newRecord = {
-            shortPlural: 'tsp',
-            shortSingular: 'tsp',
-            longPlural: 'teaspoons',
-            longSingular: 'teaspoon',
-            preferredNumberFormat: 'fraction',
-            hasSpace: false,
-        };
         await User.deleteOne({ username: 'testuser1' });
         const deletedUser = await User.findOne({ username: 'testuser1' });
         assert.isNull(deletedUser);
-        const response = await createUnit(this, user, newRecord);
+        const response = await createUnit(this, user, mockTeaspoon);
         assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
         assert.equal(
@@ -139,18 +127,7 @@ describe('unitUpdateById', () => {
     before(startServer);
     after(stopServer);
 
-    beforeEach(async function () {
-        const user = await User.register(
-            new User({
-                username: 'testuser1',
-                firstName: 'Tester1',
-                lastName: 'McTestFace',
-                role: 'user',
-            }),
-            'password'
-        );
-        assert(user);
-    });
+    beforeEach(createUser);
 
     afterEach(function (done) {
         mongoose.connection.collections.users
@@ -188,25 +165,9 @@ describe('unitUpdateById', () => {
     it('should update a unit', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         // Create the ingredients
-        const recordOneVars = {
-            shortPlural: 'tsp',
-            shortSingular: 'tsp',
-            longPlural: 'teaspoons',
-            longSingular: 'teaspoon',
-            preferredNumberFormat: 'fraction',
-            hasSpace: false,
-        };
-        const recordTwoVars = {
-            shortPlural: 'tbsp',
-            shortSingular: 'tbsp',
-            longPlural: 'tablespoons',
-            longSingular: 'tablespoon',
-            preferredNumberFormat: 'fraction',
-            hasSpace: false,
-        };
-        const recordOneResponse = await createUnit(this, user, recordOneVars);
+        const recordOneResponse = await createUnit(this, user, mockTeaspoon);
         const recordOne = parseCreatedUnit(recordOneResponse);
-        await createUnit(this, user, recordTwoVars);
+        await createUnit(this, user, mockTablespoon);
         // Update the ingredient
         const response = await updateUnit(this, user, recordOne._id, { shortSingular: 'tspy' });
         assert.equal(response.body.kind, 'single');
@@ -222,25 +183,9 @@ describe('unitUpdateById', () => {
     it('should NOT update a unit, duplicate data', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         // Create the ingredients
-        const recordOneVars = {
-            shortPlural: 'tsp',
-            shortSingular: 'tsp',
-            longPlural: 'teaspoons',
-            longSingular: 'teaspoon',
-            preferredNumberFormat: 'fraction',
-            hasSpace: false,
-        };
-        const recordTwoVars = {
-            shortPlural: 'tbsp',
-            shortSingular: 'tbsp',
-            longPlural: 'tablespoons',
-            longSingular: 'tablespoon',
-            preferredNumberFormat: 'fraction',
-            hasSpace: false,
-        };
-        const recordOneResponse = await createUnit(this, user, recordOneVars);
+        const recordOneResponse = await createUnit(this, user, mockTeaspoon);
         const recordOne = parseCreatedUnit(recordOneResponse);
-        await createUnit(this, user, recordTwoVars);
+        await createUnit(this, user, mockTablespoon);
         // Update the unit
         const response = await updateUnit(this, user, recordOne._id, { shortPlural: 'tbsp' });
         assert.equal(response.body.kind, 'single');
@@ -254,25 +199,9 @@ describe('unitUpdateById', () => {
     it('should NOT update a unit, owner does not exist', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         // Create the ingredients
-        const recordOneVars = {
-            shortPlural: 'tsp',
-            shortSingular: 'tsp',
-            longPlural: 'teaspoons',
-            longSingular: 'teaspoon',
-            preferredNumberFormat: 'fraction',
-            hasSpace: false,
-        };
-        const recordTwoVars = {
-            shortPlural: 'tbsp',
-            shortSingular: 'tbsp',
-            longPlural: 'tablespoons',
-            longSingular: 'tablespoon',
-            preferredNumberFormat: 'fraction',
-            hasSpace: false,
-        };
-        const recordOneResponse = await createUnit(this, user, recordOneVars);
+        const recordOneResponse = await createUnit(this, user, mockTeaspoon);
         const recordOne = parseCreatedUnit(recordOneResponse);
-        await createUnit(this, user, recordTwoVars);
+        await createUnit(this, user, mockTablespoon);
         // Update the unit
         await User.deleteOne({ username: 'testuser1' });
         const deletedUser = await User.findOne({ username: 'testuser1' });

@@ -2,6 +2,7 @@ import { assert } from 'chai';
 import mongoose from 'mongoose';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
+import { createUser } from '../utils/data.js';
 import { User } from '../../src/models/User.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 
@@ -45,18 +46,7 @@ describe('ingredientCreateOne', () => {
     before(startServer);
     after(stopServer);
 
-    beforeEach(async function () {
-        const user = await User.register(
-            new User({
-                username: 'testuser1',
-                firstName: 'Tester1',
-                lastName: 'McTestFace',
-                role: 'user',
-            }),
-            'password'
-        );
-        assert(user);
-    });
+    beforeEach(createUser);
 
     afterEach(function (done) {
         mongoose.connection.collections.users
@@ -140,18 +130,7 @@ describe('ingredientUpdateById', () => {
     before(startServer);
     after(stopServer);
 
-    beforeEach(async function () {
-        const user = await User.register(
-            new User({
-                username: 'testuser1',
-                firstName: 'Tester1',
-                lastName: 'McTestFace',
-                role: 'user',
-            }),
-            'password'
-        );
-        assert(user);
-    });
+    beforeEach(createUser);
 
     afterEach(function (done) {
         mongoose.connection.collections.users

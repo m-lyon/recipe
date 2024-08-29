@@ -2,6 +2,7 @@ import { assert } from 'chai';
 import mongoose from 'mongoose';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
+import { createUser } from '../utils/data.js';
 import { User } from '../../src/models/User.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 
@@ -32,7 +33,9 @@ async function createPrepMethod(context, user, record) {
 
 const parseCreatedPrepMethod = (response) => {
     assert.equal(response.body.kind, 'single');
+    console.log(response.body.singleResult.errors);
     assert.isUndefined(response.body.singleResult.errors);
+
     const record = (
         response.body.singleResult.data as {
             prepMethodCreateOne: { record: { _id: string; value: string } };
@@ -45,18 +48,7 @@ describe('prepMethodCreateOne', () => {
     before(startServer);
     after(stopServer);
 
-    beforeEach(async function () {
-        const user = await User.register(
-            new User({
-                username: 'testuser1',
-                firstName: 'Tester1',
-                lastName: 'McTestFace',
-                role: 'user',
-            }),
-            'password'
-        );
-        assert(user);
-    });
+    beforeEach(createUser);
 
     afterEach(function (done) {
         mongoose.connection.collections.users
@@ -71,7 +63,7 @@ describe('prepMethodCreateOne', () => {
 
     it('should create a prep method', async function () {
         const user = await User.findOne({ username: 'testuser1' });
-        const newRecord = { value: 'chopped' };
+        const newRecord = { value: 'chopped', unique: true };
         const response = await createPrepMethod(this, user, newRecord);
         const record = parseCreatedPrepMethod(response);
         assert.equal(record.value, 'chopped');
@@ -79,7 +71,7 @@ describe('prepMethodCreateOne', () => {
 
     it('should NOT create a prep method', async function () {
         const user = await User.findOne({ username: 'testuser1' });
-        const newRecord = { value: 'chopped' };
+        const newRecord = { value: 'chopped', unique: true };
         await createPrepMethod(this, user, newRecord);
         const response = await createPrepMethod(this, user, newRecord);
         assert.equal(response.body.kind, 'single');
@@ -95,18 +87,7 @@ describe('prepMethodUpdateById', () => {
     before(startServer);
     after(stopServer);
 
-    beforeEach(async function () {
-        const user = await User.register(
-            new User({
-                username: 'testuser1',
-                firstName: 'Tester1',
-                lastName: 'McTestFace',
-                role: 'user',
-            }),
-            'password'
-        );
-        assert(user);
-    });
+    beforeEach(createUser);
 
     afterEach(function (done) {
         mongoose.connection.collections.users
@@ -144,8 +125,8 @@ describe('prepMethodUpdateById', () => {
     it('should update a prep method', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         // Create the ingredients
-        const recordOneVars = { value: 'chopped' };
-        const recordTwoVars = { value: 'diced' };
+        const recordOneVars = { value: 'chopped', unique: true };
+        const recordTwoVars = { value: 'diced', unique: true };
         const recordOneResponse = await createPrepMethod(this, user, recordOneVars);
         const recordOne = parseCreatedPrepMethod(recordOneResponse);
         await createPrepMethod(this, user, recordTwoVars);
@@ -164,8 +145,8 @@ describe('prepMethodUpdateById', () => {
     it('should NOT update a prep method', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         // Create the ingredients
-        const recordOneVars = { value: 'chopped' };
-        const recordTwoVars = { value: 'diced' };
+        const recordOneVars = { value: 'chopped', unique: true };
+        const recordTwoVars = { value: 'diced', unique: true };
         const recordOneResponse = await createPrepMethod(this, user, recordOneVars);
         const recordOne = parseCreatedPrepMethod(recordOneResponse);
         await createPrepMethod(this, user, recordTwoVars);

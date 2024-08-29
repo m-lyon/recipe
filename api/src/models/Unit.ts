@@ -11,6 +11,7 @@ export interface Unit extends Document {
     preferredNumberFormat: string;
     owner: Types.ObjectId;
     hasSpace: boolean;
+    unique: boolean;
 }
 
 const unitSchema = new Schema<Unit>({
@@ -57,6 +58,7 @@ const unitSchema = new Schema<Unit>({
     preferredNumberFormat: { type: String, required: true, enum: ['decimal', 'fraction'] },
     owner: { type: Schema.Types.ObjectId, required: true, ref: 'User', validate: ownerExists() },
     hasSpace: { type: Boolean, required: true },
+    unique: { type: Boolean, required: true },
 });
 
 export const Unit = model<Unit>('Unit', unitSchema);

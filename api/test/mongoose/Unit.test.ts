@@ -1,10 +1,38 @@
-import mongoose from 'mongoose';
 import { assert } from 'chai';
+import mongoose from 'mongoose';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { User } from '../../src/models/User.js';
 import { Unit } from '../../src/models/Unit.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
+
+const getMockUnitOne = (user) => {
+    const UnitOne = {
+        shortSingular: 'test',
+        shortPlural: 'tests',
+        longSingular: 'test',
+        longPlural: 'tests',
+        preferredNumberFormat: 'decimal',
+        owner: user._id,
+        hasSpace: false,
+        unique: true,
+    };
+    return UnitOne;
+};
+
+const getMockUnitTwo = (user) => {
+    const UnitTwo = {
+        shortSingular: 'test2',
+        shortPlural: 'tests2',
+        longSingular: 'test2',
+        longPlural: 'tests2',
+        preferredNumberFormat: 'decimal',
+        owner: user._id,
+        hasSpace: false,
+        unique: true,
+    };
+    return UnitTwo;
+};
 
 describe('Unit Model', function () {
     before(startServer);
@@ -56,15 +84,7 @@ describe('Unit Model', function () {
 
     it('Should save a new unit', async function () {
         const user = await User.findOne({ firstName: 'Tester1' });
-        const newUnit = new Unit({
-            shortSingular: 'test',
-            shortPlural: 'tests',
-            longSingular: 'test',
-            longPlural: 'tests',
-            preferredNumberFormat: 'decimal',
-            owner: user._id,
-            hasSpace: false,
-        });
+        const newUnit = new Unit(getMockUnitOne(user));
         try {
             await newUnit.save();
             assert.isFalse(newUnit.isNew);
@@ -77,15 +97,7 @@ describe('Unit Model', function () {
     it('Should NOT save a unit with a duplicate short singular name admin1 to user1', async function () {
         const user = await User.findOne({ firstName: 'Tester1' });
         const admin = await User.findOne({ firstName: 'Admin1', role: 'admin' });
-        const newUnit = new Unit({
-            shortSingular: 'test',
-            shortPlural: 'tests',
-            longSingular: 'test',
-            longPlural: 'tests',
-            preferredNumberFormat: 'decimal',
-            owner: admin._id,
-            hasSpace: false,
-        });
+        const newUnit = new Unit(getMockUnitOne(admin));
 
         try {
             await newUnit.save();
@@ -95,15 +107,7 @@ describe('Unit Model', function () {
             assert.fail('Unit not saved');
         }
 
-        const duplicateUnit = new Unit({
-            shortSingular: 'test',
-            shortPlural: 'tests',
-            longSingular: 'test',
-            longPlural: 'tests',
-            preferredNumberFormat: 'decimal',
-            owner: user._id,
-            hasSpace: false,
-        });
+        const duplicateUnit = new Unit(getMockUnitOne(user));
 
         try {
             await duplicateUnit.save();
@@ -118,24 +122,8 @@ describe('Unit Model', function () {
 
     it('Should NOT update a unit with a duplicate short singular name admin1 to user1', async function () {
         const admin = await User.findOne({ firstName: 'Admin1', role: 'admin' });
-        const newUnit1 = new Unit({
-            shortSingular: 'test',
-            shortPlural: 'tests',
-            longSingular: 'test',
-            longPlural: 'tests',
-            preferredNumberFormat: 'decimal',
-            hasSpace: false,
-            owner: admin._id,
-        });
-        const newUnit2 = new Unit({
-            shortSingular: 'test2',
-            shortPlural: 'tests2',
-            longSingular: 'test2',
-            longPlural: 'tests2',
-            preferredNumberFormat: 'decimal',
-            hasSpace: false,
-            owner: admin._id,
-        });
+        const newUnit1 = new Unit(getMockUnitOne(admin));
+        const newUnit2 = new Unit(getMockUnitTwo(admin));
 
         try {
             await newUnit1.save();
@@ -162,15 +150,7 @@ describe('Unit Model', function () {
     it('Should NOT save a unit with a duplicate short singular name admin1 to admin2', async function () {
         const admin1 = await User.findOne({ firstName: 'Admin1', role: 'admin' });
         const admin2 = await User.findOne({ firstName: 'Admin2', role: 'admin' });
-        const newUnit = new Unit({
-            shortSingular: 'test',
-            shortPlural: 'tests',
-            longSingular: 'test',
-            longPlural: 'tests',
-            preferredNumberFormat: 'decimal',
-            owner: admin1._id,
-            hasSpace: false,
-        });
+        const newUnit = new Unit(getMockUnitOne(admin1));
 
         try {
             await newUnit.save();
@@ -180,15 +160,7 @@ describe('Unit Model', function () {
             assert.fail('Unit not saved');
         }
 
-        const duplicateUnit = new Unit({
-            shortSingular: 'test',
-            shortPlural: 'tests',
-            longSingular: 'test',
-            longPlural: 'tests',
-            preferredNumberFormat: 'decimal',
-            owner: admin2._id,
-            hasSpace: false,
-        });
+        const duplicateUnit = new Unit(getMockUnitOne(admin2));
 
         try {
             await duplicateUnit.save();
@@ -204,24 +176,8 @@ describe('Unit Model', function () {
     it('Should NOT update a unit with a duplicate short singular name admin1 to admin2', async function () {
         const admin1 = await User.findOne({ firstName: 'Admin1', role: 'admin' });
         const admin2 = await User.findOne({ firstName: 'Admin2', role: 'admin' });
-        const newUnit1 = new Unit({
-            shortSingular: 'test',
-            shortPlural: 'tests',
-            longSingular: 'test',
-            longPlural: 'tests',
-            preferredNumberFormat: 'decimal',
-            owner: admin1._id,
-            hasSpace: false,
-        });
-        const newUnit2 = new Unit({
-            shortSingular: 'test2',
-            shortPlural: 'tests2',
-            longSingular: 'test2',
-            longPlural: 'tests2',
-            preferredNumberFormat: 'decimal',
-            owner: admin2._id,
-            hasSpace: false,
-        });
+        const newUnit1 = new Unit(getMockUnitOne(admin1));
+        const newUnit2 = new Unit(getMockUnitTwo(admin2));
 
         try {
             await newUnit1.save();
@@ -247,15 +203,7 @@ describe('Unit Model', function () {
 
     it('Should NOT save a unit with a duplicate short singular name user1 to user1', async function () {
         const user = await User.findOne({ firstName: 'Tester1' });
-        const newUnit = new Unit({
-            shortSingular: 'test',
-            shortPlural: 'tests',
-            longSingular: 'test',
-            longPlural: 'tests',
-            preferredNumberFormat: 'decimal',
-            owner: user._id,
-            hasSpace: false,
-        });
+        const newUnit = new Unit(getMockUnitOne(user));
 
         try {
             await newUnit.save();
@@ -265,15 +213,7 @@ describe('Unit Model', function () {
             assert.fail('Unit not saved');
         }
 
-        const duplicateUnit = new Unit({
-            shortSingular: 'test',
-            shortPlural: 'tests',
-            longSingular: 'test',
-            longPlural: 'tests',
-            preferredNumberFormat: 'decimal',
-            owner: user._id,
-            hasSpace: false,
-        });
+        const duplicateUnit = new Unit(getMockUnitOne(user));
 
         try {
             await duplicateUnit.save();
@@ -288,24 +228,8 @@ describe('Unit Model', function () {
 
     it('Should NOT update a unit with a duplicate short singular name user1 to user2', async function () {
         const user = await User.findOne({ firstName: 'Tester1' });
-        const newUnit1 = new Unit({
-            shortSingular: 'test',
-            shortPlural: 'tests',
-            longSingular: 'test',
-            longPlural: 'tests',
-            preferredNumberFormat: 'decimal',
-            owner: user._id,
-            hasSpace: false,
-        });
-        const newUnit2 = new Unit({
-            shortSingular: 'test2',
-            shortPlural: 'tests2',
-            longSingular: 'test2',
-            longPlural: 'tests2',
-            preferredNumberFormat: 'decimal',
-            owner: user._id,
-            hasSpace: false,
-        });
+        const newUnit1 = new Unit(getMockUnitOne(user));
+        const newUnit2 = new Unit(getMockUnitTwo(user));
 
         try {
             await newUnit1.save();
@@ -332,15 +256,7 @@ describe('Unit Model', function () {
     it('Should save a unit with a duplicate short singular name user1 to user2', async function () {
         const user1 = await User.findOne({ firstName: 'Tester1' });
         const user2 = await User.findOne({ firstName: 'Tester2' });
-        const newUnit = new Unit({
-            shortSingular: 'test',
-            shortPlural: 'tests',
-            longSingular: 'test',
-            longPlural: 'tests',
-            preferredNumberFormat: 'decimal',
-            owner: user1._id,
-            hasSpace: false,
-        });
+        const newUnit = new Unit(getMockUnitOne(user1));
 
         try {
             await newUnit.save();
@@ -349,16 +265,7 @@ describe('Unit Model', function () {
             console.log(error);
             assert.fail('Unit not saved');
         }
-
-        const duplicateUnit = new Unit({
-            shortSingular: 'test',
-            shortPlural: 'tests',
-            longSingular: 'test',
-            longPlural: 'tests',
-            preferredNumberFormat: 'decimal',
-            owner: user2._id,
-            hasSpace: false,
-        });
+        const duplicateUnit = new Unit(getMockUnitOne(user2));
 
         try {
             await duplicateUnit.save();
@@ -371,24 +278,8 @@ describe('Unit Model', function () {
     it('Should update a unit with a duplicate short singular name user1 to user2', async function () {
         const user1 = await User.findOne({ firstName: 'Tester1' });
         const user2 = await User.findOne({ firstName: 'Tester2' });
-        const newUnit1 = new Unit({
-            shortSingular: 'test',
-            shortPlural: 'tests',
-            longSingular: 'test',
-            longPlural: 'tests',
-            preferredNumberFormat: 'decimal',
-            owner: user1._id,
-            hasSpace: false,
-        });
-        const newUnit2 = new Unit({
-            shortSingular: 'test2',
-            shortPlural: 'tests',
-            longSingular: 'test',
-            longPlural: 'tests',
-            preferredNumberFormat: 'decimal',
-            owner: user2._id,
-            hasSpace: false,
-        });
+        const newUnit1 = new Unit(getMockUnitOne(user1));
+        const newUnit2 = new Unit({ ...getMockUnitOne(user2), shortSingular: 'test2' });
 
         try {
             await newUnit1.save();
