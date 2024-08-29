@@ -10,3 +10,11 @@ export const filterIsOwnerOrAdmin = () => (next) => async (rp) => {
     };
     return next(rp);
 };
+
+export const filterIsUnique = () => (next) => async (rp) => {
+    rp.args.filter = {
+        ...rp.args.filter,
+        unique: true,
+    };
+    return next(rp);
+};

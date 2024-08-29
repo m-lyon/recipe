@@ -1,6 +1,6 @@
 import { setRecordOwnerAsUser } from '../middleware/create.js';
-import { filterIsOwnerOrAdmin } from '../middleware/filters.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
+import { filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
 import { PrepMethod, PrepMethodCreateTC, PrepMethodTC } from '../models/PrepMethod.js';
 
 PrepMethodTC.addResolver({
@@ -32,6 +32,7 @@ export const PrepMethodQuery = {
     prepMethodMany: PrepMethodTC.mongooseResolvers
         .findMany()
         .wrapResolve(filterIsOwnerOrAdmin())
+        .wrapResolve(filterIsUnique())
         .setDescription('Retrieve multiple prep methods'),
     prepMethodManyAll: PrepMethodTC.mongooseResolvers
         .findMany()

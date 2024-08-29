@@ -1,7 +1,7 @@
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { Unit, UnitCreateTC, UnitTC } from '../models/Unit.js';
-import { filterIsOwnerOrAdmin } from '../middleware/filters.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
+import { filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
 
 UnitTC.addResolver({
     name: 'updateById',
@@ -28,6 +28,7 @@ export const UnitQuery = {
     unitMany: UnitTC.mongooseResolvers
         .findMany()
         .wrapResolve(filterIsOwnerOrAdmin())
+        .wrapResolve(filterIsUnique())
         .setDescription('Retrieve multiple units'),
     unitManyAll: UnitTC.mongooseResolvers.findMany().setDescription('Retrieve all units'),
 };
