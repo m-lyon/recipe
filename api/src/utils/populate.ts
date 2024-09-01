@@ -35,11 +35,11 @@ export async function populatePrepMethods() {
 
         // Create new dummy prep methods
         const dummyPrepMethods = [
-            { value: 'sliced', owner: admin._id },
-            { value: 'chopped', owner: admin._id },
-            { value: 'diced', owner: admin._id },
-            { value: 'grated', owner: user._id },
-            { value: 'shredded', owner: user._id },
+            { value: 'sliced', unique: true, owner: admin._id },
+            { value: 'chopped', unique: true, owner: admin._id },
+            { value: 'diced', unique: true, owner: admin._id },
+            { value: 'grated', unique: true, owner: user._id },
+            { value: 'shredded', unique: true, owner: user._id },
         ];
         const createdPrepMethods = await PrepMethod.create(dummyPrepMethods);
 
@@ -66,6 +66,7 @@ export async function populateUnits() {
                 longPlural: 'kilograms',
                 preferredNumberFormat: 'decimal',
                 hasSpace: true,
+                unique: true,
                 owner: admin._id,
             },
             {
@@ -75,6 +76,7 @@ export async function populateUnits() {
                 longPlural: 'millilitres',
                 preferredNumberFormat: 'decimal',
                 hasSpace: true,
+                unique: true,
                 owner: user._id,
             },
             {
@@ -84,6 +86,7 @@ export async function populateUnits() {
                 longPlural: 'teaspoons',
                 preferredNumberFormat: 'fraction',
                 hasSpace: true,
+                unique: true,
                 owner: admin._id,
             },
             {
@@ -91,8 +94,9 @@ export async function populateUnits() {
                 shortPlural: 'tbsp',
                 longSingular: 'tablespoon',
                 longPlural: 'tablespoons',
-                hasSpace: true,
                 preferredNumberFormat: 'fraction',
+                hasSpace: true,
+                unique: true,
                 owner: admin._id,
             },
             {
@@ -100,8 +104,9 @@ export async function populateUnits() {
                 shortPlural: 'cups',
                 longSingular: 'cup',
                 longPlural: 'cups',
-                hasSpace: true,
                 preferredNumberFormat: 'fraction',
+                hasSpace: true,
+                unique: true,
                 owner: user._id,
             },
         ];

@@ -33,7 +33,6 @@ async function createPrepMethod(context, user, record) {
 
 const parseCreatedPrepMethod = (response) => {
     assert.equal(response.body.kind, 'single');
-    console.log(response.body.singleResult.errors);
     assert.isUndefined(response.body.singleResult.errors);
 
     const record = (
@@ -69,7 +68,7 @@ describe('prepMethodCreateOne', () => {
         assert.equal(record.value, 'chopped');
     });
 
-    it('should NOT create a prep method', async function () {
+    it('should NOT create a prep method, duplicate data', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         const newRecord = { value: 'chopped', unique: true };
         await createPrepMethod(this, user, newRecord);
@@ -80,6 +79,15 @@ describe('prepMethodCreateOne', () => {
             response.body.singleResult.errors[0].message,
             'PrepMethod validation failed: value: The prep method must be unique.'
         );
+    });
+
+    it('should create a prep method, duplicate data with unique set to false', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const newRecord = { value: 'chopped', unique: false };
+        await createPrepMethod(this, user, newRecord);
+        const response = await createPrepMethod(this, user, newRecord);
+        const record = parseCreatedPrepMethod(response);
+        assert.equal(record.value, 'chopped');
     });
 });
 
@@ -142,7 +150,7 @@ describe('prepMethodUpdateById', () => {
         assert.equal(updatedRecord.value, 'minced');
     });
 
-    it('should NOT update a prep method', async function () {
+    it('should NOT update a prep method, duplicate data', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         // Create the ingredients
         const recordOneVars = { value: 'chopped', unique: true };
@@ -158,5 +166,25 @@ describe('prepMethodUpdateById', () => {
             response.body.singleResult.errors[0].message,
             'PrepMethod validation failed: value: The prep method must be unique.'
         );
+    });
+
+    it('should update a prep method, duplicate data with unique set to false', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        // Create the ingredients
+        const recordOneVars = { value: 'chopped', unique: false };
+        const recordTwoVars = { value: 'diced', unique: false };
+        const recordOneResponse = await createPrepMethod(this, user, recordOneVars);
+        const recordOne = parseCreatedPrepMethod(recordOneResponse);
+        await createPrepMethod(this, user, recordTwoVars);
+        // Update the unit
+        const response = await updatePrepMethod(this, user, recordOne._id, { value: 'diced' });
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(response.body.singleResult.errors);
+        const updatedRecord = (
+            response.body.singleResult.data as {
+                prepMethodUpdateById: { record: { _id: string; value: string } };
+            }
+        ).prepMethodUpdateById.record;
+        assert.equal(updatedRecord.value, 'diced');
     });
 });

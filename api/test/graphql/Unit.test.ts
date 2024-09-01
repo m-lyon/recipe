@@ -108,6 +108,22 @@ describe('unitCreateOne', function () {
         );
     });
 
+    it('should create a unit, duplicate data with unique set to false', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        await createUnit(this, user, { ...mockTeaspoon, unique: false });
+        // Modify the record to only have the same shortPlural
+        const newRecord = {
+            ...mockTeaspoon,
+            shortSingular: 'tspp',
+            longPlural: 'teaspoonss',
+            longSingular: 'teaspoonn',
+            unique: false,
+        };
+        const response = await createUnit(this, user, newRecord);
+        const record = parseCreatedUnit(response);
+        assert.equal(record.longSingular, 'teaspoonn');
+    });
+
     it('should NOT create a unit, owner does not exist', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         await User.deleteOne({ username: 'testuser1' });
@@ -162,6 +178,17 @@ describe('unitUpdateById', () => {
         return response;
     }
 
+    const parseUpdatedUnit = (response) => {
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(response.body.singleResult.errors);
+        const record = (
+            response.body.singleResult.data as {
+                unitUpdateById: { record: { _id: string; shortSingular: string } };
+            }
+        ).unitUpdateById.record;
+        return record;
+    };
+
     it('should update a unit', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         // Create the ingredients
@@ -170,14 +197,8 @@ describe('unitUpdateById', () => {
         await createUnit(this, user, mockTablespoon);
         // Update the ingredient
         const response = await updateUnit(this, user, recordOne._id, { shortSingular: 'tspy' });
-        assert.equal(response.body.kind, 'single');
-        assert.isUndefined(response.body.singleResult.errors);
-        const updatedRecord = (
-            response.body.singleResult.data as {
-                unitUpdateById: { record: { _id: string; shortSingular: string } };
-            }
-        ).unitUpdateById.record;
-        assert.equal(updatedRecord.shortSingular, 'tspy');
+        const record = parseUpdatedUnit(response);
+        assert.equal(record.shortSingular, 'tspy');
     });
 
     it('should NOT update a unit, duplicate data', async function () {
@@ -194,6 +215,18 @@ describe('unitUpdateById', () => {
             response.body.singleResult.errors[0].message,
             'Unit validation failed: shortPlural: The short plural unit name must be unique.'
         );
+    });
+
+    it('should update a unit, duplicate data with unique set to false', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        // Create the ingredients
+        const recordOneResponse = await createUnit(this, user, { ...mockTeaspoon, unique: false });
+        const recordOne = parseCreatedUnit(recordOneResponse);
+        await createUnit(this, user, { ...mockTeaspoon, unique: false });
+        // Update the unit
+        const response = await updateUnit(this, user, recordOne._id, { shortSingular: 'tbsp' });
+        const record = parseUpdatedUnit(response);
+        assert.equal(record.shortSingular, 'tbsp');
     });
 
     it('should NOT update a unit, owner does not exist', async function () {
