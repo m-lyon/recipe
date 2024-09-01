@@ -8,9 +8,11 @@ export type EditableQuantity = Quantity;
 export type FinishedQuantity = Quantity;
 export interface EditableUnit {
     value: string | null;
-    data?: Unit | null;
+    data?: UniqueUnit | null;
 }
-export type FinishedUnit = Unit | null;
+export type UniqueUnit = Omit<Unit, 'unique'>;
+export type UniquePrepMethod = Omit<PrepMethod, 'unique'>;
+export type FinishedUnit = UniqueUnit | null;
 export type RecipeFromOne = GetRecipeQuery['recipeOne'];
 export type RecipeFromMany = GetRecipesQuery['recipeMany'][0];
 export type RecipeFromIngredientsMany = GetIngredientsQuery['recipeMany'][0];

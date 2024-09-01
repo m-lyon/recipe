@@ -1,31 +1,34 @@
 import { matchSorter } from 'match-sorter';
 import { LayoutGroup } from 'framer-motion';
-import { MutableRefObject, useRef } from 'react';
+import { MutableRefObject, useRef, useState } from 'react';
 import { Popover, PopoverAnchor, useDisclosure } from '@chakra-ui/react';
 
-import { Quantity } from '@recipe/types';
 import { Unit } from '@recipe/graphql/generated';
+import { Quantity, UniqueUnit } from '@recipe/types';
 import { DropdownItem } from '@recipe/common/components';
 import { useNavigatableList } from '@recipe/common/hooks';
 import { unitDisplayValue } from '@recipe/utils/formatting';
 
 import { NewUnitPopover } from './NewUnitPopover';
+import { NewBespokeUnitPopover } from './NewBespokeUnitPopover';
 
 export interface UnitSuggestion {
-    value: string | Unit;
+    value: string | UniqueUnit;
     colour?: string;
 }
 interface Props {
     strValue: string;
     data: Unit[];
     quantity: Quantity;
-    setItem: (value: Unit | null) => void;
+    setItem: (value: UniqueUnit | null) => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
 }
 export function UnitDropdown(props: Props) {
     const dropdownRef = useRef<HTMLLIElement | null>(null);
     const firstFieldRef = useRef<HTMLInputElement | null>(null);
+    const [bespokeValue, setBespokeValue] = useState('');
+    const [bespoke, setBespoke] = useState(false);
     const { isOpen, onOpen, onClose } = useDisclosure({
         onClose: () => {
             props.previewRef.current?.focus();
@@ -40,6 +43,7 @@ export function UnitDropdown(props: Props) {
             items.unshift({ value: 'skip unit', colour: 'gray.400' });
         } else {
             items.push({ value: 'add new unit', colour: 'gray.400' });
+            items.push({ value: 'use "' + value + '" as unit', colour: 'gray.400' });
         }
         return items;
     };
@@ -50,6 +54,15 @@ export function UnitDropdown(props: Props) {
             if (item.value === 'skip unit') {
                 props.setItem(null);
             } else if (item.value === 'add new unit') {
+                if (bespoke) {
+                    setBespoke(false);
+                }
+                onOpen();
+            } else if (item.value.startsWith('use "')) {
+                if (!bespoke) {
+                    setBespoke(true);
+                }
+                setBespokeValue(props.strValue);
                 onOpen();
             }
         } else {
@@ -114,11 +127,20 @@ export function UnitDropdown(props: Props) {
             returnFocusOnClose={true}
         >
             <LayoutGroup>{listItems}</LayoutGroup>
-            <NewUnitPopover
-                fieldRef={firstFieldRef}
-                onClose={onClose}
-                handleSelect={handleSelect}
-            />
+            {bespoke ? (
+                <NewBespokeUnitPopover
+                    value={bespokeValue}
+                    setValue={setBespokeValue}
+                    onClose={onClose}
+                    handleSelect={handleSelect}
+                />
+            ) : (
+                <NewUnitPopover
+                    fieldRef={firstFieldRef}
+                    onClose={onClose}
+                    handleSelect={handleSelect}
+                />
+            )}
         </Popover>
     );
 }

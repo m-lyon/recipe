@@ -192,7 +192,7 @@ export function IngredientForm(props: IngredientFormProps) {
             <FloatingLabelInput
                 label='Name'
                 id='name'
-                firstFieldRef={fieldRef}
+                inputRef={fieldRef}
                 value={name}
                 isInvalid={hasError}
                 isRequired

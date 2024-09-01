@@ -1,14 +1,14 @@
 import { useQuery } from '@apollo/client';
 import { Fraction, MathType, divide, fraction, multiply } from 'mathjs';
 
-import { Quantity } from '@recipe/types';
 import { isFraction } from '@recipe/utils/number';
-import { Unit, UnitConversion } from '@recipe/graphql/generated';
+import { Quantity, UniqueUnit } from '@recipe/types';
+import { UnitConversion } from '@recipe/graphql/generated';
 import { GET_UNIT_CONVERSIONS } from '@recipe/graphql/queries/unitConversion';
 
 export interface UnitConversionArgs {
     quantity: Quantity;
-    unit: Unit | null;
+    unit: UniqueUnit | null;
 }
 export function useUnitConversion() {
     const { data, loading, error } = useQuery(GET_UNIT_CONVERSIONS);

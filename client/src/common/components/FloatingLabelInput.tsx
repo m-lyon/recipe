@@ -1,7 +1,7 @@
 import { FormControl, FormLabel, Input } from '@chakra-ui/react';
 
 interface Props {
-    firstFieldRef?: React.MutableRefObject<HTMLInputElement | null>;
+    inputRef?: React.MutableRefObject<HTMLInputElement | null>;
     id: string;
     label: string;
     value: string;
@@ -11,13 +11,13 @@ interface Props {
     onChange: React.ChangeEventHandler<HTMLInputElement>;
 }
 export function FloatingLabelInput(props: Props) {
-    const { firstFieldRef, id, label, isInvalid, isRequired, isDisabled, value, onChange } = props;
+    const { inputRef, id, label, isInvalid, isRequired, isDisabled, value, onChange } = props;
     return (
         <FormControl variant='floating' isInvalid={isInvalid} isDisabled={isDisabled}>
             <Input
                 placeholder=''
                 fontWeight={600}
-                ref={firstFieldRef}
+                ref={inputRef}
                 id={id}
                 value={value}
                 onChange={onChange}

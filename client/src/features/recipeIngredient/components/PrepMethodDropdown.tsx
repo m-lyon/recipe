@@ -1,11 +1,14 @@
 import { matchSorter } from 'match-sorter';
 import { LayoutGroup } from 'framer-motion';
+import { useMutation } from '@apollo/client';
 import { MutableRefObject, useRef } from 'react';
 import { Popover, PopoverAnchor, useDisclosure } from '@chakra-ui/react';
 
-import { PrepMethod } from '@recipe/graphql/generated';
+import { UniquePrepMethod } from '@recipe/types';
 import { DropdownItem } from '@recipe/common/components';
-import { useNavigatableList } from '@recipe/common/hooks';
+import { CREATE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
+import { CreatePrepMethodMutation, PrepMethod } from '@recipe/graphql/generated';
+import { useErrorToast, useNavigatableList, useSuccessToast } from '@recipe/common/hooks';
 
 import { NewPrepMethodPopover } from './NewPrepMethodPopover';
 
@@ -16,7 +19,7 @@ export interface PrepMethodSuggestion {
 interface Props {
     strValue: string;
     data: PrepMethod[];
-    setItem: (value: PrepMethod | null, _id?: string) => void;
+    setItem: (value: UniquePrepMethod | null, _id?: string) => void;
     handleSubmit: () => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
@@ -25,8 +28,28 @@ export function PrepMethodDropdown(props: Props) {
     const { strValue, data, setItem, handleSubmit, inputRef, previewRef } = props;
     const dropdownRef = useRef<HTMLLIElement | null>(null);
     const firstFieldRef = useRef<HTMLInputElement | null>(null);
+    const successToast = useSuccessToast();
+    const errorToast = useErrorToast();
     const { isOpen, onOpen, onClose } = useDisclosure({
         onClose: () => previewRef.current?.focus(),
+    });
+    const [saveBespokePrepMethod] = useMutation(CREATE_PREP_METHOD, {
+        onCompleted: (data: CreatePrepMethodMutation) => {
+            setItem(data.prepMethodCreateOne!.record!);
+            handleSubmit();
+            successToast({
+                title: 'Prep method saved',
+                description: `${data?.prepMethodCreateOne?.record?.value} saved`,
+                position: 'top',
+            });
+        },
+        onError: (error) => {
+            errorToast({
+                title: 'Error saving unit',
+                description: error.message,
+                position: 'top',
+            });
+        },
     });
     const filter = (data: PrepMethod[], value: string): PrepMethodSuggestion[] => {
         const items = matchSorter<PrepMethod>(data, value, {
@@ -36,6 +59,7 @@ export function PrepMethodDropdown(props: Props) {
             items.unshift({ value: 'skip prep method', colour: 'gray.400' });
         } else {
             items.push({ value: 'add new prep method', colour: 'gray.400' });
+            items.push({ value: 'use "' + value + '" as prep method', colour: 'gray.400' });
         }
         return items;
     };
@@ -47,6 +71,15 @@ export function PrepMethodDropdown(props: Props) {
                 handleSubmit();
             } else if (item.value === 'add new prep method') {
                 onOpen();
+            } else if (item.value.startsWith('use "')) {
+                saveBespokePrepMethod({
+                    variables: {
+                        record: {
+                            value: strValue,
+                            unique: false,
+                        },
+                    },
+                });
             }
         } else {
             setItem(item.value);

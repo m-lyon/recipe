@@ -5,10 +5,11 @@ import { ApolloError, Reference, useMutation } from '@apollo/client';
 import { ValidationError, boolean, mixed, object, string } from 'yup';
 import { Checkbox, Radio, RadioGroup, Stack, StackProps } from '@chakra-ui/react';
 
+import { UniqueUnit } from '@recipe/types';
 import { useErrorToast } from '@recipe/common/hooks';
 import { FloatingLabelInput } from '@recipe/common/components';
 import { UNIT_FIELDS_FULL } from '@recipe/graphql/queries/unit';
-import { EnumUnitCreatePreferredNumberFormat, Unit } from '@recipe/graphql/generated';
+import { EnumUnitCreatePreferredNumberFormat } from '@recipe/graphql/generated';
 import { CREATE_UNIT, DELETE_UNIT, MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
 import { CreateUnitMutation, ModifyUnitMutation, Scalars } from '@recipe/graphql/generated';
 
@@ -21,7 +22,7 @@ function formatError(error: ApolloError) {
 
 interface CommonUnitFormProps extends StackProps {
     fieldRef?: React.MutableRefObject<HTMLInputElement | null>;
-    initData?: Unit;
+    initData?: UniqueUnit;
     disabled?: boolean;
 }
 interface CreateUnitFormProps extends CommonUnitFormProps {
@@ -141,6 +142,7 @@ export function UnitForm(props: UnitFormProps) {
                 'You must select a number format'
             ),
         hasSpace: boolean().required(),
+        unique: boolean().required(),
     });
 
     const handleSubmit = () => {
@@ -152,6 +154,7 @@ export function UnitForm(props: UnitFormProps) {
                 longPlural: longPlural === '' ? longSingular : longPlural,
                 preferredNumberFormat,
                 hasSpace,
+                unique: true,
             });
             saveUnit({ variables: { record: validated, ...mutationVars } });
         } catch (e: unknown) {
@@ -190,7 +193,7 @@ export function UnitForm(props: UnitFormProps) {
             {...rest}
         >
             <FloatingLabelInput
-                firstFieldRef={fieldRef}
+                inputRef={fieldRef}
                 id='short-singular-name'
                 label='Short singular name'
                 value={shortSingular}

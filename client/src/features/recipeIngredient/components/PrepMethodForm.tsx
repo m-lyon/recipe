@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { ValidationError, object, string } from 'yup';
+import { ValidationError, boolean, object, string } from 'yup';
 import { ApolloError, Reference, useMutation } from '@apollo/client';
 import { Button, ButtonGroup, Stack, StackProps } from '@chakra-ui/react';
 
+import { UniquePrepMethod } from '@recipe/types';
+import { Scalars } from '@recipe/graphql/generated';
 import { useErrorToast } from '@recipe/common/hooks';
 import { FloatingLabelInput } from '@recipe/common/components';
-import { PrepMethod, Scalars } from '@recipe/graphql/generated';
 import { DELETE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 import { PREP_METHOD_FIELDS_FULL } from '@recipe/graphql/queries/prepMethod';
 import { CREATE_PREP_METHOD, MODIFY_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
@@ -20,7 +21,7 @@ function formatError(error: ApolloError) {
 
 interface CommonPrepMethodFormProps extends StackProps {
     fieldRef?: React.MutableRefObject<HTMLInputElement | null>;
-    initData?: PrepMethod;
+    initData?: UniquePrepMethod;
     disabled?: boolean;
 }
 interface CreatePrepMethodFormProps extends CommonPrepMethodFormProps {
@@ -113,11 +114,14 @@ export function PrepMethodForm(props: PrepMethoFormProps) {
         }
     }, [initData, disabled]);
 
-    const formSchema = object({ value: string().required('Prep method is required') });
+    const formSchema = object({
+        value: string().required('Prep method is required'),
+        unique: boolean().required(),
+    });
 
     const handleSubmit = () => {
         try {
-            const validated = formSchema.validateSync({ value });
+            const validated = formSchema.validateSync({ value, unique: true });
             savePrepMethod({ variables: { record: validated, ...mutationVars } });
         } catch (e: unknown) {
             if (e instanceof ValidationError) {
@@ -156,7 +160,7 @@ export function PrepMethodForm(props: PrepMethoFormProps) {
             <FloatingLabelInput
                 label='Name'
                 id='name'
-                firstFieldRef={fieldRef}
+                inputRef={fieldRef}
                 value={value}
                 isInvalid={hasError}
                 isRequired
