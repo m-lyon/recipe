@@ -3,6 +3,7 @@ import { VStack } from '@chakra-ui/react';
 import { useMutation } from '@apollo/client';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 
+import { DEBUG } from '@recipe/constants';
 import { useErrorToast } from '@recipe/common/hooks';
 import { FinishedRecipeIngredient } from '@recipe/types';
 import { EditableText } from '@recipe/common/components';
@@ -15,9 +16,14 @@ export function EditableIngredientList(props: UseIngredientListReturnType) {
     const { state, actionHandler, queryData } = props;
     const errorToast = useErrorToast();
     const [deleteUnit] = useMutation(DELETE_UNIT, {
+        onCompleted: (data) => {
+            if (DEBUG) {
+                console.log(`Successfully deleted unit ${data.unitRemoveById?.recordId}`);
+            }
+        },
         onError: (error) => {
             errorToast({
-                title: 'Error saving unit',
+                title: 'Error deleting unit',
                 description: error.message,
                 position: 'top',
             });
@@ -27,9 +33,16 @@ export function EditableIngredientList(props: UseIngredientListReturnType) {
         },
     });
     const [deletePrepMethod] = useMutation(DELETE_PREP_METHOD, {
+        onCompleted: (data) => {
+            if (DEBUG) {
+                console.log(
+                    `Successfully deleted prep method ${data.prepMethodRemoveById?.recordId}`
+                );
+            }
+        },
         onError: (error) => {
             errorToast({
-                title: 'Error saving prep method',
+                title: 'Error deleting prep method',
                 description: error.message,
                 position: 'top',
             });

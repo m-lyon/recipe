@@ -3,6 +3,7 @@ import { useMutation } from '@apollo/client';
 import { useOutsideClick } from '@chakra-ui/react';
 import { Box, Editable, EditableInput, EditablePreview } from '@chakra-ui/react';
 
+import { DEBUG } from '@recipe/constants';
 import { useErrorToast } from '@recipe/common/hooks';
 import { EditableRecipeIngredient } from '@recipe/types';
 import { RecipeIngredientQueryData } from '@recipe/types';
@@ -26,6 +27,11 @@ export function EditableIngredient(props: Props) {
     const parentRef = useRef<HTMLDivElement | null>(null);
     const toast = useErrorToast();
     const [deleteUnit] = useMutation(DELETE_UNIT, {
+        onCompleted: (data) => {
+            if (DEBUG) {
+                console.log(`Successfully deleted unit ${data.unitRemoveById?.recordId}`);
+            }
+        },
         onError: (error) => {
             toast({
                 title: 'Error saving unit',

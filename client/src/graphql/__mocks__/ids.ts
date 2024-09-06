@@ -24,6 +24,7 @@ export const mockKilogramId = '60f4d2e5c3d5b0a4f1b9c0ee';
 export const mockOunceId = '60f4d2e5c3d5a0a4f1b9c0ee';
 export const mockCupId = '60f4d2e5c3d5a0a4f1b9c0ed';
 export const mockCuttingId = '60f4d2e5c3d5a0a4f1b9c1ef';
+export const mockBumpId = '60f4d2e5c3d5a0a4l1b9c0ef';
 
 // Ingredients
 export const mockAppleId = '60f4d2e5c3d5a0a4f1b9c0e8';
@@ -39,6 +40,7 @@ export const mockDicedId = '60f4d2e5c3d6a0a4f1b9c0eb';
 export const mockSlicedId = '60f4d22c3d5a0a4f1b9c0eb';
 export const mockWholeId = '60f4d2e5c3d5a0a4c1b9c0ed';
 export const mockPippedId = '60f4d2e5c3d5a0a4f1b9c0ef';
+export const mockPostedId = '60f4d2e5c3d5a0a4f1b9c0ff';
 
 // Users
 export const mockAdminId = '60f4d2e5c3d5a0a4f1b9c0e0';

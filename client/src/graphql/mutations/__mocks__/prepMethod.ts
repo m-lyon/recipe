@@ -1,6 +1,6 @@
 import { mockDiced } from '@recipe/graphql/queries/__mocks__/prepMethod';
 import { DELETE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
-import { mockAdminId, mockPippedId } from '@recipe/graphql/__mocks__/ids';
+import { mockAdminId, mockPippedId, mockPostedId } from '@recipe/graphql/__mocks__/ids';
 import { CREATE_PREP_METHOD, MODIFY_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 
 export const mockPipped = {
@@ -24,6 +24,30 @@ export const mockCreatePrepMethod = {
         data: {
             prepMethodCreateOne: {
                 record: mockPipped,
+            },
+        },
+    },
+};
+export const mockCreateBespokePrepMethod = {
+    request: {
+        query: CREATE_PREP_METHOD,
+        variables: {
+            record: {
+                value: 'posted',
+                unique: false,
+            },
+        },
+    },
+    result: {
+        data: {
+            prepMethodCreateOne: {
+                record: {
+                    _id: mockPostedId,
+                    __typename: 'PrepMethod' as const,
+                    value: 'posted',
+                    unique: false,
+                    owner: mockAdminId,
+                },
             },
         },
     },
@@ -61,6 +85,21 @@ export const mockDeletePrepMethod = {
         data: {
             prepMethodRemoveById: {
                 recordId: mockDiced._id,
+            },
+        },
+    },
+};
+export const mockDeleteBespokePrepMethod = {
+    request: {
+        query: DELETE_PREP_METHOD,
+        variables: {
+            id: mockPostedId,
+        },
+    },
+    result: {
+        data: {
+            prepMethodRemoveById: {
+                recordId: mockPostedId,
             },
         },
     },

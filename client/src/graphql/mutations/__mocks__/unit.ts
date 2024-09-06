@@ -1,6 +1,6 @@
 import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 import { EnumUnitPreferredNumberFormat } from '@recipe/graphql/generated';
-import { mockAdminId, mockCuttingId } from '@recipe/graphql/__mocks__/ids';
+import { mockAdminId, mockBumpId, mockCuttingId } from '@recipe/graphql/__mocks__/ids';
 import { CREATE_UNIT, DELETE_UNIT, MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
 
 export const mockUnit = {
@@ -35,6 +35,40 @@ export const mockCreateUnit = {
         data: {
             unitCreateOne: {
                 record: mockUnit,
+            },
+        },
+    },
+};
+export const mockCreateBespokeUnit = {
+    request: {
+        query: CREATE_UNIT,
+        variables: {
+            record: {
+                longSingular: 'bump',
+                longPlural: 'bump',
+                shortSingular: 'bump',
+                shortPlural: 'bump',
+                preferredNumberFormat: 'decimal',
+                unique: false,
+                hasSpace: true,
+            },
+        },
+    },
+    result: {
+        data: {
+            unitCreateOne: {
+                record: {
+                    __typename: 'Unit' as const,
+                    _id: mockBumpId,
+                    longSingular: 'bump',
+                    longPlural: 'bump',
+                    shortSingular: 'bump',
+                    shortPlural: 'bump',
+                    preferredNumberFormat: 'decimal',
+                    hasSpace: true,
+                    unique: false,
+                    owner: mockAdminId,
+                },
             },
         },
     },
@@ -77,6 +111,21 @@ export const mockDeleteUnit = {
         data: {
             unitRemoveById: {
                 recordId: mockTeaspoon._id,
+            },
+        },
+    },
+};
+export const mockDeleteBespokeUnit = {
+    request: {
+        query: DELETE_UNIT,
+        variables: {
+            id: mockBumpId,
+        },
+    },
+    result: {
+        data: {
+            unitRemoveById: {
+                recordId: mockBumpId,
             },
         },
     },
