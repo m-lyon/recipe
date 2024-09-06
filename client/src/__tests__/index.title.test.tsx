@@ -3,9 +3,11 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { enterEditRecipePage, renderComponent } from '@recipe/utils/tests';
+import { enterEditRecipePage } from '@recipe/utils/tests';
 import { mockUpdateRecipeNewTitle } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeNewTitleAsIngredient } from '@recipe/graphql/mutations/__mocks__/recipe';
+
+import { renderComponent } from './utils';
 
 vi.mock('global', () => ({
     fetch: vi.fn(),

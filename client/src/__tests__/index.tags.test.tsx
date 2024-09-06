@@ -3,12 +3,14 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
+import { enterEditRecipePage } from '@recipe/utils/tests';
 import { enterCreateNewRecipePage } from '@recipe/utils/tests';
-import { enterEditRecipePage, renderComponent } from '@recipe/utils/tests';
 import { mockCreateTag, mockRemoveTag } from '@recipe/graphql/mutations/__mocks__/tag';
 import { mockUpdateRecipeRemoveTag } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeAddNewTag } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeAddExistingTag } from '@recipe/graphql/mutations/__mocks__/recipe';
+
+import { renderComponent } from './utils';
 
 loadErrorMessages();
 loadDevMessages();

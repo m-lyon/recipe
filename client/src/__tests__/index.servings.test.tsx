@@ -3,8 +3,10 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { enterEditRecipePage, renderComponent } from '@recipe/utils/tests';
+import { enterEditRecipePage } from '@recipe/utils/tests';
 import { mockUpdateRecipeNumServings } from '@recipe/graphql/mutations/__mocks__/recipe';
+
+import { renderComponent } from './utils';
 
 loadErrorMessages();
 loadDevMessages();

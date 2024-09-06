@@ -3,9 +3,10 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { renderComponent } from '@recipe/utils/tests';
 import { mockDeleteRecipeOne } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockDeleteRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
+
+import { renderComponent } from './utils';
 
 loadErrorMessages();
 loadDevMessages();

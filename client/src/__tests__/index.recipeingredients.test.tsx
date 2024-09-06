@@ -4,10 +4,12 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { enterEditRecipePage } from '@recipe/utils/tests';
-import { clickFindByText, notNullByText, renderComponent } from '@recipe/utils/tests';
+import { clickFindByText, notNullByText } from '@recipe/utils/tests';
 import { mockUpdateRecipeIngredientsAdd } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeIngredientsEdit } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeIngredientsRemove } from '@recipe/graphql/mutations/__mocks__/recipe';
+
+import { renderComponent } from './utils';
 
 loadErrorMessages();
 loadDevMessages();

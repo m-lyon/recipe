@@ -1,55 +1,18 @@
-import { ChakraProvider } from '@chakra-ui/react';
-import { RouterProvider } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
-import { MockedProvider } from '@apollo/client/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
-import { cleanup, getDefaultNormalizer, render, screen } from '@testing-library/react';
-import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
+import { cleanup, getDefaultNormalizer, screen } from '@testing-library/react';
 
 import { clickGetByText } from '@recipe/utils/tests';
-import { useIngredientList } from '@recipe/features/recipeIngredient';
-import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
-import { mockCreateUnit } from '@recipe/graphql/mutations/__mocks__/unit';
-import { mockGetPrepMethods } from '@recipe/graphql/queries/__mocks__/prepMethod';
 import { mockCreatePrepMethod } from '@recipe/graphql/mutations/__mocks__/prepMethod';
 import { mockCreateIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
-import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
-import { mockGetIngredientsWithRecipe } from '@recipe/graphql/queries/__mocks__/ingredient';
+import { mockCreateBespokePrepMethod } from '@recipe/graphql/mutations/__mocks__/prepMethod';
+import { mockCreateBespokeUnit, mockCreateUnit } from '@recipe/graphql/mutations/__mocks__/unit';
 
-import { EditableIngredientList } from '../EditableIngredientList';
+import { renderComponent } from './utils';
 
 loadErrorMessages();
 loadDevMessages();
-
-const MockEditableIngredientList = () => {
-    const props = useIngredientList();
-    return <EditableIngredientList {...props} />;
-};
-
-const routes = createBrowserRouter(
-    createRoutesFromElements(<Route path='/' element={<MockEditableIngredientList />} />)
-);
-
-const renderComponent = () => {
-    render(
-        <MockedProvider
-            mocks={[
-                mockGetUnits,
-                mockGetIngredientsWithRecipe,
-                mockGetPrepMethods,
-                mockCreateUnit,
-                mockCreateIngredient,
-                mockCreatePrepMethod,
-                mockGetUnitConversions,
-            ]}
-        >
-            <ChakraProvider>
-                <RouterProvider router={routes} />
-            </ChakraProvider>
-        </MockedProvider>
-    );
-};
 
 describe('Creating new items', () => {
     afterEach(() => {
@@ -59,7 +22,7 @@ describe('Creating new items', () => {
     it('should create a new unit', async () => {
         const user = userEvent.setup();
         // Render
-        renderComponent();
+        renderComponent([mockCreateUnit]);
 
         // Act
         await user.click(screen.getByText('Enter ingredient'));
@@ -84,10 +47,51 @@ describe('Creating new items', () => {
         expect(screen.queryByLabelText('cutting')).not.toBeNull();
     });
 
+    it('should create a new bespoke unit', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent([mockCreateBespokeUnit]);
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }{b}{u}{m}{p}');
+        await user.click(screen.getByText('use "bump" as unit'));
+        await user.click(screen.getByText('decimal'));
+        await user.click(screen.getByLabelText('Save unit'));
+
+        // Expect --------------------------------------------------------------
+        expect(
+            screen.queryByText('1 bump ', { normalizer: getDefaultNormalizer({ trim: false }) })
+        ).not.toBeNull();
+        expect(screen.queryByText('add new ingredient')).not.toBeNull();
+    });
+
+    it('should create a new bespoke unit, and not be a dropdown option', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent([mockCreateBespokeUnit]);
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }{b}{u}{m}{p}');
+        await user.click(screen.getByText('use "bump" as unit'));
+        await user.click(screen.getByText('decimal'));
+        await user.click(screen.getByLabelText('Save unit'));
+        await clickGetByText(screen, user, 'chicken', 'skip prep method');
+
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+
+        // Expect --------------------------------------------------------------
+        expect(screen.queryByText('1 bump chicken')).not.toBeNull();
+        expect(screen.queryByText('teaspoon')).not.toBeNull;
+        expect(screen.queryByText('bump')).toBeNull();
+    });
+
     it('should create a new ingredient', async () => {
         const user = userEvent.setup();
         // Render
-        renderComponent();
+        renderComponent([mockCreateIngredient]);
 
         // Act
         await user.click(screen.getByText('Enter ingredient'));
@@ -113,7 +117,7 @@ describe('Creating new items', () => {
     it('should create a new prep method', async () => {
         const user = userEvent.setup();
         // Render
-        renderComponent();
+        renderComponent([mockCreatePrepMethod]);
 
         // Act
         await user.click(screen.getByText('Enter ingredient'));
@@ -133,5 +137,42 @@ describe('Creating new items', () => {
         await clickGetByText(screen, user, 'skip unit', 'chickens');
         expect(await screen.findByLabelText('skip prep method')).not.toBeNull();
         expect(screen.queryByLabelText('pipped')).not.toBeNull();
+    });
+
+    it('should create a new bespoke prep method', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent([mockCreateBespokePrepMethod]);
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await clickGetByText(screen, user, 'skip unit', 'chicken');
+        await user.keyboard('{p}{o}{s}{t}{e}{d}');
+        await user.click(screen.getByText('use "posted" as prep method'));
+
+        // Expect --------------------------------------------------------------
+        expect(screen.queryByText('1 chicken, posted')).not.toBeNull();
+        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
+    });
+
+    it('should create a new bespoke prep method, and not be a dropdown option', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent([mockCreateBespokePrepMethod]);
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await clickGetByText(screen, user, 'skip unit', 'chicken');
+        await user.keyboard('{p}{o}{s}{t}{e}{d}');
+        await user.click(screen.getByText('use "posted" as prep method'));
+        await user.keyboard('{1}{ }');
+        await clickGetByText(screen, user, 'skip unit', 'chicken');
+
+        // Expect --------------------------------------------------------------
+        expect(screen.queryByText('1 chicken, posted')).not.toBeNull();
+        expect(screen.queryByText('diced')).not.toBeNull();
+        expect(screen.queryByText('posted')).toBeNull();
     });
 });

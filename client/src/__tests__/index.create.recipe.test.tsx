@@ -3,6 +3,7 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
+import { enterEditRecipePage, notNullByText } from '@recipe/utils/tests';
 import { mockCreateRecipe } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { clickFindByText, enterCreateNewRecipePage } from '@recipe/utils/tests';
 import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
@@ -10,9 +11,10 @@ import { mockGetRatingsNewRecipe } from '@recipe/graphql/queries/__mocks__/ratin
 import { mockAddRatingNewRecipe } from '@recipe/graphql/mutations/__mocks__/rating';
 import { mockCreateRecipeAsIngr } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetRatingsNewRecipeAsIngr } from '@recipe/graphql/queries/__mocks__/rating';
-import { enterEditRecipePage, notNullByText, renderComponent } from '@recipe/utils/tests';
 import { mockImageFileNew, mockUploadImagesNew } from '@recipe/graphql/mutations/__mocks__/image';
 import { mockGetRecipeNew, mockGetRecipeNewAsIngr } from '@recipe/graphql/queries/__mocks__/recipe';
+
+import { renderComponent } from './utils';
 
 vi.mock('global', () => ({
     fetch: vi.fn(),

@@ -1,48 +1,12 @@
-import { ChakraProvider } from '@chakra-ui/react';
-import { RouterProvider } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
-import { MockedProvider } from '@apollo/client/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
-import { cleanup, getDefaultNormalizer, render, screen } from '@testing-library/react';
-import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
+import { cleanup, getDefaultNormalizer, screen } from '@testing-library/react';
 
-import { useIngredientList } from '@recipe/features/recipeIngredient';
-import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
-import { mockGetPrepMethods } from '@recipe/graphql/queries/__mocks__/prepMethod';
-import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
-import { mockGetIngredientsWithRecipe } from '@recipe/graphql/queries/__mocks__/ingredient';
-
-import { EditableIngredientList } from '../EditableIngredientList';
+import { renderComponent } from './utils';
 
 loadErrorMessages();
 loadDevMessages();
-
-const MockCreateRecipe = () => {
-    const props = useIngredientList();
-    return <EditableIngredientList {...props} />;
-};
-
-const routes = createBrowserRouter(
-    createRoutesFromElements(<Route path='/' element={<MockCreateRecipe />} />)
-);
-
-const renderComponent = () => {
-    render(
-        <MockedProvider
-            mocks={[
-                mockGetUnits,
-                mockGetIngredientsWithRecipe,
-                mockGetPrepMethods,
-                mockGetUnitConversions,
-            ]}
-        >
-            <ChakraProvider>
-                <RouterProvider router={routes} />
-            </ChakraProvider>
-        </MockedProvider>
-    );
-};
 
 describe('EditableIngredient Quantity Keyboard', () => {
     afterEach(() => {
