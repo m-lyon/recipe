@@ -3,9 +3,9 @@ import { useContext, useState } from 'react';
 import { FormLabel, Select } from '@chakra-ui/react';
 import { Box, FormControl, Heading, VStack } from '@chakra-ui/react';
 
-import { UniquePrepMethod } from '@recipe/types';
 import { UserContext } from '@recipe/features/user';
 import { useSuccessToast } from '@recipe/common/hooks';
+import { PrepMethod } from '@recipe/graphql/generated';
 import { PrepMethodForm } from '@recipe/features/recipeIngredient';
 import { GET_PREP_METHODS } from '@recipe/graphql/queries/prepMethod';
 import { MODIFY_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
@@ -13,7 +13,7 @@ import { MODIFY_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 export function EditPrepMethod() {
     const [userContext] = useContext(UserContext);
     const toast = useSuccessToast();
-    const [currentPrepMethod, setCurrentPrepMethod] = useState<UniquePrepMethod>();
+    const [currentPrepMethod, setCurrentPrepMethod] = useState<PrepMethod>();
     const { data } = useQuery(GET_PREP_METHODS, {
         variables: {
             filter: userContext

@@ -1,9 +1,12 @@
 import { useRef } from 'react';
+import { useMutation } from '@apollo/client';
 import { useOutsideClick } from '@chakra-ui/react';
 import { Box, Editable, EditableInput, EditablePreview } from '@chakra-ui/react';
 
+import { useErrorToast } from '@recipe/common/hooks';
 import { EditableRecipeIngredient } from '@recipe/types';
 import { RecipeIngredientQueryData } from '@recipe/types';
+import { DELETE_UNIT } from '@recipe/graphql/mutations/unit';
 
 import { RecipeIngredientDropdown } from './RecipeIngredientDropdown';
 import { DEFAULT_INGREDIENT_STR, IngredientActionHandler } from '../hooks/useIngredientList';
@@ -21,11 +24,30 @@ export function EditableIngredient(props: Props) {
     const previewRef = useRef<HTMLInputElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null);
     const parentRef = useRef<HTMLDivElement | null>(null);
+    const toast = useErrorToast();
+    const [deleteUnit] = useMutation(DELETE_UNIT, {
+        onError: (error) => {
+            toast({
+                title: 'Error saving unit',
+                description: error.message,
+                position: 'top',
+            });
+        },
+        update(cache, { data }) {
+            cache.evict({ id: `Unit:${data?.unitRemoveById?.recordId}` });
+        },
+    });
+    const handleReset = () => {
+        actionHandler.resetEditable(subsection);
+        if (item.unit.data && !item.unit.data.unique) {
+            deleteUnit({ variables: { id: item.unit.data._id } });
+        }
+    };
     useOutsideClick({
         ref: parentRef,
         handler: () => {
             if (item.quantity !== null || item.show) {
-                actionHandler.resetEditable(subsection);
+                handleReset();
             }
         },
     });
@@ -54,7 +76,7 @@ export function EditableIngredient(props: Props) {
                     }
                 }}
                 onChange={(value: string) => actionHandler.handleEditableChange(subsection, value)}
-                onCancel={() => actionHandler.resetEditable(subsection)}
+                onCancel={handleReset}
                 onEdit={() => actionHandler.setEditableShow.on(subsection)}
                 textAlign='left'
                 fontSize={fontSize}

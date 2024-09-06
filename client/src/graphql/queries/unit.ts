@@ -9,6 +9,7 @@ export const UNIT_FIELDS = gql(`
         longPlural
         preferredNumberFormat
         hasSpace
+        unique
     }
 `);
 

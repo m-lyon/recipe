@@ -5,12 +5,11 @@ import { FinishedRecipeIngredient } from '@recipe/types';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 
 interface Props {
-    index: number;
     item: FinishedRecipeIngredient;
-    removeFinished: (index: number) => void;
+    removeFinished: () => void;
 }
 export function FinishedIngredient(props: Props) {
-    const { index, item, removeFinished } = props;
+    const { item, removeFinished } = props;
     const ingrStr = getFinishedRecipeIngredientStr(item);
     return (
         <Reorder.Item
@@ -21,10 +20,7 @@ export function FinishedIngredient(props: Props) {
         >
             <Tag size='lg' marginBottom='5px'>
                 <TagLabel>{ingrStr}</TagLabel>
-                <TagCloseButton
-                    onClick={() => removeFinished(index)}
-                    aria-label={`Remove ${ingrStr}`}
-                />
+                <TagCloseButton onClick={() => removeFinished()} aria-label={`Remove ${ingrStr}`} />
             </Tag>
         </Reorder.Item>
     );

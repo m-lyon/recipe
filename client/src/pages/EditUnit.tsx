@@ -3,7 +3,7 @@ import { useContext, useState } from 'react';
 import { FormLabel, Select } from '@chakra-ui/react';
 import { Box, FormControl, Heading, VStack } from '@chakra-ui/react';
 
-import { UniqueUnit } from '@recipe/types';
+import { Unit } from '@recipe/graphql/generated';
 import { UserContext } from '@recipe/features/user';
 import { useSuccessToast } from '@recipe/common/hooks';
 import { GET_UNITS } from '@recipe/graphql/queries/unit';
@@ -13,7 +13,7 @@ import { UnitForm } from '@recipe/features/recipeIngredient';
 export function EditUnit() {
     const [userContext] = useContext(UserContext);
     const toast = useSuccessToast();
-    const [currentUnit, setCurrentUnit] = useState<UniqueUnit>();
+    const [currentUnit, setCurrentUnit] = useState<Unit>();
     const { data } = useQuery(GET_UNITS, {
         variables: {
             filter: userContext

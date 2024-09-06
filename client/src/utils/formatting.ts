@@ -1,4 +1,5 @@
-import { LikeFinishedRecipeIngredient, UniqueUnit } from '@recipe/types';
+import { Unit } from '@recipe/graphql/generated';
+import { LikeFinishedRecipeIngredient } from '@recipe/types';
 import { EditableRecipeIngredient, FinishedQuantity } from '@recipe/types';
 import { FinishedIngredient, FinishedPrepMethod, FinishedUnit } from '@recipe/types';
 
@@ -20,11 +21,7 @@ function getEditableQuantityStr(item: EditableRecipeIngredient): string {
     }
     return getFinishedQuantityStr(item.quantity);
 }
-export function unitDisplayValue(
-    quantity: FinishedQuantity,
-    unit: UniqueUnit,
-    short: boolean
-): string {
+export function unitDisplayValue(quantity: FinishedQuantity, unit: Unit, short: boolean): string {
     if (short) {
         return isPlural(quantity) ? unit.shortPlural : unit.shortSingular;
     }

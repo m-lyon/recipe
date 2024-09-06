@@ -1,14 +1,43 @@
 import { Reorder } from 'framer-motion';
 import { VStack } from '@chakra-ui/react';
+import { useMutation } from '@apollo/client';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 
+import { useErrorToast } from '@recipe/common/hooks';
 import { FinishedRecipeIngredient } from '@recipe/types';
 import { EditableText } from '@recipe/common/components';
+import { DELETE_UNIT } from '@recipe/graphql/mutations/unit';
+import { DELETE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 import { UseIngredientListReturnType } from '@recipe/features/recipeIngredient';
 import { EditableIngredient, FinishedIngredient } from '@recipe/features/recipeIngredient';
 
 export function EditableIngredientList(props: UseIngredientListReturnType) {
     const { state, actionHandler, queryData } = props;
+    const errorToast = useErrorToast();
+    const [deleteUnit] = useMutation(DELETE_UNIT, {
+        onError: (error) => {
+            errorToast({
+                title: 'Error saving unit',
+                description: error.message,
+                position: 'top',
+            });
+        },
+        update(cache, { data }) {
+            cache.evict({ id: `Unit:${data?.unitRemoveById?.recordId}` });
+        },
+    });
+    const [deletePrepMethod] = useMutation(DELETE_PREP_METHOD, {
+        onError: (error) => {
+            errorToast({
+                title: 'Error saving prep method',
+                description: error.message,
+                position: 'top',
+            });
+        },
+        update(cache, { data }) {
+            cache.evict({ id: `PrepMethod:${data?.prepMethodRemoveById?.recordId}` });
+        },
+    });
 
     const subsections = state.map((subsection, sectionIndex) => {
         const finishedIngredients = subsection.finished.map(
@@ -16,9 +45,16 @@ export function EditableIngredientList(props: UseIngredientListReturnType) {
                 return (
                     <FinishedIngredient
                         key={item.key}
-                        index={itemIndex}
                         item={item}
-                        removeFinished={() => actionHandler.removeFinished(sectionIndex, itemIndex)}
+                        removeFinished={() => {
+                            actionHandler.removeFinished(sectionIndex, itemIndex);
+                            if (item.unit && !item.unit.unique) {
+                                deleteUnit({ variables: { id: item.unit._id } });
+                            }
+                            if (item.prepMethod && !item.prepMethod.unique) {
+                                deletePrepMethod({ variables: { id: item.prepMethod._id } });
+                            }
+                        }}
                     />
                 );
             }

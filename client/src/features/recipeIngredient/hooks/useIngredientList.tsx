@@ -11,7 +11,7 @@ import { useUnitConversion } from '@recipe/features/servings';
 import { GET_INGREDIENTS } from '@recipe/graphql/queries/ingredient';
 import { GET_PREP_METHODS } from '@recipe/graphql/queries/prepMethod';
 import { getEditableRecipeIngredientStr } from '@recipe/utils/formatting';
-import { FinishedIngredient, FinishedRecipeIngredient, UniqueUnit } from '@recipe/types';
+import { FinishedIngredient, FinishedRecipeIngredient } from '@recipe/types';
 import { FinishedPrepMethod, FinishedUnit, InputState } from '@recipe/types';
 import { ingredientDisplayStr, unitDisplayValue } from '@recipe/utils/formatting';
 import { EditableRecipeIngredient, FinishedQuantity, Quantity } from '@recipe/types';
@@ -336,7 +336,7 @@ function setQuantity(state: IngredientListState, action: SetQuantityAction): Ing
 }
 interface SetUnitAction {
     type: 'set_editable_unit';
-    payload: UniqueUnit | null;
+    payload: Unit | null;
     subsection: number;
 }
 function setUnit(state: IngredientListState, action: SetUnitAction): IngredientListState {
@@ -632,7 +632,7 @@ interface InternalActionHandler {
     submit: (subsection: number) => void;
     truncate: (subsection: number, num: number) => void;
     quantity: RecipeIngredientActionHandler<Quantity>;
-    unit: RecipeIngredientActionHandler<UniqueUnit | null>;
+    unit: RecipeIngredientActionHandler<Unit | null>;
     ingredient: RecipeIngredientActionHandler<Ingredient>;
     prepMethod: RecipeIngredientActionHandler<PrepMethod | null>;
     reset: (subsection: number) => void;

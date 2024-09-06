@@ -5,11 +5,10 @@ import { ApolloError, Reference, useMutation } from '@apollo/client';
 import { ValidationError, boolean, mixed, object, string } from 'yup';
 import { Checkbox, Radio, RadioGroup, Stack, StackProps } from '@chakra-ui/react';
 
-import { UniqueUnit } from '@recipe/types';
 import { useErrorToast } from '@recipe/common/hooks';
 import { FloatingLabelInput } from '@recipe/common/components';
 import { UNIT_FIELDS_FULL } from '@recipe/graphql/queries/unit';
-import { EnumUnitCreatePreferredNumberFormat } from '@recipe/graphql/generated';
+import { EnumUnitCreatePreferredNumberFormat, Unit } from '@recipe/graphql/generated';
 import { CREATE_UNIT, DELETE_UNIT, MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
 import { CreateUnitMutation, ModifyUnitMutation, Scalars } from '@recipe/graphql/generated';
 
@@ -22,7 +21,7 @@ function formatError(error: ApolloError) {
 
 interface CommonUnitFormProps extends StackProps {
     fieldRef?: React.MutableRefObject<HTMLInputElement | null>;
-    initData?: UniqueUnit;
+    initData?: Unit;
     disabled?: boolean;
 }
 interface CreateUnitFormProps extends CommonUnitFormProps {

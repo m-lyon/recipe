@@ -3,10 +3,9 @@ import { ValidationError, boolean, object, string } from 'yup';
 import { ApolloError, Reference, useMutation } from '@apollo/client';
 import { Button, ButtonGroup, Stack, StackProps } from '@chakra-ui/react';
 
-import { UniquePrepMethod } from '@recipe/types';
-import { Scalars } from '@recipe/graphql/generated';
 import { useErrorToast } from '@recipe/common/hooks';
 import { FloatingLabelInput } from '@recipe/common/components';
+import { PrepMethod, Scalars } from '@recipe/graphql/generated';
 import { DELETE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 import { PREP_METHOD_FIELDS_FULL } from '@recipe/graphql/queries/prepMethod';
 import { CREATE_PREP_METHOD, MODIFY_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
@@ -21,7 +20,7 @@ function formatError(error: ApolloError) {
 
 interface CommonPrepMethodFormProps extends StackProps {
     fieldRef?: React.MutableRefObject<HTMLInputElement | null>;
-    initData?: UniquePrepMethod;
+    initData?: PrepMethod;
     disabled?: boolean;
 }
 interface CreatePrepMethodFormProps extends CommonPrepMethodFormProps {

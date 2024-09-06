@@ -4,11 +4,10 @@ import { useMutation } from '@apollo/client';
 import { MutableRefObject, useRef } from 'react';
 import { Popover, PopoverAnchor, useDisclosure } from '@chakra-ui/react';
 
-import { UniquePrepMethod } from '@recipe/types';
 import { DropdownItem } from '@recipe/common/components';
+import { useErrorToast, useNavigatableList } from '@recipe/common/hooks';
 import { CREATE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 import { CreatePrepMethodMutation, PrepMethod } from '@recipe/graphql/generated';
-import { useErrorToast, useNavigatableList, useSuccessToast } from '@recipe/common/hooks';
 
 import { NewPrepMethodPopover } from './NewPrepMethodPopover';
 
@@ -19,7 +18,7 @@ export interface PrepMethodSuggestion {
 interface Props {
     strValue: string;
     data: PrepMethod[];
-    setItem: (value: UniquePrepMethod | null, _id?: string) => void;
+    setItem: (value: PrepMethod | null, _id?: string) => void;
     handleSubmit: () => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
@@ -28,7 +27,6 @@ export function PrepMethodDropdown(props: Props) {
     const { strValue, data, setItem, handleSubmit, inputRef, previewRef } = props;
     const dropdownRef = useRef<HTMLLIElement | null>(null);
     const firstFieldRef = useRef<HTMLInputElement | null>(null);
-    const successToast = useSuccessToast();
     const errorToast = useErrorToast();
     const { isOpen, onOpen, onClose } = useDisclosure({
         onClose: () => previewRef.current?.focus(),
@@ -37,11 +35,6 @@ export function PrepMethodDropdown(props: Props) {
         onCompleted: (data: CreatePrepMethodMutation) => {
             setItem(data.prepMethodCreateOne!.record!);
             handleSubmit();
-            successToast({
-                title: 'Prep method saved',
-                description: `${data?.prepMethodCreateOne?.record?.value} saved`,
-                position: 'top',
-            });
         },
         onError: (error) => {
             errorToast({

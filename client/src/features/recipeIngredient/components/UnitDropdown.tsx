@@ -3,8 +3,8 @@ import { LayoutGroup } from 'framer-motion';
 import { MutableRefObject, useRef, useState } from 'react';
 import { Popover, PopoverAnchor, useDisclosure } from '@chakra-ui/react';
 
+import { Quantity } from '@recipe/types';
 import { Unit } from '@recipe/graphql/generated';
-import { Quantity, UniqueUnit } from '@recipe/types';
 import { DropdownItem } from '@recipe/common/components';
 import { useNavigatableList } from '@recipe/common/hooks';
 import { unitDisplayValue } from '@recipe/utils/formatting';
@@ -13,14 +13,14 @@ import { NewUnitPopover } from './NewUnitPopover';
 import { NewBespokeUnitPopover } from './NewBespokeUnitPopover';
 
 export interface UnitSuggestion {
-    value: string | UniqueUnit;
+    value: string | Unit;
     colour?: string;
 }
 interface Props {
     strValue: string;
     data: Unit[];
     quantity: Quantity;
-    setItem: (value: UniqueUnit | null) => void;
+    setItem: (value: Unit | null) => void;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     previewRef: MutableRefObject<HTMLDivElement | null>;
 }
