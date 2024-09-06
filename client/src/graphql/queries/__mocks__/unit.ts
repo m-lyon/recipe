@@ -12,6 +12,7 @@ export const mockTeaspoon = {
     longPlural: 'teaspoons',
     preferredNumberFormat: 'fraction' as EnumUnitPreferredNumberFormat,
     owner: mockAdminId,
+    unique: true,
     hasSpace: true,
 };
 export const mockTablespoon = {
@@ -23,6 +24,7 @@ export const mockTablespoon = {
     longPlural: 'tablespoons',
     preferredNumberFormat: 'fraction' as EnumUnitPreferredNumberFormat,
     owner: mockAdminId,
+    unique: true,
     hasSpace: true,
 };
 export const mockGram = {
@@ -34,6 +36,7 @@ export const mockGram = {
     longPlural: 'grams',
     preferredNumberFormat: 'decimal' as EnumUnitPreferredNumberFormat,
     owner: mockAdminId,
+    unique: true,
     hasSpace: false,
 };
 export const mockKilogram = {
@@ -45,6 +48,7 @@ export const mockKilogram = {
     longPlural: 'kilograms',
     preferredNumberFormat: 'decimal' as EnumUnitPreferredNumberFormat,
     owner: mockAdminId,
+    unique: true,
     hasSpace: false,
 };
 export const mockOunce = {
@@ -56,6 +60,7 @@ export const mockOunce = {
     longPlural: 'ounces',
     preferredNumberFormat: 'decimal' as EnumUnitPreferredNumberFormat,
     owner: mockAdminId,
+    unique: true,
     hasSpace: true,
 };
 export const mockCup = {
@@ -67,6 +72,7 @@ export const mockCup = {
     longPlural: 'cups',
     preferredNumberFormat: 'fraction' as EnumUnitPreferredNumberFormat,
     owner: mockAdminId,
+    unique: true,
     hasSpace: true,
 };
 

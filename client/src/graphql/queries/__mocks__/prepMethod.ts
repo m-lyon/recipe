@@ -6,24 +6,28 @@ export const mockChopped = {
     __typename: 'PrepMethod',
     _id: mockChoppedId,
     value: 'chopped',
+    unique: true,
     owner: mockAdminId,
 };
 export const mockDiced = {
     __typename: 'PrepMethod' as const,
     _id: mockDicedId,
     value: 'diced',
+    unique: true,
     owner: mockAdminId,
 };
 export const mockSliced = {
     __typename: 'PrepMethod' as const,
     _id: mockSlicedId,
     value: 'sliced',
+    unique: true,
     owner: mockAdminId,
 };
 export const mockWhole = {
     __typename: 'PrepMethod' as const,
     _id: mockWholeId,
     value: 'whole',
+    unique: true,
     owner: mockAdminId,
 };
 

@@ -12,6 +12,7 @@ export const mockUnit = {
     shortPlural: 'cut',
     preferredNumberFormat: 'decimal' as EnumUnitPreferredNumberFormat,
     hasSpace: true,
+    unique: true,
     owner: mockAdminId,
 };
 
@@ -25,6 +26,7 @@ export const mockCreateUnit = {
                 shortSingular: mockUnit.shortSingular,
                 shortPlural: mockUnit.shortPlural,
                 preferredNumberFormat: mockUnit.preferredNumberFormat,
+                unique: mockTeaspoon.unique,
                 hasSpace: true,
             },
         },
@@ -48,6 +50,7 @@ export const mockUpdateUnit = {
                 shortSingular: mockTeaspoon.shortSingular,
                 shortPlural: mockTeaspoon.shortPlural,
                 preferredNumberFormat: mockTeaspoon.preferredNumberFormat,
+                unique: mockTeaspoon.unique,
                 hasSpace: mockTeaspoon.hasSpace,
             },
         },

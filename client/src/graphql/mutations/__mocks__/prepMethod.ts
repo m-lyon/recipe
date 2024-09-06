@@ -7,6 +7,7 @@ export const mockPipped = {
     _id: mockPippedId,
     __typename: 'PrepMethod' as const,
     value: 'pipped',
+    unique: true,
     owner: mockAdminId,
 };
 export const mockCreatePrepMethod = {
@@ -15,6 +16,7 @@ export const mockCreatePrepMethod = {
         variables: {
             record: {
                 value: mockPipped.value,
+                unique: mockPipped.unique,
             },
         },
     },
@@ -33,6 +35,7 @@ export const mockUpdatePrepMethod = {
             id: mockDiced._id,
             record: {
                 value: 'dicey',
+                unique: true,
             },
         },
     },
