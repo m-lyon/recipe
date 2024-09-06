@@ -63,6 +63,7 @@ jobs:
           echo "VITE_ROOT_PATH = ${{ secrets.VITE_ROOT_PATH }}" >> .env.test.local
           echo "VITE_DELAY_SHORT = ${{ secrets.VITE_DELAY_SHORT }}" >> .env.test.local
           echo "VITE_DELAY_LONG = ${{ secrets.VITE_DELAY_LONG }}" >> .env.test.local
+          echo "VITE_DEBUG = ${{ secrets.VITE_DEBUG }}" >> .env.test.local
 
       - name: Start server in development mode
         working-directory: ./api
