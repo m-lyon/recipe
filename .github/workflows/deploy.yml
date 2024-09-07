@@ -42,9 +42,13 @@ jobs:
           path: ~/.cache/mongodb-binaries
           key: ${{ runner.os }}-mongodb-${{ env.MONGODB_VERSION }}
 
+      - name: Download MongoDB Memory Server
+        working-directory: ./api
+        run: npm run dl_memory
+
       - name: Run API tests
         working-directory: ./api
-        run: npm run test
+        run: npm run start:test
 
       - name: Create API environment file
         working-directory: ./api
