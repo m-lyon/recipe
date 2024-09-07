@@ -2,7 +2,7 @@ import 'dotenv-flow/config';
 
 import { MongoMemoryServer } from 'mongodb-memory-server-core';
 
-import { MONGODB_OPTS } from '../../test/utils/mongodb.js';
+import { MONGODB_OPTS } from '../utils/mongodb.js';
 
 async function downloadMemoryServer() {
     try {
