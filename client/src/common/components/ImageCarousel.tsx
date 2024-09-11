@@ -1,5 +1,4 @@
 import * as CSS from 'csstype';
-import { LegacyRef } from 'react';
 import { useMeasure } from 'react-use';
 import { UseMeasureRef } from 'react-use/lib/useMeasure';
 import { AspectRatio, Card, CardBody, CardProps, Image } from '@chakra-ui/react';
@@ -18,7 +17,7 @@ interface ImageCarouselProps extends CardProps {
 }
 export function ImageCarousel(props: ImageCarouselProps) {
     const { images, width, ratio, cardRef, imgBottomRightRadius, ...rest } = props;
-    const [ref, { height }] = useMeasure();
+    const [ref, { height }] = useMeasure<HTMLImageElement>();
 
     const imagesCards = images.map((image, index) => {
         return (
@@ -30,7 +29,7 @@ export function ImageCarousel(props: ImageCarouselProps) {
                         onDragStart={(e: React.DragEvent<HTMLImageElement>) => e.preventDefault()}
                         borderBottomRadius={images.length === 1 ? 'md' : 0}
                         borderBottomRightRadius={images.length === 1 ? imgBottomRightRadius : 0}
-                        ref={index === 0 ? (ref as LegacyRef<HTMLImageElement>) : undefined}
+                        ref={index === 0 ? ref : undefined}
                         alt={`Image ${index + 1} for ${image.recipe?.title}`}
                     />
                 </AspectRatio>

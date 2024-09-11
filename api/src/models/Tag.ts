@@ -15,8 +15,7 @@ const tagSchema = new Schema<Tag>({
         validate: [
             uniqueInAdminsAndUser('Tag', 'value', 'The tag must be unique.'),
             {
-                validator: (value: string) =>
-                    !([...ALLOWED_TAGS] as readonly string[]).includes(value.toLowerCase()),
+                validator: (value: string) => ![...ALLOWED_TAGS].includes(value.toLowerCase()),
                 message: 'Forbidden tag.',
             },
         ],

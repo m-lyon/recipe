@@ -39,7 +39,7 @@ export const isDocumentOwnerOrAdmin =
                 extensions: { code: 'NOT_FOUND' },
             });
         }
-        if (!(document.owner as Types.ObjectId).equals(user._id) && user.role !== 'admin') {
+        if (!document.owner.equals(user._id) && user.role !== 'admin') {
             throw new GraphQLError('You are not authorised!', {
                 extensions: { code: 'FORBIDDEN' },
             });

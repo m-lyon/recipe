@@ -270,7 +270,7 @@ function Track(props: TrackProps) {
 
     const handleClick = useCallback(
         (event: MouseEvent) => {
-            if (node.current && node.current.contains(event.target as Node)) {
+            if (node.current && node.current.contains(event.target as Node | null)) {
                 setTrackIsActive(true);
             } else {
                 setTrackIsActive(false);

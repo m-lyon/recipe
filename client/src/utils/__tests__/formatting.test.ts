@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { InputState } from '@recipe/types';
 import { getEditableRecipeIngredientStr } from '@recipe/utils/formatting';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
+import { EnumUnitPreferredNumberFormat } from '@recipe/graphql/generated';
 import { EnumRecipeIngredientType, Ingredient, Unit } from '@recipe/graphql/generated';
 
 describe('getEditableRecipeIngredientStr', () => {
@@ -17,9 +18,9 @@ describe('getEditableRecipeIngredientStr', () => {
                     shortSingular: 'cup',
                     longPlural: 'cups',
                     longSingular: 'cup',
-                    preferredNumberFormat: 'fraction',
+                    preferredNumberFormat: EnumUnitPreferredNumberFormat.Fraction,
                     hasSpace: true,
-                } as Unit,
+                } satisfies Unit as Unit,
             },
             ingredient: {
                 value: 'onion',
@@ -28,10 +29,10 @@ describe('getEditableRecipeIngredientStr', () => {
                     name: 'onion',
                     pluralName: 'onions',
                     isCountable: true,
-                } as Ingredient,
+                } satisfies Ingredient as Ingredient,
             },
             prepMethod: { value: null },
-            state: 'prepMethod' as InputState,
+            state: 'prepMethod' satisfies InputState as InputState,
             show: true,
             key: '1',
             type: EnumRecipeIngredientType.Ingredient,
@@ -54,10 +55,10 @@ describe('getEditableRecipeIngredientStr', () => {
                     name: 'onion',
                     pluralName: 'onions',
                     isCountable: true,
-                } as Ingredient,
+                } satisfies Ingredient as Ingredient,
             },
             prepMethod: { value: null },
-            state: 'prepMethod' as InputState,
+            state: 'prepMethod' satisfies InputState as InputState,
             show: true,
             key: '1',
             type: EnumRecipeIngredientType.Ingredient,
@@ -77,15 +78,15 @@ describe('getFinishedRecipeIngredientStr', () => {
                 shortSingular: 'cup',
                 longPlural: 'cups',
                 longSingular: 'cup',
-                preferredNumberFormat: 'fraction',
+                preferredNumberFormat: EnumUnitPreferredNumberFormat.Fraction,
                 hasSpace: true,
-            } as Unit,
+            } satisfies Unit as Unit,
             ingredient: {
                 __typename: 'Ingredient',
                 name: 'onion',
                 pluralName: 'onions',
                 isCountable: true,
-            } as Ingredient,
+            } satisfies Ingredient as Ingredient,
             prepMethod: null,
             key: '1',
         };
@@ -102,7 +103,7 @@ describe('getFinishedRecipeIngredientStr', () => {
                 name: 'onion',
                 pluralName: 'onions',
                 isCountable: true,
-            } as Ingredient,
+            } satisfies Ingredient as Ingredient,
             prepMethod: null,
             key: '1',
         };

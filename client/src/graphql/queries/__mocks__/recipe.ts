@@ -32,7 +32,7 @@ export const mockRecipeOne = {
                 {
                     // normal ingredient
                     _id: mockRecipeIngredientIdOne,
-                    type: 'ingredient' as EnumRecipeIngredientType,
+                    type: EnumRecipeIngredientType.Ingredient,
                     quantity: '1',
                     unit: mockTeaspoon,
                     ingredient: mockApple,
@@ -41,7 +41,7 @@ export const mockRecipeOne = {
                 {
                     // ingredient with no unit
                     _id: mockRecipeIngredientIdTwo,
-                    type: 'ingredient' as EnumRecipeIngredientType,
+                    type: EnumRecipeIngredientType.Ingredient,
                     quantity: '1',
                     unit: null,
                     ingredient: mockApple,
@@ -50,7 +50,7 @@ export const mockRecipeOne = {
                 {
                     // ingredient with no unit and plural quantity
                     _id: mockRecipeIngredientIdThree,
-                    type: 'ingredient' as EnumRecipeIngredientType,
+                    type: EnumRecipeIngredientType.Ingredient,
                     quantity: '2',
                     unit: null,
                     ingredient: mockApple,
@@ -64,7 +64,7 @@ export const mockRecipeOne = {
                 {
                     // ingredient with fraction quantity
                     _id: mockRecipeIngredientIdFour,
-                    type: 'ingredient' as EnumRecipeIngredientType,
+                    type: EnumRecipeIngredientType.Ingredient,
                     quantity: '1/3',
                     unit: mockCup,
                     ingredient: mockApple,
@@ -73,7 +73,7 @@ export const mockRecipeOne = {
                 {
                     // ingredient with no prep method
                     _id: mockRecipeIngredientIdFive,
-                    type: 'ingredient' as EnumRecipeIngredientType,
+                    type: EnumRecipeIngredientType.Ingredient,
                     quantity: '1',
                     unit: mockOunce,
                     ingredient: mockApple,
@@ -121,7 +121,7 @@ export const mockRecipeThree = {
                 {
                     // normal ingredient
                     _id: mockRecipeIngredientIdOne,
-                    type: 'ingredient' as EnumRecipeIngredientType,
+                    type: EnumRecipeIngredientType.Ingredient,
                     quantity: '1',
                     unit: mockTeaspoon,
                     ingredient: mockApple,
@@ -130,7 +130,7 @@ export const mockRecipeThree = {
                 {
                     // ingredient with no unit
                     _id: mockRecipeIngredientIdTwo,
-                    type: 'ingredient' as EnumRecipeIngredientType,
+                    type: EnumRecipeIngredientType.Ingredient,
                     quantity: '1',
                     unit: null,
                     ingredient: mockApple,
@@ -139,7 +139,7 @@ export const mockRecipeThree = {
                 {
                     // ingredient with no unit and plural quantity
                     _id: mockRecipeIngredientIdThree,
-                    type: 'ingredient' as EnumRecipeIngredientType,
+                    type: EnumRecipeIngredientType.Ingredient,
                     quantity: '2',
                     unit: null,
                     ingredient: mockApple,
@@ -166,7 +166,7 @@ export const mockRecipeFour = {
             ingredients: [
                 {
                     _id: mockRecipeIngredientIdEight,
-                    type: 'recipe' as EnumRecipeIngredientType,
+                    type: EnumRecipeIngredientType.Recipe,
                     quantity: '1',
                     unit: mockTeaspoon,
                     ingredient: mockRecipeTwo,
@@ -189,7 +189,7 @@ export const mockRecipeNew = {
             ingredients: [
                 {
                     _id: mockRecipeIngredientIdSix,
-                    type: 'ingredient' as EnumRecipeIngredientType,
+                    type: EnumRecipeIngredientType.Ingredient,
                     quantity: '2',
                     unit: mockTeaspoon,
                     ingredient: mockApple,
@@ -282,7 +282,7 @@ export const mockGetRecipes = {
                 mockRecipeTwo,
                 mockRecipeThree,
                 mockRecipeFour,
-            ] as GetRecipesQuery['recipeMany'],
+            ] satisfies GetRecipesQuery['recipeMany'] as GetRecipesQuery['recipeMany'],
         },
     },
 };

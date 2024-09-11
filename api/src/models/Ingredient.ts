@@ -4,7 +4,7 @@ import { composeMongoose } from 'graphql-compose-mongoose';
 import { ownerExists } from './validation.js';
 import { uniqueInAdminsAndUser } from './validation.js';
 
-export const ALLOWED_TAGS = ['vegan', 'vegetarian'] as const;
+export const ALLOWED_TAGS: ReadonlyArray<string> = ['vegan', 'vegetarian'];
 export interface Ingredient extends Document {
     name: string;
     pluralName: string;

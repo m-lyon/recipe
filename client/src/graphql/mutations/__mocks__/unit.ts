@@ -10,7 +10,7 @@ export const mockUnit = {
     longPlural: 'cutting',
     shortSingular: 'cut',
     shortPlural: 'cut',
-    preferredNumberFormat: 'decimal' as EnumUnitPreferredNumberFormat,
+    preferredNumberFormat: EnumUnitPreferredNumberFormat.Decimal,
     hasSpace: true,
     unique: true,
     owner: mockAdminId,
