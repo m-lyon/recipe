@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useToast } from '@chakra-ui/react';
 import { ToastPosition } from '@chakra-ui/react';
 
@@ -10,12 +11,15 @@ interface UseSuccessToastOptions {
 }
 export function useSuccessToast() {
     const toast = useToast();
+    const [toastId] = useState(Math.random().toString());
     return (opts: UseSuccessToastOptions) => {
-        toast({
-            ...opts,
-            status: 'success',
-            duration: DELAY_SHORT,
-            isClosable: true,
-        });
+        if (!toast.isActive(toastId)) {
+            toast({
+                ...opts,
+                status: 'success',
+                duration: DELAY_SHORT,
+                isClosable: true,
+            });
+        }
     };
 }

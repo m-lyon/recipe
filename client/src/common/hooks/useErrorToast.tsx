@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useToast } from '@chakra-ui/react';
 import { ToastPosition } from '@chakra-ui/react';
 
@@ -10,12 +11,15 @@ interface UseErrorToastOptions {
 }
 export function useErrorToast() {
     const toast = useToast();
+    const [toastId] = useState(Math.random().toString());
     return (opts: UseErrorToastOptions) => {
-        toast({
-            status: 'error',
-            duration: DELAY_LONG,
-            isClosable: true,
-            ...opts,
-        });
+        if (!toast.isActive(toastId)) {
+            toast({
+                status: 'error',
+                duration: DELAY_LONG,
+                isClosable: true,
+                ...opts,
+            });
+        }
     };
 }

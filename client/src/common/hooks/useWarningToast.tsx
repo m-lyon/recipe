@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useToast } from '@chakra-ui/react';
 import { ToastPosition } from '@chakra-ui/react';
 
@@ -10,12 +11,16 @@ interface UseWarningToastOptions {
 }
 export function useWarningToast() {
     const toast = useToast();
+    const [toastId] = useState(Math.random().toString());
     return (opts: UseWarningToastOptions) => {
-        toast({
-            status: 'warning',
-            duration: DELAY_LONG,
-            isClosable: true,
-            ...opts,
-        });
+        if (!toast.isActive(toastId)) {
+            toast({
+                id: toastId,
+                status: 'warning',
+                duration: DELAY_LONG,
+                isClosable: true,
+                ...opts,
+            });
+        }
     };
 }
