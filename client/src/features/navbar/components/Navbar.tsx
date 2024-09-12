@@ -1,6 +1,6 @@
 import { useContext, useRef, useState } from 'react';
 import { Outlet, Link as ReactRouterLink } from 'react-router-dom';
-import { useBreakpointValue, useColorModeValue, useDisclosure } from '@chakra-ui/react';
+import { useColorModeValue, useDisclosure } from '@chakra-ui/react';
 import { Box, Collapse, Flex, Icon, IconButton, Slide, Stack, Text } from '@chakra-ui/react';
 import { Link as ChakraLink, Popover, PopoverContent, PopoverTrigger } from '@chakra-ui/react';
 import { ChevronDownIcon, ChevronRightIcon, CloseIcon, HamburgerIcon } from '@chakra-ui/icons';
@@ -34,7 +34,7 @@ export function Navbar() {
                     w='100%'
                 >
                     <Flex
-                        flex={{ base: 1, md: 'auto' }}
+                        flex={{ base: 0, md: 'auto' }}
                         ml={{ base: -2 }}
                         display={{ base: 'flex', md: 'none' }}
                     >
@@ -53,7 +53,7 @@ export function Navbar() {
                         alignItems='center'
                     >
                         <ChakraLink
-                            textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
+                            textAlign={{ base: 'center', md: 'left' }}
                             fontFamily='heading'
                             color={useColorModeValue('gray.800', 'white')}
                             _hover={{ textDecoration: 'none' }}
@@ -61,6 +61,7 @@ export function Navbar() {
                             as={ReactRouterLink}
                             aria-label='Navigate to home page'
                             onClick={onClose}
+                            display={{ base: 'none', md: 'inline' }}
                         >
                             Home
                         </ChakraLink>
@@ -69,15 +70,15 @@ export function Navbar() {
                             <DesktopNav isLoggedIn={isLoggedIn} />
                         </Flex>
                         <Flex width='100%'>
-                            <Box ml='auto' pr='20px'>
+                            <Box ml='auto' pr={{ base: '0px', md: '20px' }}>
                                 <SearchBar
                                     searchQuery={searchQuery}
                                     setSearchQuery={setSearchQuery}
                                 />
                             </Box>
                         </Flex>
+                        <UserOptions />
                     </Flex>
-                    <UserOptions />
                 </Flex>
                 <Slide in={isOpen} direction='top' style={{ zIndex: 2, marginTop: '60px' }}>
                     <MobileNav isLoggedIn={isLoggedIn} parentOnToggle={onToggle} />

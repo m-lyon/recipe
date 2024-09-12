@@ -1,7 +1,7 @@
 import * as CSS from 'csstype';
 import { useMeasure } from 'react-use';
 import { UseMeasureRef } from 'react-use/lib/useMeasure';
-import { AspectRatio, Card, CardBody, CardProps, Image } from '@chakra-ui/react';
+import { AspectRatio, Card, CardBody, CardProps, Image, ResponsiveValue } from '@chakra-ui/react';
 
 import { Images } from '@recipe/types';
 import { GRAPHQL_ENDPOINT } from '@recipe/constants';
@@ -10,13 +10,14 @@ import { Carousel } from './Carousel';
 
 interface ImageCarouselProps extends CardProps {
     images: Images;
-    width: CSS.Property.Width;
+    width: ResponsiveValue<CSS.Property.Width>;
     ratio: number;
     cardRef?: UseMeasureRef<Element>;
-    imgBottomRightRadius?: CSS.Property.BorderBottomRightRadius;
+    bottomLeftRadius?: ResponsiveValue<CSS.Property.BorderBottomRightRadius>;
+    bottomRightRadius?: ResponsiveValue<CSS.Property.BorderBottomRightRadius>;
 }
 export function ImageCarousel(props: ImageCarouselProps) {
-    const { images, width, ratio, cardRef, imgBottomRightRadius, ...rest } = props;
+    const { images, width, ratio, cardRef, bottomLeftRadius, bottomRightRadius, ...rest } = props;
     const [ref, { height }] = useMeasure<HTMLImageElement>();
 
     const imagesCards = images!.map((image, index) => {
@@ -27,8 +28,8 @@ export function ImageCarousel(props: ImageCarouselProps) {
                         src={`${GRAPHQL_ENDPOINT}${image!.origUrl}`}
                         objectFit='contain'
                         onDragStart={(e: React.DragEvent<HTMLImageElement>) => e.preventDefault()}
-                        borderBottomRadius={images?.length === 1 ? 'md' : 0}
-                        borderBottomRightRadius={images?.length === 1 ? imgBottomRightRadius : 0}
+                        borderBottomLeftRadius={images?.length === 1 ? bottomLeftRadius : 0}
+                        borderBottomRightRadius={images?.length === 1 ? bottomRightRadius : 0}
                         ref={index === 0 ? ref : undefined}
                         alt={`Image ${index + 1} for ${image?.recipe?.title}`}
                     />

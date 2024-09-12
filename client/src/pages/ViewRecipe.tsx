@@ -1,6 +1,6 @@
 import { useQuery } from '@apollo/client';
 import { useParams } from 'react-router-dom';
-import { Box, Container, Grid, GridItem, useBreakpointValue } from '@chakra-ui/react';
+import { Box, Container, Grid, GridItem } from '@chakra-ui/react';
 
 import { Recipe } from '@recipe/graphql/generated';
 import { IngredientSubsection } from '@recipe/types';
@@ -13,29 +13,6 @@ export function ViewRecipe() {
     const { data, loading, error } = useQuery(GET_RECIPE, {
         variables: { filter: { titleIdentifier } },
     });
-    const styles = useBreakpointValue(
-        {
-            base: {
-                templateAreas: `'title'
-                            'image'
-                            'ingredients'
-                            'instructions'`,
-                gridTemplateRows: 'repeat(4, auto)',
-                gridTemplateColumns: '100%',
-                height: 'auto',
-                displayImageTab: true,
-            },
-            md: {
-                templateAreas: `'title title'
-                            'ingredients instructions'`,
-                gridTemplateRows: '100px auto',
-                gridTemplateColumns: '0.285fr 0.715fr',
-                height: 'auto',
-                displayImageTab: false,
-            },
-        },
-        { fallback: 'md' }
-    );
 
     if (loading) {
         return <div>Loading...</div>;
@@ -61,10 +38,17 @@ export function ViewRecipe() {
     return (
         <Container maxW='container.xl' pt='60px'>
             <Grid
-                templateAreas={styles!.templateAreas}
-                gridTemplateRows={styles!.gridTemplateRows}
-                gridTemplateColumns={styles!.gridTemplateColumns}
-                h={styles!.height}
+                templateAreas={{
+                    base: `'title'
+                            'image'
+                            'ingredients'
+                            'instructions'`,
+                    md: `'title title'
+                            'ingredients instructions'`,
+                }}
+                gridTemplateRows={{ base: 'repeat(4, auto)', md: '100px auto' }}
+                gridTemplateColumns={{ base: '100%', md: '0.285fr 0.715fr' }}
+                h='auto'
                 gap='2'
                 pt='2'
                 pb='2'
@@ -74,16 +58,19 @@ export function ViewRecipe() {
                 <GridItem boxShadow='lg' p='6' area='title'>
                     <Title title={titleNormed as string} />
                 </GridItem>
-                {styles?.displayImageTab && (
-                    <GridItem boxShadow='lg' area='image' w='100%'>
-                        <Box position='relative' w='100%'>
-                            <ImageViewerRecipe
-                                images={images as Recipe['images']}
-                                position='relative'
-                            />
-                        </Box>
-                    </GridItem>
-                )}
+                <GridItem
+                    boxShadow='lg'
+                    area='image'
+                    w='100%'
+                    display={{ base: 'inline', md: 'none' }}
+                >
+                    <Box position='relative' w='100%'>
+                        <ImageViewerRecipe
+                            images={images as Recipe['images']}
+                            position='relative'
+                        />
+                    </Box>
+                </GridItem>
                 <GridItem area='ingredients' boxShadow='lg' p='6'>
                     <IngredientsTab
                         recipeId={data!.recipeOne!._id}

@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Box, Flex, Spacer, VStack, useBreakpointValue } from '@chakra-ui/react';
+import { Box, Flex, Spacer, VStack } from '@chakra-ui/react';
 
 interface Props {
     Servings: ReactNode;
@@ -10,17 +10,11 @@ interface Props {
 }
 export function IngredientsTabLayout(props: Props) {
     const { Servings, StarRating, IngredientList, Notes, Tags } = props;
-    const styles = useBreakpointValue(
-        {
-            base: { showTags: true },
-            md: { showTags: false },
-        },
-        { fallback: 'md' }
-    );
+
     return (
         <Flex direction='column' justifyContent='space-between' height='100%'>
             <VStack spacing='24px' align='left'>
-                {styles?.showTags && Tags}
+                {Tags}
                 <Flex paddingBottom={3}>
                     {Servings}
                     <Spacer />

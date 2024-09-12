@@ -19,6 +19,8 @@ export function ImageViewerHome(props: Props) {
             right={0}
             top={0}
             shadow='none'
+            bottomLeftRadius='md'
+            bottomRightRadius='md'
         />
     );
 }

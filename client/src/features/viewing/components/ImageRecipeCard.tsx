@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CloseIcon, EditIcon } from '@chakra-ui/icons';
-import { LinkBox, LinkOverlay, VStack, useBreakpointValue } from '@chakra-ui/react';
+import { LinkBox, LinkOverlay, VStack } from '@chakra-ui/react';
 import { Card, CardBody, CardHeader, Heading, IconButton, Spacer } from '@chakra-ui/react';
 
 import { ROOT_PATH } from '@recipe/constants';
@@ -20,20 +20,6 @@ interface Props {
 export function ImageRecipeCard(props: Props) {
     const { recipe, hasEditPermission, handleDelete } = props;
     const [isHovered, setIsHovered] = useState(false);
-
-    const styles = useBreakpointValue(
-        {
-            base: {
-                transform: 'translate(-50%, -50%)',
-                opacity: 1,
-            },
-            md: {
-                transform: `translate(-50%, -50%) scale(${isHovered ? 1 : 0})`,
-                opacity: isHovered ? 1 : 0,
-            },
-        },
-        { fallback: 'md' }
-    );
 
     return (
         <LinkBox display='flex' flexDirection='column' alignItems='center'>
@@ -54,8 +40,11 @@ export function ImageRecipeCard(props: Props) {
                         top='0'
                         left='0'
                         zIndex='1'
-                        opacity={styles!.opacity}
-                        transform={styles!.transform}
+                        opacity={{ base: 1, md: isHovered ? 1 : 0 }}
+                        transform={{
+                            base: 'translate(-50%, -50%)',
+                            md: `translate(-50%, -50%) scale(${isHovered ? 1 : 0})`,
+                        }}
                         transition='opacity 0.3s, transform 0.3s'
                         width='1'
                         as={Link}
@@ -107,8 +96,11 @@ export function ImageRecipeCard(props: Props) {
                         top='0'
                         right='-10'
                         zIndex='1'
-                        opacity={styles!.opacity}
-                        transform={styles!.transform}
+                        opacity={{ base: 1, md: isHovered ? 1 : 0 }}
+                        transform={{
+                            base: 'translate(-50%, -50%)',
+                            md: `translate(-50%, -50%) scale(${isHovered ? 1 : 0})`,
+                        }}
                         transition='opacity 0.3s, transform 0.3s'
                         onClick={() => handleDelete(recipe._id)}
                     />

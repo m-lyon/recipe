@@ -61,7 +61,13 @@ export function UserOptions() {
 
 function LoginOptions() {
     return (
-        <Stack flex={{ base: 1, md: 0 }} justify='flex-end' direction='row' spacing={6}>
+        <Stack
+            flex={{ base: 1, md: 0 }}
+            justify='flex-end'
+            direction='row'
+            spacing={6}
+            ml={{ base: 3, md: 0 }}
+        >
             <Button
                 as='a'
                 fontSize='sm'

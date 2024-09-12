@@ -48,6 +48,7 @@ export function IngredientsTab(props: Props) {
                 <TagList
                     tags={tags.concat(calculatedTags.map((tag) => ({ value: tag }) as Tag))}
                     pb='24px'
+                    display={{ base: 'block', md: 'none' }}
                 />
             }
         />

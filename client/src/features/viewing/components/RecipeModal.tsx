@@ -13,26 +13,6 @@ interface Props {
 export function RecipeModal(props: Props) {
     const { recipe, isOpen, onClose } = props;
 
-    const styles = useBreakpointValue(
-        {
-            base: {
-                ingrColSpan: 20,
-                dividerColSpan: 20,
-                dividerPy: '12px',
-                dividerOrientation: 'horizontal' as const,
-                instrColSpan: 20,
-            },
-            md: {
-                ingrColSpan: 8,
-                dividerColSpan: 1,
-                dividerPy: undefined,
-                dividerOrientation: 'vertical' as const,
-                instrColSpan: 11,
-            },
-        },
-        { fallback: 'md' }
-    );
-
     return (
         <Modal isOpen={isOpen} onClose={onClose} size='xl'>
             <ModalOverlay />
@@ -48,17 +28,25 @@ export function RecipeModal(props: Props) {
                 <ModalCloseButton aria-label={`Close ${recipe.title} modal`} />
                 <ModalBody>
                     <Grid templateColumns='repeat(20, 1fr)' pb='12px'>
-                        <GridItem colSpan={styles?.ingrColSpan}>
+                        <GridItem colSpan={{ base: 20, md: 8 }}>
                             <IngredientList
                                 subsections={recipe.ingredientSubsections}
                                 currentServings={recipe.numServings}
                                 origServings={recipe.numServings}
                             />
                         </GridItem>
-                        <GridItem colSpan={styles?.dividerColSpan} py={styles?.dividerPy}>
-                            <Divider orientation={styles?.dividerOrientation} />
+                        <GridItem
+                            colSpan={{ base: 20, md: 1 }}
+                            py={{ base: '12px', md: undefined }}
+                        >
+                            <Divider
+                                orientation={useBreakpointValue({
+                                    base: 'horizontal',
+                                    md: 'vertical',
+                                })}
+                            />
                         </GridItem>
-                        <GridItem colSpan={styles?.instrColSpan}>
+                        <GridItem colSpan={{ base: 20, md: 11 }}>
                             <InstructionList
                                 instructions={recipe.instructionSubsections}
                                 fontSize='md'

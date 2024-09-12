@@ -34,40 +34,6 @@ export function EditableRecipe(props: Props) {
     const { state, rating, handleSubmitMutation, submitButtonProps } = props;
     const [userContext] = useContext(UserContext);
     const toast = useErrorToast();
-    const styles = useBreakpointValue(
-        {
-            base: {
-                templateAreas: `'title'
-                            'tags' 
-                            'ingredients'
-                            'instructions'
-                            'images'
-                            'button'`,
-                gridTemplateRows: 'auto auto auto auto auto 90px',
-                gridTemplateColumns: '100%',
-                height: 'auto',
-                tagMinHeight: '134px',
-                ingredientsMinHeight: '500px',
-                imageMinHeight: '300px',
-                readonlyStarRating: true,
-            },
-            md: {
-                templateAreas: `'title title'
-                            'ingredients tags'
-                            'ingredients instructions'
-                            'images images'
-                            'button button'`,
-                gridTemplateRows: '100px 140px auto auto 90px',
-                gridTemplateColumns: '0.4fr 1fr',
-                height: 'auto',
-                tagMinHeight: '140px',
-                ingredientsMinHeight: '200px',
-                imageMinHeight: '300px',
-                readonlyStarRating: false,
-            },
-        },
-        { fallback: 'md' }
-    );
 
     const validate = () => {
         if (state.title.value === null) {
@@ -200,10 +166,25 @@ export function EditableRecipe(props: Props) {
     return (
         <Container maxW='container.xl' pt='60px'>
             <Grid
-                templateAreas={styles!.templateAreas}
-                gridTemplateRows={styles!.gridTemplateRows}
-                gridTemplateColumns={styles!.gridTemplateColumns}
-                h={styles!.height}
+                templateAreas={{
+                    base: `'title'
+                            'tags' 
+                            'ingredients'
+                            'instructions'
+                            'images'
+                            'button'`,
+                    md: `'title title'
+                            'ingredients tags'
+                            'ingredients instructions'
+                            'images images'
+                            'button button'`,
+                }}
+                gridTemplateRows={{
+                    base: 'auto auto auto auto auto 90px',
+                    md: '100px 140px auto auto 90px',
+                }}
+                gridTemplateColumns={{ base: '100%', md: '0.4fr 1fr' }}
+                h='auto'
                 gap='2'
                 pt='2'
                 pb='2'
@@ -225,7 +206,7 @@ export function EditableRecipe(props: Props) {
                     pt='6'
                     pr='6'
                     pb='2'
-                    minH={styles?.tagMinHeight}
+                    minH={{ base: '134px', md: '140px' }}
                 >
                     <EditableTagList {...state.tags} />
                 </GridItem>
@@ -233,14 +214,16 @@ export function EditableRecipe(props: Props) {
                     area='ingredients'
                     boxShadow='lg'
                     padding='6'
-                    minH={styles?.ingredientsMinHeight}
+                    minH={{ base: '500px', md: '200px' }}
                 >
                     <IngredientsTabLayout
                         Servings={<Servings {...state.numServings} />}
                         StarRating={
                             <StarRating
                                 {...rating}
-                                readonly={styles?.readonlyStarRating || !userContext}
+                                readonly={
+                                    useBreakpointValue({ base: true, md: false }) || !userContext
+                                }
                             />
                         }
                         IngredientList={<EditableIngredientList {...state.ingredient} />}
@@ -260,7 +243,7 @@ export function EditableRecipe(props: Props) {
                     area='images'
                     display='flex'
                     flexDirection='column'
-                    minH={styles?.imageMinHeight}
+                    minH='300px'
                 >
                     <ImageUpload {...state.images} />
                 </GridItem>

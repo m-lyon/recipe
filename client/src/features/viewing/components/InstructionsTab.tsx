@@ -1,5 +1,5 @@
 import { useMeasure } from 'react-use';
-import { Box, Flex, Spacer, VStack, useBreakpointValue } from '@chakra-ui/react';
+import { Box, Flex, Spacer, VStack } from '@chakra-ui/react';
 
 import { TagList } from '@recipe/features/tags';
 import { tagsHeight } from '@recipe/features/tags';
@@ -22,14 +22,6 @@ export function InstructionsTab(props: Props) {
     const { tags, instructions, source, images, calculatedTags } = props;
     const [ref, { height }] = useMeasure();
 
-    const styles = useBreakpointValue(
-        {
-            base: { showImages: false },
-            md: { showImages: true },
-        },
-        { fallback: 'md' }
-    );
-
     const boxHeight = (height ? height : 0) - tagsHeight - instrSpacing;
     const numImages = images ? images.length : 0;
 
@@ -37,21 +29,19 @@ export function InstructionsTab(props: Props) {
         <Flex direction='column' justifyContent='space-between' height='100%'>
             <Flex direction='row'>
                 <Box position='relative' w='100%'>
-                    {styles?.showImages && <ImageViewerRecipe images={images} cardRef={ref} />}
-                    <VStack
-                        spacing={styles?.showImages ? `${instrSpacing}px` : undefined}
-                        align='left'
-                    >
-                        {styles?.showImages && (
-                            <TagList
-                                tags={tags.concat(
-                                    calculatedTags.map((tag) => ({ value: tag }) as Tag)
-                                )}
-                                displayBoxMargin={true}
-                            />
-                        )}
+                    <ImageViewerRecipe
+                        images={images}
+                        cardRef={ref}
+                        display={{ base: 'none', md: 'block' }}
+                    />
+                    <VStack spacing={{ base: undefined, md: `${instrSpacing}px` }} align='left'>
+                        <TagList
+                            tags={tags.concat(calculatedTags.map((tag) => ({ value: tag }) as Tag))}
+                            displayBoxMargin={true}
+                            display={{ base: 'none', md: 'block' }}
+                        />
                         <Box pr='24px'>
-                            {styles?.showImages && numImages ? (
+                            {numImages ? (
                                 <Box
                                     h={numImages > 1 ? boxHeight + sliderBarHeight : boxHeight}
                                     w={imageCardWidth - 24}
@@ -59,6 +49,7 @@ export function InstructionsTab(props: Props) {
                                     marginBottom='4'
                                     float='right'
                                     position='relative'
+                                    display={{ base: 'none', md: 'block' }}
                                 />
                             ) : undefined}
                             <InstructionList instructions={instructions} />
