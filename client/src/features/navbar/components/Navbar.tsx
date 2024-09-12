@@ -1,4 +1,4 @@
-import { useContext, useRef } from 'react';
+import { useContext, useRef, useState } from 'react';
 import { Outlet, Link as ReactRouterLink } from 'react-router-dom';
 import { useBreakpointValue, useColorModeValue, useDisclosure } from '@chakra-ui/react';
 import { Box, Collapse, Flex, Icon, IconButton, Slide, Stack, Text } from '@chakra-ui/react';
@@ -6,11 +6,13 @@ import { Link as ChakraLink, Popover, PopoverContent, PopoverTrigger } from '@ch
 import { ChevronDownIcon, ChevronRightIcon, CloseIcon, HamburgerIcon } from '@chakra-ui/icons';
 
 import { ROOT_PATH } from '@recipe/constants';
+import { SearchBar } from '@recipe/features/search';
 import { UserContext, UserOptions } from '@recipe/features/user';
 
 export function Navbar() {
     const { isOpen, onToggle, onClose } = useDisclosure();
     const [userContext] = useContext(UserContext);
+    const [searchQuery, setSearchQuery] = useState('');
     const isLoggedIn = userContext !== null && userContext !== false;
 
     return (
@@ -45,7 +47,11 @@ export function Navbar() {
                             aria-label='Toggle Navigation'
                         />
                     </Flex>
-                    <Flex flex={{ base: 1 }} justify={{ base: 'center', md: 'start' }}>
+                    <Flex
+                        flex={{ base: 1 }}
+                        justify={{ base: 'center', md: 'start' }}
+                        alignItems='center'
+                    >
                         <ChakraLink
                             textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
                             fontFamily='heading'
@@ -62,6 +68,14 @@ export function Navbar() {
                         <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
                             <DesktopNav isLoggedIn={isLoggedIn} />
                         </Flex>
+                        <Flex width='100%'>
+                            <Box ml='auto' pr='20px'>
+                                <SearchBar
+                                    searchQuery={searchQuery}
+                                    setSearchQuery={setSearchQuery}
+                                />
+                            </Box>
+                        </Flex>
                     </Flex>
                     <UserOptions />
                 </Flex>
@@ -69,7 +83,7 @@ export function Navbar() {
                     <MobileNav isLoggedIn={isLoggedIn} parentOnToggle={onToggle} />
                 </Slide>
             </Box>
-            <Outlet />
+            <Outlet context={{ searchQuery, setSearchQuery }} />
         </>
     );
 }
@@ -316,17 +330,6 @@ const USER_NAV_ITEMS: Array<NavItem> = [
             },
         ],
     },
-    {
-        label: 'Search',
-        ariaLabel: 'Search for recipes',
-        href: `${ROOT_PATH}/search`,
-    },
 ];
 
-const PUBLIC_NAV_ITEMS: Array<NavItem> = [
-    {
-        label: 'Search',
-        ariaLabel: 'Search for recipes',
-        href: `${ROOT_PATH}/search`,
-    },
-];
+const PUBLIC_NAV_ITEMS: Array<NavItem> = [];

@@ -6,10 +6,23 @@ export const getCache = () =>
             Query: {
                 fields: {
                     recipeMany: {
-                        keyArgs: ['filter'],
-                        merge(existing = [], incoming) {
-                            const resulting = [...existing, ...incoming];
-                            return resulting;
+                        keyArgs: (args) => {
+                            if (args?.filter) {
+                                if (args.filter.isIngredient && !args.filter._operators) {
+                                    return ['filter'];
+                                }
+                            }
+                            return [];
+                        },
+                        merge(existing = [], incoming, { args, storage }) {
+                            const currFilter = args?.filter;
+
+                            if (JSON.stringify(currFilter) === JSON.stringify(storage.prevFilter)) {
+                                storage.prevFilter = currFilter;
+                                return [...existing, ...incoming];
+                            }
+                            storage.prevFilter = currFilter;
+                            return incoming;
                         },
                     },
                 },

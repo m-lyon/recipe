@@ -149,6 +149,7 @@ const recipeSchema = new Schema<Recipe>({
         type: String,
         required: true,
         validate: uniqueInAdminsAndUser('Recipe', 'title'),
+        text: true,
     },
     titleIdentifier: {
         type: String,

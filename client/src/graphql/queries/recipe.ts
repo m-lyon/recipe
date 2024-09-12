@@ -1,8 +1,8 @@
 import { gql } from '../../__generated__';
 
 export const COUNT_RECIPES = gql(`
-    query CountRecipes {
-        recipeCount
+    query CountRecipes($filter: FilterCountRecipeInput) {
+        recipeCount(filter: $filter)
     }
 `);
 
@@ -101,8 +101,8 @@ export const GET_RECIPE = gql(`
 `);
 
 export const GET_RECIPES = gql(`
-    query GetRecipes($offset: Int = 0, $limit: Int = 1000) {
-        recipeMany(skip: $offset, limit: $limit, sort: MODIFIED_DESC) {
+    query GetRecipes($offset: Int = 0, $limit: Int = 1000, $filter: FilterFindManyRecipeInput) {
+        recipeMany(skip: $offset, limit: $limit, sort: MODIFIED_DESC, filter: $filter) {
             ...RecipeFieldsSubset
         }
     }

@@ -1,13 +1,16 @@
 import { useQuery } from '@apollo/client';
 import { Container, Grid, GridItem, Text } from '@chakra-ui/react';
 
+import { INIT_LOAD_NUM } from '@recipe/constants';
 import { Recipe } from '@recipe/graphql/generated';
+import { useSearchQuery } from '@recipe/features/navbar';
 import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { RecipeCardsContainer } from '@recipe/features/viewing';
 
 export function Home() {
+    const { searchQuery } = useSearchQuery();
     const { data, loading, error, fetchMore } = useQuery(GET_RECIPES, {
-        variables: { offset: 0, limit: 25 },
+        variables: { offset: 0, limit: INIT_LOAD_NUM },
     });
 
     if (loading) {
@@ -42,9 +45,16 @@ export function Home() {
                         recipes={data!.recipeMany as Recipe[]}
                         fetchMore={() => {
                             fetchMore({
-                                variables: { offset: data!.recipeMany.length, limit: 10 },
+                                variables: {
+                                    offset: data!.recipeMany.length,
+                                    limit: 10,
+                                    filter: searchQuery
+                                        ? { _operators: { title: { regex: `/${searchQuery}/i` } } }
+                                        : undefined,
+                                },
                             });
                         }}
+                        searchQuery={searchQuery}
                     />
                 </GridItem>
             </Grid>

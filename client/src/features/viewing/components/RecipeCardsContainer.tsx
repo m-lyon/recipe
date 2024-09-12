@@ -37,13 +37,20 @@ const breakPoints: { [key: number]: number } = generateBreakPoints(4);
 interface Props {
     recipes: Recipe[];
     fetchMore: () => void;
+    searchQuery: string;
 }
 export function RecipeCardsContainer(props: Props) {
-    const { recipes, fetchMore } = props;
+    const { recipes, fetchMore, searchQuery } = props;
     const [show, setShow] = useState(false);
     const [recipeId, setRecipeId] = useState('');
     const [user] = useContext(UserContext);
-    const { data } = useQuery(COUNT_RECIPES);
+    const { data } = useQuery(COUNT_RECIPES, {
+        variables: {
+            filter: searchQuery
+                ? { _operators: { title: { regex: `/${searchQuery}/i` } } }
+                : undefined,
+        },
+    });
 
     const handleDelete = (id: string) => {
         setRecipeId(id);
