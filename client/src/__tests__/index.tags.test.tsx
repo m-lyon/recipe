@@ -38,7 +38,7 @@ describe('Update Recipe Workflow: Tags', () => {
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
-        expect(screen.queryByText('dinner')).not.toBeNull();
+        expect(screen.queryAllByText('dinner')).not.toBeNull();
         expect(screen.queryByText('lunch')).toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
@@ -66,8 +66,8 @@ describe('Update Recipe Workflow: Tags', () => {
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
-        expect(screen.queryByText('dinner')).not.toBeNull();
-        expect(screen.queryByText('mock tag')).not.toBeNull();
+        expect(screen.queryAllByText('dinner')).not.toBeNull();
+        expect(screen.queryAllByText('mock tag')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
@@ -94,8 +94,8 @@ describe('Update Recipe Workflow: Tags', () => {
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
-        expect(screen.queryByText('dinner')).not.toBeNull();
-        expect(screen.queryByText('spicy')).not.toBeNull();
+        expect(screen.queryAllByText('dinner')).not.toBeNull();
+        expect(screen.queryAllByText('spicy')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);

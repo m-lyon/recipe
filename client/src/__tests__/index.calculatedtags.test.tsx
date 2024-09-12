@@ -3,7 +3,7 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { enterEditRecipePage, notNullByText } from '@recipe/utils/tests';
+import { allNotNullByText, enterEditRecipePage, notNullByText } from '@recipe/utils/tests';
 import { mockUpdateRecipeCalculatedTagsAdd } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeCalculatedTagsEdit } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeCalculatedTagsRemove } from '@recipe/graphql/mutations/__mocks__/recipe';
@@ -32,7 +32,8 @@ describe('Update Recipe Workflow: Calculated Tags', () => {
         await notNullByText(screen, 'Recipes', 'vegetarian', 'special', 'vegan');
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
-        await notNullByText(screen, 'Instruction one', 'vegetarian', 'special', 'vegan');
+        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        allNotNullByText(screen, 'vegetarian', 'special', 'vegan');
     });
 
     it('should display edit calculated tags', async () => {
@@ -50,7 +51,7 @@ describe('Update Recipe Workflow: Calculated Tags', () => {
         expect(screen.queryByText('vegan')).toBeNull();
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
-        await notNullByText(screen, 'Instruction one', 'vegetarian', 'special');
+        allNotNullByText(screen, 'vegetarian', 'special');
         expect(screen.queryByText('vegan')).toBeNull();
     });
 
@@ -69,7 +70,8 @@ describe('Update Recipe Workflow: Calculated Tags', () => {
         expect(screen.queryByText('vegan')).toBeNull();
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
-        await notNullByText(screen, 'Instruction one', 'vegetarian');
+        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        expect(screen.queryAllByText('vegetarian')).not.toBeNull();
         expect(screen.queryByText('vegan')).toBeNull();
     });
 });

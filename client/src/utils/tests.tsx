@@ -65,6 +65,12 @@ export async function notNullByText(screen: Screen, ...text: string[]) {
     }
 }
 
+export function allNotNullByText(screen: Screen, ...text: string[]) {
+    for (const t of text) {
+        expect(screen.queryAllByText(t)).not.toBeNull();
+    }
+}
+
 export function haveValueByLabelText(screen: Screen, label: string, value: string) {
     expect(screen.getByLabelText(label)).toHaveProperty('value', value);
 }

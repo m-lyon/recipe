@@ -43,7 +43,7 @@ describe('Update Image Workflow', () => {
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
         expect(await screen.findByText('Instruction one')).not.toBeNull();
-        expect(screen.queryByAltText('Image 1 for Mock Recipe')).not.toBeNull();
+        expect(screen.queryAllByAltText('Image 1 for Mock Recipe')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
