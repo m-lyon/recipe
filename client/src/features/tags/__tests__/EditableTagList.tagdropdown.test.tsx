@@ -1,17 +1,14 @@
-import { ChakraProvider } from '@chakra-ui/react';
+import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
-import { MockedProvider, MockedResponse } from '@apollo/client/testing';
+import { Route, createRoutesFromElements } from 'react-router-dom';
 
+import { MockedResponses, renderPage } from '@recipe/utils/tests';
 import { mockGetManyTags } from '@recipe/graphql/queries/__mocks__/tag';
 import { mockGetTags, mockGetTagsEmpty } from '@recipe/graphql/queries/__mocks__/tag';
 
-import { EditableTag } from '../EditableTag';
+import { EditableTag } from '../components/EditableTag';
 
-const renderComponent = (
-    mocks: MockedResponse<Record<string, any>, Record<string, any>>[] = [],
-    additionalProps = {}
-) => {
+const renderComponent = (mocks: MockedResponses, additionalProps = {}) => {
     const props = {
         tag: {
             show: true,
@@ -28,13 +25,10 @@ const renderComponent = (
         selectedTags: [],
         ...additionalProps,
     };
-    render(
-        <MockedProvider mocks={mocks}>
-            <ChakraProvider>
-                <EditableTag {...props} />
-            </ChakraProvider>
-        </MockedProvider>
+    const routes = createRoutesFromElements(
+        <Route path='/' element={<EditableTag {...props} />} />
     );
+    renderPage(routes, mocks);
 };
 
 describe('TagDropdown', () => {

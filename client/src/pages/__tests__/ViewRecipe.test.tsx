@@ -1,11 +1,9 @@
-import { ChakraProvider } from '@chakra-ui/react';
-import { RouterProvider } from 'react-router-dom';
-import { MockedProvider } from '@apollo/client/testing';
 import { afterEach, describe, expect, it } from 'vitest';
+import { cleanup, screen, waitFor } from '@testing-library/react';
+import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
-import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
 
+import { renderPage } from '@recipe/utils/tests';
 import { mockGetRecipe } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRatingsRecipeOne } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
@@ -15,18 +13,9 @@ import { ViewRecipe } from '../ViewRecipe';
 loadErrorMessages();
 loadDevMessages();
 
-const routes = createBrowserRouter(
-    createRoutesFromElements(<Route path='/' element={<ViewRecipe />} />)
-);
-
 const renderComponent = () => {
-    render(
-        <MockedProvider mocks={[mockGetRecipe, mockGetRatingsRecipeOne, mockGetUnitConversions]}>
-            <ChakraProvider>
-                <RouterProvider router={routes} />
-            </ChakraProvider>
-        </MockedProvider>
-    );
+    const routes = createRoutesFromElements(<Route path='/' element={<ViewRecipe />} />);
+    renderPage(routes, [mockGetRecipe, mockGetRatingsRecipeOne, mockGetUnitConversions]);
 };
 
 describe('IngredientList', () => {

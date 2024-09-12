@@ -1,12 +1,10 @@
-import { ChakraProvider } from '@chakra-ui/react';
-import { RouterProvider } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, screen } from '@testing-library/react';
+import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
-import { MockedProvider, MockedResponse } from '@apollo/client/testing';
-import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
 
+import { MockedResponses, renderPage } from '@recipe/utils/tests';
 import { mockDicedId, mockSlicedId } from '@recipe/graphql/__mocks__/ids';
 import { mockGetPrepMethods } from '@recipe/graphql/queries/__mocks__/prepMethod';
 import { mockUpdatePrepMethod } from '@recipe/graphql/mutations/__mocks__/prepMethod';
@@ -17,20 +15,9 @@ import { EditPrepMethod } from '../EditPrepMethod';
 loadErrorMessages();
 loadDevMessages();
 
-const routes = createBrowserRouter(
-    createRoutesFromElements(<Route path='/' element={<EditPrepMethod />} />)
-);
-
-const renderComponent = (
-    mocks: MockedResponse<Record<string, any>, Record<string, any>>[] = []
-) => {
-    render(
-        <MockedProvider mocks={[mockGetPrepMethods, ...mocks]}>
-            <ChakraProvider>
-                <RouterProvider router={routes} />
-            </ChakraProvider>
-        </MockedProvider>
-    );
+const renderComponent = (mocks: MockedResponses = []) => {
+    const routes = createRoutesFromElements(<Route path='/' element={<EditPrepMethod />} />);
+    renderPage(routes, [mockGetPrepMethods, ...mocks]);
 };
 
 describe('Edit Prep Method', () => {

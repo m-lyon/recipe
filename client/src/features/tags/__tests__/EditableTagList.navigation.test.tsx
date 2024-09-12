@@ -1,33 +1,21 @@
-import { RouterProvider } from 'react-router-dom';
-import { ChakraProvider } from '@chakra-ui/react';
 import userEvent from '@testing-library/user-event';
-import { MockedProvider } from '@apollo/client/testing';
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
-import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
+import { cleanup, screen } from '@testing-library/react';
+import { Route, createRoutesFromElements } from 'react-router-dom';
 
+import { renderPage } from '@recipe/utils/tests';
 import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
 
-import { useTagList } from '../../hooks/useTagList';
-import { EditableTagList } from '../EditableTagList';
-
-const MockCreateRecipe = () => {
-    const props = useTagList();
-    return <EditableTagList {...props} />;
-};
-
-const routes = createBrowserRouter(
-    createRoutesFromElements(<Route path='/' element={<MockCreateRecipe />} />)
-);
+import { useTagList } from '../hooks/useTagList';
+import { EditableTagList } from '../components/EditableTagList';
 
 const renderComponent = () => {
-    render(
-        <MockedProvider mocks={[mockGetTags]} addTypename={false}>
-            <ChakraProvider>
-                <RouterProvider router={routes} />
-            </ChakraProvider>
-        </MockedProvider>
-    );
+    const MockCreateRecipe = () => {
+        const props = useTagList();
+        return <EditableTagList {...props} />;
+    };
+    const routes = createRoutesFromElements(<Route path='/' element={<MockCreateRecipe />} />);
+    renderPage(routes, [mockGetTags]);
 };
 
 describe('EditableTag Click Action', () => {

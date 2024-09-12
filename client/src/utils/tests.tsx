@@ -1,6 +1,12 @@
 import { expect } from 'vitest';
-import { Screen } from '@testing-library/react';
+import { ChakraProvider } from '@chakra-ui/react';
 import userEvent from '@testing-library/user-event';
+import { Screen, render } from '@testing-library/react';
+import { MockedProvider, MockedResponse } from '@apollo/client/testing';
+import { RouteObject, RouterProvider, createMemoryRouter } from 'react-router-dom';
+
+import { getCache } from '@recipe/utils/cache';
+import { UserProvider } from '@recipe/features/user';
 
 export async function enterCreateNewRecipePage(
     screen: Screen,
@@ -61,4 +67,25 @@ export async function notNullByText(screen: Screen, ...text: string[]) {
 
 export function haveValueByLabelText(screen: Screen, label: string, value: string) {
     expect(screen.getByLabelText(label)).toHaveProperty('value', value);
+}
+
+export type MockedResponses = MockedResponse<Record<string, any>, Record<string, any>>[];
+export function renderPage(
+    route: RouteObject[],
+    mockedResponses: MockedResponses = [],
+    initialEntries?: string[]
+) {
+    render(
+        <MockedProvider mocks={mockedResponses} cache={getCache()}>
+            <ChakraProvider>
+                <UserProvider>
+                    <RouterProvider
+                        router={createMemoryRouter(route, {
+                            initialEntries,
+                        })}
+                    />
+                </UserProvider>
+            </ChakraProvider>
+        </MockedProvider>
+    );
 }

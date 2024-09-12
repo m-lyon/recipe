@@ -1,61 +1,50 @@
-import { ChakraProvider } from '@chakra-ui/react';
-import { RouterProvider } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
-import { MockedProvider } from '@apollo/client/testing';
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, screen } from '@testing-library/react';
+import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
-import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
 
-import { Recipe, RecipeIngredient } from '@recipe/graphql/generated';
+import { renderPage } from '@recipe/utils/tests';
 import { mockChicken } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockGetRatingsRecipeOne } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockGetUnits, mockKilogram } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
+import { EnumRecipeIngredientType, Recipe, RecipeIngredient } from '@recipe/graphql/generated';
 
 import { IngredientsTab } from '../IngredientsTab';
 
 loadErrorMessages();
 loadDevMessages();
 
-const MockIngredientsTab = () => {
-    const props = {
-        recipeId: '60f4d2e5c3d5a0a4f1b9c0eb',
-        ingredients: [
-            {
-                name: 'Section One',
-                ingredients: [
-                    {
-                        _id: '60f4d2e5c3d5afa4f1b9c0f8',
-                        quantity: '1',
-                        unit: mockKilogram,
-                        ingredient: mockChicken,
-                        prepMethod: null,
-                        type: 'ingredient',
-                    },
-                ] as RecipeIngredient[],
-            },
-        ],
-        notes: null as Recipe['notes'],
-        numServings: 4,
-        tags: [] as Recipe['tags'],
-        calculatedTags: [] as Recipe['calculatedTags'],
-    };
-    return <IngredientsTab {...props} />;
-};
-
-const routes = createBrowserRouter(
-    createRoutesFromElements(<Route path='/' element={<MockIngredientsTab />} />)
-);
-
 const renderComponent = () => {
-    render(
-        <MockedProvider mocks={[mockGetUnits, mockGetUnitConversions, mockGetRatingsRecipeOne]}>
-            <ChakraProvider>
-                <RouterProvider router={routes} />
-            </ChakraProvider>
-        </MockedProvider>
-    );
+    const MockIngredientsTab = () => {
+        const props = {
+            recipeId: '60f4d2e5c3d5a0a4f1b9c0eb',
+            ingredients: [
+                {
+                    name: 'Section One',
+                    ingredients: [
+                        {
+                            _id: '60f4d2e5c3d5afa4f1b9c0f8',
+                            quantity: '1',
+                            unit: mockKilogram,
+                            ingredient: mockChicken,
+                            prepMethod: null,
+                            type: EnumRecipeIngredientType.Ingredient,
+                        },
+                    ] satisfies RecipeIngredient[],
+                },
+            ],
+            notes: null satisfies Recipe['notes'],
+            numServings: 4,
+            tags: [] satisfies Recipe['tags'],
+            calculatedTags: [] satisfies Recipe['calculatedTags'],
+        };
+        return <IngredientsTab {...props} />;
+    };
+
+    const routes = createRoutesFromElements(<Route path='/' element={<MockIngredientsTab />} />);
+    renderPage(routes, [mockGetUnits, mockGetUnitConversions, mockGetRatingsRecipeOne]);
 };
 
 describe('IngredientsTab unit conversion', () => {
