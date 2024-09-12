@@ -68,6 +68,9 @@ jobs:
           echo "VITE_DELAY_SHORT = ${{ secrets.VITE_DELAY_SHORT }}" >> .env.test.local
           echo "VITE_DELAY_LONG = ${{ secrets.VITE_DELAY_LONG }}" >> .env.test.local
           echo "VITE_DEBUG = ${{ secrets.VITE_DEBUG }}" >> .env.test.local
+          echo "VITE_DEBOUNCE_TIME = ${{ secrets.VITE_DEBOUNCE_TIME }}" >> .env.test.local
+          echo "VITE_INIT_LOAD_NUM = ${{ secrets.VITE_INIT_LOAD_NUM }}" >> .env.test.local
+          echo "VITE_FETCH_MORE_NUM = ${{ secrets.VITE_FETCH_MORE_NUM }}" >> .env.test.local
 
       - name: Start server in development mode
         working-directory: ./api
