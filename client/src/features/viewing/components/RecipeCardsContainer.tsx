@@ -4,7 +4,7 @@ import { useContext, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
-import { Recipe } from '@recipe/graphql/generated';
+import { RecipeFromMany } from '@recipe/types';
 import { ConfirmDeleteModal } from '@recipe/features/editing';
 import { COUNT_RECIPES } from '@recipe/graphql/queries/recipe';
 import { IUserContext, UserContext } from '@recipe/features/user';
@@ -12,7 +12,7 @@ import { IUserContext, UserContext } from '@recipe/features/user';
 import { RecipeCard } from './RecipeCard';
 import { ImageRecipeCard } from './ImageRecipeCard';
 
-function hasPermission(user: IUserContext, recipe: Recipe) {
+function hasPermission(user: IUserContext, recipe: RecipeFromMany) {
     if (!user) {
         return false;
     }
@@ -35,7 +35,7 @@ const generateBreakPoints = (maxColumns: number): { [key: number]: number } => {
 const breakPoints: { [key: number]: number } = generateBreakPoints(4);
 
 interface Props {
-    recipes: Recipe[];
+    recipes: RecipeFromMany[];
     fetchMore: () => void;
     searchQuery: string;
 }

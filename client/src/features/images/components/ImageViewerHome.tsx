@@ -1,8 +1,8 @@
-import { Image, Recipe } from '@recipe/graphql/generated';
+import { Images } from '@recipe/types';
 import { ImageCarousel } from '@recipe/common/components';
 
 interface Props {
-    images: Recipe['images'];
+    images: Images;
 }
 export function ImageViewerHome(props: Props) {
     const { images } = props;
@@ -13,7 +13,7 @@ export function ImageViewerHome(props: Props) {
 
     return (
         <ImageCarousel
-            images={images.slice(0, 1) as Image[]}
+            images={images.slice(0, 1)}
             width='288px'
             ratio={3 / 2}
             right={0}

@@ -12,6 +12,7 @@ export interface EditableUnit {
 }
 export type FinishedUnit = Unit | null;
 export type RecipeFromOne = GetRecipeQuery['recipeOne'];
+export type Images = NonNullable<GetRecipeQuery['recipeOne']>['images'];
 export type RecipeFromMany = GetRecipesQuery['recipeMany'][0];
 export type RecipeFromIngredientsMany = GetIngredientsQuery['recipeMany'][0];
 export interface EditableIngredient {

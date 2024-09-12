@@ -5,14 +5,15 @@ import { LinkBox, LinkOverlay, VStack, useBreakpointValue } from '@chakra-ui/rea
 import { Card, CardBody, CardHeader, Heading, IconButton, Spacer } from '@chakra-ui/react';
 
 import { ROOT_PATH } from '@recipe/constants';
+import { RecipeFromMany } from '@recipe/types';
 import { TagList } from '@recipe/features/tags';
-import { Recipe, Tag } from '@recipe/graphql/generated';
+import { Tag } from '@recipe/graphql/generated';
 import { ImageViewerHome } from '@recipe/features/images';
 
 import { getCardTitle } from './RecipeCard';
 
 interface Props {
-    recipe: Recipe;
+    recipe: RecipeFromMany;
     hasEditPermission: boolean;
     handleDelete: (id: string) => void;
 }

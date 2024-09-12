@@ -5,20 +5,23 @@ import { IconButton, LinkOverlay, useBreakpointValue } from '@chakra-ui/react';
 import { Card, CardBody, CardHeader, Heading, LinkBox } from '@chakra-ui/react';
 
 import { ROOT_PATH } from '@recipe/constants';
+import { RecipeFromMany } from '@recipe/types';
 import { TagList } from '@recipe/features/tags';
-import { Recipe, Tag } from '@recipe/graphql/generated';
 
-export function getCardTitle(recipe: Recipe): string {
+export function getCardTitle(recipe: RecipeFromMany): string {
+    if (recipe.isIngredient && !recipe.pluralTitle) {
+        throw new Error('No plural title for ingredient');
+    }
     const title = recipe.isIngredient
         ? recipe.numServings > 1
-            ? recipe.pluralTitle
+            ? recipe.pluralTitle!
             : recipe.title
         : recipe.title;
-    return title as string;
+    return title;
 }
 
 interface Props {
-    recipe: Recipe;
+    recipe: RecipeFromMany;
     hasEditPermission: boolean;
     handleDelete: (id: string) => void;
 }
@@ -79,9 +82,9 @@ export function RecipeCard(props: Props) {
                 </CardHeader>
                 <CardBody>
                     <TagList
-                        tags={recipe.tags.concat(
-                            recipe.calculatedTags.map((tag) => ({ value: tag }) as Tag)
-                        )}
+                        tags={recipe.tags
+                            .map((tag) => ({ value: tag.value }))
+                            .concat(recipe.calculatedTags.map((tag) => ({ value: tag! })))}
                     />
                 </CardBody>
                 {hasEditPermission ? (

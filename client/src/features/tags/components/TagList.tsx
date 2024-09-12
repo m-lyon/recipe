@@ -1,12 +1,11 @@
 import { Box, BoxProps, Tag, TagLabel, VStack, Wrap, WrapItem } from '@chakra-ui/react';
 
 import { imageCardWidth } from '@recipe/features/images';
-import { Tag as TagType } from '@recipe/graphql/generated';
 
 export const tagsHeight = 34;
 
 interface Props extends BoxProps {
-    tags: TagType[];
+    tags: { value: string }[];
     displayBoxMargin?: boolean;
 }
 export function TagList(props: Props) {
