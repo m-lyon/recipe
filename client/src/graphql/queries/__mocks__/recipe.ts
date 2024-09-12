@@ -273,7 +273,7 @@ export const mockGetRecipeNewAsIngr = {
 export const mockGetRecipes = {
     request: {
         query: GET_RECIPES,
-        variables: { offset: 0, limit: 25 },
+        variables: { offset: 0, limit: 5 },
     },
     result: {
         data: {
@@ -282,7 +282,7 @@ export const mockGetRecipes = {
                 mockRecipeTwo,
                 mockRecipeThree,
                 mockRecipeFour,
-            ] satisfies GetRecipesQuery['recipeMany'] as GetRecipesQuery['recipeMany'],
+            ] satisfies GetRecipesQuery['recipeMany'],
         },
     },
 };
@@ -293,6 +293,102 @@ export const mockCountRecipes = {
     result: {
         data: {
             recipeCount: 4,
+        },
+    },
+};
+export const mockGetRecipesLarger = {
+    request: {
+        query: GET_RECIPES,
+        variables: { offset: 0, limit: 5 },
+    },
+    result: {
+        data: {
+            recipeMany: [
+                { ...mockRecipeOne, _id: 'mock-recipe-one' },
+                { ...mockRecipeTwo, _id: 'mock-recipe-two' },
+                { ...mockRecipeThree, _id: 'mock-recipe-three' },
+                { ...mockRecipeOne, _id: 'mock-recipe-four' },
+                { ...mockRecipeTwo, _id: 'mock-recipe-five' },
+            ] satisfies GetRecipesQuery['recipeMany'],
+        },
+    },
+};
+export const mockCountRecipesLarger = {
+    request: {
+        query: COUNT_RECIPES,
+    },
+    result: {
+        data: {
+            recipeCount: 15,
+        },
+    },
+};
+export const mockGetRecipesLargerFilteredOnePageOne = {
+    request: {
+        query: GET_RECIPES,
+        variables: { offset: 0, limit: 5, filter: { _operators: { title: { regex: '/one/i' } } } },
+    },
+    result: {
+        data: {
+            recipeMany: [
+                { ...mockRecipeOne, _id: 'mock-recipe-one' },
+                { ...mockRecipeOne, _id: 'mock-recipe-four' },
+                { ...mockRecipeOne, _id: 'mock-recipe-six' },
+                { ...mockRecipeOne, _id: 'mock-recipe-seven' },
+                { ...mockRecipeOne, _id: 'mock-recipe-eight' },
+            ] satisfies GetRecipesQuery['recipeMany'],
+        },
+    },
+};
+export const mockGetRecipesLargerFilteredOnePageTwo = {
+    request: {
+        query: GET_RECIPES,
+        variables: { offset: 5, limit: 5, filter: { _operators: { title: { regex: '/one/i' } } } },
+    },
+    result: {
+        data: {
+            recipeMany: [
+                { ...mockRecipeOne, _id: 'mock-recipe-nine' },
+                { ...mockRecipeOne, _id: 'mock-recipe-ten' },
+                { ...mockRecipeOne, _id: 'mock-recipe-eleven' },
+                { ...mockRecipeOne, _id: 'mock-recipe-twelve' },
+            ] satisfies GetRecipesQuery['recipeMany'],
+        },
+    },
+};
+export const mockCountRecipesLargerFilteredOne = {
+    request: {
+        query: COUNT_RECIPES,
+        variables: { filter: { _operators: { title: { regex: '/one/i' } } } },
+    },
+    result: {
+        data: {
+            recipeCount: 9,
+        },
+    },
+};
+export const mockGetRecipesLargerFilteredTwo = {
+    request: {
+        query: GET_RECIPES,
+        variables: { offset: 0, limit: 5, filter: { _operators: { title: { regex: '/two/i' } } } },
+    },
+    result: {
+        data: {
+            recipeMany: [
+                { ...mockRecipeTwo, _id: 'mock-recipe-two' },
+                { ...mockRecipeTwo, _id: 'mock-recipe-five' },
+            ] satisfies GetRecipesQuery['recipeMany'],
+        },
+    },
+};
+export const mockCountRecipesLargerFilteredTwo = {
+    request: {
+        query: COUNT_RECIPES,
+        variables: { filter: { _operators: { title: { regex: '/two/i' } } } },
+    },
+    result: {
+        data: {
+            recipeCount: 2,
         },
     },
 };

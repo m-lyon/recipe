@@ -1,11 +1,10 @@
 import { useQuery } from '@apollo/client';
 import { Container, Grid, GridItem, Text } from '@chakra-ui/react';
 
-import { INIT_LOAD_NUM } from '@recipe/constants';
-import { Recipe } from '@recipe/graphql/generated';
 import { useSearchQuery } from '@recipe/features/navbar';
 import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { RecipeCardsContainer } from '@recipe/features/viewing';
+import { FETCH_MORE_NUM, INIT_LOAD_NUM } from '@recipe/constants';
 
 export function Home() {
     const { searchQuery } = useSearchQuery();
@@ -42,12 +41,12 @@ export function Home() {
                 </GridItem>
                 <GridItem boxShadow='lg' area='recipes'>
                     <RecipeCardsContainer
-                        recipes={data!.recipeMany as Recipe[]}
+                        recipes={data!.recipeMany}
                         fetchMore={() => {
                             fetchMore({
                                 variables: {
                                     offset: data!.recipeMany.length,
-                                    limit: 10,
+                                    limit: FETCH_MORE_NUM,
                                     filter: searchQuery
                                         ? { _operators: { title: { regex: `/${searchQuery}/i` } } }
                                         : undefined,

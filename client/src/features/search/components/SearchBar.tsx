@@ -3,19 +3,15 @@ import { SearchIcon } from '@chakra-ui/icons';
 import { useDebouncedCallback } from 'use-debounce';
 import { Input, InputGroup, InputLeftElement } from '@chakra-ui/react';
 
-import { INIT_LOAD_NUM } from '@recipe/constants';
 import { UseSearchQuery } from '@recipe/features/navbar';
 import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
+import { DEBOUNCE_TIME, INIT_LOAD_NUM } from '@recipe/constants';
 
 export function SearchBar(props: UseSearchQuery) {
-    const { searchQuery, setSearchQuery } = props;
-    const [searchRecipes] = useLazyQuery(GET_RECIPES, {
-        fetchPolicy: 'network-only',
-        onCompleted: (data) => {
-            console.log(data);
-        },
-    });
+    const { setSearchQuery } = props;
+    const [searchRecipes] = useLazyQuery(GET_RECIPES, { fetchPolicy: 'network-only' });
     const debounced = useDebouncedCallback((value: string) => {
+        setSearchQuery(value);
         searchRecipes({
             variables: {
                 offset: 0,
@@ -27,7 +23,7 @@ export function SearchBar(props: UseSearchQuery) {
                     : undefined,
             },
         });
-    });
+    }, DEBOUNCE_TIME);
 
     return (
         <InputGroup display='flex'>
@@ -35,12 +31,9 @@ export function SearchBar(props: UseSearchQuery) {
                 <SearchIcon color='gray.300' />
             </InputLeftElement>
             <Input
-                value={searchQuery}
                 placeholder='Find a recipe...'
-                onChange={(e) => {
-                    setSearchQuery(e.currentTarget.value);
-                    debounced(e.currentTarget.value);
-                }}
+                onChange={(e) => debounced(e.currentTarget.value)}
+                aria-label='Search for recipes'
             />
         </InputGroup>
     );
