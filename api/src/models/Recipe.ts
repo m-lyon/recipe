@@ -1,21 +1,23 @@
 import { Document, PopulatedDoc, Schema, Types, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 
+import { Size } from './Size.js';
 import { Unit } from './Unit.js';
-import { ALLOWED_TAGS, Ingredient } from './Ingredient.js';
 import { PrepMethod } from './PrepMethod.js';
 import { generateRandomString } from '../utils/random.js';
-import { ownerExists, tagsExist, unique, uniqueInAdminsAndUser } from './validation.js';
+import { ALLOWED_TAGS, Ingredient } from './Ingredient.js';
 import type { Ingredient as IngredientType } from './Ingredient.js';
+import { ownerExists, tagsExist, unique, uniqueInAdminsAndUser } from './validation.js';
 
 const quantityRegex = /^(?:(?:[+-]?\d+\.\d+)|(?:[+-]?\d+)|(?:[+-]?\d+\/[1-9]\d*))$/;
 type RecipeIngredientEnum = 'ingredient' | 'recipe';
 
 export interface RecipeIngredientType extends Document {
-    ingredient: PopulatedDoc<Document<Types.ObjectId> & IngredientType>;
     type: RecipeIngredientEnum;
     quantity?: string;
     unit?: Types.ObjectId;
+    size?: Types.ObjectId;
+    ingredient: PopulatedDoc<Document<Types.ObjectId> & IngredientType>;
     prepMethod?: Types.ObjectId;
 }
 
@@ -31,27 +33,6 @@ export function generateRecipeIdentifier(title: string): string {
 }
 
 const recipeIngredientSchema = new Schema<RecipeIngredientType>({
-    ingredient: {
-        type: Schema.Types.ObjectId,
-        ref: function () {
-            return this.type === 'ingredient' ? 'Ingredient' : 'Recipe';
-        },
-        required: true,
-        validate: {
-            validator: function (ingredient: Types.ObjectId) {
-                let type = this.type;
-                if (!this.isNew) {
-                    type = this.get('type');
-                }
-                if (type === 'ingredient') {
-                    return Ingredient.exists({ _id: ingredient });
-                } else {
-                    return Recipe.exists({ _id: ingredient });
-                }
-            },
-            message: 'Ingredient does not exist.',
-        },
-    },
     type: { type: String, enum: ['ingredient', 'recipe'], required: true },
     quantity: {
         type: String,
@@ -76,6 +57,40 @@ const recipeIngredientSchema = new Schema<RecipeIngredientType>({
                 return true;
             },
             message: 'Unit does not exist.',
+        },
+    },
+    size: {
+        type: Schema.Types.ObjectId,
+        ref: 'Size',
+        validate: {
+            validator: function (size: Types.ObjectId) {
+                if (size != null) {
+                    return Size.exists({ _id: size });
+                }
+                return true;
+            },
+            message: 'Size does not exist.',
+        },
+    },
+    ingredient: {
+        type: Schema.Types.ObjectId,
+        ref: function () {
+            return this.type === 'ingredient' ? 'Ingredient' : 'Recipe';
+        },
+        required: true,
+        validate: {
+            validator: function (ingredient: Types.ObjectId) {
+                let type = this.type;
+                if (!this.isNew) {
+                    type = this.get('type');
+                }
+                if (type === 'ingredient') {
+                    return Ingredient.exists({ _id: ingredient });
+                } else {
+                    return Recipe.exists({ _id: ingredient });
+                }
+            },
+            message: 'Ingredient does not exist.',
         },
     },
     prepMethod: {

@@ -2,21 +2,23 @@ import { SchemaComposer } from 'graphql-compose';
 import { composeResolvers } from '@graphql-tools/resolvers-composition';
 
 import { Unit } from '../models/Unit.js';
+import { Size } from '../models/Size.js';
 import { Recipe } from '../models/Recipe.js';
 import { TagMutation, TagQuery } from './Tag.js';
-import { UnitMutation, UnitQuery } from './Unit.js';
 import { UserMutation, UserQuery } from './User.js';
 import { Ingredient } from '../models/Ingredient.js';
 import { PrepMethod } from '../models/PrepMethod.js';
 import { ImageMutation, ImageQuery } from './Image.js';
 import { RecipeMutation, RecipeQuery } from './Recipe.js';
 import { RatingMutation, RatingQuery } from './Rating.js';
-import { PrepMethodMutation, PrepMethodQuery } from './PrepMethod.js';
+import { SizeMutation, SizeQuery, SizeQueryAdmin } from './Size.js';
+import { UnitMutation, UnitQuery, UnitQueryAdmin } from './Unit.js';
 import { IngredientMutation, IngredientQuery } from './Ingredient.js';
 import { isAdmin, isImageOwnerOrAdmin } from '../middleware/authorisation.js';
 import { UnitConversionMutation, UnitConversionQuery } from './UnitConversion.js';
 import { ConversionRuleMutation, ConversionRuleQuery } from './UnitConversion.js';
 import { isAuthenticated, isDocumentOwnerOrAdmin } from '../middleware/authorisation.js';
+import { PrepMethodMutation, PrepMethodQuery, PrepMethodQueryAdmin } from './PrepMethod.js';
 
 const isAdminMutations = composeResolvers(
     {
@@ -31,7 +33,9 @@ const isAdminMutations = composeResolvers(
 const isAdminQueries = composeResolvers(
     {
         Query: {
-            unitManyAll: UnitQuery.unitManyAll,
+            ...SizeQueryAdmin,
+            ...UnitQueryAdmin,
+            ...PrepMethodQueryAdmin,
         },
     },
     { 'Query.*': [isAdmin()] }
@@ -41,6 +45,7 @@ const isAuthenticatedMutations = composeResolvers(
         Mutation: {
             recipeCreateOne: RecipeMutation.recipeCreateOne,
             ratingCreateOne: RatingMutation.ratingCreateOne,
+            sizeCreateOne: SizeMutation.sizeCreateOne,
             unitCreateOne: UnitMutation.unitCreateOne,
             prepMethodCreateOne: PrepMethodMutation.prepMethodCreateOne,
             ingredientCreateOne: IngredientMutation.ingredientCreateOne,
@@ -76,6 +81,15 @@ const isUnitOwnerOrAdminMutations = composeResolvers(
     },
     { 'Mutation.*': [isDocumentOwnerOrAdmin(Unit)] }
 );
+const isSizeOwnerOrAdminMutations = composeResolvers(
+    {
+        Mutation: {
+            sizeUpdateById: SizeMutation.sizeUpdateById,
+            sizeRemoveById: SizeMutation.sizeRemoveById,
+        },
+    },
+    { 'Mutation.*': [isDocumentOwnerOrAdmin(Size)] }
+);
 const isIngredientOwnerOrAdminMutations = composeResolvers(
     {
         Mutation: {
@@ -100,6 +114,7 @@ schemaComposer.Query.addFields({
     ...TagQuery,
     ...UserQuery,
     ...UnitQuery,
+    ...SizeQuery,
     ...PrepMethodQuery,
     ...IngredientQuery,
     ...RecipeQuery,
@@ -115,6 +130,7 @@ schemaComposer.Mutation.addFields({
     ...isAuthenticatedMutations.Mutation,
     ...isRecipeOwnerOrAdminMutations.Mutation,
     ...isUnitOwnerOrAdminMutations.Mutation,
+    ...isSizeOwnerOrAdminMutations.Mutation,
     ...isIngredientOwnerOrAdminMutations.Mutation,
     ...isPrepMethodOwnerOrAdminMutations.Mutation,
     ...isImageOwnerOrAdminMutations.Mutation,

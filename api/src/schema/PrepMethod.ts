@@ -34,6 +34,9 @@ export const PrepMethodQuery = {
         .wrapResolve(filterIsOwnerOrAdmin())
         .wrapResolve(filterIsUnique())
         .setDescription('Retrieve multiple prep methods'),
+};
+
+export const PrepMethodQueryAdmin = {
     prepMethodManyAll: PrepMethodTC.mongooseResolvers
         .findMany()
         .setDescription('Retrieve all prep methods'),

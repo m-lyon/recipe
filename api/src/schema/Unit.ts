@@ -30,6 +30,9 @@ export const UnitQuery = {
         .wrapResolve(filterIsOwnerOrAdmin())
         .wrapResolve(filterIsUnique())
         .setDescription('Retrieve multiple units'),
+};
+
+export const UnitQueryAdmin = {
     unitManyAll: UnitTC.mongooseResolvers.findMany().setDescription('Retrieve all units'),
 };
 

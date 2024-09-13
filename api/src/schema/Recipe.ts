@@ -3,6 +3,7 @@ import { schemaComposer } from 'graphql-compose';
 import { GraphQLError, GraphQLList } from 'graphql';
 
 import { TagTC } from '../models/Tag.js';
+import { SizeTC } from '../models/Size.js';
 import { UnitTC } from '../models/Unit.js';
 import { ImageTC } from '../models/Image.js';
 import { PrepMethodTC } from '../models/PrepMethod.js';
@@ -75,6 +76,11 @@ RecipeIngredientTC.addRelation('unit', {
     resolver: () => UnitTC.mongooseResolvers.findById(),
     prepareArgs: { _id: (source) => source.unit },
     projection: { unit: true },
+});
+RecipeIngredientTC.addRelation('size', {
+    resolver: () => SizeTC.mongooseResolvers.findById(),
+    prepareArgs: { _id: (source) => source.size },
+    projection: { size: true },
 });
 RecipeIngredientTC.addRelation('ingredient', {
     resolver: () => RecipeIngredientTC.getResolver('ingredientOrRecipe'),

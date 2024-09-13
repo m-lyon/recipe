@@ -9,6 +9,7 @@ import { IMAGE_DIR } from '../constants.js';
 import { Recipe } from '../models/Recipe.js';
 import { Ingredient } from '../models/Ingredient.js';
 import { PrepMethod } from '../models/PrepMethod.js';
+import { Size } from '../models/Size.js';
 
 export async function populateTags() {
     try {
@@ -118,6 +119,28 @@ export async function populateUnits() {
     }
 }
 
+export async function populateSizes() {
+    try {
+        // Remove all existing sizes
+        await Size.collection.drop();
+
+        const admin = await User.findOne({ role: 'admin' });
+        const user = await User.findOne({ role: 'user' });
+
+        // Create new dummy sizes
+        const dummySizes = [
+            { value: 'small', unique: true, owner: admin._id },
+            { value: 'medium', unique: true, owner: admin._id },
+            { value: 'large', unique: true, owner: user._id },
+        ];
+        const createdSizes = await Size.create(dummySizes);
+
+        console.log('Dummy sizes added:', createdSizes);
+    } catch (error) {
+        console.error('Error populating sizes:', error);
+    }
+}
+
 export async function populateIngredients() {
     try {
         // Remove all existing ingredients
@@ -190,24 +213,27 @@ export async function populateRecipes() {
                 ingredientSubsections: {
                     ingredients: [
                         {
-                            ingredient: (await Ingredient.findOne({ name: 'onion' }))._id,
                             type: 'ingredient',
                             quantity: '1',
                             unit: null,
+                            size: null,
+                            ingredient: (await Ingredient.findOne({ name: 'onion' }))._id,
                             prepMethod: (await PrepMethod.findOne({ value: 'chopped' }))._id,
                         },
                         {
-                            ingredient: (await Ingredient.findOne({ name: 'chicken' }))._id,
                             type: 'ingredient',
                             quantity: '1',
                             unit: (await Unit.findOne({ shortSingular: 'kg' }))._id,
+                            size: (await Size.findOne({ value: 'medium' }))._id,
+                            ingredient: (await Ingredient.findOne({ name: 'chicken' }))._id,
                             prepMethod: (await PrepMethod.findOne({ value: 'diced' }))._id,
                         },
                         {
-                            ingredient: (await Ingredient.findOne({ name: 'tomato' }))._id,
                             type: 'ingredient',
                             quantity: '400',
                             unit: (await Unit.findOne({ shortSingular: 'cup' }))._id,
+                            size: null,
+                            ingredient: (await Ingredient.findOne({ name: 'tomato' }))._id,
                             prepMethod: (await PrepMethod.findOne({ value: 'chopped' }))._id,
                         },
                     ],
@@ -249,24 +275,27 @@ export async function populateRecipes() {
                         name: 'Main Ingredients',
                         ingredients: [
                             {
-                                ingredient: (await Ingredient.findOne({ name: 'onion' }))._id,
                                 type: 'ingredient',
                                 quantity: '1/2',
                                 unit: null,
+                                size: null,
+                                ingredient: (await Ingredient.findOne({ name: 'onion' }))._id,
                                 prepMethod: (await PrepMethod.findOne({ value: 'sliced' }))._id,
                             },
                             {
-                                ingredient: (await Ingredient.findOne({ name: 'chicken' }))._id,
                                 type: 'ingredient',
                                 quantity: '1',
                                 unit: (await Unit.findOne({ shortSingular: 'kg' }))._id,
+                                size: (await Size.findOne({ value: 'medium' }))._id,
+                                ingredient: (await Ingredient.findOne({ name: 'chicken' }))._id,
                                 prepMethod: (await PrepMethod.findOne({ value: 'diced' }))._id,
                             },
                             {
-                                ingredient: (await Ingredient.findOne({ name: 'tomato' }))._id,
                                 type: 'ingredient',
                                 quantity: '400',
                                 unit: (await Unit.findOne({ shortSingular: 'cup' }))._id,
+                                size: (await Size.findOne({ value: 'small' }))._id,
+                                ingredient: (await Ingredient.findOne({ name: 'tomato' }))._id,
                                 prepMethod: (await PrepMethod.findOne({ value: 'chopped' }))._id,
                             },
                         ],
@@ -275,10 +304,11 @@ export async function populateRecipes() {
                         name: 'Sides',
                         ingredients: [
                             {
-                                ingredient: (await Ingredient.findOne({ name: 'rice' }))._id,
                                 type: 'ingredient',
                                 quantity: '2',
                                 unit: (await Unit.findOne({ shortSingular: 'cup' }))._id,
+                                size: null,
+                                ingredient: (await Ingredient.findOne({ name: 'rice' }))._id,
                                 prepMethod: null,
                             },
                         ],
@@ -323,17 +353,19 @@ export async function populateRecipes() {
                         name: 'Main Ingredients',
                         ingredients: [
                             {
-                                ingredient: (await Ingredient.findOne({ name: 'onion' }))._id,
                                 type: 'ingredient',
                                 quantity: '1',
                                 unit: null,
+                                size: null,
+                                ingredient: (await Ingredient.findOne({ name: 'onion' }))._id,
                                 prepMethod: (await PrepMethod.findOne({ value: 'chopped' }))._id,
                             },
                             {
-                                ingredient: (await Ingredient.findOne({ name: 'tomato' }))._id,
                                 type: 'ingredient',
                                 quantity: '400',
                                 unit: (await Unit.findOne({ shortSingular: 'cup' }))._id,
+                                size: null,
+                                ingredient: (await Ingredient.findOne({ name: 'tomato' }))._id,
                                 prepMethod: (await PrepMethod.findOne({ value: 'chopped' }))._id,
                             },
                         ],
