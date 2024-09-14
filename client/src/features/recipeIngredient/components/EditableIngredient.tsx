@@ -9,8 +9,8 @@ import { EditableRecipeIngredient } from '@recipe/types';
 import { RecipeIngredientQueryData } from '@recipe/types';
 import { DELETE_UNIT } from '@recipe/graphql/mutations/unit';
 
+import { IngredientActionHandler } from '../hooks/useIngredientList';
 import { RecipeIngredientDropdown } from './RecipeIngredientDropdown';
-import { DEFAULT_INGREDIENT_STR, IngredientActionHandler } from '../hooks/useIngredientList';
 
 interface Props {
     subsection: number;
@@ -78,7 +78,7 @@ export function EditableIngredient(props: Props) {
                         ingredientStr === '' &&
                         item.state !== 'quantity'
                     ) {
-                        actionHandler.decrementEditableState(subsection);
+                        actionHandler.decrementEditableState(subsection, 'quantity');
                     }
                 }}
                 onChange={(value: string) => actionHandler.handleEditableChange(subsection, value)}
@@ -88,7 +88,7 @@ export function EditableIngredient(props: Props) {
                 fontSize={fontSize}
                 color={item.quantity !== null || item.ingredient.value !== null ? '' : 'gray.400'}
                 pl='0px'
-                placeholder={DEFAULT_INGREDIENT_STR}
+                placeholder='Enter ingredient'
             >
                 <EditablePreview
                     ref={previewRef}
