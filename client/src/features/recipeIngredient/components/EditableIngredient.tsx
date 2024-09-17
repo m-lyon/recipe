@@ -1,7 +1,7 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useMutation } from '@apollo/client';
-import { useOutsideClick } from '@chakra-ui/react';
 import { Box, Editable, EditableInput, EditablePreview } from '@chakra-ui/react';
+import { Popover, PopoverAnchor, useDisclosure, useOutsideClick } from '@chakra-ui/react';
 
 import { DEBUG } from '@recipe/constants';
 import { useErrorToast } from '@recipe/common/hooks';
@@ -9,9 +9,15 @@ import { EditableRecipeIngredient } from '@recipe/types';
 import { RecipeIngredientQueryData } from '@recipe/types';
 import { DELETE_UNIT } from '@recipe/graphql/mutations/unit';
 
-import { IngredientActionHandler } from '../hooks/useIngredientList';
-import { RecipeIngredientDropdown } from './RecipeIngredientDropdown';
+import { Dropdown } from './Dropdown';
+import { NewUnitPopover } from './NewUnitPopover';
+import { NewSizePopover } from './NewSizePopover';
+import { NewIngredientPopover } from './NewIngredientPopover';
+import { NewPrepMethodPopover } from './NewPrepMethodPopover';
+import { NewBespokeUnitPopover } from './NewBespokeUnitPopover';
+import { IngredientActionHandler, SetAttr } from '../hooks/useIngredientList';
 
+export type PopoverType = 'unit' | 'bespokeUnit' | 'size' | 'ingredient' | 'prepMethod';
 interface Props {
     subsection: number;
     item: EditableRecipeIngredient;
@@ -25,7 +31,15 @@ export function EditableIngredient(props: Props) {
     const previewRef = useRef<HTMLInputElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null);
     const parentRef = useRef<HTMLDivElement | null>(null);
+    const fieldRef = useRef<HTMLInputElement | null>(null);
+    const [popover, setPopover] = useState<PopoverType>('unit');
+    const [bespokeValue, setBespokeValue] = useState('');
     const toast = useErrorToast();
+    const { isOpen, onOpen, onClose } = useDisclosure({
+        onClose: () => {
+            previewRef.current?.focus();
+        },
+    });
     const [deleteUnit] = useMutation(DELETE_UNIT, {
         onCompleted: (data) => {
             if (DEBUG) {
@@ -57,58 +71,104 @@ export function EditableIngredient(props: Props) {
             }
         },
     });
+    const handleSelect = (attr: SetAttr) =>
+        actionHandler.setCurrentEditableAttribute(subsection, attr);
 
     const ingredientStr = actionHandler.editableStringValue(subsection);
+
+    const openPopover = (type: PopoverType) => {
+        setPopover(type);
+        if (type === 'bespokeUnit') {
+            setBespokeValue(actionHandler.currentEditableAttributeValue(subsection) ?? '');
+        }
+        onOpen();
+    };
+
+    const getPopover = () => {
+        const popoverProps = { fieldRef, onClose, handleSelect };
+        switch (popover) {
+            case 'unit':
+                return <NewUnitPopover {...popoverProps} />;
+            case 'bespokeUnit':
+                return (
+                    <NewBespokeUnitPopover
+                        {...popoverProps}
+                        value={bespokeValue}
+                        setValue={setBespokeValue}
+                    />
+                );
+            case 'size':
+                return <NewSizePopover {...popoverProps} />;
+            case 'ingredient':
+                return <NewIngredientPopover {...popoverProps} />;
+            case 'prepMethod':
+                return <NewPrepMethodPopover {...popoverProps} />;
+            default:
+                return null;
+        }
+    };
 
     return (
         // Position relative is needed for the dropdown to be positioned correctly
         <Box ref={parentRef} position='relative'>
-            <Editable
-                value={ingredientStr}
-                onMouseDown={(e) => {
-                    if (item.quantity !== null) {
-                        e.preventDefault();
-                        previewRef.current?.focus();
-                    }
-                }}
-                selectAllOnFocus={false}
-                onKeyDown={(e) => {
-                    if (
-                        e.key === 'Backspace' &&
-                        ingredientStr === '' &&
-                        item.state !== 'quantity'
-                    ) {
-                        actionHandler.decrementEditableState(subsection, 'quantity');
-                    }
-                }}
-                onChange={(value: string) => actionHandler.handleEditableChange(subsection, value)}
-                onCancel={handleReset}
-                onEdit={() => actionHandler.setEditableShow.on(subsection)}
-                textAlign='left'
-                fontSize={fontSize}
-                color={item.quantity !== null || item.ingredient.value !== null ? '' : 'gray.400'}
-                pl='0px'
-                placeholder='Enter ingredient'
+            <Popover
+                isOpen={isOpen}
+                onOpen={onOpen}
+                onClose={onClose}
+                closeOnBlur={false}
+                placement='right'
+                initialFocusRef={fieldRef}
+                returnFocusOnClose={true}
             >
-                <EditablePreview
-                    ref={previewRef}
-                    width='100%'
-                    aria-label={`Enter ingredient #${ingredientNum} for subsection ${subsection + 1}`}
+                <PopoverAnchor>
+                    <Editable
+                        value={ingredientStr}
+                        onMouseDown={(e) => {
+                            if (item.quantity !== null) {
+                                e.preventDefault();
+                                previewRef.current?.focus();
+                            }
+                        }}
+                        selectAllOnFocus={false}
+                        onChange={(value: string) => {
+                            actionHandler.handleEditableChange(subsection, value);
+                        }}
+                        onCancel={handleReset}
+                        onEdit={() => actionHandler.setEditableShow.on(subsection)}
+                        textAlign='left'
+                        fontSize={fontSize}
+                        color={
+                            item.quantity !== null || item.ingredient.value !== null
+                                ? ''
+                                : 'gray.400'
+                        }
+                        pl='0px'
+                        placeholder='Enter ingredient'
+                    >
+                        <EditablePreview
+                            ref={previewRef}
+                            width='100%'
+                            aria-label={`Enter ingredient #${ingredientNum} for subsection ${subsection + 1}`}
+                        />
+                        <EditableInput
+                            ref={inputRef}
+                            value={ingredientStr}
+                            _focusVisible={{ outline: 'none' }}
+                            aria-label={`Input ingredient #${ingredientNum} for subsection ${subsection + 1}`}
+                        />
+                    </Editable>
+                </PopoverAnchor>
+                <Dropdown
+                    subsection={subsection}
+                    item={item}
+                    actionHandler={actionHandler}
+                    data={queryData}
+                    inputRef={inputRef}
+                    previewRef={previewRef}
+                    openPopover={openPopover}
                 />
-                <EditableInput
-                    ref={inputRef}
-                    value={ingredientStr}
-                    _focusVisible={{ outline: 'none' }}
-                />
-            </Editable>
-            <RecipeIngredientDropdown
-                subsection={subsection}
-                item={item}
-                actionHandler={actionHandler}
-                queryData={queryData}
-                inputRef={inputRef}
-                previewRef={previewRef}
-            />
+                {getPopover()}
+            </Popover>
         </Box>
     );
 }

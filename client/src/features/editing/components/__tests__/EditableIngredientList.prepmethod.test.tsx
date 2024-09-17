@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { clickGetByText, notNullByText } from '@recipe/utils/tests';
+import { clickGetByText, haveValueByLabelText, notNullByText } from '@recipe/utils/tests';
 
 import { renderComponent } from './utils';
 
@@ -20,12 +20,14 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
         renderComponent();
 
         // Act
-        const ingredientInput = screen.getByText('Enter ingredient');
-        await user.click(ingredientInput);
-        await user.keyboard('{1}{ }{ArrowDown>2/}{Enter}{ArrowDown}{Enter}{Escape}');
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }{ArrowDown>2/}{Enter}{ArrowDown}{Enter}{ArrowUp}{Enter}');
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1g small chicken, ');
+        expect(screen.queryByText('chopped')).not.toBeNull();
+        await user.keyboard('{Escape}');
 
         // Expect
-        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '');
     });
     it('should display skip prepMethod', async () => {
         const user = userEvent.setup();
@@ -35,10 +37,11 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
         // Act
         const ingredientInput = screen.getByText('Enter ingredient');
         await user.click(ingredientInput);
-        await user.keyboard('{1}{ }{ArrowDown}{Enter}{ArrowDown>2/}{Enter}');
+        await user.keyboard('{1}{ }{Enter}{ArrowDown>5/}{Enter}');
 
         // Expect
-        await notNullByText(screen, '1 cup chicken,', 'skip prep method');
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 carrot, ');
+        expect(screen.queryByText('skip prep method')).not.toBeNull();
     });
     it('should display all prepMethod options', async () => {
         const user = userEvent.setup();
@@ -48,7 +51,7 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
         // Act
         const ingredientInput = screen.getByText('Enter ingredient');
         await user.click(ingredientInput);
-        await user.keyboard('{1}{ }{ArrowDown>2/}{Enter}{ArrowDown}{Enter}');
+        await user.keyboard('{1}{ }{ArrowDown>2/}{Enter>3/}');
 
         // Expect
         await notNullByText(screen, 'chopped', 'diced', 'sliced', 'whole');
@@ -61,7 +64,7 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
         // Act
         const ingredientInput = screen.getByText('Enter ingredient');
         await user.click(ingredientInput);
-        await user.keyboard('{1}{ }{ArrowDown>2/}{Enter}{ArrowDown}{Enter}chi');
+        await user.keyboard('{1}{ }{ArrowDown>2/}{Enter>3/}{c}{h}{i}');
 
         // Expect
         expect(screen.queryByText('add new prep method')).not.toBeNull();
@@ -87,11 +90,11 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
         // Act
         const quantityInput = screen.getByText('Enter ingredient');
         await user.click(quantityInput);
-        await user.keyboard('{1}{ }{ArrowDown}{Enter}{ArrowDown>2/}{Enter}');
+        await user.keyboard('{1}{ }{ArrowDown}{Enter>3/}');
         await user.click(screen.getByText('skip prep method'));
 
         // Expect
-        await notNullByText(screen, '1 cup chicken', 'Enter ingredient');
+        await notNullByText(screen, '1 cup large carrots', 'Enter ingredient');
     });
     it('should open up the new prepMethod popover', async () => {
         const user = userEvent.setup();
@@ -101,9 +104,15 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
         // Act
         const quantityInput = screen.getByText('Enter ingredient');
         await user.click(quantityInput);
-        await user.keyboard('{1}{ }{ArrowDown>2/}{Enter}{ArrowDown}{Enter}chi{Enter}');
+        await user.keyboard('{1}{ }{ArrowDown}{Enter>3/}{ArrowUp}{h}{e}{a}{t}');
+        await user.keyboard('{Enter}');
 
         // Expect
+        haveValueByLabelText(
+            screen,
+            'Input ingredient #1 for subsection 1',
+            '1 cup large carrots, heat'
+        );
         await notNullByText(screen, 'Add new prep method', 'Save');
     });
 });

@@ -5,9 +5,10 @@ import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { renderPage } from '@recipe/utils/tests';
+import { mockKilogram } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockChicken } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockGetRatingsRecipeOne } from '@recipe/graphql/queries/__mocks__/rating';
-import { mockGetUnits, mockKilogram } from '@recipe/graphql/queries/__mocks__/unit';
+import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
 import { EnumRecipeIngredientType, Recipe, RecipeIngredient } from '@recipe/graphql/generated';
 
@@ -28,6 +29,7 @@ const renderComponent = () => {
                             _id: '60f4d2e5c3d5afa4f1b9c0f8',
                             quantity: '1',
                             unit: mockKilogram,
+                            size: null,
                             ingredient: mockChicken,
                             prepMethod: null,
                             type: EnumRecipeIngredientType.Ingredient,
@@ -44,7 +46,11 @@ const renderComponent = () => {
     };
 
     const routes = createRoutesFromElements(<Route path='/' element={<MockIngredientsTab />} />);
-    renderPage(routes, [mockGetUnits, mockGetUnitConversions, mockGetRatingsRecipeOne]);
+    renderPage(routes, [
+        mockGetIngredientComponents,
+        mockGetUnitConversions,
+        mockGetRatingsRecipeOne,
+    ]);
 };
 
 describe('IngredientsTab unit conversion', () => {

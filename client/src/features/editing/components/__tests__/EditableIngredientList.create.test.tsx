@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { cleanup, getDefaultNormalizer, screen } from '@testing-library/react';
 
-import { clickGetByText } from '@recipe/utils/tests';
+import { clickGetByText, haveValueByLabelText } from '@recipe/utils/tests';
 import { mockCreatePrepMethod } from '@recipe/graphql/mutations/__mocks__/prepMethod';
 import { mockCreateIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
 import { mockCreateBespokePrepMethod } from '@recipe/graphql/mutations/__mocks__/prepMethod';
@@ -33,11 +33,10 @@ describe('Creating new items', () => {
         await user.keyboard('{c}{u}{t}{t}{i}{n}{g}');
         await user.click(screen.getByText('decimal'));
         await user.click(screen.getByLabelText('Save unit'));
+        await user.keyboard('{c}');
 
         // Expect --------------------------------------------------------------
-        expect(
-            screen.queryByText('1 cut ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).not.toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cut c');
         expect(screen.queryByText('add new ingredient')).not.toBeNull();
         // ------ Available as new unit ----------------------------------------
         await user.keyboard('{Escape}');
@@ -58,11 +57,10 @@ describe('Creating new items', () => {
         await user.click(screen.getByText('use "bump" as unit'));
         await user.click(screen.getByText('decimal'));
         await user.click(screen.getByLabelText('Save unit'));
+        await user.keyboard('{c}');
 
         // Expect --------------------------------------------------------------
-        expect(
-            screen.queryByText('1 bump ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).not.toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 bump c');
         expect(screen.queryByText('add new ingredient')).not.toBeNull();
     });
 
@@ -96,7 +94,7 @@ describe('Creating new items', () => {
         // Act
         await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{ }');
-        await clickGetByText(screen, user, 'skip unit', 'add new ingredient');
+        await clickGetByText(screen, user, 'skip unit', 'skip size', 'add new ingredient');
         await user.keyboard('beef');
         await user.click(screen.getByLabelText('Save ingredient'));
 

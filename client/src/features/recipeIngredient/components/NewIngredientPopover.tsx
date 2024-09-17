@@ -1,17 +1,17 @@
 import { PopoverArrow, PopoverHeader } from '@chakra-ui/react';
 import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 
+import { IngredientAndRecipe } from '@recipe/types';
 import { useSuccessToast } from '@recipe/common/hooks';
 import { CreateIngredientMutation } from '@recipe/graphql/generated';
 import { CREATE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 
 import { IngredientForm } from './IngredientForm';
-import { IngredientSuggestion } from './IngredientDropdown';
 
 interface Props {
     fieldRef: React.MutableRefObject<HTMLInputElement | null>;
     onClose: () => void;
-    handleSelect: (item: IngredientSuggestion) => void;
+    handleSelect: (item: IngredientAndRecipe) => void;
 }
 export function NewIngredientPopover(props: Props) {
     const { fieldRef, onClose, handleSelect } = props;
@@ -19,10 +19,7 @@ export function NewIngredientPopover(props: Props) {
 
     const handleComplete = (data: CreateIngredientMutation) => {
         onClose();
-        handleSelect({
-            value: data!.ingredientCreateOne!.record!,
-            colour: undefined,
-        });
+        handleSelect(data!.ingredientCreateOne!.record!);
         toast({
             title: 'Ingredient saved',
             description: `${data?.ingredientCreateOne?.record?.name} saved`,

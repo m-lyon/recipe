@@ -3,15 +3,14 @@ import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 
 import { useSuccessToast } from '@recipe/common/hooks';
 import { CREATE_UNIT } from '@recipe/graphql/mutations/unit';
-import { CreateUnitMutation } from '@recipe/graphql/generated';
+import { CreateUnitMutation, Unit } from '@recipe/graphql/generated';
 
 import { UnitForm } from './UnitForm';
-import { UnitSuggestion } from './UnitDropdown';
 
 interface Props {
     fieldRef: React.MutableRefObject<HTMLInputElement | null>;
     onClose: () => void;
-    handleSelect: (item: UnitSuggestion) => void;
+    handleSelect: (item: Unit) => void;
 }
 export function NewUnitPopover(props: Props) {
     const { fieldRef, onClose, handleSelect } = props;
@@ -19,10 +18,7 @@ export function NewUnitPopover(props: Props) {
 
     const handleComplete = (data: CreateUnitMutation) => {
         onClose();
-        handleSelect({
-            value: data.unitCreateOne!.record!,
-            colour: undefined,
-        });
+        handleSelect(data.unitCreateOne!.record!);
         toast({
             title: 'Unit saved',
             description: `${data?.unitCreateOne?.record?.longSingular} saved`,

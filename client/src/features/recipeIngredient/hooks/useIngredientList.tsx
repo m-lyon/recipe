@@ -2,13 +2,13 @@ import { produce } from 'immer';
 import { useReducer } from 'react';
 import { useQuery } from '@apollo/client';
 
-import { IngredientAndRecipe, InputState } from '@recipe/types';
 import { isPlural } from '@recipe/utils/plural';
 import { useErrorToast } from '@recipe/common/hooks';
 import { VALID_NUMBER_REGEX } from '@recipe/utils/number';
 import { useUnitConversion } from '@recipe/features/servings';
+import { IngredientAndRecipe, InputState } from '@recipe/types';
 import { GET_INGREDIENT_COMPONENTS } from '@recipe/graphql/queries/recipe';
-import { ingredientDisplayStr, unitDisplayValue } from '@recipe/utils/formatting';
+import { ingredientDisplayValue, unitDisplayValue } from '@recipe/utils/formatting';
 import { RecipeFromIngredientsMany, RecipeIngredientQueryData } from '@recipe/types';
 import { getEditableRecipeIngredientStr, sizeDisplayValue } from '@recipe/utils/formatting';
 import { EditableRecipeIngredient, FinishedRecipeIngredient, Quantity } from '@recipe/types';
@@ -18,11 +18,11 @@ export function dbIngredientToFinished(ingr: RecipeIngredient): FinishedRecipeIn
     const { quantity, unit, size, ingredient, prepMethod } = ingr;
     const key = crypto.randomUUID();
     if (
-        quantity == undefined ||
-        unit == undefined ||
-        size == undefined ||
+        quantity === undefined ||
+        unit === undefined ||
+        size === undefined ||
         ingredient == undefined ||
-        prepMethod == undefined
+        prepMethod === undefined
     ) {
         throw new Error('One or more property is undefined');
     }
@@ -37,7 +37,7 @@ function handleQuantityChange(
     actionHandler: InternalActionHandler
 ) {
     if (typeof char === 'number') {
-        actionHandler.truncate(subsection, char);
+        actionHandler.deleteChar(subsection);
     } else {
         // Validate quantity upon completion
         if (char === ' ' && item.quantity !== null) {
@@ -80,7 +80,7 @@ function handleUnitChange(
     actionHandler: InternalActionHandler
 ) {
     if (typeof char === 'number') {
-        actionHandler.truncate(subsection, char);
+        actionHandler.deleteChar(subsection);
     } else {
         if (/^[a-zA-Z ]$/.test(char)) {
             if (char === ' ' && item.unit.value !== null) {
@@ -113,7 +113,7 @@ function handleUnitChange(
 
 function handleSizeChange(subsection: number, char: NewChar, actionHandler: InternalActionHandler) {
     if (typeof char === 'number') {
-        actionHandler.truncate(subsection, char);
+        actionHandler.deleteChar(subsection);
     } else {
         if (/^[a-zA-Z ]$/.test(char)) {
             actionHandler.size.append(subsection, char);
@@ -131,7 +131,7 @@ function handleIngredientChange(
     actionHandler: InternalActionHandler
 ) {
     if (typeof char === 'number') {
-        actionHandler.truncate(subsection, char);
+        actionHandler.deleteChar(subsection);
     } else {
         if (/^[a-zA-Z -]$/.test(char)) {
             actionHandler.ingredient.append(subsection, char);
@@ -147,7 +147,7 @@ function handlePrepMethodChange(
     actionHandler: InternalActionHandler
 ) {
     if (typeof char === 'number') {
-        actionHandler.truncate(subsection, char);
+        actionHandler.deleteChar(subsection);
     } else {
         if (/^[a-zA-Z ]$/.test(char)) {
             actionHandler.prepMethod.append(subsection, char);
@@ -189,72 +189,45 @@ function getEmptyIngredient(): EditableRecipeIngredient {
         key: crypto.randomUUID(),
     };
 }
-function getPrevState(state: InputState): InputState {
-    const nextState = {
-        quantity: 'quantity',
-        unit: 'quantity',
-        size: 'unit',
-        ingredient: 'size',
-        prepMethod: 'ingredient',
-    };
-    return nextState[state] as InputState;
-}
-function removeFromQuantity(num: number, item: EditableRecipeIngredient): EditableRecipeIngredient {
-    if (num <= 0 || item.state !== 'quantity') {
-        return item;
+function setPrevState(editable: EditableRecipeIngredient) {
+    switch (editable.state) {
+        case 'quantity':
+            break;
+        case 'unit':
+            editable.state = 'quantity';
+            break;
+        case 'size':
+            if (editable.unit.value === null) {
+                editable.state = 'quantity';
+                break;
+            }
+            editable.unit.data = undefined;
+            editable.state = 'unit';
+            break;
+        case 'ingredient':
+            if (editable.size.value === null) {
+                if (editable.unit.value === null) {
+                    editable.state = 'quantity';
+                    break;
+                }
+                editable.unit.data = undefined;
+                editable.state = 'unit';
+                break;
+            }
+            editable.size.data = undefined;
+            editable.state = 'size';
+            break;
+        case 'prepMethod':
+            editable.state = 'ingredient';
+            break;
+        default:
+            break;
     }
-
-    // number to delete is greater or equal, reset val
-    if (item.quantity === null || num >= item.quantity.length) {
-        item.quantity = null;
-        return item;
-    }
-    // number to delete is within current state value
-    item.quantity = item.quantity.slice(0, item.quantity.length - num);
-    return item;
-}
-function removeFromProperty(
-    num: number,
-    item: EditableRecipeIngredient,
-    currentState: DBInputState
-): [number, EditableRecipeIngredient] {
-    // TODO: make this function decrement state to quantity if unit/size are null. (need to
-    // make sure that the data is reset to undefined)
-    if (num <= 0 || item.state !== currentState) {
-        return [num, item];
-    }
-    const val = item[currentState].value;
-    // Remove data if present
-    item[currentState].data = undefined;
-
-    // Current state is empty, decrement state and return item
-    if (val === null) {
-        item.state = getPrevState(currentState);
-        num--;
-        return [num, item];
-    }
-    // number to delete is greater than current state, reset val and decrement state
-    if (num > val.length) {
-        item[currentState].value = null;
-        item.state = getPrevState(currentState);
-        return [num - val.length - 1, item];
-    }
-    // number is equal, just reset val
-    if (num === val.length) {
-        item[currentState].value = null;
-        return [num - val.length, item];
-    }
-    // number to delete is within current state value
-    item[currentState].value = val.slice(0, val.length - num);
-    return [0, item];
 }
 function getActionSubsection(state: IngredientListState, action: GetSubsectionAction) {
     return getSubsection(state, action.subsection);
 }
-function getSubsection(state: IngredientListState, subsection: number) {
-    if (state.length <= subsection) {
-        throw new Error('Invalid subsection index');
-    }
+function getSubsection(state: IngredientListState, subsection: number): Subsection {
     return state[subsection];
 }
 // Actions ---------------------------------------------------------------------
@@ -271,9 +244,7 @@ type Action =
     | SetSizeAction
     | SetPrepMethodAction
     | IncrementEditableStateAction
-    | DecrementEditableStateAction
-    | SubmitEditableAction
-    | TruncateEditableAction
+    | DeleteEditableCharAction
     | AddSubsectionAction
     | RemoveSubsectionAction
     | SetSubsectionTitleAction;
@@ -386,6 +357,11 @@ function setSize(state: IngredientListState, action: SetSizeAction): IngredientL
         const subsection = getActionSubsection(draft, action);
         // Set data
         subsection.editable.size.data = action.payload;
+        // Set unit if skipping
+        if (subsection.editable.unit.data === undefined) {
+            subsection.editable.unit.value = null;
+            subsection.editable.unit.data = null;
+        }
         // Set value
         if (subsection.editable.size.data === null) {
             subsection.editable.size.value = subsection.editable.size.data;
@@ -407,11 +383,20 @@ function setIngredient(
         const subsection = getActionSubsection(draft, action);
         // Set data
         subsection.editable.ingredient.data = action.payload;
+        // Set unit & size if skipping
+        if (subsection.editable.unit.data === undefined) {
+            subsection.editable.unit.value = null;
+            subsection.editable.unit.data = null;
+        }
+        if (subsection.editable.size.data === undefined) {
+            subsection.editable.size.value = null;
+            subsection.editable.size.data = null;
+        }
         // Set value
         if (subsection.editable.ingredient.data === null) {
             subsection.editable.ingredient.value = null;
         } else {
-            subsection.editable.ingredient.value = ingredientDisplayStr(
+            subsection.editable.ingredient.value = ingredientDisplayValue(
                 subsection.editable.quantity,
                 subsection.editable.unit.data!,
                 subsection.editable.ingredient.data
@@ -438,6 +423,7 @@ function setPrepMethod(
         } else {
             subsection.editable.prepMethod.value = subsection.editable.prepMethod.data.value;
         }
+        submitEditable(subsection);
     });
 }
 interface AppendQuantityAction {
@@ -481,117 +467,94 @@ function appendOtherIngredient(
         }
     });
 }
-const states: { [key: number]: InputState } = {
+const STATES: Record<number, InputState> = {
     0: 'quantity',
     1: 'unit',
     2: 'size',
     3: 'ingredient',
     4: 'prepMethod',
 };
+export const STATES_ORDER: Record<InputState, number> = {
+    quantity: 0,
+    unit: 1,
+    size: 2,
+    ingredient: 3,
+    prepMethod: 4,
+};
 interface IncrementEditableStateAction {
     type: 'increment_editable_state';
     subsection: number;
-    increment?: number | InputState;
+    increment: number | InputState;
 }
 function incrementEditableState(
     state: IngredientListState,
-    action: IncrementEditableStateAction,
-    increment: number | InputState = 1
+    action: IncrementEditableStateAction
 ): IngredientListState {
     return produce(state, (draft) => {
         const subsection = getActionSubsection(draft, action);
-        if (typeof increment === 'string') {
-            subsection.editable.state = increment;
+        if (typeof action.increment === 'string') {
+            subsection.editable.state = action.increment;
             return;
         }
         const currentState = subsection.editable.state;
-        const currentIndex = Object.keys(states).find((key) => states[+key] === currentState);
-        if (currentIndex === undefined) {
-            return;
-        }
-        const max = Object.keys(states).length - 1;
-        const newIndex = parseInt(currentIndex) + increment;
-        subsection.editable.state = states[Math.min(newIndex, max)];
+        const max = Object.keys(STATES).length - 1;
+        const newIndex = STATES_ORDER[currentState] + action.increment;
+        subsection.editable.state = STATES[Math.min(newIndex, max)];
     });
 }
-
-interface DecrementEditableStateAction {
-    type: 'decrement_editable_state';
+interface DeleteEditableCharAction {
+    type: 'delete_editable_char';
     subsection: number;
-    decrement?: number | InputState;
 }
-function decrementEditableState(
+function deleteEditableChar(
     state: IngredientListState,
-    action: DecrementEditableStateAction,
-    decrement: number | InputState = 1
+    action: DeleteEditableCharAction
 ): IngredientListState {
     return produce(state, (draft) => {
         const subsection = getActionSubsection(draft, action);
-        if (typeof decrement === 'string') {
-            subsection.editable.state = decrement;
-            return;
-        }
         const currentState = subsection.editable.state;
-        const currentIndex = Object.keys(states).find((key) => states[+key] === currentState);
-        if (currentIndex === undefined) {
-            return;
+        if (currentState === 'quantity') {
+            const currentValue = subsection.editable.quantity;
+            if (currentValue === null) {
+                return;
+            }
+            if (currentValue.length === 1) {
+                subsection.editable.quantity = null;
+            } else {
+                subsection.editable.quantity = currentValue.slice(0, -1);
+            }
+        } else {
+            const currentItem = subsection.editable[currentState];
+            if (currentItem.value === null) {
+                setPrevState(subsection.editable);
+            } else if (currentItem.value.length === 1) {
+                currentItem.value = null;
+            } else {
+                currentItem.value = currentItem.value.slice(0, -1);
+            }
         }
-        const newIndex = parseInt(currentIndex) - decrement;
-        subsection.editable.state = states[Math.max(newIndex, 0)];
     });
 }
-interface TruncateEditableAction {
-    type: 'truncate_editable';
-    payload: number;
-    subsection: number;
-}
-function truncateEditable(
-    state: IngredientListState,
-    action: TruncateEditableAction
-): IngredientListState {
-    return produce(state, (draft) => {
-        const subsection = getActionSubsection(draft, action);
-        let newItem = { ...subsection.editable };
-        [action.payload, newItem] = removeFromProperty(action.payload, newItem, 'prepMethod');
-        [action.payload, newItem] = removeFromProperty(action.payload, newItem, 'ingredient');
-        [action.payload, newItem] = removeFromProperty(action.payload, newItem, 'unit');
-        newItem = removeFromQuantity(action.payload, newItem);
-        subsection.editable = newItem;
-    });
-}
-interface SubmitEditableAction {
-    type: 'submit_editable';
-    subsection: number;
-}
-function submitEditable(
-    state: IngredientListState,
-    action: SubmitEditableAction
-): IngredientListState {
-    return produce(state, (draft) => {
-        const subsection = getActionSubsection(draft, action);
-        if (subsection.editable.unit.data === undefined) {
-            subsection.editable.unit.data = null;
-        }
-        if (subsection.editable.size.data === undefined) {
-            subsection.editable.size.data = null;
-        }
-        if (subsection.editable.ingredient.data === undefined) {
-            throw new Error('Cannot submit an item with no ingredient.');
-        }
-        if (subsection.editable.prepMethod.data === undefined) {
-            subsection.editable.prepMethod.data = null;
-        }
-        const finished = {
-            key: subsection.editable.key,
-            quantity: subsection.editable.quantity,
-            unit: subsection.editable.unit.data,
-            size: subsection.editable.size.data,
-            ingredient: subsection.editable.ingredient.data,
-            prepMethod: subsection.editable.prepMethod.data,
-        };
-        subsection.finished.push(finished);
-        subsection.editable = getEmptyIngredient();
-    });
+function submitEditable(subsection: Subsection) {
+    if (subsection.editable.unit.data === undefined) {
+        subsection.editable.unit.data = null;
+    }
+    if (subsection.editable.size.data === undefined) {
+        subsection.editable.size.data = null;
+    }
+    if (subsection.editable.prepMethod.data === undefined) {
+        subsection.editable.prepMethod.data = null;
+    }
+    const finished = {
+        key: subsection.editable.key,
+        quantity: subsection.editable.quantity,
+        unit: subsection.editable.unit.data,
+        size: subsection.editable.size.data,
+        ingredient: subsection.editable.ingredient.data as IngredientAndRecipe,
+        prepMethod: subsection.editable.prepMethod.data,
+    };
+    subsection.finished.push(finished);
+    subsection.editable = getEmptyIngredient();
 }
 interface AddSubsectionAction {
     type: 'add_subsection';
@@ -653,14 +616,8 @@ function reducer(state: IngredientListState, action: Action): IngredientListStat
         case 'increment_editable_state': {
             return incrementEditableState(state, action);
         }
-        case 'decrement_editable_state': {
-            return decrementEditableState(state, action);
-        }
-        case 'truncate_editable': {
-            return truncateEditable(state, action);
-        }
-        case 'submit_editable': {
-            return submitEditable(state, action);
+        case 'delete_editable_char': {
+            return deleteEditableChar(state, action);
         }
         case 'add_subsection': {
             return produce(state, (draft) => {
@@ -686,7 +643,7 @@ function reducer(state: IngredientListState, action: Action): IngredientListStat
             });
         }
         default: {
-            throw Error('Unknown action type');
+            return state;
         }
     }
 }
@@ -697,15 +654,12 @@ interface RecipeIngredientActionHandler<T> {
 }
 interface InternalActionHandler {
     incrementState: (subsection: number, increment?: number | InputState) => void;
-    decrementState: (subsection: number, decrement?: number | InputState) => void;
-    submit: (subsection: number) => void;
-    truncate: (subsection: number, num: number) => void;
+    deleteChar: (subsection: number) => void;
     quantity: RecipeIngredientActionHandler<Quantity>;
     unit: RecipeIngredientActionHandler<Unit | null>;
     size: RecipeIngredientActionHandler<Size | null>;
     ingredient: RecipeIngredientActionHandler<Ingredient>;
     prepMethod: RecipeIngredientActionHandler<PrepMethod | null>;
-    reset: (subsection: number) => void;
     setShow: SetShow;
 }
 interface SetShow {
@@ -725,9 +679,7 @@ export interface IngredientActionHandler {
     setCurrentEditableAttribute: (subsection: number, attr: SetAttr) => void;
     currentEditableAttributeValue: (subsection: number) => string | null;
     setEditableShow: SetShow;
-    handleEditableSubmit: (subsection: number) => void;
     handleEditableChange: (subsection: number, value: string) => void;
-    decrementEditableState: (subsection: number, decrement?: InputState) => void;
     setFinishedArray: (subsection: number, finished: FinishedRecipeIngredient[]) => void;
     removeFinished: (subsection: number, index: number) => void;
     subsection: SubsectionActions;
@@ -749,14 +701,9 @@ export function useIngredientList(): UseIngredientListReturnType {
     const toast = useErrorToast();
     const getIngredientActionHandler = (): IngredientActionHandler => {
         const editableActions: InternalActionHandler = {
-            reset: (subsection) => dispatch({ type: 'reset_editable', subsection }),
-            submit: (subsection) => dispatch({ type: 'submit_editable', subsection }),
-            truncate: (subsection, num) =>
-                dispatch({ type: 'truncate_editable', payload: num, subsection }),
-            incrementState: (subsection, increment) =>
+            deleteChar: (subsection) => dispatch({ type: 'delete_editable_char', subsection }),
+            incrementState: (subsection, increment = 1) =>
                 dispatch({ type: 'increment_editable_state', subsection, increment }),
-            decrementState: (subsection, decrement) =>
-                dispatch({ type: 'decrement_editable_state', subsection, decrement }),
             quantity: {
                 set: (subsection, quantity) =>
                     dispatch({ type: 'set_editable_quantity', payload: quantity, subsection }),
@@ -817,13 +764,33 @@ export function useIngredientList(): UseIngredientListReturnType {
                 const sub = getSubsection(state, subsection);
                 return getEditableRecipeIngredientStr(sub.editable);
             },
-            resetEditable: editableActions.reset,
+            resetEditable: (subsection) => dispatch({ type: 'reset_editable', subsection }),
             setCurrentEditableAttribute: (subsection, attr) => {
                 if (typeof attr === 'string') {
                     editableActions.quantity.set(subsection, attr);
                     return editableActions.incrementState(subsection);
                 }
-                switch (attr?.__typename) {
+                if (attr === null) {
+                    const sub = getSubsection(state, subsection);
+                    switch (sub.editable.state) {
+                        case 'quantity':
+                            editableActions.quantity.set(subsection, attr);
+                            editableActions.unit.set(subsection, attr);
+                            return editableActions.incrementState(subsection, 'size');
+                        case 'unit':
+                            editableActions.unit.set(subsection, attr);
+                            return editableActions.incrementState(subsection);
+                        case 'size':
+                            editableActions.size.set(subsection, attr);
+                            return editableActions.incrementState(subsection);
+                        case 'prepMethod':
+                            editableActions.prepMethod.set(subsection, attr);
+                            return;
+                        default:
+                            return;
+                    }
+                }
+                switch (attr.__typename) {
                     case 'Unit':
                         editableActions.unit.set(subsection, attr);
                         return editableActions.incrementState(subsection, 'size');
@@ -848,15 +815,6 @@ export function useIngredientList(): UseIngredientListReturnType {
                 }
             },
             setEditableShow: editableActions.setShow,
-            handleEditableSubmit: (subsection) => {
-                const sub = getSubsection(state, subsection);
-                if (sub.editable.state !== 'prepMethod') {
-                    editableActions.reset(subsection);
-                } else {
-                    editableActions.setShow.off(subsection);
-                    editableActions.submit(subsection);
-                }
-            },
             handleEditableChange: (subsection, value) => {
                 const sub = getSubsection(state, subsection);
                 const diff = getTextDiff(value, getEditableRecipeIngredientStr(sub.editable));
@@ -892,7 +850,6 @@ export function useIngredientList(): UseIngredientListReturnType {
                     }
                 }
             },
-            decrementEditableState: editableActions.decrementState,
             setFinishedArray: (subsection, finished) =>
                 dispatch({ type: 'set_finished', finished, subsection }),
             removeFinished: (subsection, index) =>

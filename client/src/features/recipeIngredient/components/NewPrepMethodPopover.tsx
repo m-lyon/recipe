@@ -1,17 +1,17 @@
+import { MutableRefObject } from 'react';
 import { PopoverArrow, PopoverHeader } from '@chakra-ui/react';
 import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 
 import { useSuccessToast } from '@recipe/common/hooks';
-import { CreatePrepMethodMutation } from '@recipe/graphql/generated';
 import { CREATE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
+import { CreatePrepMethodMutation, PrepMethod } from '@recipe/graphql/generated';
 
 import { PrepMethodForm } from './PrepMethodForm';
-import { PrepMethodSuggestion } from './PrepMethodDropdown';
 
 interface Props {
-    fieldRef: React.MutableRefObject<HTMLInputElement | null>;
+    fieldRef: MutableRefObject<HTMLInputElement | null>;
     onClose: () => void;
-    handleSelect: (item: PrepMethodSuggestion) => void;
+    handleSelect: (item: PrepMethod) => void;
 }
 export function NewPrepMethodPopover(props: Props) {
     const { fieldRef, onClose, handleSelect } = props;
@@ -19,10 +19,7 @@ export function NewPrepMethodPopover(props: Props) {
 
     const handleComplete = (data: CreatePrepMethodMutation) => {
         onClose();
-        handleSelect({
-            value: data.prepMethodCreateOne!.record!,
-            colour: undefined,
-        });
+        handleSelect(data.prepMethodCreateOne!.record!);
         toast({
             title: 'Prep method saved',
             description: `${data?.prepMethodCreateOne?.record?.value} saved`,

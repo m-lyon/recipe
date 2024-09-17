@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { notNullByText } from '@recipe/utils/tests';
+import { haveValueByLabelText, notNullByText } from '@recipe/utils/tests';
 
 import { renderComponent } from './utils';
 
@@ -22,10 +22,10 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         // Act
         const ingredientInput = screen.getByText('Enter ingredient');
         await user.click(ingredientInput);
-        await user.keyboard('{1}{ }{ArrowDown}{Enter}{ArrowDown>2/}{Enter}');
+        await user.keyboard('{1}{ }{ArrowDown}{Enter}{c}{h}{i}{ArrowUp}{Enter}');
 
         // Expect
-        expect(screen.queryByText('1 cup chicken,')).not.toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup chicken, ');
     });
     it('should reset via escape key', async () => {
         const user = userEvent.setup();
@@ -35,8 +35,10 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         // Act
         const ingredientInput = screen.getByText('Enter ingredient');
         await user.click(ingredientInput);
-        await user.keyboard('{1}{ }');
-        await user.click(screen.getByText('cup'));
+        await user.keyboard('{1}{ }{c}{u}{p}{Enter}{Enter}');
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup ');
+        expect(screen.queryByText('add new ingredient')).not.toBeNull();
+        expect(screen.queryByText('add new size')).toBeNull();
         await user.keyboard('{Escape}');
 
         // Expect
@@ -111,11 +113,10 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         const quantityInput = screen.getByText('Enter ingredient');
         await user.click(quantityInput);
         await user.keyboard('{2}{ }');
-        await user.click(screen.getByText('skip unit'));
         await user.keyboard('{a}{p}{p}{Enter}');
 
         // Expect
-        expect(screen.queryByText('2 apples,')).not.toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '2 apples, ');
     });
     it('should have a plural countable noun ingredient with a unit', async () => {
         const user = userEvent.setup();
@@ -209,7 +210,6 @@ describe('EditableIngredient Ingredient Click', () => {
         const quantityInput = screen.getByText('Enter ingredient');
         await user.click(quantityInput);
         await user.keyboard('{2}{ }');
-        await user.click(screen.getByText('skip unit'));
         await user.keyboard('{a}{p}{p}');
         await user.click(screen.getByText('apples'));
         await user.keyboard('{Enter}');

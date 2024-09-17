@@ -72,7 +72,7 @@ export function allNotNullByText(screen: Screen, ...text: string[]) {
 }
 
 export function haveValueByLabelText(screen: Screen, label: string, value: string) {
-    expect(screen.getByLabelText(label)).toHaveProperty('value', value);
+    expect(screen.getByLabelText(label)).property('value').equal(value);
 }
 
 export type MockedResponses = MockedResponse<Record<string, any>, Record<string, any>>[];
