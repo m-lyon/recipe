@@ -6,7 +6,6 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { enterEditRecipePage, notNullByText } from '@recipe/utils/tests';
 import { mockCreateRecipe } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { clickFindByText, enterCreateNewRecipePage } from '@recipe/utils/tests';
-import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockGetRatingsNewRecipe } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockAddRatingNewRecipe } from '@recipe/graphql/mutations/__mocks__/rating';
 import { mockCreateRecipeAsIngr } from '@recipe/graphql/mutations/__mocks__/recipe';
@@ -34,12 +33,7 @@ describe('Create Recipe Workflow', () => {
 
     it('should create a recipe only', async () => {
         // Render -----------------------------------------------
-        renderComponent([
-            mockCreateRecipe,
-            mockGetIngredients,
-            mockGetRecipeNew,
-            mockGetRatingsNewRecipe,
-        ]);
+        renderComponent([mockCreateRecipe, mockGetRecipeNew, mockGetRatingsNewRecipe]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -97,7 +91,6 @@ describe('Create Recipe Workflow', () => {
         global.fetch = vi.fn().mockResolvedValue({ blob: () => Promise.resolve(mockBlob) });
         renderComponent([
             mockCreateRecipe,
-            mockGetIngredients,
             mockGetRatingsNewRecipe,
             mockUploadImagesNew,
             mockAddRatingNewRecipe,
@@ -177,7 +170,6 @@ describe('Create Recipe Workflow', () => {
         // Render -----------------------------------------------
         renderComponent([
             mockCreateRecipeAsIngr,
-            mockGetIngredients,
             mockGetRecipeNewAsIngr,
             mockGetRatingsNewRecipeAsIngr,
         ]);

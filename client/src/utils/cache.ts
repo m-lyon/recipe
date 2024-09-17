@@ -16,7 +16,6 @@ export const getCache = () =>
                         },
                         merge(existing = [], incoming, { args, storage }) {
                             const currFilter = args?.filter;
-
                             if (JSON.stringify(currFilter) === JSON.stringify(storage.prevFilter)) {
                                 storage.prevFilter = currFilter;
                                 return [...existing, ...incoming];

@@ -104,7 +104,7 @@ describe('Ingredient Subsections', () => {
         // Act --------------------------------------------------
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 2', 'Section Two');
-        await notNullByText(screen, '⅓ cup apples, diced', '1 oz apples');
+        await notNullByText(screen, '⅓ cup medium apples, diced', '1 oz apples');
         await user.click(screen.getByLabelText('Enter title for ingredient subsection 2'));
         await user.keyboard('{Backspace>11/}{Enter}');
         await user.click(screen.getByLabelText('Save recipe'));
@@ -115,13 +115,13 @@ describe('Ingredient Subsections', () => {
         // ------ View Recipe Page -------------------------------
         await user.click(screen.getByLabelText('View Mock Recipe'));
         await notNullByText(screen, 'Instruction one', 'Section One');
-        nullByText(screen, 'Section Two', '⅓ cup apples, diced', '1 oz apples');
+        nullByText(screen, 'Section Two', '⅓ cup medium apples, diced', '1 oz apples');
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 1', 'Section One');
         expect(screen.queryByLabelText('Enter ingredient #4 for subsection 1')).not.toBeNull();
-        nullByText(screen, 'Section Two', '⅓ cup apples, diced', '1 oz apples');
+        nullByText(screen, 'Section Two', '⅓ cup medium apples, diced', '1 oz apples');
         expect(screen.queryByLabelText('Enter title for ingredient subsection 2')).not.toBeNull();
         expect(screen.queryByLabelText('Enter ingredient #1 for subsection 2')).not.toBeNull();
     });
@@ -271,7 +271,7 @@ describe('Ingredient Subsections', () => {
         expect(screen.queryByLabelText('Enter ingredient #1 for subsection 2')).not.toBeNull();
         expect(screen.queryByLabelText('Enter ingredient #1 for subsection 3')).toBeNull();
         nullByText(screen, '2 tsp apple, diced', '1 apple, diced', '2 apples, diced');
-        await notNullByText(screen, '⅓ cup apples, diced', '1 oz apples');
+        await notNullByText(screen, '⅓ cup medium apples, diced', '1 oz apples');
     });
 
     it('should delete ingredient list items after removing first subsection name, click', async () => {
@@ -294,7 +294,7 @@ describe('Ingredient Subsections', () => {
         expect(screen.queryByLabelText('Enter ingredient #1 for subsection 2')).not.toBeNull();
         expect(screen.queryByLabelText('Enter ingredient #1 for subsection 3')).toBeNull();
         nullByText(screen, '2 tsp apple, diced', '1 apple, diced', '2 apples, diced');
-        await notNullByText(screen, '⅓ cup apples, diced', '1 oz apples');
+        await notNullByText(screen, '⅓ cup medium apples, diced', '1 oz apples');
     });
 
     it('should stop recipe submission if there is a second non-named ingredient subsection', async () => {

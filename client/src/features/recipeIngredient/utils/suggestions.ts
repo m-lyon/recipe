@@ -1,7 +1,8 @@
 import { matchSorter } from 'match-sorter';
 
-import { PrepMethod, Size, Unit } from '@recipe/graphql/generated';
-import { IngredientAndRecipe, RecipeIngredientQueryData } from '@recipe/types';
+import { RecipeIngredientQueryData } from '@recipe/types';
+import { IngredientAndRecipe, RecipeFromIngredientsMany } from '@recipe/types';
+import { Ingredient, PrepMethod, Size, Unit } from '@recipe/graphql/generated';
 
 export interface UnitSuggestion {
     value: string | Unit | Size | IngredientAndRecipe | PrepMethod;
@@ -19,20 +20,37 @@ export interface PrepMethodSuggestion {
     value: string | PrepMethod;
     colour?: string;
 }
-
+const sortUnits = (units: Unit[], value: string): UnitSuggestion[] => {
+    return matchSorter<Unit>(units, value, {
+        keys: ['longSingular', 'longPlural'],
+    }).map((item) => ({ value: item }));
+};
+const sortSizes = (sizes: Size[], value: string): SizeSuggestion[] => {
+    return matchSorter<Size>(sizes, value, {
+        keys: ['value'],
+    }).map((item) => ({ value: item }));
+};
+const sortIngredients = (
+    ingredients: Ingredient[],
+    recipes: RecipeFromIngredientsMany[],
+    value: string
+): IngredientSuggestion[] => {
+    return matchSorter<IngredientAndRecipe>([...ingredients, ...recipes], value, {
+        keys: ['name', 'pluralName', 'title', 'pluralTitle'],
+    }).map((item) => ({ value: item }));
+};
+const sortPrepMethods = (prepMethods: PrepMethod[], value: string): PrepMethodSuggestion[] => {
+    return matchSorter<PrepMethod>(prepMethods, value, {
+        keys: ['value'],
+    }).map((item) => ({ value: item }));
+};
 export const unitSuggestions = (
     data: RecipeIngredientQueryData,
     value: string
 ): UnitSuggestion[] => {
-    const items = matchSorter<Unit>(data?.units ?? [], value, {
-        keys: ['longSingular', 'longPlural'],
-    }).map((item) => ({ value: item })) as UnitSuggestion[];
-    const sizes = matchSorter<Size>(data?.sizes ?? [], value, {
-        keys: ['value'],
-    }).map((item) => ({ value: item })) as SizeSuggestion[];
-    const ingredients = matchSorter<IngredientAndRecipe>(data?.ingredients ?? [], value, {
-        keys: ['name', 'pluralName', 'title', 'pluralTitle'],
-    }).map((item) => ({ value: item })) as IngredientSuggestion[];
+    const items = sortUnits(data?.units ?? [], value);
+    const sizes = sortSizes(data?.sizes ?? [], value);
+    const ingredients = sortIngredients(data?.ingredients ?? [], data?.recipes ?? [], value);
     items.push(...[...sizes, ...ingredients]);
     if (value === '') {
         items.unshift({ value: 'skip unit', colour: 'gray.400' });
@@ -53,12 +71,8 @@ export const sizeSuggestions = (
     data: RecipeIngredientQueryData,
     value: string
 ): SizeSuggestion[] => {
-    const items = matchSorter<Size>(data?.sizes ?? [], value, {
-        keys: ['value'],
-    }).map((item) => ({ value: item })) as SizeSuggestion[];
-    const ingredients = matchSorter<IngredientAndRecipe>(data?.ingredients ?? [], value, {
-        keys: ['name', 'pluralName', 'title', 'pluralTitle'],
-    }).map((item) => ({ value: item })) as IngredientSuggestion[];
+    const items = sortSizes(data?.sizes ?? [], value);
+    const ingredients = sortIngredients(data?.ingredients ?? [], data?.recipes ?? [], value);
     items.push(...ingredients);
     if (value === '') {
         items.unshift({ value: 'skip size', colour: 'gray.400' });
@@ -77,16 +91,7 @@ export const ingredientSuggestions = (
     data: RecipeIngredientQueryData,
     value: string
 ): IngredientSuggestion[] => {
-    const items = matchSorter<IngredientAndRecipe>(
-        [...(data?.ingredients ?? []), ...(data?.recipes ?? [])],
-        value,
-        {
-            keys: ['name', 'pluralName', 'title', 'pluralTitle'],
-        }
-    ).map((item) => ({
-        value: item,
-        colour: undefined,
-    })) satisfies IngredientSuggestion[] as IngredientSuggestion[];
+    const items = sortIngredients(data?.ingredients ?? [], data?.recipes ?? [], value);
     items.push({ value: 'add new ingredient', colour: 'gray.400' });
     return items;
 };
@@ -95,9 +100,7 @@ export const prepMethodSuggestions = (
     data: RecipeIngredientQueryData,
     value: string
 ): PrepMethodSuggestion[] => {
-    const items = matchSorter<PrepMethod>(data?.prepMethods ?? [], value, {
-        keys: ['value'],
-    }).map((item) => ({ value: item })) as PrepMethodSuggestion[];
+    const items = sortPrepMethods(data?.prepMethods ?? [], value);
     if (value === '') {
         items.unshift({ value: 'skip prep method', colour: 'gray.400' });
     } else {

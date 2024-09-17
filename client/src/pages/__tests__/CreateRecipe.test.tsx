@@ -6,9 +6,7 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { renderPage } from '@recipe/utils/tests';
 import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
-import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
-import { mockGetPrepMethods } from '@recipe/graphql/queries/__mocks__/prepMethod';
-import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
+import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
 
 import { CreateRecipe } from '../CreateRecipe';
@@ -18,13 +16,7 @@ loadDevMessages();
 
 const renderComponent = () => {
     const routes = createRoutesFromElements(<Route path='/' element={<CreateRecipe />} />);
-    renderPage(routes, [
-        mockGetUnits,
-        mockGetIngredients,
-        mockGetPrepMethods,
-        mockGetTags,
-        mockGetUnitConversions,
-    ]);
+    renderPage(routes, [mockGetIngredientComponents, mockGetTags, mockGetUnitConversions]);
 };
 
 describe('Title', () => {
