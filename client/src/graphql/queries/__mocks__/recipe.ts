@@ -1,6 +1,7 @@
 import { mockRecipeIngredientIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdFour } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdFive } from '@recipe/graphql/__mocks__/ids';
+import { GET_INGREDIENT_COMPONENTS } from '@recipe/graphql/queries/recipe';
 import { mockRecipeIngredientIdEight } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdThree } from '@recipe/graphql/__mocks__/ids';
 import { mockTitleOne, mockTitleTwo } from '@recipe/graphql/__mocks__/common';
@@ -13,10 +14,26 @@ import { mockRecipeIdFour, mockRecipeIngredientIdOne } from '@recipe/graphql/__m
 import { mockRecipeIdNewAsIngr, mockRecipeIngredientIdSix } from '@recipe/graphql/__mocks__/ids';
 
 import { mockAdmin } from './user';
-import { mockApple } from './ingredient';
-import { mockDiced } from './prepMethod';
-import { mockCup, mockOunce, mockTeaspoon } from './unit';
+import { mockDiced, mockPrepMethods } from './prepMethod';
+import { mockMedium, mockSizes, mockSmall } from './size';
+import { mockCup, mockOunce, mockTeaspoon, mockUnits } from './unit';
 import { mockDinnerTag, mockFreezableTag, mockLunchTag } from './tag';
+import { mockApple, mockIngredients, mockRecipeFromIngredients } from './ingredient';
+
+export const mockGetIngredientComponents = {
+    request: {
+        query: GET_INGREDIENT_COMPONENTS,
+    },
+    result: {
+        data: {
+            units: mockUnits,
+            sizes: mockSizes,
+            ingredients: mockIngredients,
+            recipes: mockRecipeFromIngredients,
+            prepMethods: mockPrepMethods,
+        },
+    },
+};
 
 export const mockRecipeOne = {
     __typename: 'Recipe' as const,
@@ -35,6 +52,7 @@ export const mockRecipeOne = {
                     type: EnumRecipeIngredientType.Ingredient,
                     quantity: '1',
                     unit: mockTeaspoon,
+                    size: null,
                     ingredient: mockApple,
                     prepMethod: mockDiced,
                 },
@@ -44,6 +62,7 @@ export const mockRecipeOne = {
                     type: EnumRecipeIngredientType.Ingredient,
                     quantity: '1',
                     unit: null,
+                    size: mockSmall,
                     ingredient: mockApple,
                     prepMethod: mockDiced,
                 },
@@ -53,6 +72,7 @@ export const mockRecipeOne = {
                     type: EnumRecipeIngredientType.Ingredient,
                     quantity: '2',
                     unit: null,
+                    size: null,
                     ingredient: mockApple,
                     prepMethod: mockDiced,
                 },
@@ -67,6 +87,7 @@ export const mockRecipeOne = {
                     type: EnumRecipeIngredientType.Ingredient,
                     quantity: '1/3',
                     unit: mockCup,
+                    size: mockMedium,
                     ingredient: mockApple,
                     prepMethod: mockDiced,
                 },
@@ -76,6 +97,7 @@ export const mockRecipeOne = {
                     type: EnumRecipeIngredientType.Ingredient,
                     quantity: '1',
                     unit: mockOunce,
+                    size: null,
                     ingredient: mockApple,
                     prepMethod: null,
                 },
@@ -124,6 +146,7 @@ export const mockRecipeThree = {
                     type: EnumRecipeIngredientType.Ingredient,
                     quantity: '1',
                     unit: mockTeaspoon,
+                    size: null,
                     ingredient: mockApple,
                     prepMethod: mockDiced,
                 },
@@ -133,6 +156,7 @@ export const mockRecipeThree = {
                     type: EnumRecipeIngredientType.Ingredient,
                     quantity: '1',
                     unit: null,
+                    size: mockSmall,
                     ingredient: mockApple,
                     prepMethod: mockDiced,
                 },
@@ -142,6 +166,7 @@ export const mockRecipeThree = {
                     type: EnumRecipeIngredientType.Ingredient,
                     quantity: '2',
                     unit: null,
+                    size: null,
                     ingredient: mockApple,
                     prepMethod: mockDiced,
                 },
@@ -169,6 +194,7 @@ export const mockRecipeFour = {
                     type: EnumRecipeIngredientType.Recipe,
                     quantity: '1',
                     unit: mockTeaspoon,
+                    size: null,
                     ingredient: mockRecipeTwo,
                     prepMethod: null,
                 },
@@ -192,6 +218,7 @@ export const mockRecipeNew = {
                     type: EnumRecipeIngredientType.Ingredient,
                     quantity: '2',
                     unit: mockTeaspoon,
+                    size: null,
                     ingredient: mockApple,
                     prepMethod: mockDiced,
                 },

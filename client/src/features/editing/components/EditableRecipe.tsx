@@ -117,6 +117,7 @@ export function EditableRecipe(props: Props) {
                         return {
                             quantity: item.quantity ? item.quantity : undefined,
                             unit: item.unit ? item.unit._id : undefined,
+                            size: item.size ? item.size._id : undefined,
                             ingredient: item.ingredient._id,
                             prepMethod: item.prepMethod ? item.prepMethod._id : undefined,
                             type: EnumRecipeIngredientType[item.ingredient.__typename!],

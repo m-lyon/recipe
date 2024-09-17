@@ -1,6 +1,7 @@
-import { GET_INGREDIENTS } from '@recipe/graphql/queries/ingredient';
 import { mockAppleId, mockCarrotId, mockChickenId } from '@recipe/graphql/__mocks__/ids';
 import { mockAdminId, mockLettuceId, mockRhubarbPieId } from '@recipe/graphql/__mocks__/ids';
+
+import { GET_INGREDIENTS } from '../ingredient';
 
 // Ingredients
 export const mockApple = {
@@ -48,25 +49,9 @@ export const mockRhurbarbPie = {
     owner: mockAdminId,
     calculatedTags: ['vegetarian'],
 };
-
+export const mockIngredients = [mockApple, mockChicken, mockCarrot, mockLettuce];
+export const mockRecipeFromIngredients = [mockRhurbarbPie];
 export const mockGetIngredients = {
-    request: {
-        query: GET_INGREDIENTS,
-    },
-    result: {
-        data: {
-            ingredientMany: [mockApple, mockChicken, mockCarrot, mockLettuce],
-            recipeMany: [],
-        },
-    },
-};
-
-export const mockGetIngredientsWithRecipe = {
-    request: { ...mockGetIngredients.request },
-    result: {
-        data: {
-            ...mockGetIngredients.result.data,
-            recipeMany: [mockRhurbarbPie],
-        },
-    },
+    request: { query: GET_INGREDIENTS },
+    result: { data: { ingredientMany: mockIngredients, recipeMany: [] } },
 };

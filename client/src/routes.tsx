@@ -9,7 +9,9 @@ import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
 import { Search } from './pages/Search';
 import { EditUnit } from './pages/EditUnit';
+import { EditSize } from './pages/EditSize';
 import { ErrorBoundary } from './pages/Error';
+import { CreateSize } from './pages/CreateSize';
 import { ViewRecipe } from './pages/ViewRecipe';
 import { EditRecipe } from './pages/EditRecipe';
 import { CreateUnit } from './pages/CreateUnit';
@@ -31,11 +33,13 @@ export const routes = createRoutesFromElements(
                 <Route path='recipe' element={<CreateRecipe />} />
                 <Route path='unit' element={<CreateUnit />} />
                 <Route path='unit-conversion' element={<CreateUnitConversion />} />
+                <Route path='size' element={<CreateSize />} />
                 <Route path='ingredient' element={<CreateIngredient />} />
                 <Route path='prep-method' element={<CreatePrepMethod />} />
             </Route>
             <Route path='edit' element={<RequireAuth />}>
                 <Route path='unit' element={<EditUnit />} />
+                <Route path='size' element={<EditSize />} />
                 <Route path='ingredient' element={<EditIngredient />} />
                 <Route path='prep-method' element={<EditPrepMethod />} />
                 <Route path='recipe/:titleIdentifier' element={<EditRecipe />} />

@@ -295,6 +295,11 @@ const USER_NAV_ITEMS: Array<NavItem> = [
                 href: `${ROOT_PATH}/create/unit`,
             },
             {
+                label: 'Size',
+                ariaLabel: 'Create new size',
+                href: `${ROOT_PATH}/create/size`,
+            },
+            {
                 label: 'Ingredient',
                 ariaLabel: 'Create new ingredient',
                 href: `${ROOT_PATH}/create/ingredient`,
@@ -318,6 +323,11 @@ const USER_NAV_ITEMS: Array<NavItem> = [
                 label: 'Unit',
                 ariaLabel: 'Edit existing unit',
                 href: `${ROOT_PATH}/edit/unit`,
+            },
+            {
+                label: 'Size',
+                ariaLabel: 'Edit existing size',
+                href: `${ROOT_PATH}/edit/size`,
             },
             {
                 label: 'Ingredient',

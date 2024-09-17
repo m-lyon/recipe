@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import { HStack, Stack, StackProps } from '@chakra-ui/react';
+import { MutableRefObject, useEffect, useState } from 'react';
 import { Button, ButtonGroup, Checkbox } from '@chakra-ui/react';
 import { ApolloError, Reference, useMutation } from '@apollo/client';
 import { ValidationError, array, boolean, mixed, number, object, string } from 'yup';
@@ -21,7 +21,7 @@ function formatError(error: ApolloError) {
 }
 
 interface CommonIngredientFormProps extends StackProps {
-    fieldRef?: React.MutableRefObject<HTMLInputElement | null>;
+    fieldRef?: MutableRefObject<HTMLInputElement | null>;
     initData?: Ingredient;
     disabled?: boolean;
 }
@@ -86,9 +86,13 @@ export function IngredientForm(props: IngredientFormProps) {
             cache.modify({
                 fields: {
                     ingredientMany(existingRefs = [], { readField }) {
+                        if (!data) {
+                            return existingRefs;
+                        }
                         const record =
-                            (data as CreateIngredientMutation).ingredientCreateOne?.record ??
-                            (data as ModifyIngredientMutation).ingredientUpdateById?.record;
+                            (data satisfies CreateIngredientMutation).ingredientCreateOne?.record ??
+                            (data satisfies ModifyIngredientMutation as ModifyIngredientMutation)
+                                .ingredientUpdateById?.record;
                         if (!record) {
                             return existingRefs;
                         }

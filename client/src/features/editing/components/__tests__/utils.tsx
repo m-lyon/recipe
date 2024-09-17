@@ -2,10 +2,8 @@ import { Route, createRoutesFromElements } from 'react-router-dom';
 
 import { MockedResponses, renderPage } from '@recipe/utils/tests';
 import { useIngredientList } from '@recipe/features/recipeIngredient';
-import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
-import { mockGetPrepMethods } from '@recipe/graphql/queries/__mocks__/prepMethod';
+import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
-import { mockGetIngredientsWithRecipe } from '@recipe/graphql/queries/__mocks__/ingredient';
 
 import { EditableIngredientList } from '../EditableIngredientList';
 
@@ -17,11 +15,5 @@ export const renderComponent = (mockedResponses: MockedResponses = []) => {
     const routes = createRoutesFromElements(
         <Route path='/' element={<MockEditableIngredientList />} />
     );
-    renderPage(routes, [
-        mockGetUnits,
-        mockGetIngredientsWithRecipe,
-        mockGetPrepMethods,
-        mockGetUnitConversions,
-        ...mockedResponses,
-    ]);
+    renderPage(routes, [mockGetIngredientComponents, mockGetUnitConversions, ...mockedResponses]);
 };

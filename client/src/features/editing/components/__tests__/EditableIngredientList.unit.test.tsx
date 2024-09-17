@@ -1,9 +1,9 @@
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
+import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
-import { cleanup, getDefaultNormalizer, screen } from '@testing-library/react';
 
-import { notNullByText, nullByText } from '@recipe/utils/tests';
+import { haveValueByLabelText, notNullByText, nullByText } from '@recipe/utils/tests';
 
 import { renderComponent } from './utils';
 
@@ -39,12 +39,7 @@ describe('EditableIngredient Unit Keyboard', () => {
         await user.keyboard('{1}{ }{ArrowDown}{Enter}');
 
         // Expect
-        expect(
-            screen.queryByText('1 cup ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).not.toBeNull();
-        expect(
-            screen.queryByText('1 cup  ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup ');
         expect(screen.queryByText('chicken')).not.toBeNull();
     });
     it('should switch to the ingredient state plural', async () => {
@@ -58,9 +53,7 @@ describe('EditableIngredient Unit Keyboard', () => {
         await user.keyboard('{2}{ }{ArrowDown}{Enter}');
 
         // Expect
-        expect(
-            screen.queryByText('2 cups ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).not.toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '2 cups ');
         expect(screen.queryByText('chicken')).not.toBeNull();
     });
     it('should display skip unit', async () => {
@@ -88,9 +81,7 @@ describe('EditableIngredient Unit Keyboard', () => {
 
         // Expect
         expect(screen.queryByText('Enter ingredient')).toBeNull();
-        expect(
-            screen.queryByText('1 ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).not.toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 ');
         await notNullByText(screen, 'teaspoon', 'gram', 'ounce', 'cup');
     });
     it('should display add new unit', async () => {
@@ -131,10 +122,9 @@ describe('EditableIngredient Unit Keyboard', () => {
         await user.click(screen.getByText('skip unit'));
 
         // Expect
-        expect(
-            screen.queryByText('1 ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).not.toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 ');
         expect(screen.queryByText('chicken')).not.toBeNull();
+        expect(screen.queryByText('cup')).toBeNull();
     });
     it('should open up the new unit popover', async () => {
         const user = userEvent.setup();
@@ -158,10 +148,11 @@ describe('EditableIngredient Unit Keyboard', () => {
         // Act
         const quantityInput = screen.getByText('Enter ingredient');
         await user.click(quantityInput);
-        await user.keyboard('{1}{ }{g}{ }{Backspace>2/}');
+        await user.keyboard('{1}{ }{g}{ }{Backspace>3/}');
 
         // Expect
-        nullByText(screen, 'chicken', '1 g');
+        nullByText(screen, 'chicken', 'cup');
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1');
     });
 });
 describe('EditableIngredient Unit Spacebar', () => {
@@ -179,14 +170,7 @@ describe('EditableIngredient Unit Spacebar', () => {
         await user.keyboard('{1}{ }{c}{u}{p}{ }');
 
         // Expect
-        expect(
-            screen.queryByText('1 cup ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).not.toBeNull();
-        expect(
-            screen.queryByText('1 cup  ', {
-                normalizer: getDefaultNormalizer({ trim: false, collapseWhitespace: false }),
-            })
-        ).toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup ');
         expect(screen.queryByText('chicken')).not.toBeNull();
     });
     it('should switch to the ingredient state plural', async () => {
@@ -200,9 +184,7 @@ describe('EditableIngredient Unit Spacebar', () => {
         await user.keyboard('{2}{ }{c}{u}{p}{s}{ }');
 
         // Expect
-        expect(
-            screen.queryByText('2 cups ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).not.toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '2 cups ');
         expect(screen.queryByText('chicken')).not.toBeNull();
     });
 });
@@ -222,9 +204,7 @@ describe('EditableIngredient Unit Click', () => {
         await user.click(screen.getByText('cup'));
 
         // Expect
-        expect(
-            screen.queryByText('1 cup ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).not.toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup ');
         expect(screen.queryByText('chicken')).not.toBeNull();
     });
     it('should switch to the ingredient state plural', async () => {
@@ -239,9 +219,7 @@ describe('EditableIngredient Unit Click', () => {
         await user.click(screen.getByText('cups'));
 
         // Expect
-        expect(
-            screen.queryByText('2 cups ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).not.toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '2 cups ');
         expect(screen.queryByText('chicken')).not.toBeNull();
     });
     it('should reset via click away', async () => {
@@ -270,10 +248,9 @@ describe('EditableIngredient Unit Click', () => {
         await user.click(screen.getByText('skip unit'));
 
         // Expect
-        expect(
-            screen.queryByText('1 ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).not.toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 ');
         expect(screen.queryByText('chicken')).not.toBeNull();
+        expect(screen.queryByText('cup')).toBeNull();
     });
     it('should open up the new unit popover', async () => {
         const user = userEvent.setup();

@@ -1,7 +1,7 @@
-import { Ingredient, PrepMethod, Recipe } from '@recipe/graphql/generated';
-import { GetIngredientsQuery, GetUnitsQuery } from '@recipe/graphql/generated';
+import { GetRecipeQuery, GetRecipesQuery } from '@recipe/graphql/generated';
+import { Ingredient, PrepMethod, Recipe, Size } from '@recipe/graphql/generated';
 import { EnumRecipeIngredientType, RecipeIngredient, Unit } from '@recipe/graphql/generated';
-import { GetPrepMethodsQuery, GetRecipeQuery, GetRecipesQuery } from '@recipe/graphql/generated';
+import { GetIngredientComponentsQuery, GetIngredientsQuery } from '@recipe/graphql/generated';
 
 export type Quantity = string | null;
 export type EditableQuantity = Quantity;
@@ -11,24 +11,31 @@ export interface EditableUnit {
     data?: Unit | null;
 }
 export type FinishedUnit = Unit | null;
+export interface EditableSize {
+    value: string | null;
+    data?: Size | null;
+}
+export type FinishedSize = Size | null;
 export type RecipeFromOne = GetRecipeQuery['recipeOne'];
 export type Images = NonNullable<GetRecipeQuery['recipeOne']>['images'];
 export type RecipeFromMany = GetRecipesQuery['recipeMany'][0];
 export type RecipeFromIngredientsMany = GetIngredientsQuery['recipeMany'][0];
+export type IngredientAndRecipe = Ingredient | RecipeFromIngredientsMany;
 export interface EditableIngredient {
     value: string | null;
-    data?: Ingredient | RecipeFromIngredientsMany;
+    data?: IngredientAndRecipe;
 }
-export type FinishedIngredient = Ingredient | RecipeFromIngredientsMany;
+export type FinishedIngredient = IngredientAndRecipe;
 export interface EditablePrepMethod {
     value: string | null;
     data?: PrepMethod | null;
 }
 export type FinishedPrepMethod = PrepMethod | null;
-export type InputState = 'quantity' | 'unit' | 'ingredient' | 'prepMethod';
+export type InputState = 'quantity' | 'unit' | 'size' | 'ingredient' | 'prepMethod';
 export interface EditableRecipeIngredient {
     quantity: EditableQuantity;
     unit: EditableUnit;
+    size: EditableSize;
     ingredient: EditableIngredient;
     prepMethod: EditablePrepMethod;
     state: InputState;
@@ -39,17 +46,14 @@ export interface EditableRecipeIngredient {
 export interface FinishedRecipeIngredient {
     quantity: FinishedQuantity;
     unit: FinishedUnit;
+    size: FinishedSize;
     ingredient: FinishedIngredient;
     prepMethod: FinishedPrepMethod;
     key: string;
 }
+
 export type LikeFinishedRecipeIngredient = Omit<FinishedRecipeIngredient, 'key'>;
-export interface RecipeIngredientQueryData {
-    unit?: GetUnitsQuery['unitMany'];
-    ingredient?: GetIngredientsQuery['ingredientMany'];
-    recipe?: GetIngredientsQuery['recipeMany'];
-    prepMethod?: GetPrepMethodsQuery['prepMethodMany'];
-}
+export type RecipeIngredientQueryData = GetIngredientComponentsQuery | undefined;
 export type IngredientListRecipe = Pick<
     Recipe,
     '_id' | 'title' | 'pluralTitle' | 'instructionSubsections' | 'numServings'

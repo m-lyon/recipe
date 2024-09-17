@@ -1,9 +1,10 @@
-import { GET_PREP_METHODS } from '@recipe/graphql/queries/prepMethod';
 import { mockAdminId, mockWholeId } from '@recipe/graphql/__mocks__/ids';
 import { mockChoppedId, mockDicedId, mockSlicedId } from '@recipe/graphql/__mocks__/ids';
 
+import { GET_PREP_METHODS } from '../prepMethod';
+
 export const mockChopped = {
-    __typename: 'PrepMethod',
+    __typename: 'PrepMethod' as const,
     _id: mockChoppedId,
     value: 'chopped',
     unique: true,
@@ -30,14 +31,8 @@ export const mockWhole = {
     unique: true,
     owner: mockAdminId,
 };
-
+export const mockPrepMethods = [mockChopped, mockDiced, mockSliced, mockWhole];
 export const mockGetPrepMethods = {
-    request: {
-        query: GET_PREP_METHODS,
-    },
-    result: {
-        data: {
-            prepMethodMany: [mockChopped, mockDiced, mockSliced, mockWhole],
-        },
-    },
+    request: { query: GET_PREP_METHODS },
+    result: { data: { prepMethodMany: mockPrepMethods } },
 };

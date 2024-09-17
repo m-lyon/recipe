@@ -4,39 +4,39 @@ import { ApolloError, Reference, useMutation } from '@apollo/client';
 import { Button, ButtonGroup, Stack, StackProps } from '@chakra-ui/react';
 
 import { useErrorToast } from '@recipe/common/hooks';
+import { Scalars, Size } from '@recipe/graphql/generated';
+import { DELETE_SIZE } from '@recipe/graphql/mutations/size';
 import { FloatingLabelInput } from '@recipe/common/components';
-import { PrepMethod, Scalars } from '@recipe/graphql/generated';
-import { DELETE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
-import { PREP_METHOD_FIELDS_FULL } from '@recipe/graphql/queries/prepMethod';
-import { CREATE_PREP_METHOD, MODIFY_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
-import { CreatePrepMethodMutation, ModifyPrepMethodMutation } from '@recipe/graphql/generated';
+import { SIZE_FIELDS_FULL } from '@recipe/graphql/queries/size';
+import { CREATE_SIZE, MODIFY_SIZE } from '@recipe/graphql/mutations/size';
+import { CreateSizeMutation, ModifySizeMutation } from '@recipe/graphql/generated';
 
 function formatError(error: ApolloError) {
     if (error.message.startsWith('E11000')) {
-        return 'Prep method already exists';
+        return 'Size already exists';
     }
     return error.message;
 }
 
-interface CommonPrepMethodFormProps extends StackProps {
+interface CommonSizeFormProps extends StackProps {
     fieldRef?: MutableRefObject<HTMLInputElement | null>;
-    initData?: PrepMethod;
+    initData?: Size;
     disabled?: boolean;
 }
-interface CreatePrepMethodFormProps extends CommonPrepMethodFormProps {
-    mutation: typeof CREATE_PREP_METHOD;
+interface CreateSizeFormProps extends CommonSizeFormProps {
+    mutation: typeof CREATE_SIZE;
     mutationVars?: never;
-    handleComplete: (data: CreatePrepMethodMutation) => void;
+    handleComplete: (data: CreateSizeMutation) => void;
     handleDelete?: never;
 }
-interface ModifyPrepMethodFormProps extends CommonPrepMethodFormProps {
-    mutation: typeof MODIFY_PREP_METHOD;
+interface ModifySizeFormProps extends CommonSizeFormProps {
+    mutation: typeof MODIFY_SIZE;
     mutationVars?: { id: Scalars['MongoID']['input'] };
-    handleComplete: (data: ModifyPrepMethodMutation) => void;
+    handleComplete: (data: ModifySizeMutation) => void;
     handleDelete: () => void;
 }
-type PrepMethodFormProps = CreatePrepMethodFormProps | ModifyPrepMethodFormProps;
-export function PrepMethodForm(props: PrepMethodFormProps) {
+type SizeFormProps = CreateSizeFormProps | ModifySizeFormProps;
+export function SizeForm(props: SizeFormProps) {
     const {
         fieldRef,
         mutation,
@@ -51,25 +51,25 @@ export function PrepMethodForm(props: PrepMethodFormProps) {
     const [hasError, setHasError] = useState(false);
     const [value, setValue] = useState('');
     const [isFocused, setIsFocused] = useState(false);
-    const [deletePrepMethod] = useMutation(DELETE_PREP_METHOD, {
+    const [deleteSize] = useMutation(DELETE_SIZE, {
         onCompleted: handleDelete,
         onError: (error) => {
             setHasError(true);
             toast({
-                title: 'Error deleting prep method',
+                title: 'Error deleting size',
                 description: formatError(error),
                 position: 'top',
             });
         },
         update: (cache, { data }) => {
-            cache.evict({ id: `PrepMethod:${data?.prepMethodRemoveById?.recordId}` });
+            cache.evict({ id: `Size:${data?.sizeRemoveById?.recordId}` });
         },
     });
-    const [savePrepMethod] = useMutation(mutation, {
+    const [saveSize] = useMutation(mutation, {
         onCompleted: handleComplete,
         onError: (error) => {
             toast({
-                title: 'Error saving prep method',
+                title: 'Error saving size',
                 description: formatError(error),
                 position: 'top',
             });
@@ -77,21 +77,21 @@ export function PrepMethodForm(props: PrepMethodFormProps) {
         update: (cache, { data }) => {
             cache.modify({
                 fields: {
-                    prepMethodMany(existingRefs = [], { readField }) {
+                    sizeMany(existingRefs = [], { readField }) {
                         if (!data) {
                             return existingRefs;
                         }
                         const record =
-                            (data satisfies CreatePrepMethodMutation).prepMethodCreateOne?.record ??
-                            (data satisfies ModifyPrepMethodMutation as ModifyPrepMethodMutation)
-                                .prepMethodUpdateById?.record;
+                            (data satisfies CreateSizeMutation).sizeCreateOne?.record ??
+                            (data satisfies ModifySizeMutation as ModifySizeMutation).sizeUpdateById
+                                ?.record;
                         if (!record) {
                             return existingRefs;
                         }
                         const newRef = cache.writeFragment({
                             data: record,
-                            fragment: PREP_METHOD_FIELDS_FULL,
-                            fragmentName: 'PrepMethodFieldsFull',
+                            fragment: SIZE_FIELDS_FULL,
+                            fragmentName: 'SizeFieldsFull',
                         });
                         if (
                             existingRefs.some(
@@ -118,19 +118,19 @@ export function PrepMethodForm(props: PrepMethodFormProps) {
     }, [initData, disabled]);
 
     const formSchema = object({
-        value: string().required('Prep method is required'),
+        value: string().required('Size is required'),
         unique: boolean().required(),
     });
 
     const handleSubmit = () => {
         try {
             const validated = formSchema.validateSync({ value, unique: true });
-            savePrepMethod({ variables: { record: validated, ...mutationVars } });
+            saveSize({ variables: { record: validated, ...mutationVars } });
         } catch (e: unknown) {
             if (e instanceof ValidationError) {
                 setHasError(true);
                 toast({
-                    title: 'Error saving prep method',
+                    title: 'Error saving size',
                     description: e.message,
                     position: 'top',
                 });
@@ -177,13 +177,13 @@ export function PrepMethodForm(props: PrepMethodFormProps) {
                 {mutationVars && (
                     <Button
                         colorScheme='red'
-                        onClick={() => deletePrepMethod({ variables: mutationVars })}
-                        aria-label='Delete prep method'
+                        onClick={() => deleteSize({ variables: mutationVars })}
+                        aria-label='Delete size'
                     >
                         Delete
                     </Button>
                 )}
-                <Button colorScheme='teal' onClick={handleSubmit} aria-label='Save prep method'>
+                <Button colorScheme='teal' onClick={handleSubmit} aria-label='Save size'>
                     Save
                 </Button>
             </ButtonGroup>

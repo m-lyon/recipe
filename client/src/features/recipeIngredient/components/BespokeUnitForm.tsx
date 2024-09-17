@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import { useMutation } from '@apollo/client';
+import { MutableRefObject, useEffect, useState } from 'react';
 import { FormControl, FormHelperText } from '@chakra-ui/react';
 import { Button, ButtonGroup, HStack } from '@chakra-ui/react';
 import { ValidationError, boolean, mixed, object, string } from 'yup';
@@ -12,12 +12,13 @@ import { CreateUnitMutation } from '@recipe/graphql/generated';
 import { EnumUnitCreatePreferredNumberFormat } from '@recipe/graphql/generated';
 
 interface Props extends StackProps {
+    fieldRef: MutableRefObject<HTMLInputElement | null>;
     value: string;
     setValue: (value: string) => void;
     handleComplete: (data: CreateUnitMutation) => void;
 }
 export function BeskpokeUnitForm(props: Props) {
-    const { value, setValue, handleComplete, ...rest } = props;
+    const { fieldRef, value, setValue, handleComplete, ...rest } = props;
     const toast = useErrorToast();
     const [hasError, setHasError] = useState(false);
     const [preferredNumberFormat, setpreferredNumberFormat] = useState('');
@@ -101,6 +102,7 @@ export function BeskpokeUnitForm(props: Props) {
             <FloatingLabelInput
                 id='name'
                 label='Unit name'
+                inputRef={fieldRef}
                 value={value}
                 isInvalid={hasError}
                 isRequired

@@ -26,6 +26,13 @@ export const mockCupId = '60f4d2e5c3d5a0a4f1b9c0ed';
 export const mockCuttingId = '60f4d2e5c3d5a0a4f1b9c1ef';
 export const mockBumpId = '60f4d2e5c3d5a0a4l1b9c0ef';
 
+// Sizes
+export const mockSmallId = '60f4d2e5c3d5a1a4f1b9c0ed';
+export const mockMediumId = '60f4d2e5c3d5a0a4f1b9c0le';
+export const mockLargeId = '60f4d2e553d5a0a4f1b9c0ef';
+export const mockExtraLargeId = '60f4d2e5c3d5a0aff1b9c0ef';
+export const mockReallyBigId = '60f4d2e553d5a0a4f1b9c0lf';
+
 // Ingredients
 export const mockAppleId = '60f4d2e5c3d5a0a4f1b9c0e8';
 export const mockChickenId = '60f4d2e5c3d5a0a4f1b9c0e9';
