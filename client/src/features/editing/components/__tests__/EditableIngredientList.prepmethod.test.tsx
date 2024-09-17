@@ -22,7 +22,7 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
         // Act
         await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{ }{ArrowDown>2/}{Enter}{ArrowDown}{Enter}{ArrowUp}{Enter}');
-        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1g small chicken, ');
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1g large apples, ');
         expect(screen.queryByText('chopped')).not.toBeNull();
         await user.keyboard('{Escape}');
 
@@ -90,11 +90,11 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
         // Act
         const quantityInput = screen.getByText('Enter ingredient');
         await user.click(quantityInput);
-        await user.keyboard('{1}{ }{ArrowDown}{Enter>3/}');
+        await user.keyboard('{1}{ }{ArrowDown}{Enter>2/}{ArrowDown}{Enter}');
         await user.click(screen.getByText('skip prep method'));
 
         // Expect
-        await notNullByText(screen, '1 cup large carrots', 'Enter ingredient');
+        await notNullByText(screen, '1 cup carrots', 'Enter ingredient');
     });
     it('should open up the new prepMethod popover', async () => {
         const user = userEvent.setup();
@@ -108,11 +108,7 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
         await user.keyboard('{Enter}');
 
         // Expect
-        haveValueByLabelText(
-            screen,
-            'Input ingredient #1 for subsection 1',
-            '1 cup large carrots, heat'
-        );
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup apples, heat');
         await notNullByText(screen, 'Add new prep method', 'Save');
     });
 });

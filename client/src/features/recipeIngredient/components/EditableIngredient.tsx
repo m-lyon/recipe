@@ -12,6 +12,8 @@ import { DELETE_UNIT } from '@recipe/graphql/mutations/unit';
 import { Dropdown } from './Dropdown';
 import { NewUnitPopover } from './NewUnitPopover';
 import { NewSizePopover } from './NewSizePopover';
+import { getSuggestions } from '../utils/suggestions';
+import { useDropdownList } from '../hooks/useDropdownList';
 import { NewIngredientPopover } from './NewIngredientPopover';
 import { NewPrepMethodPopover } from './NewPrepMethodPopover';
 import { NewBespokeUnitPopover } from './NewBespokeUnitPopover';
@@ -71,11 +73,8 @@ export function EditableIngredient(props: Props) {
             }
         },
     });
-    const handleSelect = (attr: SetAttr) =>
-        actionHandler.setCurrentEditableAttribute(subsection, attr);
-
-    const ingredientStr = actionHandler.editableStringValue(subsection);
-
+    const strValue = actionHandler.currentEditableAttributeValue(subsection) ?? '';
+    const suggestions = getSuggestions(item, queryData, strValue);
     const openPopover = (type: PopoverType) => {
         setPopover(type);
         if (type === 'bespokeUnit') {
@@ -83,9 +82,19 @@ export function EditableIngredient(props: Props) {
         }
         onOpen();
     };
+    const { setHighlighted, handleKeyboardEvent, ...dropdownProps } = useDropdownList(
+        strValue,
+        suggestions,
+        (attr: SetAttr) => actionHandler.setCurrentEditableAttribute(subsection, attr),
+        openPopover
+    );
 
     const getPopover = () => {
-        const popoverProps = { fieldRef, onClose, handleSelect };
+        const setItem = (attr: SetAttr) => {
+            actionHandler.setCurrentEditableAttribute(subsection, attr);
+            setHighlighted(0);
+        };
+        const popoverProps = { fieldRef, onClose, setItem };
         switch (popover) {
             case 'unit':
                 return <NewUnitPopover {...popoverProps} />;
@@ -122,7 +131,7 @@ export function EditableIngredient(props: Props) {
             >
                 <PopoverAnchor>
                     <Editable
-                        value={ingredientStr}
+                        value={actionHandler.editableStringValue(subsection)}
                         onMouseDown={(e) => {
                             if (item.quantity !== null) {
                                 e.preventDefault();
@@ -152,20 +161,19 @@ export function EditableIngredient(props: Props) {
                         />
                         <EditableInput
                             ref={inputRef}
-                            value={ingredientStr}
+                            value={strValue}
                             _focusVisible={{ outline: 'none' }}
+                            onKeyDown={handleKeyboardEvent}
                             aria-label={`Input ingredient #${ingredientNum} for subsection ${subsection + 1}`}
                         />
                     </Editable>
                 </PopoverAnchor>
                 <Dropdown
-                    subsection={subsection}
+                    suggestions={suggestions}
                     item={item}
-                    actionHandler={actionHandler}
-                    data={queryData}
-                    inputRef={inputRef}
                     previewRef={previewRef}
-                    openPopover={openPopover}
+                    setHighlighted={setHighlighted}
+                    {...dropdownProps}
                 />
                 {getPopover()}
             </Popover>

@@ -11,14 +11,14 @@ interface Props {
     value: string;
     setValue: (value: string) => void;
     onClose: () => void;
-    handleSelect: (item: Unit) => void;
+    setItem: (item: Unit) => void;
 }
 export function NewBespokeUnitPopover(props: Props) {
-    const { fieldRef, value, setValue, onClose, handleSelect } = props;
+    const { fieldRef, value, setValue, onClose, setItem } = props;
 
     const handleComplete = (data: CreateUnitMutation) => {
         onClose();
-        handleSelect(data.unitCreateOne!.record!);
+        setItem(data.unitCreateOne!.record!);
     };
     return (
         <PopoverContent paddingRight={4} paddingBottom={3} paddingLeft={2}>

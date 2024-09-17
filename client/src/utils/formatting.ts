@@ -1,8 +1,8 @@
 import { PrepMethod, Unit } from '@recipe/graphql/generated';
 import { STATES_ORDER } from '@recipe/features/recipeIngredient';
-import { FinishedSize, LikeFinishedRecipeIngredient } from '@recipe/types';
 import { EditableRecipeIngredient, FinishedQuantity } from '@recipe/types';
 import { FinishedIngredient, FinishedPrepMethod, FinishedUnit } from '@recipe/types';
+import { FinishedSize, Item, LikeFinishedRecipeIngredient, Quantity } from '@recipe/types';
 
 import { isPlural } from './plural';
 import { formatFraction, isFraction } from './number';
@@ -153,4 +153,26 @@ export function getFinishedRecipeIngredientStr(item: LikeFinishedRecipeIngredien
     const ingrStr = getFinishedIngredientStr(quantity, unit, size, ingredient);
     const prepMethodStr = getFinishedPrepMethodStr(prepMethod);
     return `${quantityStr}${unitStr}${sizeStr}${ingrStr}${prepMethodStr}`;
+}
+export function displayValue(
+    quantity: Quantity,
+    unit: Unit | null | undefined,
+    item: Item | string
+): string {
+    if (typeof item === 'string') {
+        return item;
+    }
+    switch (item?.__typename) {
+        case 'Unit':
+            return unitDisplayValue(quantity, item, false);
+        case 'Size':
+            return sizeDisplayValue(item);
+        case 'Ingredient':
+        case 'Recipe':
+            return ingredientDisplayValue(quantity, unit ?? null, item);
+        case 'PrepMethod':
+            return prepMethodDisplayValue(item);
+        default:
+            return '';
+    }
 }

@@ -11,15 +11,15 @@ import { IngredientForm } from './IngredientForm';
 interface Props {
     fieldRef: React.MutableRefObject<HTMLInputElement | null>;
     onClose: () => void;
-    handleSelect: (item: IngredientAndRecipe) => void;
+    setItem: (item: IngredientAndRecipe) => void;
 }
 export function NewIngredientPopover(props: Props) {
-    const { fieldRef, onClose, handleSelect } = props;
+    const { fieldRef, onClose, setItem } = props;
     const toast = useSuccessToast();
 
     const handleComplete = (data: CreateIngredientMutation) => {
         onClose();
-        handleSelect(data!.ingredientCreateOne!.record!);
+        setItem(data!.ingredientCreateOne!.record!);
         toast({
             title: 'Ingredient saved',
             description: `${data?.ingredientCreateOne?.record?.name} saved`,

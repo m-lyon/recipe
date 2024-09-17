@@ -66,3 +66,4 @@ export interface RecipeAsIngredient extends RecipeIngredient {
     type: EnumRecipeIngredientType.Recipe;
     ingredient: Recipe;
 }
+export type Item = string | Unit | Size | IngredientAndRecipe | PrepMethod;

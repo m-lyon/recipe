@@ -10,15 +10,15 @@ import { UnitForm } from './UnitForm';
 interface Props {
     fieldRef: React.MutableRefObject<HTMLInputElement | null>;
     onClose: () => void;
-    handleSelect: (item: Unit) => void;
+    setItem: (item: Unit) => void;
 }
 export function NewUnitPopover(props: Props) {
-    const { fieldRef, onClose, handleSelect } = props;
+    const { fieldRef, onClose, setItem } = props;
     const toast = useSuccessToast();
 
     const handleComplete = (data: CreateUnitMutation) => {
         onClose();
-        handleSelect(data.unitCreateOne!.record!);
+        setItem(data.unitCreateOne!.record!);
         toast({
             title: 'Unit saved',
             description: `${data?.unitCreateOne?.record?.longSingular} saved`,

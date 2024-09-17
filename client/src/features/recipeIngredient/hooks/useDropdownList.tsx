@@ -1,46 +1,101 @@
-import { MutableRefObject, useEffect, useState } from 'react';
+import { useMutation } from '@apollo/client';
+import { KeyboardEvent, useEffect, useState } from 'react';
 
-export function useDropdownList<T>(
-    list: Array<T>,
-    handleEnter: (item: T) => void,
-    focusRef: MutableRefObject<HTMLElement | null>,
-    handleOutsideEnter?: () => void
+import { useErrorToast } from '@recipe/common/hooks';
+import { CreatePrepMethodMutation } from '@recipe/graphql/generated';
+import { CREATE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
+
+import { SetAttr } from './useIngredientList';
+import { Suggestion } from '../utils/suggestions';
+import { PopoverType } from '../components/EditableIngredient';
+
+export function useDropdownList(
+    strValue: string,
+    suggestions: Suggestion[],
+    setItem: (attr: SetAttr) => void,
+    openPopover: (type: PopoverType) => void
 ) {
-    const [highlightedIndex, setHighlightedIndex] = useState(0);
-
+    const toast = useErrorToast();
+    const [highlighted, setHighlighted] = useState(0);
+    const [saveBespokePrepMethod] = useMutation(CREATE_PREP_METHOD, {
+        onCompleted: (data: CreatePrepMethodMutation) => {
+            setItem(data.prepMethodCreateOne!.record!);
+        },
+        onError: (error) => {
+            toast({
+                title: 'Error saving unit',
+                description: error.message,
+                position: 'top',
+            });
+        },
+    });
     useEffect(() => {
-        if (highlightedIndex > list.length - 1) {
-            setHighlightedIndex(Math.max(list.length - 1, 0));
+        if (highlighted > suggestions.length - 1) {
+            setHighlighted(Math.max(suggestions.length - 1, 0));
         }
-    }, [list.length]);
+    }, [highlighted, suggestions.length]);
 
-    useEffect(() => {
-        if (focusRef.current) {
-            focusRef.current.addEventListener('keydown', handleKeyboardEvent);
-        }
-        return () => {
-            if (focusRef.current) {
-                focusRef.current.removeEventListener('keydown', handleKeyboardEvent);
+    const handleSelect = (item: Suggestion) => {
+        if (typeof item.value === 'string') {
+            switch (item.value) {
+                case 'add new unit':
+                    openPopover('unit');
+                    break;
+                case 'add new size':
+                    openPopover('size');
+                    break;
+                case 'add new ingredient':
+                    openPopover('ingredient');
+                    break;
+                case 'skip prep method':
+                    setItem(null);
+                    setHighlighted(0);
+                    break;
+                case 'skip unit':
+                case 'skip size':
+                case 'skip quantity':
+                    setItem(null);
+                    setHighlighted(0);
+                    break;
+                case 'add new prep method':
+                    openPopover('prepMethod');
+                    break;
+                default:
+                    if (/^use ".*" as unit$/.test(item.value)) {
+                        openPopover('bespokeUnit');
+                    } else if (/^use ".*" as prep method$/.test(item.value)) {
+                        saveBespokePrepMethod({
+                            variables: {
+                                record: {
+                                    value: strValue,
+                                    unique: false,
+                                },
+                            },
+                        });
+                        setHighlighted(0);
+                    }
+                    break;
             }
-        };
-    }, [highlightedIndex, list]);
-
-    const handleKeyboardEvent = (event: KeyboardEvent) => {
-        if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter') {
-            event.preventDefault();
+        } else {
+            setItem(item.value);
+            setHighlighted(0);
         }
-        if (event.key === 'ArrowDown' && highlightedIndex < list.length - 1) {
-            setHighlightedIndex((index) => (index += 1));
-        } else if (event.key === 'ArrowUp' && highlightedIndex > 0) {
-            setHighlightedIndex((index) => (index -= 1));
-        } else if (event.key === 'Enter') {
-            if (highlightedIndex !== -1) {
-                handleEnter(list[highlightedIndex]);
-            } else if (handleOutsideEnter) {
-                handleOutsideEnter();
+    };
+
+    const handleKeyboardEvent = (e: KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') {
+            e.preventDefault();
+        }
+        if (e.key === 'ArrowDown' && highlighted < suggestions.length - 1) {
+            setHighlighted((index) => (index += 1));
+        } else if (e.key === 'ArrowUp' && highlighted > 0) {
+            setHighlighted((index) => (index -= 1));
+        } else if (e.key === 'Enter') {
+            if (highlighted !== -1) {
+                handleSelect(suggestions[highlighted]);
             }
         }
     };
 
-    return { highlightedIndex, setHighlightedIndex };
+    return { highlighted, setHighlighted, handleKeyboardEvent, handleSelect };
 }

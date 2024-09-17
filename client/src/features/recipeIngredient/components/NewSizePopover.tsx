@@ -10,15 +10,15 @@ import { SizeForm } from './SizeForm';
 interface Props {
     fieldRef: React.MutableRefObject<HTMLInputElement | null>;
     onClose: () => void;
-    handleSelect: (item: Size) => void;
+    setItem: (item: Size) => void;
 }
 export function NewSizePopover(props: Props) {
-    const { fieldRef, onClose, handleSelect } = props;
+    const { fieldRef, onClose, setItem } = props;
     const toast = useSuccessToast();
 
     const handleComplete = (data: CreateSizeMutation) => {
         onClose();
-        handleSelect(data.sizeCreateOne!.record!);
+        setItem(data.sizeCreateOne!.record!);
         toast({
             title: 'Size saved',
             description: `${data?.sizeCreateOne?.record?.value} saved`,

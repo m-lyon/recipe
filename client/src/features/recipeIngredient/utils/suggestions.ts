@@ -1,23 +1,27 @@
 import { matchSorter } from 'match-sorter';
 
-import { RecipeIngredientQueryData } from '@recipe/types';
 import { IngredientAndRecipe, RecipeFromIngredientsMany } from '@recipe/types';
 import { Ingredient, PrepMethod, Size, Unit } from '@recipe/graphql/generated';
+import { EditableRecipeIngredient, Item, RecipeIngredientQueryData } from '@recipe/types';
 
-export interface UnitSuggestion {
+interface UnitSuggestion {
     value: string | Unit | Size | IngredientAndRecipe | PrepMethod;
     colour?: string;
 }
-export interface SizeSuggestion {
+interface SizeSuggestion {
     value: string | Size | IngredientAndRecipe;
     colour?: string;
 }
-export interface IngredientSuggestion {
+interface IngredientSuggestion {
     value: string | IngredientAndRecipe;
     colour?: string;
 }
-export interface PrepMethodSuggestion {
+interface PrepMethodSuggestion {
     value: string | PrepMethod;
+    colour?: string;
+}
+export interface Suggestion {
+    value: string | Item;
     colour?: string;
 }
 const sortUnits = (units: Unit[], value: string): UnitSuggestion[] => {
@@ -44,10 +48,7 @@ const sortPrepMethods = (prepMethods: PrepMethod[], value: string): PrepMethodSu
         keys: ['value'],
     }).map((item) => ({ value: item }));
 };
-export const unitSuggestions = (
-    data: RecipeIngredientQueryData,
-    value: string
-): UnitSuggestion[] => {
+const unitSuggestions = (data: RecipeIngredientQueryData, value: string): UnitSuggestion[] => {
     const items = sortUnits(data?.units ?? [], value);
     const sizes = sortSizes(data?.sizes ?? [], value);
     const ingredients = sortIngredients(data?.ingredients ?? [], data?.recipes ?? [], value);
@@ -67,10 +68,7 @@ export const unitSuggestions = (
     return items;
 };
 
-export const sizeSuggestions = (
-    data: RecipeIngredientQueryData,
-    value: string
-): SizeSuggestion[] => {
+const sizeSuggestions = (data: RecipeIngredientQueryData, value: string): SizeSuggestion[] => {
     const items = sortSizes(data?.sizes ?? [], value);
     const ingredients = sortIngredients(data?.ingredients ?? [], data?.recipes ?? [], value);
     items.push(...ingredients);
@@ -87,7 +85,7 @@ export const sizeSuggestions = (
     return items;
 };
 
-export const ingredientSuggestions = (
+const ingredientSuggestions = (
     data: RecipeIngredientQueryData,
     value: string
 ): IngredientSuggestion[] => {
@@ -96,7 +94,7 @@ export const ingredientSuggestions = (
     return items;
 };
 
-export const prepMethodSuggestions = (
+const prepMethodSuggestions = (
     data: RecipeIngredientQueryData,
     value: string
 ): PrepMethodSuggestion[] => {
@@ -108,4 +106,25 @@ export const prepMethodSuggestions = (
         items.push({ value: 'use "' + value + '" as prep method', colour: 'gray.400' });
     }
     return items;
+};
+
+export const getSuggestions = (
+    item: EditableRecipeIngredient,
+    data: RecipeIngredientQueryData,
+    strValue: string
+): Suggestion[] => {
+    switch (item.state) {
+        case 'quantity':
+            return strValue ? [] : [{ value: 'skip quantity', colour: 'gray.400' }];
+        case 'unit':
+            return unitSuggestions(data, strValue);
+        case 'size':
+            return sizeSuggestions(data, strValue);
+        case 'ingredient':
+            return ingredientSuggestions(data, strValue);
+        case 'prepMethod':
+            return prepMethodSuggestions(data, strValue);
+        default:
+            return [];
+    }
 };

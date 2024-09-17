@@ -11,15 +11,15 @@ import { PrepMethodForm } from './PrepMethodForm';
 interface Props {
     fieldRef: MutableRefObject<HTMLInputElement | null>;
     onClose: () => void;
-    handleSelect: (item: PrepMethod) => void;
+    setItem: (item: PrepMethod) => void;
 }
 export function NewPrepMethodPopover(props: Props) {
-    const { fieldRef, onClose, handleSelect } = props;
+    const { fieldRef, onClose, setItem } = props;
     const toast = useSuccessToast();
 
     const handleComplete = (data: CreatePrepMethodMutation) => {
         onClose();
-        handleSelect(data.prepMethodCreateOne!.record!);
+        setItem(data.prepMethodCreateOne!.record!);
         toast({
             title: 'Prep method saved',
             description: `${data?.prepMethodCreateOne?.record?.value} saved`,
