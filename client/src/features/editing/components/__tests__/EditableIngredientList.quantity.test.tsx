@@ -61,8 +61,7 @@ describe('EditableIngredient Quantity Keyboard', () => {
         renderComponent();
 
         // Act
-        const quantityInput = screen.getByText('Enter ingredient');
-        await user.click(quantityInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{{/}}{2}{ }');
 
         // Expect
@@ -76,8 +75,7 @@ describe('EditableIngredient Quantity Keyboard', () => {
         renderComponent();
 
         // Act
-        const quantityInput = screen.getByText('Enter ingredient');
-        await user.click(quantityInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{.}{5}{{-}}{2}{.}{5}{ }');
 
         // Expect
@@ -91,8 +89,7 @@ describe('EditableIngredient Quantity Keyboard', () => {
         renderComponent();
 
         // Act
-        const quantityInput = screen.getByText('Enter ingredient');
-        await user.click(quantityInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{{/}}{2}{ }{Backspace}');
 
         // Expect
@@ -106,8 +103,7 @@ describe('EditableIngredient Quantity Keyboard', () => {
         renderComponent();
 
         // Act
-        const quantityInput = screen.getByText('Enter ingredient');
-        await user.click(quantityInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{a}');
 
         // Expect
@@ -119,8 +115,7 @@ describe('EditableIngredient Quantity Keyboard', () => {
         renderComponent();
 
         // Act
-        const quantityInput = screen.getByText('Enter ingredient');
-        await user.click(quantityInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{-}');
 
         // Expect
@@ -132,13 +127,48 @@ describe('EditableIngredient Quantity Keyboard', () => {
         renderComponent();
 
         // Act
-        const quantityInput = screen.getByText('Enter ingredient');
-        await user.click(quantityInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.click(screen.getByText('skip quantity'));
 
         // Expect
         expect(screen.queryByText('chicken')).not.toBeNull();
         expect(screen.queryByText('apple')).not.toBeNull();
+    });
+    it('should display skip quantity when quantity is deleted', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{Backspace}');
+
+        // Expect
+        expect(screen.queryByText('skip quantity')).not.toBeNull();
+    });
+    it('should display skip quantity when quantity is deleted after state change', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }{Backspace>2/}');
+
+        // Expect
+        expect(screen.queryByText('skip quantity')).not.toBeNull();
+    });
+    it('should not display the dropdown suggestion list when quantity is not null', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }{Backspace}');
+
+        // Expect
+        expect(screen.queryByLabelText('Dropdown suggestion list')).toBeNull();
     });
 });
 describe('EditableIngredient Quantity Click', () => {

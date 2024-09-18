@@ -284,20 +284,23 @@ interface SetShowAction {
 function setEditableShow(state: IngredientListState, action: SetShowAction): IngredientListState {
     return produce(state, (draft) => {
         const subsection = getActionSubsection(draft, action);
-        switch (action.payload) {
-            case 'on':
-                subsection.editable.show = true;
-                break;
-            case 'off':
-                subsection.editable.show = false;
-                break;
-            case 'toggle':
-                subsection.editable.show = !subsection.editable.show;
-                break;
-            default:
-                break;
-        }
+        _setEditableShow(subsection, action.payload);
     });
+}
+function _setEditableShow(subsection: Subsection, state: ShowStates) {
+    switch (state) {
+        case 'on':
+            subsection.editable.show = true;
+            break;
+        case 'off':
+            subsection.editable.show = false;
+            break;
+        case 'toggle':
+            subsection.editable.show = !subsection.editable.show;
+            break;
+        default:
+            break;
+    }
 }
 interface SetFinishedAction {
     type: 'set_finished';
@@ -520,6 +523,7 @@ function deleteEditableChar(
             }
             if (currentValue.length === 1) {
                 subsection.editable.quantity = null;
+                _setEditableShow(subsection, 'on');
             } else {
                 subsection.editable.quantity = currentValue.slice(0, -1);
             }
@@ -527,6 +531,9 @@ function deleteEditableChar(
             const currentItem = subsection.editable[currentState];
             if (currentItem.value === null) {
                 setPrevState(subsection.editable);
+                if (currentState === 'unit' && subsection.editable.quantity !== null) {
+                    _setEditableShow(subsection, 'off');
+                }
             } else if (currentItem.value.length === 1) {
                 currentItem.value = null;
             } else {

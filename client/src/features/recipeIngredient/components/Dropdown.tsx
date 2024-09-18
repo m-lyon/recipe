@@ -33,6 +33,7 @@ export function Dropdown(props: Props) {
                         boxShadow='6px 5px 8px rgba(0,50,30,0.02)'
                         maxHeight={item.show ? '14em' : undefined}
                         overflowY={item.show ? 'auto' : undefined}
+                        aria-label='Dropdown suggestion list'
                     >
                         <LayoutGroup>
                             {suggestions.map((i, index) => (
