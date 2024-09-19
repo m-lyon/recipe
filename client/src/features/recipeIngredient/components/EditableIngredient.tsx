@@ -147,7 +147,9 @@ export function EditableIngredient(props: Props) {
                         textAlign='left'
                         fontSize={fontSize}
                         color={
-                            item.quantity !== null || item.ingredient.value !== null
+                            item.quantity !== null ||
+                            item.size.value !== null ||
+                            item.ingredient.value !== null
                                 ? ''
                                 : 'gray.400'
                         }

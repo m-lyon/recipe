@@ -1,8 +1,9 @@
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
+import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
-import { cleanup, getDefaultNormalizer, screen } from '@testing-library/react';
 
+import { mockCreateSize } from '@recipe/graphql/mutations/__mocks__/size';
 import { clickGetByText, haveValueByLabelText } from '@recipe/utils/tests';
 import { mockCreatePrepMethod } from '@recipe/graphql/mutations/__mocks__/prepMethod';
 import { mockCreateIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
@@ -86,6 +87,31 @@ describe('Creating new items', () => {
         expect(screen.queryByText('bump')).toBeNull();
     });
 
+    it('should create a new size', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent([mockCreateSize]);
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await user.click(screen.getByText('skip unit'));
+        await user.keyboard('a');
+        await user.click(screen.getByText('add new size'));
+        await user.keyboard('extra large');
+        await user.click(screen.getByLabelText('Save size'));
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 extra large ');
+        // ------ Available as new size -----------------------------------------
+        await user.keyboard('{Escape}');
+        await user.click(screen.getByLabelText('Enter ingredient #1 for subsection 1'));
+        await user.keyboard('{2}{ }');
+        await clickGetByText(screen, user, 'skip unit');
+        expect(await screen.findByLabelText('extra large')).not.toBeNull();
+        expect(screen.queryByLabelText('large')).not.toBeNull();
+    });
+
     it('should create a new ingredient', async () => {
         const user = userEvent.setup();
         // Render
@@ -99,9 +125,7 @@ describe('Creating new items', () => {
         await user.click(screen.getByLabelText('Save ingredient'));
 
         // Expect --------------------------------------------------------------
-        expect(
-            screen.queryByText('1 beef, ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).not.toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 beef, ');
         expect(screen.queryByText('skip prep method')).not.toBeNull();
         // ------ Available as new ingredient -----------------------------------
         await user.keyboard('{Escape}');

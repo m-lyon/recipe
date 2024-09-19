@@ -111,6 +111,19 @@ describe('FinishedIngredient', () => {
         // Expect
         await notNullByText(screen, '2 chickens, chopped', 'Enter ingredient');
     });
+    it('should displat a completed item with a size', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await clickGetByText(screen, user, 'large', 'chicken', 'chopped');
+
+        // Expect
+        await notNullByText(screen, '1 large chicken, chopped', 'Enter ingredient');
+    });
     it('should display a completed item with no quantity or unit', async () => {
         const user = userEvent.setup();
         // Render
@@ -136,5 +149,4 @@ describe('FinishedIngredient', () => {
         // Expect
         await notNullByText(screen, 'chicken, chopped', 'Enter ingredient');
     });
-    it('should rearrange the order of the items', async () => {}); // TODO
 });

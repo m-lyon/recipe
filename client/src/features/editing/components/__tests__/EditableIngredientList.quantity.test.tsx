@@ -1,7 +1,9 @@
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
+import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
-import { cleanup, getDefaultNormalizer, screen } from '@testing-library/react';
+
+import { haveValueByLabelText } from '@recipe/utils/tests';
 
 import { renderComponent } from './utils';
 
@@ -50,9 +52,7 @@ describe('EditableIngredient Quantity Keyboard', () => {
         await user.keyboard('{2}{.}{5}{ }');
 
         // Expect
-        expect(
-            screen.queryByText('2.5 ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).not.toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '2.5 ');
         expect(screen.queryByText('skip unit')).not.toBeNull();
     });
     it('should display a fraction', async () => {
@@ -65,9 +65,7 @@ describe('EditableIngredient Quantity Keyboard', () => {
         await user.keyboard('{1}{{/}}{2}{ }');
 
         // Expect
-        expect(
-            screen.queryByText('½ ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).not.toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '½ ');
     });
     it('should allow a number range', async () => {
         const user = userEvent.setup();
@@ -79,9 +77,7 @@ describe('EditableIngredient Quantity Keyboard', () => {
         await user.keyboard('{1}{.}{5}{{-}}{2}{.}{5}{ }');
 
         // Expect
-        expect(
-            screen.queryByText('1.5-2.5 ', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).not.toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1.5-2.5 ');
     });
     it('should reset the fraction display', async () => {
         const user = userEvent.setup();
@@ -93,9 +89,7 @@ describe('EditableIngredient Quantity Keyboard', () => {
         await user.keyboard('{1}{{/}}{2}{ }{Backspace}');
 
         // Expect
-        expect(
-            screen.queryByText('1/2', { normalizer: getDefaultNormalizer({ trim: false }) })
-        ).not.toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1/2');
     });
     it('should display an error message for alphabetic character', async () => {
         const user = userEvent.setup();
