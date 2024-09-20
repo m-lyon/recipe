@@ -5,11 +5,6 @@ import viteConfig from './vite.config.ts';
 export default mergeConfig(
     viteConfig,
     defineConfig({
-        test: {
-            environment: 'happy-dom',
-            setupFiles: ['./config/vitest/setupTests.js'],
-            css: true,
-            testTimeout: 15000,
-        },
+        test: { environment: 'happy-dom', css: true, testTimeout: 15000 },
     })
 );

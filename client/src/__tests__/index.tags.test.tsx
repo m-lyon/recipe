@@ -1,4 +1,4 @@
-import userEvent from '@testing-library/user-event';
+import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
@@ -137,7 +137,7 @@ describe('Tag Workflow', () => {
         await enterCreateNewRecipePage(screen, user);
         await user.click(screen.getByLabelText('Add a tag'));
         await user.keyboard('mock tag{Enter}');
-        await user.click(screen.getByLabelText('Remove mock tag tag'));
+        await user.click(await screen.findByLabelText('Remove mock tag tag'));
         await user.click(screen.getByLabelText('Navigate to home page'));
         await user.click(screen.getAllByLabelText('Create new recipe')[0]);
         await user.click(screen.getByLabelText('Add a tag'));

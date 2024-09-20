@@ -1,6 +1,6 @@
-import userEvent from '@testing-library/user-event';
+import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, screen } from '@testing-library/react';
+import { cleanup, screen, waitFor } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { mockCreateSize } from '@recipe/graphql/mutations/__mocks__/size';
@@ -102,7 +102,9 @@ describe('Creating new items', () => {
         await user.click(screen.getByLabelText('Save size'));
 
         // Expect --------------------------------------------------------------
-        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 extra large ');
+        await waitFor(() =>
+            haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 extra large ')
+        );
         // ------ Available as new size -----------------------------------------
         await user.keyboard('{Escape}');
         await user.click(screen.getByLabelText('Enter ingredient #1 for subsection 1'));
@@ -125,7 +127,9 @@ describe('Creating new items', () => {
         await user.click(screen.getByLabelText('Save ingredient'));
 
         // Expect --------------------------------------------------------------
-        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 beef, ');
+        await waitFor(() =>
+            haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 beef, ')
+        );
         expect(screen.queryByText('skip prep method')).not.toBeNull();
         // ------ Available as new ingredient -----------------------------------
         await user.keyboard('{Escape}');
@@ -151,7 +155,7 @@ describe('Creating new items', () => {
         await user.click(screen.getByLabelText('Save prep method'));
 
         // Expect --------------------------------------------------------------
-        expect(screen.queryByText('1 chicken, pipped')).not.toBeNull();
+        expect(await screen.findByText('1 chicken, pipped')).not.toBeNull();
         expect(screen.queryByText('Enter ingredient')).not.toBeNull();
         // ------ Available as new prepMethod -----------------------------------
         expect(await screen.findByLabelText('skip quantity')).not.toBeNull();
