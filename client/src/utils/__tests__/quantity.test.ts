@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { Ingredient, Unit } from '@recipe/graphql/generated';
+import { Ingredient, RecipeIngredient, Unit } from '@recipe/graphql/generated';
 import { EnumRecipeIngredientType, EnumUnitPreferredNumberFormat } from '@recipe/graphql/generated';
 
 import { changeQuantity } from '../quantity';
@@ -19,8 +19,9 @@ describe('changeIngredientQuantity', () => {
             name: 'flour',
             owner: '030f1b5b-1b1b-4b1b-8b1b-2b1b3b1b4b1b',
             pluralName: 'flours',
+            tags: [],
         };
-        const unit = {
+        const unit: Unit = {
             _id: '030f1b5b-1b1b-4b1b-8b1b-2b1b3b1b4b1b',
             hasSpace: false,
             longPlural: 'cups',
@@ -29,8 +30,9 @@ describe('changeIngredientQuantity', () => {
             shortSingular: 'cup',
             preferredNumberFormat: EnumUnitPreferredNumberFormat.Fraction,
             owner: '030f1b5b-1b1b-4b1b-8b1b-2b1b3b1b4b1b',
+            unique: true,
         };
-        const recipeIngredient = {
+        const recipeIngredient: RecipeIngredient = {
             _id: '030f1b5b-1b1b-4b1b-8b1b-2b1b3b1b4b1b',
             ingredient,
             quantity: '1',

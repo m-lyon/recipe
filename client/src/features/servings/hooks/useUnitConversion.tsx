@@ -2,7 +2,7 @@ import { useQuery } from '@apollo/client';
 import { Fraction, MathType, divide, fraction, multiply } from 'mathjs';
 
 import { Quantity } from '@recipe/types';
-import { isFraction } from '@recipe/utils/number';
+import { isFraction, isRange } from '@recipe/utils/number';
 import { Unit, UnitConversion } from '@recipe/graphql/generated';
 import { GET_UNIT_CONVERSIONS } from '@recipe/graphql/queries/unitConversion';
 
@@ -28,26 +28,34 @@ export function useUnitConversion() {
         }
         // Get base conversion factor
         const currentUnit = unitConversion.rules.find((rule) => rule.unit!._id === unit._id);
-
-        if (isFraction(quantity!)) {
-            return handleFractionConversion(
-                quantity,
-                currentUnit!.baseToUnitConversion,
-                unitConversion as UnitConversion
-            );
-        } else {
-            return handleFloatConversion(
-                quantity,
-                currentUnit!.baseToUnitConversion,
-                unitConversion as UnitConversion
-            );
-        }
+        return applyConversion(quantity, currentUnit!.baseToUnitConversion, unitConversion);
     };
 
     return { apply };
 }
 
-function handleFractionConversion(
+function applyConversion(
+    quantity: Quantity,
+    baseToUnitConversion: number,
+    unitConversion: UnitConversion
+): UnitConversionArgs {
+    if (isRange(quantity!)) {
+        const [start, end] = quantity!.split('-');
+        const startConversion = applyConversion(start, baseToUnitConversion, unitConversion);
+        const endConversion = applyConversion(end, baseToUnitConversion, unitConversion);
+        return {
+            quantity: `${startConversion.quantity}-${endConversion.quantity}`,
+            unit: startConversion.unit,
+        };
+    }
+    if (isFraction(quantity!)) {
+        return applyFractionConversion(quantity, baseToUnitConversion, unitConversion);
+    } else {
+        return applyFloatConversion(quantity, baseToUnitConversion, unitConversion);
+    }
+}
+
+function applyFractionConversion(
     quantity: Quantity,
     baseToUnitConversion: number,
     unitConversion: UnitConversion
@@ -65,7 +73,7 @@ function handleFractionConversion(
     };
 }
 
-function handleFloatConversion(
+function applyFloatConversion(
     quantity: Quantity,
     baseToUnitConversion: number,
     unitConversion: UnitConversion

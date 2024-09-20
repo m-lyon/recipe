@@ -4,10 +4,10 @@ import { useQuery } from '@apollo/client';
 
 import { isPlural } from '@recipe/utils/plural';
 import { useErrorToast } from '@recipe/common/hooks';
-import { VALID_NUMBER_REGEX } from '@recipe/utils/number';
 import { useUnitConversion } from '@recipe/features/servings';
 import { IngredientAndRecipe, InputState } from '@recipe/types';
 import { GET_INGREDIENT_COMPONENTS } from '@recipe/graphql/queries/recipe';
+import { VALID_NUMBER_REGEX, isRange, validateRange } from '@recipe/utils/number';
 import { ingredientDisplayValue, unitDisplayValue } from '@recipe/utils/formatting';
 import { RecipeFromIngredientsMany, RecipeIngredientQueryData } from '@recipe/types';
 import { getEditableRecipeIngredientStr, sizeDisplayValue } from '@recipe/utils/formatting';
@@ -43,10 +43,14 @@ function handleQuantityChange(
         if (char === ' ' && item.quantity !== null) {
             if (!VALID_NUMBER_REGEX.test(item.quantity)) {
                 throw new Error('Invalid quantity.');
-            } else {
-                actionHandler.incrementState(subsection);
-                actionHandler.setShow.on(subsection);
             }
+            if (isRange(item.quantity)) {
+                if (!validateRange(item.quantity)) {
+                    throw new Error('First number in range must be smaller than second.');
+                }
+            }
+            actionHandler.incrementState(subsection);
+            actionHandler.setShow.on(subsection);
             // Skip quantity with alphabetical characters
         } else if (item.quantity === null && /^[a-zA-Z]$/.test(char)) {
             actionHandler.incrementState(subsection, 2);
