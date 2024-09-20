@@ -51,8 +51,16 @@ describe('Quantity Validation', function () {
             owner: user._id,
             tags: [],
         });
-        Promise.all([user.save(), ingredient.save()])
-            .then(() => done())
+        user.save()
+            .then(() =>
+                ingredient
+                    .save()
+                    .then(() => done())
+                    .catch((error) => {
+                        console.log(error);
+                        assert.fail('Ingredients not saved');
+                    })
+            )
             .catch((error) => {
                 console.log(error);
                 assert.fail('Users not saved');
