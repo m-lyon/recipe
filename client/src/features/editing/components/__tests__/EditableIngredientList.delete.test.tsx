@@ -34,7 +34,7 @@ describe('Deleting bespoke items', () => {
         await user.click(screen.getByText('use "bump" as unit'));
         await user.click(screen.getByText('decimal'));
         await user.click(screen.getByLabelText('Save unit'));
-        await clickGetByText(screen, user, 'chicken');
+        await user.click(await screen.findByText('chicken'));
         await user.click(screen.getByLabelText('Enter title for ingredient subsection 1'));
 
         // Expect --------------------------------------------------------------
