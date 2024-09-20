@@ -1,5 +1,5 @@
-import { Document, PopulatedDoc, Schema, Types, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
+import { Document, PopulatedDoc, Schema, Types, model } from 'mongoose';
 
 import { Size } from './Size.js';
 import { Unit } from './Unit.js';
@@ -9,7 +9,7 @@ import { ALLOWED_TAGS, Ingredient } from './Ingredient.js';
 import type { Ingredient as IngredientType } from './Ingredient.js';
 import { ownerExists, tagsExist, unique, uniqueInAdminsAndUser } from './validation.js';
 
-const quantityRegex = /^(?:(?:[+-]?\d+\.\d+)|(?:[+-]?\d+)|(?:[+-]?\d+\/[1-9]\d*))$/;
+const quantityRegex = /^((\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*)(-(\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*))?)$/;
 type RecipeIngredientEnum = 'ingredient' | 'recipe';
 
 export interface RecipeIngredientType extends Document {

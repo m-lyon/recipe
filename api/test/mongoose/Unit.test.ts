@@ -78,7 +78,7 @@ describe('Unit Model', function () {
             .then(() => done())
             .catch((error) => {
                 console.log(error);
-                assert.fail('Users not deleted');
+                assert.fail('Data not deleted');
             });
     });
 
