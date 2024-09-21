@@ -10,7 +10,7 @@ import { Carousel } from './Carousel';
 
 interface ImageCarouselProps extends CardProps {
     images: Images;
-    width: ResponsiveValue<CSS.Property.Width>;
+    width: CSS.Property.Width | number;
     ratio: number;
     cardRef?: UseMeasureRef<Element>;
     bottomLeftRadius?: ResponsiveValue<CSS.Property.BorderBottomRightRadius>;
@@ -21,11 +21,18 @@ export function ImageCarousel(props: ImageCarouselProps) {
     const [ref, { height }] = useMeasure<HTMLImageElement>();
 
     const imagesCards = images!.map((image, index) => {
+        let queryStr = '';
+        if (typeof width === 'number') {
+            queryStr = `?width=${2 * width}`;
+        } else if (width === '100%') {
+            queryStr = '?width=1080';
+        }
+
         return (
             <CardBody padding='0' key={index}>
                 <AspectRatio maxW={width} ratio={ratio} key={index}>
                     <Image
-                        src={`${GRAPHQL_ENDPOINT}${image!.origUrl}`}
+                        src={`${GRAPHQL_ENDPOINT}${image!.origUrl}${queryStr}`}
                         objectFit='contain'
                         onDragStart={(e: React.DragEvent<HTMLImageElement>) => e.preventDefault()}
                         borderBottomLeftRadius={images?.length === 1 ? bottomLeftRadius : 0}

@@ -4,6 +4,7 @@ import { Router } from 'express';
 
 import { Image } from '../models/Image.js';
 import { IMAGE_DIR } from '../constants.js';
+import { loadImage } from '../utils/image.js';
 
 export const uploadRouter = Router();
 
@@ -16,9 +17,16 @@ uploadRouter.get('/images/:fname', async (req, res) => {
     if (!image) {
         return res.status(404).send('Image not found.');
     }
-    return res.sendFile(fname, { root: IMAGE_DIR }, (err) => {
-        if (err) {
-            console.error(err);
-        }
-    });
+    try {
+        const { stream, contentType } = await loadImage(
+            path.join(IMAGE_DIR, fname),
+            +(req.query.quality ?? 0),
+            +(req.query.width ?? 0),
+            +(req.query.height ?? 0)
+        );
+        res.setHeader('Content-Type', contentType);
+        stream.pipe(res);
+    } catch (error) {
+        res.status(500).send('Failed to load image.');
+    }
 });

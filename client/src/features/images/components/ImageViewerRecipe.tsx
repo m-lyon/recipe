@@ -1,6 +1,6 @@
 import * as CSS from 'csstype';
-import { ResponsiveValue } from '@chakra-ui/react';
 import { UseMeasureRef } from 'react-use/lib/useMeasure';
+import { ResponsiveValue, useBreakpointValue } from '@chakra-ui/react';
 
 import { Image, Recipe } from '@recipe/graphql/generated';
 import { ImageCarousel } from '@recipe/common/components';
@@ -16,6 +16,10 @@ interface Props {
 }
 export function ImageViewerRecipe(props: Props) {
     const { images, cardRef, position, display } = props;
+    const variant = useBreakpointValue<CSS.Property.Width | number>({
+        base: '100%',
+        md: imageCardWidth,
+    });
 
     if (!images || images.length === 0) {
         return null;
@@ -24,7 +28,7 @@ export function ImageViewerRecipe(props: Props) {
     return (
         <ImageCarousel
             images={images as Image[]}
-            width={{ base: '100%', md: `${imageCardWidth}px` }}
+            width={variant ?? imageCardWidth}
             ratio={3 / 2}
             position={position ? position : 'absolute'}
             zIndex={1}
