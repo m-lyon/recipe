@@ -71,21 +71,11 @@ function LoginOptions() {
             <Button
                 as='a'
                 fontSize='sm'
-                fontWeight={400}
-                variant='link'
+                fontWeight={600}
+                colorScheme='teal'
                 href={`${ROOT_PATH}/login`}
             >
                 Sign In
-            </Button>
-            <Button
-                as='a'
-                display={{ base: 'none', md: 'inline-flex' }}
-                fontSize='sm'
-                fontWeight={600}
-                colorScheme='teal'
-                href={`${ROOT_PATH}/signup`}
-            >
-                Sign Up
             </Button>
         </Stack>
     );
