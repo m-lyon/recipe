@@ -154,6 +154,7 @@ jobs:
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.REMOTE_PORT }}
+          timeout: 60s
           script: |
             cd ${{ secrets.API_REMOTE_TARGET }}
             npm ci --production
