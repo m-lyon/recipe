@@ -8,6 +8,7 @@ import { loadImage } from '../utils/image.js';
 
 export const uploadRouter = Router();
 
+const LOWRES_WIDTH = 720;
 uploadRouter.get('/images/:fname', async (req, res) => {
     const fname = req.params.fname;
     if (!fname) {
@@ -18,12 +19,12 @@ uploadRouter.get('/images/:fname', async (req, res) => {
         return res.status(404).send('Image not found.');
     }
     try {
-        const { stream, contentType } = await loadImage(
-            path.join(IMAGE_DIR, fname),
-            +(req.query.quality ?? 0),
-            +(req.query.width ?? 0),
-            +(req.query.height ?? 0)
-        );
+        const fpath = path.join(IMAGE_DIR, fname);
+        const width = +(req.query.width ?? 0);
+        const quality = +(req.query.quality ?? 0);
+        const height = +(req.query.height ?? 0);
+        const save = width === LOWRES_WIDTH && !height && !quality;
+        const { stream, contentType } = await loadImage(fpath, quality, width, height, save);
         res.setHeader('Content-Type', contentType);
         stream.pipe(res);
     } catch (error) {
