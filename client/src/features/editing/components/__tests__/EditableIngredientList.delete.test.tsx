@@ -3,7 +3,7 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { clickGetByText } from '@recipe/utils/tests';
+import { clickFindByText, clickGetByText } from '@recipe/utils/tests';
 import { mockBumpId, mockPostedId } from '@recipe/graphql/__mocks__/ids';
 import { mockCreateBespokeUnit } from '@recipe/graphql/mutations/__mocks__/unit';
 import { mockDeleteBespokeUnit } from '@recipe/graphql/mutations/__mocks__/unit';
@@ -53,7 +53,7 @@ describe('Deleting bespoke items', () => {
         await user.click(screen.getByText('use "bump" as unit'));
         await user.click(screen.getByText('decimal'));
         await user.click(screen.getByLabelText('Save unit'));
-        await clickGetByText(screen, user, 'chicken');
+        await clickFindByText(screen, user, 'chicken');
         await user.keyboard('{Escape}');
 
         // Expect --------------------------------------------------------------
@@ -72,7 +72,7 @@ describe('Deleting bespoke items', () => {
         await user.click(screen.getByText('use "bump" as unit'));
         await user.click(screen.getByText('decimal'));
         await user.click(screen.getByLabelText('Save unit'));
-        await clickGetByText(screen, user, 'chicken', 'skip prep method');
+        await clickFindByText(screen, user, 'chicken', 'skip prep method');
         await user.click(screen.getByLabelText('Remove 1 bump chicken'));
 
         // Expect --------------------------------------------------------------
@@ -91,7 +91,7 @@ describe('Deleting bespoke items', () => {
         await clickGetByText(screen, user, 'skip unit', 'chicken');
         await user.keyboard('{p}{o}{s}{t}{e}{d}');
         await user.click(screen.getByText('use "posted" as prep method'));
-        await user.click(screen.getByLabelText('Remove 1 chicken, posted'));
+        await user.click(await screen.findByLabelText('Remove 1 chicken, posted'));
 
         // Expect --------------------------------------------------------------
         expect(consoleMock).toHaveBeenCalledOnce();

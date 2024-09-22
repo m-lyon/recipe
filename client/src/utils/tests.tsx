@@ -56,12 +56,8 @@ export function nullByText(screen: Screen, ...text: string[]) {
 }
 
 export async function notNullByText(screen: Screen, ...text: string[]) {
-    expect(await screen.findByText(text[0])).not.toBeNull();
-    if (text.length === 1) {
-        return;
-    }
-    for (const t of text.slice(1)) {
-        expect(screen.queryByText(t)).not.toBeNull();
+    for (const t of text) {
+        expect(await screen.findByText(t)).not.toBeNull();
     }
 }
 

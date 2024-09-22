@@ -3,8 +3,9 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen, waitFor } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
+import { haveValueByLabelText } from '@recipe/utils/tests';
 import { mockCreateSize } from '@recipe/graphql/mutations/__mocks__/size';
-import { clickGetByText, haveValueByLabelText } from '@recipe/utils/tests';
+import { clickFindByText, clickGetByText, notNullByText } from '@recipe/utils/tests';
 import { mockCreatePrepMethod } from '@recipe/graphql/mutations/__mocks__/prepMethod';
 import { mockCreateIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
 import { mockCreateBespokePrepMethod } from '@recipe/graphql/mutations/__mocks__/prepMethod';
@@ -76,7 +77,7 @@ describe('Creating new items', () => {
         await user.click(screen.getByText('use "bump" as unit'));
         await user.click(screen.getByText('decimal'));
         await user.click(screen.getByLabelText('Save unit'));
-        await clickGetByText(screen, user, 'chicken', 'skip prep method');
+        await clickFindByText(screen, user, 'chicken', 'skip prep method');
 
         await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{ }');
@@ -178,8 +179,7 @@ describe('Creating new items', () => {
         await user.click(screen.getByText('use "posted" as prep method'));
 
         // Expect --------------------------------------------------------------
-        expect(screen.queryByText('1 chicken, posted')).not.toBeNull();
-        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
+        await notNullByText(screen, '1 chicken, posted', 'Enter ingredient');
     });
 
     it('should create a new bespoke prep method, and not be a dropdown option', async () => {

@@ -1,7 +1,8 @@
 import * as CSS from 'csstype';
 import { useMeasure } from 'react-use';
 import { UseMeasureRef } from 'react-use/lib/useMeasure';
-import { AspectRatio, Card, CardBody, CardProps, Image, ResponsiveValue } from '@chakra-ui/react';
+import { Box, ResponsiveValue, Skeleton } from '@chakra-ui/react';
+import { AspectRatio, Card, CardBody, CardProps, Image } from '@chakra-ui/react';
 
 import { Images } from '@recipe/types';
 import { GRAPHQL_ENDPOINT } from '@recipe/constants';
@@ -23,10 +24,16 @@ export function ImageCarousel(props: ImageCarouselProps) {
     const imagesCards = images!.map((image, index) => {
         let queryStr = '';
         if (typeof width === 'number') {
-            queryStr = `?width=${2 * width}`;
+            if (2 * width <= 720) {
+                queryStr = `?width=720`;
+            } else {
+                queryStr = `?width=${2 * width}`;
+            }
         } else if (width === '100%') {
             queryStr = '?width=1080';
         }
+        const borderLeft = images?.length === 1 ? bottomLeftRadius : 0;
+        const borderRight = images?.length === 1 ? bottomRightRadius : 0;
 
         return (
             <CardBody padding='0' key={index}>
@@ -35,10 +42,18 @@ export function ImageCarousel(props: ImageCarouselProps) {
                         src={`${GRAPHQL_ENDPOINT}${image!.origUrl}${queryStr}`}
                         objectFit='contain'
                         onDragStart={(e: React.DragEvent<HTMLImageElement>) => e.preventDefault()}
-                        borderBottomLeftRadius={images?.length === 1 ? bottomLeftRadius : 0}
-                        borderBottomRightRadius={images?.length === 1 ? bottomRightRadius : 0}
-                        ref={index === 0 ? ref : undefined}
+                        borderBottomLeftRadius={borderLeft}
+                        borderBottomRightRadius={borderRight}
                         alt={`Image ${index + 1} for ${image?.recipe?.title}`}
+                        fallback={
+                            <Box ref={index === 0 ? ref : undefined}>
+                                <Skeleton
+                                    height='90%'
+                                    width='95%'
+                                    aria-label={`Loading image ${index + 1} for ${image?.recipe?.title}`}
+                                />
+                            </Box>
+                        }
                     />
                 </AspectRatio>
             </CardBody>
