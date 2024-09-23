@@ -1,6 +1,10 @@
+import { ModifyIngredientMutation } from '@recipe/graphql/generated';
+import { DeleteIngredientMutation } from '@recipe/graphql/generated';
 import { mockAdminId, mockBeefId } from '@recipe/graphql/__mocks__/ids';
 import { DELETE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 import { mockCarrot } from '@recipe/graphql/queries/__mocks__/ingredient';
+import { DeleteIngredientMutationVariables } from '@recipe/graphql/generated';
+import { ModifyIngredientMutationVariables } from '@recipe/graphql/generated';
 import { CREATE_INGREDIENT, MODIFY_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 
 export const mockBeef = {
@@ -43,7 +47,7 @@ export const mockUpdateIngredient = {
                 isCountable: mockCarrot.isCountable,
                 tags: mockCarrot.tags,
             },
-        },
+        } satisfies ModifyIngredientMutationVariables,
     },
     result: {
         data: {
@@ -53,7 +57,7 @@ export const mockUpdateIngredient = {
                     pluralName: 'carrotz',
                 },
             },
-        },
+        } satisfies ModifyIngredientMutation,
     },
 };
 export const mockDeleteIngredient = {
@@ -61,13 +65,13 @@ export const mockDeleteIngredient = {
         query: DELETE_INGREDIENT,
         variables: {
             id: mockCarrot._id,
-        },
+        } satisfies DeleteIngredientMutationVariables,
     },
     result: {
         data: {
             ingredientRemoveById: {
                 recordId: mockCarrot._id,
             },
-        },
+        } satisfies DeleteIngredientMutation,
     },
 };

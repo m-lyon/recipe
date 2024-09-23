@@ -1,10 +1,10 @@
 import { GET_RATINGS } from '@recipe/graphql/queries/rating';
-import { mockRatingIdNewTwo } from '@recipe/graphql/__mocks__/ids';
+import { mockRecipeIdThree, mockRecipeIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { mockRatingIdNewOne, mockRecipeIdOne } from '@recipe/graphql/__mocks__/ids';
+import { mockRatingIdNewTwo, mockRecipeIdFour } from '@recipe/graphql/__mocks__/ids';
+import { GetRatingsQuery, GetRatingsQueryVariables } from '@recipe/graphql/generated';
 import { mockRecipeIdNew, mockRecipeIdNewAsIngr } from '@recipe/graphql/__mocks__/ids';
 import { mockRatingIdOne, mockRatingIdThree, mockRatingIdTwo } from '@recipe/graphql/__mocks__/ids';
-
-import { mockRecipeFour, mockRecipeThree, mockRecipeTwo } from './recipe';
 
 export const mockRatingOne = {
     __typename: 'Rating' as const,
@@ -34,66 +34,66 @@ export const mockRatingNewTwo = {
 export const mockGetRatingsRecipeOne = {
     request: {
         query: GET_RATINGS,
-        variables: { recipeId: mockRecipeIdOne },
+        variables: { recipeId: mockRecipeIdOne } satisfies GetRatingsQueryVariables,
     },
     result: {
         data: {
             ratingMany: [mockRatingOne],
-        },
+        } satisfies GetRatingsQuery,
     },
 };
 export const mockGetRatingsRecipeTwo = {
     request: {
         query: GET_RATINGS,
-        variables: { recipeId: mockRecipeTwo._id },
+        variables: { recipeId: mockRecipeIdTwo } satisfies GetRatingsQueryVariables,
     },
     result: {
         data: {
             ratingMany: [mockRatingTwo],
-        },
+        } satisfies GetRatingsQuery,
     },
 };
 export const mockGetRatingsRecipeThree = {
     request: {
         query: GET_RATINGS,
-        variables: { recipeId: mockRecipeThree._id },
+        variables: { recipeId: mockRecipeIdThree } satisfies GetRatingsQueryVariables,
     },
     result: {
         data: {
             ratingMany: [mockRatingThree],
-        },
+        } satisfies GetRatingsQuery,
     },
 };
 export const mockGetRatingsRecipeFour = {
     request: {
         query: GET_RATINGS,
-        variables: { recipeId: mockRecipeFour._id },
+        variables: { recipeId: mockRecipeIdFour } satisfies GetRatingsQueryVariables,
     },
     result: {
         data: {
             ratingMany: [],
-        },
+        } satisfies GetRatingsQuery,
     },
 };
 export const mockGetRatingsNewRecipe = {
     request: {
         query: GET_RATINGS,
-        variables: { recipeId: mockRecipeIdNew },
+        variables: { recipeId: mockRecipeIdNew } satisfies GetRatingsQueryVariables,
     },
     result: {
         data: {
             ratingMany: [mockRatingNewOne],
-        },
+        } satisfies GetRatingsQuery,
     },
 };
 export const mockGetRatingsNewRecipeAsIngr = {
     request: {
         query: GET_RATINGS,
-        variables: { recipeId: mockRecipeIdNewAsIngr },
+        variables: { recipeId: mockRecipeIdNewAsIngr } satisfies GetRatingsQueryVariables,
     },
     result: {
         data: {
             ratingMany: [],
-        },
+        } satisfies GetRatingsQuery,
     },
 };

@@ -1,3 +1,4 @@
+import { GetTagsQuery } from '@recipe/graphql/generated';
 import { mockHighProteinTagId } from '@recipe/graphql/__mocks__/ids';
 import { mockLowCarbTagId, mockSpicyTagId } from '@recipe/graphql/__mocks__/ids';
 import { mockBreakfastTagId, mockBrunchTagId } from '@recipe/graphql/__mocks__/ids';
@@ -80,7 +81,7 @@ export const mockGetTags = {
     result: {
         data: {
             tagMany: [mockDinnerTag, mockLunchTag, mockFreezableTag, mockSpicyTag],
-        },
+        } satisfies GetTagsQuery,
     },
 };
 
@@ -91,7 +92,7 @@ export const mockGetTagsEmpty = {
     result: {
         data: {
             tagMany: [],
-        },
+        } satisfies GetTagsQuery,
     },
 };
 
@@ -116,6 +117,6 @@ export const mockGetManyTags = {
                 mockBreakfastTag,
                 mockBrunchTag,
             ],
-        },
+        } satisfies GetTagsQuery,
     },
 };

@@ -84,4 +84,5 @@ export const mockTagId = '60f4d2e5cgd5a0a4f1b9c0f0';
 export const mockConversionRuleIdOne = '60f4d2e5c4d5a0a4f1b9c0f0';
 export const mockUnitConversionIdOne = '60f4d2e5c3d5a0a4f1b9c0q1';
 export const mockConversionRuleIdTwo = '60f4d2e5c3d5a1a4f1b9c0f1';
+export const mockConversionRuleIdThree = '60f4d2e5c3d5a0a4l1b9c0f2';
 export const mockUnitConversionIdTwo = '60f4d2e5c3d5a0a4f1b9c0q2';

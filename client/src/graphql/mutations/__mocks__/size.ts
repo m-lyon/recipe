@@ -3,6 +3,9 @@ import { mockExtraLargeId } from '@recipe/graphql/__mocks__/ids';
 import { mockSmall } from '@recipe/graphql/queries/__mocks__/size';
 import { CREATE_SIZE, MODIFY_SIZE } from '@recipe/graphql/mutations/size';
 import { mockAdminId, mockReallyBigId } from '@recipe/graphql/__mocks__/ids';
+import { CreateSizeMutation, CreateSizeMutationVariables } from '@recipe/graphql/generated';
+import { ModifySizeMutation, ModifySizeMutationVariables } from '@recipe/graphql/generated';
+import { DeleteSizeMutation, DeleteSizeMutationVariables } from '@recipe/graphql/generated';
 
 export const mockExtraLarge = {
     _id: mockExtraLargeId,
@@ -37,7 +40,7 @@ export const mockCreateBespokeSize = {
                 value: 'really big',
                 unique: false,
             },
-        },
+        } satisfies CreateSizeMutationVariables,
     },
     result: {
         data: {
@@ -50,7 +53,7 @@ export const mockCreateBespokeSize = {
                     owner: mockAdminId,
                 },
             },
-        },
+        } satisfies CreateSizeMutation,
     },
 };
 export const mockUpdateSize = {
@@ -62,7 +65,7 @@ export const mockUpdateSize = {
                 value: 'smaller',
                 unique: true,
             },
-        },
+        } satisfies ModifySizeMutationVariables,
     },
     result: {
         data: {
@@ -72,7 +75,7 @@ export const mockUpdateSize = {
                     value: 'smaller',
                 },
             },
-        },
+        } satisfies ModifySizeMutation,
     },
 };
 export const mockDeleteSize = {
@@ -80,14 +83,14 @@ export const mockDeleteSize = {
         query: DELETE_SIZE,
         variables: {
             id: mockSmall._id,
-        },
+        } satisfies DeleteSizeMutationVariables,
     },
     result: {
         data: {
             sizeRemoveById: {
                 recordId: mockSmall._id,
             },
-        },
+        } satisfies DeleteSizeMutation,
     },
 };
 export const mockDeleteBespokeSize = {
@@ -95,13 +98,13 @@ export const mockDeleteBespokeSize = {
         query: DELETE_SIZE,
         variables: {
             id: mockReallyBigId,
-        },
+        } satisfies DeleteSizeMutationVariables,
     },
     result: {
         data: {
             sizeRemoveById: {
                 recordId: mockReallyBigId,
             },
-        },
+        } satisfies DeleteSizeMutation,
     },
 };

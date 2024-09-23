@@ -1,3 +1,4 @@
+import { GetRecipeQueryVariables } from '@recipe/graphql/generated';
 import { mockRecipeIngredientIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdFour } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdFive } from '@recipe/graphql/__mocks__/ids';
@@ -5,13 +6,15 @@ import { GET_INGREDIENT_COMPONENTS } from '@recipe/graphql/queries/recipe';
 import { mockRecipeIngredientIdEight } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdThree } from '@recipe/graphql/__mocks__/ids';
 import { mockTitleOne, mockTitleTwo } from '@recipe/graphql/__mocks__/common';
+import { CountRecipesQuery, GetRecipeQuery } from '@recipe/graphql/generated';
 import { mockRecipeIdNew, mockRecipeIdOne } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIdThree, mockRecipeIdTwo } from '@recipe/graphql/__mocks__/ids';
-import { EnumRecipeIngredientType, GetRecipesQuery } from '@recipe/graphql/generated';
+import { GetRecipesQuery, GetRecipesQueryVariables } from '@recipe/graphql/generated';
 import { mockImageNew, mockImageTwo } from '@recipe/graphql/mutations/__mocks__/image';
 import { COUNT_RECIPES, GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { mockRecipeIdFour, mockRecipeIngredientIdOne } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIdNewAsIngr, mockRecipeIngredientIdSix } from '@recipe/graphql/__mocks__/ids';
+import { EnumRecipeIngredientType, GetIngredientComponentsQuery } from '@recipe/graphql/generated';
 
 import { mockAdmin } from './user';
 import { mockDiced, mockPrepMethods } from './prepMethod';
@@ -31,7 +34,7 @@ export const mockGetIngredientComponents = {
             ingredients: mockIngredients,
             recipes: mockRecipeFromIngredients,
             prepMethods: mockPrepMethods,
-        },
+        } satisfies GetIngredientComponentsQuery,
     },
 };
 
@@ -126,6 +129,7 @@ export const mockRecipeTwo = {
     pluralTitle: 'Mock Recipes Two',
     images: [mockImageTwo],
     calculatedTags: [],
+    numServings: 3,
 };
 export const mockRecipeThree = {
     ...mockRecipeOne,
@@ -250,67 +254,74 @@ export const mockRecipeNewAsIngr = {
 export const mockGetRecipe = {
     request: {
         query: GET_RECIPE,
-        variables: { filter: { titleIdentifier: undefined } },
+        variables: { filter: { titleIdentifier: undefined } } satisfies GetRecipeQueryVariables,
     },
-    result: { data: { recipeOne: mockRecipeOne } },
+    result: { data: { recipeOne: mockRecipeOne } satisfies GetRecipeQuery },
 };
 export const mockGetRecipeOne = {
     request: {
         query: GET_RECIPE,
-        variables: { filter: { titleIdentifier: 'mock-recipe-one' } },
+        variables: {
+            filter: { titleIdentifier: 'mock-recipe-one' },
+        } satisfies GetRecipeQueryVariables,
     },
-    result: { data: { recipeOne: mockRecipeOne } },
+    result: { data: { recipeOne: mockRecipeOne } satisfies GetRecipeQuery },
 };
 export const mockGetRecipeTwo = {
     request: {
         query: GET_RECIPE,
-        variables: { filter: { titleIdentifier: 'mock-recipe-two' } },
+        variables: {
+            filter: { titleIdentifier: 'mock-recipe-two' },
+        } satisfies GetRecipeQueryVariables,
     },
-    result: { data: { recipeOne: mockRecipeTwo } },
+    result: { data: { recipeOne: mockRecipeTwo } satisfies GetRecipeQuery },
 };
 export const mockGetRecipeThree = {
     request: {
         query: GET_RECIPE,
-        variables: { filter: { titleIdentifier: 'mock-recipe-three' } },
+        variables: {
+            filter: { titleIdentifier: 'mock-recipe-three' },
+        } satisfies GetRecipeQueryVariables,
     },
-    result: { data: { recipeOne: mockRecipeThree } },
+    result: { data: { recipeOne: mockRecipeThree } satisfies GetRecipeQuery },
 };
 export const mockGetRecipeFour = {
     request: {
         query: GET_RECIPE,
-        variables: { filter: { titleIdentifier: 'mock-recipe-four' } },
+        variables: {
+            filter: { titleIdentifier: 'mock-recipe-four' },
+        } satisfies GetRecipeQueryVariables,
     },
-    result: { data: { recipeOne: mockRecipeFour } },
+    result: { data: { recipeOne: mockRecipeFour } satisfies GetRecipeQuery },
 };
 export const mockGetRecipeNew = {
     request: {
         query: GET_RECIPE,
-        variables: { filter: { titleIdentifier: 'new-recipe' } },
+        variables: { filter: { titleIdentifier: 'new-recipe' } } satisfies GetRecipeQueryVariables,
     },
-    result: { data: { recipeOne: { ...mockRecipeNew, images: [mockImageNew] } } },
+    result: {
+        data: { recipeOne: { ...mockRecipeNew, images: [mockImageNew] } } satisfies GetRecipeQuery,
+    },
 };
 export const mockGetRecipeNewAsIngr = {
     request: {
         query: GET_RECIPE,
-        variables: { filter: { titleIdentifier: 'new-ingredient-recipe' } },
+        variables: {
+            filter: { titleIdentifier: 'new-ingredient-recipe' },
+        } satisfies GetRecipeQueryVariables,
     },
-    result: { data: { recipeOne: mockRecipeNewAsIngr } },
+    result: { data: { recipeOne: mockRecipeNewAsIngr } satisfies GetRecipeQuery },
 };
 // GetRecipes
 export const mockGetRecipes = {
     request: {
         query: GET_RECIPES,
-        variables: { offset: 0, limit: 5 },
+        variables: { offset: 0, limit: 5 } satisfies GetRecipesQueryVariables,
     },
     result: {
         data: {
-            recipeMany: [
-                mockRecipeOne,
-                mockRecipeTwo,
-                mockRecipeThree,
-                mockRecipeFour,
-            ] satisfies GetRecipesQuery['recipeMany'],
-        },
+            recipeMany: [mockRecipeOne, mockRecipeTwo, mockRecipeThree, mockRecipeFour],
+        } satisfies GetRecipesQuery,
     },
 };
 export const mockCountRecipes = {
@@ -320,13 +331,13 @@ export const mockCountRecipes = {
     result: {
         data: {
             recipeCount: 4,
-        },
+        } satisfies CountRecipesQuery,
     },
 };
 export const mockGetRecipesLarger = {
     request: {
         query: GET_RECIPES,
-        variables: { offset: 0, limit: 5 },
+        variables: { offset: 0, limit: 5 } satisfies GetRecipesQueryVariables,
     },
     result: {
         data: {
@@ -336,8 +347,8 @@ export const mockGetRecipesLarger = {
                 { ...mockRecipeThree, _id: 'mock-recipe-three' },
                 { ...mockRecipeOne, _id: 'mock-recipe-four' },
                 { ...mockRecipeTwo, _id: 'mock-recipe-five' },
-            ] satisfies GetRecipesQuery['recipeMany'],
-        },
+            ],
+        } satisfies GetRecipesQuery,
     },
 };
 export const mockCountRecipesLarger = {
@@ -347,13 +358,17 @@ export const mockCountRecipesLarger = {
     result: {
         data: {
             recipeCount: 15,
-        },
+        } satisfies CountRecipesQuery,
     },
 };
 export const mockGetRecipesLargerFilteredOnePageOne = {
     request: {
         query: GET_RECIPES,
-        variables: { offset: 0, limit: 5, filter: { _operators: { title: { regex: '/one/i' } } } },
+        variables: {
+            offset: 0,
+            limit: 5,
+            filter: { _operators: { title: { regex: '/one/i' } } },
+        } satisfies GetRecipesQueryVariables,
     },
     result: {
         data: {
@@ -363,14 +378,18 @@ export const mockGetRecipesLargerFilteredOnePageOne = {
                 { ...mockRecipeOne, _id: 'mock-recipe-six' },
                 { ...mockRecipeOne, _id: 'mock-recipe-seven' },
                 { ...mockRecipeOne, _id: 'mock-recipe-eight' },
-            ] satisfies GetRecipesQuery['recipeMany'],
-        },
+            ],
+        } satisfies GetRecipesQuery,
     },
 };
 export const mockGetRecipesLargerFilteredOnePageTwo = {
     request: {
         query: GET_RECIPES,
-        variables: { offset: 5, limit: 5, filter: { _operators: { title: { regex: '/one/i' } } } },
+        variables: {
+            offset: 5,
+            limit: 5,
+            filter: { _operators: { title: { regex: '/one/i' } } },
+        } satisfies GetRecipesQueryVariables,
     },
     result: {
         data: {
@@ -379,43 +398,51 @@ export const mockGetRecipesLargerFilteredOnePageTwo = {
                 { ...mockRecipeOne, _id: 'mock-recipe-ten' },
                 { ...mockRecipeOne, _id: 'mock-recipe-eleven' },
                 { ...mockRecipeOne, _id: 'mock-recipe-twelve' },
-            ] satisfies GetRecipesQuery['recipeMany'],
-        },
+            ],
+        } satisfies GetRecipesQuery,
     },
 };
 export const mockCountRecipesLargerFilteredOne = {
     request: {
         query: COUNT_RECIPES,
-        variables: { filter: { _operators: { title: { regex: '/one/i' } } } },
+        variables: {
+            filter: { _operators: { title: { regex: '/one/i' } } },
+        } satisfies GetRecipesQueryVariables,
     },
     result: {
         data: {
             recipeCount: 9,
-        },
+        } satisfies CountRecipesQuery,
     },
 };
 export const mockGetRecipesLargerFilteredTwo = {
     request: {
         query: GET_RECIPES,
-        variables: { offset: 0, limit: 5, filter: { _operators: { title: { regex: '/two/i' } } } },
+        variables: {
+            offset: 0,
+            limit: 5,
+            filter: { _operators: { title: { regex: '/two/i' } } },
+        } satisfies GetRecipesQueryVariables,
     },
     result: {
         data: {
             recipeMany: [
                 { ...mockRecipeTwo, _id: 'mock-recipe-two' },
                 { ...mockRecipeTwo, _id: 'mock-recipe-five' },
-            ] satisfies GetRecipesQuery['recipeMany'],
-        },
+            ],
+        } satisfies GetRecipesQuery,
     },
 };
 export const mockCountRecipesLargerFilteredTwo = {
     request: {
         query: COUNT_RECIPES,
-        variables: { filter: { _operators: { title: { regex: '/two/i' } } } },
+        variables: {
+            filter: { _operators: { title: { regex: '/two/i' } } },
+        } satisfies GetRecipesQueryVariables,
     },
     result: {
         data: {
             recipeCount: 2,
-        },
+        } satisfies CountRecipesQuery,
     },
 };

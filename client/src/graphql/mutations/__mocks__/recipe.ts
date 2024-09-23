@@ -1,15 +1,18 @@
-import { EnumRecipeIngredientType } from '@recipe/graphql/generated';
 import { mockSpicyTag } from '@recipe/graphql/queries/__mocks__/tag';
 import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockApple } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockDiced } from '@recipe/graphql/queries/__mocks__/prepMethod';
+import { UpdateRecipeMutationVariables } from '@recipe/graphql/generated';
 import { mockRecipeIngredientIdThree } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdSeven } from '@recipe/graphql/__mocks__/ids';
 import { GetRecipeQuery, RecipeIngredient } from '@recipe/graphql/generated';
 import { mockRecipeOne, mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockRecipeNew, mockRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
+import { EnumRecipeIngredientType, UpdateRecipeMutation } from '@recipe/graphql/generated';
 import { CREATE_RECIPE, DELETE_RECIPE, UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { mockRecipeFour, mockRecipeNewAsIngr } from '@recipe/graphql/queries/__mocks__/recipe';
+import { DeleteRecipeMutation, DeleteRecipeMutationVariables } from '@recipe/graphql/generated';
+import { CreateRecipeMutation, CreateRecipeMutationVariables } from '@recipe/graphql/generated';
 
 import { mockCreateTag } from './tag';
 
@@ -59,12 +62,12 @@ export const mockUpdateRecipeOne = {
         variables: {
             id: recipeOneVars.id,
             recipe: recipeOneVars.recipe,
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
             recipeUpdateById: { record: recipeOneData.record },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeNumServings = {
@@ -73,12 +76,12 @@ export const mockUpdateRecipeNumServings = {
         variables: {
             id: recipeOneVars.id,
             recipe: { ...recipeOneVars.recipe, numServings: 5 },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
             recipeUpdateById: { record: { ...recipeOneData.record, numServings: 5 } },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeNewTitle = {
@@ -87,14 +90,14 @@ export const mockUpdateRecipeNewTitle = {
         variables: {
             id: recipeOneVars.id,
             recipe: { ...recipeOneVars.recipe, title: 'New Title' },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
             recipeUpdateById: {
                 record: { ...recipeOneData.record, title: 'New Title' },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeInstructionsEdit = {
@@ -106,7 +109,7 @@ export const mockUpdateRecipeInstructionsEdit = {
                 ...recipeOneVars.recipe,
                 instructionSubsections: [{ instructions: ['Instruction one', 'New instruction.'] }],
             },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
@@ -118,7 +121,7 @@ export const mockUpdateRecipeInstructionsEdit = {
                     ],
                 },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeInstructionsAdd = {
@@ -132,7 +135,7 @@ export const mockUpdateRecipeInstructionsAdd = {
                     { instructions: ['Instruction one', 'Instruction two.', 'New instruction.'] },
                 ],
             },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
@@ -151,7 +154,7 @@ export const mockUpdateRecipeInstructionsAdd = {
                     ],
                 },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeInstructionsRemove = {
@@ -163,7 +166,7 @@ export const mockUpdateRecipeInstructionsRemove = {
                 ...recipeOneVars.recipe,
                 instructionSubsections: [{ instructions: ['Instruction one'] }],
             },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
@@ -173,7 +176,7 @@ export const mockUpdateRecipeInstructionsRemove = {
                     instructionSubsections: [{ name: null, instructions: ['Instruction one'] }],
                 },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeAddExistingTag = {
@@ -185,7 +188,7 @@ export const mockUpdateRecipeAddExistingTag = {
                 ...recipeOneVars.recipe,
                 tags: [...recipeOneVars.recipe.tags, mockSpicyTag._id],
             },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
@@ -195,7 +198,7 @@ export const mockUpdateRecipeAddExistingTag = {
                     tags: [...recipeOneData.record.tags, mockSpicyTag],
                 },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeAddNote = {
@@ -204,12 +207,12 @@ export const mockUpdateRecipeAddNote = {
         variables: {
             id: recipeOneVars.id,
             recipe: { ...recipeOneVars.recipe, notes: 'A new note.' },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
             recipeUpdateById: { record: { ...recipeOneData.record, notes: 'A new note.' } },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeAddSource = {
@@ -218,12 +221,12 @@ export const mockUpdateRecipeAddSource = {
         variables: {
             id: recipeOneVars.id,
             recipe: { ...recipeOneVars.recipe, source: 'A new source' },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
             recipeUpdateById: { record: { ...recipeOneData.record, source: 'A new source' } },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeRemoveTag = {
@@ -235,7 +238,7 @@ export const mockUpdateRecipeRemoveTag = {
                 ...recipeOneVars.recipe,
                 tags: [recipeOneVars.recipe.tags[0]],
             },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
@@ -245,7 +248,7 @@ export const mockUpdateRecipeRemoveTag = {
                     tags: [recipeOneData.record.tags[0]],
                 },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeAddNewTag = {
@@ -260,7 +263,7 @@ export const mockUpdateRecipeAddNewTag = {
                     mockCreateTag.result.data.tagCreateOne.record._id,
                 ],
             },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
@@ -273,7 +276,7 @@ export const mockUpdateRecipeAddNewTag = {
                     ],
                 },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeIngredientsAdd = {
@@ -300,7 +303,7 @@ export const mockUpdateRecipeIngredientsAdd = {
                     },
                 ],
             },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
@@ -327,7 +330,7 @@ export const mockUpdateRecipeIngredientsAdd = {
                     ],
                 },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeIngredientsEdit = {
@@ -356,7 +359,7 @@ export const mockUpdateRecipeIngredientsEdit = {
                     recipeOneVars.recipe.ingredientSubsections![1],
                 ],
             },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
@@ -385,7 +388,7 @@ export const mockUpdateRecipeIngredientsEdit = {
                     ],
                 },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeIngredientsRemove = {
@@ -407,7 +410,7 @@ export const mockUpdateRecipeIngredientsRemove = {
                     recipeOneVars.recipe.ingredientSubsections![1],
                 ],
             },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
@@ -427,7 +430,7 @@ export const mockUpdateRecipeIngredientsRemove = {
                     ],
                 },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeCalculatedTagsAdd = {
@@ -436,7 +439,7 @@ export const mockUpdateRecipeCalculatedTagsAdd = {
         variables: {
             id: recipeOneVars.id,
             recipe: recipeOneVars.recipe,
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
@@ -446,7 +449,7 @@ export const mockUpdateRecipeCalculatedTagsAdd = {
                     calculatedTags: ['vegan', 'vegetarian', 'special'],
                 },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeCalculatedTagsEdit = {
@@ -455,14 +458,14 @@ export const mockUpdateRecipeCalculatedTagsEdit = {
         variables: {
             id: recipeOneVars.id,
             recipe: recipeOneVars.recipe,
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
             recipeUpdateById: {
                 record: { ...recipeOneData.record, calculatedTags: ['vegetarian', 'special'] },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeCalculatedTagsRemove = {
@@ -471,7 +474,7 @@ export const mockUpdateRecipeCalculatedTagsRemove = {
         variables: {
             id: recipeOneVars.id,
             recipe: recipeOneVars.recipe,
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
@@ -481,7 +484,7 @@ export const mockUpdateRecipeCalculatedTagsRemove = {
                     calculatedTags: ['vegetarian'],
                 },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeAddIsIngredient = {
@@ -490,7 +493,7 @@ export const mockUpdateRecipeAddIsIngredient = {
         variables: {
             id: recipeOneVars.id,
             recipe: { ...recipeOneVars.recipe, isIngredient: true, pluralTitle: 'Mock Recipes' },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
@@ -501,7 +504,7 @@ export const mockUpdateRecipeAddIsIngredient = {
                     pluralTitle: 'Mock Recipes',
                 },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeAddIngredientSubsection = {
@@ -527,7 +530,7 @@ export const mockUpdateRecipeAddIngredientSubsection = {
                     },
                 ],
             },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
@@ -553,7 +556,7 @@ export const mockUpdateRecipeAddIngredientSubsection = {
                     ],
                 },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeEditIngredientSubsection = {
@@ -574,7 +577,7 @@ export const mockUpdateRecipeEditIngredientSubsection = {
                     },
                 ],
             },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
@@ -595,7 +598,7 @@ export const mockUpdateRecipeEditIngredientSubsection = {
                     ],
                 },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeRemoveIngredientSubsection = {
@@ -607,7 +610,7 @@ export const mockUpdateRecipeRemoveIngredientSubsection = {
                 ...recipeOneVars.recipe,
                 ingredientSubsections: [recipeOneVars.recipe.ingredientSubsections![0]],
             },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
@@ -617,7 +620,7 @@ export const mockUpdateRecipeRemoveIngredientSubsection = {
                     ingredientSubsections: [recipeOneData.record.ingredientSubsections![0]],
                 },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 const recipeTwoVars = getMockRecipeVariables(mockRecipeTwo);
@@ -628,12 +631,12 @@ export const mockUpdateRecipeTwo = {
         variables: {
             id: recipeTwoVars.id,
             recipe: recipeTwoVars.recipe,
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
             recipeUpdateById: { record: recipeTwoData.record },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeNewTitleAsIngredient = {
@@ -642,14 +645,14 @@ export const mockUpdateRecipeNewTitleAsIngredient = {
         variables: {
             id: recipeTwoVars.id,
             recipe: { ...recipeTwoVars.recipe, title: 'New Title', pluralTitle: 'New Titles' },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
             recipeUpdateById: {
                 record: { ...recipeTwoData.record, title: 'New Title', pluralTitle: 'New Titles' },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeRemoveAsIngredient = {
@@ -658,14 +661,14 @@ export const mockUpdateRecipeRemoveAsIngredient = {
         variables: {
             id: recipeTwoVars.id,
             recipe: { ...recipeTwoVars.recipe, isIngredient: false, pluralTitle: undefined },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
             recipeUpdateById: {
                 record: { ...recipeTwoData.record, isIngredient: false, pluralTitle: null },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeEditAsIngredient = {
@@ -688,7 +691,7 @@ export const mockUpdateRecipeEditAsIngredient = {
                     },
                 ],
             },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
@@ -710,7 +713,7 @@ export const mockUpdateRecipeEditAsIngredient = {
                     ],
                 },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateAddInstructionSubsection = {
@@ -725,7 +728,7 @@ export const mockUpdateAddInstructionSubsection = {
                     { name: 'New Section', instructions: ['A new instruction.'] },
                 ],
             },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
@@ -738,7 +741,7 @@ export const mockUpdateAddInstructionSubsection = {
                     ],
                 },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateEditInstructionSubsection = {
@@ -752,7 +755,7 @@ export const mockUpdateEditInstructionSubsection = {
                     { ...recipeTwoVars.recipe.instructionSubsections![0], name: 'Instruct Four' },
                 ],
             },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
@@ -761,13 +764,13 @@ export const mockUpdateEditInstructionSubsection = {
                     ...recipeTwoData.record,
                     instructionSubsections: [
                         {
-                            ...recipeTwoData.record.instructionSubsections![0],
+                            ...recipeTwoData.record.instructionSubsections[0]!,
                             name: 'Instruct Four',
                         },
                     ],
                 },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 const recipeThreeVars = getMockRecipeVariables(mockRecipeThree);
@@ -778,12 +781,12 @@ export const mockUpdateRecipeRemoveNotes = {
         variables: {
             id: recipeThreeVars.id,
             recipe: { ...recipeThreeVars.recipe, notes: undefined },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
             recipeUpdateById: { record: { ...recipeThreeData.record, notes: null } },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeUpdateSource = {
@@ -792,12 +795,12 @@ export const mockUpdateRecipeUpdateSource = {
         variables: {
             id: recipeThreeVars.id,
             recipe: { ...recipeThreeVars.recipe, source: 'Exa' },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
             recipeUpdateById: { record: { ...recipeThreeData.record, source: 'Exa' } },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeUpdateNotes = {
@@ -806,12 +809,12 @@ export const mockUpdateRecipeUpdateNotes = {
         variables: {
             id: recipeThreeVars.id,
             recipe: { ...recipeThreeVars.recipe, notes: 'A new note.' },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
             recipeUpdateById: { record: { ...recipeThreeData.record, notes: 'A new note.' } },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 export const mockUpdateRecipeRemoveSource = {
@@ -820,12 +823,12 @@ export const mockUpdateRecipeRemoveSource = {
         variables: {
             id: recipeThreeVars.id,
             recipe: { ...recipeThreeVars.recipe, source: undefined },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
             recipeUpdateById: { record: { ...recipeThreeData.record, source: null } },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 const recipeFourVars = getMockRecipeVariables(mockRecipeFour);
@@ -839,7 +842,7 @@ export const mockUpdateRemoveInstructionSubsection = {
                 ...recipeFourVars.recipe,
                 instructionSubsections: [recipeFourVars.recipe.instructionSubsections![0]],
             },
-        },
+        } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
@@ -849,7 +852,7 @@ export const mockUpdateRemoveInstructionSubsection = {
                     instructionSubsections: [recipeFourData.record.instructionSubsections![0]],
                 },
             },
-        },
+        } satisfies UpdateRecipeMutation,
     },
 };
 const mockCreateRecipeVars = getMockRecipeVariables(mockRecipeNew);
@@ -857,12 +860,12 @@ const mockCreateRecipeData = getMockRecipeReturn(mockRecipeNew);
 export const mockCreateRecipe = {
     request: {
         query: CREATE_RECIPE,
-        variables: { recipe: mockCreateRecipeVars.recipe },
+        variables: { recipe: mockCreateRecipeVars.recipe } satisfies CreateRecipeMutationVariables,
     },
     result: {
         data: {
             recipeCreateOne: { record: mockCreateRecipeData.record },
-        },
+        } satisfies CreateRecipeMutation,
     },
 };
 const mockCreateRecipeAsIngrVars = getMockRecipeVariables(mockRecipeNewAsIngr);
@@ -870,33 +873,35 @@ const mockCreateRecipeAsIngrData = getMockRecipeReturn(mockRecipeNewAsIngr);
 export const mockCreateRecipeAsIngr = {
     request: {
         query: CREATE_RECIPE,
-        variables: { recipe: mockCreateRecipeAsIngrVars.recipe },
+        variables: {
+            recipe: mockCreateRecipeAsIngrVars.recipe,
+        } satisfies CreateRecipeMutationVariables,
     },
     result: {
         data: {
             recipeCreateOne: { record: mockCreateRecipeAsIngrData.record },
-        },
+        } satisfies CreateRecipeMutation,
     },
 };
 export const mockDeleteRecipeOne = {
     request: {
         query: DELETE_RECIPE,
-        variables: { id: recipeOneVars.id },
+        variables: { id: recipeOneVars.id } satisfies DeleteRecipeMutationVariables,
     },
     result: {
         data: {
             recipeRemoveById: { recordId: recipeOneVars.id },
-        },
+        } satisfies DeleteRecipeMutation,
     },
 };
 export const mockDeleteRecipeTwo = {
     request: {
         query: DELETE_RECIPE,
-        variables: { id: recipeTwoVars.id },
+        variables: { id: recipeTwoVars.id } satisfies DeleteRecipeMutationVariables,
     },
     result: {
         data: {
             recipeRemoveById: { recordId: recipeTwoVars.id },
-        },
+        } satisfies DeleteRecipeMutation,
     },
 };

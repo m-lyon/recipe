@@ -1,5 +1,11 @@
+import { DeletePrepMethodMutation } from '@recipe/graphql/generated';
+import { CreatePrepMethodMutation } from '@recipe/graphql/generated';
+import { ModifyPrepMethodMutation } from '@recipe/graphql/generated';
 import { mockDiced } from '@recipe/graphql/queries/__mocks__/prepMethod';
 import { DELETE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
+import { ModifyPrepMethodMutationVariables } from '@recipe/graphql/generated';
+import { DeletePrepMethodMutationVariables } from '@recipe/graphql/generated';
+import { CreatePrepMethodMutationVariables } from '@recipe/graphql/generated';
 import { mockAdminId, mockPippedId, mockPostedId } from '@recipe/graphql/__mocks__/ids';
 import { CREATE_PREP_METHOD, MODIFY_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 
@@ -18,14 +24,14 @@ export const mockCreatePrepMethod = {
                 value: mockPipped.value,
                 unique: mockPipped.unique,
             },
-        },
+        } satisfies CreatePrepMethodMutationVariables,
     },
     result: {
         data: {
             prepMethodCreateOne: {
                 record: mockPipped,
             },
-        },
+        } satisfies CreatePrepMethodMutation,
     },
 };
 export const mockCreateBespokePrepMethod = {
@@ -36,7 +42,7 @@ export const mockCreateBespokePrepMethod = {
                 value: 'posted',
                 unique: false,
             },
-        },
+        } satisfies CreatePrepMethodMutationVariables,
     },
     result: {
         data: {
@@ -49,7 +55,7 @@ export const mockCreateBespokePrepMethod = {
                     owner: mockAdminId,
                 },
             },
-        },
+        } satisfies CreatePrepMethodMutation,
     },
 };
 export const mockUpdatePrepMethod = {
@@ -61,7 +67,7 @@ export const mockUpdatePrepMethod = {
                 value: 'dicey',
                 unique: true,
             },
-        },
+        } satisfies ModifyPrepMethodMutationVariables,
     },
     result: {
         data: {
@@ -71,7 +77,7 @@ export const mockUpdatePrepMethod = {
                     value: 'dicey',
                 },
             },
-        },
+        } satisfies ModifyPrepMethodMutation,
     },
 };
 export const mockDeletePrepMethod = {
@@ -79,14 +85,14 @@ export const mockDeletePrepMethod = {
         query: DELETE_PREP_METHOD,
         variables: {
             id: mockDiced._id,
-        },
+        } satisfies DeletePrepMethodMutationVariables,
     },
     result: {
         data: {
             prepMethodRemoveById: {
                 recordId: mockDiced._id,
             },
-        },
+        } satisfies DeletePrepMethodMutation,
     },
 };
 export const mockDeleteBespokePrepMethod = {
@@ -94,13 +100,13 @@ export const mockDeleteBespokePrepMethod = {
         query: DELETE_PREP_METHOD,
         variables: {
             id: mockPostedId,
-        },
+        } satisfies DeletePrepMethodMutationVariables,
     },
     result: {
         data: {
             prepMethodRemoveById: {
                 recordId: mockPostedId,
             },
-        },
+        } satisfies DeletePrepMethodMutation,
     },
 };

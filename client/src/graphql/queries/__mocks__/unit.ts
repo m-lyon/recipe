@@ -1,4 +1,4 @@
-import { EnumUnitPreferredNumberFormat } from '@recipe/graphql/generated';
+import { EnumUnitPreferredNumberFormat, GetUnitsQuery } from '@recipe/graphql/generated';
 import { mockAdminId, mockTablespoonId, mockTeaspoonId } from '@recipe/graphql/__mocks__/ids';
 import { mockCupId, mockGramId, mockKilogramId, mockOunceId } from '@recipe/graphql/__mocks__/ids';
 
@@ -71,7 +71,7 @@ export const mockCup = {
     shortPlural: 'cups',
     longSingular: 'cup',
     longPlural: 'cups',
-    preferredNumberFormat: EnumUnitPreferredNumberFormat.Decimal,
+    preferredNumberFormat: EnumUnitPreferredNumberFormat.Fraction,
     owner: mockAdminId,
     unique: true,
     hasSpace: true,
@@ -79,5 +79,5 @@ export const mockCup = {
 export const mockUnits = [mockTeaspoon, mockTablespoon, mockGram, mockKilogram, mockOunce, mockCup];
 export const mockGetUnits = {
     request: { query: GET_UNITS },
-    result: { data: { unitMany: mockUnits } },
+    result: { data: { unitMany: mockUnits } satisfies GetUnitsQuery },
 };

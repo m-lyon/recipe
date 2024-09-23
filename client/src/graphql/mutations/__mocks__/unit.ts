@@ -1,9 +1,13 @@
 import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
-import { EnumUnitPreferredNumberFormat } from '@recipe/graphql/generated';
+import { EnumUnitPreferredNumberFormat, Unit } from '@recipe/graphql/generated';
+import { EnumUnitCreatePreferredNumberFormat } from '@recipe/graphql/generated';
 import { mockAdminId, mockBumpId, mockCuttingId } from '@recipe/graphql/__mocks__/ids';
 import { CREATE_UNIT, DELETE_UNIT, MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
+import { CreateUnitMutation, CreateUnitMutationVariables } from '@recipe/graphql/generated';
+import { DeleteUnitMutation, DeleteUnitMutationVariables } from '@recipe/graphql/generated';
+import { ModifyUnitMutation, ModifyUnitMutationVariables } from '@recipe/graphql/generated';
 
-export const mockUnit = {
+export const mockUnit: Unit = {
     __typename: 'Unit' as const,
     _id: mockCuttingId,
     longSingular: 'cutting',
@@ -25,18 +29,18 @@ export const mockCreateUnit = {
                 longPlural: mockUnit.longPlural,
                 shortSingular: mockUnit.shortSingular,
                 shortPlural: mockUnit.shortPlural,
-                preferredNumberFormat: mockUnit.preferredNumberFormat,
+                preferredNumberFormat: EnumUnitCreatePreferredNumberFormat.Decimal,
                 unique: mockTeaspoon.unique,
                 hasSpace: true,
             },
-        },
+        } satisfies CreateUnitMutationVariables,
     },
     result: {
         data: {
             unitCreateOne: {
                 record: mockUnit,
             },
-        },
+        } satisfies CreateUnitMutation,
     },
 };
 export const mockCreateBespokeUnit = {
@@ -48,11 +52,11 @@ export const mockCreateBespokeUnit = {
                 longPlural: 'bump',
                 shortSingular: 'bump',
                 shortPlural: 'bump',
-                preferredNumberFormat: 'decimal',
+                preferredNumberFormat: EnumUnitCreatePreferredNumberFormat.Decimal,
                 unique: false,
                 hasSpace: true,
             },
-        },
+        } satisfies CreateUnitMutationVariables,
     },
     result: {
         data: {
@@ -64,13 +68,13 @@ export const mockCreateBespokeUnit = {
                     longPlural: 'bump',
                     shortSingular: 'bump',
                     shortPlural: 'bump',
-                    preferredNumberFormat: 'decimal',
+                    preferredNumberFormat: EnumUnitPreferredNumberFormat.Decimal,
                     hasSpace: true,
                     unique: false,
                     owner: mockAdminId,
                 },
             },
-        },
+        } satisfies CreateUnitMutation,
     },
 };
 export const mockUpdateUnit = {
@@ -87,7 +91,7 @@ export const mockUpdateUnit = {
                 unique: mockTeaspoon.unique,
                 hasSpace: mockTeaspoon.hasSpace,
             },
-        },
+        } satisfies ModifyUnitMutationVariables,
     },
     result: {
         data: {
@@ -97,7 +101,7 @@ export const mockUpdateUnit = {
                     longPlural: 'teaspoonz',
                 },
             },
-        },
+        } satisfies ModifyUnitMutation,
     },
 };
 export const mockDeleteUnit = {
@@ -105,14 +109,14 @@ export const mockDeleteUnit = {
         query: DELETE_UNIT,
         variables: {
             id: mockTeaspoon._id,
-        },
+        } satisfies DeleteUnitMutationVariables,
     },
     result: {
         data: {
             unitRemoveById: {
                 recordId: mockTeaspoon._id,
             },
-        },
+        } satisfies DeleteUnitMutation,
     },
 };
 export const mockDeleteBespokeUnit = {
@@ -120,13 +124,13 @@ export const mockDeleteBespokeUnit = {
         query: DELETE_UNIT,
         variables: {
             id: mockBumpId,
-        },
+        } satisfies DeleteUnitMutationVariables,
     },
     result: {
         data: {
             unitRemoveById: {
                 recordId: mockBumpId,
             },
-        },
+        } satisfies DeleteUnitMutation,
     },
 };
