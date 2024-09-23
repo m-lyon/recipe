@@ -31,10 +31,13 @@ export function IngredientList(props: IngredientListProps) {
     });
 
     const subsectionsList = modifiedSubsections.map((collection, index) => {
-        const finishedIngredients = collection.ingredients.map((item) => {
+        const finishedIngredients = collection.ingredients.map((item, i) => {
             if (item.type === 'ingredient') {
                 return (
-                    <ListItem key={item._id}>
+                    <ListItem
+                        key={item._id}
+                        aria-label={`Ingredient #${i + 1} in subsection ${index + 1}`}
+                    >
                         {getFinishedRecipeIngredientStr(item as LikeFinishedRecipeIngredient)}
                     </ListItem>
                 );
