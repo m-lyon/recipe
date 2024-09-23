@@ -1,4 +1,5 @@
 import { useContext } from 'react';
+import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { Button, Stack } from '@chakra-ui/react';
 import { useMutation, useQuery } from '@apollo/client';
@@ -69,11 +70,11 @@ function LoginOptions() {
             ml={{ base: 3, md: 0 }}
         >
             <Button
-                as='a'
+                as={Link}
                 fontSize='sm'
                 fontWeight={600}
                 colorScheme='teal'
-                href={`${ROOT_PATH}/login`}
+                to={`${ROOT_PATH}/login`}
             >
                 Sign In
             </Button>
