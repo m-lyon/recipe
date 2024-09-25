@@ -26,7 +26,18 @@ export async function enterEditRecipePage(
 ) {
     await user.hover(await screen.findByLabelText(`View ${recipeName}`));
     await user.click(screen.getByLabelText(`Edit ${recipeName}`));
-    expect(await screen.findByText(instructionText)).not.toBeNull();
+    expect(await screen.findByText(findText)).not.toBeNull();
+}
+
+export async function enterViewRecipePage(
+    screen: Screen,
+    user: ReturnType<typeof userEvent.setup>,
+    recipeName: string,
+    findText: string
+) {
+    expect(await screen.findByText('Recipes')).not.toBeNull();
+    await user.click(await screen.findByLabelText(`View ${recipeName}`));
+    expect(await screen.findByText(findText)).not.toBeNull();
 }
 
 export async function clickFindByText(
@@ -69,6 +80,10 @@ export function allNotNullByText(screen: Screen, ...text: string[]) {
 
 export function haveValueByLabelText(screen: Screen, label: string, value: string) {
     expect(screen.getByLabelText(label)).property('value').equal(value);
+}
+
+export function haveTextContentByLabelText(screen: Screen, label: string, text: string) {
+    expect(screen.getByLabelText(label)).property('textContent').equal(text);
 }
 
 export type MockedResponses = MockedResponse<Record<string, any>, Record<string, any>>[];
