@@ -3,13 +3,13 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { enterEditRecipePage, notNullByText } from '@recipe/utils/tests';
 import { mockCreateRecipe } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { clickFindByText, enterCreateNewRecipePage } from '@recipe/utils/tests';
 import { mockGetRatingsNewRecipe } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockAddRatingNewRecipe } from '@recipe/graphql/mutations/__mocks__/rating';
 import { mockCreateRecipeAsIngr } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetRatingsNewRecipeAsIngr } from '@recipe/graphql/queries/__mocks__/rating';
+import { enterEditRecipePage, enterViewRecipePage, notNullByText } from '@recipe/utils/tests';
 import { mockImageFileNew, mockUploadImagesNew } from '@recipe/graphql/mutations/__mocks__/image';
 import { mockGetRecipeNew, mockGetRecipeNewAsIngr } from '@recipe/graphql/queries/__mocks__/recipe';
 
@@ -69,14 +69,14 @@ describe('Create Recipe Workflow', () => {
         await notNullByText(screen, 'Recipes', 'New Recipe', 'freezable');
 
         // ------ View Recipe Page -------------------------------
-        await user.click(screen.getByLabelText('View New Recipe'));
-        await notNullByText(screen, 'Instr #1.', 'Instr #2.', '2 Servings', 'Recipe Notes.');
+        await enterViewRecipePage(screen, user, 'New Recipe', 'Instr #1.');
+        await notNullByText(screen, 'Instr #2.', '2 Servings', 'Recipe Notes.');
         await notNullByText(screen, 'Source: Recipe Source', '2 tsp apples, diced');
         expect(screen.queryAllByText('freezable')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
 
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage('New Recipe', 'Instr #1.', screen, user);
+        await enterEditRecipePage(screen, user, 'New Recipe', 'Instr #1.');
         await notNullByText(screen, 'Instr #2.', '2 Servings', 'Recipe Notes.', 'freezable');
         expect(screen.queryByText('2 tsp apples, diced')).not.toBeNull();
         expect(screen.getByLabelText('Edit recipe source')).toHaveProperty(
@@ -140,8 +140,8 @@ describe('Create Recipe Workflow', () => {
         await notNullByText(screen, 'Recipes', 'New Recipe', 'freezable');
         expect(screen.queryByLabelText('Loading image 1 for New Recipe')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
-        await user.click(screen.getByLabelText('View New Recipe'));
-        await notNullByText(screen, 'Instr #1.', 'Instr #2.', '2 Servings', 'Recipe Notes.');
+        await enterViewRecipePage(screen, user, 'New Recipe', 'Instr #1.');
+        await notNullByText(screen, 'Instr #2.', '2 Servings', 'Recipe Notes.');
         await notNullByText(screen, 'Source: Recipe Source', '2 tsp apples, diced');
         expect(screen.queryAllByText('freezable')).not.toBeNull();
         expect(screen.queryAllByAltText('Image 1 for New Recipe')).not.toBeNull();
@@ -152,7 +152,7 @@ describe('Create Recipe Workflow', () => {
         await user.click(screen.getByLabelText('Navigate to home page'));
 
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage('New Recipe', 'Instr #1.', screen, user);
+        await enterEditRecipePage(screen, user, 'New Recipe', 'Instr #1.');
         await notNullByText(screen, 'Instr #2.', '2 Servings', 'Recipe Notes.', 'freezable');
         expect(screen.getByLabelText('Edit recipe source')).toHaveProperty(
             'value',
@@ -197,17 +197,13 @@ describe('Create Recipe Workflow', () => {
         await user.click(screen.getByLabelText('Save recipe'));
 
         // // Expect ------------------------------------------------
-        // ------ Home Page --------------------------------------
-        expect(await screen.findByText('Recipes')).not.toBeNull();
-        expect(screen.queryByText('New Ingredient Recipe')).not.toBeNull();
-
         // ------ View Recipe Page -------------------------------
-        await user.click(screen.getByLabelText('View New Ingredient Recipe'));
-        await notNullByText(screen, 'Instr #1.', 'Instr #2.', '2 tsp apples, diced');
+        await enterViewRecipePage(screen, user, 'New Ingredient Recipe', 'Instr #1.');
+        await notNullByText(screen, 'Instr #2.', '2 tsp apples, diced');
         await user.click(screen.getByLabelText('Navigate to home page'));
 
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage('New Ingredient Recipe', 'Instr #1.', screen, user);
+        await enterEditRecipePage(screen, user, 'New Ingredient Recipe', 'Instr #1.');
         await notNullByText(screen, 'Instr #2.', '2 tsp apples, diced');
 
         // ------ Ingredients List ------------------------------

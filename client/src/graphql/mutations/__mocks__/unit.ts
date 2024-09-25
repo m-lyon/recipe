@@ -1,11 +1,11 @@
 import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
-import { EnumUnitPreferredNumberFormat, Unit } from '@recipe/graphql/generated';
+import { ModifyUnitMutationVariables, Unit } from '@recipe/graphql/generated';
 import { EnumUnitCreatePreferredNumberFormat } from '@recipe/graphql/generated';
 import { mockAdminId, mockBumpId, mockCuttingId } from '@recipe/graphql/__mocks__/ids';
 import { CREATE_UNIT, DELETE_UNIT, MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
 import { CreateUnitMutation, CreateUnitMutationVariables } from '@recipe/graphql/generated';
 import { DeleteUnitMutation, DeleteUnitMutationVariables } from '@recipe/graphql/generated';
-import { ModifyUnitMutation, ModifyUnitMutationVariables } from '@recipe/graphql/generated';
+import { EnumUnitPreferredNumberFormat, ModifyUnitMutation } from '@recipe/graphql/generated';
 
 export const mockUnit: Unit = {
     __typename: 'Unit' as const,

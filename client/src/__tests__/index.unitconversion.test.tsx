@@ -3,7 +3,8 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { enterCreateNewRecipePage, haveValueByLabelText, nullByText } from '@recipe/utils/tests';
+import { enterCreateNewRecipePage, enterViewRecipePage } from '@recipe/utils/tests';
+import { haveTextContentByLabelText, haveValueByLabelText, nullByText } from '@recipe/utils/tests';
 
 import { renderComponent } from './utils';
 
@@ -52,15 +53,11 @@ describe('Update Recipe Workflow: Servings', () => {
         const user = userEvent.setup();
 
         // Act ---------------------------------------------------
-        expect(await screen.findByText('Recipes')).not.toBeNull();
-        await user.click(screen.getByLabelText('View Mock Recipe Two'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterViewRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one');
         await user.click(screen.getByLabelText('Increase serving size'));
 
         // Expect ------------------------------------------------
         expect(await screen.findByText('4 Servings')).not.toBeNull();
-        expect(screen.getByLabelText('Ingredient #2 in subsection 2').textContent).toBe(
-            '1.33 oz apples'
-        );
+        haveTextContentByLabelText(screen, 'Ingredient #2 in subsection 2', '1.33 oz apples');
     });
 });

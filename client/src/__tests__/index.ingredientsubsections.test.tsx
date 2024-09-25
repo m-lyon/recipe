@@ -3,11 +3,11 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen, waitFor } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { enterCreateNewRecipePage } from '@recipe/utils/tests';
-import { notNullByText, nullByText } from '@recipe/utils/tests';
+import { enterViewRecipePage, nullByText } from '@recipe/utils/tests';
 import { mockGetRecipeFour } from '@recipe/graphql/queries/__mocks__/recipe';
+import { clickFindByText, enterCreateNewRecipePage } from '@recipe/utils/tests';
 import { mockGetRatingsRecipeFour } from '@recipe/graphql/queries/__mocks__/rating';
-import { clickFindByText, enterEditRecipePage, haveValueByLabelText } from '@recipe/utils/tests';
+import { enterEditRecipePage, haveValueByLabelText, notNullByText } from '@recipe/utils/tests';
 import { mockUpdateRecipeAddIngredientSubsection } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeEditIngredientSubsection } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeRemoveIngredientSubsection } from '@recipe/graphql/mutations/__mocks__/recipe';
@@ -28,11 +28,10 @@ describe('Ingredient Subsections', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        expect(await screen.findByText('Recipes')).not.toBeNull();
-        await user.click(screen.getByLabelText('View Mock Recipe'));
+        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
 
         // Expect
-        await notNullByText(screen, 'Instruction one', 'Section One', 'Section Two');
+        await notNullByText(screen, 'Section One', 'Section Two');
     });
 
     it('should add a new ingredient subsection', async () => {
@@ -41,7 +40,7 @@ describe('Ingredient Subsections', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
         await user.click(screen.getByLabelText('Enter title for ingredient subsection 3'));
         await user.keyboard('New Section');
         await user.click(screen.getByLabelText('Enter ingredient #1 for subsection 3'));
@@ -50,14 +49,12 @@ describe('Ingredient Subsections', () => {
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
-        // ------ Home Page --------------------------------------
-        expect(await screen.findByText('Recipes')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
-        await user.click(screen.getByLabelText('View Mock Recipe'));
-        await notNullByText(screen, 'Instruction one', 'Section One', 'Section Two', 'New Section');
+        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await notNullByText(screen, 'Section One', 'Section Two', 'New Section');
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 1', 'Section One');
         expect(screen.queryByLabelText('Enter ingredient #4 for subsection 1')).not.toBeNull();
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 2', 'Section Two');
@@ -74,20 +71,18 @@ describe('Ingredient Subsections', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
         await user.click(screen.getByLabelText('Enter title for ingredient subsection 2'));
         await user.keyboard('{Backspace>3/}Four');
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
-        // ------ Home Page --------------------------------------
-        expect(await screen.findByText('Recipes')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
-        await user.click(screen.getByLabelText('View Mock Recipe'));
-        await notNullByText(screen, 'Instruction one', 'Section One', 'Section Four');
+        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await notNullByText(screen, 'Section One', 'Section Four');
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 1', 'Section One');
         expect(screen.queryByLabelText('Enter ingredient #4 for subsection 1')).not.toBeNull();
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 2', 'Section Four');
@@ -102,7 +97,7 @@ describe('Ingredient Subsections', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 2', 'Section Two');
         await notNullByText(screen, '⅓ cup medium apples, diced', '1 oz apples');
         await user.click(screen.getByLabelText('Enter title for ingredient subsection 2'));
@@ -111,14 +106,12 @@ describe('Ingredient Subsections', () => {
 
         // Expect ------------------------------------------------
         // ------ Home Page --------------------------------------
-        expect(await screen.findByText('Recipes')).not.toBeNull();
-        // ------ View Recipe Page -------------------------------
-        await user.click(screen.getByLabelText('View Mock Recipe'));
-        await notNullByText(screen, 'Instruction one', 'Section One');
+        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await notNullByText(screen, 'Section One');
         nullByText(screen, 'Section Two', '⅓ cup medium apples, diced', '1 oz apples');
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 1', 'Section One');
         expect(screen.queryByLabelText('Enter ingredient #4 for subsection 1')).not.toBeNull();
         nullByText(screen, 'Section Two', '⅓ cup medium apples, diced', '1 oz apples');
@@ -165,7 +158,7 @@ describe('Ingredient Subsections', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage('Mock Recipe Three', 'Instruction one', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one');
 
         // Expect -----------------------------------------------
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 1', '');
@@ -180,7 +173,7 @@ describe('Ingredient Subsections', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage('Mock Recipe Four', 'Instr #1.', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe Four', 'Instr #1.');
 
         // Expect -----------------------------------------------
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 1', 'First Section');
@@ -197,7 +190,7 @@ describe('Ingredient Subsections', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
 
         // Expect -----------------------------------------------
         haveValueByLabelText(screen, 'Enter title for ingredient subsection 1', 'Section One');
@@ -216,7 +209,7 @@ describe('Ingredient Subsections', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage('Mock Recipe Four', 'Instr #1.', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe Four', 'Instr #1.');
         await user.click(screen.getByLabelText('Enter title for ingredient subsection 1'));
         await user.keyboard('{Backspace>13/}{Enter}');
         // Expect -----------------------------------------------
@@ -236,7 +229,7 @@ describe('Ingredient Subsections', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage('Mock Recipe Four', 'Instr #1.', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe Four', 'Instr #1.');
         await user.click(screen.getByLabelText('Enter title for ingredient subsection 1'));
         await user.keyboard('{Backspace>13/}');
         await user.click(screen.getByLabelText('Enter recipe title'));
@@ -258,7 +251,7 @@ describe('Ingredient Subsections', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
         await user.click(screen.getByLabelText('Enter title for ingredient subsection 1'));
         await user.keyboard('{Backspace>11/}{Enter}');
 
@@ -280,7 +273,7 @@ describe('Ingredient Subsections', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
         await user.click(screen.getByLabelText('Enter title for ingredient subsection 1'));
         await user.keyboard('{Backspace>11/}');
         await user.click(screen.getByLabelText('Enter recipe title'));
@@ -303,7 +296,7 @@ describe('Ingredient Subsections', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage('Mock Recipe Four', 'Instr #1.', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe Four', 'Instr #1.');
         await user.click(screen.getByLabelText('Enter ingredient #1 for subsection 2'));
         await user.keyboard('{6}{ }');
         await clickFindByText(screen, user, 'teaspoons', 'apples', 'diced');
@@ -323,7 +316,7 @@ describe('Ingredient Subsections', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage('Mock Recipe Four', 'Instr #1.', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe Four', 'Instr #1.');
         await user.click(screen.getByLabelText('Enter title for ingredient subsection 2'));
         await user.keyboard('Second Section');
         await user.click(screen.getByLabelText('Save recipe'));

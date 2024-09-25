@@ -19,10 +19,10 @@ export async function enterCreateNewRecipePage(
 }
 
 export async function enterEditRecipePage(
-    recipeName: string,
-    instructionText: string,
     screen: Screen,
-    user: ReturnType<typeof userEvent.setup>
+    user: ReturnType<typeof userEvent.setup>,
+    recipeName: string,
+    findText: string
 ) {
     await user.hover(await screen.findByLabelText(`View ${recipeName}`));
     await user.click(screen.getByLabelText(`Edit ${recipeName}`));

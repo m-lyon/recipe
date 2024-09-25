@@ -3,7 +3,8 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { enterEditRecipePage, haveValueByLabelText } from '@recipe/utils/tests';
+import { haveValueByLabelText } from '@recipe/utils/tests';
+import { enterEditRecipePage, enterViewRecipePage } from '@recipe/utils/tests';
 import { mockUpdateRecipeAddIsIngredient } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeRemoveAsIngredient } from '@recipe/graphql/mutations/__mocks__/recipe';
 
@@ -23,7 +24,7 @@ describe('Update Recipe Workflow: Is Ingredient', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
         await user.click(screen.getByLabelText('Toggle recipe as ingredient'));
         await user.click(screen.getByLabelText('Edit recipe plural title'));
         await user.keyboard('Mock Recipes');
@@ -35,13 +36,12 @@ describe('Update Recipe Workflow: Is Ingredient', () => {
         expect(screen.queryByText('Mock Recipes')).not.toBeNull();
 
         // ------ View Recipe Page -------------------------------
-        await user.click(screen.getByLabelText('View Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
         expect(screen.queryByText('Mock Recipes')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
 
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
         expect(screen.queryByText('Mock Recipe')).not.toBeNull();
         haveValueByLabelText(screen, 'Edit recipe plural title', 'Mock Recipes');
 
@@ -62,7 +62,7 @@ describe('Update Recipe Workflow: Is Ingredient', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage('Mock Recipe Two', 'Instruction one', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one');
         await user.click(screen.getByLabelText('Toggle recipe as ingredient'));
         await user.click(screen.getByLabelText('Save recipe'));
 
@@ -73,13 +73,12 @@ describe('Update Recipe Workflow: Is Ingredient', () => {
         expect(screen.queryByText('Mock Recipe Two')).not.toBeNull();
 
         // ------ View Recipe Page -------------------------------
-        await user.click(screen.getByLabelText('View Mock Recipe Two'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterViewRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one');
         expect(screen.queryByText('Mock Recipes Two')).toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
 
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage('Mock Recipe Two', 'Instruction one', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one');
         expect(screen.queryByText('Mock Recipe Two')).not.toBeNull();
         expect(screen.queryByLabelText('Edit recipe plural title')).toBeNull();
 

@@ -22,7 +22,7 @@ describe('Update Recipe Workflow: Servings', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
         await user.click(screen.getByLabelText('Increase serving size'));
         expect(await screen.findByText('5 Servings')).not.toBeNull();
         await user.click(screen.getByLabelText('Save recipe'));
@@ -35,7 +35,7 @@ describe('Update Recipe Workflow: Servings', () => {
         expect(await screen.findByText('5 Servings')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage('Mock Recipe', 'Instruction one', screen, user);
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
         expect(await screen.findByText('5 Servings')).not.toBeNull();
     });
 });

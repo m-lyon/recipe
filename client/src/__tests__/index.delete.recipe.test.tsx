@@ -3,6 +3,7 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
+import { enterViewRecipePage } from '@recipe/utils/tests';
 import { mockDeleteRecipeOne } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockDeleteRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
 
@@ -63,9 +64,7 @@ describe('Delete Recipe Workflow', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        expect(await screen.findByText('Recipes'));
-        await user.click(screen.getByLabelText('View Mock Recipe'));
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
         await user.click(screen.getByLabelText('Navigate to home page'));
         await user.hover(await screen.findByLabelText('View Mock Recipe'));
         await user.click(screen.getByLabelText('Delete Mock Recipe'));
