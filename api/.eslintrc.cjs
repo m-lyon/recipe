@@ -7,7 +7,7 @@ module.exports = {
     env: {
         node: true,
     },
-    plugins: ['@typescript-eslint', 'prettier', 'import'],
+    plugins: ['@typescript-eslint', 'prettier', 'import', 'import-line-sorter'],
     extends: [
         'eslint:recommended',
         'plugin:@typescript-eslint/recommended',
@@ -61,6 +61,7 @@ module.exports = {
                 'newlines-between': 'always',
             },
         ],
+        'import-line-sorter/import-length-sort': ['error', { maxLength: 100 }],
     },
     settings: {
         'import/resolver': {

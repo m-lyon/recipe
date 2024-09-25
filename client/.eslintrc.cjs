@@ -7,7 +7,7 @@ module.exports = {
     env: {
         node: true,
     },
-    plugins: ['@typescript-eslint', 'prettier', 'import', 'react-hooks'],
+    plugins: ['@typescript-eslint', 'prettier', 'import', 'react-hooks', 'import-line-sorter'],
     extends: [
         'eslint:recommended',
         'plugin:@typescript-eslint/recommended',
@@ -63,6 +63,7 @@ module.exports = {
                 'newlines-between': 'always',
             },
         ],
+        'import-line-sorter/import-length-sort': ['error', { maxLength: 100 }],
         'react-hooks/rules-of-hooks': 'error',
         'react-hooks/exhaustive-deps': 'warn',
     },
