@@ -61,7 +61,8 @@ module.exports = {
                 'newlines-between': 'always',
             },
         ],
-        'import-line-sorter/import-length-sort': ['error', { maxLength: 100 }],
+        'import-line-sorter/sort-imports': 'error',
+        'import-line-sorter/no-multiline-imports': 'error',
     },
     settings: {
         'import/resolver': {
