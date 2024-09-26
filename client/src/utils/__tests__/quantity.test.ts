@@ -63,7 +63,7 @@ describe('changeIngredientQuantity', () => {
         const newServings = 8;
         const oldServings = 4;
         const result = changeQuantity(ingr, newServings, oldServings, (ingr) => ingr);
-        expect(result.quantity).toBe('1');
+        expect(result.quantity).toBe('1/1');
     });
 
     it('should adjust quantity to whole number when quantity is a decimal', () => {
@@ -71,7 +71,7 @@ describe('changeIngredientQuantity', () => {
         const newServings = 8;
         const oldServings = 4;
         const result = changeQuantity(ingr, newServings, oldServings, (ingr) => ingr);
-        expect(result.quantity).toBe('1');
+        expect(result.quantity).toBe('1/1');
     });
 
     it('should adjust quantity to fraction when unit preferred number format is fraction', () => {
@@ -93,7 +93,7 @@ describe('changeIngredientQuantity', () => {
     });
 
     it('should adjust quantity to decimal when unit preferred number format is decimal', () => {
-        const ingr = getIngredient({ quantity: '1' });
+        const ingr = getIngredient({ quantity: '1/1' });
         ingr.unit!.preferredNumberFormat = EnumUnitPreferredNumberFormat.Decimal;
         const newServings = 6;
         const oldServings = 4;

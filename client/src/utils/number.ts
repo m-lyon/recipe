@@ -21,10 +21,32 @@ export function validateRange(input: string): boolean {
 
 export function formatFraction(input: string): string {
     const fract = fraction(input);
+    if (fract.d === 1) {
+        return fract.n.toString();
+    }
     if (fract.n > fract.d) {
         return `${Math.floor(fract.n / fract.d)}${fractionUnicode(fract.n % fract.d, fract.d)}`;
     }
     return fractionUnicode(fract.n, fract.d);
+}
+
+export function formatFloat(input: string): string {
+    const num = parseFloat(input);
+    const round = (num: number, precision: number): number =>
+        Math.round(num / precision) * precision;
+    const trailingZerosRegex = /([0-9]+(\.[0-9]+[1-9])?)(\.?0+$)/;
+    switch (true) {
+        case num <= 5:
+            return num.toFixed(2).replace(trailingZerosRegex, '$1');
+        case num <= 25:
+            return num.toFixed(1).replace(trailingZerosRegex, '$1');
+        case num <= 100:
+            return round(num, 0.5).toFixed(1).replace(trailingZerosRegex, '$1');
+        case num <= 250:
+            return num.toFixed(0);
+        default:
+            return round(num, 5).toFixed(0);
+    }
 }
 
 export function percentage(x: number, y: number): number {

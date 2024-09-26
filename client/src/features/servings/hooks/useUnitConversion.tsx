@@ -5,6 +5,7 @@ import { Quantity } from '@recipe/types';
 import { isFraction, isRange } from '@recipe/utils/number';
 import { Unit, UnitConversion } from '@recipe/graphql/generated';
 import { GET_UNIT_CONVERSIONS } from '@recipe/graphql/queries/unitConversion';
+import { returnQuantityFromFloat, returnQuantityFromFraction } from '@recipe/utils/quantity';
 
 export interface UnitConversionArgs {
     quantity: Quantity;
@@ -35,11 +36,11 @@ export function useUnitConversion() {
 }
 
 function applyConversion(
-    quantity: Quantity,
+    quantity: string,
     baseToUnitConversion: number,
     unitConversion: UnitConversion
 ): UnitConversionArgs {
-    if (isRange(quantity!)) {
+    if (isRange(quantity)) {
         const [start, end] = quantity!.split('-');
         const startConversion = applyConversion(start, baseToUnitConversion, unitConversion);
         const endConversion = applyConversion(end, baseToUnitConversion, unitConversion);
@@ -48,7 +49,7 @@ function applyConversion(
             unit: startConversion.unit,
         };
     }
-    if (isFraction(quantity!)) {
+    if (isFraction(quantity)) {
         return applyFractionConversion(quantity, baseToUnitConversion, unitConversion);
     } else {
         return applyFloatConversion(quantity, baseToUnitConversion, unitConversion);
@@ -56,7 +57,7 @@ function applyConversion(
 }
 
 function applyFractionConversion(
-    quantity: Quantity,
+    quantity: string,
     baseToUnitConversion: number,
     unitConversion: UnitConversion
 ): UnitConversionArgs {
@@ -64,17 +65,17 @@ function applyFractionConversion(
     for (const rule of unitConversion.rules) {
         if (baseQuantity >= (rule.baseUnitThreshold as MathType)) {
             const result = divide(baseQuantity, fraction(rule.baseToUnitConversion)) as Fraction;
-            return { quantity: `${result.n}/${result.d}`, unit: rule.unit! };
+            return { quantity: returnQuantityFromFraction(result, rule.unit!), unit: rule.unit! };
         }
     }
     return {
-        quantity: `${baseQuantity.n}/${baseQuantity.d}`,
+        quantity: returnQuantityFromFraction(baseQuantity, unitConversion.baseUnit!),
         unit: unitConversion.baseUnit!,
     };
 }
 
 function applyFloatConversion(
-    quantity: Quantity,
+    quantity: string,
     baseToUnitConversion: number,
     unitConversion: UnitConversion
 ): UnitConversionArgs {
@@ -82,8 +83,11 @@ function applyFloatConversion(
     for (const rule of unitConversion.rules) {
         if (baseQuantity >= rule.baseUnitThreshold) {
             const result = baseQuantity / rule.baseToUnitConversion;
-            return { quantity: result.toString(), unit: rule.unit! };
+            return { quantity: returnQuantityFromFloat(result, rule.unit!), unit: rule.unit! };
         }
     }
-    return { quantity: baseQuantity.toString(), unit: unitConversion.baseUnit! };
+    return {
+        quantity: returnQuantityFromFloat(baseQuantity, unitConversion.baseUnit!),
+        unit: unitConversion.baseUnit!,
+    };
 }

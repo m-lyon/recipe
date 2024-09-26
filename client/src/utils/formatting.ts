@@ -5,7 +5,7 @@ import { FinishedIngredient, FinishedPrepMethod, FinishedUnit } from '@recipe/ty
 import { FinishedSize, Item, LikeFinishedRecipeIngredient, Quantity } from '@recipe/types';
 
 import { isPlural } from './plural';
-import { formatFraction, isFraction, isRange } from './number';
+import { formatFloat, formatFraction, isFraction, isRange } from './number';
 
 // Quantity -------------------------------------------------------------
 function getEditableQuantityStr(item: EditableRecipeIngredient): string {
@@ -26,7 +26,7 @@ function getFinishedQuantityStr(quantity: FinishedQuantity): string {
     if (isFraction(quantity)) {
         return formatFraction(quantity);
     }
-    return quantity;
+    return formatFloat(quantity);
 }
 // Unit -----------------------------------------------------------------
 function getEditableUnitStr(item: EditableRecipeIngredient): string {

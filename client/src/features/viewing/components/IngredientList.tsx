@@ -4,11 +4,11 @@ import { UnorderedList, VStack, useToast } from '@chakra-ui/react';
 import { Box, Flex, HStack, IconButton, ListItem, Spacer, Text } from '@chakra-ui/react';
 
 import { DELAY_SHORT } from '@recipe/constants';
+import { RecipeAsIngredient } from '@recipe/types';
 import { changeQuantity } from '@recipe/utils/quantity';
 import { useUnitConversion } from '@recipe/features/servings';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 import { IngredientSubsection, LikeFinishedRecipeIngredient } from '@recipe/types';
-import { RecipeAsIngredient } from '@recipe/types';
 
 import { RecipeIngredient } from './RecipeIngredient';
 

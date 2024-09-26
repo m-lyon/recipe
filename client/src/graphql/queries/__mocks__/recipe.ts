@@ -1,12 +1,17 @@
 import { GetRecipeQueryVariables } from '@recipe/graphql/generated';
+import { mockRecipeIngredientIdTen } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdFour } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdFive } from '@recipe/graphql/__mocks__/ids';
 import { GET_INGREDIENT_COMPONENTS } from '@recipe/graphql/queries/recipe';
+import { mockRecipeIngredientIdNine } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdEight } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdThree } from '@recipe/graphql/__mocks__/ids';
+import { mockRecipeIngredientIdEleven } from '@recipe/graphql/__mocks__/ids';
+import { mockRecipeIngredientIdTwelve } from '@recipe/graphql/__mocks__/ids';
 import { mockTitleOne, mockTitleTwo } from '@recipe/graphql/__mocks__/common';
 import { CountRecipesQuery, GetRecipeQuery } from '@recipe/graphql/generated';
+import { mockRecipeIngredientIdThirteen } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIdNew, mockRecipeIdOne } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIdThree, mockRecipeIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { GetRecipesQuery, GetRecipesQueryVariables } from '@recipe/graphql/generated';
@@ -175,49 +180,49 @@ export const mockRecipeThree = {
                     prepMethod: mockDiced,
                 },
                 {
-                    _id: mockRecipeIngredientIdOne,
+                    _id: mockRecipeIngredientIdNine,
                     type: EnumRecipeIngredientType.Ingredient,
                     quantity: '1.13',
                     unit: mockOunce,
                     size: null,
                     ingredient: mockApple,
-                    prepMethod: mockDiced,
+                    prepMethod: null,
                 },
                 {
-                    _id: mockRecipeIngredientIdOne,
+                    _id: mockRecipeIngredientIdTen,
                     type: EnumRecipeIngredientType.Ingredient,
                     quantity: '5',
                     unit: mockOunce,
                     size: null,
                     ingredient: mockApple,
-                    prepMethod: mockDiced,
+                    prepMethod: null,
                 },
                 {
-                    _id: mockRecipeIngredientIdOne,
+                    _id: mockRecipeIngredientIdEleven,
                     type: EnumRecipeIngredientType.Ingredient,
                     quantity: '26.1',
                     unit: mockOunce,
                     size: null,
                     ingredient: mockApple,
-                    prepMethod: mockDiced,
+                    prepMethod: null,
                 },
                 {
-                    _id: mockRecipeIngredientIdOne,
+                    _id: mockRecipeIngredientIdTwelve,
                     type: EnumRecipeIngredientType.Ingredient,
                     quantity: '101',
                     unit: mockOunce,
                     size: null,
                     ingredient: mockApple,
-                    prepMethod: mockDiced,
+                    prepMethod: null,
                 },
                 {
-                    _id: mockRecipeIngredientIdOne,
+                    _id: mockRecipeIngredientIdThirteen,
                     type: EnumRecipeIngredientType.Ingredient,
                     quantity: '251',
                     unit: mockOunce,
                     size: null,
                     ingredient: mockApple,
-                    prepMethod: mockDiced,
+                    prepMethod: null,
                 },
             ],
         },

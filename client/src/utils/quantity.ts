@@ -18,7 +18,12 @@ export function changeQuantity(
     return { ...ingr, ...unitConversion({ quantity: newQuantity, unit: ingr.unit! }) };
 }
 
-function calculateQuantity(qty: string, newServ: number, oldServ: number, unit: Unit): string {
+function calculateQuantity(
+    qty: string,
+    newServ: number,
+    oldServ: number,
+    unit: Unit | null
+): string {
     if (isRange(qty)) {
         const [start, end] = qty.split('-');
         const newStart = calculateQuantity(start, newServ, oldServ, unit);
@@ -26,22 +31,20 @@ function calculateQuantity(qty: string, newServ: number, oldServ: number, unit: 
         return `${newStart}-${newEnd}`;
     }
     const result = multiply(fraction(qty), fraction(newServ / oldServ)) as Fraction;
-    if (result.d === 1) {
-        return handleInteger(result);
-    }
-    return handleFraction(result, unit);
+    return returnQuantityFromFraction(result, unit);
 }
 
-function handleFraction(result: Fraction, unit: Unit): string {
-    if (unit == null) {
-        return `${result.n}/${result.d}`;
+export function returnQuantityFromFraction(num: Fraction, unit: Unit | null): string {
+    if (unit == null || unit.preferredNumberFormat === EnumUnitPreferredNumberFormat.Fraction) {
+        return `${num.n}/${num.d}`;
     }
-    if (unit?.preferredNumberFormat === EnumUnitPreferredNumberFormat.Fraction) {
-        return `${result.n}/${result.d}`;
-    }
-    return result.toString();
+    return (num.n / num.d).toString();
 }
 
-function handleInteger(result: Fraction): string {
-    return result.toString();
+export function returnQuantityFromFloat(num: number, unit: Unit | null): string {
+    if (unit == null || unit.preferredNumberFormat === EnumUnitPreferredNumberFormat.Fraction) {
+        const fract = fraction(num);
+        return `${fract.n}/${fract.d}`;
+    }
+    return num.toString();
 }
