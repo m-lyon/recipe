@@ -39,7 +39,13 @@ export function UserOptions() {
     }
     if (data?.currentUser) {
         return (
-            <Stack flex={{ base: 1, md: 0 }} justify='flex-end' direction='row' spacing={6}>
+            <Stack
+                flex={{ base: 1, md: 0 }}
+                justify='flex-end'
+                direction='row'
+                spacing={6}
+                ml={{ base: 3, md: 0 }}
+            >
                 <Button fontSize='sm' fontWeight={400} onClick={() => logout()} aria-label='Logout'>
                     Logout
                 </Button>
