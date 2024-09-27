@@ -60,6 +60,7 @@ export function EditableIngredient(props: Props) {
         },
     });
     const handleReset = () => {
+        setHighlighted(0);
         actionHandler.resetEditable(subsection);
         if (item.unit.data && !item.unit.data.unique) {
             deleteUnit({ variables: { id: item.unit.data._id } });
