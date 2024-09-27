@@ -97,7 +97,7 @@ function Slider(props: SliderProps) {
         if (dims) {
             initSliderWidth(Math.round(dims.width));
         }
-    }, [dims?.width, initSliderWidth]);
+    }, [dims, dims?.width, initSliderWidth]);
 
     const handleFocus = () => setTrackIsActive(true);
     const handleDecrementClick = () => {

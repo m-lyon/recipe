@@ -27,7 +27,7 @@ export function IngredientsTab(props: Props) {
 
     useEffect(() => {
         getRatings(recipeId);
-    }, [recipeId]);
+    }, [recipeId, getRatings]);
 
     return (
         <IngredientsTabLayout

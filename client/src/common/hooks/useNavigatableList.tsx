@@ -12,35 +12,36 @@ export function useNavigatableList<T>(
         if (highlightedIndex > list.length - 1) {
             setHighlightedIndex(list.length - 1);
         }
-    }, [list.length]);
+    }, [highlightedIndex, list.length]);
 
     useEffect(() => {
-        if (focusRef.current) {
-            focusRef.current.addEventListener('keydown', handleKeyboardEvent);
-        }
-        return () => {
-            if (focusRef.current) {
-                focusRef.current.removeEventListener('keydown', handleKeyboardEvent);
+        const handleKeyboardEvent = (event: KeyboardEvent) => {
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter') {
+                event.preventDefault();
+            }
+            if (event.key === 'ArrowDown' && highlightedIndex < list.length - 1) {
+                setHighlightedIndex((index) => (index += 1));
+            } else if (event.key === 'ArrowUp' && highlightedIndex > 0) {
+                setHighlightedIndex((index) => (index -= 1));
+            } else if (event.key === 'Enter') {
+                if (highlightedIndex !== -1) {
+                    handleEnter(list[highlightedIndex]);
+                } else if (handleOutsideEnter) {
+                    handleOutsideEnter();
+                }
             }
         };
-    }, [highlightedIndex, list]);
 
-    const handleKeyboardEvent = (event: KeyboardEvent) => {
-        if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter') {
-            event.preventDefault();
+        const current = focusRef.current;
+        if (current) {
+            current.addEventListener('keydown', handleKeyboardEvent);
         }
-        if (event.key === 'ArrowDown' && highlightedIndex < list.length - 1) {
-            setHighlightedIndex((index) => (index += 1));
-        } else if (event.key === 'ArrowUp' && highlightedIndex > 0) {
-            setHighlightedIndex((index) => (index -= 1));
-        } else if (event.key === 'Enter') {
-            if (highlightedIndex !== -1) {
-                handleEnter(list[highlightedIndex]);
-            } else if (handleOutsideEnter) {
-                handleOutsideEnter();
+        return () => {
+            if (current) {
+                current.removeEventListener('keydown', handleKeyboardEvent);
             }
-        }
-    };
+        };
+    }, [highlightedIndex, list, focusRef, handleEnter, handleOutsideEnter]);
 
     return { highlightedIndex, setHighlightedIndex };
 }

@@ -28,17 +28,17 @@ export function EditableItemArea(props: Props) {
                 }
             }
         };
-
-        if (ref.current) {
-            ref.current.addEventListener('keydown', onEnter);
+        const current = ref.current;
+        if (current) {
+            current.addEventListener('keydown', onEnter);
         }
 
         return () => {
-            if (ref.current) {
-                ref.current.removeEventListener('keydown', onEnter);
+            if (current) {
+                current.removeEventListener('keydown', onEnter);
             }
         };
-    }, []);
+    }, [handleEnter]);
 
     return (
         <Textarea

@@ -50,17 +50,18 @@ export const EditableItem = forwardRef<HTMLInputElement, Props>(function Editabl
     };
 
     useEffect(() => {
-        if (inputRef.current) {
-            inputRef.current.addEventListener('keydown', handleEnter);
+        const current = inputRef.current;
+        if (current) {
+            current.addEventListener('keydown', handleEnter);
         }
 
         return () => {
-            if (inputRef.current) {
+            if (current) {
                 // Cleanup: Remove the event listener when the component unmounts
-                inputRef.current.removeEventListener('keydown', handleEnter);
+                current.removeEventListener('keydown', handleEnter);
             }
         };
-    }, []);
+    }, [handleEnter]);
 
     return (
         <Editable
