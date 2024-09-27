@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { useMutation } from '@apollo/client';
+import { useBreakpointValue } from '@chakra-ui/react';
 import { Box, Editable, EditableInput, EditablePreview } from '@chakra-ui/react';
 import { Popover, PopoverAnchor, useDisclosure, useOutsideClick } from '@chakra-ui/react';
 
@@ -126,7 +127,7 @@ export function EditableIngredient(props: Props) {
                 onOpen={onOpen}
                 onClose={onClose}
                 closeOnBlur={false}
-                placement='right'
+                placement={useBreakpointValue({ base: 'bottom', md: 'right' })}
                 initialFocusRef={fieldRef}
                 returnFocusOnClose={true}
             >

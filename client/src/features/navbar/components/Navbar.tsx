@@ -29,7 +29,7 @@ export function Navbar() {
                     borderColor={useColorModeValue('gray.200', 'gray.900')}
                     align='center'
                     position='fixed'
-                    zIndex={3}
+                    zIndex={12}
                     w='100%'
                 >
                     <Flex
@@ -79,7 +79,7 @@ export function Navbar() {
                         <UserOptions />
                     </Flex>
                 </Flex>
-                <Slide in={isOpen} direction='top' style={{ zIndex: 2, marginTop: '60px' }}>
+                <Slide in={isOpen} direction='top' style={{ zIndex: 11, marginTop: '60px' }}>
                     <MobileNav isLoggedIn={isLoggedIn} parentOnToggle={onToggle} />
                 </Slide>
             </Box>
