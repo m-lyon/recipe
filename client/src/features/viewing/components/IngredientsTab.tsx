@@ -27,7 +27,10 @@ export function IngredientsTab(props: Props) {
 
     useEffect(() => {
         getRatings(recipeId);
-    }, [recipeId, getRatings]);
+        // do not include getRatings in the dependency array
+        // because it will cause an infinite loop
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [recipeId]);
 
     return (
         <IngredientsTabLayout
