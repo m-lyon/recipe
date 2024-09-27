@@ -148,25 +148,23 @@ jobs:
           TARGET: ${{ secrets.API_REMOTE_TARGET }}
 
       - name: Install API dependencies on server
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.0.1
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.REMOTE_PORT }}
-          timeout: 60s
           script: |
             cd ${{ secrets.API_REMOTE_TARGET }}
             npm ci --production
 
       - name: Start API server
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.0.1
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.REMOTE_PORT }}
-          timeout: 60s
           script: sudo systemctl restart recipe
 
       - name: Deploy client to server
