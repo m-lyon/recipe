@@ -20,7 +20,7 @@ export const theme = extendTheme({
                         label: {
                             top: 0,
                             left: 0,
-                            zIndex: 2,
+                            zIndex: 1,
                             position: 'absolute',
                             backgroundColor: 'white',
                             pointerEvents: 'none',
