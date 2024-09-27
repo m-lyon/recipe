@@ -22,14 +22,14 @@ export const mockCreateSize = {
                 value: mockExtraLarge.value,
                 unique: mockExtraLarge.unique,
             },
-        },
+        } satisfies CreateSizeMutationVariables,
     },
     result: {
         data: {
             sizeCreateOne: {
                 record: mockExtraLarge,
             },
-        },
+        } satisfies CreateSizeMutation,
     },
 };
 export const mockCreateBespokeSize = {

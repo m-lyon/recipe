@@ -1,16 +1,15 @@
-import { useContext } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 
 import { ROOT_PATH } from '@recipe/constants';
 
-import { UserContext } from '../context/UserContext';
+import { useUser } from '../hooks/useUser';
 
 export function RequireAuth() {
-    const [userContext] = useContext(UserContext);
+    const { isLoggedIn, loading } = useUser();
 
-    if (userContext === null) {
+    if (loading) {
         return <div>Loading...</div>;
     }
 
-    return userContext === false ? <Navigate to={ROOT_PATH} /> : <Outlet />;
+    return isLoggedIn ? <Outlet /> : <Navigate to={ROOT_PATH} />;
 }

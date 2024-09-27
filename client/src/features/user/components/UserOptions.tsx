@@ -1,4 +1,3 @@
-import { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { Button, Stack } from '@chakra-ui/react';
@@ -9,49 +8,39 @@ import { useErrorToast } from '@recipe/common/hooks';
 import { LOGOUT } from '@recipe/graphql/mutations/user';
 import { CURRENT_USER } from '@recipe/graphql/queries/user';
 
-import { UserContext } from '../context/UserContext';
-
 export function UserOptions() {
-    const [userContext, setUserContext] = useContext(UserContext);
-    const [logout] = useMutation(LOGOUT);
-    const navigate = useNavigate();
-    const toast = useErrorToast();
-    const { loading } = useQuery(CURRENT_USER, {
+    const { data, loading } = useQuery(CURRENT_USER, {
         pollInterval: 1000 * 60 * 5,
-        onCompleted: (data) => {
-            if (!data.currentUser) {
-                setUserContext(false);
-            } else {
-                setUserContext(data.currentUser);
-            }
-        },
         onError: (err) => {
             console.log(err);
             toast({ title: 'An error occurred.', description: err.message });
         },
     });
+    const [logout] = useMutation(LOGOUT, {
+        onError: (err) => {
+            console.log(err);
+            toast({ title: 'An error occurred.', description: err.message });
+        },
+        onCompleted: () => {
+            navigate(ROOT_PATH);
+        },
+        update: (cache) => {
+            cache.writeQuery({
+                query: CURRENT_USER,
+                data: { currentUser: null },
+            });
+        },
+    });
+    const navigate = useNavigate();
+    const toast = useErrorToast();
 
-    const handleLogout = async () => {
-        try {
-            const { data } = await logout();
-            if (data) {
-                setUserContext(false);
-                navigate(ROOT_PATH);
-            }
-        } catch (err) {
-            if (err instanceof Error) {
-                console.error(err);
-                toast({ title: 'An error occurred.', description: err.message });
-            }
-        }
-    };
     if (loading) {
         return <LoginOptions />;
     }
-    if (userContext) {
+    if (data?.currentUser) {
         return (
             <Stack flex={{ base: 1, md: 0 }} justify='flex-end' direction='row' spacing={6}>
-                <Button fontSize='sm' fontWeight={400} onClick={handleLogout}>
+                <Button fontSize='sm' fontWeight={400} onClick={() => logout()} aria-label='Logout'>
                     Logout
                 </Button>
             </Stack>
@@ -75,6 +64,7 @@ function LoginOptions() {
                 fontWeight={600}
                 colorScheme='teal'
                 to={`${ROOT_PATH}/login`}
+                aria-label='Log in or sign up'
             >
                 Sign In
             </Button>

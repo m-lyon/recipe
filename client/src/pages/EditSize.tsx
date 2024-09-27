@@ -1,28 +1,17 @@
-import { useQuery } from '@apollo/client';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { FormLabel, Select } from '@chakra-ui/react';
 import { Box, FormControl, Heading, VStack } from '@chakra-ui/react';
 
 import { Size } from '@recipe/graphql/generated';
-import { UserContext } from '@recipe/features/user';
 import { useSuccessToast } from '@recipe/common/hooks';
 import { GET_SIZES } from '@recipe/graphql/queries/size';
-import { SizeForm } from '@recipe/features/recipeIngredient';
 import { MODIFY_SIZE } from '@recipe/graphql/mutations/size';
+import { SizeForm, useEditPermissionRecipeIngredients } from '@recipe/features/recipeIngredient';
 
 export function EditSize() {
-    const [userContext] = useContext(UserContext);
     const toast = useSuccessToast();
     const [currentSize, setCurrentSize] = useState<Size>();
-    const { data } = useQuery(GET_SIZES, {
-        variables: {
-            filter: userContext
-                ? userContext.role === 'admin'
-                    ? {}
-                    : { owner: userContext._id }
-                : undefined,
-        },
-    });
+    const { data } = useEditPermissionRecipeIngredients(GET_SIZES);
 
     return (
         <VStack>

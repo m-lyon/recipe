@@ -1,7 +1,7 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { TagList } from '@recipe/features/tags';
-import { UserContext } from '@recipe/features/user';
+import { useUser } from '@recipe/features/user';
 import { Servings } from '@recipe/features/servings';
 import { IngredientSubsection } from '@recipe/types';
 import { IngredientsTabLayout } from '@recipe/layouts';
@@ -21,8 +21,8 @@ interface Props {
 }
 export function IngredientsTab(props: Props) {
     const { recipeId, ingredients, notes, numServings, tags, calculatedTags } = props;
-    const [userContext] = useContext(UserContext);
     const [servings, setServings] = useState(numServings);
+    const { isLoggedIn } = useUser();
     const { avgRating, getRatings, setRating } = useViewStarRating();
 
     useEffect(() => {
@@ -33,7 +33,7 @@ export function IngredientsTab(props: Props) {
         <IngredientsTabLayout
             Servings={<Servings num={servings} setNum={setServings} />}
             StarRating={
-                <StarRating rating={avgRating} setRating={setRating} readonly={!userContext} />
+                <StarRating rating={avgRating} setRating={setRating} readonly={!isLoggedIn} />
             }
             IngredientList={
                 <IngredientList

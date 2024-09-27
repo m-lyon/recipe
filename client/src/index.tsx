@@ -1,12 +1,11 @@
 import { createRoot } from 'react-dom/client';
 import { ChakraProvider } from '@chakra-ui/react';
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { ApolloClient, ApolloProvider } from '@apollo/client';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import createUploadLink from 'apollo-upload-client/createUploadLink.mjs';
 
 import { getCache } from '@recipe/utils/cache';
 import { GRAPHQL_ENDPOINT } from '@recipe/constants';
-import { UserProvider } from '@recipe/features/user';
 
 import { routes } from './routes';
 import { theme } from './theme/chakraTheme';
@@ -22,9 +21,7 @@ const client = new ApolloClient({
 root.render(
     <ApolloProvider client={client}>
         <ChakraProvider theme={theme}>
-            <UserProvider>
-                <RouterProvider router={createBrowserRouter(routes)} />
-            </UserProvider>
+            <RouterProvider router={createBrowserRouter(routes)} />
         </ChakraProvider>
     </ApolloProvider>
 );

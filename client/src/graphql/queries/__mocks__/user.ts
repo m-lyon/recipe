@@ -10,13 +10,24 @@ export const mockAdmin = {
     lastName: 'User',
 };
 
-export const mockGetCurrentUser = {
+export const mockCurrentUser = {
     request: {
         query: CURRENT_USER,
     },
     result: {
         data: {
             currentUser: mockAdmin,
+        } satisfies CurrentUserQuery,
+    },
+};
+
+export const mockCurrentUserNull = {
+    request: {
+        query: CURRENT_USER,
+    },
+    result: {
+        data: {
+            currentUser: null,
         } satisfies CurrentUserQuery,
     },
 };

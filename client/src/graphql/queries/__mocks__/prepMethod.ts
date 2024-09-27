@@ -1,6 +1,6 @@
-import { GetPrepMethodsQuery } from '@recipe/graphql/generated';
 import { mockAdminId, mockWholeId } from '@recipe/graphql/__mocks__/ids';
 import { mockChoppedId, mockDicedId, mockSlicedId } from '@recipe/graphql/__mocks__/ids';
+import { GetPrepMethodsQuery, GetPrepMethodsQueryVariables } from '@recipe/graphql/generated';
 
 import { GET_PREP_METHODS } from '../prepMethod';
 
@@ -34,6 +34,9 @@ export const mockWhole = {
 };
 export const mockPrepMethods = [mockChopped, mockDiced, mockSliced, mockWhole];
 export const mockGetPrepMethods = {
-    request: { query: GET_PREP_METHODS },
+    request: {
+        query: GET_PREP_METHODS,
+        variables: { filter: {} } satisfies GetPrepMethodsQueryVariables,
+    },
     result: { data: { prepMethodMany: mockPrepMethods } satisfies GetPrepMethodsQuery },
 };

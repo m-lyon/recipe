@@ -1,10 +1,11 @@
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, screen } from '@testing-library/react';
+import { cleanup, screen, waitFor } from '@testing-library/react';
 import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { MockedResponses, renderPage } from '@recipe/utils/tests';
+import { mockCurrentUser } from '@recipe/graphql/queries/__mocks__/user';
 import { mockDicedId, mockSlicedId } from '@recipe/graphql/__mocks__/ids';
 import { mockGetPrepMethods } from '@recipe/graphql/queries/__mocks__/prepMethod';
 import { mockUpdatePrepMethod } from '@recipe/graphql/mutations/__mocks__/prepMethod';
@@ -17,7 +18,7 @@ loadDevMessages();
 
 const renderComponent = (mocks: MockedResponses = []) => {
     const routes = createRoutesFromElements(<Route path='/' element={<EditPrepMethod />} />);
-    renderPage(routes, [mockGetPrepMethods, ...mocks]);
+    renderPage(routes, [mockGetPrepMethods, mockCurrentUser, ...mocks]);
 };
 
 describe('Edit Prep Method', () => {
@@ -32,6 +33,7 @@ describe('Edit Prep Method', () => {
 
         // Act
         expect(await screen.findByText('Edit Prep Method')).not.toBeNull();
+        await waitFor(() => expect(screen.getByLabelText('diced')).not.toBeNull());
         await user.selectOptions(screen.getByLabelText('Select prep method'), mockDicedId);
         expect(screen.getByLabelText('Name')).toHaveProperty('value', 'diced');
         await user.click(screen.getByLabelText('Name'));
@@ -51,6 +53,7 @@ describe('Edit Prep Method', () => {
 
         // Act
         expect(await screen.findByText('Edit Prep Method')).not.toBeNull();
+        await waitFor(() => expect(screen.getByLabelText('diced')).not.toBeNull());
         await user.selectOptions(screen.getByLabelText('Select prep method'), mockDicedId);
         expect(screen.getByLabelText('Name')).toHaveProperty('value', 'diced');
         await user.click(screen.getByLabelText('Name'));
@@ -69,6 +72,7 @@ describe('Edit Prep Method', () => {
 
         // Act
         expect(await screen.findByText('Edit Prep Method')).not.toBeNull();
+        await waitFor(() => expect(screen.getByLabelText('diced')).not.toBeNull());
         await user.selectOptions(screen.getByLabelText('Select prep method'), mockDicedId);
         expect(screen.getByLabelText('Name')).toHaveProperty('value', 'diced');
         await user.click(screen.getByLabelText('Delete prep method'));

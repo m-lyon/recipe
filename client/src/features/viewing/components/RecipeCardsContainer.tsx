@@ -1,18 +1,19 @@
+import { useState } from 'react';
 import { Box } from '@chakra-ui/react';
 import { useQuery } from '@apollo/client';
-import { useContext, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
 import { RecipeFromMany } from '@recipe/types';
+import { useUser } from '@recipe/features/user';
+import { User } from '@recipe/graphql/generated';
 import { ConfirmDeleteModal } from '@recipe/features/editing';
 import { COUNT_RECIPES } from '@recipe/graphql/queries/recipe';
-import { IUserContext, UserContext } from '@recipe/features/user';
 
 import { RecipeCard } from './RecipeCard';
 import { ImageRecipeCard } from './ImageRecipeCard';
 
-function hasPermission(user: IUserContext, recipe: RecipeFromMany) {
+function hasPermission(user: User | null | undefined, recipe: RecipeFromMany) {
     if (!user) {
         return false;
     }
@@ -43,7 +44,7 @@ export function RecipeCardsContainer(props: Props) {
     const { recipes, fetchMore, searchQuery } = props;
     const [show, setShow] = useState(false);
     const [recipeId, setRecipeId] = useState('');
-    const [user] = useContext(UserContext);
+    const { user } = useUser();
     const { data } = useQuery(COUNT_RECIPES, {
         variables: {
             filter: searchQuery

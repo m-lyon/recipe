@@ -1,4 +1,4 @@
-import { useContext, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Outlet, Link as ReactRouterLink } from 'react-router-dom';
 import { useColorModeValue, useDisclosure } from '@chakra-ui/react';
 import { Box, Collapse, Flex, Icon, IconButton, Slide, Stack, Text } from '@chakra-ui/react';
@@ -7,13 +7,12 @@ import { ChevronDownIcon, ChevronRightIcon, CloseIcon, HamburgerIcon } from '@ch
 
 import { ROOT_PATH } from '@recipe/constants';
 import { SearchBar } from '@recipe/features/search';
-import { UserContext, UserOptions } from '@recipe/features/user';
+import { UserOptions, useUser } from '@recipe/features/user';
 
 export function Navbar() {
     const { isOpen, onToggle, onClose } = useDisclosure();
-    const [userContext] = useContext(UserContext);
     const [searchQuery, setSearchQuery] = useState('');
-    const isLoggedIn = userContext !== null && userContext !== false;
+    const { isLoggedIn } = useUser();
 
     return (
         <>

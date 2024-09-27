@@ -1,10 +1,11 @@
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, screen } from '@testing-library/react';
+import { cleanup, screen, waitFor } from '@testing-library/react';
 import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { MockedResponses, renderPage } from '@recipe/utils/tests';
+import { mockCurrentUser } from '@recipe/graphql/queries/__mocks__/user';
 import { mockCarrotId, mockChickenId } from '@recipe/graphql/__mocks__/ids';
 import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockUpdateIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
@@ -17,7 +18,7 @@ loadDevMessages();
 
 const renderComponent = (mocks: MockedResponses = []) => {
     const routes = createRoutesFromElements(<Route path='/' element={<EditIngredient />} />);
-    renderPage(routes, [mockGetIngredients, ...mocks]);
+    renderPage(routes, [mockGetIngredients, mockCurrentUser, ...mocks]);
 };
 
 describe('Edit Ingredient', () => {
@@ -32,6 +33,7 @@ describe('Edit Ingredient', () => {
 
         // Act
         expect(await screen.findByText('Edit Ingredient')).not.toBeNull();
+        await waitFor(() => expect(screen.getByLabelText('carrot')).not.toBeNull());
         await user.selectOptions(screen.getByLabelText('Select ingredient'), mockCarrotId);
         expect(screen.getByLabelText('Plural name')).toHaveProperty('value', 'carrots');
         await user.click(screen.getByLabelText('Plural name'));
@@ -52,6 +54,7 @@ describe('Edit Ingredient', () => {
 
         // Act
         expect(await screen.findByText('Edit Ingredient')).not.toBeNull();
+        await waitFor(() => expect(screen.getByLabelText('carrot')).not.toBeNull());
         await user.selectOptions(screen.getByLabelText('Select ingredient'), mockCarrotId);
         expect(screen.getByLabelText('Plural name')).toHaveProperty('value', 'carrots');
         await user.click(screen.getByLabelText('Plural name'));
@@ -71,6 +74,7 @@ describe('Edit Ingredient', () => {
 
         // Act
         expect(await screen.findByText('Edit Ingredient')).not.toBeNull();
+        await waitFor(() => expect(screen.getByLabelText('carrot')).not.toBeNull());
         await user.selectOptions(screen.getByLabelText('Select ingredient'), mockCarrotId);
         expect(screen.getByLabelText('Plural name')).toHaveProperty('value', 'carrots');
         await user.click(screen.getByLabelText('Delete ingredient'));

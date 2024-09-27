@@ -1,7 +1,6 @@
-import { useContext } from 'react';
 import { Container, Grid, GridItem, useBreakpointValue } from '@chakra-ui/react';
 
-import { UserContext } from '@recipe/features/user';
+import { useUser } from '@recipe/features/user';
 import { useErrorToast } from '@recipe/common/hooks';
 import { Servings } from '@recipe/features/servings';
 import { ImageUpload } from '@recipe/features/images';
@@ -32,7 +31,7 @@ interface Props {
 }
 export function EditableRecipe(props: Props) {
     const { state, rating, handleSubmitMutation, submitButtonProps } = props;
-    const [userContext] = useContext(UserContext);
+    const { isLoggedIn } = useUser();
     const toast = useErrorToast();
 
     const validate = () => {
@@ -139,7 +138,7 @@ export function EditableRecipe(props: Props) {
                         .map((line) => line.value),
                 };
             });
-        if (userContext === false) {
+        if (!isLoggedIn) {
             toast({ title: 'Please log in to create a recipe', position: 'top' });
             return;
         }
@@ -223,7 +222,7 @@ export function EditableRecipe(props: Props) {
                             <StarRating
                                 {...rating}
                                 readonly={
-                                    useBreakpointValue({ base: true, md: false }) || !userContext
+                                    useBreakpointValue({ base: true, md: false }) || !isLoggedIn
                                 }
                             />
                         }

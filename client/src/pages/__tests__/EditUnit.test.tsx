@@ -1,11 +1,12 @@
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, screen } from '@testing-library/react';
+import { cleanup, screen, waitFor } from '@testing-library/react';
 import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { MockedResponses, renderPage } from '@recipe/utils/tests';
 import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
+import { mockCurrentUser } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGramId, mockTeaspoonId } from '@recipe/graphql/__mocks__/ids';
 import { mockDeleteUnit, mockUpdateUnit } from '@recipe/graphql/mutations/__mocks__/unit';
 
@@ -16,7 +17,7 @@ loadDevMessages();
 
 const renderComponent = (mocks: MockedResponses = []) => {
     const routes = createRoutesFromElements(<Route path='/' element={<EditUnit />} />);
-    renderPage(routes, [mockGetUnits, ...mocks]);
+    renderPage(routes, [mockGetUnits, mockCurrentUser, ...mocks]);
 };
 
 describe('Edit Unit', () => {
@@ -31,6 +32,7 @@ describe('Edit Unit', () => {
 
         // Act
         expect(await screen.findByText('Edit Unit')).not.toBeNull();
+        await waitFor(() => expect(screen.getByLabelText('teaspoon')).not.toBeNull());
         await user.selectOptions(screen.getByLabelText('Select unit'), mockTeaspoonId);
         expect(screen.getByLabelText('Short singular name')).toHaveProperty('value', 'tsp');
         await user.click(screen.getByLabelText('Long plural name'));
@@ -51,6 +53,7 @@ describe('Edit Unit', () => {
 
         // Act
         expect(await screen.findByText('Edit Unit')).not.toBeNull();
+        await waitFor(() => expect(screen.getByLabelText('teaspoon')).not.toBeNull());
         await user.selectOptions(screen.getByLabelText('Select unit'), mockTeaspoonId);
         expect(screen.getByLabelText('Short singular name')).toHaveProperty('value', 'tsp');
         await user.click(screen.getByLabelText('Long plural name'));
@@ -70,6 +73,7 @@ describe('Edit Unit', () => {
 
         // Act
         expect(await screen.findByText('Edit Unit')).not.toBeNull();
+        await waitFor(() => expect(screen.getByLabelText('teaspoon')).not.toBeNull());
         await user.selectOptions(screen.getByLabelText('Select unit'), mockTeaspoonId);
         expect(screen.getByLabelText('Short singular name')).toHaveProperty('value', 'tsp');
         await user.click(screen.getByLabelText('Delete unit'));

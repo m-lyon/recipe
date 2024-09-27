@@ -1,6 +1,7 @@
+import { EnumIngredientTags, GetIngredientsQuery } from '@recipe/graphql/generated';
+import { GetIngredientsQueryVariables, Ingredient } from '@recipe/graphql/generated';
 import { mockAppleId, mockCarrotId, mockChickenId } from '@recipe/graphql/__mocks__/ids';
 import { mockAdminId, mockLettuceId, mockRhubarbPieId } from '@recipe/graphql/__mocks__/ids';
-import { EnumIngredientTags, GetIngredientsQuery, Ingredient } from '@recipe/graphql/generated';
 
 import { GET_INGREDIENTS } from '../ingredient';
 
@@ -53,7 +54,10 @@ export const mockRhurbarbPie = {
 export const mockIngredients = [mockApple, mockChicken, mockCarrot, mockLettuce];
 export const mockRecipeFromIngredients = [mockRhurbarbPie];
 export const mockGetIngredients = {
-    request: { query: GET_INGREDIENTS },
+    request: {
+        query: GET_INGREDIENTS,
+        variables: { filter: {} } satisfies GetIngredientsQueryVariables,
+    },
     result: {
         data: { ingredientMany: mockIngredients, recipeMany: [] } satisfies GetIngredientsQuery,
     },

@@ -1,28 +1,18 @@
-import { useQuery } from '@apollo/client';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { FormLabel, Select } from '@chakra-ui/react';
 import { Box, FormControl, Heading, VStack } from '@chakra-ui/react';
 
-import { UserContext } from '@recipe/features/user';
-import { Ingredient } from '@recipe/graphql/generated';
 import { useSuccessToast } from '@recipe/common/hooks';
+import { Ingredient } from '@recipe/graphql/generated';
 import { IngredientForm } from '@recipe/features/recipeIngredient';
 import { GET_INGREDIENTS } from '@recipe/graphql/queries/ingredient';
 import { MODIFY_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
+import { useEditPermissionRecipeIngredients } from '@recipe/features/recipeIngredient';
 
 export function EditIngredient() {
-    const [userContext] = useContext(UserContext);
     const toast = useSuccessToast();
     const [currentIngredient, setCurrentIngredient] = useState<Ingredient>();
-    const { data } = useQuery(GET_INGREDIENTS, {
-        variables: {
-            filter: userContext
-                ? userContext.role === 'admin'
-                    ? {}
-                    : { owner: userContext._id }
-                : undefined,
-        },
-    });
+    const { data } = useEditPermissionRecipeIngredients(GET_INGREDIENTS);
 
     return (
         <VStack>

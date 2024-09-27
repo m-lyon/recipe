@@ -6,7 +6,6 @@ import { MockedProvider, MockedResponse } from '@apollo/client/testing';
 import { RouteObject, RouterProvider, createMemoryRouter } from 'react-router-dom';
 
 import { getCache } from '@recipe/utils/cache';
-import { UserProvider } from '@recipe/features/user';
 
 export async function enterCreateNewRecipePage(
     screen: Screen,
@@ -95,13 +94,11 @@ export function renderPage(
     render(
         <MockedProvider mocks={mockedResponses} cache={getCache()}>
             <ChakraProvider>
-                <UserProvider>
-                    <RouterProvider
-                        router={createMemoryRouter(route, {
-                            initialEntries,
-                        })}
-                    />
-                </UserProvider>
+                <RouterProvider
+                    router={createMemoryRouter(route, {
+                        initialEntries,
+                    })}
+                />
             </ChakraProvider>
         </MockedProvider>
     );

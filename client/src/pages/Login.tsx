@@ -1,13 +1,13 @@
 import { object, string } from 'yup';
 import { motion } from 'framer-motion';
+import { FormEvent, useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
-import { FormEvent, useContext, useState } from 'react';
 import { Box, Button, FormControl, HStack, Heading, Stack } from '@chakra-ui/react';
 
 import { ROOT_PATH } from '@recipe/constants';
-import { UserContext } from '@recipe/features/user';
 import { useErrorToast } from '@recipe/common/hooks';
+import { CURRENT_USER } from '@recipe/graphql/queries/user';
 import { LOGIN, SIGNUP } from '@recipe/graphql/mutations/user';
 import { FloatingLabelInput } from '@recipe/common/components';
 
@@ -17,11 +17,48 @@ export function Login() {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [isSignup, setIsSignup] = useState(false);
-    const [login, { loading: loginLoading }] = useMutation(LOGIN);
-    const [signup, { loading: SignupLoading }] = useMutation(SIGNUP);
+    const [login, { loading: loginLoading }] = useMutation(LOGIN, {
+        onCompleted: (data) => {
+            if (data?.login) {
+                navigate(ROOT_PATH);
+            }
+        },
+        update: (cache, { data }) => {
+            if (data?.login) {
+                cache.writeQuery({
+                    query: CURRENT_USER,
+                    data: { currentUser: data.login },
+                });
+            } else {
+                cache.writeQuery({
+                    query: CURRENT_USER,
+                    data: { currentUser: null },
+                });
+            }
+        },
+    });
+    const [signup, { loading: SignupLoading }] = useMutation(SIGNUP, {
+        onCompleted: (data) => {
+            if (data?.register) {
+                navigate(ROOT_PATH);
+            }
+        },
+        update: (cache, { data }) => {
+            if (data?.register) {
+                cache.writeQuery({
+                    query: CURRENT_USER,
+                    data: { currentUser: data.register },
+                });
+            } else {
+                cache.writeQuery({
+                    query: CURRENT_USER,
+                    data: { currentUser: null },
+                });
+            }
+        },
+    });
     const navigate = useNavigate();
     const toast = useErrorToast();
-    const setUserContext = useContext(UserContext)[1];
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -39,13 +76,7 @@ export function Login() {
                     firstName,
                     lastName,
                 });
-                const { data } = await signup({ variables: { ...validated } });
-                if (data?.register) {
-                    setUserContext(data.register);
-                    navigate(ROOT_PATH);
-                } else {
-                    setUserContext(false);
-                }
+                await signup({ variables: { ...validated } });
             } catch (err) {
                 if (err instanceof Error) {
                     console.error(err);
@@ -59,13 +90,7 @@ export function Login() {
             });
             try {
                 const validated = await formSchema.validate({ email, password });
-                const { data } = await login({ variables: { ...validated } });
-                if (data?.login) {
-                    setUserContext(data.login);
-                    navigate(ROOT_PATH);
-                } else {
-                    setUserContext(false);
-                }
+                await login({ variables: { ...validated } });
             } catch (err) {
                 if (err instanceof Error) {
                     console.error(err);
@@ -162,6 +187,7 @@ export function Login() {
                                 colorScheme='teal'
                                 isLoading={loginLoading || SignupLoading}
                                 type='submit'
+                                aria-label={isSignup ? 'Register' : 'Login'}
                                 isDisabled={
                                     !email ||
                                     !password ||
