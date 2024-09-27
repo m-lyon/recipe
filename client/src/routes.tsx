@@ -43,8 +43,8 @@ export const routes = createRoutesFromElements(
                 <Route path='prep-method' element={<EditPrepMethod />} />
                 <Route path='recipe/:titleIdentifier' element={<EditRecipe />} />
             </Route>
+            <Route path='login' element={<Login />} />
+            <Route path='search' element={<Search />} />
         </Route>
-        <Route path='login' element={<Login />} />
-        <Route path='search' element={<Search />} />
     </Route>
 );
