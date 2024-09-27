@@ -166,6 +166,7 @@ jobs:
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.REMOTE_PORT }}
+          timeout: 60s
           script: sudo systemctl restart recipe
 
       - name: Deploy client to server
