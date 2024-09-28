@@ -2,9 +2,9 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Route, createRoutesFromElements } from 'react-router-dom';
 
-import { MockedResponses, renderPage } from '@recipe/utils/tests';
 import { mockGetManyTags } from '@recipe/graphql/queries/__mocks__/tag';
 import { mockGetTags, mockGetTagsEmpty } from '@recipe/graphql/queries/__mocks__/tag';
+import { MockedResponses, notNullByText, nullByText, renderPage } from '@recipe/utils/tests';
 
 import { EditableTag } from '../components/EditableTag';
 
@@ -43,9 +43,7 @@ describe('TagDropdown', () => {
 
         // Expect
         expect(await screen.findByText('Add a tag...')).not.toBeNull();
-        expect(screen.queryByText('dinner')).not.toBeNull();
-        expect(screen.queryByText('lunch')).not.toBeNull();
-        expect(screen.queryByText('freezable')).not.toBeNull();
+        await notNullByText(screen, 'dinner', 'lunch', 'freezable');
     });
 
     it('should not render the dropdown when tag.show is false', async () => {
@@ -54,9 +52,7 @@ describe('TagDropdown', () => {
 
         // Expect
         expect(await screen.findByText('Add a tag...')).not.toBeNull();
-        expect(screen.queryByText('dinner')).toBeNull();
-        expect(screen.queryByText('lunch')).toBeNull();
-        expect(screen.queryByText('freezable')).toBeNull();
+        nullByText(screen, 'dinner', 'lunch', 'freezable');
     });
 
     it('should not render the suggestions list when data is not available', async () => {
@@ -65,9 +61,7 @@ describe('TagDropdown', () => {
 
         // Expect
         expect(await screen.findByText('Add a tag...')).not.toBeNull();
-        expect(screen.queryByText('dinner')).toBeNull();
-        expect(screen.queryByText('lunch')).toBeNull();
-        expect(screen.queryByText('freezable')).toBeNull();
+        nullByText(screen, 'dinner', 'lunch', 'freezable');
     });
 
     it('should display a scrollbar when there are many tags', async () => {

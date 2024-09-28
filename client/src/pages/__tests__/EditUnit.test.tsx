@@ -4,10 +4,10 @@ import { cleanup, screen, waitFor } from '@testing-library/react';
 import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { MockedResponses, renderPage } from '@recipe/utils/tests';
 import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockCurrentUser } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGramId, mockTeaspoonId } from '@recipe/graphql/__mocks__/ids';
+import { MockedResponses, haveValueByLabelText, renderPage } from '@recipe/utils/tests';
 import { mockDeleteUnit, mockUpdateUnit } from '@recipe/graphql/mutations/__mocks__/unit';
 
 import { EditUnit } from '../EditUnit';
@@ -42,8 +42,8 @@ describe('Edit Unit', () => {
         await user.selectOptions(screen.getByLabelText('Select unit'), mockTeaspoonId);
 
         // Expect
-        expect(screen.getByLabelText('Short singular name')).toHaveProperty('value', 'tsp');
-        expect(screen.getByLabelText('Long plural name')).toHaveProperty('value', 'teaspoonz');
+        haveValueByLabelText(screen, 'Short singular name', 'tsp');
+        haveValueByLabelText(screen, 'Long plural name', 'teaspoonz');
     });
 
     it('should not save an update to a unit', async () => {
@@ -62,8 +62,8 @@ describe('Edit Unit', () => {
         await user.selectOptions(screen.getByLabelText('Select unit'), mockTeaspoonId);
 
         // Expect
-        expect(screen.getByLabelText('Short singular name')).toHaveProperty('value', 'tsp');
-        expect(screen.getByLabelText('Long plural name')).toHaveProperty('value', 'teaspoons');
+        haveValueByLabelText(screen, 'Short singular name', 'tsp');
+        haveValueByLabelText(screen, 'Long plural name', 'teaspoons');
     });
 
     it('should remove a unit', async () => {

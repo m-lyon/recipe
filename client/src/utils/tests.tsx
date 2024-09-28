@@ -65,9 +65,21 @@ export function nullByText(screen: Screen, ...text: string[]) {
     }
 }
 
+export function nullByLabelText(screen: Screen, ...text: string[]) {
+    for (const t of text) {
+        expect(screen.queryByLabelText(t)).toBeNull();
+    }
+}
+
 export async function notNullByText(screen: Screen, ...text: string[]) {
     for (const t of text) {
         expect(await screen.findByText(t)).not.toBeNull();
+    }
+}
+
+export async function notNullByLabelText(screen: Screen, ...text: string[]) {
+    for (const t of text) {
+        expect(await screen.findByLabelText(t)).not.toBeNull();
     }
 }
 

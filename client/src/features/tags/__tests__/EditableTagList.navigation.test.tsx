@@ -3,8 +3,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen } from '@testing-library/react';
 import { Route, createRoutesFromElements } from 'react-router-dom';
 
-import { renderPage } from '@recipe/utils/tests';
 import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
+import { clickGetByText, notNullByText, renderPage } from '@recipe/utils/tests';
 
 import { useTagList } from '../hooks/useTagList';
 import { EditableTagList } from '../components/EditableTagList';
@@ -32,8 +32,7 @@ describe('EditableTag Click Action', () => {
         await user.click(tagInput);
 
         // Expect
-        expect(screen.queryByText('Add a tag...')).not.toBeNull();
-        expect(screen.queryByText('lunch')).not.toBeNull();
+        await notNullByText(screen, 'Add a tag...', 'lunch');
     });
 
     it('should display completed tag', async () => {
@@ -49,8 +48,7 @@ describe('EditableTag Click Action', () => {
         await user.click(tag);
 
         // Expect
-        expect(screen.queryByText('Add a tag...')).not.toBeNull();
-        expect(screen.queryByText('lunch')).not.toBeNull();
+        await notNullByText(screen, 'Add a tag...', 'lunch');
     });
 
     it('should unfocus when clicked away after first tag', async () => {
@@ -59,9 +57,7 @@ describe('EditableTag Click Action', () => {
         renderComponent();
 
         // Act
-        await user.click(screen.getByText('Add a tag...'));
-        await user.click(screen.getByText('lunch'));
-        await user.click(screen.getByText('Add a tag...'));
+        await clickGetByText(screen, user, 'Add a tag...', 'lunch', 'Add a tag...');
         await user.click(document.body);
 
         // Expect
@@ -84,8 +80,7 @@ describe('EditableTag Key Arrow Action', () => {
         await user.keyboard('{l}{Enter}');
 
         // Expect
-        expect(screen.queryByText('Add a tag...')).not.toBeNull();
-        expect(screen.queryByText('lunch')).not.toBeNull();
+        await notNullByText(screen, 'Add a tag...', 'lunch');
     });
 
     it('should not still be focused on editable input', async () => {

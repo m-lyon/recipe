@@ -4,12 +4,12 @@ import { cleanup, screen, waitFor } from '@testing-library/react';
 import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { MockedResponses, renderPage } from '@recipe/utils/tests';
 import { mockCurrentUser } from '@recipe/graphql/queries/__mocks__/user';
 import { mockCarrotId, mockChickenId } from '@recipe/graphql/__mocks__/ids';
 import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockUpdateIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
 import { mockDeleteIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
+import { MockedResponses, haveValueByLabelText, renderPage } from '@recipe/utils/tests';
 
 import { EditIngredient } from '../EditIngredient';
 
@@ -43,8 +43,8 @@ describe('Edit Ingredient', () => {
         await user.selectOptions(screen.getByLabelText('Select ingredient'), mockCarrotId);
 
         // Expect
-        expect(screen.getByLabelText('Name')).toHaveProperty('value', 'carrot');
-        expect(screen.getByLabelText('Plural name')).toHaveProperty('value', 'carrotz');
+        haveValueByLabelText(screen, 'Name', 'carrot');
+        haveValueByLabelText(screen, 'Plural name', 'carrotz');
     });
 
     it('should not save an update to an ingredient', async () => {
@@ -63,8 +63,8 @@ describe('Edit Ingredient', () => {
         await user.selectOptions(screen.getByLabelText('Select ingredient'), mockCarrotId);
 
         // Expect
-        expect(screen.getByLabelText('Name')).toHaveProperty('value', 'carrot');
-        expect(screen.getByLabelText('Plural name')).toHaveProperty('value', 'carrots');
+        haveValueByLabelText(screen, 'Name', 'carrot');
+        haveValueByLabelText(screen, 'Plural name', 'carrots');
     });
 
     it('should remove an ingredient', async () => {

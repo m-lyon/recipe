@@ -4,13 +4,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { mockCreateRecipe } from '@recipe/graphql/mutations/__mocks__/recipe';
-import { clickFindByText, enterCreateNewRecipePage } from '@recipe/utils/tests';
 import { mockGetRatingsNewRecipe } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockAddRatingNewRecipe } from '@recipe/graphql/mutations/__mocks__/rating';
 import { mockCreateRecipeAsIngr } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetRatingsNewRecipeAsIngr } from '@recipe/graphql/queries/__mocks__/rating';
 import { enterEditRecipePage, enterViewRecipePage, notNullByText } from '@recipe/utils/tests';
 import { mockImageFileNew, mockUploadImagesNew } from '@recipe/graphql/mutations/__mocks__/image';
+import { clickFindByText, enterCreateNewRecipePage, notNullByLabelText } from '@recipe/utils/tests';
 import { mockGetRecipeNew, mockGetRecipeNewAsIngr } from '@recipe/graphql/queries/__mocks__/recipe';
 
 import { renderComponent } from './utils';
@@ -78,7 +78,7 @@ describe('Create Recipe Workflow', () => {
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage(screen, user, 'New Recipe', 'Instr #1.');
         await notNullByText(screen, 'Instr #2.', '2 Servings', 'Recipe Notes.', 'freezable');
-        expect(screen.queryByText('2 tsp apples, diced')).not.toBeNull();
+        expect(screen.queryByLabelText('2 tsp apples, diced')).not.toBeNull();
         expect(screen.getByLabelText('Edit recipe source')).toHaveProperty(
             'value',
             'Recipe Source'
@@ -158,7 +158,7 @@ describe('Create Recipe Workflow', () => {
             'value',
             'Recipe Source'
         );
-        expect(screen.queryByText('2 tsp apples, diced')).not.toBeNull();
+        expect(screen.queryByLabelText('2 tsp apples, diced')).not.toBeNull();
         expect(screen.queryByAltText('test_image_new.png')).not.toBeNull();
         expect(screen.getByRole('rating').querySelector('.filled-icons')).toHaveProperty(
             'title',
@@ -204,7 +204,8 @@ describe('Create Recipe Workflow', () => {
 
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage(screen, user, 'New Ingredient Recipe', 'Instr #1.');
-        await notNullByText(screen, 'Instr #2.', '2 tsp apples, diced');
+        await notNullByText(screen, 'Instr #2.');
+        await notNullByLabelText(screen, '2 tsp apples, diced');
 
         // ------ Ingredients List ------------------------------
         await user.click(screen.getAllByLabelText('Create new recipe')[0]);

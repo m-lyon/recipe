@@ -83,7 +83,7 @@ describe('Creating new items', () => {
         await user.keyboard('{1}{ }');
 
         // Expect --------------------------------------------------------------
-        expect(screen.queryByText('1 bump chicken')).not.toBeNull();
+        expect(screen.queryByLabelText('1 bump chicken')).not.toBeNull();
         expect(screen.queryByText('teaspoon')).not.toBeNull;
         expect(screen.queryByText('bump')).toBeNull();
     });
@@ -156,7 +156,7 @@ describe('Creating new items', () => {
         await user.click(screen.getByLabelText('Save prep method'));
 
         // Expect --------------------------------------------------------------
-        expect(await screen.findByText('1 chicken, pipped')).not.toBeNull();
+        expect(await screen.findByLabelText('1 chicken, pipped')).not.toBeNull();
         expect(screen.queryByText('Enter ingredient')).not.toBeNull();
         // ------ Available as new prepMethod -----------------------------------
         expect(await screen.findByLabelText('skip quantity')).not.toBeNull();
@@ -197,7 +197,7 @@ describe('Creating new items', () => {
         await clickGetByText(screen, user, 'skip unit', 'chicken');
 
         // Expect --------------------------------------------------------------
-        expect(screen.queryByText('1 chicken, posted')).not.toBeNull();
+        expect(screen.queryByLabelText('1 chicken, posted')).not.toBeNull();
         expect(screen.queryByText('diced')).not.toBeNull();
         expect(screen.queryByText('posted')).toBeNull();
     });

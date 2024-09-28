@@ -57,7 +57,7 @@ describe('Unit conversion', () => {
         await clickGetByText(screen, user, 'kilograms', 'chicken', 'chopped');
 
         // Expect
-        expect(screen.queryByText('500g chicken, chopped')).not.toBeNull();
+        expect(screen.queryByLabelText('500g chicken, chopped')).not.toBeNull();
         expect(screen.queryByText('Enter ingredient')).not.toBeNull();
     });
 

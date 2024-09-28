@@ -124,8 +124,7 @@ describe('EditableIngredient Unit Keyboard', () => {
 
         // Expect
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 ');
-        expect(screen.queryByText('chicken')).not.toBeNull();
-        expect(screen.queryByText('large')).not.toBeNull();
+        await notNullByText(screen, 'chicken', 'large');
         expect(screen.queryByText('cup')).toBeNull();
     });
     it('should open up the new unit popover', async () => {
@@ -256,8 +255,7 @@ describe('EditableIngredient Unit Click', () => {
 
         // Expect
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 ');
-        expect(screen.queryByText('chicken')).not.toBeNull();
-        expect(screen.queryByText('large')).not.toBeNull();
+        await notNullByText(screen, 'chicken', 'large');
         expect(screen.queryByText('cup')).toBeNull();
     });
     it('should open up the new unit popover', async () => {

@@ -3,8 +3,8 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { clickFindByText, notNullByText } from '@recipe/utils/tests';
 import { enterEditRecipePage, enterViewRecipePage } from '@recipe/utils/tests';
+import { clickFindByText, notNullByLabelText, notNullByText } from '@recipe/utils/tests';
 import { mockUpdateRecipeIngredientsAdd } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeIngredientsEdit } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeIngredientsRemove } from '@recipe/graphql/mutations/__mocks__/recipe';
@@ -29,7 +29,7 @@ describe('Update Recipe Workflow: Ingredients', () => {
         await user.click(screen.getByLabelText('Enter ingredient #3 for subsection 2'));
         await user.keyboard('{4}{ }');
         await clickFindByText(screen, user, 'teaspoons', 'apples', 'diced');
-        expect(await screen.findByText('4 tsp apples, diced')).not.toBeNull();
+        expect(await screen.findByLabelText('4 tsp apples, diced')).not.toBeNull();
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
@@ -38,8 +38,9 @@ describe('Update Recipe Workflow: Ingredients', () => {
         await notNullByText(screen, '4 tsp apples, diced', '2 apples, diced');
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe', '1 small apple, diced');
-        await notNullByText(screen, '4 tsp apples, diced', '2 apples, diced');
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await notNullByLabelText(screen, '1 small apple, diced', '4 tsp apples, diced');
+        await notNullByLabelText(screen, '2 apples, diced');
     });
 
     it('should edit the ingredients', async () => {
@@ -53,7 +54,7 @@ describe('Update Recipe Workflow: Ingredients', () => {
         await user.click(screen.getByLabelText('Enter ingredient #3 for subsection 1'));
         await user.keyboard('{4}{ }');
         await clickFindByText(screen, user, 'teaspoons', 'apples', 'diced');
-        expect(await screen.findByText('4 tsp apples, diced')).not.toBeNull();
+        expect(await screen.findByLabelText('4 tsp apples, diced')).not.toBeNull();
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
@@ -64,8 +65,8 @@ describe('Update Recipe Workflow: Ingredients', () => {
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
-        await notNullByText(screen, '1 small apple, diced', '4 tsp apples, diced');
-        expect(screen.queryByText('2 apples, diced')).toBeNull();
+        await notNullByLabelText(screen, '1 small apple, diced', '4 tsp apples, diced');
+        expect(screen.queryByLabelText('2 apples, diced')).toBeNull();
     });
 
     it('should remove an ingredient', async () => {
@@ -85,7 +86,7 @@ describe('Update Recipe Workflow: Ingredients', () => {
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
-        expect(await screen.findByText('1 small apple, diced')).not.toBeNull();
-        expect(screen.queryByText('2 apples, diced')).toBeNull();
+        expect(await screen.findByLabelText('1 small apple, diced')).not.toBeNull();
+        expect(screen.queryByLabelText('2 apples, diced')).toBeNull();
     });
 });

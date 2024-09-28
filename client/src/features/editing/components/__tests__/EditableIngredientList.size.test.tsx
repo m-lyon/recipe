@@ -43,8 +43,7 @@ describe('EditableIngredient Size Keyboard', () => {
         // Expect
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup large ');
         expect(screen.queryByText('chicken')).not.toBeNull();
-        expect(screen.queryByText('cup')).toBeNull();
-        expect(screen.queryByText('small')).toBeNull();
+        nullByText(screen, 'cup', 'small');
     });
     it('should switch to the ingredient state plural', async () => {
         const user = userEvent.setup();
@@ -59,8 +58,7 @@ describe('EditableIngredient Size Keyboard', () => {
         // Expect
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '2 cups large ');
         expect(screen.queryByText('chicken')).not.toBeNull();
-        expect(screen.queryByText('cup')).toBeNull();
-        expect(screen.queryByText('small')).toBeNull();
+        nullByText(screen, 'cups', 'small');
     });
     it('should display skip size', async () => {
         const user = userEvent.setup();
@@ -129,8 +127,7 @@ describe('EditableIngredient Size Keyboard', () => {
         // Expect
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 ');
         expect(screen.queryByText('chicken')).not.toBeNull();
-        expect(screen.queryByText('large')).toBeNull();
-        expect(screen.queryByText('cup')).toBeNull();
+        nullByText(screen, 'cup', 'small');
     });
     it('should open up the new size popover', async () => {
         const user = userEvent.setup();
@@ -180,8 +177,7 @@ describe('EditableIngredient Size Click', () => {
         // Expect
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup small ');
         expect(screen.queryByText('chicken')).not.toBeNull();
-        expect(screen.queryByText('cup')).toBeNull();
-        expect(screen.queryByText('large')).toBeNull();
+        nullByText(screen, 'cup', 'large');
     });
     it('should switch to the ingredient state plural', async () => {
         const user = userEvent.setup();
@@ -198,8 +194,7 @@ describe('EditableIngredient Size Click', () => {
         // Expect
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '2 cups small ');
         expect(screen.queryByText('chicken')).not.toBeNull();
-        expect(screen.queryByText('cups')).toBeNull();
-        expect(screen.queryByText('large')).toBeNull();
+        nullByText(screen, 'cups', 'large');
     });
     it('should reset via click away', async () => {
         const user = userEvent.setup();
@@ -232,8 +227,7 @@ describe('EditableIngredient Size Click', () => {
         // Expect
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 ');
         expect(screen.queryByText('chicken')).not.toBeNull();
-        expect(screen.queryByText('large')).toBeNull();
-        expect(screen.queryByText('cup')).toBeNull();
+        nullByText(screen, 'cup', 'small');
     });
     it('should open up the new size popover', async () => {
         const user = userEvent.setup();

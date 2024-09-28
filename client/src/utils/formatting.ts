@@ -150,14 +150,22 @@ export function getEditableRecipeIngredientStr(item: EditableRecipeIngredient): 
     const prepMethodStr = getEditablePrepMethodStr(item);
     return `${quantityStr}${unitStr}${sizeStr}${ingrStr}${prepMethodStr}`;
 }
-export function getFinishedRecipeIngredientStr(item: LikeFinishedRecipeIngredient): string {
+function getFinishedRecipeIngredientStrings(item: LikeFinishedRecipeIngredient) {
     const { quantity, unit, size, ingredient, prepMethod } = item;
-    const quantityStr = getFinishedQuantityStr(quantity);
-    const unitStr = getFinishedUnitStr(quantity, unit);
-    const sizeStr = getFinishedSizeStr(quantity, size);
-    const ingrStr = getFinishedIngredientStr(quantity, unit, size, ingredient);
-    const prepMethodStr = getFinishedPrepMethodStr(prepMethod);
-    return `${quantityStr}${unitStr}${sizeStr}${ingrStr}${prepMethodStr}`;
+    return [
+        getFinishedQuantityStr(quantity),
+        getFinishedUnitStr(quantity, unit),
+        getFinishedSizeStr(quantity, size),
+        getFinishedIngredientStr(quantity, unit, size, ingredient),
+        getFinishedPrepMethodStr(prepMethod),
+    ];
+}
+export function getFinishedRecipeIngredientStr(item: LikeFinishedRecipeIngredient): string {
+    return getFinishedRecipeIngredientStrings(item).join('');
+}
+export function getFinishedRecipeIngredientParts(item: LikeFinishedRecipeIngredient) {
+    const [quantityStr, ...rest] = getFinishedRecipeIngredientStrings(item);
+    return { quantity: quantityStr, rest: rest.join('') };
 }
 export function displayValue(
     quantity: Quantity,

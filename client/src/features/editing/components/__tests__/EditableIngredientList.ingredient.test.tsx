@@ -133,7 +133,7 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         await user.keyboard('{Enter}');
 
         // Expect
-        expect(screen.queryByText('1 cup apples')).not.toBeNull();
+        expect(screen.queryByLabelText('1 cup apples')).not.toBeNull();
     });
     it('should revert back to quantity state', async () => {
         const user = userEvent.setup();
@@ -215,6 +215,6 @@ describe('EditableIngredient Ingredient Click', () => {
         await user.keyboard('{Enter}');
 
         // Expect
-        expect(screen.queryByText('2 apples')).not.toBeNull();
+        expect(screen.queryByLabelText('2 apples')).not.toBeNull();
     });
 });

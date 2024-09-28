@@ -5,10 +5,10 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { cleanup, fireEvent, screen, waitForElementToBeRemoved } from '@testing-library/react';
 
 import { Navbar } from '@recipe/features/navbar';
-import { MockedResponses, renderPage } from '@recipe/utils/tests';
 import { mockCurrentUser } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetRecipesLarger } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCountRecipesLarger } from '@recipe/graphql/queries/__mocks__/recipe';
+import { MockedResponses, nullByLabelText, renderPage } from '@recipe/utils/tests';
 import { mockGetRecipesLargerFilteredTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCountRecipesLargerFilteredOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCountRecipesLargerFilteredTwo } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -46,8 +46,7 @@ describe('Search Functionality', () => {
         await waitForElementToBeRemoved(() => screen.queryAllByLabelText('View Mock Recipe'));
 
         // Expect -----------------------------------------------
-        expect(screen.queryByLabelText('View Mock Recipe')).toBeNull();
-        expect(screen.queryByLabelText('View Mock Recipe Three')).toBeNull();
+        nullByLabelText(screen, 'View Mock Recipe', 'View Mock Recipe Three');
         expect(screen.queryAllByLabelText('View Mock Recipe Two')).toHaveLength(2);
     });
     it('should limit scrolldown pagination correctly after search, no more pages', async () => {
@@ -65,8 +64,7 @@ describe('Search Functionality', () => {
 
         // Expect -----------------------------------------------
         expect(screen.queryByText('Loading...')).toBeNull();
-        expect(screen.queryByLabelText('View Mock Recipe')).toBeNull();
-        expect(screen.queryByLabelText('View Mock Recipe Three')).toBeNull();
+        nullByLabelText(screen, 'View Mock Recipe', 'View Mock Recipe Three');
         expect(screen.queryAllByLabelText('View Mock Recipe Two')).toHaveLength(2);
     });
     it('should limit scrolldown pagination correctly after search, one more page', async () => {
@@ -89,8 +87,7 @@ describe('Search Functionality', () => {
         await waitForElementToBeRemoved(() => screen.queryByText('Loading...'));
 
         // Expect -----------------------------------------------
-        expect(screen.queryByLabelText('View Mock Recipe Two')).toBeNull();
-        expect(screen.queryByLabelText('View Mock Recipe Three')).toBeNull();
+        nullByLabelText(screen, 'View Mock Recipe Two', 'View Mock Recipe Three');
         expect(screen.queryAllByLabelText('View Mock Recipe')).toHaveLength(9);
     });
     it('should reset card list after blank search term', async () => {

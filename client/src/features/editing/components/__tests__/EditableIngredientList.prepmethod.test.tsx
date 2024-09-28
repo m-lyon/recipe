@@ -3,7 +3,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { clickGetByText, haveValueByLabelText, notNullByText } from '@recipe/utils/tests';
+import { notNullByText } from '@recipe/utils/tests';
+import { clickGetByText, haveValueByLabelText, notNullByLabelText } from '@recipe/utils/tests';
 
 import { renderComponent } from './utils';
 
@@ -94,7 +95,8 @@ describe('EditableIngredient PrepMethod Keyboard', () => {
         await user.click(screen.getByText('skip prep method'));
 
         // Expect
-        await notNullByText(screen, '1 cup carrots', 'Enter ingredient');
+        await notNullByText(screen, 'Enter ingredient');
+        await notNullByLabelText(screen, '1 cup carrots');
     });
     it('should open up the new prepMethod popover', async () => {
         const user = userEvent.setup();
@@ -147,7 +149,7 @@ describe('EditableIngredient PrepMethod Click', () => {
         await clickGetByText(screen, user, 'chicken', 'skip prep method');
 
         // Expect
-        expect(screen.queryByText('1 cup chicken')).not.toBeNull();
+        expect(screen.queryByLabelText('1 cup chicken')).not.toBeNull();
     });
     it('should open up the new prepMethod popover', async () => {
         const user = userEvent.setup();
