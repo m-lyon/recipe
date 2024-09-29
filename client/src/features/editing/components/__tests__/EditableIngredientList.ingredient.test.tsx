@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { haveValueByLabelText, notNullByText } from '@recipe/utils/tests';
+import { clickGetByText, haveValueByLabelText, notNullByText } from '@recipe/utils/tests';
 
 import { renderComponent } from './utils';
 
@@ -20,8 +20,7 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         renderComponent();
 
         // Act
-        const ingredientInput = screen.getByText('Enter ingredient');
-        await user.click(ingredientInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{ }{ArrowDown}{Enter}{c}{h}{i}{ArrowUp}{Enter}');
 
         // Expect
@@ -33,8 +32,7 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         renderComponent();
 
         // Act
-        const ingredientInput = screen.getByText('Enter ingredient');
-        await user.click(ingredientInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{ }{c}{u}{p}{Enter}{Enter}');
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup ');
         expect(screen.queryByText('add new ingredient')).not.toBeNull();
@@ -50,8 +48,7 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         renderComponent();
 
         // Act
-        const quantityInput = screen.getByText('Enter ingredient');
-        await user.click(quantityInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{ }');
         await user.click(screen.getByText('cup'));
 
@@ -64,8 +61,7 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         renderComponent();
 
         // Act
-        const quantityInput = screen.getByText('Enter ingredient');
-        await user.click(quantityInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{ }');
         await user.click(screen.getByText('cup'));
         await user.keyboard('{a}{p}{f}');
@@ -79,8 +75,7 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         renderComponent();
 
         // Act
-        const quantityInput = screen.getByText('Enter ingredient');
-        await user.click(quantityInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{ }');
         await user.click(screen.getByText('cup'));
         await user.keyboard('{1}');
@@ -94,8 +89,7 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         renderComponent();
 
         // Act
-        const quantityInput = screen.getByText('Enter ingredient');
-        await user.click(quantityInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{ }');
         await user.click(screen.getByText('cup'));
         await user.keyboard('{a}{p}{f}{ArrowDown}{Enter}');
@@ -110,10 +104,8 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         renderComponent();
 
         // Act
-        const quantityInput = screen.getByText('Enter ingredient');
-        await user.click(quantityInput);
-        await user.keyboard('{2}{ }');
-        await user.keyboard('{a}{p}{p}{Enter}');
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{2}{ }{a}{p}{p}{Enter}');
 
         // Expect
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '2 apples, ');
@@ -124,8 +116,7 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         renderComponent();
 
         // Act
-        const quantityInput = screen.getByText('Enter ingredient');
-        await user.click(quantityInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{ }');
         await user.click(screen.getByText('cup'));
         await user.keyboard('{a}{p}{p}');
@@ -135,15 +126,13 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         // Expect
         expect(screen.queryByLabelText('1 cup apples')).not.toBeNull();
     });
-    it('should revert back to quantity state', async () => {
+    it('should revert back to quantity state after skip quantity clicked', async () => {
         const user = userEvent.setup();
         // Render
         renderComponent();
 
         // Act
-        const quantityInput = screen.getByText('Enter ingredient');
-        await user.click(quantityInput);
-        await user.click(screen.getByText('skip quantity'));
+        await clickGetByText(screen, user, 'Enter ingredient', 'skip quantity');
         await user.keyboard('{Backspace}');
 
         // Expect
@@ -155,9 +144,7 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         renderComponent();
 
         // Act
-        const quantityInput = screen.getByText('Enter ingredient');
-        await user.click(quantityInput);
-        await user.click(screen.getByText('skip quantity'));
+        await clickGetByText(screen, user, 'Enter ingredient', 'skip quantity');
         await user.keyboard('{c}{Backspace}{Backspace}');
 
         // Expect
@@ -174,8 +161,7 @@ describe('EditableIngredient Ingredient Click', () => {
         renderComponent();
 
         // Act
-        const quantityInput = screen.getByText('Enter ingredient');
-        await user.click(quantityInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{ }');
         await user.click(screen.getByText('cup'));
         await user.keyboard('{c}{h}');
@@ -190,8 +176,7 @@ describe('EditableIngredient Ingredient Click', () => {
         renderComponent();
 
         // Act
-        const quantityInput = screen.getByText('Enter ingredient');
-        await user.click(quantityInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{ }');
         await user.click(screen.getByText('cup'));
         await user.keyboard('{a}{p}{f}');
@@ -207,10 +192,8 @@ describe('EditableIngredient Ingredient Click', () => {
         renderComponent();
 
         // Act
-        const quantityInput = screen.getByText('Enter ingredient');
-        await user.click(quantityInput);
-        await user.keyboard('{2}{ }');
-        await user.keyboard('{a}{p}{p}');
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{2}{ }{a}{p}{p}');
         await user.click(screen.getByText('apples'));
         await user.keyboard('{Enter}');
 

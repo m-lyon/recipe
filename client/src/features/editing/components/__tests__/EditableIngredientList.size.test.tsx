@@ -158,6 +158,41 @@ describe('EditableIngredient Size Keyboard', () => {
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1');
     });
 });
+describe('EditableIngredient Size Spacebar', () => {
+    afterEach(() => {
+        cleanup();
+    });
+    it('should switch to the ingredient state', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        const quantityInput = screen.getByText('Enter ingredient');
+        await user.click(quantityInput);
+        await user.keyboard('1 cup large ');
+
+        // Expect
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup large ');
+        expect(await screen.findByText('chicken')).not.toBeNull();
+        nullByText(screen, 'large', 'cup');
+    });
+    it('should switch to the ingredient state from unit', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        const quantityInput = screen.getByText('Enter ingredient');
+        await user.click(quantityInput);
+        await user.keyboard('large ');
+
+        // Expect
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', 'large ');
+        expect(await screen.findByText('chicken')).not.toBeNull();
+        nullByText(screen, 'small', 'cup');
+    });
+});
 describe('EditableIngredient Size Click', () => {
     afterEach(() => {
         cleanup();

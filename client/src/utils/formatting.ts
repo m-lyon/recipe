@@ -61,10 +61,11 @@ function getEditableSizeStr(item: EditableRecipeIngredient): string {
         return '';
     }
     if (STATES_ORDER[item.state] === STATES_ORDER['size']) {
+        const delim = item.quantity === null ? '' : ' ';
         if (item.size.value === null) {
-            return ' ';
+            return delim;
         } else {
-            return ` ${item.size.value}`;
+            return `${delim}${item.size.value}`;
         }
     } else {
         return getFinishedSizeStr(item.quantity, item.size.data!);

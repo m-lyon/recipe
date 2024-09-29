@@ -88,7 +88,8 @@ export function EditableIngredient(props: Props) {
         strValue,
         suggestions,
         (attr: SetAttr) => actionHandler.setCurrentEditableAttribute(subsection, attr),
-        openPopover
+        openPopover,
+        () => actionHandler.deleteChar(subsection)
     );
 
     const getPopover = () => {

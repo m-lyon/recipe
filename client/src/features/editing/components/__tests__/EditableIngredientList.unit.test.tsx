@@ -172,7 +172,7 @@ describe('EditableIngredient Unit Spacebar', () => {
 
         // Expect
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup ');
-        expect(screen.queryByText('large')).not.toBeNull();
+        await notNullByText(screen, 'large', 'chicken');
         expect(screen.queryByText('cup')).toBeNull();
     });
     it('should switch to the size state plural', async () => {
@@ -187,7 +187,7 @@ describe('EditableIngredient Unit Spacebar', () => {
 
         // Expect
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '2 cups ');
-        expect(screen.queryByText('large')).not.toBeNull();
+        await notNullByText(screen, 'large', 'chicken');
         expect(screen.queryByText('cups')).toBeNull();
     });
 });

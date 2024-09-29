@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { haveValueByLabelText } from '@recipe/utils/tests';
+import { haveValueByLabelText, notNullByText } from '@recipe/utils/tests';
 
 import { renderComponent } from './utils';
 
@@ -21,8 +21,7 @@ describe('EditableIngredient Quantity Keyboard', () => {
         renderComponent();
 
         // Act
-        const ingredientInput = screen.getByText('Enter ingredient');
-        await user.click(ingredientInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('1');
 
         // Expect
@@ -34,8 +33,7 @@ describe('EditableIngredient Quantity Keyboard', () => {
         renderComponent();
 
         // Act
-        const ingredientInput = screen.getByText('Enter ingredient');
-        await user.click(ingredientInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{Escape}');
 
         // Expect
@@ -47,8 +45,7 @@ describe('EditableIngredient Quantity Keyboard', () => {
         renderComponent();
 
         // Act
-        const ingredientInput = screen.getByText('Enter ingredient');
-        await user.click(ingredientInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{2}{.}{5}{ }');
 
         // Expect
@@ -115,18 +112,31 @@ describe('EditableIngredient Quantity Keyboard', () => {
         // Expect
         expect(screen.queryByText('Invalid input')).not.toBeNull();
     });
-    it('should skip the quantity', async () => {
+    it('should skip the quantity using "skip quantity"', async () => {
         const user = userEvent.setup();
         // Render
         renderComponent();
 
         // Act
         await user.click(screen.getByText('Enter ingredient'));
-        await user.click(screen.getByText('skip quantity'));
+        await user.keyboard('{Enter}');
 
         // Expect
-        expect(screen.queryByText('chicken')).not.toBeNull();
-        expect(screen.queryByText('apple')).not.toBeNull();
+        await notNullByText(screen, 'large', 'chicken');
+    });
+    it('should skip the quantity through typing letters', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{a}');
+
+        // Expect
+        await notNullByText(screen, 'large', 'apple');
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', 'a');
+        expect(screen.queryByText('cup')).toBeNull();
     });
     it('should display skip quantity when quantity is deleted', async () => {
         const user = userEvent.setup();
@@ -175,12 +185,23 @@ describe('EditableIngredient Quantity Click', () => {
         renderComponent();
 
         // Act
-        const ingredientInput = screen.getByText('Enter ingredient');
-        await user.click(ingredientInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}');
         await user.click(document.body);
 
         // Expect
         expect(screen.queryByText('Enter ingredient')).not.toBeNull();
+    });
+    it('should skip the quantity', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.click(screen.getByText('skip quantity'));
+
+        // Expect
+        await notNullByText(screen, 'large', 'chicken');
     });
 });

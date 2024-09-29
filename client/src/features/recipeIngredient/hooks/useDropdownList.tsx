@@ -13,7 +13,8 @@ export function useDropdownList(
     strValue: string,
     suggestions: Suggestion[],
     setItem: (attr: SetAttr) => void,
-    openPopover: (type: PopoverType) => void
+    openPopover: (type: PopoverType) => void,
+    deleteChar: () => void
 ) {
     const toast = useErrorToast();
     const [highlighted, setHighlighted] = useState(0);
@@ -83,7 +84,7 @@ export function useDropdownList(
     };
 
     const handleKeyboardEvent = (e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') {
+        if (['ArrowDown', 'ArrowUp', 'Enter', 'Backspace'].includes(e.key)) {
             e.preventDefault();
         }
         if (e.key === 'ArrowDown' && highlighted < suggestions.length - 1) {
@@ -94,6 +95,8 @@ export function useDropdownList(
             if (highlighted !== -1) {
                 handleSelect(suggestions[highlighted]);
             }
+        } else if (e.key === 'Backspace') {
+            deleteChar();
         }
     };
 

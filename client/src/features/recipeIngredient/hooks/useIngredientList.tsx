@@ -29,144 +29,129 @@ export function dbIngredientToFinished(ingr: RecipeIngredient): FinishedRecipeIn
     return { key, quantity, unit, size, ingredient, prepMethod };
 }
 
-type NewChar = string | number;
-function handleQuantityChange(
-    subsection: number,
-    char: NewChar,
-    item: EditableRecipeIngredient,
-    actionHandler: InternalActionHandler
-) {
-    if (typeof char === 'number') {
-        actionHandler.deleteChar(subsection);
-    } else {
-        // Validate quantity upon completion
-        if (char === ' ' && item.quantity !== null) {
-            if (!VALID_NUMBER_REGEX.test(item.quantity)) {
-                throw new Error('Invalid quantity.');
-            }
-            if (isRange(item.quantity)) {
-                if (!validateRange(item.quantity)) {
-                    throw new Error('First number in range must be smaller than second.');
-                }
-            }
-            actionHandler.incrementState(subsection);
-            actionHandler.setShow.on(subsection);
-            // Skip quantity with alphabetical characters
-        } else if (item.quantity === null && /^[a-zA-Z]$/.test(char)) {
-            actionHandler.incrementState(subsection, 2);
-            actionHandler.setShow.on(subsection);
-            actionHandler.unit.set(subsection, null);
-            handleIngredientChange(subsection, char, actionHandler);
-            // Starting input should be a number
-        } else if (item.quantity === null && /^[\d]$/.test(char)) {
-            actionHandler.quantity.append(subsection, char);
-            if (item.show) {
-                actionHandler.setShow.off(subsection);
-            }
-            // Valid numerical input
-        } else if (item.quantity !== null && /^[\d/.-]$/.test(char)) {
-            actionHandler.quantity.append(subsection, char);
-            if (item.show) {
-                actionHandler.setShow.off(subsection);
-            }
-            // Throw error for invalid input
-        } else {
-            throw new Error('Only numbers and fractions are allowed when inputting a quantity.');
+interface handleChangeOpts {
+    subsection: number;
+    char: string;
+    item: EditableRecipeIngredient;
+    data: RecipeIngredientQueryData;
+    editableActions: InternalActionHandler;
+}
+function handleQuantityChange(opts: handleChangeOpts) {
+    const { subsection, char, item, editableActions } = opts;
+    // Validate quantity upon completion
+    if (char === ' ' && item.quantity !== null) {
+        if (!VALID_NUMBER_REGEX.test(item.quantity)) {
+            throw new Error('Invalid quantity.');
         }
+        if (isRange(item.quantity)) {
+            if (!validateRange(item.quantity)) {
+                throw new Error('First number in range must be smaller than second.');
+            }
+        }
+        editableActions.incrementState(subsection);
+        editableActions.setShow.on(subsection);
+        // Skip quantity with alphabetical characters
+    } else if (item.quantity === null && /^[a-zA-Z]$/.test(char)) {
+        editableActions.incrementState(subsection, 2);
+        editableActions.setShow.on(subsection);
+        editableActions.unit.set(subsection, null);
+        handleSizeChange(opts);
+        // Starting input should be a number
+    } else if (item.quantity === null && /^[\d]$/.test(char)) {
+        editableActions.quantity.append(subsection, char);
+        if (item.show) {
+            editableActions.setShow.off(subsection);
+        }
+        // Valid numerical input
+    } else if (item.quantity !== null && /^[\d/.-]$/.test(char)) {
+        editableActions.quantity.append(subsection, char);
+        if (item.show) {
+            editableActions.setShow.off(subsection);
+        }
+        // Throw error for invalid input
+    } else {
+        throw new Error('Only numbers and fractions are allowed when inputting a quantity.');
     }
 }
 
-function handleUnitChange(
-    subsection: number,
-    char: NewChar,
-    item: EditableRecipeIngredient,
-    data: RecipeIngredientQueryData,
-    actionHandler: InternalActionHandler
-) {
-    if (typeof char === 'number') {
-        actionHandler.deleteChar(subsection);
-    } else {
-        if (/^[a-zA-Z ]$/.test(char)) {
-            if (char === ' ' && item.unit.value !== null) {
-                if (!data) {
-                    throw new Error('Could not load ingredient components');
-                }
-                const unitValue = item.unit.value;
-                for (const unit of data.units) {
-                    if (isPlural(item.quantity)) {
-                        if (unit.longPlural === unitValue || unit.shortPlural === unitValue) {
-                            actionHandler.unit.set(subsection, unit);
-                            return actionHandler.incrementState(subsection);
-                        }
-                    } else {
-                        if (unit.longSingular === unitValue || unit.shortSingular === unitValue) {
-                            actionHandler.unit.set(subsection, unit);
-                            return actionHandler.incrementState(subsection);
-                        }
+function handleUnitChange(opts: handleChangeOpts) {
+    const { subsection, char, item, data, editableActions } = opts;
+    if (/^[a-zA-Z ]$/.test(char)) {
+        if (char === ' ') {
+            if (!data) {
+                throw new Error('Could not load ingredient components');
+            }
+            const value = item.unit.value;
+            for (const unit of data.units) {
+                if (isPlural(item.quantity)) {
+                    if (unit.longPlural === value || unit.shortPlural === value) {
+                        editableActions.unit.set(subsection, unit);
+                        return editableActions.incrementState(subsection);
+                    }
+                } else {
+                    if (unit.longSingular === value || unit.shortSingular === value) {
+                        editableActions.unit.set(subsection, unit);
+                        return editableActions.incrementState(subsection);
                     }
                 }
             }
-            actionHandler.unit.append(subsection, char);
-        } else {
-            throw new Error(
-                'Only letters and spaces are allowed when inputting unit, size, or ingredient.'
-            );
+            for (const size of data.sizes) {
+                if (size.value === value) {
+                    editableActions.size.set(subsection, size);
+                    return editableActions.incrementState(subsection, 'ingredient');
+                }
+            }
         }
-    }
-}
-
-function handleSizeChange(subsection: number, char: NewChar, actionHandler: InternalActionHandler) {
-    if (typeof char === 'number') {
-        actionHandler.deleteChar(subsection);
+        editableActions.unit.append(subsection, char);
     } else {
-        if (/^[a-zA-Z ]$/.test(char)) {
-            actionHandler.size.append(subsection, char);
-        } else {
-            throw new Error(
-                `Only letters and spaces are allowed when inputting a size or ingredient.`
-            );
-        }
+        throw new Error(
+            'Only letters and spaces are allowed when inputting unit, size, or ingredient.'
+        );
     }
 }
 
-function handleIngredientChange(
-    subsection: number,
-    char: NewChar,
-    actionHandler: InternalActionHandler
-) {
-    if (typeof char === 'number') {
-        actionHandler.deleteChar(subsection);
+function handleSizeChange(opts: handleChangeOpts) {
+    const { subsection, char, item, data, editableActions } = opts;
+    if (/^[a-zA-Z ]$/.test(char)) {
+        if (char === ' ') {
+            if (!data) {
+                throw new Error('Could not load ingredient components');
+            }
+            const value = item.size.value;
+            for (const size of data.sizes) {
+                if (size.value === value) {
+                    editableActions.size.set(subsection, size);
+                    return editableActions.incrementState(subsection);
+                }
+            }
+        }
+        editableActions.size.append(subsection, char);
     } else {
-        if (/^[a-zA-Z -]$/.test(char)) {
-            actionHandler.ingredient.append(subsection, char);
-        } else {
-            throw new Error('Only letters and spaces are allowed when inputting an ingredient.');
-        }
+        throw new Error(`Only letters and spaces are allowed when inputting a size or ingredient.`);
     }
 }
 
-function handlePrepMethodChange(
-    subsection: number,
-    char: NewChar,
-    actionHandler: InternalActionHandler
-) {
-    if (typeof char === 'number') {
-        actionHandler.deleteChar(subsection);
+function handleIngredientChange(opts: handleChangeOpts) {
+    const { subsection, char, editableActions } = opts;
+    if (/^[a-zA-Z -]$/.test(char)) {
+        editableActions.ingredient.append(subsection, char);
     } else {
-        if (/^[a-zA-Z ]$/.test(char)) {
-            actionHandler.prepMethod.append(subsection, char);
-        } else {
-            throw new Error(`Only letters and spaces are allowed when inputting a prep method.`);
-        }
+        throw new Error('Only letters and spaces are allowed when inputting an ingredient.');
     }
 }
 
-export function getTextDiff(value: string, origStr: string): NewChar {
+function handlePrepMethodChange(opts: handleChangeOpts) {
+    const { subsection, char, editableActions } = opts;
+    if (/^[a-zA-Z ]$/.test(char)) {
+        editableActions.prepMethod.append(subsection, char);
+    } else {
+        throw new Error(`Only letters and spaces are allowed when inputting a prep method.`);
+    }
+}
+
+export function getTextDiff(value: string, origStr: string): string {
     if (value.length > origStr.length) {
         return value.replace(origStr, '');
-    }
-    if (value.length < origStr.length) {
-        return origStr.length - value.length;
     }
     return '';
 }
@@ -690,6 +675,7 @@ export interface IngredientActionHandler {
     setCurrentEditableAttribute: (subsection: number, attr: SetAttr) => void;
     currentEditableAttributeValue: (subsection: number) => string | null;
     setEditableShow: SetShow;
+    deleteChar: (subsection: number) => void;
     handleEditableChange: (subsection: number, value: string) => void;
     setFinishedArray: (subsection: number, finished: FinishedRecipeIngredient[]) => void;
     removeFinished: (subsection: number, index: number) => void;
@@ -826,32 +812,23 @@ export function useIngredientList(): UseIngredientListReturnType {
                 }
             },
             setEditableShow: editableActions.setShow,
+            deleteChar: (subsection) => dispatch({ type: 'delete_editable_char', subsection }),
             handleEditableChange: (subsection, value) => {
                 const sub = getSubsection(state, subsection);
-                const diff = getTextDiff(value, getEditableRecipeIngredientStr(sub.editable));
+                const char = getTextDiff(value, getEditableRecipeIngredientStr(sub.editable));
                 try {
+                    const opts = { subsection, char, item: sub.editable, data, editableActions };
                     switch (sub.editable.state) {
                         case 'quantity':
-                            return handleQuantityChange(
-                                subsection,
-                                diff,
-                                sub.editable,
-                                editableActions
-                            );
+                            return handleQuantityChange(opts);
                         case 'unit':
-                            return handleUnitChange(
-                                subsection,
-                                diff,
-                                sub.editable,
-                                data,
-                                editableActions
-                            );
+                            return handleUnitChange(opts);
                         case 'size':
-                            return handleSizeChange(subsection, diff, editableActions);
+                            return handleSizeChange(opts);
                         case 'ingredient':
-                            return handleIngredientChange(subsection, diff, editableActions);
+                            return handleIngredientChange(opts);
                         case 'prepMethod':
-                            return handlePrepMethodChange(subsection, diff, editableActions);
+                            return handlePrepMethodChange(opts);
                         default:
                             throw new Error(`Unknown state: ${sub.editable.state}`);
                     }
