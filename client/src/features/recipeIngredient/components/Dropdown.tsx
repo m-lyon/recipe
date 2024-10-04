@@ -2,9 +2,8 @@ import { MutableRefObject } from 'react';
 import { Box, List } from '@chakra-ui/react';
 import { LayoutGroup, motion } from 'framer-motion';
 
-import { DropdownItem } from '@recipe/common/components';
-import { EditableRecipeIngredient } from '@recipe/types';
 import { displayValue } from '@recipe/utils/formatting';
+import { DropdownItem } from '@recipe/common/components';
 
 import { Suggestion } from '../utils/suggestions';
 

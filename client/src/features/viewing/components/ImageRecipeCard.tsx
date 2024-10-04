@@ -5,15 +5,13 @@ import { Box, Flex, LinkBox, LinkOverlay, VStack } from '@chakra-ui/react';
 import { Card, CardBody, CardHeader, Heading, IconButton, Spacer } from '@chakra-ui/react';
 
 import { ROOT_PATH } from '@recipe/constants';
-import { RecipeFromMany } from '@recipe/types';
 import { TagList } from '@recipe/features/tags';
-import { Tag } from '@recipe/graphql/generated';
 import { ImageViewerHome } from '@recipe/features/images';
 
 import { getCardTitle } from './RecipeCard';
 
 interface Props {
-    recipe: RecipeFromMany;
+    recipe: RecipePreview;
     hasEditPermission: boolean;
     handleDelete: (id: string) => void;
 }
@@ -93,13 +91,15 @@ export function ImageRecipeCard(props: Props) {
                             alignItems='flex-start'
                         >
                             <TagList
-                                tags={recipe.tags.concat(
-                                    recipe.calculatedTags.map((tag) => ({ value: tag }) as Tag)
-                                )}
+                                tags={recipe.tags
+                                    .map((tag) => tag.value)
+                                    .concat(recipe.calculatedTags)}
                                 paddingX='20px'
                             />
                             <Spacer />
-                            <ImageViewerHome images={recipe.images} />
+                            <ImageViewerHome
+                                images={recipe.images.filter((image) => image !== null) || []}
+                            />
                         </VStack>
                     </LinkOverlay>
                 </CardBody>

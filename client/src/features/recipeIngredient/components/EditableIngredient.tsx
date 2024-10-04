@@ -6,8 +6,6 @@ import { Popover, PopoverAnchor, useDisclosure, useOutsideClick } from '@chakra-
 
 import { DEBUG } from '@recipe/constants';
 import { useErrorToast } from '@recipe/common/hooks';
-import { EditableRecipeIngredient } from '@recipe/types';
-import { RecipeIngredientQueryData } from '@recipe/types';
 import { DELETE_UNIT } from '@recipe/graphql/mutations/unit';
 
 import { Dropdown } from './Dropdown';
@@ -18,14 +16,14 @@ import { useDropdownList } from '../hooks/useDropdownList';
 import { NewIngredientPopover } from './NewIngredientPopover';
 import { NewPrepMethodPopover } from './NewPrepMethodPopover';
 import { NewBespokeUnitPopover } from './NewBespokeUnitPopover';
-import { IngredientActionHandler, SetAttr } from '../hooks/useIngredientList';
+import { IngredientActionHandler } from '../hooks/useIngredientList';
 
 export type PopoverType = 'unit' | 'bespokeUnit' | 'size' | 'ingredient' | 'prepMethod';
 interface Props {
     subsection: number;
     item: EditableRecipeIngredient;
     actionHandler: IngredientActionHandler;
-    queryData: RecipeIngredientQueryData;
+    queryData: IngredientComponentQuery;
     ingredientNum: number;
     fontSize?: string;
 }
@@ -87,13 +85,14 @@ export function EditableIngredient(props: Props) {
     const { setHighlighted, handleKeyboardEvent, ...dropdownProps } = useDropdownList(
         strValue,
         suggestions,
-        (attr: SetAttr) => actionHandler.setCurrentEditableAttribute(subsection, attr),
+        (attr: RecipeIngredientDropdown) =>
+            actionHandler.setCurrentEditableAttribute(subsection, attr),
         openPopover,
         () => actionHandler.deleteChar(subsection)
     );
 
     const getPopover = () => {
-        const setItem = (attr: SetAttr) => {
+        const setItem = (attr: RecipeIngredientDropdown) => {
             actionHandler.setCurrentEditableAttribute(subsection, attr);
             setHighlighted(0);
         };

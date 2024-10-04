@@ -7,7 +7,6 @@ import { ImageUpload } from '@recipe/features/images';
 import { IngredientsTabLayout } from '@recipe/layouts';
 import { EditableTagList } from '@recipe/features/tags';
 import { EditableField } from '@recipe/common/components';
-import { EnumRecipeIngredientType } from '@recipe/graphql/generated';
 import { StarRating, StarRatingProps } from '@recipe/features/rating';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
 
@@ -119,8 +118,7 @@ export function EditableRecipe(props: Props) {
                             size: item.size ? item.size._id : undefined,
                             ingredient: item.ingredient._id,
                             prepMethod: item.prepMethod ? item.prepMethod._id : undefined,
-                            type: EnumRecipeIngredientType[item.ingredient.__typename!],
-                        };
+                        } satisfies SubmittableRecipeIngredient;
                     }),
                 };
             });

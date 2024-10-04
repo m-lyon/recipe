@@ -1,13 +1,12 @@
-import { Images } from '@recipe/types';
 import { ImageCarousel } from '@recipe/common/components';
 
 interface Props {
-    images: Images;
+    images: ImagePreview[];
 }
 export function ImageViewerHome(props: Props) {
     const { images } = props;
 
-    if (!images || images.length === 0) {
+    if (images.length === 0) {
         return null;
     }
 

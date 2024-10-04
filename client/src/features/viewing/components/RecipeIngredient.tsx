@@ -1,14 +1,12 @@
 import { ChevronRightIcon } from '@chakra-ui/icons';
 import { Box, Flex, ListItem, Spacer, useDisclosure } from '@chakra-ui/react';
 
-import { LikeFinishedRecipeIngredient } from '@recipe/types';
-import { IngredientListRecipe, RecipeAsIngredient } from '@recipe/types';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 
 import { RecipeModal } from './RecipeModal';
 
 interface Props {
-    ingredient: RecipeAsIngredient;
+    ingredient: RecipeIngredientAsRecipeView;
 }
 export function RecipeIngredient({ ingredient }: Props) {
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -39,16 +37,12 @@ export function RecipeIngredient({ ingredient }: Props) {
                     onClick={onOpen}
                     aria-label={`View ${ingredient.ingredient.title}`}
                 >
-                    {getFinishedRecipeIngredientStr(ingredient as LikeFinishedRecipeIngredient)}
+                    {getFinishedRecipeIngredientStr(ingredient)}
                     <ChevronRightIcon style={{ marginLeft: 5 }} />
                 </Box>
                 <Spacer />
             </Flex>
-            <RecipeModal
-                recipe={ingredient.ingredient as IngredientListRecipe}
-                isOpen={isOpen}
-                onClose={onClose}
-            />
+            <RecipeModal recipe={ingredient.ingredient} isOpen={isOpen} onClose={onClose} />
         </ListItem>
     );
 }

@@ -3,9 +3,7 @@ import { useEffect, useState } from 'react';
 import { TagList } from '@recipe/features/tags';
 import { useUser } from '@recipe/features/user';
 import { Servings } from '@recipe/features/servings';
-import { IngredientSubsection } from '@recipe/types';
 import { IngredientsTabLayout } from '@recipe/layouts';
-import { Recipe, Tag } from '@recipe/graphql/generated';
 import { StarRating, useViewStarRating } from '@recipe/features/rating';
 
 import { Notes } from './Notes';
@@ -13,11 +11,11 @@ import { IngredientList } from './IngredientList';
 
 interface Props {
     recipeId: string;
-    ingredients: IngredientSubsection[];
-    notes: Recipe['notes'];
-    numServings: Recipe['numServings'];
-    tags: Recipe['tags'];
-    calculatedTags: Recipe['calculatedTags'];
+    ingredients: CompletedRecipeView['ingredientSubsections'];
+    notes: CompletedRecipeView['notes'];
+    numServings: CompletedRecipeView['numServings'];
+    tags: CompletedRecipeView['tags'];
+    calculatedTags: CompletedRecipeView['calculatedTags'];
 }
 export function IngredientsTab(props: Props) {
     const { recipeId, ingredients, notes, numServings, tags, calculatedTags } = props;
@@ -49,7 +47,7 @@ export function IngredientsTab(props: Props) {
             Notes={<Notes notes={notes} />}
             Tags={
                 <TagList
-                    tags={tags.concat(calculatedTags.map((tag) => ({ value: tag }) as Tag))}
+                    tags={tags.map((tag) => tag.value).concat(calculatedTags)}
                     pb='24px'
                     display={{ base: 'block', md: 'none' }}
                 />

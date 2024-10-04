@@ -9,7 +9,8 @@ import { useErrorToast } from '@recipe/common/hooks';
 import { CREATE_UNIT } from '@recipe/graphql/mutations/unit';
 import { FloatingLabelInput } from '@recipe/common/components';
 import { CreateUnitMutation } from '@recipe/graphql/generated';
-import { EnumUnitCreatePreferredNumberFormat } from '@recipe/graphql/generated';
+
+export const numberFormat: NumberFormat[] = ['fraction', 'decimal'];
 
 interface Props extends StackProps {
     fieldRef: MutableRefObject<HTMLInputElement | null>;
@@ -42,12 +43,9 @@ export function BeskpokeUnitForm(props: Props) {
         shortPlural: string().required('Short plural name is required'),
         longSingular: string().required('Long singular name is required'),
         longPlural: string().required('Long plural name is required'),
-        preferredNumberFormat: mixed<EnumUnitCreatePreferredNumberFormat>()
+        preferredNumberFormat: mixed<NumberFormat>()
             .required()
-            .oneOf(
-                Object.values(EnumUnitCreatePreferredNumberFormat),
-                'You must select a number format'
-            ),
+            .oneOf(numberFormat, 'You must select a number format'),
         hasSpace: boolean().required(),
         unique: boolean().required(),
     });

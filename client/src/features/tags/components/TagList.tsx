@@ -5,7 +5,7 @@ import { imageCardWidth } from '@recipe/features/images';
 export const tagsHeight = 34;
 
 interface Props extends BoxProps {
-    tags: { value: string }[];
+    tags: string[];
     displayBoxMargin?: boolean;
 }
 export function TagList(props: Props) {
@@ -13,9 +13,9 @@ export function TagList(props: Props) {
 
     const tagsList = tags.map((tag) => {
         return (
-            <WrapItem key={tag.value}>
+            <WrapItem key={tag}>
                 <Tag size='lg'>
-                    <TagLabel>{tag.value}</TagLabel>
+                    <TagLabel>{tag}</TagLabel>
                 </Tag>
             </WrapItem>
         );

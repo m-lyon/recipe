@@ -1,54 +1,53 @@
 import { matchSorter } from 'match-sorter';
 
-import { IngredientAndRecipe, RecipeFromIngredientsMany } from '@recipe/types';
-import { Ingredient, PrepMethod, Size, Unit } from '@recipe/graphql/generated';
-import { EditableRecipeIngredient, Item, RecipeIngredientQueryData } from '@recipe/types';
-
 interface UnitSuggestion {
-    value: string | Unit | Size | IngredientAndRecipe | PrepMethod;
+    value: string | UnitChoice | SizeChoice | IngredientOrRecipeChoice;
     colour?: string;
 }
 interface SizeSuggestion {
-    value: string | Size | IngredientAndRecipe;
+    value: string | SizeChoice | IngredientOrRecipeChoice;
     colour?: string;
 }
 interface IngredientSuggestion {
-    value: string | IngredientAndRecipe;
+    value: string | IngredientOrRecipeChoice;
     colour?: string;
 }
 interface PrepMethodSuggestion {
-    value: string | PrepMethod;
+    value: string | PrepMethodChoice;
     colour?: string;
 }
 export interface Suggestion {
-    value: string | Item;
+    value: RecipeIngredientDropdown;
     colour?: string;
 }
-const sortUnits = (units: Unit[], value: string): UnitSuggestion[] => {
-    return matchSorter<Unit>(units, value, {
+const sortUnits = (units: UnitChoice[], value: string): UnitSuggestion[] => {
+    return matchSorter<UnitChoice>(units, value, {
         keys: ['longSingular', 'longPlural'],
     }).map((item) => ({ value: item }));
 };
-const sortSizes = (sizes: Size[], value: string): SizeSuggestion[] => {
-    return matchSorter<Size>(sizes, value, {
+const sortSizes = (sizes: SizeChoice[], value: string): SizeSuggestion[] => {
+    return matchSorter<SizeChoice>(sizes, value, {
         keys: ['value'],
     }).map((item) => ({ value: item }));
 };
 const sortIngredients = (
-    ingredients: Ingredient[],
-    recipes: RecipeFromIngredientsMany[],
+    ingredients: IngredientChoice[],
+    recipes: RecipeChoice[],
     value: string
 ): IngredientSuggestion[] => {
-    return matchSorter<IngredientAndRecipe>([...ingredients, ...recipes], value, {
+    return matchSorter<IngredientOrRecipeChoice>([...ingredients, ...recipes], value, {
         keys: ['name', 'pluralName', 'title', 'pluralTitle'],
     }).map((item) => ({ value: item }));
 };
-const sortPrepMethods = (prepMethods: PrepMethod[], value: string): PrepMethodSuggestion[] => {
-    return matchSorter<PrepMethod>(prepMethods, value, {
+const sortPrepMethods = (
+    prepMethods: PrepMethodChoice[],
+    value: string
+): PrepMethodSuggestion[] => {
+    return matchSorter<PrepMethodChoice>(prepMethods, value, {
         keys: ['value'],
     }).map((item) => ({ value: item }));
 };
-const unitSuggestions = (data: RecipeIngredientQueryData, value: string): UnitSuggestion[] => {
+const unitSuggestions = (data: IngredientComponentQuery, value: string): UnitSuggestion[] => {
     const items = sortUnits(data?.units ?? [], value);
     const sizes = sortSizes(data?.sizes ?? [], value);
     const ingredients = sortIngredients(data?.ingredients ?? [], data?.recipes ?? [], value);
@@ -68,7 +67,7 @@ const unitSuggestions = (data: RecipeIngredientQueryData, value: string): UnitSu
     return items;
 };
 
-const sizeSuggestions = (data: RecipeIngredientQueryData, value: string): SizeSuggestion[] => {
+const sizeSuggestions = (data: IngredientComponentQuery, value: string): SizeSuggestion[] => {
     const items = sortSizes(data?.sizes ?? [], value);
     const ingredients = sortIngredients(data?.ingredients ?? [], data?.recipes ?? [], value);
     items.push(...ingredients);
@@ -86,7 +85,7 @@ const sizeSuggestions = (data: RecipeIngredientQueryData, value: string): SizeSu
 };
 
 const ingredientSuggestions = (
-    data: RecipeIngredientQueryData,
+    data: IngredientComponentQuery,
     value: string
 ): IngredientSuggestion[] => {
     const items = sortIngredients(data?.ingredients ?? [], data?.recipes ?? [], value);
@@ -95,7 +94,7 @@ const ingredientSuggestions = (
 };
 
 const prepMethodSuggestions = (
-    data: RecipeIngredientQueryData,
+    data: IngredientComponentQuery,
     value: string
 ): PrepMethodSuggestion[] => {
     const items = sortPrepMethods(data?.prepMethods ?? [], value);
@@ -110,7 +109,7 @@ const prepMethodSuggestions = (
 
 export const getSuggestions = (
     item: EditableRecipeIngredient,
-    data: RecipeIngredientQueryData,
+    data: IngredientComponentQuery,
     strValue: string
 ): Suggestion[] => {
     switch (item.state) {

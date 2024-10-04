@@ -6,5 +6,6 @@ export function useUser() {
     const { data, loading } = useQuery(CURRENT_USER);
     const isLoggedIn = !!data?.currentUser;
     const isAdmin = data?.currentUser?.role === 'admin';
-    return { user: data?.currentUser, isLoggedIn, isAdmin, loading };
+    const user = data?.currentUser ? data.currentUser : null;
+    return { user, isLoggedIn, isAdmin, loading };
 }

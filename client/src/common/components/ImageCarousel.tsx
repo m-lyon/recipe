@@ -4,13 +4,12 @@ import { UseMeasureRef } from 'react-use/lib/useMeasure';
 import { Box, ResponsiveValue, Skeleton } from '@chakra-ui/react';
 import { AspectRatio, Card, CardBody, CardProps, Image } from '@chakra-ui/react';
 
-import { Images } from '@recipe/types';
 import { GRAPHQL_ENDPOINT } from '@recipe/constants';
 
 import { Carousel } from './Carousel';
 
 interface ImageCarouselProps extends CardProps {
-    images: Images;
+    images: Image[];
     width: CSS.Property.Width | number;
     ratio: number;
     cardRef?: UseMeasureRef<Element>;
@@ -21,7 +20,7 @@ export function ImageCarousel(props: ImageCarouselProps) {
     const { images, width, ratio, cardRef, bottomLeftRadius, bottomRightRadius, ...rest } = props;
     const [ref, { height }] = useMeasure<HTMLImageElement>();
 
-    const imagesCards = images!.map((image, index) => {
+    const imagesCards = images.map((image, index) => {
         let queryStr = '';
         if (typeof width === 'number') {
             if (2 * width <= 720) {
@@ -32,25 +31,25 @@ export function ImageCarousel(props: ImageCarouselProps) {
         } else if (width === '100%') {
             queryStr = '?width=1080';
         }
-        const borderLeft = images?.length === 1 ? bottomLeftRadius : 0;
-        const borderRight = images?.length === 1 ? bottomRightRadius : 0;
+        const borderLeft = images.length === 1 ? bottomLeftRadius : 0;
+        const borderRight = images.length === 1 ? bottomRightRadius : 0;
 
         return (
             <CardBody padding='0' key={index}>
                 <AspectRatio maxW={width} ratio={ratio} key={index}>
                     <Image
-                        src={`${GRAPHQL_ENDPOINT}${image!.origUrl}${queryStr}`}
+                        src={`${GRAPHQL_ENDPOINT}${image.origUrl}${queryStr}`}
                         objectFit='contain'
                         onDragStart={(e: React.DragEvent<HTMLImageElement>) => e.preventDefault()}
                         borderBottomLeftRadius={borderLeft}
                         borderBottomRightRadius={borderRight}
-                        alt={`Image ${index + 1} for ${image?.recipe?.title}`}
+                        alt={`Image ${index + 1} for ${image.recipe.title}`}
                         fallback={
                             <Box ref={index === 0 ? ref : undefined}>
                                 <Skeleton
                                     height='90%'
                                     width='95%'
-                                    aria-label={`Loading image ${index + 1} for ${image?.recipe?.title}`}
+                                    aria-label={`Loading image ${index + 1} for ${image.recipe.title}`}
                                 />
                             </Box>
                         }
@@ -62,12 +61,12 @@ export function ImageCarousel(props: ImageCarouselProps) {
 
     return (
         <Card
-            height={images!.length > 1 ? height + 36 : height}
+            height={images.length > 1 ? height + 36 : height}
             width={width}
             ref={cardRef}
             {...rest}
         >
-            {images!.length > 1 ? <Carousel gap={0}>{imagesCards}</Carousel> : imagesCards[0]}
+            {images.length > 1 ? <Carousel gap={0}>{imagesCards}</Carousel> : imagesCards[0]}
         </Card>
     );
 }

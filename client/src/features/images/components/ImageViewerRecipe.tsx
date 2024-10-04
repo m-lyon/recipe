@@ -2,14 +2,13 @@ import * as CSS from 'csstype';
 import { UseMeasureRef } from 'react-use/lib/useMeasure';
 import { ResponsiveValue, useBreakpointValue } from '@chakra-ui/react';
 
-import { Image, Recipe } from '@recipe/graphql/generated';
 import { ImageCarousel } from '@recipe/common/components';
 
 export const imageCardWidth = 360;
 export const sliderBarHeight = 36;
 
 interface Props {
-    images: Recipe['images'];
+    images: ImageView[];
     cardRef?: UseMeasureRef<Element>;
     position?: ResponsiveValue<CSS.Property.Position>;
     display?: ResponsiveValue<CSS.Property.Display>;
@@ -21,13 +20,13 @@ export function ImageViewerRecipe(props: Props) {
         md: imageCardWidth,
     });
 
-    if (!images || images.length === 0) {
+    if (images.length === 0) {
         return null;
     }
 
     return (
         <ImageCarousel
-            images={images as Image[]}
+            images={images}
             width={variant ?? imageCardWidth}
             ratio={3 / 2}
             position={position ? position : 'absolute'}

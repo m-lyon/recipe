@@ -1,9 +1,7 @@
 import { Text } from '@chakra-ui/react';
 
-import { Recipe } from '@recipe/graphql/generated';
-
 interface Props {
-    notes: Recipe['notes'];
+    notes: CompletedRecipeView['notes'];
 }
 export function Notes(props: Props) {
     const { notes } = props;

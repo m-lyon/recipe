@@ -7,7 +7,16 @@ const config: CodegenConfig = {
     generates: {
         './src/__generated__/': {
             preset: 'client',
-            plugins: [],
+            config: {
+                avoidOptionals: {
+                    field: true,
+                    inputValue: false,
+                    object: false,
+                    defaultValue: false,
+                },
+                nonOptionalTypename: true,
+                enumsAsTypes: true,
+            },
             presetConfig: {
                 gqlTagName: 'gql',
                 fragmentMasking: false,

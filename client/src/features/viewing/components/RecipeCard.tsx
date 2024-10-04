@@ -5,23 +5,21 @@ import { Box, Flex, IconButton, LinkOverlay, Spacer } from '@chakra-ui/react';
 import { Card, CardBody, CardHeader, Heading, LinkBox } from '@chakra-ui/react';
 
 import { ROOT_PATH } from '@recipe/constants';
-import { RecipeFromMany } from '@recipe/types';
 import { TagList } from '@recipe/features/tags';
 
-export function getCardTitle(recipe: RecipeFromMany): string {
+export function getCardTitle(recipe: RecipePreview): string {
     if (recipe.isIngredient && !recipe.pluralTitle) {
         throw new Error('No plural title for ingredient');
     }
-    const title = recipe.isIngredient
-        ? recipe.numServings > 1
-            ? recipe.pluralTitle!
-            : recipe.title
-        : recipe.title;
-    return title;
+    if (recipe.isIngredient) {
+        // pluralTitle is not undefined because of the check above
+        return recipe.numServings > 1 ? recipe.pluralTitle! : recipe.title;
+    }
+    return recipe.title;
 }
 
 interface Props {
-    recipe: RecipeFromMany;
+    recipe: RecipePreview;
     hasEditPermission: boolean;
     handleDelete: (id: string) => void;
 }
@@ -91,9 +89,7 @@ export function RecipeCard(props: Props) {
                 </CardHeader>
                 <CardBody>
                     <TagList
-                        tags={recipe.tags
-                            .map((tag) => ({ value: tag.value }))
-                            .concat(recipe.calculatedTags.map((tag) => ({ value: tag! })))}
+                        tags={recipe.tags.map((tag) => tag.value).concat(recipe.calculatedTags)}
                     />
                 </CardBody>
             </Card>

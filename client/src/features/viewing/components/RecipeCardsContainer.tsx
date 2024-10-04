@@ -4,16 +4,14 @@ import { useQuery } from '@apollo/client';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
-import { RecipeFromMany } from '@recipe/types';
 import { useUser } from '@recipe/features/user';
-import { User } from '@recipe/graphql/generated';
 import { ConfirmDeleteModal } from '@recipe/features/editing';
 import { COUNT_RECIPES } from '@recipe/graphql/queries/recipe';
 
 import { RecipeCard } from './RecipeCard';
 import { ImageRecipeCard } from './ImageRecipeCard';
 
-function hasPermission(user: User | null | undefined, recipe: RecipeFromMany) {
+function hasPermission(user: CurrentUser, recipe: RecipePreview): boolean {
     if (!user) {
         return false;
     }
@@ -36,7 +34,7 @@ const generateBreakPoints = (maxColumns: number): { [key: number]: number } => {
 const breakPoints: { [key: number]: number } = generateBreakPoints(4);
 
 interface Props {
-    recipes: RecipeFromMany[];
+    recipes: RecipePreview[];
     fetchMore: () => void;
     searchQuery: string;
 }
