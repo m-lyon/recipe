@@ -1,11 +1,10 @@
 import { Reorder } from 'framer-motion';
 import { Tag, TagCloseButton, TagLabel } from '@chakra-ui/react';
 
-import { FinishedRecipeIngredient } from '@recipe/types';
 import { getFinishedRecipeIngredientParts } from '@recipe/utils/formatting';
 
 interface Props {
-    item: FinishedRecipeIngredient;
+    item: FinishedIngredient;
     removeFinished: () => void;
 }
 export function FinishedIngredient(props: Props) {

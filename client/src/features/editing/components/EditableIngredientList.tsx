@@ -5,7 +5,6 @@ import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 
 import { DEBUG } from '@recipe/constants';
 import { useErrorToast } from '@recipe/common/hooks';
-import { FinishedRecipeIngredient } from '@recipe/types';
 import { EditableText } from '@recipe/common/components';
 import { DELETE_UNIT } from '@recipe/graphql/mutations/unit';
 import { DELETE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';

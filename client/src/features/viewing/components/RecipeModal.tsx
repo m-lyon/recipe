@@ -2,11 +2,10 @@ import { Box, Grid, GridItem } from '@chakra-ui/react';
 import { Badge, Divider, ModalCloseButton, useBreakpointValue } from '@chakra-ui/react';
 import { Modal, ModalBody, ModalContent, ModalHeader, ModalOverlay } from '@chakra-ui/react';
 
-import { IngredientListRecipe } from '@recipe/types';
 import { IngredientList, InstructionList } from '@recipe/features/viewing';
 
 interface Props {
-    recipe: IngredientListRecipe;
+    recipe: IngredientAsRecipeView;
     isOpen: boolean;
     onClose: () => void;
 }

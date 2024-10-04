@@ -4,16 +4,14 @@ import { UnorderedList, VStack, useToast } from '@chakra-ui/react';
 import { Box, Flex, HStack, IconButton, ListItem, Spacer, Text } from '@chakra-ui/react';
 
 import { DELAY_SHORT } from '@recipe/constants';
-import { RecipeAsIngredient } from '@recipe/types';
 import { changeQuantity } from '@recipe/utils/quantity';
 import { useUnitConversion } from '@recipe/features/servings';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
-import { IngredientSubsection, LikeFinishedRecipeIngredient } from '@recipe/types';
 
 import { RecipeIngredient } from './RecipeIngredient';
 
 export interface IngredientListProps {
-    subsections: IngredientSubsection[];
+    subsections: IngredientSubsectionView[];
     currentServings: number;
     origServings: number;
     weightAndVolumeBtns?: boolean;
@@ -32,17 +30,23 @@ export function IngredientList(props: IngredientListProps) {
 
     const subsectionsList = modifiedSubsections.map((collection, index) => {
         const finishedIngredients = collection.ingredients.map((item, i) => {
-            if (item.type === 'ingredient') {
+            if (item.ingredient.__typename === 'Ingredient') {
                 return (
                     <ListItem
                         key={item._id}
                         aria-label={`Ingredient #${i + 1} in subsection ${index + 1}`}
                     >
-                        {getFinishedRecipeIngredientStr(item as LikeFinishedRecipeIngredient)}
+                        {getFinishedRecipeIngredientStr(item)}
                     </ListItem>
                 );
             }
-            return <RecipeIngredient key={item._id} ingredient={item as RecipeAsIngredient} />;
+            return (
+                <RecipeIngredient
+                    key={item._id}
+                    // ingredient is guaranteed to be a recipe because of the typename check
+                    ingredient={item as RecipeIngredientAsRecipeView}
+                />
+            );
         });
         if (index === 0) {
             return (

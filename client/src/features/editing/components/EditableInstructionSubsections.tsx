@@ -3,8 +3,8 @@ import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 
 import { EditableText } from '@recipe/common/components';
 
-import { UseInstructionListReturnType } from '../hooks/useInstructionsList';
 import { EditableInstructionList } from './EditableInstructionList';
+import { UseInstructionListReturnType } from '../hooks/useInstructionsList';
 
 export function EditableInstructionSubsections(props: UseInstructionListReturnType) {
     const { state, actionHandler } = props;

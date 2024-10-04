@@ -1,9 +1,7 @@
 import { Text } from '@chakra-ui/react';
 
-import { Recipe } from '@recipe/graphql/generated';
-
 interface Props {
-    source: Recipe['source'];
+    source: SourceView;
 }
 export function Source(props: Props) {
     const { source } = props;

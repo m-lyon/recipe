@@ -1,6 +1,6 @@
 import { useRef } from 'react';
-import { ListItem, OrderedList } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
+import { ListItem, OrderedList } from '@chakra-ui/react';
 
 import { EditableItemArea } from '@recipe/common/components';
 
