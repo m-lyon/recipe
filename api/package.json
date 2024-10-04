@@ -16,7 +16,6 @@
         "test": "npm run compile && npm run start:test --",
         "start:test": "NODE_ENV=test mocha ./dist/test/**/*.test.js",
         "seed": "npm run compile && NODE_ENV=development node ./dist/src/scripts/seedDatabase.js",
-        "reset_db": "npm run compile && NODE_ENV=development node ./dist/src/scripts/resetDatabase.js",
         "dl_memory": "npm run compile && NODE_ENV=test node ./dist/test/scripts/downloadMemoryServer.js"
     },
     "keywords": [],

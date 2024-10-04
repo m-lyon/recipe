@@ -33,7 +33,6 @@ export function generateRecipeIdentifier(title: string): string {
 }
 
 const recipeIngredientSchema = new Schema<RecipeIngredientType>({
-    type: { type: String, enum: ['ingredient', 'recipe'], required: true },
     quantity: {
         type: String,
         validate: {
@@ -75,20 +74,12 @@ const recipeIngredientSchema = new Schema<RecipeIngredientType>({
     ingredient: {
         type: Schema.Types.ObjectId,
         ref: function () {
-            return this.type === 'ingredient' ? 'Ingredient' : 'Recipe';
+            return Ingredient.exists({ _id: this._id }) ? 'Ingredient' : 'Recipe';
         },
         required: true,
         validate: {
             validator: function (ingredient: Types.ObjectId) {
-                let type = this.type;
-                if (!this.isNew) {
-                    type = this.get('type');
-                }
-                if (type === 'ingredient') {
-                    return Ingredient.exists({ _id: ingredient });
-                } else {
-                    return Recipe.exists({ _id: ingredient });
-                }
+                return Ingredient.exists({ _id: ingredient }) || Recipe.exists({ _id: ingredient });
             },
             message: 'Ingredient does not exist.',
         },
@@ -173,7 +164,7 @@ const recipeSchema = new Schema<Recipe>({
     },
     pluralTitle: { type: String },
     subTitle: { type: String },
-    calculatedTags: { type: [String], required: true },
+    calculatedTags: { type: [String!]!, required: true },
     tags: {
         type: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
         validate: [
@@ -249,7 +240,7 @@ recipeSchema.pre('save', async function () {
     for (const tag of ALLOWED_TAGS) {
         const allMembers = this.ingredientSubsections.every((collection) => {
             return collection.ingredients.every((recipeIngr) => {
-                if (recipeIngr.type === 'recipe') {
+                if (recipeIngr.ingredient.calculatedTags !== undefined) {
                     const recipe: Recipe = recipeIngr.ingredient;
                     return recipe.calculatedTags.includes(tag);
                 } else {
@@ -270,6 +261,7 @@ export const RecipeIngredient = model<RecipeIngredientType>(
 );
 export const RecipeIngredientTC = composeMongoose(RecipeIngredient);
 export const Recipe = model<Recipe>('Recipe', recipeSchema);
+export const RecipeTC = composeMongoose(Recipe);
 export const RecipeModifyTC = composeMongoose(Recipe, {
     removeFields: ['titleIdentifier', 'calculatedTags', 'createdAt', 'lastModified'],
     name: 'RecipeModify',
@@ -278,4 +270,3 @@ export const RecipeCreateTC = composeMongoose(Recipe, {
     removeFields: ['owner', 'titleIdentifier', 'calculatedTags', 'createdAt', 'lastModified'],
     name: 'RecipeCreate',
 });
-export const RecipeTC = composeMongoose(Recipe);

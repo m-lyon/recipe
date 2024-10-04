@@ -1,3 +1,5 @@
+import { GraphQLNonNull } from 'graphql';
+
 import { UnitTC } from '../models/Unit.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
 import { ConversionRule, ConversionRuleTC } from '../models/UnitConversion.js';
@@ -26,12 +28,18 @@ ConversionRuleTC.addRelation('unit', {
     },
     projection: { unit: true },
 });
+ConversionRuleTC.extendField('unit', {
+    type: new GraphQLNonNull(UnitTC.getType()),
+});
 ConversionRuleTC.addRelation('baseUnit', {
     resolver: () => UnitTC.mongooseResolvers.findById(),
     prepareArgs: {
         _id: (source) => source.baseUnit,
     },
     projection: { baseUnit: true },
+});
+ConversionRuleTC.extendField('baseUnit', {
+    type: new GraphQLNonNull(UnitTC.getType()),
 });
 
 export const ConversionRuleQuery = {
@@ -82,6 +90,9 @@ UnitConversionTC.addRelation('baseUnit', {
         _id: (source) => source.baseUnit,
     },
     projection: { baseUnit: true },
+});
+UnitConversionTC.extendField('baseUnit', {
+    type: new GraphQLNonNull(UnitTC.getType()),
 });
 
 UnitConversionTC.addRelation('rules', {

@@ -1,6 +1,7 @@
 import { Model } from 'mongoose';
 import { schemaComposer } from 'graphql-compose';
-import { GraphQLError, GraphQLList } from 'graphql';
+import { GraphQLNonNull, GraphQLString } from 'graphql';
+import { GraphQLError, GraphQLList, GraphQLObjectType } from 'graphql';
 
 import { TagTC } from '../models/Tag.js';
 import { SizeTC } from '../models/Size.js';
@@ -41,7 +42,7 @@ RecipeCreateTC.addResolver({
 
 RecipeIngredientTC.addResolver({
     name: 'ingredientOrRecipe',
-    type: IngredientOrRecipeTC,
+    type: new GraphQLNonNull(IngredientOrRecipeTC.getType()),
     description:
         'Determine if the object is an ingredient or a recipe and return the appropriate type',
     args: { _id: 'MongoID!' },
@@ -67,11 +68,56 @@ RecipeIngredientTC.addResolver({
     },
 });
 
+// This is here because the calculatedTags field in the schema constructor does
+// not add non-nullability to array items.
+RecipeTC.extendField('calculatedTags', {
+    type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLString))),
+});
+RecipeTC.extendField('ingredientSubsections', {
+    type: new GraphQLNonNull(
+        new GraphQLList(
+            new GraphQLNonNull(
+                new GraphQLObjectType({
+                    name: 'IngredientSubsections',
+                    fields: {
+                        name: { type: GraphQLString },
+                        ingredients: {
+                            type: new GraphQLNonNull(
+                                new GraphQLList(new GraphQLNonNull(RecipeIngredientTC.getType()))
+                            ),
+                        },
+                    },
+                })
+            )
+        )
+    ),
+});
+RecipeTC.extendField('instructionSubsections', {
+    type: new GraphQLNonNull(
+        new GraphQLList(
+            new GraphQLNonNull(
+                new GraphQLObjectType({
+                    name: 'InstructionSubsections',
+                    fields: {
+                        name: { type: GraphQLString },
+                        instructions: {
+                            type: new GraphQLNonNull(
+                                new GraphQLList(new GraphQLNonNull(GraphQLString))
+                            ),
+                        },
+                    },
+                })
+            )
+        )
+    ),
+});
+
 RecipeTC.addRelation('tags', {
     resolver: () => TagTC.mongooseResolvers.findByIds(),
     prepareArgs: { _ids: (source: Recipe) => source.tags?.map((o) => o._id) },
     projection: { tags: true },
 });
+
 RecipeIngredientTC.addRelation('unit', {
     resolver: () => UnitTC.mongooseResolvers.findById(),
     prepareArgs: { _id: (source) => source.unit },
@@ -94,7 +140,7 @@ RecipeIngredientTC.addRelation('prepMethod', {
 });
 RecipeTC.addFields({
     images: {
-        type: new GraphQLList(ImageTC.getType()),
+        type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(ImageTC.getType()))),
         resolve: async (source) => {
             return await ImageTC.mongooseResolvers.findMany().resolve({
                 args: { filter: { recipe: source._id } },

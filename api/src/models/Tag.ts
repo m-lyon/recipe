@@ -1,8 +1,8 @@
 import { Document, Schema, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 
-import { uniqueInAdminsAndUser } from './validation.js';
 import { ALLOWED_TAGS } from './Ingredient.js';
+import { uniqueInAdminsAndUser } from './validation.js';
 
 export interface Tag extends Document {
     value: string;

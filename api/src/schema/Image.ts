@@ -95,11 +95,13 @@ ImageTC.addResolver({
         return { records: images };
     },
 });
-
 ImageTC.addRelation('recipe', {
     resolver: () => RecipeTC.mongooseResolvers.findById(),
     prepareArgs: { _id: (source) => source.recipe },
     projection: { recipe: true },
+});
+ImageTC.extendField('recipe', {
+    type: new GraphQLNonNull(RecipeTC.getType()),
 });
 
 export const ImageQuery = {
