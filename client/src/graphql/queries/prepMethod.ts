@@ -8,17 +8,10 @@ export const PREP_METHOD_FIELDS = gql(`
     }
 `);
 
-export const PREP_METHOD_FIELDS_FULL = gql(`
-    fragment PrepMethodFieldsFull on PrepMethod {
-        ...PrepMethodFields
-        owner
-    }
-`);
-
 export const GET_PREP_METHODS = gql(`
     query GetPrepMethods($filter: FilterFindManyPrepMethodInput) {
         prepMethodMany(limit: 5000, filter: $filter) {
-            ...PrepMethodFieldsFull
+            ...PrepMethodFields
         }
     }
 `);

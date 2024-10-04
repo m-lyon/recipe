@@ -4,7 +4,7 @@ export const CREATE_SIZE = gql(`
     mutation CreateSize($record: CreateOneSizeCreateInput!) {
         sizeCreateOne(record: $record) {
             record {
-                ...SizeFieldsFull
+                ...SizeFields
             }
         }
     }
@@ -14,7 +14,7 @@ export const MODIFY_SIZE = gql(`
     mutation ModifySize($id: MongoID!, $record: UpdateByIdSizeInput!) {
         sizeUpdateById(_id: $id, record: $record) {
             record {
-                ...SizeFieldsFull
+                ...SizeFields
             }
         }
     }

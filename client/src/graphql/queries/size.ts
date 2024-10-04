@@ -8,17 +8,10 @@ export const SIZE_FIELDS = gql(`
     }
 `);
 
-export const SIZE_FIELDS_FULL = gql(`
-    fragment SizeFieldsFull on Size {
-        ...SizeFields
-        owner
-    }
-`);
-
 export const GET_SIZES = gql(`
     query GetSizes($filter: FilterFindManySizeInput) {
         sizeMany(limit: 5000, filter: $filter) {
-            ...SizeFieldsFull
+            ...SizeFields
         }
     }
 `);

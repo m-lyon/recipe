@@ -13,7 +13,7 @@ export function CreateUnit() {
     const handleComplete = (data: CreateUnitMutation) => {
         toast({
             title: 'Unit saved',
-            description: `${data?.unitCreateOne?.record?.longSingular} saved, redirecting to the home page.`,
+            description: `${data!.unitCreateOne!.record!.longSingular} saved, redirecting to the home page.`,
             position: 'top',
         });
         return setTimeout(() => navigate(ROOT_PATH), DELAY_LONG);

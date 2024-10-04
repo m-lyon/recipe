@@ -16,8 +16,8 @@ export function Home() {
         return <div>Loading...</div>;
     }
 
-    if (error) {
-        return <div>Error: {error.message}</div>;
+    if (error || !data) {
+        return <div>Error: {error?.message}</div>;
     }
 
     return (
@@ -41,7 +41,7 @@ export function Home() {
                 </GridItem>
                 <GridItem boxShadow='lg' area='recipes'>
                     <RecipeCardsContainer
-                        recipes={data!.recipeMany}
+                        recipes={data.recipeMany}
                         fetchMore={() => {
                             fetchMore({
                                 variables: {

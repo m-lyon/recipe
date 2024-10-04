@@ -2,23 +2,22 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Reference, useMutation, useQuery } from '@apollo/client';
 
-import { RecipeFromOne } from '@recipe/types';
 import { useViewStarRating } from '@recipe/features/rating';
 import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { RECIPE_FIELDS_SUBSET } from '@recipe/graphql/queries/recipe';
 import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
+import { UpdateByIdRecipeModifyInput } from '@recipe/graphql/generated';
 import { EditableRecipe, useRecipeState } from '@recipe/features/editing';
 import { dbIngredientToFinished } from '@recipe/features/recipeIngredient';
 import { GET_RECIPE, RECIPE_INGR_FIELDS } from '@recipe/graphql/queries/recipe';
 import { DELAY_LONG, DELAY_SHORT, GRAPHQL_ENDPOINT, ROOT_PATH } from '@recipe/constants';
-import { RecipeIngredient, UpdateByIdRecipeModifyInput } from '@recipe/graphql/generated';
 import { DELETE_IMAGES, IMAGE_FIELDS, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
 
 export function EditRecipe() {
     const errorToast = useErrorToast();
     const successToast = useSuccessToast();
     const state = useRecipeState();
-    const [recipe, setRecipe] = useState<RecipeFromOne | null>(null);
+    const [recipe, setRecipe] = useState<RecipeView>(null);
     const navigate = useNavigate();
     const { titleIdentifier } = useParams();
     const { avgRating: rating, getRatings, setRating } = useViewStarRating();
@@ -109,41 +108,41 @@ export function EditRecipe() {
         },
     });
     const { data, loading, error } = useQuery(GET_RECIPE, {
-        variables: { filter: { titleIdentifier: titleIdentifier } },
+        variables: { filter: titleIdentifier ? { titleIdentifier } : {} },
         onCompleted: async (data) => {
-            getRatings(data.recipeOne!._id);
-            const recipe = data.recipeOne!;
+            if (!data.recipeOne) {
+                return;
+            }
+            getRatings(data.recipeOne._id);
+            const recipe = data.recipeOne;
             setRecipe(recipe);
             state.title.actionHandler.set(recipe.title);
             state.numServings.setNum(recipe.numServings);
-            recipe.ingredientSubsections!.forEach((sub, index) => {
-                if (!sub) {
-                    return;
-                }
+            recipe.ingredientSubsections.forEach((sub, index) => {
                 state.ingredient.actionHandler.subsection.setTitle(index, sub.name);
                 const ingredients = sub.ingredients.map((ing) => {
-                    return dbIngredientToFinished(ing as RecipeIngredient);
+                    return dbIngredientToFinished(ing);
                 });
                 state.ingredient.actionHandler.setFinishedArray(index, ingredients);
                 if (
                     recipe.ingredientSubsections.length > 1 ||
-                    recipe.ingredientSubsections[0]!.name
+                    recipe.ingredientSubsections[0].name
                 ) {
                     state.ingredient.actionHandler.subsection.add();
                 }
             });
-            recipe.instructionSubsections!.forEach((sub, index) => {
+            recipe.instructionSubsections.forEach((sub, index) => {
                 if (!sub) {
                     return;
                 }
                 state.instructions.actionHandler.setSubsection(
                     index,
-                    [...sub.instructions, ''] as string[],
+                    [...sub.instructions, ''],
                     sub.name || undefined
                 );
                 if (
                     recipe.instructionSubsections.length > 1 ||
-                    recipe.instructionSubsections[0]!.name
+                    recipe.instructionSubsections[0].name
                 ) {
                     state.instructions.actionHandler.addSubsection();
                 }
@@ -152,7 +151,7 @@ export function EditRecipe() {
                 state.notes.setNotes(recipe.notes);
             }
             state.tags.setTags(
-                data.recipeOne!.tags.map((tag) => {
+                data.recipeOne.tags.map((tag) => {
                     return {
                         _id: tag._id,
                         value: tag.value,
@@ -164,17 +163,17 @@ export function EditRecipe() {
             if (recipe.source) {
                 state.source.setSource(recipe.source);
             }
-            if (recipe.isIngredient) {
+            if (recipe.isIngredient && recipe.pluralTitle) {
                 state.asIngredient.actionHandler.toggleIsIngredient();
-                state.asIngredient.actionHandler.setPluralTitle(recipe.pluralTitle!);
+                state.asIngredient.actionHandler.setPluralTitle(recipe.pluralTitle);
             }
             if (recipe.images) {
                 try {
                     const images = await Promise.all(
                         recipe.images.map(async (img) => {
-                            const res = await fetch(`${GRAPHQL_ENDPOINT}${img!.origUrl}`);
+                            const res = await fetch(`${GRAPHQL_ENDPOINT}${img.origUrl}`);
                             const blob = await res.blob();
-                            return new File([blob], img!.origUrl, { type: blob.type });
+                            return new File([blob], img.origUrl, { type: blob.type });
                         })
                     );
                     state.images.setImages(images);
@@ -193,14 +192,15 @@ export function EditRecipe() {
         return <div>Loading...</div>;
     }
 
-    if (error) {
-        return <div>Error: {error.message}</div>;
+    if (error || !data || !data.recipeOne) {
+        return <div>Error: {error?.message}</div>;
     }
+    const recipeOne = data.recipeOne;
 
     const handleSubmitMutation = async (recipe: UpdateByIdRecipeModifyInput) => {
         try {
             // Save Recipe
-            await saveRecipe({ variables: { id: data!.recipeOne!._id, recipe } });
+            await saveRecipe({ variables: { id: recipeOne._id, recipe } });
         } catch (error) {
             return errorToast({
                 title: 'Error saving recipe',
@@ -210,20 +210,20 @@ export function EditRecipe() {
         }
         try {
             // Upload Images
-            const originalImages = data!.recipeOne!.images ? data!.recipeOne!.images : [];
+            const originalImages = recipeOne.images ? recipeOne.images : [];
             const newImages = state.images.images;
             const imagesToDelete = originalImages.filter(
-                (img) => !newImages.map((img) => img.name).includes(img!.origUrl)
+                (img) => !newImages.map((img) => img.name).includes(img.origUrl)
             );
             const imagesToAdd = newImages.filter(
-                (img) => !originalImages.map((img) => img!.origUrl).includes(img.name)
+                (img) => !originalImages.map((img) => img.origUrl).includes(img.name)
             );
             if (imagesToDelete.length > 0) {
-                await deleteImages({ variables: { ids: imagesToDelete.map((img) => img!._id) } });
+                await deleteImages({ variables: { ids: imagesToDelete.map((img) => img._id) } });
             }
             if (imagesToAdd.length > 0) {
                 await uploadImages({
-                    variables: { recipeId: data!.recipeOne!._id, images: imagesToAdd },
+                    variables: { recipeId: recipeOne._id, images: imagesToAdd },
                 });
             }
         } catch (error) {

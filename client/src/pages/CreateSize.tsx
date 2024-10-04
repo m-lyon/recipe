@@ -13,7 +13,7 @@ export function CreateSize() {
     const handleComplete = (data: CreateSizeMutation) => {
         toast({
             title: 'Size saved',
-            description: `${data?.sizeCreateOne?.record?.value} saved, redirecting to the home page.`,
+            description: `${data!.sizeCreateOne!.record!.value} saved, redirecting to the home page.`,
             position: 'top',
         });
         return setTimeout(() => navigate(ROOT_PATH), DELAY_LONG);

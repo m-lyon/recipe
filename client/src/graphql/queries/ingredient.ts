@@ -11,8 +11,8 @@ export const INGREDIENT_FIELDS = gql(`
 export const INGREDIENT_FIELDS_FULL = gql(`
     fragment IngredientFieldsFull on Ingredient {
         ...IngredientFields
-        owner
         tags
+        density
     }
 `);
 
@@ -20,9 +20,6 @@ export const GET_INGREDIENTS = gql(`
     query GetIngredients($filter: FilterFindManyIngredientInput) {
         ingredientMany(limit: 5000, filter: $filter) {
             ...IngredientFieldsFull
-        }
-        recipeMany(limit: 5000, filter: {isIngredient: true}) {
-            ...RecipeIngrFields
         }
     }
 `);

@@ -5,14 +5,14 @@ export const GET_UNIT_CONVERSIONS = gql(`
         unitConversionMany(limit: 5000) {
             _id
             baseUnit {
-                ...UnitFieldsFull
+                ...UnitFields
             }
             rules(sort: THRESHOLD_DESC) {
                 _id
                 baseUnitThreshold
                 baseToUnitConversion
                 unit {
-                    ...UnitFieldsFull
+                    ...UnitFields
                 }
             }
         }

@@ -2,8 +2,6 @@ import { useQuery } from '@apollo/client';
 import { useParams } from 'react-router-dom';
 import { Box, Container, Grid, GridItem } from '@chakra-ui/react';
 
-import { Recipe } from '@recipe/graphql/generated';
-import { IngredientSubsection } from '@recipe/types';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { ImageViewerRecipe } from '@recipe/features/images';
 import { IngredientsTab, InstructionsTab, Title } from '@recipe/features/viewing';
@@ -18,8 +16,8 @@ export function ViewRecipe() {
         return <div>Loading...</div>;
     }
 
-    if (error) {
-        return <div>Error: {error.message}</div>;
+    if (error || !data || !data.recipeOne) {
+        return <div>Error: {error?.message}</div>;
     }
     const {
         title,
@@ -33,7 +31,7 @@ export function ViewRecipe() {
         isIngredient,
         pluralTitle,
         images,
-    } = data!.recipeOne!;
+    } = data.recipeOne;
     const titleNormed = isIngredient ? (numServings > 1 ? pluralTitle : title) : title;
     return (
         <Container maxW='container.xl' pt='60px'>
@@ -65,16 +63,13 @@ export function ViewRecipe() {
                     display={{ base: 'inline', md: 'none' }}
                 >
                     <Box position='relative' w='100%'>
-                        <ImageViewerRecipe
-                            images={images as Recipe['images']}
-                            position='relative'
-                        />
+                        <ImageViewerRecipe images={images} position='relative' />
                     </Box>
                 </GridItem>
                 <GridItem area='ingredients' boxShadow='lg' p='6'>
                     <IngredientsTab
-                        recipeId={data!.recipeOne!._id}
-                        ingredients={ingredientSubsections as IngredientSubsection[]}
+                        recipeId={data.recipeOne._id}
+                        ingredients={ingredientSubsections}
                         notes={notes}
                         numServings={numServings}
                         tags={tags}
@@ -84,9 +79,9 @@ export function ViewRecipe() {
                 <GridItem boxShadow='lg' py='6' pl='6' area='instructions' minH='600px'>
                     <InstructionsTab
                         tags={tags}
-                        instructions={instructionSubsections as Recipe['instructionSubsections']}
+                        instructions={instructionSubsections}
                         source={source}
-                        images={images as Recipe['images']}
+                        images={images}
                         calculatedTags={calculatedTags}
                     />
                 </GridItem>

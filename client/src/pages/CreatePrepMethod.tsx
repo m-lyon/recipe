@@ -13,7 +13,7 @@ export function CreatePrepMethod() {
     const handleComplete = (data: CreatePrepMethodMutation) => {
         toast({
             title: 'Prep method saved',
-            description: `${data?.prepMethodCreateOne?.record?.value} saved, redirecting to the home page.`,
+            description: `${data!.prepMethodCreateOne!.record!.value} saved, redirecting to the home page.`,
             position: 'top',
         });
         return setTimeout(() => navigate(ROOT_PATH), DELAY_LONG);

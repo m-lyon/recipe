@@ -9,19 +9,19 @@ export const COUNT_RECIPES = gql(`
 export const GET_INGREDIENT_COMPONENTS = gql(`
     query GetIngredientComponents {
         units: unitMany(limit: 5000) {
-            ...UnitFieldsFull
+            ...UnitFields
         }
         sizes: sizeMany(limit: 5000) {
-            ...SizeFieldsFull
+            ...SizeFields
         }
         ingredients: ingredientMany(limit: 5000) {
-            ...IngredientFieldsFull
+            ...IngredientFields
         }
         recipes: recipeMany(limit: 5000, filter: {isIngredient: true}) {
             ...RecipeIngrFields
         }
         prepMethods: prepMethodMany(limit: 5000) {
-            ...PrepMethodFieldsFull
+            ...PrepMethodFields
         }
     }
 `);
@@ -31,8 +31,6 @@ export const RECIPE_INGR_FIELDS = gql(`
         _id
         title
         pluralTitle
-        calculatedTags
-        owner
     }
 `);
 
@@ -49,6 +47,8 @@ export const RECIPE_FIELDS_SUBSET = gql(`
         images {
             ...ImageFields
         }
+        calculatedTags
+        owner
     }
 `);
 
@@ -63,7 +63,6 @@ export const RECIPE_FIELDS_FULL = gql(`
             name
             ingredients {
                 _id
-                type
                 quantity
                 unit {
                     ...UnitFields
@@ -80,7 +79,6 @@ export const RECIPE_FIELDS_FULL = gql(`
                             name
                             ingredients {
                                 _id
-                                type
                                 quantity
                                 unit {
                                     ...UnitFields

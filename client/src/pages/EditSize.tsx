@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { FormLabel, Select } from '@chakra-ui/react';
 import { Box, FormControl, Heading, VStack } from '@chakra-ui/react';
 
-import { Size } from '@recipe/graphql/generated';
 import { useSuccessToast } from '@recipe/common/hooks';
 import { GET_SIZES } from '@recipe/graphql/queries/size';
 import { MODIFY_SIZE } from '@recipe/graphql/mutations/size';
@@ -10,7 +9,7 @@ import { SizeForm, useEditPermissionRecipeIngredients } from '@recipe/features/r
 
 export function EditSize() {
     const toast = useSuccessToast();
-    const [currentSize, setCurrentSize] = useState<Size>();
+    const [currentSize, setCurrentSize] = useState<ModifyableSize>();
     const { data } = useEditPermissionRecipeIngredients(GET_SIZES);
 
     return (

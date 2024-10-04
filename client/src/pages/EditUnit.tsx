@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { FormLabel, Select } from '@chakra-ui/react';
 import { Box, FormControl, Heading, VStack } from '@chakra-ui/react';
 
-import { Unit } from '@recipe/graphql/generated';
 import { useSuccessToast } from '@recipe/common/hooks';
 import { GET_UNITS } from '@recipe/graphql/queries/unit';
 import { MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
@@ -10,7 +9,7 @@ import { UnitForm, useEditPermissionRecipeIngredients } from '@recipe/features/r
 
 export function EditUnit() {
     const toast = useSuccessToast();
-    const [currentUnit, setCurrentUnit] = useState<Unit>();
+    const [currentUnit, setCurrentUnit] = useState<ModifyableUnit>();
     const { data } = useEditPermissionRecipeIngredients(GET_UNITS);
 
     return (
