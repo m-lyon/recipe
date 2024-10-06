@@ -2,33 +2,46 @@ import { GET_RATINGS } from '@recipe/graphql/queries/rating';
 import { mockRecipeIdThree, mockRecipeIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { mockRatingIdNewOne, mockRecipeIdOne } from '@recipe/graphql/__mocks__/ids';
 import { mockRatingIdNewTwo, mockRecipeIdFour } from '@recipe/graphql/__mocks__/ids';
-import { GetRatingsQuery, GetRatingsQueryVariables } from '@recipe/graphql/generated';
 import { mockRecipeIdNew, mockRecipeIdNewAsIngr } from '@recipe/graphql/__mocks__/ids';
+import { GetRatingsQuery, GetRatingsQueryVariables, Rating } from '@recipe/graphql/generated';
 import { mockRatingIdOne, mockRatingIdThree, mockRatingIdTwo } from '@recipe/graphql/__mocks__/ids';
 
-export const mockRatingOne = {
+import { mockAdmin } from './user';
+import { mockRecipeNew, mockRecipeOne, mockRecipeThree, mockRecipeTwo } from './recipe';
+
+export const mockRatingOne: Rating = {
     __typename: 'Rating' as const,
     _id: mockRatingIdOne,
+    owner: mockAdmin,
+    recipe: mockRecipeOne,
     value: 3.0,
 };
-export const mockRatingTwo = {
+export const mockRatingTwo: Rating = {
     __typename: 'Rating' as const,
     _id: mockRatingIdTwo,
+    owner: mockAdmin,
+    recipe: mockRecipeTwo,
     value: 4.0,
 };
-export const mockRatingThree = {
+export const mockRatingThree: Rating = {
     __typename: 'Rating' as const,
     _id: mockRatingIdThree,
+    owner: mockAdmin,
+    recipe: mockRecipeThree,
     value: 5.0,
 };
-export const mockRatingNewOne = {
+export const mockRatingNewOne: Rating = {
     __typename: 'Rating' as const,
     _id: mockRatingIdNewOne,
+    owner: mockAdmin,
+    recipe: mockRecipeNew,
     value: 1.5,
 };
-export const mockRatingNewTwo = {
+export const mockRatingNewTwo: Rating = {
     __typename: 'Rating' as const,
     _id: mockRatingIdNewTwo,
+    owner: mockAdmin,
+    recipe: mockRecipeOne,
     value: 1.5,
 };
 export const mockGetRatingsRecipeOne = {
@@ -38,6 +51,7 @@ export const mockGetRatingsRecipeOne = {
     },
     result: {
         data: {
+            __typename: 'Query',
             ratingMany: [mockRatingOne],
         } satisfies GetRatingsQuery,
     },
@@ -49,6 +63,7 @@ export const mockGetRatingsRecipeTwo = {
     },
     result: {
         data: {
+            __typename: 'Query',
             ratingMany: [mockRatingTwo],
         } satisfies GetRatingsQuery,
     },
@@ -60,6 +75,7 @@ export const mockGetRatingsRecipeThree = {
     },
     result: {
         data: {
+            __typename: 'Query',
             ratingMany: [mockRatingThree],
         } satisfies GetRatingsQuery,
     },
@@ -71,6 +87,7 @@ export const mockGetRatingsRecipeFour = {
     },
     result: {
         data: {
+            __typename: 'Query',
             ratingMany: [],
         } satisfies GetRatingsQuery,
     },
@@ -82,6 +99,7 @@ export const mockGetRatingsNewRecipe = {
     },
     result: {
         data: {
+            __typename: 'Query',
             ratingMany: [mockRatingNewOne],
         } satisfies GetRatingsQuery,
     },
@@ -93,6 +111,7 @@ export const mockGetRatingsNewRecipeAsIngr = {
     },
     result: {
         data: {
+            __typename: 'Query',
             ratingMany: [],
         } satisfies GetRatingsQuery,
     },

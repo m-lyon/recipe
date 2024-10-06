@@ -14,7 +14,8 @@ export const mockAddRatingNewRecipe = {
     },
     result: {
         data: {
-            ratingCreateOne: { record: mockRatingNewOne },
+            __typename: 'Mutation',
+            ratingCreateOne: { __typename: 'CreateOneRatingPayload', record: mockRatingNewOne },
         } satisfies AddRatingMutation,
     },
 };
@@ -24,11 +25,12 @@ export const mockAddRatingRecipeOne = {
         variables: {
             recipeId: mockRecipeIdOne,
             rating: mockRatingNewTwo.value,
-        } as AddRatingMutationVariables,
+        } satisfies AddRatingMutationVariables,
     },
     result: {
         data: {
-            ratingCreateOne: { record: mockRatingNewTwo },
-        } as AddRatingMutation,
+            __typename: 'Mutation',
+            ratingCreateOne: { __typename: 'CreateOneRatingPayload', record: mockRatingNewTwo },
+        } satisfies AddRatingMutation,
     },
 };

@@ -38,5 +38,10 @@ export const mockGetPrepMethods = {
         query: GET_PREP_METHODS,
         variables: { filter: {} } satisfies GetPrepMethodsQueryVariables,
     },
-    result: { data: { prepMethodMany: mockPrepMethods } satisfies GetPrepMethodsQuery },
+    result: {
+        data: {
+            __typename: 'Query',
+            prepMethodMany: mockPrepMethods,
+        } satisfies GetPrepMethodsQuery,
+    },
 };

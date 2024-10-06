@@ -22,7 +22,7 @@ export function NewSizePopover(props: Props) {
         setItem(data.sizeCreateOne!.record!);
         toast({
             title: 'Size saved',
-            description: `${data?.sizeCreateOne?.record?.value} saved`,
+            description: `${data.sizeCreateOne!.record!.value} saved`,
             position: 'top',
         });
     };

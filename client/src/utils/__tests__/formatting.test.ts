@@ -1,14 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { InputState } from '@recipe/types';
 import { getEditableRecipeIngredientStr } from '@recipe/utils/formatting';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
-import { EnumUnitPreferredNumberFormat } from '@recipe/graphql/generated';
-import { EnumRecipeIngredientType, Ingredient, Unit } from '@recipe/graphql/generated';
 
 describe('getEditableRecipeIngredientStr', () => {
     it('should display plural unit when a fraction greater than 1', () => {
-        const item = {
+        const item: EditableRecipeIngredient = {
             quantity: '3/2',
             unit: {
                 value: 'cup',
@@ -19,11 +16,10 @@ describe('getEditableRecipeIngredientStr', () => {
                     shortSingular: 'cup',
                     longPlural: 'cups',
                     longSingular: 'cup',
-                    preferredNumberFormat: EnumUnitPreferredNumberFormat.Fraction,
+                    preferredNumberFormat: 'fraction',
                     hasSpace: true,
                     unique: true,
-                    owner: '60f4d2e5c3d5a0a5f1b9c0eb',
-                } satisfies Unit as Unit,
+                },
             },
             size: { value: null, data: null },
             ingredient: {
@@ -34,22 +30,19 @@ describe('getEditableRecipeIngredientStr', () => {
                     name: 'onion',
                     pluralName: 'onions',
                     isCountable: true,
-                    owner: '60f4d2e5c3d5a0a5f1b9c0eb',
-                    tags: [],
-                } satisfies Ingredient as Ingredient,
+                },
             },
-            prepMethod: { value: null },
-            state: 'prepMethod' satisfies InputState as InputState,
+            prepMethod: { value: null, data: undefined },
+            state: 'prepMethod',
             show: true,
             key: '1',
-            type: EnumRecipeIngredientType.Ingredient,
         };
         const result = getEditableRecipeIngredientStr(item);
         expect(result).toBe('1½ cups onions, ');
     });
 
     it('should display plural ingredient when a fraction greater than 1', () => {
-        const item = {
+        const item: EditableRecipeIngredient = {
             quantity: '3/2',
             unit: { value: null, data: null },
             size: { value: null, data: null },
@@ -61,15 +54,12 @@ describe('getEditableRecipeIngredientStr', () => {
                     name: 'onion',
                     pluralName: 'onions',
                     isCountable: true,
-                    owner: '60f4d2e5c3d5a0a5f1b9c0eb',
-                    tags: [],
-                } satisfies Ingredient as Ingredient,
+                },
             },
-            prepMethod: { value: null },
-            state: 'prepMethod' satisfies InputState as InputState,
+            prepMethod: { value: null, data: undefined },
+            state: 'prepMethod',
             show: true,
             key: '1',
-            type: EnumRecipeIngredientType.Ingredient,
         };
         const result = getEditableRecipeIngredientStr(item);
         expect(result).toBe('1½ onions, ');
@@ -78,7 +68,7 @@ describe('getEditableRecipeIngredientStr', () => {
 
 describe('getFinishedRecipeIngredientStr', () => {
     it('should display plural unit when a fraction greater than 1', () => {
-        const item = {
+        const item: FinishedRecipeIngredient = {
             quantity: '3/2',
             unit: {
                 _id: '60f4d2e5c3d5a0a4f1b9c0eb',
@@ -87,11 +77,10 @@ describe('getFinishedRecipeIngredientStr', () => {
                 shortSingular: 'cup',
                 longPlural: 'cups',
                 longSingular: 'cup',
-                preferredNumberFormat: EnumUnitPreferredNumberFormat.Fraction,
+                preferredNumberFormat: 'fraction',
                 hasSpace: true,
                 unique: true,
-                owner: '60f4d2e5c3d5a0a5f1b9c0eb',
-            } satisfies Unit as Unit,
+            },
             size: null,
             ingredient: {
                 _id: '60f4d2e5c3d5a0a4f1b9c0ec',
@@ -99,9 +88,7 @@ describe('getFinishedRecipeIngredientStr', () => {
                 name: 'onion',
                 pluralName: 'onions',
                 isCountable: true,
-                owner: '60f4d2e5c3d5a0a5f1b9c0eb',
-                tags: [],
-            } satisfies Ingredient as Ingredient,
+            },
             prepMethod: null,
             key: '1',
         };
@@ -110,7 +97,7 @@ describe('getFinishedRecipeIngredientStr', () => {
     });
 
     it('should display plural ingredient when a fraction greater than 1', () => {
-        const item = {
+        const item: FinishedRecipeIngredient = {
             quantity: '3/2',
             unit: null,
             size: null,
@@ -120,9 +107,7 @@ describe('getFinishedRecipeIngredientStr', () => {
                 name: 'onion',
                 pluralName: 'onions',
                 isCountable: true,
-                owner: '60f4d2e5c3d5a0a5f1b9c0eb',
-                tags: [],
-            } satisfies Ingredient as Ingredient,
+            },
             prepMethod: null,
             key: '1',
         };

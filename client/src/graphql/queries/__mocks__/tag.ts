@@ -1,4 +1,4 @@
-import { GetTagsQuery } from '@recipe/graphql/generated';
+import { GetTagsQuery, Tag } from '@recipe/graphql/generated';
 import { mockHighProteinTagId } from '@recipe/graphql/__mocks__/ids';
 import { mockLowCarbTagId, mockSpicyTagId } from '@recipe/graphql/__mocks__/ids';
 import { mockBreakfastTagId, mockBrunchTagId } from '@recipe/graphql/__mocks__/ids';
@@ -8,67 +8,67 @@ import { mockDinnerTagId, mockFreezableTagId, mockLunchTagId } from '@recipe/gra
 
 import { GET_TAGS } from '../tag';
 
-export const mockDinnerTag = {
+export const mockDinnerTag: Tag = {
     __typename: 'Tag' as const,
     _id: mockDinnerTagId,
     value: 'dinner',
 };
-export const mockLunchTag = {
+export const mockLunchTag: Tag = {
     __typename: 'Tag' as const,
     _id: mockLunchTagId,
     value: 'lunch',
 };
-export const mockFreezableTag = {
+export const mockFreezableTag: Tag = {
     __typename: 'Tag' as const,
     _id: mockFreezableTagId,
     value: 'freezable',
 };
-export const mockSpicyTag = {
+export const mockSpicyTag: Tag = {
     __typename: 'Tag' as const,
     _id: mockSpicyTagId,
     value: 'spicy',
 };
-export const mockGlutenFreeTag = {
+export const mockGlutenFreeTag: Tag = {
     __typename: 'Tag' as const,
     _id: mockGlutenFreeTagId,
     value: 'gluten-free',
 };
-export const mockDairyFreeTag = {
+export const mockDairyFreeTag: Tag = {
     __typename: 'Tag' as const,
     _id: mockDairyFreeTagId,
     value: 'dairy-free',
 };
-export const mockLowCarbTag = {
+export const mockLowCarbTag: Tag = {
     __typename: 'Tag' as const,
     _id: mockLowCarbTagId,
     value: 'low-carb',
 };
-export const mockLowFatTag = {
+export const mockLowFatTag: Tag = {
     __typename: 'Tag' as const,
     _id: mockLowFatTagId,
     value: 'low-fat',
 };
-export const mockLowSugarTag = {
+export const mockLowSugarTag: Tag = {
     __typename: 'Tag' as const,
     _id: mockLowSugarTagId,
     value: 'low-sugar',
 };
-export const mockHighProteinTag = {
+export const mockHighProteinTag: Tag = {
     __typename: 'Tag' as const,
     _id: mockHighProteinTagId,
     value: 'high-protein',
 };
-export const mockQuickTag = {
+export const mockQuickTag: Tag = {
     __typename: 'Tag' as const,
     _id: mockQuickTagId,
     value: 'quick',
 };
-export const mockBreakfastTag = {
+export const mockBreakfastTag: Tag = {
     __typename: 'Tag' as const,
     _id: mockBreakfastTagId,
     value: 'breakfast',
 };
-export const mockBrunchTag = {
+export const mockBrunchTag: Tag = {
     __typename: 'Tag' as const,
     _id: mockBrunchTagId,
     value: 'brunch',
@@ -80,6 +80,7 @@ export const mockGetTags = {
     },
     result: {
         data: {
+            __typename: 'Query',
             tagMany: [mockDinnerTag, mockLunchTag, mockFreezableTag, mockSpicyTag],
         } satisfies GetTagsQuery,
     },
@@ -91,6 +92,7 @@ export const mockGetTagsEmpty = {
     },
     result: {
         data: {
+            __typename: 'Query',
             tagMany: [],
         } satisfies GetTagsQuery,
     },
@@ -102,6 +104,7 @@ export const mockGetManyTags = {
     },
     result: {
         data: {
+            __typename: 'Query',
             tagMany: [
                 mockDinnerTag,
                 mockLunchTag,

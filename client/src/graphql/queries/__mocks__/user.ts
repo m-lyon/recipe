@@ -1,11 +1,12 @@
 import { mockAdminId } from '@recipe/graphql/__mocks__/ids';
 import { CURRENT_USER } from '@recipe/graphql/queries/user';
-import { CurrentUserQuery, EnumUserRole } from '@recipe/graphql/generated';
+import { CurrentUserQuery, User } from '@recipe/graphql/generated';
 
-export const mockAdmin = {
+export const mockAdmin: User = {
     __typename: 'User' as const,
     _id: mockAdminId,
-    role: EnumUserRole.Admin,
+    role: 'admin',
+    username: 'admin',
     firstName: 'Mock',
     lastName: 'User',
 };
@@ -16,6 +17,7 @@ export const mockCurrentUser = {
     },
     result: {
         data: {
+            __typename: 'Query',
             currentUser: mockAdmin,
         } satisfies CurrentUserQuery,
     },
@@ -27,6 +29,7 @@ export const mockCurrentUserNull = {
     },
     result: {
         data: {
+            __typename: 'Query',
             currentUser: null,
         } satisfies CurrentUserQuery,
     },

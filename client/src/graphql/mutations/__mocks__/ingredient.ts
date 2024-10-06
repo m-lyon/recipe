@@ -51,7 +51,9 @@ export const mockUpdateIngredient = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             ingredientUpdateById: {
+                __typename: 'UpdateByIdIngredientPayload',
                 record: {
                     ...mockCarrot,
                     pluralName: 'carrotz',
@@ -69,7 +71,9 @@ export const mockDeleteIngredient = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             ingredientRemoveById: {
+                __typename: 'RemoveByIdIngredientPayload',
                 recordId: mockCarrot._id,
             },
         } satisfies DeleteIngredientMutation,

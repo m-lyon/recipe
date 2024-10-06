@@ -1,9 +1,9 @@
 import { mockTagId } from '@recipe/graphql/__mocks__/ids';
 import { CREATE_TAG, REMOVE_TAG } from '@recipe/graphql/mutations/tag';
-import { CreateTagMutation, CreateTagMutationVariables } from '@recipe/graphql/generated';
 import { RemoveTagMutation, RemoveTagMutationVariables } from '@recipe/graphql/generated';
+import { CreateTagMutation, CreateTagMutationVariables, Tag } from '@recipe/graphql/generated';
 
-export const mockTag = {
+export const mockTag: Tag = {
     __typename: 'Tag' as const,
     _id: mockTagId,
     value: 'mock tag',
@@ -19,7 +19,9 @@ export const mockCreateTag = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             tagCreateOne: {
+                __typename: 'CreateOneTagPayload',
                 record: mockTag,
             },
         } satisfies CreateTagMutation,
@@ -34,7 +36,9 @@ export const mockRemoveTag = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             tagRemoveById: {
+                __typename: 'RemoveByIdTagPayload',
                 record: mockTag,
             },
         } satisfies RemoveTagMutation,

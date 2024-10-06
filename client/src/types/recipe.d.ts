@@ -1,7 +1,8 @@
-import { GetSizesQuery, GetUnitsQuery } from '@recipe/graphql/generated';
+import { GetUnitsQuery } from '@recipe/graphql/generated';
 import { GetRecipeQuery, GetRecipesQuery } from '@recipe/graphql/generated';
 import { EnumIngredientTags, GetTagsQuery } from '@recipe/graphql/generated';
 import { CurrentUserQuery, GetUnitConversionsQuery } from '@recipe/graphql/generated';
+import { CreateConversionRuleMutation, GetSizesQuery } from '@recipe/graphql/generated';
 import { GetIngredientComponentsQuery, GetIngredientsQuery } from '@recipe/graphql/generated';
 import { EnumUnitPreferredNumberFormat, GetPrepMethodsQuery } from '@recipe/graphql/generated';
 
@@ -236,6 +237,10 @@ declare global {
      * Represents an image object for use in the view recipe page.
      */
     type ImageView = CompletedRecipeView['images'][number];
+    type IngredientView =
+        IngredientAsIngredientView['ingredientSubsections'][number]['ingredients'][number]['ingredient'];
+    type UnitView =
+        CompletedRecipeView['ingredientSubsections'][number]['ingredients'][number]['unit'];
     type SourceView = CompletedRecipeView['source'];
     type NotesView = CompletedRecipeView['notes'];
     type RecipeTagsView = CompletedRecipeView['tags'];
@@ -262,6 +267,9 @@ declare global {
     // ----------------------- GraphQL Query and Mutation Types -------------------
     type CompletedIngredientComponentQuery = GetIngredientComponentsQuery;
     type IngredientComponentQuery = CompletedIngredientComponentQuery | undefined;
+    type CompletedCreateConversionRule = NonNullable<
+        CreateConversionRuleMutation['conversionRuleCreateOne']
+    >;
     // - Enums -------------------------------------------------------
     type NumberFormat = EnumUnitPreferredNumberFormat;
     type ReservedTags = EnumIngredientTags;

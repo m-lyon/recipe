@@ -3,11 +3,11 @@ import { mockExtraLargeId } from '@recipe/graphql/__mocks__/ids';
 import { mockSmall } from '@recipe/graphql/queries/__mocks__/size';
 import { CREATE_SIZE, MODIFY_SIZE } from '@recipe/graphql/mutations/size';
 import { mockAdminId, mockReallyBigId } from '@recipe/graphql/__mocks__/ids';
-import { CreateSizeMutation, CreateSizeMutationVariables } from '@recipe/graphql/generated';
 import { ModifySizeMutation, ModifySizeMutationVariables } from '@recipe/graphql/generated';
 import { DeleteSizeMutation, DeleteSizeMutationVariables } from '@recipe/graphql/generated';
+import { CreateSizeMutation, CreateSizeMutationVariables, Size } from '@recipe/graphql/generated';
 
-export const mockExtraLarge = {
+export const mockExtraLarge: Size = {
     _id: mockExtraLargeId,
     __typename: 'Size' as const,
     value: 'extra large',
@@ -26,7 +26,9 @@ export const mockCreateSize = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             sizeCreateOne: {
+                __typename: 'CreateOneSizePayload',
                 record: mockExtraLarge,
             },
         } satisfies CreateSizeMutation,
@@ -44,13 +46,14 @@ export const mockCreateBespokeSize = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             sizeCreateOne: {
+                __typename: 'CreateOneSizePayload',
                 record: {
                     _id: mockReallyBigId,
                     __typename: 'Size' as const,
                     value: 'really big',
                     unique: false,
-                    owner: mockAdminId,
                 },
             },
         } satisfies CreateSizeMutation,
@@ -69,7 +72,9 @@ export const mockUpdateSize = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             sizeUpdateById: {
+                __typename: 'UpdateByIdSizePayload',
                 record: {
                     ...mockSmall,
                     value: 'smaller',
@@ -87,7 +92,9 @@ export const mockDeleteSize = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             sizeRemoveById: {
+                __typename: 'RemoveByIdSizePayload' as const,
                 recordId: mockSmall._id,
             },
         } satisfies DeleteSizeMutation,
@@ -102,7 +109,9 @@ export const mockDeleteBespokeSize = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             sizeRemoveById: {
+                __typename: 'RemoveByIdSizePayload' as const,
                 recordId: mockReallyBigId,
             },
         } satisfies DeleteSizeMutation,

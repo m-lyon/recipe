@@ -1,4 +1,4 @@
-import { EnumIngredientTags, GetIngredientsQuery } from '@recipe/graphql/generated';
+import { GetIngredientsQuery } from '@recipe/graphql/generated';
 import { GetIngredientsQueryVariables, Ingredient } from '@recipe/graphql/generated';
 import { mockAppleId, mockCarrotId, mockChickenId } from '@recipe/graphql/__mocks__/ids';
 import { mockAdminId, mockLettuceId, mockRhubarbPieId } from '@recipe/graphql/__mocks__/ids';
@@ -12,8 +12,9 @@ export const mockApple: Ingredient = {
     name: 'apple',
     pluralName: 'apples',
     isCountable: true,
+    density: null,
     owner: mockAdminId,
-    tags: [EnumIngredientTags.Vegan, EnumIngredientTags.Vegetarian],
+    tags: ['vegan', 'vegetarian'],
 };
 export const mockChicken: Ingredient = {
     _id: mockChickenId,
@@ -21,6 +22,7 @@ export const mockChicken: Ingredient = {
     name: 'chicken',
     pluralName: 'chickens',
     isCountable: false,
+    density: null,
     owner: mockAdminId,
     tags: [],
 };
@@ -30,8 +32,9 @@ export const mockCarrot: Ingredient = {
     name: 'carrot',
     pluralName: 'carrots',
     isCountable: true,
+    density: null,
     owner: mockAdminId,
-    tags: [EnumIngredientTags.Vegan, EnumIngredientTags.Vegetarian],
+    tags: ['vegan', 'vegetarian'],
 };
 export const mockLettuce: Ingredient = {
     _id: mockLettuceId,
@@ -39,17 +42,16 @@ export const mockLettuce: Ingredient = {
     name: 'iceberg lettuce',
     pluralName: 'iceberg lettuces',
     isCountable: false,
+    density: null,
     owner: mockAdminId,
-    tags: [EnumIngredientTags.Vegan, EnumIngredientTags.Vegetarian],
+    tags: ['vegan', 'vegetarian'],
 };
 // Recipes
-export const mockRhurbarbPie = {
+export const mockRhurbarbPie: RecipeChoice = {
     _id: mockRhubarbPieId,
     __typename: 'Recipe' as const,
     title: 'rhubarb pie',
     pluralTitle: 'rhubarb pies',
-    owner: mockAdminId,
-    calculatedTags: [EnumIngredientTags.Vegetarian],
 };
 export const mockIngredients = [mockApple, mockChicken, mockCarrot, mockLettuce];
 export const mockRecipeFromIngredients = [mockRhurbarbPie];
@@ -59,6 +61,9 @@ export const mockGetIngredients = {
         variables: { filter: {} } satisfies GetIngredientsQueryVariables,
     },
     result: {
-        data: { ingredientMany: mockIngredients, recipeMany: [] } satisfies GetIngredientsQuery,
+        data: {
+            __typename: 'Query',
+            ingredientMany: mockIngredients,
+        } satisfies GetIngredientsQuery,
     },
 };

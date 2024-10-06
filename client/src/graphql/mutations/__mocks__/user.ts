@@ -13,6 +13,7 @@ export const mockLogin = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             login: mockAdmin,
         } satisfies LoginMutation,
     },
@@ -24,6 +25,7 @@ export const mockLogout = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             logout: true,
         } satisfies LogoutMutation,
     },

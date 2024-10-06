@@ -1,39 +1,42 @@
-import { GetUnitConversionsQuery } from '@recipe/graphql/generated';
 import { mockConversionRuleIdThree } from '@recipe/graphql/__mocks__/ids';
 import { GET_UNIT_CONVERSIONS } from '@recipe/graphql/queries/unitConversion';
+import { ConversionRule, GetUnitConversionsQuery } from '@recipe/graphql/generated';
 import { mockConversionRuleIdOne, mockUnitConversionIdOne } from '@recipe/graphql/__mocks__/ids';
 import { mockConversionRuleIdTwo, mockUnitConversionIdTwo } from '@recipe/graphql/__mocks__/ids';
 
 import { mockCup, mockGram, mockKilogram, mockTablespoon, mockTeaspoon } from './unit';
 
-export const mockConversionRuleOne = {
+export const mockConversionRuleOne: ConversionRule = {
     __typename: 'ConversionRule' as const,
     _id: mockConversionRuleIdOne,
     unit: mockKilogram,
+    baseUnit: mockGram,
     baseUnitThreshold: 1000,
     baseToUnitConversion: 1000,
 };
-export const mockConversionRuleTwo = {
+export const mockConversionRuleTwo: ConversionRule = {
     __typename: 'ConversionRule' as const,
     _id: mockConversionRuleIdTwo,
     unit: mockTablespoon,
+    baseUnit: mockTeaspoon,
     baseUnitThreshold: 3,
     baseToUnitConversion: 3,
 };
-export const mockConversionRuleThree = {
+export const mockConversionRuleThree: ConversionRule = {
     __typename: 'ConversionRule' as const,
     _id: mockConversionRuleIdThree,
     unit: mockCup,
+    baseUnit: mockTeaspoon,
     baseUnitThreshold: 12,
     baseToUnitConversion: 48,
 };
-export const mockUnitConversionOne = {
+export const mockUnitConversionOne: UnitConversion = {
     __typename: 'UnitConversion' as const,
     _id: mockUnitConversionIdOne,
     baseUnit: mockGram,
     rules: [mockConversionRuleOne],
 };
-export const mockUnitConversionTwo = {
+export const mockUnitConversionTwo: UnitConversion = {
     __typename: 'UnitConversion' as const,
     _id: mockUnitConversionIdTwo,
     baseUnit: mockTeaspoon,
@@ -45,6 +48,7 @@ export const mockGetUnitConversions = {
     },
     result: {
         data: {
+            __typename: 'Query',
             unitConversionMany: [mockUnitConversionOne, mockUnitConversionTwo],
         } satisfies GetUnitConversionsQuery,
     },

@@ -28,7 +28,9 @@ export const mockCreatePrepMethod = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             prepMethodCreateOne: {
+                __typename: 'CreateOnePrepMethodPayload',
                 record: mockPipped,
             },
         } satisfies CreatePrepMethodMutation,
@@ -46,13 +48,14 @@ export const mockCreateBespokePrepMethod = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             prepMethodCreateOne: {
+                __typename: 'CreateOnePrepMethodPayload',
                 record: {
                     _id: mockPostedId,
                     __typename: 'PrepMethod' as const,
                     value: 'posted',
                     unique: false,
-                    owner: mockAdminId,
                 },
             },
         } satisfies CreatePrepMethodMutation,
@@ -71,7 +74,9 @@ export const mockUpdatePrepMethod = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             prepMethodUpdateById: {
+                __typename: 'UpdateByIdPrepMethodPayload',
                 record: {
                     ...mockDiced,
                     value: 'dicey',
@@ -89,7 +94,9 @@ export const mockDeletePrepMethod = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             prepMethodRemoveById: {
+                __typename: 'RemoveByIdPrepMethodPayload',
                 recordId: mockDiced._id,
             },
         } satisfies DeletePrepMethodMutation,
@@ -104,7 +111,9 @@ export const mockDeleteBespokePrepMethod = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             prepMethodRemoveById: {
+                __typename: 'RemoveByIdPrepMethodPayload',
                 recordId: mockPostedId,
             },
         } satisfies DeletePrepMethodMutation,
