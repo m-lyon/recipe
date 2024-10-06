@@ -664,7 +664,7 @@ interface SubsectionActions {
 export interface IngredientActionHandler {
     editableStringValue: (subsection: number) => string;
     resetEditable: (subsection: number) => void;
-    setCurrentEditableAttribute: (subsection: number, attr: RecipeIngredientDropdown) => void;
+    setCurrentEditableAttribute: (subsection: number, attr: SetAttr) => void;
     currentEditableAttributeValue: (subsection: number) => string | null;
     setEditableShow: SetShow;
     deleteChar: (subsection: number) => void;

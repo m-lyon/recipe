@@ -143,6 +143,7 @@ export function EditableRecipe(props: Props) {
         const isIngredient = state.asIngredient.state.isIngredient;
         const recipe = {
             numServings: state.numServings.num,
+            // title is not null due to the validation check above
             title: state.title.value!,
             pluralTitle: isIngredient
                 ? state.asIngredient.state.pluralTitle

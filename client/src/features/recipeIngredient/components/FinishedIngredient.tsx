@@ -4,7 +4,7 @@ import { Tag, TagCloseButton, TagLabel } from '@chakra-ui/react';
 import { getFinishedRecipeIngredientParts } from '@recipe/utils/formatting';
 
 interface Props {
-    item: FinishedIngredient;
+    item: FinishedRecipeIngredient;
     removeFinished: () => void;
 }
 export function FinishedIngredient(props: Props) {

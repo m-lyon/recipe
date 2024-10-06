@@ -1,6 +1,6 @@
-import { EnumIngredientTags } from '@recipe/graphql/generated';
 import { GetSizesQuery, GetUnitsQuery } from '@recipe/graphql/generated';
 import { GetRecipeQuery, GetRecipesQuery } from '@recipe/graphql/generated';
+import { EnumIngredientTags, GetTagsQuery } from '@recipe/graphql/generated';
 import { CurrentUserQuery, GetUnitConversionsQuery } from '@recipe/graphql/generated';
 import { GetIngredientComponentsQuery, GetIngredientsQuery } from '@recipe/graphql/generated';
 import { EnumUnitPreferredNumberFormat, GetPrepMethodsQuery } from '@recipe/graphql/generated';
@@ -8,14 +8,20 @@ import { EnumUnitPreferredNumberFormat, GetPrepMethodsQuery } from '@recipe/grap
 type EditableValue = string | null;
 
 declare global {
-    // - RecipeIngredient Dropdown Choices ----------------------------------------
+    // - Dropdown Choices ----------------------------------------
     type UnitChoice = GetIngredientComponentsQuery['units'][number];
     type SizeChoice = GetIngredientComponentsQuery['sizes'][number];
     type IngredientChoice = GetIngredientComponentsQuery['ingredients'][number];
     type RecipeChoice = GetIngredientComponentsQuery['recipes'][number];
     type PrepMethodChoice = GetIngredientComponentsQuery['prepMethods'][number];
     type IngredientOrRecipeChoice = IngredientChoice | RecipeChoice;
+    type TagChoice = GetTagsQuery['tagMany'][number];
 
+    /**
+     * Represents a dropdown choice that can be selected by the user when editing a recipe.
+     * This includes 'string' which is used for the quantity field, as well as the various
+     * custom choices such as 'skip unit' and 'add new ingredient', etc.
+     */
     type RecipeIngredientDropdown =
         | string
         | UnitChoice
@@ -23,6 +29,12 @@ declare global {
         | IngredientChoice
         | RecipeChoice
         | PrepMethodChoice;
+    /**
+     * This type is used to represent the attribute that is set when a dropdown choice is
+     * selected by the user. This includes null, which is set when skip actions are selected,
+     * such as 'skip unit' or 'skip prep method'.
+     */
+    type SetAttr = null | RecipeIngredientDropdown;
     // - Editables ----------------------------------------------------------------
     // ----------- Types for the RecipeIngredient Edit Workflow -------------------
     /**
@@ -224,6 +236,12 @@ declare global {
      * Represents an image object for use in the view recipe page.
      */
     type ImageView = CompletedRecipeView['images'][number];
+    type SourceView = CompletedRecipeView['source'];
+    type NotesView = CompletedRecipeView['notes'];
+    type RecipeTagsView = CompletedRecipeView['tags'];
+    type ServingNumberView = CompletedRecipeView['numServings'];
+    type InstructionSubsectionView = CompletedRecipeView['instructionSubsections'][number];
+    type CalculatedTagsView = CompletedRecipeView['calculatedTags'];
     // - Previews -----------------------------------------------------------------
     // ----------- Types for the data displayed on the Home Page ------------------
     /**

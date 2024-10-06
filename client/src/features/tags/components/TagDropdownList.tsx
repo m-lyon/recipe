@@ -3,7 +3,6 @@ import { matchSorter } from 'match-sorter';
 import { LayoutGroup } from 'framer-motion';
 import { useMutation } from '@apollo/client';
 
-import { Tag } from '@recipe/graphql/generated';
 import { TAG_FIELDS } from '@recipe/graphql/queries/tag';
 import { DropdownItem } from '@recipe/common/components';
 import { CREATE_TAG } from '@recipe/graphql/mutations/tag';
@@ -11,14 +10,9 @@ import { useNavigatableList, useSuccessToast, useWarningToast } from '@recipe/co
 
 import { FinishedTag, SetAndSubmit } from '../hooks/useTagList';
 
-interface TagSuggestion {
-    value: string;
-    _id: string;
-}
-
 interface Props {
     strValue: string;
-    tags: Tag[];
+    tags: TagChoice[];
     setAndSubmit: SetAndSubmit;
     inputRef: MutableRefObject<HTMLInputElement | null>;
     selectedTags: FinishedTag[];
@@ -61,17 +55,15 @@ export function TagDropdownList(props: Props) {
             });
         },
     });
-    const suggestions = matchSorter<Tag>(
+    const suggestions = matchSorter<TagChoice>(
         tags.filter((tag) => {
             return !selectedTags.find((selectedTag) => selectedTag._id === tag._id);
         }),
         strValue,
         { keys: ['value'] }
-    ).map((tag) => {
-        return { value: tag.value, _id: tag._id };
-    }) as TagSuggestion[];
+    );
 
-    const handleSelect = (item: TagSuggestion) => {
+    const handleSelect = (item: TagChoice) => {
         setAndSubmit(item.value, item._id);
         inputRef.current?.blur();
     };
@@ -89,7 +81,7 @@ export function TagDropdownList(props: Props) {
         inputRef.current?.blur();
     };
 
-    const { highlightedIndex, setHighlightedIndex } = useNavigatableList<TagSuggestion>(
+    const { highlightedIndex, setHighlightedIndex } = useNavigatableList<TagChoice>(
         suggestions,
         handleSelect,
         inputRef,

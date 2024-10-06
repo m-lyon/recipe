@@ -5,7 +5,6 @@ import { useErrorToast } from '@recipe/common/hooks';
 import { CreatePrepMethodMutation } from '@recipe/graphql/generated';
 import { CREATE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 
-import { SetAttr } from './useIngredientList';
 import { Suggestion } from '../utils/suggestions';
 import { PopoverType } from '../components/EditableIngredient';
 

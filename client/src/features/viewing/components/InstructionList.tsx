@@ -1,9 +1,7 @@
 import { Box, ListItem, OrderedList, Text } from '@chakra-ui/react';
 
-import { Recipe } from '@recipe/graphql/generated';
-
 interface Props {
-    instructions: Recipe['instructionSubsections'];
+    instructions: InstructionSubsectionView[];
     fontWeight?: string;
     fontSize?: string;
 }

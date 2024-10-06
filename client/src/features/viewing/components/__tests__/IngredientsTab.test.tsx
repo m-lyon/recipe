@@ -11,7 +11,6 @@ import { mockChicken } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockGetRatingsRecipeOne } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
-import { EnumRecipeIngredientType, Recipe, RecipeIngredient } from '@recipe/graphql/generated';
 
 import { IngredientsTab } from '../IngredientsTab';
 
@@ -24,24 +23,25 @@ const renderComponent = () => {
             recipeId: '60f4d2e5c3d5a0a4f1b9c0eb',
             ingredients: [
                 {
+                    __typename: 'IngredientSubsections',
                     name: 'Section One',
                     ingredients: [
                         {
-                            _id: '60f4d2e5c3d5afa4f1b9c0f8',
+                            _id: '60f4d2e5c3d5a0a4f1b9c0ec',
+                            __typename: 'RecipeIngredient',
                             quantity: '1',
                             unit: mockKilogram,
                             size: null,
                             ingredient: mockChicken,
                             prepMethod: null,
-                            type: EnumRecipeIngredientType.Ingredient,
-                        },
-                    ] satisfies RecipeIngredient[],
+                        } satisfies RecipeIngredientView,
+                    ],
                 },
-            ],
-            notes: null satisfies Recipe['notes'],
+            ] satisfies IngredientSubsectionView[],
+            notes: null satisfies NotesView,
             numServings: 4,
-            tags: [] satisfies Recipe['tags'],
-            calculatedTags: [] satisfies Recipe['calculatedTags'],
+            tags: [] satisfies RecipeTagsView,
+            calculatedTags: [] satisfies CalculatedTagsView,
         };
         return <IngredientsTab {...props} />;
     };

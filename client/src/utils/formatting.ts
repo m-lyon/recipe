@@ -1,8 +1,4 @@
-import { PrepMethod, Unit } from '@recipe/graphql/generated';
 import { STATES_ORDER } from '@recipe/features/recipeIngredient';
-import { EditableRecipeIngredient, FinishedQuantity } from '@recipe/types';
-import { FinishedIngredient, FinishedPrepMethod, FinishedUnit } from '@recipe/types';
-import { FinishedSize, Item, LikeFinishedRecipeIngredient, Quantity } from '@recipe/types';
 
 import { isPlural } from './plural';
 import { formatFloat, formatFraction, isFraction, isRange } from './number';
@@ -49,7 +45,11 @@ function getFinishedUnitStr(quantity: FinishedQuantity, unit: FinishedUnit): str
     }
     return `${unit.hasSpace ? ' ' : ''}${unitDisplayValue(quantity, unit, true)}`;
 }
-export function unitDisplayValue(quantity: FinishedQuantity, unit: Unit, short: boolean): string {
+export function unitDisplayValue(
+    quantity: FinishedQuantity,
+    unit: NonNullable<FinishedUnit>,
+    short: boolean
+): string {
     if (short) {
         return isPlural(quantity) ? unit.shortPlural : unit.shortSingular;
     }
@@ -139,7 +139,7 @@ function getFinishedPrepMethodStr(prepMethod: FinishedPrepMethod): string {
     }
     return `, ${prepMethodDisplayValue(prepMethod)}`;
 }
-export function prepMethodDisplayValue(prepMethod: PrepMethod): string {
+export function prepMethodDisplayValue(prepMethod: NonNullable<FinishedPrepMethod>): string {
     return prepMethod.value;
 }
 // RecipeIngredient -----------------------------------------------------
@@ -151,7 +151,7 @@ export function getEditableRecipeIngredientStr(item: EditableRecipeIngredient): 
     const prepMethodStr = getEditablePrepMethodStr(item);
     return `${quantityStr}${unitStr}${sizeStr}${ingrStr}${prepMethodStr}`;
 }
-function getFinishedRecipeIngredientStrings(item: LikeFinishedRecipeIngredient) {
+function getFinishedRecipeIngredientStrings(item: FinishedRecipeIngredient): string[] {
     const { quantity, unit, size, ingredient, prepMethod } = item;
     return [
         getFinishedQuantityStr(quantity),
@@ -161,31 +161,30 @@ function getFinishedRecipeIngredientStrings(item: LikeFinishedRecipeIngredient) 
         getFinishedPrepMethodStr(prepMethod),
     ];
 }
-export function getFinishedRecipeIngredientStr(item: LikeFinishedRecipeIngredient): string {
+export function getFinishedRecipeIngredientStr(item: FinishedRecipeIngredient): string {
     return getFinishedRecipeIngredientStrings(item).join('');
 }
-export function getFinishedRecipeIngredientParts(item: LikeFinishedRecipeIngredient) {
+export function getFinishedRecipeIngredientParts(item: FinishedRecipeIngredient) {
     const [quantityStr, ...rest] = getFinishedRecipeIngredientStrings(item);
     return { quantity: quantityStr, rest: rest.join('') };
 }
 export function displayValue(
-    quantity: Quantity,
-    unit: Unit | null | undefined,
-    item: Item | string
+    item: EditableRecipeIngredient,
+    choice: RecipeIngredientDropdown
 ): string {
-    if (typeof item === 'string') {
-        return item;
+    if (typeof choice === 'string') {
+        return choice;
     }
-    switch (item?.__typename) {
+    switch (choice?.__typename) {
         case 'Unit':
-            return unitDisplayValue(quantity, item, false);
+            return unitDisplayValue(item.quantity, choice, false);
         case 'Size':
-            return sizeDisplayValue(item);
+            return sizeDisplayValue(choice);
         case 'Ingredient':
         case 'Recipe':
-            return ingredientDisplayValue(quantity, unit ?? null, item);
+            return ingredientDisplayValue(item.quantity, item.unit.data ?? null, choice);
         case 'PrepMethod':
-            return prepMethodDisplayValue(item);
+            return prepMethodDisplayValue(choice);
         default:
             return '';
     }

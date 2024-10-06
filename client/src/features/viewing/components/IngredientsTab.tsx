@@ -11,11 +11,11 @@ import { IngredientList } from './IngredientList';
 
 interface Props {
     recipeId: string;
-    ingredients: CompletedRecipeView['ingredientSubsections'];
-    notes: CompletedRecipeView['notes'];
-    numServings: CompletedRecipeView['numServings'];
-    tags: CompletedRecipeView['tags'];
-    calculatedTags: CompletedRecipeView['calculatedTags'];
+    ingredients: IngredientSubsectionView[];
+    notes: NotesView;
+    numServings: ServingNumberView;
+    tags: RecipeTagsView;
+    calculatedTags: CalculatedTagsView;
 }
 export function IngredientsTab(props: Props) {
     const { recipeId, ingredients, notes, numServings, tags, calculatedTags } = props;

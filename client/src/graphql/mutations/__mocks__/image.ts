@@ -44,7 +44,8 @@ export const mockUploadImages = {
     },
     result: {
         data: {
-            imageUploadMany: { records: [mockImageOne] },
+            __typename: 'Mutation',
+            imageUploadMany: { __typename: 'ImageUploadManyPayload', records: [mockImageOne] },
         } satisfies UploadImagesMutation,
     },
 };
@@ -58,7 +59,8 @@ export const mockUploadImagesNew = {
     },
     result: {
         data: {
-            imageUploadMany: { records: [mockImageNew] },
+            __typename: 'Mutation',
+            imageUploadMany: { __typename: 'ImageUploadManyPayload', records: [mockImageNew] },
         } satisfies UploadImagesMutation,
     },
 };
@@ -69,7 +71,8 @@ export const mockDeleteImages = {
     },
     result: {
         data: {
-            imageRemoveMany: { records: [mockImageTwo] },
+            __typename: 'Mutation',
+            imageRemoveMany: { __typename: 'ImageRemoveManyPayload', records: [mockImageTwo] },
         } satisfies DeleteImagesMutation,
     },
 };

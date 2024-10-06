@@ -12,20 +12,17 @@ import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 import { CREATE_CONVERSION_RULE } from '@recipe/graphql/mutations/unitConversion';
 import { CREATE_UNIT_CONVERSION } from '@recipe/graphql/mutations/unitConversion';
 import { REMOVE_CONVERSION_RULE } from '@recipe/graphql/mutations/unitConversion';
-import { CreateConversionRuleMutation, GetUnitsQuery, Unit } from '@recipe/graphql/generated';
 
-type ConversionRule = NonNullable<
-    NonNullable<CreateConversionRuleMutation['conversionRuleCreateOne']>['record']
->;
+type ConversionRule = NonNullable<CompletedCreateConversionRule['record']>;
 interface CreateConversionRuleProps {
     setConversionRules: Dispatch<SetStateAction<ConversionRule[]>>;
-    unitData: GetUnitsQuery | undefined;
-    baseUnit: Unit | undefined;
+    units: ModifyableUnit[];
+    baseUnit: ModifyableUnit | undefined;
 }
 function CreateConversionRule(props: CreateConversionRuleProps) {
-    const { setConversionRules, unitData, baseUnit } = props;
+    const { setConversionRules, units, baseUnit } = props;
     const [baseUnitThreshold, setThreshold] = useState(0);
-    const [unit, setUnit] = useState<Unit | undefined>(undefined);
+    const [unit, setUnit] = useState<ModifyableUnit | undefined>(undefined);
     const [baseToUnitConversion, setbaseToUnitConversion] = useState(0);
     const [createConversionRule, { loading }] = useMutation(CREATE_CONVERSION_RULE);
     const toast = useErrorToast();
@@ -70,12 +67,10 @@ function CreateConversionRule(props: CreateConversionRuleProps) {
                             placeholder='-'
                             value={unit?._id}
                             onChange={(e) => {
-                                setUnit(
-                                    unitData?.unitMany.find((unit) => unit._id === e.target.value)
-                                );
+                                setUnit(units.find((unit) => unit._id === e.target.value));
                             }}
                         >
-                            {unitData?.unitMany.map((unit) => (
+                            {units.map((unit) => (
                                 <option key={unit._id} value={unit._id}>
                                     {unit.shortSingular}
                                 </option>
@@ -114,9 +109,9 @@ function CreateConversionRule(props: CreateConversionRuleProps) {
 }
 
 export function CreateUnitConversion() {
-    const [baseUnit, setBaseUnit] = useState<Unit | undefined>(undefined);
+    const [baseUnit, setBaseUnit] = useState<ModifyableUnit | undefined>(undefined);
     const [rules, setRules] = useState<ConversionRule[]>([]);
-    const { data } = useQuery(GET_UNITS);
+    const { data, loading: loadingUnits } = useQuery(GET_UNITS);
     const [removeConversionRule] = useMutation(REMOVE_CONVERSION_RULE);
     const [createUnitConversion, { loading }] = useMutation(CREATE_UNIT_CONVERSION);
     const navigate = useNavigate();
@@ -189,7 +184,7 @@ export function CreateUnitConversion() {
                 <Heading pb={6}>Create Unit Conversion</Heading>
                 <CreateConversionRule
                     setConversionRules={setRules}
-                    unitData={data}
+                    units={loadingUnits ? [] : data!.unitMany}
                     baseUnit={baseUnit}
                 />
                 <form onSubmit={handleSubmit}>

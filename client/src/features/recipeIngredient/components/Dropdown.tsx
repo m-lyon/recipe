@@ -39,7 +39,7 @@ export function Dropdown(props: Props) {
                                 <DropdownItem
                                     key={index}
                                     color={i.colour}
-                                    value={displayValue(item.quantity, item.unit.data, i.value)}
+                                    value={displayValue(item, i.value)}
                                     onClick={() => {
                                         handleSelect(i);
                                         previewRef?.current?.focus();

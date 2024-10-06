@@ -11,7 +11,7 @@ import { InstructionList } from './InstructionList';
 
 export const instrSpacing = 24;
 interface Props {
-    tags: TagsView;
+    tags: RecipeTagsView;
     instructions: InstructionSubsectionView[];
     source: SourceView;
     images: ImageView[];
