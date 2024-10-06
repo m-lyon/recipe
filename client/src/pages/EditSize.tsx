@@ -3,9 +3,9 @@ import { FormLabel, Select } from '@chakra-ui/react';
 import { Box, FormControl, Heading, VStack } from '@chakra-ui/react';
 
 import { useSuccessToast } from '@recipe/common/hooks';
+import { ModifySizeForm } from '@recipe/features/forms';
 import { GET_SIZES } from '@recipe/graphql/queries/size';
-import { MODIFY_SIZE } from '@recipe/graphql/mutations/size';
-import { SizeForm, useEditPermissionRecipeIngredients } from '@recipe/features/recipeIngredient';
+import { useEditPermissionRecipeIngredients } from '@recipe/features/recipeIngredient';
 
 export function EditSize() {
     const toast = useSuccessToast();
@@ -37,9 +37,8 @@ export function EditSize() {
                                 ))}
                             </Select>
                         </FormControl>
-                        <SizeForm
-                            mutation={MODIFY_SIZE}
-                            mutationVars={currentSize ? { id: currentSize._id } : { id: '' }}
+                        <ModifySizeForm
+                            sizeId={currentSize?._id}
                             initData={currentSize}
                             disabled={!currentSize}
                             handleComplete={() => {

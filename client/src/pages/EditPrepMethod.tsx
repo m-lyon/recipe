@@ -3,15 +3,13 @@ import { FormLabel, Select } from '@chakra-ui/react';
 import { Box, FormControl, Heading, VStack } from '@chakra-ui/react';
 
 import { useSuccessToast } from '@recipe/common/hooks';
-import { PrepMethod } from '@recipe/graphql/generated';
-import { PrepMethodForm } from '@recipe/features/recipeIngredient';
+import { ModifyPrepMethodForm } from '@recipe/features/forms';
 import { GET_PREP_METHODS } from '@recipe/graphql/queries/prepMethod';
-import { MODIFY_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 import { useEditPermissionRecipeIngredients } from '@recipe/features/recipeIngredient';
 
 export function EditPrepMethod() {
     const toast = useSuccessToast();
-    const [currentPrepMethod, setCurrentPrepMethod] = useState<PrepMethod>();
+    const [currentPrepMethod, setCurrentPrepMethod] = useState<ModifyablePrepMethod>();
     const { data } = useEditPermissionRecipeIngredients(GET_PREP_METHODS);
 
     return (
@@ -41,11 +39,8 @@ export function EditPrepMethod() {
                                 ))}
                             </Select>
                         </FormControl>
-                        <PrepMethodForm
-                            mutation={MODIFY_PREP_METHOD}
-                            mutationVars={
-                                currentPrepMethod ? { id: currentPrepMethod._id } : { id: '' }
-                            }
+                        <ModifyPrepMethodForm
+                            prepMethodId={currentPrepMethod?._id}
                             initData={currentPrepMethod}
                             disabled={!currentPrepMethod}
                             handleComplete={() => {

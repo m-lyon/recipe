@@ -2,16 +2,15 @@ import { MutableRefObject } from 'react';
 import { PopoverArrow, PopoverHeader } from '@chakra-ui/react';
 import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 
-import { CreateUnitMutation, Unit } from '@recipe/graphql/generated';
-
-import { BeskpokeUnitForm } from './BespokeUnitForm';
+import { CreateUnitMutation } from '@recipe/graphql/generated';
+import { CreateBespokeUnitForm } from '@recipe/features/forms';
 
 interface Props {
     fieldRef: MutableRefObject<HTMLInputElement | null>;
     value: string;
     setValue: (value: string) => void;
     onClose: () => void;
-    setItem: (item: Unit) => void;
+    setItem: (item: UnitChoice) => void;
 }
 export function NewBespokeUnitPopover(props: Props) {
     const { fieldRef, value, setValue, onClose, setItem } = props;
@@ -25,7 +24,7 @@ export function NewBespokeUnitPopover(props: Props) {
             <PopoverArrow />
             <PopoverCloseButton />
             <PopoverHeader border='hidden'>Use bespoke unit</PopoverHeader>
-            <BeskpokeUnitForm
+            <CreateBespokeUnitForm
                 fieldRef={fieldRef}
                 value={value}
                 setValue={setValue}

@@ -3,15 +3,13 @@ import { FormLabel, Select } from '@chakra-ui/react';
 import { Box, FormControl, Heading, VStack } from '@chakra-ui/react';
 
 import { useSuccessToast } from '@recipe/common/hooks';
-import { Ingredient } from '@recipe/graphql/generated';
-import { IngredientForm } from '@recipe/features/recipeIngredient';
+import { ModifyIngredientForm } from '@recipe/features/forms';
 import { GET_INGREDIENTS } from '@recipe/graphql/queries/ingredient';
-import { MODIFY_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 import { useEditPermissionRecipeIngredients } from '@recipe/features/recipeIngredient';
 
 export function EditIngredient() {
     const toast = useSuccessToast();
-    const [currentIngredient, setCurrentIngredient] = useState<Ingredient>();
+    const [currentIngredient, setCurrentIngredient] = useState<ModifyableIngredient>();
     const { data } = useEditPermissionRecipeIngredients(GET_INGREDIENTS);
 
     return (
@@ -41,11 +39,8 @@ export function EditIngredient() {
                                 ))}
                             </Select>
                         </FormControl>
-                        <IngredientForm
-                            mutation={MODIFY_INGREDIENT}
-                            mutationVars={
-                                currentIngredient ? { id: currentIngredient._id } : { id: '' }
-                            }
+                        <ModifyIngredientForm
+                            ingredientId={currentIngredient?._id}
                             initData={currentIngredient}
                             disabled={!currentIngredient}
                             handleComplete={() => {

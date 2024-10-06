@@ -1,17 +1,15 @@
+import { MutableRefObject } from 'react';
 import { PopoverArrow, PopoverHeader } from '@chakra-ui/react';
 import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 
-import { IngredientAndRecipe } from '@recipe/types';
 import { useSuccessToast } from '@recipe/common/hooks';
+import { CreateIngredientForm } from '@recipe/features/forms';
 import { CreateIngredientMutation } from '@recipe/graphql/generated';
-import { CREATE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
-
-import { IngredientForm } from './IngredientForm';
 
 interface Props {
-    fieldRef: React.MutableRefObject<HTMLInputElement | null>;
+    fieldRef: MutableRefObject<HTMLInputElement | null>;
     onClose: () => void;
-    setItem: (item: IngredientAndRecipe) => void;
+    setItem: (item: IngredientChoice) => void;
 }
 export function NewIngredientPopover(props: Props) {
     const { fieldRef, onClose, setItem } = props;
@@ -19,10 +17,12 @@ export function NewIngredientPopover(props: Props) {
 
     const handleComplete = (data: CreateIngredientMutation) => {
         onClose();
-        setItem(data!.ingredientCreateOne!.record!);
+        // handleComplete is called when the mutation is successful
+        // therefore we can safely assume that data.ingredientCreateOne.record is not null
+        setItem(data.ingredientCreateOne!.record!);
         toast({
             title: 'Ingredient saved',
-            description: `${data?.ingredientCreateOne?.record?.name} saved`,
+            description: `${data.ingredientCreateOne!.record!.name} saved`,
             position: 'top',
         });
     };
@@ -32,11 +32,7 @@ export function NewIngredientPopover(props: Props) {
             <PopoverArrow />
             <PopoverCloseButton />
             <PopoverHeader border='hidden'>Add new ingredient</PopoverHeader>
-            <IngredientForm
-                fieldRef={fieldRef}
-                mutation={CREATE_INGREDIENT}
-                handleComplete={handleComplete}
-            />
+            <CreateIngredientForm handleComplete={handleComplete} fieldRef={fieldRef} />
         </PopoverContent>
     );
 }

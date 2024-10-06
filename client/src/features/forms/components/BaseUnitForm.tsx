@@ -1,53 +1,43 @@
-import { MutableRefObject, useEffect, useState } from 'react';
-import { FormControl, FormHelperText } from '@chakra-ui/react';
-import { Button, ButtonGroup, HStack } from '@chakra-ui/react';
-import { ApolloError, Reference, useMutation } from '@apollo/client';
+import { ApolloError } from '@apollo/client';
+import { StackProps } from '@chakra-ui/react';
+import { Button, ButtonGroup, Checkbox } from '@chakra-ui/react';
 import { ValidationError, boolean, mixed, object, string } from 'yup';
-import { Checkbox, Radio, RadioGroup, Stack, StackProps } from '@chakra-ui/react';
+import { MutableRefObject, useCallback, useEffect, useState } from 'react';
+import { FormControl, FormHelperText, HStack, Radio, RadioGroup, Stack } from '@chakra-ui/react';
 
 import { useErrorToast } from '@recipe/common/hooks';
 import { FloatingLabelInput } from '@recipe/common/components';
-import { UNIT_FIELDS_FULL } from '@recipe/graphql/queries/unit';
-import { EnumUnitCreatePreferredNumberFormat, Unit } from '@recipe/graphql/generated';
-import { CREATE_UNIT, DELETE_UNIT, MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
-import { CreateUnitMutation, ModifyUnitMutation, Scalars } from '@recipe/graphql/generated';
 
-function formatError(error: ApolloError) {
+export function formatUnitError(error: ApolloError) {
     if (error.message.startsWith('E11000')) {
         return 'Unit already exists';
     }
     return error.message;
 }
 
-interface CommonUnitFormProps extends StackProps {
+export type UnitFormData = ReturnType<typeof unitFormSchema.validateSync>;
+export interface BaseUnitFormProps extends StackProps {
     fieldRef?: MutableRefObject<HTMLInputElement | null>;
-    initData?: Unit;
+    initData?: ModifyableUnit;
     disabled?: boolean;
+    handleSubmit: (data: UnitFormData) => void;
+    handleDelete?: () => void;
 }
-interface CreateUnitFormProps extends CommonUnitFormProps {
-    mutation: typeof CREATE_UNIT;
-    mutationVars?: never;
-    handleComplete: (data: CreateUnitMutation) => void;
-    handleDelete?: never;
-}
-interface ModifyUnitFormProps extends CommonUnitFormProps {
-    mutation: typeof MODIFY_UNIT;
-    mutationVars: { id: Scalars['MongoID']['input'] };
-    handleComplete: (data: ModifyUnitMutation) => void;
-    handleDelete: () => void;
-}
-type UnitFormProps = CreateUnitFormProps | ModifyUnitFormProps;
-export function UnitForm(props: UnitFormProps) {
-    const {
-        fieldRef,
-        mutation,
-        mutationVars,
-        handleComplete,
-        handleDelete,
-        initData,
-        disabled,
-        ...rest
-    } = props;
+const numberFormat: NumberFormat[] = ['decimal', 'fraction'];
+export const unitFormSchema = object({
+    shortSingular: string().required('Short singular name is required'),
+    shortPlural: string().required('Short plural name is required'),
+    longSingular: string().required('Long singular name is required'),
+    longPlural: string().required('Long plural name is required'),
+    preferredNumberFormat: mixed<NumberFormat>()
+        .required()
+        .oneOf(Object.values(numberFormat), 'You must select a number format'),
+    hasSpace: boolean().required(),
+    unique: boolean().required(),
+});
+
+export function BaseUnitForm(props: BaseUnitFormProps) {
+    const { fieldRef, initData, disabled, handleSubmit, handleDelete, ...rest } = props;
     const toast = useErrorToast();
     const [hasError, setHasError] = useState(false);
     const [shortSingular, setShortSingular] = useState('');
@@ -57,61 +47,6 @@ export function UnitForm(props: UnitFormProps) {
     const [preferredNumberFormat, setpreferredNumberFormat] = useState('');
     const [hasSpace, setHasSpace] = useState(true);
     const [isFocused, setIsFocused] = useState(false);
-    const [deleteUnit] = useMutation(DELETE_UNIT, {
-        onCompleted: handleDelete,
-        onError: (error) => {
-            toast({
-                title: 'Error deleting unit',
-                description: formatError(error),
-                position: 'top',
-            });
-        },
-        update: (cache, { data }) => {
-            cache.evict({ id: `Unit:${data?.unitRemoveById?.recordId}` });
-        },
-    });
-    const [saveUnit] = useMutation(mutation, {
-        onCompleted: handleComplete,
-        onError: (error) => {
-            toast({
-                title: 'Error saving unit',
-                description: formatError(error),
-                position: 'top',
-            });
-            setHasError(true);
-        },
-        update: (cache, { data }) => {
-            cache.modify({
-                fields: {
-                    unitMany(existingRefs = [], { readField }) {
-                        if (!data) {
-                            return existingRefs;
-                        }
-                        const record =
-                            (data satisfies CreateUnitMutation).unitCreateOne?.record ??
-                            (data satisfies ModifyUnitMutation as ModifyUnitMutation).unitUpdateById
-                                ?.record;
-                        if (!record) {
-                            return existingRefs;
-                        }
-                        const newRef = cache.writeFragment({
-                            data: record,
-                            fragment: UNIT_FIELDS_FULL,
-                            fragmentName: 'UnitFieldsFull',
-                        });
-                        if (
-                            existingRefs.some(
-                                (ref: Reference) => readField('_id', ref) === record._id
-                            )
-                        ) {
-                            return existingRefs;
-                        }
-                        return [...existingRefs, newRef];
-                    },
-                },
-            });
-        },
-    });
 
     useEffect(() => {
         if (initData) {
@@ -133,24 +68,9 @@ export function UnitForm(props: UnitFormProps) {
         }
     }, [initData, disabled]);
 
-    const formSchema = object({
-        shortSingular: string().required('Short singular name is required'),
-        shortPlural: string().required('Short plural name is required'),
-        longSingular: string().required('Long singular name is required'),
-        longPlural: string().required('Long plural name is required'),
-        preferredNumberFormat: mixed<EnumUnitCreatePreferredNumberFormat>()
-            .required()
-            .oneOf(
-                Object.values(EnumUnitCreatePreferredNumberFormat),
-                'You must select a number format'
-            ),
-        hasSpace: boolean().required(),
-        unique: boolean().required(),
-    });
-
-    const handleSubmit = () => {
+    const onSubmit = useCallback(() => {
         try {
-            const validated = formSchema.validateSync({
+            const validated = unitFormSchema.validateSync({
                 shortSingular,
                 shortPlural: shortPlural === '' ? shortSingular : shortPlural,
                 longSingular,
@@ -159,7 +79,7 @@ export function UnitForm(props: UnitFormProps) {
                 hasSpace,
                 unique: true,
             });
-            saveUnit({ variables: { record: validated, ...mutationVars } });
+            handleSubmit(validated);
         } catch (e: unknown) {
             setHasError(true);
             if (e instanceof ValidationError) {
@@ -170,22 +90,30 @@ export function UnitForm(props: UnitFormProps) {
                 });
             }
         }
-    };
+    }, [
+        hasSpace,
+        longPlural,
+        longSingular,
+        preferredNumberFormat,
+        shortPlural,
+        shortSingular,
+        handleSubmit,
+        toast,
+    ]);
 
     useEffect(() => {
         const handleKeyboardEvent = (e: KeyboardEvent) => {
             if (isFocused && e.key === 'Enter') {
                 e.preventDefault();
-                handleSubmit();
+                onSubmit();
             }
         };
-
         window.addEventListener('keydown', handleKeyboardEvent);
 
         return () => {
             window.removeEventListener('keydown', handleKeyboardEvent);
         };
-    });
+    }, [isFocused, onSubmit]);
 
     return (
         <Stack
@@ -265,16 +193,12 @@ export function UnitForm(props: UnitFormProps) {
                 paddingTop={2}
                 isDisabled={disabled}
             >
-                {mutationVars && (
-                    <Button
-                        colorScheme='red'
-                        onClick={() => deleteUnit({ variables: mutationVars })}
-                        aria-label='Delete unit'
-                    >
+                {handleDelete && (
+                    <Button colorScheme='red' onClick={handleDelete} aria-label='Delete unit'>
                         Delete
                     </Button>
                 )}
-                <Button colorScheme='teal' onClick={handleSubmit} aria-label='Save unit'>
+                <Button colorScheme='teal' onClick={onSubmit} aria-label='Save unit'>
                     Save
                 </Button>
             </ButtonGroup>

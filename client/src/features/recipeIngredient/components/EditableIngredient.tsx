@@ -85,8 +85,7 @@ export function EditableIngredient(props: Props) {
     const { setHighlighted, handleKeyboardEvent, ...dropdownProps } = useDropdownList(
         strValue,
         suggestions,
-        (attr: RecipeIngredientDropdown) =>
-            actionHandler.setCurrentEditableAttribute(subsection, attr),
+        (attr: SetAttr) => actionHandler.setCurrentEditableAttribute(subsection, attr),
         openPopover,
         () => actionHandler.deleteChar(subsection)
     );

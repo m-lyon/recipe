@@ -1,16 +1,15 @@
+import { MutableRefObject } from 'react';
 import { PopoverArrow, PopoverHeader } from '@chakra-ui/react';
 import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 
 import { useSuccessToast } from '@recipe/common/hooks';
-import { CREATE_UNIT } from '@recipe/graphql/mutations/unit';
-import { CreateUnitMutation, Unit } from '@recipe/graphql/generated';
-
-import { UnitForm } from './UnitForm';
+import { CreateUnitForm } from '@recipe/features/forms';
+import { CreateUnitMutation } from '@recipe/graphql/generated';
 
 interface Props {
-    fieldRef: React.MutableRefObject<HTMLInputElement | null>;
+    fieldRef: MutableRefObject<HTMLInputElement | null>;
     onClose: () => void;
-    setItem: (item: Unit) => void;
+    setItem: (item: UnitChoice) => void;
 }
 export function NewUnitPopover(props: Props) {
     const { fieldRef, onClose, setItem } = props;
@@ -18,10 +17,12 @@ export function NewUnitPopover(props: Props) {
 
     const handleComplete = (data: CreateUnitMutation) => {
         onClose();
+        // handleComplete is called when the mutation is successful
+        // therefore we can safely assume that data.unitCreateOne.record is not null
         setItem(data.unitCreateOne!.record!);
         toast({
             title: 'Unit saved',
-            description: `${data?.unitCreateOne?.record?.longSingular} saved`,
+            description: `${data.unitCreateOne!.record!.longSingular} saved`,
             position: 'top',
         });
     };
@@ -30,12 +31,7 @@ export function NewUnitPopover(props: Props) {
             <PopoverArrow />
             <PopoverCloseButton />
             <PopoverHeader border='hidden'>Add new unit</PopoverHeader>
-            <UnitForm
-                fieldRef={fieldRef}
-                mutation={CREATE_UNIT}
-                handleComplete={handleComplete}
-                pl={2}
-            />
+            <CreateUnitForm fieldRef={fieldRef} handleComplete={handleComplete} pl={2} />
         </PopoverContent>
     );
 }

@@ -3,9 +3,9 @@ import { FormLabel, Select } from '@chakra-ui/react';
 import { Box, FormControl, Heading, VStack } from '@chakra-ui/react';
 
 import { useSuccessToast } from '@recipe/common/hooks';
+import { ModifyUnitForm } from '@recipe/features/forms';
 import { GET_UNITS } from '@recipe/graphql/queries/unit';
-import { MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
-import { UnitForm, useEditPermissionRecipeIngredients } from '@recipe/features/recipeIngredient';
+import { useEditPermissionRecipeIngredients } from '@recipe/features/recipeIngredient';
 
 export function EditUnit() {
     const toast = useSuccessToast();
@@ -41,9 +41,8 @@ export function EditUnit() {
                                 ))}
                             </Select>
                         </FormControl>
-                        <UnitForm
-                            mutation={MODIFY_UNIT}
-                            mutationVars={currentUnit ? { id: currentUnit._id } : { id: '' }}
+                        <ModifyUnitForm
+                            unitId={currentUnit?._id}
                             initData={currentUnit}
                             disabled={!currentUnit}
                             handleComplete={() => {

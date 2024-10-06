@@ -1,54 +1,40 @@
+import { ApolloError } from '@apollo/client';
 import { HStack, Stack, StackProps } from '@chakra-ui/react';
-import { MutableRefObject, useEffect, useState } from 'react';
 import { Button, ButtonGroup, Checkbox } from '@chakra-ui/react';
-import { ApolloError, Reference, useMutation } from '@apollo/client';
+import { MutableRefObject, useCallback, useEffect, useState } from 'react';
 import { ValidationError, array, boolean, mixed, number, object, string } from 'yup';
 
 import { useErrorToast } from '@recipe/common/hooks';
 import { FloatingLabelInput } from '@recipe/common/components';
-import { Ingredient, Scalars } from '@recipe/graphql/generated';
-import { DELETE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
-import { INGREDIENT_FIELDS_FULL } from '@recipe/graphql/queries/ingredient';
-import { EnumIngredientCreateTags, EnumIngredientTags } from '@recipe/graphql/generated';
-import { CREATE_INGREDIENT, MODIFY_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
-import { CreateIngredientMutation, ModifyIngredientMutation } from '@recipe/graphql/generated';
 
-function formatError(error: ApolloError) {
+export function formatIngredientError(error: ApolloError) {
     if (error.message.startsWith('E11000')) {
         return 'Ingredient already exists';
     }
     return error.message;
 }
+const reservedTags: ReservedTags[] = ['vegan', 'vegetarian'];
 
-interface CommonIngredientFormProps extends StackProps {
+export type IngredientFormData = ReturnType<typeof formSchema.validateSync>;
+export interface BaseIngredientFormProps extends StackProps {
     fieldRef?: MutableRefObject<HTMLInputElement | null>;
-    initData?: Ingredient;
+    initData?: ModifyableIngredient;
     disabled?: boolean;
+    handleSubmit: (data: IngredientFormData) => void;
+    handleDelete?: () => void;
 }
-interface CreateIngredientFormProps extends CommonIngredientFormProps {
-    mutation: typeof CREATE_INGREDIENT;
-    mutationVars?: never;
-    handleComplete: (data: CreateIngredientMutation) => void;
-    handleDelete?: never;
-}
-interface ModifyIngredientFormProps extends CommonIngredientFormProps {
-    mutation: typeof MODIFY_INGREDIENT;
-    mutationVars?: { id: Scalars['MongoID']['input'] };
-    handleComplete: (data: ModifyIngredientMutation) => void;
-    handleDelete: () => void;
-}
-type IngredientFormProps = CreateIngredientFormProps | ModifyIngredientFormProps;
-export function IngredientForm(props: IngredientFormProps) {
-    const {
-        fieldRef,
-        mutation,
-        mutationVars,
-        handleComplete,
-        handleDelete,
-        initData,
-        disabled,
-        ...rest
-    } = props;
+const formSchema = object({
+    name: string().required('Name is required'),
+    pluralName: string().required(),
+    isCountable: boolean().required(),
+    density: number(),
+    tags: array()
+        .required()
+        .of(mixed<ReservedTags>().required().oneOf(reservedTags, 'Invalid tag')),
+});
+
+export function BaseIngredientForm(props: BaseIngredientFormProps) {
+    const { fieldRef, initData, disabled, handleSubmit, handleDelete, ...rest } = props;
     const toast = useErrorToast();
     const [hasError, setHasError] = useState(false);
     const [name, setName] = useState('');
@@ -58,62 +44,6 @@ export function IngredientForm(props: IngredientFormProps) {
     const [vegan, setVegan] = useState(false);
     const [vegetarian, setVegetarian] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
-    const [deleteIngredient] = useMutation(DELETE_INGREDIENT, {
-        onCompleted: handleDelete,
-        onError: (error) => {
-            setHasError(true);
-            toast({
-                title: 'Error deleting ingredient',
-                description: formatError(error),
-                position: 'top',
-            });
-        },
-        update: (cache, { data }) => {
-            cache.evict({ id: `Ingredient:${data?.ingredientRemoveById?.recordId}` });
-        },
-    });
-    const [saveIngredient] = useMutation(mutation, {
-        onCompleted: handleComplete,
-        onError: (error) => {
-            setHasError(true);
-            toast({
-                title: 'Error saving ingredient',
-                description: formatError(error),
-                position: 'top',
-            });
-        },
-        update: (cache, { data }) => {
-            cache.modify({
-                fields: {
-                    ingredientMany(existingRefs = [], { readField }) {
-                        if (!data) {
-                            return existingRefs;
-                        }
-                        const record =
-                            (data satisfies CreateIngredientMutation).ingredientCreateOne?.record ??
-                            (data satisfies ModifyIngredientMutation as ModifyIngredientMutation)
-                                .ingredientUpdateById?.record;
-                        if (!record) {
-                            return existingRefs;
-                        }
-                        const newRef = cache.writeFragment({
-                            data: record,
-                            fragment: INGREDIENT_FIELDS_FULL,
-                            fragmentName: 'IngredientFieldsFull',
-                        });
-                        if (
-                            existingRefs.some(
-                                (ref: Reference) => readField('_id', ref) === record._id
-                            )
-                        ) {
-                            return existingRefs;
-                        }
-                        return [...existingRefs, newRef];
-                    },
-                },
-            });
-        },
-    });
 
     useEffect(() => {
         if (initData) {
@@ -121,8 +51,8 @@ export function IngredientForm(props: IngredientFormProps) {
             setPluralName(initData.pluralName);
             setIsCountable(initData.isCountable);
             setDensity(initData.density ? initData.density.toString() : '');
-            setVegan(initData.tags.includes('vegan' as EnumIngredientTags));
-            setVegetarian(initData.tags.includes('vegetarian' as EnumIngredientTags));
+            setVegan(initData.tags.includes('vegan'));
+            setVegetarian(initData.tags.includes('vegetarian'));
         }
         if (disabled) {
             setHasError(false);
@@ -135,30 +65,16 @@ export function IngredientForm(props: IngredientFormProps) {
         }
     }, [initData, disabled]);
 
-    const formSchema = object({
-        name: string().required('Name is required'),
-        pluralName: string().required(),
-        isCountable: boolean().required(),
-        density: number(),
-        tags: array()
-            .required()
-            .of(
-                mixed<EnumIngredientCreateTags>()
-                    .required()
-                    .oneOf(Object.values(EnumIngredientCreateTags), 'Invalid tag')
-            ),
-    });
-
-    const handleSubmit = () => {
+    const onSubmit = useCallback(() => {
         try {
             const validated = formSchema.validateSync({
                 name,
                 pluralName: pluralName === '' ? name : pluralName,
                 isCountable,
-                density: density === '' ? undefined : density,
+                density: density === '' ? undefined : parseFloat(density),
                 tags: (vegan ? ['vegan'] : []).concat(vegetarian ? ['vegetarian'] : []),
             });
-            saveIngredient({ variables: { record: { ...validated }, ...mutationVars } });
+            handleSubmit(validated);
         } catch (e: unknown) {
             setHasError(true);
             if (e instanceof ValidationError) {
@@ -169,22 +85,21 @@ export function IngredientForm(props: IngredientFormProps) {
                 });
             }
         }
-    };
+    }, [name, pluralName, isCountable, density, vegan, vegetarian, handleSubmit, toast]);
 
     useEffect(() => {
         const handleKeyboardEvent = (e: KeyboardEvent) => {
             if (isFocused && e.key === 'Enter') {
                 e.preventDefault();
-                handleSubmit();
+                onSubmit();
             }
         };
-
         window.addEventListener('keydown', handleKeyboardEvent);
 
         return () => {
             window.removeEventListener('keydown', handleKeyboardEvent);
         };
-    });
+    }, [isFocused, onSubmit]);
 
     return (
         <Stack
@@ -220,7 +135,7 @@ export function IngredientForm(props: IngredientFormProps) {
             <FloatingLabelInput
                 label='Density (g/ml)'
                 id='density'
-                value={density ? density : ''}
+                value={density}
                 isInvalid={hasError}
                 isDisabled={disabled}
                 onChange={(e) => {
@@ -263,16 +178,12 @@ export function IngredientForm(props: IngredientFormProps) {
                 </Checkbox>
             </HStack>
             <ButtonGroup display='flex' justifyContent='flex-end' isDisabled={disabled}>
-                {mutationVars && (
-                    <Button
-                        colorScheme='red'
-                        onClick={() => deleteIngredient({ variables: mutationVars })}
-                        aria-label='Delete ingredient'
-                    >
+                {handleDelete && (
+                    <Button colorScheme='red' onClick={handleDelete} aria-label='Delete ingredient'>
                         Delete
                     </Button>
                 )}
-                <Button colorScheme='teal' onClick={handleSubmit} aria-label='Save ingredient'>
+                <Button colorScheme='teal' onClick={onSubmit} aria-label='Save ingredient'>
                     Save
                 </Button>
             </ButtonGroup>

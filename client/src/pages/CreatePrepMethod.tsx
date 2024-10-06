@@ -3,9 +3,8 @@ import { Box, Heading, VStack } from '@chakra-ui/react';
 
 import { useSuccessToast } from '@recipe/common/hooks';
 import { DELAY_LONG, ROOT_PATH } from '@recipe/constants';
-import { PrepMethodForm } from '@recipe/features/recipeIngredient';
+import { CreatePrepMethodForm } from '@recipe/features/forms';
 import { CreatePrepMethodMutation } from '@recipe/graphql/generated';
-import { CREATE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 
 export function CreatePrepMethod() {
     const toast = useSuccessToast();
@@ -25,10 +24,7 @@ export function CreatePrepMethod() {
                 <Heading pb={6}>Create Prep Method</Heading>
                 <form>
                     <VStack mt={0} spacing={8}>
-                        <PrepMethodForm
-                            mutation={CREATE_PREP_METHOD}
-                            handleComplete={handleComplete}
-                        />
+                        <CreatePrepMethodForm handleComplete={handleComplete} />
                     </VStack>
                 </form>
             </Box>

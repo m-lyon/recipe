@@ -2,9 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Heading, VStack } from '@chakra-ui/react';
 
 import { useSuccessToast } from '@recipe/common/hooks';
+import { CreateSizeForm } from '@recipe/features/forms';
 import { DELAY_LONG, ROOT_PATH } from '@recipe/constants';
-import { CREATE_SIZE } from '@recipe/graphql/mutations/size';
-import { SizeForm } from '@recipe/features/recipeIngredient';
 import { CreateSizeMutation } from '@recipe/graphql/generated';
 
 export function CreateSize() {
@@ -25,7 +24,7 @@ export function CreateSize() {
                 <Heading pb={6}>Create Size</Heading>
                 <form>
                     <VStack mt={0} spacing={8}>
-                        <SizeForm mutation={CREATE_SIZE} handleComplete={handleComplete} />
+                        <CreateSizeForm handleComplete={handleComplete} />
                     </VStack>
                 </form>
             </Box>

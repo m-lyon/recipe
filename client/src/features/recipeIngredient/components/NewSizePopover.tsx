@@ -1,16 +1,15 @@
+import { MutableRefObject } from 'react';
 import { PopoverArrow, PopoverHeader } from '@chakra-ui/react';
 import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
 
 import { useSuccessToast } from '@recipe/common/hooks';
-import { CREATE_SIZE } from '@recipe/graphql/mutations/size';
-import { CreateSizeMutation, Size } from '@recipe/graphql/generated';
-
-import { SizeForm } from './SizeForm';
+import { CreateSizeForm } from '@recipe/features/forms';
+import { CreateSizeMutation } from '@recipe/graphql/generated';
 
 interface Props {
-    fieldRef: React.MutableRefObject<HTMLInputElement | null>;
+    fieldRef: MutableRefObject<HTMLInputElement | null>;
     onClose: () => void;
-    setItem: (item: Size) => void;
+    setItem: (item: SizeChoice) => void;
 }
 export function NewSizePopover(props: Props) {
     const { fieldRef, onClose, setItem } = props;
@@ -18,6 +17,8 @@ export function NewSizePopover(props: Props) {
 
     const handleComplete = (data: CreateSizeMutation) => {
         onClose();
+        // handleComplete is called when the mutation is successful
+        // therefore we can safely assume that data.sizeCreateOne.record is not null
         setItem(data.sizeCreateOne!.record!);
         toast({
             title: 'Size saved',
@@ -31,7 +32,7 @@ export function NewSizePopover(props: Props) {
             <PopoverArrow />
             <PopoverCloseButton />
             <PopoverHeader border='hidden'>Add new size</PopoverHeader>
-            <SizeForm fieldRef={fieldRef} mutation={CREATE_SIZE} handleComplete={handleComplete} />
+            <CreateSizeForm fieldRef={fieldRef} handleComplete={handleComplete} />
         </PopoverContent>
     );
 }

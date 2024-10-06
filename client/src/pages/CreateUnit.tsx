@@ -2,9 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Heading, VStack } from '@chakra-ui/react';
 
 import { useSuccessToast } from '@recipe/common/hooks';
+import { CreateUnitForm } from '@recipe/features/forms';
 import { DELAY_LONG, ROOT_PATH } from '@recipe/constants';
-import { CREATE_UNIT } from '@recipe/graphql/mutations/unit';
-import { UnitForm } from '@recipe/features/recipeIngredient';
 import { CreateUnitMutation } from '@recipe/graphql/generated';
 
 export function CreateUnit() {
@@ -25,7 +24,7 @@ export function CreateUnit() {
                 <Heading pb={6}>Create Unit</Heading>
                 <form>
                     <VStack mt={0} spacing={8}>
-                        <UnitForm mutation={CREATE_UNIT} handleComplete={handleComplete} />
+                        <CreateUnitForm handleComplete={handleComplete} />
                     </VStack>
                 </form>
             </Box>
