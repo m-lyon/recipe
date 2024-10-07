@@ -1,42 +1,40 @@
 import { describe, expect, it } from 'vitest';
 
-import { Ingredient, RecipeIngredient, Unit } from '@recipe/graphql/generated';
-import { EnumRecipeIngredientType, EnumUnitPreferredNumberFormat } from '@recipe/graphql/generated';
-
 import { changeQuantity } from '../quantity';
 
 interface IngredientInput {
     quantity?: string | null;
-    unit?: Unit | null;
-    ingredient?: Ingredient;
+    unit?: UnitView;
+    ingredient?: IngredientView;
 }
 
 describe('changeIngredientQuantity', () => {
     const getIngredient = (ingr: IngredientInput) => {
-        const ingredient: Ingredient = {
+        const ingredient = {
+            __typename: 'Ingredient',
             _id: '030f1b5b-1b1b-4b1b-8b1b-2b1bfb1b4b1b',
             isCountable: false,
             name: 'flour',
-            owner: '030f1b5b-1b1b-4b1b-8b1b-2b1b3b1b4b1b',
             pluralName: 'flours',
-            tags: [],
         };
-        const unit: Unit = {
+        const unit: RecipeIngredientView['unit'] = {
+            __typename: 'Unit',
             _id: '030f1b5b-1b1b-4b1b-8b1b-2b1b3b1b4b1b',
             hasSpace: false,
             longPlural: 'cups',
             longSingular: 'cup',
             shortPlural: 'cups',
             shortSingular: 'cup',
-            preferredNumberFormat: EnumUnitPreferredNumberFormat.Fraction,
-            owner: '030f1b5b-1b1b-4b1b-8b1b-2b1b3b1b4b1b',
+            preferredNumberFormat: 'fraction',
             unique: true,
         };
-        const recipeIngredient: RecipeIngredient = {
+        const recipeIngredient: RecipeIngredientView = {
+            __typename: 'RecipeIngredient',
             _id: '030f1b5b-1b1b-4b1b-8b1b-2b1b3b1b4b1b',
-            ingredient,
             quantity: '1',
-            type: EnumRecipeIngredientType.Ingredient,
+            ingredient,
+            size: null,
+            prepMethod: null,
             unit,
             ...ingr,
         };
@@ -76,7 +74,7 @@ describe('changeIngredientQuantity', () => {
 
     it('should adjust quantity to fraction when unit preferred number format is fraction', () => {
         const ingr = getIngredient({ quantity: '1' });
-        ingr.unit!.preferredNumberFormat = EnumUnitPreferredNumberFormat.Fraction;
+        ingr.unit!.preferredNumberFormat = 'fraction';
         const newServings = 6;
         const oldServings = 4;
         const result = changeQuantity(ingr, newServings, oldServings, (ingr) => ingr);
@@ -94,7 +92,7 @@ describe('changeIngredientQuantity', () => {
 
     it('should adjust quantity to decimal when unit preferred number format is decimal', () => {
         const ingr = getIngredient({ quantity: '1/1' });
-        ingr.unit!.preferredNumberFormat = EnumUnitPreferredNumberFormat.Decimal;
+        ingr.unit!.preferredNumberFormat = 'decimal';
         const newServings = 6;
         const oldServings = 4;
         const result = changeQuantity(ingr, newServings, oldServings, (ingr) => ingr);

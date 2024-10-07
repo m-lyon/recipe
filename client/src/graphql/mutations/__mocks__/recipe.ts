@@ -1,3 +1,4 @@
+import { UpdateRecipeMutation } from '@recipe/graphql/generated';
 import { mockSpicyTag } from '@recipe/graphql/queries/__mocks__/tag';
 import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockApple } from '@recipe/graphql/queries/__mocks__/ingredient';
@@ -8,7 +9,6 @@ import { mockRecipeIngredientIdSeven } from '@recipe/graphql/__mocks__/ids';
 import { GetRecipeQuery, RecipeIngredient } from '@recipe/graphql/generated';
 import { mockRecipeOne, mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockRecipeNew, mockRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
-import { EnumRecipeIngredientType, UpdateRecipeMutation } from '@recipe/graphql/generated';
 import { CREATE_RECIPE, DELETE_RECIPE, UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { mockRecipeFour, mockRecipeNewAsIngr } from '@recipe/graphql/queries/__mocks__/recipe';
 import { DeleteRecipeMutation, DeleteRecipeMutationVariables } from '@recipe/graphql/generated';
@@ -36,7 +36,6 @@ const getMockRecipeVariables = (
                     size: ingr.size?._id,
                     ingredient: ingr.ingredient?._id,
                     prepMethod: ingr.prepMethod?._id,
-                    type: ingr.type,
                 })),
             })),
             tags: mockRecipe.tags.map((tag: any) => tag._id),
@@ -66,7 +65,11 @@ export const mockUpdateRecipeOne = {
     },
     result: {
         data: {
-            recipeUpdateById: { record: recipeOneData.record },
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: recipeOneData.record,
+            },
         } satisfies UpdateRecipeMutation,
     },
 };
@@ -80,7 +83,11 @@ export const mockUpdateRecipeNumServings = {
     },
     result: {
         data: {
-            recipeUpdateById: { record: { ...recipeOneData.record, numServings: 5 } },
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: { ...recipeOneData.record, numServings: 5 },
+            },
         } satisfies UpdateRecipeMutation,
     },
 };
@@ -94,7 +101,9 @@ export const mockUpdateRecipeNewTitle = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: { ...recipeOneData.record, title: 'New Title' },
             },
         } satisfies UpdateRecipeMutation,
@@ -113,11 +122,17 @@ export const mockUpdateRecipeInstructionsEdit = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeOneData.record,
                     instructionSubsections: [
-                        { name: null, instructions: ['Instruction one', 'New instruction.'] },
+                        {
+                            __typename: 'InstructionSubsection',
+                            name: null,
+                            instructions: ['Instruction one', 'New instruction.'],
+                        },
                     ],
                 },
             },
@@ -139,11 +154,14 @@ export const mockUpdateRecipeInstructionsAdd = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeOneData.record,
                     instructionSubsections: [
                         {
+                            __typename: 'InstructionSubsection',
                             name: null,
                             instructions: [
                                 'Instruction one',
@@ -170,10 +188,18 @@ export const mockUpdateRecipeInstructionsRemove = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeOneData.record,
-                    instructionSubsections: [{ name: null, instructions: ['Instruction one'] }],
+                    instructionSubsections: [
+                        {
+                            __typename: 'InstructionSubsection',
+                            name: null,
+                            instructions: ['Instruction one'],
+                        },
+                    ],
                 },
             },
         } satisfies UpdateRecipeMutation,
@@ -192,7 +218,9 @@ export const mockUpdateRecipeAddExistingTag = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeOneData.record,
                     tags: [...recipeOneData.record.tags, mockSpicyTag],
@@ -211,7 +239,11 @@ export const mockUpdateRecipeAddNote = {
     },
     result: {
         data: {
-            recipeUpdateById: { record: { ...recipeOneData.record, notes: 'A new note.' } },
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: { ...recipeOneData.record, notes: 'A new note.' },
+            },
         } satisfies UpdateRecipeMutation,
     },
 };
@@ -225,7 +257,11 @@ export const mockUpdateRecipeAddSource = {
     },
     result: {
         data: {
-            recipeUpdateById: { record: { ...recipeOneData.record, source: 'A new source' } },
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: { ...recipeOneData.record, source: 'A new source' },
+            },
         } satisfies UpdateRecipeMutation,
     },
 };
@@ -242,7 +278,9 @@ export const mockUpdateRecipeRemoveTag = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeOneData.record,
                     tags: [recipeOneData.record.tags[0]],
@@ -267,7 +305,9 @@ export const mockUpdateRecipeAddNewTag = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeOneData.record,
                     tags: [
@@ -287,17 +327,16 @@ export const mockUpdateRecipeIngredientsAdd = {
             recipe: {
                 ...recipeOneVars.recipe,
                 ingredientSubsections: [
-                    recipeOneVars.recipe.ingredientSubsections![0],
+                    recipeOneVars.recipe.ingredientSubsections[0],
                     {
-                        name: recipeOneVars.recipe.ingredientSubsections![1].name,
+                        name: recipeOneVars.recipe.ingredientSubsections[1].name,
                         ingredients: [
-                            ...recipeOneVars.recipe.ingredientSubsections![1].ingredients,
+                            ...recipeOneVars.recipe.ingredientSubsections[1].ingredients,
                             {
                                 quantity: '4',
                                 unit: mockTeaspoon._id,
                                 ingredient: mockApple._id,
                                 prepMethod: mockDiced._id,
-                                type: EnumRecipeIngredientType.Ingredient,
                             },
                         ],
                     },
@@ -307,23 +346,26 @@ export const mockUpdateRecipeIngredientsAdd = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeOneData.record,
                     ingredientSubsections: [
-                        recipeOneData.record.ingredientSubsections![0],
+                        recipeOneData.record.ingredientSubsections[0],
                         {
-                            name: recipeOneData.record.ingredientSubsections![1]!.name,
+                            __typename: 'IngredientSubsection',
+                            name: recipeOneData.record.ingredientSubsections[1].name,
                             ingredients: [
-                                ...recipeOneData.record.ingredientSubsections![1]!.ingredients,
+                                ...recipeOneData.record.ingredientSubsections[1].ingredients,
                                 {
                                     _id: mockRecipeIngredientIdSeven,
+                                    __typename: 'RecipeIngredient',
                                     quantity: '4',
                                     unit: mockTeaspoon,
                                     size: null,
                                     ingredient: mockApple,
                                     prepMethod: mockDiced,
-                                    type: EnumRecipeIngredientType.Ingredient,
                                 },
                             ],
                         },
@@ -342,9 +384,9 @@ export const mockUpdateRecipeIngredientsEdit = {
                 ...recipeOneVars.recipe,
                 ingredientSubsections: [
                     {
-                        name: recipeOneVars.recipe.ingredientSubsections![0].name,
+                        name: recipeOneVars.recipe.ingredientSubsections[0].name,
                         ingredients: [
-                            ...recipeOneVars.recipe.ingredientSubsections![0].ingredients.filter(
+                            ...recipeOneVars.recipe.ingredientSubsections[0].ingredients.filter(
                                 (ingr: RecipeIngredient) => ingr.quantity !== '2'
                             ),
                             {
@@ -352,39 +394,41 @@ export const mockUpdateRecipeIngredientsEdit = {
                                 unit: mockTeaspoon._id,
                                 ingredient: mockApple._id,
                                 prepMethod: mockDiced._id,
-                                type: EnumRecipeIngredientType.Ingredient,
                             },
                         ],
                     },
-                    recipeOneVars.recipe.ingredientSubsections![1],
+                    recipeOneVars.recipe.ingredientSubsections[1],
                 ],
             },
         } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeOneData.record,
                     ingredientSubsections: [
                         {
-                            name: recipeOneData.record.ingredientSubsections![0]!.name,
+                            __typename: 'IngredientSubsection',
+                            name: recipeOneData.record.ingredientSubsections[0].name,
                             ingredients: [
-                                ...recipeOneData.record.ingredientSubsections![0]!.ingredients.filter(
+                                ...recipeOneData.record.ingredientSubsections[0].ingredients.filter(
                                     (ingr) => ingr!.quantity !== '2'
                                 ),
                                 {
                                     _id: mockRecipeIngredientIdThree,
+                                    __typename: 'RecipeIngredient',
                                     quantity: '4',
                                     unit: mockTeaspoon,
                                     size: null,
                                     ingredient: mockApple,
                                     prepMethod: mockDiced,
-                                    type: EnumRecipeIngredientType.Ingredient,
                                 },
                             ],
                         },
-                        recipeOneData.record.ingredientSubsections![1],
+                        recipeOneData.record.ingredientSubsections[1],
                     ],
                 },
             },
@@ -400,33 +444,36 @@ export const mockUpdateRecipeIngredientsRemove = {
                 ...recipeOneVars.recipe,
                 ingredientSubsections: [
                     {
-                        name: recipeOneVars.recipe.ingredientSubsections![0].name,
+                        name: recipeOneVars.recipe.ingredientSubsections[0].name,
                         ingredients: [
-                            ...recipeOneVars.recipe.ingredientSubsections![0].ingredients.filter(
+                            ...recipeOneVars.recipe.ingredientSubsections[0].ingredients.filter(
                                 (ingr: RecipeIngredient) => ingr.quantity !== '2'
                             ),
                         ],
                     },
-                    recipeOneVars.recipe.ingredientSubsections![1],
+                    recipeOneVars.recipe.ingredientSubsections[1],
                 ],
             },
         } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeOneData.record,
                     ingredientSubsections: [
                         {
-                            name: recipeOneData.record.ingredientSubsections![0]!.name,
+                            __typename: 'IngredientSubsection',
+                            name: recipeOneData.record.ingredientSubsections[0].name,
                             ingredients: [
-                                ...recipeOneData.record.ingredientSubsections![0]!.ingredients.filter(
+                                ...recipeOneData.record.ingredientSubsections[0].ingredients.filter(
                                     (ingr) => ingr!.quantity !== '2'
                                 ),
                             ],
                         },
-                        recipeOneData.record.ingredientSubsections![1],
+                        recipeOneData.record.ingredientSubsections[1],
                     ],
                 },
             },
@@ -443,7 +490,9 @@ export const mockUpdateRecipeCalculatedTagsAdd = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeOneData.record,
                     calculatedTags: ['vegan', 'vegetarian', 'special'],
@@ -462,7 +511,9 @@ export const mockUpdateRecipeCalculatedTagsEdit = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: { ...recipeOneData.record, calculatedTags: ['vegetarian', 'special'] },
             },
         } satisfies UpdateRecipeMutation,
@@ -478,7 +529,9 @@ export const mockUpdateRecipeCalculatedTagsRemove = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeOneData.record,
                     calculatedTags: ['vegetarian'],
@@ -497,7 +550,9 @@ export const mockUpdateRecipeAddIsIngredient = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeOneData.record,
                     isIngredient: true,
@@ -515,7 +570,7 @@ export const mockUpdateRecipeAddIngredientSubsection = {
             recipe: {
                 ...recipeOneVars.recipe,
                 ingredientSubsections: [
-                    ...recipeOneVars.recipe.ingredientSubsections!,
+                    ...recipeOneVars.recipe.ingredientSubsections,
                     {
                         name: 'New Section',
                         ingredients: [
@@ -524,7 +579,6 @@ export const mockUpdateRecipeAddIngredientSubsection = {
                                 unit: mockTeaspoon._id,
                                 ingredient: mockApple._id,
                                 prepMethod: mockDiced._id,
-                                type: EnumRecipeIngredientType.Ingredient,
                             },
                         ],
                     },
@@ -534,22 +588,25 @@ export const mockUpdateRecipeAddIngredientSubsection = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeOneData.record,
                     ingredientSubsections: [
-                        ...recipeOneData.record.ingredientSubsections!,
+                        ...recipeOneData.record.ingredientSubsections,
                         {
+                            __typename: 'IngredientSubsection',
                             name: 'New Section',
                             ingredients: [
                                 {
                                     _id: mockRecipeIngredientIdSeven,
+                                    __typename: 'RecipeIngredient',
                                     quantity: '5',
                                     unit: mockTeaspoon,
                                     size: null,
                                     ingredient: mockApple,
                                     prepMethod: mockDiced,
-                                    type: EnumRecipeIngredientType.Ingredient,
                                 },
                             ],
                         },
@@ -568,12 +625,12 @@ export const mockUpdateRecipeEditIngredientSubsection = {
                 ...recipeOneVars.recipe,
                 ingredientSubsections: [
                     {
-                        name: recipeOneVars.recipe.ingredientSubsections![0].name,
-                        ingredients: recipeOneVars.recipe.ingredientSubsections![0].ingredients,
+                        name: recipeOneVars.recipe.ingredientSubsections[0].name,
+                        ingredients: recipeOneVars.recipe.ingredientSubsections[0].ingredients,
                     },
                     {
                         name: 'Section Four',
-                        ingredients: recipeOneVars.recipe.ingredientSubsections![1].ingredients,
+                        ingredients: recipeOneVars.recipe.ingredientSubsections[1].ingredients,
                     },
                 ],
             },
@@ -581,19 +638,21 @@ export const mockUpdateRecipeEditIngredientSubsection = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeOneData.record,
                     ingredientSubsections: [
                         {
-                            name: recipeOneData.record.ingredientSubsections![0]!.name,
-                            ingredients:
-                                recipeOneData.record.ingredientSubsections![0]!.ingredients,
+                            __typename: 'IngredientSubsection',
+                            name: recipeOneData.record.ingredientSubsections[0].name,
+                            ingredients: recipeOneData.record.ingredientSubsections[0].ingredients,
                         },
                         {
+                            __typename: 'IngredientSubsection',
                             name: 'Section Four',
-                            ingredients:
-                                recipeOneData.record.ingredientSubsections![1]!.ingredients,
+                            ingredients: recipeOneData.record.ingredientSubsections[1].ingredients,
                         },
                     ],
                 },
@@ -608,16 +667,18 @@ export const mockUpdateRecipeRemoveIngredientSubsection = {
             id: recipeOneVars.id,
             recipe: {
                 ...recipeOneVars.recipe,
-                ingredientSubsections: [recipeOneVars.recipe.ingredientSubsections![0]],
+                ingredientSubsections: [recipeOneVars.recipe.ingredientSubsections[0]],
             },
         } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeOneData.record,
-                    ingredientSubsections: [recipeOneData.record.ingredientSubsections![0]],
+                    ingredientSubsections: [recipeOneData.record.ingredientSubsections[0]],
                 },
             },
         } satisfies UpdateRecipeMutation,
@@ -635,7 +696,11 @@ export const mockUpdateRecipeTwo = {
     },
     result: {
         data: {
-            recipeUpdateById: { record: recipeTwoData.record },
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: recipeTwoData.record,
+            },
         } satisfies UpdateRecipeMutation,
     },
 };
@@ -649,7 +714,9 @@ export const mockUpdateRecipeNewTitleAsIngredient = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: { ...recipeTwoData.record, title: 'New Title', pluralTitle: 'New Titles' },
             },
         } satisfies UpdateRecipeMutation,
@@ -665,7 +732,9 @@ export const mockUpdateRecipeRemoveAsIngredient = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: { ...recipeTwoData.record, isIngredient: false, pluralTitle: null },
             },
         } satisfies UpdateRecipeMutation,
@@ -680,14 +749,12 @@ export const mockUpdateRecipeEditAsIngredient = {
                 ...recipeTwoVars.recipe,
                 ingredientSubsections: [
                     {
-                        name: recipeTwoVars.recipe.ingredientSubsections![0].name,
-                        ingredients: recipeTwoVars.recipe.ingredientSubsections![0].ingredients,
+                        name: recipeTwoVars.recipe.ingredientSubsections[0].name,
+                        ingredients: recipeTwoVars.recipe.ingredientSubsections[0].ingredients,
                     },
                     {
                         name: 'Section TwoTwo',
-                        ingredients: [
-                            recipeTwoVars.recipe.ingredientSubsections![1].ingredients[0],
-                        ],
+                        ingredients: [recipeTwoVars.recipe.ingredientSubsections[1].ingredients[0]],
                     },
                 ],
             },
@@ -695,19 +762,22 @@ export const mockUpdateRecipeEditAsIngredient = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeTwoData.record,
                     ingredientSubsections: [
                         {
-                            name: recipeTwoData.record.ingredientSubsections![0]!.name,
-                            ingredients:
-                                recipeTwoData.record.ingredientSubsections![0]!.ingredients,
+                            __typename: 'IngredientSubsection',
+                            name: recipeTwoData.record.ingredientSubsections[0].name,
+                            ingredients: recipeTwoData.record.ingredientSubsections[0].ingredients,
                         },
                         {
+                            __typename: 'IngredientSubsection',
                             name: 'Section TwoTwo',
                             ingredients: [
-                                recipeTwoData.record.ingredientSubsections![1]!.ingredients[0],
+                                recipeTwoData.record.ingredientSubsections[1].ingredients[0],
                             ],
                         },
                     ],
@@ -724,7 +794,7 @@ export const mockUpdateAddInstructionSubsection = {
             recipe: {
                 ...recipeTwoVars.recipe,
                 instructionSubsections: [
-                    ...recipeTwoVars.recipe.instructionSubsections!,
+                    ...recipeTwoVars.recipe.instructionSubsections,
                     { name: 'New Section', instructions: ['A new instruction.'] },
                 ],
             },
@@ -732,12 +802,18 @@ export const mockUpdateAddInstructionSubsection = {
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeTwoData.record,
                     instructionSubsections: [
-                        ...recipeTwoData.record.instructionSubsections!,
-                        { name: 'New Section', instructions: ['A new instruction.'] },
+                        ...recipeTwoData.record.instructionSubsections,
+                        {
+                            __typename: 'InstructionSubsection',
+                            name: 'New Section',
+                            instructions: ['A new instruction.'],
+                        },
                     ],
                 },
             },
@@ -752,19 +828,21 @@ export const mockUpdateEditInstructionSubsection = {
             recipe: {
                 ...recipeTwoVars.recipe,
                 instructionSubsections: [
-                    { ...recipeTwoVars.recipe.instructionSubsections![0], name: 'Instruct Four' },
+                    { ...recipeTwoVars.recipe.instructionSubsections[0], name: 'Instruct Four' },
                 ],
             },
         } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeTwoData.record,
                     instructionSubsections: [
                         {
-                            ...recipeTwoData.record.instructionSubsections[0]!,
+                            ...recipeTwoData.record.instructionSubsections[0],
                             name: 'Instruct Four',
                         },
                     ],
@@ -785,7 +863,11 @@ export const mockUpdateRecipeRemoveNotes = {
     },
     result: {
         data: {
-            recipeUpdateById: { record: { ...recipeThreeData.record, notes: null } },
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: { ...recipeThreeData.record, notes: null },
+            },
         } satisfies UpdateRecipeMutation,
     },
 };
@@ -799,7 +881,11 @@ export const mockUpdateRecipeUpdateSource = {
     },
     result: {
         data: {
-            recipeUpdateById: { record: { ...recipeThreeData.record, source: 'Exa' } },
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: { ...recipeThreeData.record, source: 'Exa' },
+            },
         } satisfies UpdateRecipeMutation,
     },
 };
@@ -813,7 +899,11 @@ export const mockUpdateRecipeUpdateNotes = {
     },
     result: {
         data: {
-            recipeUpdateById: { record: { ...recipeThreeData.record, notes: 'A new note.' } },
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: { ...recipeThreeData.record, notes: 'A new note.' },
+            },
         } satisfies UpdateRecipeMutation,
     },
 };
@@ -827,7 +917,11 @@ export const mockUpdateRecipeRemoveSource = {
     },
     result: {
         data: {
-            recipeUpdateById: { record: { ...recipeThreeData.record, source: null } },
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: { ...recipeThreeData.record, source: null },
+            },
         } satisfies UpdateRecipeMutation,
     },
 };
@@ -840,16 +934,18 @@ export const mockUpdateRemoveInstructionSubsection = {
             id: recipeFourVars.id,
             recipe: {
                 ...recipeFourVars.recipe,
-                instructionSubsections: [recipeFourVars.recipe.instructionSubsections![0]],
+                instructionSubsections: [recipeFourVars.recipe.instructionSubsections[0]],
             },
         } satisfies UpdateRecipeMutationVariables,
     },
     result: {
         data: {
+            __typename: 'Mutation',
             recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeFourData.record,
-                    instructionSubsections: [recipeFourData.record.instructionSubsections![0]],
+                    instructionSubsections: [recipeFourData.record.instructionSubsections[0]],
                 },
             },
         } satisfies UpdateRecipeMutation,
@@ -864,7 +960,11 @@ export const mockCreateRecipe = {
     },
     result: {
         data: {
-            recipeCreateOne: { record: mockCreateRecipeData.record },
+            __typename: 'Mutation',
+            recipeCreateOne: {
+                __typename: 'CreateOneRecipePayload',
+                record: mockCreateRecipeData.record,
+            },
         } satisfies CreateRecipeMutation,
     },
 };
@@ -879,7 +979,11 @@ export const mockCreateRecipeAsIngr = {
     },
     result: {
         data: {
-            recipeCreateOne: { record: mockCreateRecipeAsIngrData.record },
+            __typename: 'Mutation',
+            recipeCreateOne: {
+                __typename: 'CreateOneRecipePayload',
+                record: mockCreateRecipeAsIngrData.record,
+            },
         } satisfies CreateRecipeMutation,
     },
 };
@@ -890,7 +994,11 @@ export const mockDeleteRecipeOne = {
     },
     result: {
         data: {
-            recipeRemoveById: { recordId: recipeOneVars.id },
+            __typename: 'Mutation',
+            recipeRemoveById: {
+                __typename: 'RemoveByIdRecipeModifyPayload',
+                recordId: recipeOneVars.id,
+            },
         } satisfies DeleteRecipeMutation,
     },
 };
@@ -901,7 +1009,11 @@ export const mockDeleteRecipeTwo = {
     },
     result: {
         data: {
-            recipeRemoveById: { recordId: recipeTwoVars.id },
+            __typename: 'Mutation',
+            recipeRemoveById: {
+                __typename: 'RemoveByIdRecipeModifyPayload',
+                recordId: recipeTwoVars.id,
+            },
         } satisfies DeleteRecipeMutation,
     },
 };
