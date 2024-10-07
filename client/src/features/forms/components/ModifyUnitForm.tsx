@@ -5,16 +5,16 @@ import { UNIT_FIELDS } from '@recipe/graphql/queries/unit';
 import { ModifyUnitMutation } from '@recipe/graphql/generated';
 import { DELETE_UNIT, MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
 
-import { BaseUnitForm, BaseUnitFormProps, UnitFormData, formatUnitError } from './BaseUnitForm';
+import { BaseUnitForm, BaseUnitFormProps, formatUnitError } from './BaseUnitForm';
 
 interface Props extends Omit<BaseUnitFormProps, 'handleSubmit'> {
     handleComplete: (data: ModifyUnitMutation) => void;
-    handleDelete: () => void;
+    onDelete: () => void;
     unitId?: string;
 }
 
 export function ModifyUnitForm(props: Props) {
-    const { handleComplete, handleDelete, unitId, ...rest } = props;
+    const { handleComplete, onDelete, unitId, ...rest } = props;
     const toast = useErrorToast();
 
     const [modifyUnit] = useMutation(MODIFY_UNIT, {
@@ -39,7 +39,7 @@ export function ModifyUnitForm(props: Props) {
     });
 
     const [deleteUnit] = useMutation(DELETE_UNIT, {
-        onCompleted: handleDelete,
+        onCompleted: onDelete,
         onError: (error) => {
             toast({
                 title: 'Error deleting unit',
@@ -52,17 +52,17 @@ export function ModifyUnitForm(props: Props) {
         },
     });
 
-    const handleSubmit = (formData: UnitFormData) => {
+    const handleSubmit = (formData: ModifyableUnit) => {
         if (unitId) {
             modifyUnit({ variables: { record: formData, id: unitId } });
         }
     };
 
-    const onDelete = () => {
+    const handleDelete = () => {
         if (unitId) {
             deleteUnit({ variables: { id: unitId } });
         }
     };
 
-    return <BaseUnitForm {...rest} handleSubmit={handleSubmit} handleDelete={onDelete} />;
+    return <BaseUnitForm {...rest} onSubmit={handleSubmit} onDelete={handleDelete} />;
 }

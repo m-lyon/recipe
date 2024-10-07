@@ -50,7 +50,7 @@ export function EditIngredient() {
                                     position: 'top',
                                 });
                             }}
-                            handleDelete={() => {
+                            onDelete={() => {
                                 toast({ title: 'Ingredient deleted' });
                                 setCurrentIngredient(undefined);
                             }}

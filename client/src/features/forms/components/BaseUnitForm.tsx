@@ -1,12 +1,14 @@
+import { MutableRefObject } from 'react';
 import { ApolloError } from '@apollo/client';
 import { StackProps } from '@chakra-ui/react';
+import { boolean, mixed, object, string } from 'yup';
 import { Button, ButtonGroup, Checkbox } from '@chakra-ui/react';
-import { ValidationError, boolean, mixed, object, string } from 'yup';
-import { MutableRefObject, useCallback, useEffect, useState } from 'react';
 import { FormControl, FormHelperText, HStack, Radio, RadioGroup, Stack } from '@chakra-ui/react';
 
-import { useErrorToast } from '@recipe/common/hooks';
 import { FloatingLabelInput } from '@recipe/common/components';
+
+import { useFormLogic } from '../hooks/useFormLogic';
+import { useKeyboardSubmit } from '../hooks/useKeyboardSubmit';
 
 export function formatUnitError(error: ApolloError) {
     if (error.message.startsWith('E11000')) {
@@ -15,14 +17,6 @@ export function formatUnitError(error: ApolloError) {
     return error.message;
 }
 
-export type UnitFormData = ReturnType<typeof unitFormSchema.validateSync>;
-export interface BaseUnitFormProps extends StackProps {
-    fieldRef?: MutableRefObject<HTMLInputElement | null>;
-    initData?: ModifyableUnit;
-    disabled?: boolean;
-    handleSubmit: (data: UnitFormData) => void;
-    handleDelete?: () => void;
-}
 const numberFormat: NumberFormat[] = ['decimal', 'fraction'];
 export const unitFormSchema = object({
     shortSingular: string().required('Short singular name is required'),
@@ -35,85 +29,22 @@ export const unitFormSchema = object({
     hasSpace: boolean().required(),
     unique: boolean().required(),
 });
-
+export interface BaseUnitFormProps extends StackProps {
+    fieldRef?: MutableRefObject<HTMLInputElement | null>;
+    initData?: ModifyableUnit;
+    disabled?: boolean;
+    onSubmit: (data: ModifyableUnit) => void;
+    onDelete?: () => void;
+}
 export function BaseUnitForm(props: BaseUnitFormProps) {
-    const { fieldRef, initData, disabled, handleSubmit, handleDelete, ...rest } = props;
-    const toast = useErrorToast();
-    const [hasError, setHasError] = useState(false);
-    const [shortSingular, setShortSingular] = useState('');
-    const [shortPlural, setShortPlural] = useState('');
-    const [longSingular, setLongSingular] = useState('');
-    const [longPlural, setLongPlural] = useState('');
-    const [preferredNumberFormat, setpreferredNumberFormat] = useState('');
-    const [hasSpace, setHasSpace] = useState(true);
-    const [isFocused, setIsFocused] = useState(false);
-
-    useEffect(() => {
-        if (initData) {
-            setShortSingular(initData.shortSingular);
-            setShortPlural(initData.shortPlural);
-            setLongSingular(initData.longSingular);
-            setLongPlural(initData.longPlural);
-            setpreferredNumberFormat(initData.preferredNumberFormat);
-            setHasSpace(initData.hasSpace);
-        }
-        if (disabled) {
-            setHasError(false);
-            setShortSingular('');
-            setShortPlural('');
-            setLongSingular('');
-            setLongPlural('');
-            setpreferredNumberFormat('');
-            setHasSpace(false);
-        }
-    }, [initData, disabled]);
-
-    const onSubmit = useCallback(() => {
-        try {
-            const validated = unitFormSchema.validateSync({
-                shortSingular,
-                shortPlural: shortPlural === '' ? shortSingular : shortPlural,
-                longSingular,
-                longPlural: longPlural === '' ? longSingular : longPlural,
-                preferredNumberFormat,
-                hasSpace,
-                unique: true,
-            });
-            handleSubmit(validated);
-        } catch (e: unknown) {
-            setHasError(true);
-            if (e instanceof ValidationError) {
-                toast({
-                    title: 'Error saving unit',
-                    description: e.message,
-                    position: 'top',
-                });
-            }
-        }
-    }, [
-        hasSpace,
-        longPlural,
-        longSingular,
-        preferredNumberFormat,
-        shortPlural,
-        shortSingular,
-        handleSubmit,
-        toast,
-    ]);
-
-    useEffect(() => {
-        const handleKeyboardEvent = (e: KeyboardEvent) => {
-            if (isFocused && e.key === 'Enter') {
-                e.preventDefault();
-                onSubmit();
-            }
-        };
-        window.addEventListener('keydown', handleKeyboardEvent);
-
-        return () => {
-            window.removeEventListener('keydown', handleKeyboardEvent);
-        };
-    }, [isFocused, onSubmit]);
+    const { fieldRef, initData, disabled, onSubmit, onDelete, ...rest } = props;
+    const { formData, hasError, handleSubmit, handleChange } = useFormLogic<ModifyableUnit>(
+        unitFormSchema,
+        initData,
+        onSubmit,
+        'Error saving ingredient'
+    );
+    const { setIsFocused } = useKeyboardSubmit(handleSubmit);
 
     return (
         <Stack
@@ -127,52 +58,43 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
                 inputRef={fieldRef}
                 id='short-singular-name'
                 label='Short singular name'
-                value={shortSingular}
+                value={formData.shortSingular || ''}
                 isInvalid={hasError}
                 isRequired
                 isDisabled={disabled}
-                onChange={(e) => {
-                    setShortSingular(e.target.value.toLowerCase());
-                    hasError && setHasError(false);
-                }}
+                onChange={(e) => handleChange('shortSingular', e.target.value.toLowerCase())}
             />
             <FloatingLabelInput
                 label='Short plural name'
                 id='short-plural-name'
-                value={shortPlural}
+                value={formData.shortPlural || ''}
                 isInvalid={hasError}
                 isDisabled={disabled}
-                onChange={(e) => {
-                    setShortPlural(e.target.value.toLowerCase());
-                    hasError && setHasError(false);
-                }}
+                onChange={(e) => handleChange('shortPlural', e.target.value.toLowerCase())}
             />
             <FloatingLabelInput
                 label='Long singular name'
                 id='long-singular-name'
-                value={longSingular}
+                value={formData.longSingular || ''}
                 isRequired
                 isDisabled={disabled}
                 isInvalid={hasError}
-                onChange={(e) => {
-                    setLongSingular(e.target.value.toLowerCase());
-                    hasError && setHasError(false);
-                }}
+                onChange={(e) => handleChange('longSingular', e.target.value.toLowerCase())}
             />
             <FloatingLabelInput
                 label='Long plural name'
                 id='long-plural-name'
-                value={longPlural}
+                value={formData.longPlural || ''}
                 isDisabled={disabled}
                 isInvalid={hasError}
-                onChange={(e) => {
-                    setLongPlural(e.target.value.toLowerCase());
-                    hasError && setHasError(false);
-                }}
+                onChange={(e) => handleChange('longPlural', e.target.value.toLowerCase())}
             />
             <FormControl isDisabled={disabled} isInvalid={hasError}>
                 <FormHelperText>Preferred number format</FormHelperText>
-                <RadioGroup onChange={setpreferredNumberFormat} value={preferredNumberFormat}>
+                <RadioGroup
+                    onChange={(value) => handleChange('preferredNumberFormat', value)}
+                    value={formData.preferredNumberFormat}
+                >
                     <HStack spacing='12px'>
                         <Radio value='decimal'>decimal</Radio>
                         <Radio value='fraction'>fraction</Radio>
@@ -182,8 +104,8 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
             <Checkbox
                 isDisabled={disabled}
                 isInvalid={hasError}
-                onChange={(e) => setHasSpace(e.target.checked)}
-                isChecked={hasSpace}
+                onChange={(e) => handleChange('hasSpace', e.target.checked)}
+                isChecked={formData.hasSpace}
             >
                 Space after quantity
             </Checkbox>
@@ -193,12 +115,12 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
                 paddingTop={2}
                 isDisabled={disabled}
             >
-                {handleDelete && (
-                    <Button colorScheme='red' onClick={handleDelete} aria-label='Delete unit'>
+                {onDelete && (
+                    <Button colorScheme='red' onClick={onDelete} aria-label='Delete unit'>
                         Delete
                     </Button>
                 )}
-                <Button colorScheme='teal' onClick={onSubmit} aria-label='Save unit'>
+                <Button colorScheme='teal' onClick={handleSubmit} aria-label='Save unit'>
                     Save
                 </Button>
             </ButtonGroup>

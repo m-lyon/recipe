@@ -6,19 +6,18 @@ import { DELETE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 import { MODIFY_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 import { INGREDIENT_FIELDS_FULL } from '@recipe/graphql/queries/ingredient';
 
-import { IngredientFormData } from './BaseIngredientForm';
 import { BaseIngredientForm } from './BaseIngredientForm';
 import { formatIngredientError } from './BaseIngredientForm';
 import { BaseIngredientFormProps } from './BaseIngredientForm';
 
-interface Props extends Omit<BaseIngredientFormProps, 'handleSubmit'> {
+interface Props extends Omit<BaseIngredientFormProps, 'onSubmit'> {
     handleComplete: (data: ModifyIngredientMutation) => void;
-    handleDelete: () => void;
+    onDelete: () => void;
     ingredientId?: string;
 }
 
 export function ModifyIngredientForm(props: Props) {
-    const { handleComplete, handleDelete, ingredientId, ...rest } = props;
+    const { handleComplete, onDelete, ingredientId, ...rest } = props;
     const toast = useErrorToast();
 
     const [modifyIngredient] = useMutation(MODIFY_INGREDIENT, {
@@ -43,7 +42,7 @@ export function ModifyIngredientForm(props: Props) {
     });
 
     const [deleteIngredient] = useMutation(DELETE_INGREDIENT, {
-        onCompleted: handleDelete,
+        onCompleted: onDelete,
         onError: (error) => {
             toast({
                 title: 'Error deleting ingredient',
@@ -56,17 +55,17 @@ export function ModifyIngredientForm(props: Props) {
         },
     });
 
-    const handleSubmit = (formData: IngredientFormData) => {
+    const handleSubmit = (formData: ModifyableIngredient) => {
         if (ingredientId) {
             modifyIngredient({ variables: { record: formData, id: ingredientId } });
         }
     };
 
-    const onDelete = () => {
+    const handleDelete = () => {
         if (ingredientId) {
             deleteIngredient({ variables: { id: ingredientId } });
         }
     };
 
-    return <BaseIngredientForm {...rest} handleSubmit={handleSubmit} handleDelete={onDelete} />;
+    return <BaseIngredientForm {...rest} onSubmit={handleSubmit} onDelete={handleDelete} />;
 }

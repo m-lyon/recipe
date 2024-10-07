@@ -52,7 +52,7 @@ export function EditUnit() {
                                     position: 'top',
                                 });
                             }}
-                            handleDelete={() => {
+                            onDelete={() => {
                                 toast({ title: 'Unit deleted', position: 'top' });
                                 setCurrentUnit(undefined);
                             }}

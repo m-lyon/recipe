@@ -5,17 +5,17 @@ import { ModifyPrepMethodMutation } from '@recipe/graphql/generated';
 import { PREP_METHOD_FIELDS } from '@recipe/graphql/queries/prepMethod';
 import { DELETE_PREP_METHOD, MODIFY_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 
-import { PrepMethodFormData, formatPrepMethodError } from './BasePrepMethodForm';
+import { formatPrepMethodError } from './BasePrepMethodForm';
 import { BasePrepMethodForm, BasePrepMethodFormProps } from './BasePrepMethodForm';
 
 interface Props extends Omit<BasePrepMethodFormProps, 'handleSubmit'> {
     handleComplete: (data: ModifyPrepMethodMutation) => void;
-    handleDelete: () => void;
+    onDelete: () => void;
     prepMethodId?: string;
 }
 
 export function ModifyPrepMethodForm(props: Props) {
-    const { handleComplete, handleDelete, prepMethodId, ...rest } = props;
+    const { handleComplete, onDelete, prepMethodId, ...rest } = props;
     const toast = useErrorToast();
 
     const [modifyPrepMethod] = useMutation(MODIFY_PREP_METHOD, {
@@ -40,7 +40,7 @@ export function ModifyPrepMethodForm(props: Props) {
     });
 
     const [deletePrepMethod] = useMutation(DELETE_PREP_METHOD, {
-        onCompleted: handleDelete,
+        onCompleted: onDelete,
         onError: (error) => {
             toast({
                 title: 'Error deleting prep method',
@@ -53,17 +53,17 @@ export function ModifyPrepMethodForm(props: Props) {
         },
     });
 
-    const handleSubmit = (formData: PrepMethodFormData) => {
+    const handleSubmit = (formData: ModifyablePrepMethod) => {
         if (prepMethodId) {
             modifyPrepMethod({ variables: { record: formData, id: prepMethodId } });
         }
     };
 
-    const onDelete = () => {
+    const handleDelete = () => {
         if (prepMethodId) {
             deletePrepMethod({ variables: { id: prepMethodId } });
         }
     };
 
-    return <BasePrepMethodForm {...rest} handleSubmit={handleSubmit} handleDelete={onDelete} />;
+    return <BasePrepMethodForm {...rest} onSubmit={handleSubmit} onDelete={handleDelete} />;
 }

@@ -5,16 +5,16 @@ import { SIZE_FIELDS } from '@recipe/graphql/queries/size';
 import { ModifySizeMutation } from '@recipe/graphql/generated';
 import { DELETE_SIZE, MODIFY_SIZE } from '@recipe/graphql/mutations/size';
 
-import { BaseSizeForm, BaseSizeFormProps, SizeFormData, formatSizeError } from './BaseSizeForm';
+import { BaseSizeForm, BaseSizeFormProps, formatSizeError } from './BaseSizeForm';
 
 interface Props extends Omit<BaseSizeFormProps, 'handleSubmit'> {
     handleComplete: (data: ModifySizeMutation) => void;
-    handleDelete: () => void;
+    onDelete: () => void;
     sizeId?: string;
 }
 
 export function ModifySizeForm(props: Props) {
-    const { handleComplete, handleDelete, sizeId, ...rest } = props;
+    const { handleComplete, onDelete, sizeId, ...rest } = props;
     const toast = useErrorToast();
 
     const [modifySize] = useMutation(MODIFY_SIZE, {
@@ -39,7 +39,7 @@ export function ModifySizeForm(props: Props) {
     });
 
     const [deleteSize] = useMutation(DELETE_SIZE, {
-        onCompleted: handleDelete,
+        onCompleted: onDelete,
         onError: (error) => {
             toast({
                 title: 'Error deleting size',
@@ -52,17 +52,17 @@ export function ModifySizeForm(props: Props) {
         },
     });
 
-    const handleSubmit = (formData: SizeFormData) => {
+    const handleSubmit = (formData: ModifyableSize) => {
         if (sizeId) {
             modifySize({ variables: { record: formData, id: sizeId } });
         }
     };
 
-    const onDelete = () => {
+    const handleDelete = () => {
         if (sizeId) {
             deleteSize({ variables: { id: sizeId } });
         }
     };
 
-    return <BaseSizeForm {...rest} handleSubmit={handleSubmit} handleDelete={onDelete} />;
+    return <BaseSizeForm {...rest} onSubmit={handleSubmit} onDelete={handleDelete} />;
 }

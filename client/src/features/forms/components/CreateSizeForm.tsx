@@ -5,9 +5,9 @@ import { SIZE_FIELDS } from '@recipe/graphql/queries/size';
 import { CREATE_SIZE } from '@recipe/graphql/mutations/size';
 import { CreateSizeMutation } from '@recipe/graphql/generated';
 
-import { BaseSizeForm, BaseSizeFormProps, SizeFormData, formatSizeError } from './BaseSizeForm';
+import { BaseSizeForm, BaseSizeFormProps, formatSizeError } from './BaseSizeForm';
 
-interface Props extends Omit<BaseSizeFormProps, 'handleSubmit'> {
+interface Props extends Omit<BaseSizeFormProps, 'onSubmit'> {
     handleComplete: (data: CreateSizeMutation) => void;
 }
 
@@ -50,9 +50,9 @@ export function CreateSizeForm(props: Props) {
         },
     });
 
-    const handleSubmit = (formData: SizeFormData) => {
+    const handleSubmit = (formData: ModifyableSize) => {
         createSize({ variables: { record: formData } });
     };
 
-    return <BaseSizeForm {...rest} handleSubmit={handleSubmit} />;
+    return <BaseSizeForm {...rest} onSubmit={handleSubmit} />;
 }

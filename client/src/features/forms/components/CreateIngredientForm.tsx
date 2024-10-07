@@ -5,12 +5,11 @@ import { CreateIngredientMutation } from '@recipe/graphql/generated';
 import { CREATE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 import { INGREDIENT_FIELDS_FULL } from '@recipe/graphql/queries/ingredient';
 
-import { IngredientFormData } from './BaseIngredientForm';
 import { BaseIngredientForm } from './BaseIngredientForm';
 import { formatIngredientError } from './BaseIngredientForm';
 import { BaseIngredientFormProps } from './BaseIngredientForm';
 
-interface Props extends Omit<BaseIngredientFormProps, 'handleSubmit'> {
+interface Props extends Omit<BaseIngredientFormProps, 'onSubmit'> {
     handleComplete: (data: CreateIngredientMutation) => void;
 }
 
@@ -53,9 +52,9 @@ export function CreateIngredientForm(props: Props) {
         },
     });
 
-    const handleSubmit = (formData: IngredientFormData) => {
+    const handleSubmit = (formData: ModifyableIngredient) => {
         createIngredient({ variables: { record: formData } });
     };
 
-    return <BaseIngredientForm {...rest} handleSubmit={handleSubmit} />;
+    return <BaseIngredientForm {...rest} onSubmit={handleSubmit} />;
 }

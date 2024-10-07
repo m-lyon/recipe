@@ -50,7 +50,7 @@ export function EditPrepMethod() {
                                     position: 'top',
                                 });
                             }}
-                            handleDelete={() => {
+                            onDelete={() => {
                                 toast({ title: 'Prep method deleted', position: 'top' });
                                 setCurrentPrepMethod(undefined);
                             }}

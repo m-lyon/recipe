@@ -48,7 +48,7 @@ export function EditSize() {
                                     position: 'top',
                                 });
                             }}
-                            handleDelete={() => {
+                            onDelete={() => {
                                 toast({ title: 'Size deleted', position: 'top' });
                                 setCurrentSize(undefined);
                             }}
