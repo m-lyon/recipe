@@ -32,7 +32,12 @@ export function ViewRecipe() {
         pluralTitle,
         images,
     } = data.recipeOne;
-    const titleNormed = isIngredient ? (numServings > 1 ? pluralTitle : title) : title;
+    let titleNormed: string;
+    if (isIngredient && pluralTitle) {
+        titleNormed = numServings > 1 ? pluralTitle : title;
+    } else {
+        titleNormed = title;
+    }
     return (
         <Container maxW='container.xl' pt='60px'>
             <Grid
@@ -54,7 +59,7 @@ export function ViewRecipe() {
                 fontWeight='bold'
             >
                 <GridItem boxShadow='lg' p='6' area='title'>
-                    <Title title={titleNormed as string} />
+                    <Title title={titleNormed} />
                 </GridItem>
                 <GridItem
                     boxShadow='lg'

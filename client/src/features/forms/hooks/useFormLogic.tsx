@@ -22,7 +22,7 @@ export function useFormLogic<T>(
     const handleSubmit = useCallback(() => {
         try {
             const validatedData = schema.validateSync(formData);
-            onSubmit(validatedData as T);
+            onSubmit(validatedData);
         } catch (e: unknown) {
             setHasError(true);
             if (e instanceof ValidationError) {

@@ -131,7 +131,7 @@ describe('Create Recipe Workflow', () => {
         const svgStar = screen.getAllByLabelText('Select star rating')[3];
         await userEvent.pointer({ target: svgStar, coords: { clientX: 30 } });
         expect(starContainer).not.toBeNull();
-        await user.click(starContainer! satisfies Element as Element);
+        await user.click(starContainer! satisfies Element);
         // --- Save Recipe ---------------------------------------
         await user.click(screen.getByLabelText('Save recipe'));
 

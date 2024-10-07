@@ -177,12 +177,12 @@ export function EditRecipe() {
                         })
                     );
                     state.images.setImages(images);
-                } catch (error) {
-                    errorToast({
-                        title: 'Error loading images',
-                        description: (error as Error).message,
-                        position: 'top',
-                    });
+                } catch (e: unknown) {
+                    let description = 'An error occurred while loading images';
+                    if (e instanceof Error) {
+                        description = e.message;
+                    }
+                    errorToast({ title: 'Error loading images', description, position: 'top' });
                 }
             }
         },
@@ -201,12 +201,12 @@ export function EditRecipe() {
         try {
             // Save Recipe
             await saveRecipe({ variables: { id: recipeOne._id, recipe } });
-        } catch (error) {
-            return errorToast({
-                title: 'Error saving recipe',
-                description: (error as Error).message,
-                position: 'top',
-            });
+        } catch (e: unknown) {
+            let description = 'An error occurred while saving the recipe';
+            if (e instanceof Error) {
+                description = e.message;
+            }
+            return errorToast({ title: 'Error saving recipe', description, position: 'top' });
         }
         try {
             // Upload Images
@@ -226,10 +226,14 @@ export function EditRecipe() {
                     variables: { recipeId: recipeOne._id, images: imagesToAdd },
                 });
             }
-        } catch (error) {
+        } catch (e: unknown) {
+            let description = 'An error occurred while uploading images';
+            if (e instanceof Error) {
+                description = e.message;
+            }
             errorToast({
                 title: 'Error uploading images, redirecting you to the home page',
-                description: (error as Error).message,
+                description,
                 position: 'top',
             });
             return setTimeout(() => navigate(ROOT_PATH), DELAY_LONG);

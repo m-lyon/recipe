@@ -91,22 +91,26 @@ export function CreateRecipe() {
             // Create Recipe
             const result = await createRecipe({ variables: { recipe } });
             recipeId = result.data?.recipeCreateOne?.record?._id;
-        } catch (error) {
-            return errorToast({
-                title: 'Error creating recipe',
-                description: (error as Error).message,
-                position: 'top',
-            });
+        } catch (e) {
+            let description = 'An error occurred while creating the recipe';
+            if (e instanceof Error) {
+                description = e.message;
+            }
+            return errorToast({ title: 'Error creating recipe', description, position: 'top' });
         }
         try {
             // Add Rating
             if (rating !== 0) {
                 await addRating({ variables: { recipeId, rating } });
             }
-        } catch (error) {
+        } catch (e: unknown) {
+            let description = 'An error occurred while adding the rating to the recipe';
+            if (e instanceof Error) {
+                description = e.message;
+            }
             errorToast({
                 title: 'Error adding rating to recipe, redirecting you to the home page',
-                description: (error as Error).message,
+                description,
                 position: 'top',
             });
             return setTimeout(() => navigate(ROOT_PATH), DELAY_LONG);
@@ -117,10 +121,14 @@ export function CreateRecipe() {
             if (state.images.images.length > 0) {
                 await uploadImages({ variables: { recipeId, images: state.images.images } });
             }
-        } catch (error) {
+        } catch (e: unknown) {
+            let description = 'An error occurred while uploading images';
+            if (e instanceof Error) {
+                description = e.message;
+            }
             errorToast({
                 title: 'Error uploading images, redirecting you to the home page',
-                description: (error as Error).message,
+                description,
                 position: 'top',
             });
             return setTimeout(() => navigate(ROOT_PATH), DELAY_LONG);

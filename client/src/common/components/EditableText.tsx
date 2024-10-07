@@ -2,10 +2,11 @@ import { useRef } from 'react';
 import { Input, InputProps, useMergeRefs } from '@chakra-ui/react';
 
 interface Props extends InputProps {
+    onSubmit: () => void;
     optionalRef?: React.RefObject<HTMLInputElement> | null;
 }
 export function EditableText(props: Props) {
-    const { optionalRef, ...rest } = props;
+    const { optionalRef, onSubmit, ...rest } = props;
     const ref = useRef<HTMLInputElement | null>(null);
     const refs = useMergeRefs(ref, optionalRef);
 
@@ -17,7 +18,7 @@ export function EditableText(props: Props) {
                     ref.current?.blur();
                 }
             }}
-            onBlur={rest.onSubmit}
+            onBlur={onSubmit}
             minH='unset'
             border='none'
             px={0}

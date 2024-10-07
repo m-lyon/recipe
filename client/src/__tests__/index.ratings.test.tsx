@@ -33,7 +33,7 @@ describe('Update Recipe Workflow: Rating', () => {
         const svgStar = screen.getAllByLabelText('Select star rating')[3];
         await userEvent.pointer({ target: svgStar, coords: { clientX: 30 } });
         expect(starContainer).not.toBeNull();
-        await user.click(starContainer! satisfies Element as Element);
+        await user.click(starContainer! satisfies Element);
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
@@ -65,7 +65,7 @@ describe('Update Recipe Workflow: Rating', () => {
         const svgStar = screen.getAllByLabelText('Select star rating')[3];
         await userEvent.pointer({ target: svgStar, coords: { clientX: 30 } });
         expect(starContainer).not.toBeNull();
-        await user.click(starContainer! satisfies Element as Element);
+        await user.click(starContainer! satisfies Element);
         await user.click(screen.getByLabelText('Navigate to home page'));
 
         // Expect ------------------------------------------------
@@ -106,7 +106,7 @@ describe('View Recipe Workflow: Rating', () => {
         const svgStar = screen.getAllByLabelText('Select star rating')[3];
         await userEvent.pointer({ target: svgStar, coords: { clientX: 30 } });
         expect(starContainer).not.toBeNull();
-        await user.click(starContainer! satisfies Element as Element);
+        await user.click(starContainer! satisfies Element);
         await user.click(screen.getByLabelText('Navigate to home page'));
 
         // Expect ------------------------------------------------
