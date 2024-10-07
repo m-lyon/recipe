@@ -1,21 +1,22 @@
+import { Size } from '@recipe/graphql/generated';
 import { mockAdminId, mockLargeId, mockMediumId, mockSmallId } from '@recipe/graphql/__mocks__/ids';
 
-export const mockSmall = {
-    __typename: 'Size' as const,
+export const mockSmall: Size = {
+    __typename: 'Size',
     _id: mockSmallId,
     value: 'small',
     unique: true,
     owner: mockAdminId,
 };
-export const mockMedium = {
-    __typename: 'Size' as const,
+export const mockMedium: Size = {
+    __typename: 'Size',
     _id: mockMediumId,
     value: 'medium',
     unique: true,
     owner: mockAdminId,
 };
-export const mockLarge = {
-    __typename: 'Size' as const,
+export const mockLarge: Size = {
+    __typename: 'Size',
     _id: mockLargeId,
     value: 'large',
     unique: true,

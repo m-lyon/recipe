@@ -1,4 +1,3 @@
-import { DeletePrepMethodMutation } from '@recipe/graphql/generated';
 import { CreatePrepMethodMutation } from '@recipe/graphql/generated';
 import { ModifyPrepMethodMutation } from '@recipe/graphql/generated';
 import { mockDiced } from '@recipe/graphql/queries/__mocks__/prepMethod';
@@ -6,12 +5,13 @@ import { DELETE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 import { ModifyPrepMethodMutationVariables } from '@recipe/graphql/generated';
 import { DeletePrepMethodMutationVariables } from '@recipe/graphql/generated';
 import { CreatePrepMethodMutationVariables } from '@recipe/graphql/generated';
+import { DeletePrepMethodMutation, PrepMethod } from '@recipe/graphql/generated';
 import { mockAdminId, mockPippedId, mockPostedId } from '@recipe/graphql/__mocks__/ids';
 import { CREATE_PREP_METHOD, MODIFY_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 
-export const mockPipped = {
+export const mockPipped: PrepMethod = {
     _id: mockPippedId,
-    __typename: 'PrepMethod' as const,
+    __typename: 'PrepMethod',
     value: 'pipped',
     unique: true,
     owner: mockAdminId,
@@ -53,7 +53,7 @@ export const mockCreateBespokePrepMethod = {
                 __typename: 'CreateOnePrepMethodPayload',
                 record: {
                     _id: mockPostedId,
-                    __typename: 'PrepMethod' as const,
+                    __typename: 'PrepMethod',
                     value: 'posted',
                     unique: false,
                 },

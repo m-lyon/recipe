@@ -9,7 +9,7 @@ import { CreateSizeMutation, CreateSizeMutationVariables, Size } from '@recipe/g
 
 export const mockExtraLarge: Size = {
     _id: mockExtraLargeId,
-    __typename: 'Size' as const,
+    __typename: 'Size',
     value: 'extra large',
     unique: true,
     owner: mockAdminId,
@@ -51,7 +51,7 @@ export const mockCreateBespokeSize = {
                 __typename: 'CreateOneSizePayload',
                 record: {
                     _id: mockReallyBigId,
-                    __typename: 'Size' as const,
+                    __typename: 'Size',
                     value: 'really big',
                     unique: false,
                 },
@@ -94,7 +94,7 @@ export const mockDeleteSize = {
         data: {
             __typename: 'Mutation',
             sizeRemoveById: {
-                __typename: 'RemoveByIdSizePayload' as const,
+                __typename: 'RemoveByIdSizePayload',
                 recordId: mockSmall._id,
             },
         } satisfies DeleteSizeMutation,
@@ -111,7 +111,7 @@ export const mockDeleteBespokeSize = {
         data: {
             __typename: 'Mutation',
             sizeRemoveById: {
-                __typename: 'RemoveByIdSizePayload' as const,
+                __typename: 'RemoveByIdSizePayload',
                 recordId: mockReallyBigId,
             },
         } satisfies DeleteSizeMutation,

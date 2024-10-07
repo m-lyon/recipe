@@ -8,7 +8,7 @@ import { GET_INGREDIENTS } from '../ingredient';
 // Ingredients
 export const mockApple: Ingredient = {
     _id: mockAppleId,
-    __typename: 'Ingredient' as const,
+    __typename: 'Ingredient',
     name: 'apple',
     pluralName: 'apples',
     isCountable: true,
@@ -18,7 +18,7 @@ export const mockApple: Ingredient = {
 };
 export const mockChicken: Ingredient = {
     _id: mockChickenId,
-    __typename: 'Ingredient' as const,
+    __typename: 'Ingredient',
     name: 'chicken',
     pluralName: 'chickens',
     isCountable: false,
@@ -28,7 +28,7 @@ export const mockChicken: Ingredient = {
 };
 export const mockCarrot: Ingredient = {
     _id: mockCarrotId,
-    __typename: 'Ingredient' as const,
+    __typename: 'Ingredient',
     name: 'carrot',
     pluralName: 'carrots',
     isCountable: true,
@@ -38,7 +38,7 @@ export const mockCarrot: Ingredient = {
 };
 export const mockLettuce: Ingredient = {
     _id: mockLettuceId,
-    __typename: 'Ingredient' as const,
+    __typename: 'Ingredient',
     name: 'iceberg lettuce',
     pluralName: 'iceberg lettuces',
     isCountable: false,
@@ -49,7 +49,7 @@ export const mockLettuce: Ingredient = {
 // Recipes
 export const mockRhurbarbPie: RecipeChoice = {
     _id: mockRhubarbPieId,
-    __typename: 'Recipe' as const,
+    __typename: 'Recipe',
     title: 'rhubarb pie',
     pluralTitle: 'rhubarb pies',
 };

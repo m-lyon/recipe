@@ -7,7 +7,7 @@ import { mockConversionRuleIdTwo, mockUnitConversionIdTwo } from '@recipe/graphq
 import { mockCup, mockGram, mockKilogram, mockTablespoon, mockTeaspoon } from './unit';
 
 export const mockConversionRuleOne: ConversionRule = {
-    __typename: 'ConversionRule' as const,
+    __typename: 'ConversionRule',
     _id: mockConversionRuleIdOne,
     unit: mockKilogram,
     baseUnit: mockGram,
@@ -15,7 +15,7 @@ export const mockConversionRuleOne: ConversionRule = {
     baseToUnitConversion: 1000,
 };
 export const mockConversionRuleTwo: ConversionRule = {
-    __typename: 'ConversionRule' as const,
+    __typename: 'ConversionRule',
     _id: mockConversionRuleIdTwo,
     unit: mockTablespoon,
     baseUnit: mockTeaspoon,
@@ -23,7 +23,7 @@ export const mockConversionRuleTwo: ConversionRule = {
     baseToUnitConversion: 3,
 };
 export const mockConversionRuleThree: ConversionRule = {
-    __typename: 'ConversionRule' as const,
+    __typename: 'ConversionRule',
     _id: mockConversionRuleIdThree,
     unit: mockCup,
     baseUnit: mockTeaspoon,
@@ -31,13 +31,13 @@ export const mockConversionRuleThree: ConversionRule = {
     baseToUnitConversion: 48,
 };
 export const mockUnitConversionOne: UnitConversion = {
-    __typename: 'UnitConversion' as const,
+    __typename: 'UnitConversion',
     _id: mockUnitConversionIdOne,
     baseUnit: mockGram,
     rules: [mockConversionRuleOne],
 };
 export const mockUnitConversionTwo: UnitConversion = {
-    __typename: 'UnitConversion' as const,
+    __typename: 'UnitConversion',
     _id: mockUnitConversionIdTwo,
     baseUnit: mockTeaspoon,
     rules: [mockConversionRuleThree, mockConversionRuleTwo],

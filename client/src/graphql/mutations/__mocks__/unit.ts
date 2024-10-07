@@ -7,7 +7,7 @@ import { CreateUnitMutation, CreateUnitMutationVariables } from '@recipe/graphql
 import { DeleteUnitMutation, DeleteUnitMutationVariables } from '@recipe/graphql/generated';
 
 export const mockUnit: Unit = {
-    __typename: 'Unit' as const,
+    __typename: 'Unit',
     _id: mockCuttingId,
     longSingular: 'cutting',
     longPlural: 'cutting',
@@ -65,7 +65,7 @@ export const mockCreateBespokeUnit = {
             unitCreateOne: {
                 __typename: 'CreateOneUnitPayload',
                 record: {
-                    __typename: 'Unit' as const,
+                    __typename: 'Unit',
                     _id: mockBumpId,
                     longSingular: 'bump',
                     longPlural: 'bump',

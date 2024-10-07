@@ -1,38 +1,34 @@
-import { mockTitleNew } from '@recipe/graphql/__mocks__/common';
-import { mockTitleOne, mockTitleTwo } from '@recipe/graphql/__mocks__/common';
+import { Image } from '@recipe/graphql/generated';
+import { mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { DELETE_IMAGES, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
 import { mockRecipeIdNew, mockRecipeIdOne } from '@recipe/graphql/__mocks__/ids';
+import { mockRecipeNew, mockRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockImageIdNew, mockImageIdOne, mockImageIdTwo } from '@recipe/graphql/__mocks__/ids';
-import { DeleteImagesMutation, DeleteImagesMutationVariables } from '@recipe/graphql/generated';
 import { UploadImagesMutation, UploadImagesMutationVariables } from '@recipe/graphql/generated';
+import { DeleteImagesMutation, DeleteImagesMutationVariables } from '@recipe/graphql/generated';
 
 export const mockImageFileOne = new File(['hello there'], 'test_image.png', { type: 'image/png' });
 export const mockImageFileNew = new File(['hello'], 'test_image_new.png', { type: 'image/png' });
-export const mockImageOne = {
-    __typename: 'Image' as const,
+export const mockImageOne: Image = {
+    __typename: 'Image',
     _id: mockImageIdOne,
     origUrl: 'test_image.png',
-    recipe: {
-        __typename: 'Recipe' as const,
-        title: mockTitleOne,
-    },
+    lowresUrl: null,
+    note: null,
+    recipe: mockRecipeOne,
 };
-export const mockImageTwo = {
+export const mockImageTwo: Image = {
     ...mockImageOne,
     _id: mockImageIdTwo,
-    recipe: {
-        __typename: 'Recipe' as const,
-        title: mockTitleTwo,
-    },
+    recipe: mockRecipeTwo,
 };
-export const mockImageNew = {
-    __typename: 'Image' as const,
+export const mockImageNew: Image = {
+    __typename: 'Image',
     _id: mockImageIdNew,
     origUrl: 'test_image_new.png',
-    recipe: {
-        __typename: 'Recipe' as const,
-        title: mockTitleNew,
-    },
+    lowresUrl: null,
+    note: null,
+    recipe: mockRecipeNew,
 };
 export const mockUploadImages = {
     request: {

@@ -5,7 +5,7 @@ import { mockCupId, mockGramId, mockKilogramId, mockOunceId } from '@recipe/grap
 import { GET_UNITS } from '../unit';
 
 export const mockTeaspoon: Unit = {
-    __typename: 'Unit' as const,
+    __typename: 'Unit',
     _id: mockTeaspoonId,
     shortSingular: 'tsp',
     shortPlural: 'tsp',
@@ -17,7 +17,7 @@ export const mockTeaspoon: Unit = {
     hasSpace: true,
 };
 export const mockTablespoon: Unit = {
-    __typename: 'Unit' as const,
+    __typename: 'Unit',
     _id: mockTablespoonId,
     shortSingular: 'tbsp',
     shortPlural: 'tbsp',
@@ -29,7 +29,7 @@ export const mockTablespoon: Unit = {
     hasSpace: true,
 };
 export const mockGram: Unit = {
-    __typename: 'Unit' as const,
+    __typename: 'Unit',
     _id: mockGramId,
     shortSingular: 'g',
     shortPlural: 'g',
@@ -41,7 +41,7 @@ export const mockGram: Unit = {
     hasSpace: false,
 };
 export const mockKilogram: Unit = {
-    __typename: 'Unit' as const,
+    __typename: 'Unit',
     _id: mockKilogramId,
     shortSingular: 'kg',
     shortPlural: 'kg',
@@ -53,7 +53,7 @@ export const mockKilogram: Unit = {
     hasSpace: false,
 };
 export const mockOunce: Unit = {
-    __typename: 'Unit' as const,
+    __typename: 'Unit',
     _id: mockOunceId,
     shortSingular: 'oz',
     shortPlural: 'oz',
@@ -65,7 +65,7 @@ export const mockOunce: Unit = {
     hasSpace: true,
 };
 export const mockCup: Unit = {
-    __typename: 'Unit' as const,
+    __typename: 'Unit',
     _id: mockCupId,
     shortSingular: 'cup',
     shortPlural: 'cups',

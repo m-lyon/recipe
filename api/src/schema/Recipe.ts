@@ -78,7 +78,7 @@ RecipeTC.extendField('ingredientSubsections', {
         new GraphQLList(
             new GraphQLNonNull(
                 new GraphQLObjectType({
-                    name: 'IngredientSubsections',
+                    name: 'IngredientSubsection',
                     fields: {
                         name: { type: GraphQLString },
                         ingredients: {
@@ -97,7 +97,7 @@ RecipeTC.extendField('instructionSubsections', {
         new GraphQLList(
             new GraphQLNonNull(
                 new GraphQLObjectType({
-                    name: 'InstructionSubsections',
+                    name: 'InstructionSubsection',
                     fields: {
                         name: { type: GraphQLString },
                         instructions: {

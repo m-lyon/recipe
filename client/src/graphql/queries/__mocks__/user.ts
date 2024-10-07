@@ -3,7 +3,7 @@ import { CURRENT_USER } from '@recipe/graphql/queries/user';
 import { CurrentUserQuery, User } from '@recipe/graphql/generated';
 
 export const mockAdmin: User = {
-    __typename: 'User' as const,
+    __typename: 'User',
     _id: mockAdminId,
     role: 'admin',
     username: 'admin',

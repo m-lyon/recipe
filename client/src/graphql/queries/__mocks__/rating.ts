@@ -10,35 +10,35 @@ import { mockAdmin } from './user';
 import { mockRecipeNew, mockRecipeOne, mockRecipeThree, mockRecipeTwo } from './recipe';
 
 export const mockRatingOne: Rating = {
-    __typename: 'Rating' as const,
+    __typename: 'Rating',
     _id: mockRatingIdOne,
     owner: mockAdmin,
     recipe: mockRecipeOne,
     value: 3.0,
 };
 export const mockRatingTwo: Rating = {
-    __typename: 'Rating' as const,
+    __typename: 'Rating',
     _id: mockRatingIdTwo,
     owner: mockAdmin,
     recipe: mockRecipeTwo,
     value: 4.0,
 };
 export const mockRatingThree: Rating = {
-    __typename: 'Rating' as const,
+    __typename: 'Rating',
     _id: mockRatingIdThree,
     owner: mockAdmin,
     recipe: mockRecipeThree,
     value: 5.0,
 };
 export const mockRatingNewOne: Rating = {
-    __typename: 'Rating' as const,
+    __typename: 'Rating',
     _id: mockRatingIdNewOne,
     owner: mockAdmin,
     recipe: mockRecipeNew,
     value: 1.5,
 };
 export const mockRatingNewTwo: Rating = {
-    __typename: 'Rating' as const,
+    __typename: 'Rating',
     _id: mockRatingIdNewTwo,
     owner: mockAdmin,
     recipe: mockRecipeOne,

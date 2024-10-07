@@ -5,14 +5,17 @@ import { DELETE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 import { mockCarrot } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { DeleteIngredientMutationVariables } from '@recipe/graphql/generated';
 import { ModifyIngredientMutationVariables } from '@recipe/graphql/generated';
+import { CreateIngredientMutationVariables } from '@recipe/graphql/generated';
+import { CreateIngredientMutation, Ingredient } from '@recipe/graphql/generated';
 import { CREATE_INGREDIENT, MODIFY_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 
-export const mockBeef = {
+export const mockBeef: Ingredient = {
     _id: mockBeefId,
-    __typename: 'Ingredient' as const,
+    __typename: 'Ingredient',
     name: 'beef',
     pluralName: 'beef',
     isCountable: false,
+    density: null,
     owner: mockAdminId,
     tags: [],
 };
@@ -26,14 +29,16 @@ export const mockCreateIngredient = {
                 isCountable: mockBeef.isCountable,
                 tags: mockBeef.tags,
             },
-        },
+        } satisfies CreateIngredientMutationVariables,
     },
     result: {
         data: {
+            __typename: 'Mutation',
             ingredientCreateOne: {
+                __typename: 'CreateOneIngredientPayload',
                 record: mockBeef,
             },
-        },
+        } satisfies CreateIngredientMutation,
     },
 };
 export const mockUpdateIngredient = {
