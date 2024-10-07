@@ -7,15 +7,12 @@ import { Popover, PopoverAnchor, useDisclosure, useOutsideClick } from '@chakra-
 import { DEBUG } from '@recipe/constants';
 import { useErrorToast } from '@recipe/common/hooks';
 import { DELETE_UNIT } from '@recipe/graphql/mutations/unit';
+import { NewBespokeUnitPopover, NewIngredientPopover } from '@recipe/features/popovers';
+import { NewPrepMethodPopover, NewSizePopover, NewUnitPopover } from '@recipe/features/popovers';
 
 import { Dropdown } from './Dropdown';
-import { NewUnitPopover } from './NewUnitPopover';
-import { NewSizePopover } from './NewSizePopover';
 import { getSuggestions } from '../utils/suggestions';
 import { useDropdownList } from '../hooks/useDropdownList';
-import { NewIngredientPopover } from './NewIngredientPopover';
-import { NewPrepMethodPopover } from './NewPrepMethodPopover';
-import { NewBespokeUnitPopover } from './NewBespokeUnitPopover';
 import { IngredientActionHandler } from '../hooks/useIngredientList';
 
 export type PopoverType = 'unit' | 'bespokeUnit' | 'size' | 'ingredient' | 'prepMethod';
