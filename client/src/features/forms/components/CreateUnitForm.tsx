@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Reference, useMutation } from '@apollo/client';
 
 import { useErrorToast } from '@recipe/common/hooks';
@@ -7,7 +8,7 @@ import { CreateUnitMutation } from '@recipe/graphql/generated';
 
 import { BaseUnitForm, BaseUnitFormProps, formatUnitError } from './BaseUnitForm';
 
-interface Props extends Omit<BaseUnitFormProps, 'onSubmit'> {
+interface Props extends Omit<BaseUnitFormProps, 'onSubmit' | 'initData'> {
     handleComplete: (data: CreateUnitMutation) => void;
 }
 
@@ -49,10 +50,11 @@ export function CreateUnitForm(props: Props) {
             }
         },
     });
+    const initData = useMemo(() => ({ hasSpace: true }), []);
 
     const handleSubmit = (formData: ModifyableUnit) => {
         createUnit({ variables: { record: formData } });
     };
 
-    return <BaseUnitForm {...rest} onSubmit={handleSubmit} />;
+    return <BaseUnitForm {...rest} initData={initData} onSubmit={handleSubmit} />;
 }

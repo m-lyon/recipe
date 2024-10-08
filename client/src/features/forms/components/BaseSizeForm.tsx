@@ -1,6 +1,6 @@
-import { MutableRefObject } from 'react';
 import { ApolloError } from '@apollo/client';
 import { boolean, object, string } from 'yup';
+import { MutableRefObject, useMemo } from 'react';
 import { Button, ButtonGroup, Stack, StackProps } from '@chakra-ui/react';
 
 import { FloatingLabelInput } from '@recipe/common/components';
@@ -17,7 +17,7 @@ export function formatSizeError(error: ApolloError) {
 
 export interface BaseSizeFormProps extends StackProps {
     fieldRef?: MutableRefObject<HTMLInputElement | null>;
-    initData?: ModifyableSize;
+    initData?: Partial<ModifyableSize>;
     disabled?: boolean;
     onSubmit: (data: ModifyableSize) => void;
     onDelete?: () => void;
@@ -29,13 +29,14 @@ const formSchema = object({
 
 export function BaseSizeForm(props: BaseSizeFormProps) {
     const { fieldRef, initData, disabled, onSubmit, onDelete, ...rest } = props;
+    const disabledData = useMemo(() => ({ value: '' }), []);
     const { formData, hasError, handleSubmit, handleChange } = useFormLogic<ModifyableSize>(
         formSchema,
+        (data) => ({ value: data.value, unique: true }),
         initData,
         onSubmit,
         'size',
-        (data) => ({ ...data, unique: true }),
-        disabled && { value: '' }
+        disabled && disabledData
     );
     const { setIsFocused } = useKeyboardSubmit(handleSubmit);
 

@@ -1,5 +1,5 @@
-import { MutableRefObject } from 'react';
 import { ApolloError } from '@apollo/client';
+import { MutableRefObject, useMemo } from 'react';
 import { array, boolean, mixed, number, object, string } from 'yup';
 import { Button, ButtonGroup, Checkbox, HStack, Stack, StackProps } from '@chakra-ui/react';
 
@@ -29,26 +29,31 @@ const formSchema = object({
 
 export interface BaseIngredientFormProps extends StackProps {
     fieldRef?: MutableRefObject<HTMLInputElement | null>;
-    initData?: ModifyableIngredient;
+    initData?: Partial<ModifyableIngredient>;
     disabled?: boolean;
     onSubmit: (data: ModifyableIngredient) => void;
     onDelete?: () => void;
 }
 export function BaseIngredientForm(props: BaseIngredientFormProps) {
     const { fieldRef, initData, disabled, onSubmit, onDelete, ...rest } = props;
+    const disabledData = useMemo(
+        () => ({ name: '', pluralName: '', isCountable: false, tags: [] }),
+        []
+    );
+    const xfm = (data: Partial<ModifyableIngredient>) => ({
+        name: data.name,
+        pluralName: data.pluralName || data.name,
+        tags: data.tags || [],
+        density: data.density || undefined,
+        isCountable: data.isCountable || false,
+    });
     const { formData, hasError, handleSubmit, handleChange } = useFormLogic<ModifyableIngredient>(
         formSchema,
+        xfm,
         initData,
         onSubmit,
         'ingredient',
-        (data) => ({
-            isCountable: false,
-            ...data,
-            tags: data.tags || [],
-            pluralName: data.pluralName || data.name,
-            density: data.density || undefined,
-        }),
-        disabled && { name: '', pluralName: '', isCountable: false, tags: [] }
+        disabled && disabledData
     );
     const { setIsFocused } = useKeyboardSubmit(handleSubmit);
 

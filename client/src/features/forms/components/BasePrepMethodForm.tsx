@@ -1,6 +1,6 @@
-import { MutableRefObject } from 'react';
 import { ApolloError } from '@apollo/client';
 import { boolean, object, string } from 'yup';
+import { MutableRefObject, useMemo } from 'react';
 import { Button, ButtonGroup, Stack, StackProps } from '@chakra-ui/react';
 
 import { FloatingLabelInput } from '@recipe/common/components';
@@ -22,20 +22,21 @@ const formSchema = object({
 
 export interface BasePrepMethodFormProps extends StackProps {
     fieldRef?: MutableRefObject<HTMLInputElement | null>;
-    initData?: ModifyablePrepMethod;
+    initData?: Partial<ModifyablePrepMethod>;
     disabled?: boolean;
     onSubmit: (data: ModifyablePrepMethod) => void;
     onDelete?: () => void;
 }
 export function BasePrepMethodForm(props: BasePrepMethodFormProps) {
     const { fieldRef, initData, disabled, onSubmit, onDelete, ...rest } = props;
+    const disabledData = useMemo(() => ({ value: '' }), []);
     const { formData, hasError, handleSubmit, handleChange } = useFormLogic<ModifyablePrepMethod>(
         formSchema,
+        (data) => ({ value: data.value, unique: true }),
         initData,
         onSubmit,
         'prep method',
-        (data) => ({ ...data, unique: true }),
-        disabled && { value: '' }
+        disabled && disabledData
     );
     const { setIsFocused } = useKeyboardSubmit(handleSubmit);
 

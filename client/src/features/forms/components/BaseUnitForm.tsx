@@ -1,6 +1,6 @@
-import { MutableRefObject } from 'react';
 import { ApolloError } from '@apollo/client';
 import { StackProps } from '@chakra-ui/react';
+import { MutableRefObject, useMemo } from 'react';
 import { boolean, mixed, object, string } from 'yup';
 import { Button, ButtonGroup, Checkbox } from '@chakra-ui/react';
 import { FormControl, FormHelperText, HStack, Radio, RadioGroup, Stack } from '@chakra-ui/react';
@@ -31,32 +31,39 @@ export const unitFormSchema = object({
 });
 export interface BaseUnitFormProps extends StackProps {
     fieldRef?: MutableRefObject<HTMLInputElement | null>;
-    initData?: ModifyableUnit;
+    initData?: Partial<ModifyableUnit>;
     disabled?: boolean;
     onSubmit: (data: ModifyableUnit) => void;
     onDelete?: () => void;
 }
 export function BaseUnitForm(props: BaseUnitFormProps) {
     const { fieldRef, initData, disabled, onSubmit, onDelete, ...rest } = props;
-    const { formData, hasError, handleSubmit, handleChange } = useFormLogic<ModifyableUnit>(
-        unitFormSchema,
-        initData,
-        onSubmit,
-        'unit',
-        (data) => ({
-            hasSpace: true,
-            ...data,
-            shortPlural: !data.shortPlural ? data.shortSingular : data.shortPlural,
-            longPlural: !data.longPlural ? data.longSingular : data.longPlural,
-            unique: true,
-        }),
-        disabled && {
+    const disabledData = useMemo(
+        () => ({
             shortSingular: '',
             shortPlural: '',
             longSingular: '',
             longPlural: '',
             hasSpace: false,
-        }
+        }),
+        []
+    );
+    const xfm = (data: Partial<ModifyableUnit>) => ({
+        shortSingular: data.shortSingular,
+        shortPlural: data.shortPlural || data.shortSingular,
+        longSingular: data.longSingular,
+        longPlural: data.longPlural || data.longSingular,
+        preferredNumberFormat: data.preferredNumberFormat,
+        hasSpace: data.hasSpace,
+        unique: true,
+    });
+    const { formData, hasError, handleSubmit, handleChange } = useFormLogic<ModifyableUnit>(
+        unitFormSchema,
+        xfm,
+        initData,
+        onSubmit,
+        'unit',
+        disabled && disabledData
     );
     const { setIsFocused } = useKeyboardSubmit(handleSubmit);
 

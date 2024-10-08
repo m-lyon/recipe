@@ -3,16 +3,16 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useErrorToast } from '@recipe/common/hooks';
 
-export function useFormLogic<T>(
+export function useFormLogic<TData>(
     schema: ObjectSchema<any>,
-    initialData: Partial<T> | undefined,
-    onSubmit: (data: T) => void,
+    preValidationTransform: (data: Partial<TData>) => any,
+    initialData: Partial<TData> | undefined,
+    onSubmit: (data: TData) => void,
     name: string = 'data',
-    preValidationTransform: (data: Partial<T>) => Partial<T> = (data) => data,
-    disabledData?: false | Partial<T>
+    disabledData?: false | Partial<TData>
 ) {
     const toast = useErrorToast();
-    const [formData, setFormData] = useState<Partial<T>>(initialData || {});
+    const [formData, setFormData] = useState<Partial<TData>>(initialData || {});
     const [hasError, setHasError] = useState(false);
 
     useEffect(() => {
@@ -39,7 +39,7 @@ export function useFormLogic<T>(
         }
     }, [formData, schema, onSubmit, toast, preValidationTransform, name]);
 
-    const handleChange = useCallback((name: keyof T, value: any) => {
+    const handleChange = useCallback((name: keyof TData, value: any) => {
         setFormData((prev) => ({ ...prev, [name]: value }));
         setHasError(false);
     }, []);
