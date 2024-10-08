@@ -33,7 +33,9 @@ export function BaseSizeForm(props: BaseSizeFormProps) {
         formSchema,
         initData,
         onSubmit,
-        'Error saving prep method'
+        'size',
+        (data) => ({ ...data, unique: true }),
+        disabled && { value: '' }
     );
     const { setIsFocused } = useKeyboardSubmit(handleSubmit);
 

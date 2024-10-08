@@ -1,34 +1,37 @@
-import { Image } from '@recipe/graphql/generated';
-import { mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { DELETE_IMAGES, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
 import { mockRecipeIdNew, mockRecipeIdOne } from '@recipe/graphql/__mocks__/ids';
-import { mockRecipeNew, mockRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockTitleNew, mockTitleOne, mockTitleTwo } from '@recipe/graphql/__mocks__/common';
 import { mockImageIdNew, mockImageIdOne, mockImageIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { UploadImagesMutation, UploadImagesMutationVariables } from '@recipe/graphql/generated';
 import { DeleteImagesMutation, DeleteImagesMutationVariables } from '@recipe/graphql/generated';
 
 export const mockImageFileOne = new File(['hello there'], 'test_image.png', { type: 'image/png' });
 export const mockImageFileNew = new File(['hello'], 'test_image_new.png', { type: 'image/png' });
-export const mockImageOne: Image = {
+export const mockImageOne: ImageView = {
     __typename: 'Image',
     _id: mockImageIdOne,
     origUrl: 'test_image.png',
-    lowresUrl: null,
-    note: null,
-    recipe: mockRecipeOne,
+    recipe: {
+        __typename: 'Recipe',
+        title: mockTitleOne,
+    },
 };
-export const mockImageTwo: Image = {
+export const mockImageTwo: ImageView = {
     ...mockImageOne,
     _id: mockImageIdTwo,
-    recipe: mockRecipeTwo,
+    recipe: {
+        __typename: 'Recipe',
+        title: mockTitleTwo,
+    },
 };
-export const mockImageNew: Image = {
+export const mockImageNew: ImageView = {
     __typename: 'Image',
     _id: mockImageIdNew,
     origUrl: 'test_image_new.png',
-    lowresUrl: null,
-    note: null,
-    recipe: mockRecipeNew,
+    recipe: {
+        __typename: 'Recipe',
+        title: mockTitleNew,
+    },
 };
 export const mockUploadImages = {
     request: {

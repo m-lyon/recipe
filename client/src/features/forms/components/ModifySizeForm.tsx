@@ -7,7 +7,7 @@ import { DELETE_SIZE, MODIFY_SIZE } from '@recipe/graphql/mutations/size';
 
 import { BaseSizeForm, BaseSizeFormProps, formatSizeError } from './BaseSizeForm';
 
-interface Props extends Omit<BaseSizeFormProps, 'handleSubmit'> {
+interface Props extends Omit<BaseSizeFormProps, 'onSubmit'> {
     handleComplete: (data: ModifySizeMutation) => void;
     onDelete: () => void;
     sizeId?: string;

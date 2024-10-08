@@ -27,7 +27,7 @@ export function UserOptions() {
         update: (cache) => {
             cache.writeQuery({
                 query: CURRENT_USER,
-                data: { currentUser: null },
+                data: { __typename: 'Query', currentUser: null },
             });
         },
     });
@@ -35,7 +35,7 @@ export function UserOptions() {
     const toast = useErrorToast();
 
     if (loading) {
-        return <LoginOptions />;
+        return <LoginOptions isLoading={true} />;
     }
     if (data?.currentUser) {
         return (
@@ -55,7 +55,8 @@ export function UserOptions() {
     return <LoginOptions />;
 }
 
-function LoginOptions() {
+function LoginOptions(props: { isLoading?: boolean }) {
+    const { isLoading } = props;
     return (
         <Stack
             flex={{ base: 1, md: 0 }}
@@ -67,6 +68,7 @@ function LoginOptions() {
             <Button
                 as={Link}
                 fontSize='sm'
+                isLoading={isLoading}
                 fontWeight={600}
                 colorScheme='teal'
                 to={`${ROOT_PATH}/login`}

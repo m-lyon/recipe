@@ -8,7 +8,7 @@ import { DELETE_PREP_METHOD, MODIFY_PREP_METHOD } from '@recipe/graphql/mutation
 import { formatPrepMethodError } from './BasePrepMethodForm';
 import { BasePrepMethodForm, BasePrepMethodFormProps } from './BasePrepMethodForm';
 
-interface Props extends Omit<BasePrepMethodFormProps, 'handleSubmit'> {
+interface Props extends Omit<BasePrepMethodFormProps, 'onSubmit'> {
     handleComplete: (data: ModifyPrepMethodMutation) => void;
     onDelete: () => void;
     prepMethodId?: string;

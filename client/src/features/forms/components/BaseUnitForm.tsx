@@ -42,7 +42,21 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
         unitFormSchema,
         initData,
         onSubmit,
-        'Error saving ingredient'
+        'unit',
+        (data) => ({
+            hasSpace: true,
+            ...data,
+            shortPlural: !data.shortPlural ? data.shortSingular : data.shortPlural,
+            longPlural: !data.longPlural ? data.longSingular : data.longPlural,
+            unique: true,
+        }),
+        disabled && {
+            shortSingular: '',
+            shortPlural: '',
+            longSingular: '',
+            longPlural: '',
+            hasSpace: false,
+        }
     );
     const { setIsFocused } = useKeyboardSubmit(handleSubmit);
 

@@ -3,8 +3,8 @@ import { Box, Heading, VStack } from '@chakra-ui/react';
 
 import { useSuccessToast } from '@recipe/common/hooks';
 import { DELAY_LONG, ROOT_PATH } from '@recipe/constants';
+import { CreateIngredientForm } from '@recipe/features/forms';
 import { CreateIngredientMutation } from '@recipe/graphql/generated';
-import { CreateIngredientForm } from '@recipe/features/recipeIngredient';
 
 export function CreateIngredient() {
     const toast = useSuccessToast();

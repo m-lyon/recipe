@@ -40,7 +40,15 @@ export function BaseIngredientForm(props: BaseIngredientFormProps) {
         formSchema,
         initData,
         onSubmit,
-        'Error saving ingredient'
+        'ingredient',
+        (data) => ({
+            isCountable: false,
+            ...data,
+            tags: data.tags || [],
+            pluralName: data.pluralName || data.name,
+            density: data.density || undefined,
+        }),
+        disabled && { name: '', pluralName: '', isCountable: false, tags: [] }
     );
     const { setIsFocused } = useKeyboardSubmit(handleSubmit);
 
@@ -91,7 +99,7 @@ export function BaseIngredientForm(props: BaseIngredientFormProps) {
                     isChecked={formData.tags?.includes('vegan')}
                     onChange={(e) => {
                         const newTags = e.target.checked
-                            ? [...(formData.tags || []), 'vegan', 'vegetarian']
+                            ? ['vegan', 'vegetarian']
                             : formData.tags?.filter((tag) => tag !== 'vegan') || [];
                         handleChange('tags', [...new Set(newTags)]);
                     }}
@@ -104,9 +112,7 @@ export function BaseIngredientForm(props: BaseIngredientFormProps) {
                     onChange={(e) => {
                         const newTags = e.target.checked
                             ? [...(formData.tags || []), 'vegetarian']
-                            : formData.tags?.filter(
-                                  (tag) => tag !== 'vegetarian' && tag !== 'vegan'
-                              ) || [];
+                            : [];
                         handleChange('tags', newTags);
                     }}
                 >

@@ -26,12 +26,12 @@ export function Login() {
             if (data?.login) {
                 cache.writeQuery({
                     query: CURRENT_USER,
-                    data: { currentUser: data.login },
+                    data: { __typename: 'Query', currentUser: data.login },
                 });
             } else {
                 cache.writeQuery({
                     query: CURRENT_USER,
-                    data: { currentUser: null },
+                    data: { __typename: 'Query', currentUser: null },
                 });
             }
         },
@@ -41,12 +41,12 @@ export function Login() {
             if (data?.register) {
                 cache.writeQuery({
                     query: CURRENT_USER,
-                    data: { currentUser: data.register },
+                    data: { __typename: 'Query', currentUser: data.register },
                 });
             } else {
                 cache.writeQuery({
                     query: CURRENT_USER,
-                    data: { currentUser: null },
+                    data: { __typename: 'Query', currentUser: null },
                 });
             }
         },

@@ -195,12 +195,11 @@ export function EditRecipe() {
     if (error || !data || !data.recipeOne) {
         return <div>Error: {error?.message}</div>;
     }
-    const recipeOne = data.recipeOne;
 
-    const handleSubmitMutation = async (recipe: UpdateByIdRecipeModifyInput) => {
+    const handleSubmitMutation = async (modifiedRecipe: UpdateByIdRecipeModifyInput) => {
         try {
-            // Save Recipe
-            await saveRecipe({ variables: { id: recipeOne._id, recipe } });
+            // recipe is guaranteed to be defined here because of the error check above
+            await saveRecipe({ variables: { id: recipe!._id, recipe: modifiedRecipe } });
         } catch (e: unknown) {
             let description = 'An error occurred while saving the recipe';
             if (e instanceof Error) {
@@ -210,7 +209,7 @@ export function EditRecipe() {
         }
         try {
             // Upload Images
-            const originalImages = recipeOne.images ? recipeOne.images : [];
+            const originalImages = recipe!.images ? recipe!.images : [];
             const newImages = state.images.images;
             const imagesToDelete = originalImages.filter(
                 (img) => !newImages.map((img) => img.name).includes(img.origUrl)
@@ -223,7 +222,7 @@ export function EditRecipe() {
             }
             if (imagesToAdd.length > 0) {
                 await uploadImages({
-                    variables: { recipeId: recipeOne._id, images: imagesToAdd },
+                    variables: { recipeId: recipe!._id, images: imagesToAdd },
                 });
             }
         } catch (e: unknown) {

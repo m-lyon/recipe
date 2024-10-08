@@ -33,7 +33,9 @@ export function BasePrepMethodForm(props: BasePrepMethodFormProps) {
         formSchema,
         initData,
         onSubmit,
-        'Error saving prep method'
+        'prep method',
+        (data) => ({ ...data, unique: true }),
+        disabled && { value: '' }
     );
     const { setIsFocused } = useKeyboardSubmit(handleSubmit);
 
