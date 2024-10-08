@@ -4,12 +4,12 @@ import path from 'path';
 import { Tag } from '../models/Tag.js';
 import { Unit } from '../models/Unit.js';
 import { User } from '../models/User.js';
+import { Size } from '../models/Size.js';
 import { Image } from '../models/Image.js';
 import { IMAGE_DIR } from '../constants.js';
 import { Recipe } from '../models/Recipe.js';
 import { Ingredient } from '../models/Ingredient.js';
 import { PrepMethod } from '../models/PrepMethod.js';
-import { Size } from '../models/Size.js';
 
 export async function populateTags() {
     try {
@@ -213,7 +213,6 @@ export async function populateRecipes() {
                 ingredientSubsections: {
                     ingredients: [
                         {
-                            type: 'ingredient',
                             quantity: '1',
                             unit: null,
                             size: null,
@@ -221,7 +220,6 @@ export async function populateRecipes() {
                             prepMethod: (await PrepMethod.findOne({ value: 'chopped' }))._id,
                         },
                         {
-                            type: 'ingredient',
                             quantity: '1',
                             unit: (await Unit.findOne({ shortSingular: 'kg' }))._id,
                             size: (await Size.findOne({ value: 'medium' }))._id,
@@ -229,7 +227,6 @@ export async function populateRecipes() {
                             prepMethod: (await PrepMethod.findOne({ value: 'diced' }))._id,
                         },
                         {
-                            type: 'ingredient',
                             quantity: '400',
                             unit: (await Unit.findOne({ shortSingular: 'cup' }))._id,
                             size: null,
@@ -275,7 +272,6 @@ export async function populateRecipes() {
                         name: 'Main Ingredients',
                         ingredients: [
                             {
-                                type: 'ingredient',
                                 quantity: '1/2',
                                 unit: null,
                                 size: null,
@@ -283,7 +279,6 @@ export async function populateRecipes() {
                                 prepMethod: (await PrepMethod.findOne({ value: 'sliced' }))._id,
                             },
                             {
-                                type: 'ingredient',
                                 quantity: '1',
                                 unit: (await Unit.findOne({ shortSingular: 'kg' }))._id,
                                 size: (await Size.findOne({ value: 'medium' }))._id,
@@ -291,7 +286,6 @@ export async function populateRecipes() {
                                 prepMethod: (await PrepMethod.findOne({ value: 'diced' }))._id,
                             },
                             {
-                                type: 'ingredient',
                                 quantity: '400',
                                 unit: (await Unit.findOne({ shortSingular: 'cup' }))._id,
                                 size: (await Size.findOne({ value: 'small' }))._id,
@@ -304,7 +298,6 @@ export async function populateRecipes() {
                         name: 'Sides',
                         ingredients: [
                             {
-                                type: 'ingredient',
                                 quantity: '2',
                                 unit: (await Unit.findOne({ shortSingular: 'cup' }))._id,
                                 size: null,
@@ -353,7 +346,6 @@ export async function populateRecipes() {
                         name: 'Main Ingredients',
                         ingredients: [
                             {
-                                type: 'ingredient',
                                 quantity: '1',
                                 unit: null,
                                 size: null,
@@ -361,7 +353,6 @@ export async function populateRecipes() {
                                 prepMethod: (await PrepMethod.findOne({ value: 'chopped' }))._id,
                             },
                             {
-                                type: 'ingredient',
                                 quantity: '400',
                                 unit: (await Unit.findOne({ shortSingular: 'cup' }))._id,
                                 size: null,

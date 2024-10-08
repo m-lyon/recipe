@@ -12,7 +12,6 @@ const getMockRecipe = async (quantity: string = '1') => {
     const ingredient = await Ingredient.findOne({ name: 'test ingredient' });
 
     const recipeIngredient = {
-        type: 'ingredient',
         quantity: quantity,
         unit: null,
         size: null,
