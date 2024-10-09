@@ -6,7 +6,7 @@ import { Input, InputGroup, InputLeftElement } from '@chakra-ui/react';
 
 import { UseSearchQuery } from '@recipe/features/navbar';
 import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
-import { DEBOUNCE_TIME, INIT_LOAD_NUM } from '@recipe/constants';
+import { DEBOUNCE_TIME, INIT_LOAD_NUM, ROOT_PATH } from '@recipe/constants';
 
 export function SearchBar(props: UseSearchQuery) {
     const { setSearchQuery } = props;
@@ -28,7 +28,7 @@ export function SearchBar(props: UseSearchQuery) {
     }, DEBOUNCE_TIME);
 
     return (
-        <InputGroup display={location.pathname === '/recipe' ? 'flex' : 'none'}>
+        <InputGroup display={location.pathname === ROOT_PATH ? 'flex' : 'none'}>
             <InputLeftElement pointerEvents='none'>
                 <SearchIcon color='gray.300' />
             </InputLeftElement>

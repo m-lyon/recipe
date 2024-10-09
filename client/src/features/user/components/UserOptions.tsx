@@ -1,12 +1,14 @@
-import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { Button, Stack } from '@chakra-ui/react';
+import { Link, useLocation } from 'react-router-dom';
 import { useMutation, useQuery } from '@apollo/client';
 
 import { ROOT_PATH } from '@recipe/constants';
 import { useErrorToast } from '@recipe/common/hooks';
 import { LOGOUT } from '@recipe/graphql/mutations/user';
 import { CURRENT_USER } from '@recipe/graphql/queries/user';
+
+import { FULL_LOGIN_PATH } from '../../../routes';
 
 export function UserOptions() {
     const { data, loading } = useQuery(CURRENT_USER, {
@@ -56,6 +58,7 @@ export function UserOptions() {
 }
 
 function LoginOptions(props: { isLoading?: boolean }) {
+    const location = useLocation();
     const { isLoading } = props;
     return (
         <Stack
@@ -64,6 +67,7 @@ function LoginOptions(props: { isLoading?: boolean }) {
             direction='row'
             spacing={6}
             ml={{ base: 3, md: 0 }}
+            display={location.pathname === FULL_LOGIN_PATH ? 'none' : undefined}
         >
             <Button
                 as={Link}
@@ -71,7 +75,7 @@ function LoginOptions(props: { isLoading?: boolean }) {
                 isLoading={isLoading}
                 fontWeight={600}
                 colorScheme='teal'
-                to={`${ROOT_PATH}/login`}
+                to={FULL_LOGIN_PATH}
                 aria-label='Log in or sign up'
             >
                 Sign In

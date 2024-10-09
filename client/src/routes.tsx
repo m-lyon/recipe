@@ -21,6 +21,9 @@ import { CreateIngredient } from './pages/CreateIngredient';
 import { CreatePrepMethod } from './pages/CreatePrepMethod';
 import { CreateUnitConversion } from './pages/CreateUnitConversion';
 
+const LOGIN_PATH = 'login';
+export const FULL_LOGIN_PATH = `${ROOT_PATH}/${LOGIN_PATH}`;
+
 export const routes = createRoutesFromElements(
     <Route path={ROOT_PATH} errorElement={<ErrorBoundary />}>
         <Route element={<Navbar />}>
@@ -43,7 +46,7 @@ export const routes = createRoutesFromElements(
                 <Route path='prep-method' element={<EditPrepMethod />} />
                 <Route path='recipe/:titleIdentifier' element={<EditRecipe />} />
             </Route>
-            <Route path='login' element={<Login />} />
+            <Route path={LOGIN_PATH} element={<Login />} />
             <Route path='search' element={<Search />} />
         </Route>
     </Route>
