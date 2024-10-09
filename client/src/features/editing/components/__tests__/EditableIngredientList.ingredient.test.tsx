@@ -26,6 +26,18 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         // Expect
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup chicken, ');
     });
+    it('should display completed recipe as ingredient', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }{ArrowDown}{Enter}{r}{h}{u}{ArrowUp}{Enter}');
+
+        // Expect
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup rhubarb pie, ');
+    });
     it('should reset via escape key', async () => {
         const user = userEvent.setup();
         // Render
@@ -53,7 +65,8 @@ describe('EditableIngredient Ingredient Keyboard', () => {
         await user.click(screen.getByText('cup'));
 
         // Expect
-        await notNullByText(screen, 'apples', 'carrots', 'chicken', 'iceberg lettuce');
+        await notNullByText(screen, 'apples', 'carrots', 'chicken');
+        await notNullByText(screen, 'iceberg lettuce', 'rhubarb pie');
     });
     it('should display add new ingredient', async () => {
         const user = userEvent.setup();
@@ -154,6 +167,32 @@ describe('EditableIngredient Ingredient Keyboard', () => {
 describe('EditableIngredient Ingredient Click', () => {
     afterEach(() => {
         cleanup();
+    });
+    it('should display completed ingredient', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await clickGetByText(screen, user, 'cup', 'chicken');
+
+        // Expect
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup chicken, ');
+    });
+    it('should display completed recipe as ingredient', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await clickGetByText(screen, user, 'cup', 'rhubarb pie');
+
+        // Expect
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup rhubarb pie, ');
     });
     it('should reset via click away', async () => {
         const user = userEvent.setup();

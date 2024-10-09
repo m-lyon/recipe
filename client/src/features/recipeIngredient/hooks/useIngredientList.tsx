@@ -787,6 +787,7 @@ export function useIngredientList(): UseIngredientListReturnType {
                         editableActions.size.set(subsection, attr);
                         return editableActions.incrementState(subsection, 'ingredient');
                     case 'Ingredient':
+                    case 'Recipe':
                         editableActions.ingredient.set(subsection, attr);
                         return editableActions.incrementState(subsection, 'prepMethod');
                     case 'PrepMethod':

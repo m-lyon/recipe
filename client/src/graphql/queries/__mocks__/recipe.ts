@@ -1,3 +1,4 @@
+import { GetRecipeQueryVariables } from '@recipe/graphql/generated';
 import { GetIngredientComponentsQuery } from '@recipe/graphql/generated';
 import { mockRecipeIngredientIdTen } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdTwo } from '@recipe/graphql/__mocks__/ids';
@@ -5,7 +6,6 @@ import { mockRecipeIngredientIdFour } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdFive } from '@recipe/graphql/__mocks__/ids';
 import { GET_INGREDIENT_COMPONENTS } from '@recipe/graphql/queries/recipe';
 import { mockRecipeIngredientIdNine } from '@recipe/graphql/__mocks__/ids';
-import { GetRecipeQueryVariables, Recipe } from '@recipe/graphql/generated';
 import { mockRecipeIngredientIdEight } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdThree } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdEleven } from '@recipe/graphql/__mocks__/ids';
@@ -44,11 +44,10 @@ export const mockGetIngredientComponents = {
     },
 };
 
-export const mockRecipeOne: Recipe = {
+export const mockRecipeOne: RecipeView = {
     __typename: 'Recipe',
     _id: mockRecipeIdOne,
     title: mockTitleOne,
-    subTitle: null,
     pluralTitle: null,
     titleIdentifier: 'mock-recipe-one',
     instructionSubsections: [
@@ -130,10 +129,8 @@ export const mockRecipeOne: Recipe = {
     images: [],
     source: null,
     owner: mockAdmin,
-    createdAt: new Date('2021-01-01T00:00:00.000Z'),
-    lastModified: new Date('2021-01-01T00:00:00.000Z'),
 };
-export const mockRecipeTwo: Recipe = {
+export const mockRecipeTwo: RecipeView = {
     ...mockRecipeOne,
     _id: mockRecipeIdTwo,
     title: mockTitleTwo,
@@ -152,7 +149,7 @@ export const mockRecipeTwo: Recipe = {
     calculatedTags: [],
     numServings: 3,
 };
-export const mockRecipeThree: Recipe = {
+export const mockRecipeThree: RecipeView = {
     ...mockRecipeOne,
     _id: mockRecipeIdThree,
     title: 'Mock Recipe Three',
@@ -245,7 +242,7 @@ export const mockRecipeThree: Recipe = {
         },
     ],
 };
-export const mockRecipeFour: Recipe = {
+export const mockRecipeFour: RecipeView = {
     ...mockRecipeOne,
     _id: mockRecipeIdFour,
     title: 'Mock Recipe Four',
@@ -278,11 +275,10 @@ export const mockRecipeFour: Recipe = {
         },
     ],
 };
-export const mockRecipeNew: Recipe = {
+export const mockRecipeNew: RecipeView = {
     _id: mockRecipeIdNew,
     __typename: 'Recipe',
     title: 'New Recipe',
-    subTitle: null,
     pluralTitle: null,
     titleIdentifier: 'new-recipe',
     instructionSubsections: [
@@ -317,10 +313,8 @@ export const mockRecipeNew: Recipe = {
     source: 'Recipe Source',
     images: [],
     owner: mockAdmin,
-    createdAt: new Date('2021-01-01T00:00:00.000Z'),
-    lastModified: new Date('2021-01-01T00:00:00.000Z'),
 };
-export const mockRecipeNewAsIngr: Recipe = {
+export const mockRecipeNewAsIngr: RecipeView = {
     ...mockRecipeNew,
     _id: mockRecipeIdNewAsIngr,
     isIngredient: true,
