@@ -1,8 +1,8 @@
+import { GraphQLError } from 'graphql';
 import { Document, Model } from 'mongoose';
 import { ObjectTypeComposer } from 'graphql-compose';
-import { findById } from 'graphql-compose-mongoose/lib/resolvers/findById.js';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
-import { GraphQLError } from 'graphql';
+import { findById } from 'graphql-compose-mongoose/lib/resolvers/findById.js';
 
 export async function validateDoc(doc: Document) {
     try {
@@ -83,11 +83,9 @@ export function updateByIdResolver<TDoc extends Document>(
                 `${tc.getTypeName()}.updateById resolver didn't receive new data in args.record`
             );
         }
-
         doc.set(recordData);
         await validateDoc(doc);
         await doc.save({ validateBeforeSave: false });
-
         return { record: doc };
     };
     return resolve;

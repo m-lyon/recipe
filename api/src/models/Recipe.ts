@@ -4,21 +4,21 @@ import { Document, PopulatedDoc, Schema, Types, model } from 'mongoose';
 import { Size } from './Size.js';
 import { Unit } from './Unit.js';
 import { PrepMethod } from './PrepMethod.js';
+import { capitalise } from '../utils/string.js';
 import { generateRandomString } from '../utils/random.js';
 import { ALLOWED_TAGS, Ingredient } from './Ingredient.js';
 import type { Ingredient as IngredientType } from './Ingredient.js';
 import { ownerExists, tagsExist, unique, uniqueInAdminsAndUser } from './validation.js';
 
 const quantityRegex = /^((\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*)(-(\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*))?)$/;
-type RecipeIngredientEnum = 'ingredient' | 'recipe';
 
 export interface RecipeIngredientType extends Document {
-    type: RecipeIngredientEnum;
     quantity?: string;
     unit?: Types.ObjectId;
     size?: Types.ObjectId;
     ingredient: PopulatedDoc<Document<Types.ObjectId> & IngredientType>;
     prepMethod?: Types.ObjectId;
+    type: 'ingredient' | 'recipe';
 }
 
 export function generateRecipeIdentifier(title: string): string {
@@ -33,6 +33,7 @@ export function generateRecipeIdentifier(title: string): string {
 }
 
 const recipeIngredientSchema = new Schema<RecipeIngredientType>({
+    type: { type: String, enum: ['ingredient', 'recipe'] },
     quantity: {
         type: String,
         validate: {
@@ -74,12 +75,14 @@ const recipeIngredientSchema = new Schema<RecipeIngredientType>({
     ingredient: {
         type: Schema.Types.ObjectId,
         ref: function () {
-            return Ingredient.exists({ _id: this._id }) ? 'Ingredient' : 'Recipe';
+            return capitalise(this.type);
         },
         required: true,
         validate: {
-            validator: function (ingredient: Types.ObjectId) {
-                return Ingredient.exists({ _id: ingredient }) || Recipe.exists({ _id: ingredient });
+            validator: async function (ingredient: Types.ObjectId) {
+                const isIngredient = await Ingredient.exists({ _id: ingredient });
+                const isRecipe = await Recipe.exists({ _id: ingredient });
+                return isIngredient || isRecipe;
             },
             message: 'Ingredient does not exist.',
         },
@@ -98,6 +101,15 @@ const recipeIngredientSchema = new Schema<RecipeIngredientType>({
         },
     },
 });
+recipeIngredientSchema.pre('save', async function () {
+    const isIngredient = await Ingredient.exists({ _id: this.ingredient });
+    if (isIngredient) {
+        this.type = 'ingredient';
+    } else {
+        this.type = 'recipe';
+    }
+});
+
 interface IngredientSubsection {
     name?: string;
     ingredients: RecipeIngredientType[];
@@ -238,14 +250,16 @@ recipeSchema.pre('save', async function () {
     await this.populate('ingredientSubsections.ingredients.ingredient');
     this.calculatedTags = [];
     for (const tag of ALLOWED_TAGS) {
-        const allMembers = this.ingredientSubsections.every((collection) => {
-            return collection.ingredients.every((recipeIngr) => {
-                if (recipeIngr.ingredient.calculatedTags !== undefined) {
+        const allMembers = this.ingredientSubsections.every((collection: IngredientSubsection) => {
+            return collection.ingredients.every((recipeIngr: RecipeIngredientType) => {
+                if (recipeIngr.type === 'ingredient') {
+                    const ingr: IngredientType = recipeIngr.ingredient;
+                    return ingr.tags.includes(tag);
+                } else if (recipeIngr.type === 'recipe') {
                     const recipe: Recipe = recipeIngr.ingredient;
                     return recipe.calculatedTags.includes(tag);
                 } else {
-                    const ingr: IngredientType = recipeIngr.ingredient;
-                    return ingr.tags.includes(tag);
+                    throw new Error('Invalid RecipeIngredient type');
                 }
             });
         });
@@ -259,7 +273,7 @@ export const RecipeIngredient = model<RecipeIngredientType>(
     'RecipeIngredient',
     recipeIngredientSchema
 );
-export const RecipeIngredientTC = composeMongoose(RecipeIngredient);
+export const RecipeIngredientTC = composeMongoose(RecipeIngredient, { removeFields: ['type'] });
 export const Recipe = model<Recipe>('Recipe', recipeSchema);
 export const RecipeTC = composeMongoose(Recipe);
 export const RecipeModifyTC = composeMongoose(Recipe, {
