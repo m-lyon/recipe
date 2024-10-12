@@ -4,7 +4,7 @@ import { UseMeasureRef } from 'react-use/lib/useMeasure';
 import { Box, ResponsiveValue, Skeleton } from '@chakra-ui/react';
 import { AspectRatio, Card, CardBody, CardProps, Image } from '@chakra-ui/react';
 
-import { GRAPHQL_ENDPOINT } from '@recipe/constants';
+import { GRAPHQL_URL } from '@recipe/constants';
 
 import { Carousel } from './Carousel';
 
@@ -38,7 +38,7 @@ export function ImageCarousel(props: ImageCarouselProps) {
             <CardBody padding='0' key={index}>
                 <AspectRatio maxW={width} ratio={ratio} key={index}>
                     <Image
-                        src={`${GRAPHQL_ENDPOINT}${image.origUrl}${queryStr}`}
+                        src={`${GRAPHQL_URL}${image.origUrl}${queryStr}`}
                         objectFit='contain'
                         onDragStart={(e: React.DragEvent<HTMLImageElement>) => e.preventDefault()}
                         borderBottomLeftRadius={borderLeft}

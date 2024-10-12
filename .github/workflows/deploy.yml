@@ -53,9 +53,9 @@ jobs:
       - name: Create API environment file
         working-directory: ./api
         run: |
-          echo "HTTPS = ${{ secrets.HTTPS }}" > .env.test.local
-          echo "MONGODB_URI = ${{ secrets.MONGODB_URI }}" >> .env.test.local
-          echo "PORT = ${{ secrets.PORT }}" >> .env.test.local
+          echo "HTTPS = ${{ vars.HTTPS }}" > .env.test.local
+          echo "MONGODB_URI = ${{ vars.MONGODB_URI }}" >> .env.test.local
+          echo "PORT = ${{ vars.PORT }}" >> .env.test.local
           echo "SESSION_SECRET = ${{ secrets.SESSION_SECRET }}" >> .env.test.local
           echo "SESSION_URI = ${{ secrets.SESSION_URI }}" >> .env.test.local
           echo "WHITELISTED_DOMAINS = ${{ secrets.WHITELISTED_DOMAINS }}" >> .env.test.local
@@ -63,14 +63,14 @@ jobs:
       - name: Create client environment file
         working-directory: ./client
         run: |
-          echo "VITE_GRAPHQL_ENDPOINT = ${{ secrets.VITE_GRAPHQL_ENDPOINT }}" > .env.test.local
-          echo "VITE_ROOT_PATH = ${{ secrets.VITE_ROOT_PATH }}" >> .env.test.local
-          echo "VITE_DELAY_SHORT = ${{ secrets.VITE_DELAY_SHORT }}" >> .env.test.local
-          echo "VITE_DELAY_LONG = ${{ secrets.VITE_DELAY_LONG }}" >> .env.test.local
-          echo "VITE_DEBUG = ${{ secrets.VITE_DEBUG }}" >> .env.test.local
-          echo "VITE_DEBOUNCE_TIME = ${{ secrets.VITE_DEBOUNCE_TIME }}" >> .env.test.local
-          echo "VITE_INIT_LOAD_NUM = ${{ secrets.VITE_INIT_LOAD_NUM }}" >> .env.test.local
-          echo "VITE_FETCH_MORE_NUM = ${{ secrets.VITE_FETCH_MORE_NUM }}" >> .env.test.local
+          echo "VITE_GRAPHQL_URL = ${{ vars.VITE_GRAPHQL_URL }}" > .env.test.local
+          echo "VITE_ROOT_PATH = ${{ vars.VITE_ROOT_PATH }}" >> .env.test.local
+          echo "VITE_DELAY_SHORT = ${{ vars.VITE_DELAY_SHORT }}" >> .env.test.local
+          echo "VITE_DELAY_LONG = ${{ vars.VITE_DELAY_LONG }}" >> .env.test.local
+          echo "VITE_DEBUG = ${{ vars.VITE_DEBUG }}" >> .env.test.local
+          echo "VITE_DEBOUNCE_TIME = ${{ vars.VITE_DEBOUNCE_TIME }}" >> .env.test.local
+          echo "VITE_INIT_LOAD_NUM = ${{ vars.VITE_INIT_LOAD_NUM }}" >> .env.test.local
+          echo "VITE_FETCH_MORE_NUM = ${{ vars.VITE_FETCH_MORE_NUM }}" >> .env.test.local
 
       - name: Start server in development mode
         working-directory: ./api
@@ -117,7 +117,7 @@ jobs:
       - name: Create client environment file
         working-directory: ./client
         run: |
-          echo "VITE_GRAPHQL_ENDPOINT = ${{ secrets.VITE_GRAPHQL_ENDPOINT }}" > .env.production.local
+          echo "VITE_GRAPHQL_URL = ${{ secrets.VITE_GRAPHQL_URL }}" > .env.production.local
           echo "VITE_ROOT_PATH = ${{ secrets.VITE_ROOT_PATH }}" >> .env.production.local
           echo "VITE_DELAY_SHORT = ${{ secrets.VITE_DELAY_SHORT }}" >> .env.production.local
           echo "VITE_DELAY_LONG = ${{ secrets.VITE_DELAY_LONG }}" >> .env.production.local

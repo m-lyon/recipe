@@ -4,7 +4,7 @@ import { CloseIcon, EditIcon } from '@chakra-ui/icons';
 import { Box, Flex, IconButton, LinkOverlay, Spacer } from '@chakra-ui/react';
 import { Card, CardBody, CardHeader, Heading, LinkBox } from '@chakra-ui/react';
 
-import { ROOT_PATH } from '@recipe/constants';
+import { PATH } from '@recipe/constants';
 import { TagList } from '@recipe/features/tags';
 
 export function getCardTitle(recipe: RecipePreview): string {
@@ -37,7 +37,7 @@ export function RecipeCard(props: Props) {
             >
                 <LinkOverlay
                     as={Link}
-                    to={`${ROOT_PATH}/view/recipe/${recipe.titleIdentifier}`}
+                    to={`${PATH.ROOT}/view/recipe/${recipe.titleIdentifier}`}
                     aria-label={`View ${recipe.title}`}
                 />
                 <Flex minWidth='max-content' direction='row'>
@@ -57,7 +57,7 @@ export function RecipeCard(props: Props) {
                                 }}
                                 transition='opacity 0.3s, transform 0.3s'
                                 as={Link}
-                                to={`${ROOT_PATH}/edit/recipe/${recipe.titleIdentifier}`}
+                                to={`${PATH.ROOT}/edit/recipe/${recipe.titleIdentifier}`}
                             />
                         </Box>
                     </Box>

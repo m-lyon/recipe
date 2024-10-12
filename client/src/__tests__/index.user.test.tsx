@@ -3,7 +3,7 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { ROOT_PATH } from '@recipe/constants';
+import { PATH } from '@recipe/constants';
 import { mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockLogin, mockLogout } from '@recipe/graphql/mutations/__mocks__/user';
 import { MockedResponses, enterViewRecipePage, renderPage } from '@recipe/utils/tests';
@@ -13,7 +13,7 @@ import { mockCountRecipes, mockGetRecipeOne } from '@recipe/graphql/queries/__mo
 import { routes } from '../routes';
 
 const renderComponent = (mockedResponses: MockedResponses = []) => {
-    renderPage(routes, [mockGetRecipes, mockCountRecipes, ...mockedResponses], [ROOT_PATH]);
+    renderPage(routes, [mockGetRecipes, mockCountRecipes, ...mockedResponses], [PATH.ROOT]);
 };
 
 loadErrorMessages();

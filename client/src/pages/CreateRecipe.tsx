@@ -4,9 +4,9 @@ import { useNavigate } from 'react-router-dom';
 
 import { ADD_RATING } from '@recipe/graphql/mutations/rating';
 import { CREATE_RECIPE } from '@recipe/graphql/mutations/recipe';
+import { DELAY_LONG, DELAY_SHORT, PATH } from '@recipe/constants';
 import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
-import { DELAY_LONG, DELAY_SHORT, ROOT_PATH } from '@recipe/constants';
 import { EditableRecipe, useRecipeState } from '@recipe/features/editing';
 import { IMAGE_FIELDS, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
 import { RECIPE_FIELDS_SUBSET, RECIPE_INGR_FIELDS } from '@recipe/graphql/queries/recipe';
@@ -113,7 +113,7 @@ export function CreateRecipe() {
                 description,
                 position: 'top',
             });
-            return setTimeout(() => navigate(ROOT_PATH), DELAY_LONG);
+            return setTimeout(() => navigate(PATH.ROOT), DELAY_LONG);
         }
 
         try {
@@ -131,14 +131,14 @@ export function CreateRecipe() {
                 description,
                 position: 'top',
             });
-            return setTimeout(() => navigate(ROOT_PATH), DELAY_LONG);
+            return setTimeout(() => navigate(PATH.ROOT), DELAY_LONG);
         }
         successToast({
             title: 'Recipe created',
             description: 'Your recipe has been created, redirecting you to the home page',
             position: 'top',
         });
-        setTimeout(() => navigate(ROOT_PATH), DELAY_SHORT);
+        setTimeout(() => navigate(PATH.ROOT), DELAY_SHORT);
     };
 
     return (

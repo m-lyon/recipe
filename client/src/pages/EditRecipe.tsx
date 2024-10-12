@@ -9,8 +9,8 @@ import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 import { UpdateByIdRecipeModifyInput } from '@recipe/graphql/generated';
 import { EditableRecipe, useRecipeState } from '@recipe/features/editing';
 import { dbIngredientToFinished } from '@recipe/features/recipeIngredient';
+import { DELAY_LONG, DELAY_SHORT, GRAPHQL_URL, PATH } from '@recipe/constants';
 import { GET_RECIPE, RECIPE_INGR_FIELDS } from '@recipe/graphql/queries/recipe';
-import { DELAY_LONG, DELAY_SHORT, GRAPHQL_ENDPOINT, ROOT_PATH } from '@recipe/constants';
 import { DELETE_IMAGES, IMAGE_FIELDS, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
 
 export function EditRecipe() {
@@ -171,7 +171,7 @@ export function EditRecipe() {
                 try {
                     const images = await Promise.all(
                         recipe.images.map(async (img) => {
-                            const res = await fetch(`${GRAPHQL_ENDPOINT}${img.origUrl}`);
+                            const res = await fetch(`${GRAPHQL_URL}${img.origUrl}`);
                             const blob = await res.blob();
                             return new File([blob], img.origUrl, { type: blob.type });
                         })
@@ -235,14 +235,14 @@ export function EditRecipe() {
                 description,
                 position: 'top',
             });
-            return setTimeout(() => navigate(ROOT_PATH), DELAY_LONG);
+            return setTimeout(() => navigate(PATH.ROOT), DELAY_LONG);
         }
         successToast({
             title: 'Recipe saved',
             description: 'Your recipe has been saved, redirecting you to the home page',
             position: 'top',
         });
-        setTimeout(() => navigate(ROOT_PATH), DELAY_SHORT);
+        setTimeout(() => navigate(PATH.ROOT), DELAY_SHORT);
     };
 
     return (

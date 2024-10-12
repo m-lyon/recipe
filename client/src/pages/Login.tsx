@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { FormEvent, useEffect, useState } from 'react';
 import { Box, Button, FormControl, HStack, Heading, Stack } from '@chakra-ui/react';
 
-import { ROOT_PATH } from '@recipe/constants';
+import { PATH } from '@recipe/constants';
 import { useUser } from '@recipe/features/user';
 import { useErrorToast } from '@recipe/common/hooks';
 import { CURRENT_USER } from '@recipe/graphql/queries/user';
@@ -94,7 +94,7 @@ export function Login() {
 
     useEffect(() => {
         if (isLoggedIn) {
-            navigate(ROOT_PATH);
+            navigate(PATH.ROOT);
         }
     }, [isLoggedIn, navigate]);
 

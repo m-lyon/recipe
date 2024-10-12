@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { Box, Heading, VStack } from '@chakra-ui/react';
 
+import { DELAY_LONG, PATH } from '@recipe/constants';
 import { useSuccessToast } from '@recipe/common/hooks';
 import { CreateSizeForm } from '@recipe/features/forms';
-import { DELAY_LONG, ROOT_PATH } from '@recipe/constants';
 import { CreateSizeMutation } from '@recipe/graphql/generated';
 
 export function CreateSize() {
@@ -15,7 +15,7 @@ export function CreateSize() {
             description: `${data!.sizeCreateOne!.record!.value} saved, redirecting to the home page.`,
             position: 'top',
         });
-        return setTimeout(() => navigate(ROOT_PATH), DELAY_LONG);
+        return setTimeout(() => navigate(PATH.ROOT), DELAY_LONG);
     };
 
     return (

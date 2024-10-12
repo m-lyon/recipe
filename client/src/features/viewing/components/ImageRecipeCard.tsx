@@ -4,7 +4,7 @@ import { CloseIcon, EditIcon } from '@chakra-ui/icons';
 import { Box, Flex, LinkBox, LinkOverlay, VStack } from '@chakra-ui/react';
 import { Card, CardBody, CardHeader, Heading, IconButton, Spacer } from '@chakra-ui/react';
 
-import { ROOT_PATH } from '@recipe/constants';
+import { PATH } from '@recipe/constants';
 import { TagList } from '@recipe/features/tags';
 import { ImageViewerHome } from '@recipe/features/images';
 
@@ -43,7 +43,7 @@ export function ImageRecipeCard(props: Props) {
                                 }}
                                 transition='opacity 0.3s, transform 0.3s'
                                 as={Link}
-                                to={`${ROOT_PATH}/edit/recipe/${recipe.titleIdentifier}`}
+                                to={`${PATH.ROOT}/edit/recipe/${recipe.titleIdentifier}`}
                             />
                         </Box>
                     </Box>
@@ -72,7 +72,7 @@ export function ImageRecipeCard(props: Props) {
                     <Heading size='md' color='blackAlpha.700'>
                         <LinkOverlay
                             as={Link}
-                            to={`${ROOT_PATH}/view/recipe/${recipe.titleIdentifier}`}
+                            to={`${PATH.ROOT}/view/recipe/${recipe.titleIdentifier}`}
                         >
                             {getCardTitle(recipe)}
                         </LinkOverlay>
@@ -81,7 +81,7 @@ export function ImageRecipeCard(props: Props) {
                 <CardBody p='0'>
                     <LinkOverlay
                         as={Link}
-                        to={`${ROOT_PATH}/view/recipe/${recipe.titleIdentifier}`}
+                        to={`${PATH.ROOT}/view/recipe/${recipe.titleIdentifier}`}
                         aria-label={`View ${recipe.title}`}
                     >
                         <VStack

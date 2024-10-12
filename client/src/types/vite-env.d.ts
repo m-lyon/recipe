@@ -1,6 +1,7 @@
 interface ImportMetaEnv {
-    readonly VITE_GRAPHQL_ENDPOINT: string;
+    readonly VITE_GRAPHQL_URL: string;
     readonly VITE_ROOT_PATH?: string;
+    readonly VITE_LOGIN_ENDPOINT?: string;
     readonly VITE_DELAY_SHORT?: number;
     readonly VITE_DELAY_LONG?: number;
     readonly VITE_DEBUG?: boolean;

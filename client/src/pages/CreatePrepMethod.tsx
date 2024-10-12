@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { Box, Heading, VStack } from '@chakra-ui/react';
 
+import { DELAY_LONG, PATH } from '@recipe/constants';
 import { useSuccessToast } from '@recipe/common/hooks';
-import { DELAY_LONG, ROOT_PATH } from '@recipe/constants';
 import { CreatePrepMethodForm } from '@recipe/features/forms';
 import { CreatePrepMethodMutation } from '@recipe/graphql/generated';
 
@@ -15,7 +15,7 @@ export function CreatePrepMethod() {
             description: `${data!.prepMethodCreateOne!.record!.value} saved, redirecting to the home page.`,
             position: 'top',
         });
-        return setTimeout(() => navigate(ROOT_PATH), DELAY_LONG);
+        return setTimeout(() => navigate(PATH.ROOT), DELAY_LONG);
     };
 
     return (

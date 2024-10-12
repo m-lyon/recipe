@@ -5,7 +5,7 @@ import { Box, Collapse, Flex, Icon, IconButton, Slide, Stack, Text } from '@chak
 import { Link as ChakraLink, Popover, PopoverContent, PopoverTrigger } from '@chakra-ui/react';
 import { ChevronDownIcon, ChevronRightIcon, CloseIcon, HamburgerIcon } from '@chakra-ui/icons';
 
-import { ROOT_PATH } from '@recipe/constants';
+import { PATH } from '@recipe/constants';
 import { SearchBar } from '@recipe/features/search';
 import { UserOptions, useUser } from '@recipe/features/user';
 
@@ -56,7 +56,7 @@ export function Navbar() {
                             fontFamily='heading'
                             color={useColorModeValue('gray.800', 'white')}
                             _hover={{ textDecoration: 'none' }}
-                            to={ROOT_PATH}
+                            to={PATH.ROOT}
                             as={ReactRouterLink}
                             aria-label='Navigate to home page'
                             onClick={onClose}
@@ -281,37 +281,37 @@ interface NavItem {
 const USER_NAV_ITEMS: Array<NavItem> = [
     {
         label: 'Create',
-        href: `${ROOT_PATH}/create/recipe`,
+        href: `${PATH.ROOT}/create/recipe`,
         children: [
             {
                 label: 'Recipe',
                 ariaLabel: 'Create new recipe',
-                href: `${ROOT_PATH}/create/recipe`,
+                href: `${PATH.ROOT}/create/recipe`,
             },
             {
                 label: 'Unit',
                 ariaLabel: 'Create new unit',
-                href: `${ROOT_PATH}/create/unit`,
+                href: `${PATH.ROOT}/create/unit`,
             },
             {
                 label: 'Size',
                 ariaLabel: 'Create new size',
-                href: `${ROOT_PATH}/create/size`,
+                href: `${PATH.ROOT}/create/size`,
             },
             {
                 label: 'Ingredient',
                 ariaLabel: 'Create new ingredient',
-                href: `${ROOT_PATH}/create/ingredient`,
+                href: `${PATH.ROOT}/create/ingredient`,
             },
             {
                 label: 'Prep Method',
                 ariaLabel: 'Create new prep method',
-                href: `${ROOT_PATH}/create/prep-method`,
+                href: `${PATH.ROOT}/create/prep-method`,
             },
             {
                 label: 'Unit Conversion',
                 ariaLabel: 'Create new unit conversion rule',
-                href: `${ROOT_PATH}/create/unit-conversion`,
+                href: `${PATH.ROOT}/create/unit-conversion`,
             },
         ],
     },
@@ -321,22 +321,22 @@ const USER_NAV_ITEMS: Array<NavItem> = [
             {
                 label: 'Unit',
                 ariaLabel: 'Edit existing unit',
-                href: `${ROOT_PATH}/edit/unit`,
+                href: `${PATH.ROOT}/edit/unit`,
             },
             {
                 label: 'Size',
                 ariaLabel: 'Edit existing size',
-                href: `${ROOT_PATH}/edit/size`,
+                href: `${PATH.ROOT}/edit/size`,
             },
             {
                 label: 'Ingredient',
                 ariaLabel: 'Edit existing ingredient',
-                href: `${ROOT_PATH}/edit/ingredient`,
+                href: `${PATH.ROOT}/edit/ingredient`,
             },
             {
                 label: 'Prep Method',
                 ariaLabel: 'Edit existing prep method',
-                href: `${ROOT_PATH}/edit/prep-method`,
+                href: `${PATH.ROOT}/edit/prep-method`,
             },
         ],
     },

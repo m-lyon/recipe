@@ -6,8 +6,8 @@ import { Dispatch, FormEvent, SetStateAction, useState } from 'react';
 import { List, Tag, TagCloseButton, TagLabel } from '@chakra-ui/react';
 import { Box, Button, FormControl, HStack, Heading, VStack } from '@chakra-ui/react';
 
+import { DELAY_SHORT, PATH } from '@recipe/constants';
 import { GET_UNITS } from '@recipe/graphql/queries/unit';
-import { DELAY_SHORT, ROOT_PATH } from '@recipe/constants';
 import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 import { CREATE_CONVERSION_RULE } from '@recipe/graphql/mutations/unitConversion';
 import { CREATE_UNIT_CONVERSION } from '@recipe/graphql/mutations/unitConversion';
@@ -137,7 +137,7 @@ export function CreateUnitConversion() {
                     'The unit conversion has been created, redirecting you to the home page',
                 position: 'top',
             });
-            setTimeout(() => navigate(ROOT_PATH), DELAY_SHORT);
+            setTimeout(() => navigate(PATH.ROOT), DELAY_SHORT);
         } catch (err) {
             if (err instanceof Error) {
                 console.error(err);
