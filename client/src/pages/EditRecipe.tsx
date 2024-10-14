@@ -116,7 +116,7 @@ export function EditRecipe() {
             getRatings(data.recipeOne._id);
             const recipe = data.recipeOne;
             setRecipe(recipe);
-            state.title.actionHandler.set(recipe.title);
+            state.title.setTitle(recipe.title);
             state.numServings.setNum(recipe.numServings);
             recipe.ingredientSubsections.forEach((sub, index) => {
                 state.ingredient.actionHandler.subsection.setTitle(index, sub.name);

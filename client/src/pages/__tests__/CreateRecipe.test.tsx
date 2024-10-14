@@ -4,8 +4,8 @@ import { cleanup, screen } from '@testing-library/react';
 import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { renderPage } from '@recipe/utils/tests';
 import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
+import { haveValueByLabelText, renderPage } from '@recipe/utils/tests';
 import { mockCurrentUser } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
@@ -37,15 +37,14 @@ describe('Title', () => {
         renderComponent();
 
         // Act
-        const element = screen.getByText('Enter Recipe Title');
+        const element = screen.getByLabelText('Enter recipe title');
         await user.click(element);
         await user.click(screen.getByLabelText('Enter title for ingredient subsection 1'));
         await user.click(element);
         await user.keyboard('g');
 
         // Expect
-        expect(screen.queryByText('gEnter Recipe Title')).toBeNull();
-        expect(screen.queryByText('g')).not.toBeNull();
+        haveValueByLabelText(screen, 'Enter recipe title', 'g');
     });
 });
 

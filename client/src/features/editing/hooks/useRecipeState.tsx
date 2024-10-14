@@ -3,12 +3,12 @@ import { useState } from 'react';
 import { ServingsProps } from '@recipe/features/servings';
 import { ImageUploadProps } from '@recipe/features/images';
 import { UseTagListReturnType, useTagList } from '@recipe/features/tags';
-import { UseEditableReturnType, useEditable } from '@recipe/common/hooks';
 import { UseIngredientListReturnType, useIngredientList } from '@recipe/features/recipeIngredient';
 
 import { useAsIngredient } from './useAsIngredient';
 import { UseAsIngredientReturnType } from './useAsIngredient';
 import { EditableNotesProps } from '../components/EditableNotes';
+import { EditableTitleProps } from '../components/EditableTitle';
 import { EditableSourceProps } from '../components/EditableSource';
 import { UseInstructionListReturnType, useInstructionList } from './useInstructionsList';
 
@@ -18,7 +18,7 @@ export interface RecipeState {
     notes: EditableNotesProps;
     instructions: UseInstructionListReturnType;
     tags: UseTagListReturnType;
-    title: UseEditableReturnType;
+    title: EditableTitleProps;
     source: EditableSourceProps;
     asIngredient: UseAsIngredientReturnType;
     images: ImageUploadProps;
@@ -28,7 +28,7 @@ export function useRecipeState(): RecipeState {
     const ingredient = useIngredientList();
     const instructions = useInstructionList();
     const tags = useTagList();
-    const title = useEditable('Enter Recipe Title');
+    const [title, setTitle] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
     const [source, setSource] = useState<string>('');
     const asIngredient = useAsIngredient();
@@ -40,7 +40,7 @@ export function useRecipeState(): RecipeState {
         notes: { notes, setNotes },
         instructions,
         tags,
-        title,
+        title: { value: title, setTitle },
         source: { source, setSource },
         asIngredient,
         images: { images, setImages },
