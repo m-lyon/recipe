@@ -1,4 +1,4 @@
-import { CentredInput } from '@recipe/common/components';
+import { CentredTextArea } from '@recipe/common/components';
 
 export interface EditableTitleProps {
     value: string;
@@ -8,7 +8,7 @@ export interface EditableTitleProps {
 export function EditableTitle(props: EditableTitleProps) {
     const { value, setTitle } = props;
     return (
-        <CentredInput
+        <CentredTextArea
             value={value}
             setValue={setTitle}
             fontSize='3xl'

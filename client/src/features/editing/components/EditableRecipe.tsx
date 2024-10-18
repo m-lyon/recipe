@@ -188,7 +188,14 @@ export function EditableRecipe(props: Props) {
                 color='blackAlpha.700'
                 fontWeight='bold'
             >
-                <GridItem boxShadow='lg' padding='6' area='title' maxH='100px'>
+                <GridItem
+                    boxShadow='lg'
+                    padding='6'
+                    area='title'
+                    minH='100px'
+                    alignItems='center'
+                    display='flex'
+                >
                     <EditableTitle {...state.title} />
                 </GridItem>
                 <GridItem
