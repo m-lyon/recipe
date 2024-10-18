@@ -2,7 +2,7 @@ import 'dotenv-flow/config';
 import { CodegenConfig } from '@graphql-codegen/cli';
 
 const config: CodegenConfig = {
-    schema: process.env.VITE_GRAPHQL_ENDPOINT,
+    schema: process.env.VITE_GRAPHQL_URL,
     documents: ['src/**/*.tsx', 'src/**/*.ts'],
     generates: {
         './src/__generated__/': {
