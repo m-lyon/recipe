@@ -36,7 +36,7 @@ export function BasePopover<TChoice, TData>(props: BasePopoverProps<TChoice, TDa
     return (
         <PopoverContent paddingRight={4} paddingBottom={3} paddingLeft={2}>
             <PopoverArrow />
-            <PopoverCloseButton />
+            <PopoverCloseButton aria-label={`Close new ${title.toLowerCase()} form`} />
             <PopoverHeader border='hidden'>Add new {title.toLowerCase()}</PopoverHeader>
             <FormComponent fieldRef={fieldRef} handleComplete={handleComplete} pl={2} />
         </PopoverContent>

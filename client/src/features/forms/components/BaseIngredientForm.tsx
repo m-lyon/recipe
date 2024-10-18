@@ -31,11 +31,11 @@ export interface BaseIngredientFormProps extends StackProps {
     fieldRef?: MutableRefObject<HTMLInputElement | null>;
     initData?: Partial<ModifyableIngredient>;
     disabled?: boolean;
-    onSubmit: (data: ModifyableIngredient) => void;
+    submitForm: (data: ModifyableIngredient) => void;
     onDelete?: () => void;
 }
 export function BaseIngredientForm(props: BaseIngredientFormProps) {
-    const { fieldRef, initData, disabled, onSubmit, onDelete, ...rest } = props;
+    const { fieldRef, initData, disabled, submitForm, onDelete, ...rest } = props;
     const disabledData = useMemo(
         () => ({ name: '', pluralName: '', isCountable: false, tags: [] }),
         []
@@ -51,7 +51,7 @@ export function BaseIngredientForm(props: BaseIngredientFormProps) {
         formSchema,
         xfm,
         initData,
-        onSubmit,
+        submitForm,
         'ingredient',
         disabled && disabledData
     );

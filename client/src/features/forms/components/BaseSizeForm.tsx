@@ -19,7 +19,7 @@ export interface BaseSizeFormProps extends StackProps {
     fieldRef?: MutableRefObject<HTMLInputElement | null>;
     initData?: Partial<ModifyableSize>;
     disabled?: boolean;
-    onSubmit: (data: ModifyableSize) => void;
+    submitForm: (data: ModifyableSize) => void;
     onDelete?: () => void;
 }
 const formSchema = object({
@@ -28,13 +28,13 @@ const formSchema = object({
 });
 
 export function BaseSizeForm(props: BaseSizeFormProps) {
-    const { fieldRef, initData, disabled, onSubmit, onDelete, ...rest } = props;
+    const { fieldRef, initData, disabled, submitForm, onDelete, ...rest } = props;
     const disabledData = useMemo(() => ({ value: '' }), []);
     const { formData, hasError, handleSubmit, handleChange } = useFormLogic<ModifyableSize>(
         formSchema,
         (data) => ({ value: data.value, unique: true }),
         initData,
-        onSubmit,
+        submitForm,
         'size',
         disabled && disabledData
     );

@@ -11,17 +11,13 @@ interface Props {
     setItem: (item: UnitChoice) => void;
 }
 export function NewUnitPopover(props: Props) {
-    const title = 'Unit';
-    const extractRecord = (data: CreateUnitMutation) => data.unitCreateOne!.record!;
-    const extractDescription = (record: UnitChoice) => record.longSingular;
-
     return (
         <BasePopover
             {...props}
-            title={title}
+            title='Unit'
             FormComponent={CreateUnitForm}
-            extractRecord={extractRecord}
-            extractDescription={extractDescription}
+            extractRecord={(data: CreateUnitMutation) => data.unitCreateOne!.record!}
+            extractDescription={(record: UnitChoice) => record.longSingular}
         />
     );
 }

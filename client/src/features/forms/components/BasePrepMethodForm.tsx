@@ -24,17 +24,17 @@ export interface BasePrepMethodFormProps extends StackProps {
     fieldRef?: MutableRefObject<HTMLInputElement | null>;
     initData?: Partial<ModifyablePrepMethod>;
     disabled?: boolean;
-    onSubmit: (data: ModifyablePrepMethod) => void;
+    submitForm: (data: ModifyablePrepMethod) => void;
     onDelete?: () => void;
 }
 export function BasePrepMethodForm(props: BasePrepMethodFormProps) {
-    const { fieldRef, initData, disabled, onSubmit, onDelete, ...rest } = props;
+    const { fieldRef, initData, disabled, submitForm, onDelete, ...rest } = props;
     const disabledData = useMemo(() => ({ value: '' }), []);
     const { formData, hasError, handleSubmit, handleChange } = useFormLogic<ModifyablePrepMethod>(
         formSchema,
         (data) => ({ value: data.value, unique: true }),
         initData,
-        onSubmit,
+        submitForm,
         'prep method',
         disabled && disabledData
     );

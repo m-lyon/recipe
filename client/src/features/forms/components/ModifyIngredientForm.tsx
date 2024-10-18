@@ -10,7 +10,7 @@ import { BaseIngredientForm } from './BaseIngredientForm';
 import { formatIngredientError } from './BaseIngredientForm';
 import { BaseIngredientFormProps } from './BaseIngredientForm';
 
-interface Props extends Omit<BaseIngredientFormProps, 'onSubmit'> {
+interface Props extends Omit<BaseIngredientFormProps, 'submitForm'> {
     handleComplete: (data: ModifyIngredientMutation) => void;
     onDelete: () => void;
     ingredientId?: string;
@@ -67,5 +67,5 @@ export function ModifyIngredientForm(props: Props) {
         }
     };
 
-    return <BaseIngredientForm {...rest} onSubmit={handleSubmit} onDelete={handleDelete} />;
+    return <BaseIngredientForm {...rest} submitForm={handleSubmit} onDelete={handleDelete} />;
 }

@@ -11,17 +11,13 @@ interface Props {
     setItem: (item: SizeChoice) => void;
 }
 export function NewSizePopover(props: Props) {
-    const title = 'Size';
-    const extractRecord = (data: CreateSizeMutation) => data.sizeCreateOne!.record!;
-    const extractDescription = (record: SizeChoice) => record.value;
-
     return (
         <BasePopover
             {...props}
-            title={title}
+            title='Size'
             FormComponent={CreateSizeForm}
-            extractRecord={extractRecord}
-            extractDescription={extractDescription}
+            extractRecord={(data: CreateSizeMutation) => data.sizeCreateOne!.record!}
+            extractDescription={(record: SizeChoice) => record.value}
         />
     );
 }

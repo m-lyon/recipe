@@ -8,7 +8,7 @@ import { CREATE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 import { formatPrepMethodError } from './BasePrepMethodForm';
 import { BasePrepMethodForm, BasePrepMethodFormProps } from './BasePrepMethodForm';
 
-interface Props extends Omit<BasePrepMethodFormProps, 'onSubmit'> {
+interface Props extends Omit<BasePrepMethodFormProps, 'submitForm'> {
     handleComplete: (data: CreatePrepMethodMutation) => void;
 }
 
@@ -55,5 +55,5 @@ export function CreatePrepMethodForm(props: Props) {
         createPrepMethod({ variables: { record: formData } });
     };
 
-    return <BasePrepMethodForm {...rest} onSubmit={handleSubmit} />;
+    return <BasePrepMethodForm {...rest} submitForm={handleSubmit} />;
 }

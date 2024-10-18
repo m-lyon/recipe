@@ -33,11 +33,11 @@ export interface BaseUnitFormProps extends StackProps {
     fieldRef?: MutableRefObject<HTMLInputElement | null>;
     initData?: Partial<ModifyableUnit>;
     disabled?: boolean;
-    onSubmit: (data: ModifyableUnit) => void;
+    submitForm: (data: ModifyableUnit) => void;
     onDelete?: () => void;
 }
 export function BaseUnitForm(props: BaseUnitFormProps) {
-    const { fieldRef, initData, disabled, onSubmit, onDelete, ...rest } = props;
+    const { fieldRef, initData, disabled, submitForm, onDelete, ...rest } = props;
     const disabledData = useMemo(
         () => ({
             shortSingular: '',
@@ -61,7 +61,7 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
         unitFormSchema,
         xfm,
         initData,
-        onSubmit,
+        submitForm,
         'unit',
         disabled && disabledData
     );

@@ -7,7 +7,7 @@ import { DELETE_UNIT, MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
 
 import { BaseUnitForm, BaseUnitFormProps, formatUnitError } from './BaseUnitForm';
 
-interface Props extends Omit<BaseUnitFormProps, 'onSubmit'> {
+interface Props extends Omit<BaseUnitFormProps, 'submitForm'> {
     handleComplete: (data: ModifyUnitMutation) => void;
     onDelete: () => void;
     unitId?: string;
@@ -64,5 +64,5 @@ export function ModifyUnitForm(props: Props) {
         }
     };
 
-    return <BaseUnitForm {...rest} onSubmit={handleSubmit} onDelete={handleDelete} />;
+    return <BaseUnitForm {...rest} submitForm={handleSubmit} onDelete={handleDelete} />;
 }

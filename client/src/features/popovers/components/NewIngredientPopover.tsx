@@ -11,17 +11,13 @@ interface Props {
     setItem: (item: IngredientChoice) => void;
 }
 export function NewIngredientPopover(props: Props) {
-    const title = 'Ingredient';
-    const extractRecord = (data: CreateIngredientMutation) => data.ingredientCreateOne!.record!;
-    const extractDescription = (record: IngredientChoice) => record.name;
-
     return (
         <BasePopover
             {...props}
-            title={title}
+            title='Ingredient'
             FormComponent={CreateIngredientForm}
-            extractRecord={extractRecord}
-            extractDescription={extractDescription}
+            extractRecord={(data: CreateIngredientMutation) => data.ingredientCreateOne!.record!}
+            extractDescription={(record: IngredientChoice) => record.name}
         />
     );
 }

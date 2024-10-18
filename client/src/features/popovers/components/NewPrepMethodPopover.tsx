@@ -12,17 +12,13 @@ interface Props {
 }
 
 export function NewPrepMethodPopover(props: Props) {
-    const title = 'Prep method';
-    const extractRecord = (data: CreatePrepMethodMutation) => data.prepMethodCreateOne!.record!;
-    const extractDescription = (record: PrepMethodChoice) => record.value;
-
     return (
         <BasePopover
             {...props}
-            title={title}
+            title='Prep method'
             FormComponent={CreatePrepMethodForm}
-            extractRecord={extractRecord}
-            extractDescription={extractDescription}
+            extractRecord={(data: CreatePrepMethodMutation) => data.prepMethodCreateOne!.record!}
+            extractDescription={(record: PrepMethodChoice) => record.value}
         />
     );
 }

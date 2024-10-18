@@ -46,6 +46,27 @@ describe('Creating new items', () => {
         await user.keyboard('{2}{ }');
         expect(await screen.findByLabelText('teaspoons')).not.toBeNull();
         expect(screen.queryByLabelText('cutting')).not.toBeNull();
+        // ------ New unit form is reset ----------------------------------------
+        await user.keyboard('{c}');
+        await user.click(screen.getByText('add new unit'));
+        haveValueByLabelText(screen, 'Short singular name', '');
+    });
+
+    it('should reset new unit form after close', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent([mockCreateUnit]);
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }{c}');
+        await user.click(screen.getByText('add new unit'));
+        await user.keyboard('{c}{u}{t}');
+        await user.click(screen.getByLabelText('Close new unit form'));
+        await user.click(screen.getByText('add new unit'));
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Short singular name', '');
     });
 
     it('should create a new bespoke unit', async () => {
@@ -113,6 +134,29 @@ describe('Creating new items', () => {
         await clickGetByText(screen, user, 'skip unit');
         expect(await screen.findByLabelText('extra large')).not.toBeNull();
         expect(screen.queryByLabelText('large')).not.toBeNull();
+        // ------ New size form is reset ----------------------------------------
+        await user.keyboard('{c}');
+        await user.click(screen.getByText('add new size'));
+        haveValueByLabelText(screen, 'Name', '');
+    });
+
+    it('should reset new size form after close', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent([mockCreateSize]);
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await user.click(screen.getByText('skip unit'));
+        await user.keyboard('a');
+        await user.click(screen.getByText('add new size'));
+        await user.keyboard('extra large');
+        await user.click(screen.getByLabelText('Close new size form'));
+        await user.click(screen.getByText('add new size'));
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Name', '');
     });
 
     it('should create a new ingredient', async () => {
@@ -139,6 +183,27 @@ describe('Creating new items', () => {
         await user.click(screen.getByText('skip unit'));
         expect(await screen.findByLabelText('apples')).not.toBeNull();
         expect(screen.queryByLabelText('beef')).not.toBeNull();
+        // ------ New ingredient form is reset ----------------------------------------
+        await user.keyboard('{c}');
+        await user.click(screen.getByText('add new ingredient'));
+        haveValueByLabelText(screen, 'Name', '');
+    });
+
+    it('should reset new ingredient form after close', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent([mockCreateIngredient]);
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await clickGetByText(screen, user, 'skip unit', 'skip size', 'add new ingredient');
+        await user.keyboard('beef');
+        await user.click(screen.getByLabelText('Close new ingredient form'));
+        await user.click(screen.getByText('add new ingredient'));
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Name', '');
     });
 
     it('should create a new prep method', async () => {
@@ -164,6 +229,29 @@ describe('Creating new items', () => {
         await clickGetByText(screen, user, 'skip unit', 'chickens');
         expect(await screen.findByLabelText('skip prep method')).not.toBeNull();
         expect(screen.queryByLabelText('pipped')).not.toBeNull();
+        // ------ New prep method form is reset ----------------------------------------
+        await user.keyboard('{c}');
+        await user.click(screen.getByText('add new prep method'));
+        haveValueByLabelText(screen, 'Name', '');
+    });
+
+    it('should reset new prep method form after close', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent([mockCreatePrepMethod]);
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await clickGetByText(screen, user, 'skip unit', 'chicken');
+        await user.keyboard('{p}');
+        await user.click(screen.getByText('add new prep method'));
+        await user.keyboard('pipped');
+        await user.click(screen.getByLabelText('Close new prep method form'));
+        await user.click(screen.getByText('add new prep method'));
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Name', '');
     });
 
     it('should create a new bespoke prep method', async () => {

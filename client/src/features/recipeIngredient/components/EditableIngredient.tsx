@@ -15,7 +15,7 @@ import { getSuggestions } from '../utils/suggestions';
 import { useDropdownList } from '../hooks/useDropdownList';
 import { IngredientActionHandler } from '../hooks/useIngredientList';
 
-export type PopoverType = 'unit' | 'bespokeUnit' | 'size' | 'ingredient' | 'prepMethod';
+export type PopoverType = 'unit' | 'bespokeUnit' | 'size' | 'ingredient' | 'prepMethod' | 'none';
 interface Props {
     subsection: number;
     item: EditableRecipeIngredient;
@@ -35,6 +35,7 @@ export function EditableIngredient(props: Props) {
     const toast = useErrorToast();
     const { isOpen, onOpen, onClose } = useDisclosure({
         onClose: () => {
+            setPopover('none');
             previewRef.current?.focus();
         },
     });

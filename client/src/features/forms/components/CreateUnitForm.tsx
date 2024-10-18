@@ -8,7 +8,7 @@ import { CreateUnitMutation } from '@recipe/graphql/generated';
 
 import { BaseUnitForm, BaseUnitFormProps, formatUnitError } from './BaseUnitForm';
 
-interface Props extends Omit<BaseUnitFormProps, 'onSubmit' | 'initData'> {
+interface Props extends Omit<BaseUnitFormProps, 'submitForm' | 'initData'> {
     handleComplete: (data: CreateUnitMutation) => void;
 }
 
@@ -56,5 +56,5 @@ export function CreateUnitForm(props: Props) {
         createUnit({ variables: { record: formData } });
     };
 
-    return <BaseUnitForm {...rest} initData={initData} onSubmit={handleSubmit} />;
+    return <BaseUnitForm {...rest} initData={initData} submitForm={handleSubmit} />;
 }
