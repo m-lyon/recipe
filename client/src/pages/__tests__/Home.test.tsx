@@ -5,13 +5,14 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { cleanup, fireEvent, screen, waitForElementToBeRemoved } from '@testing-library/react';
 
 import { Navbar } from '@recipe/features/navbar';
+import { renderPage } from '@recipe/utils/tests';
 import { mockCurrentUser } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetRecipesLarger } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCountRecipesLarger } from '@recipe/graphql/queries/__mocks__/recipe';
-import { MockedResponses, nullByLabelText, renderPage } from '@recipe/utils/tests';
 import { mockGetRecipesLargerFilteredTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCountRecipesLargerFilteredOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCountRecipesLargerFilteredTwo } from '@recipe/graphql/queries/__mocks__/recipe';
+import { MockedResponses, haveValueByLabelText, nullByLabelText } from '@recipe/utils/tests';
 import { mockGetRecipesLargerFilteredOnePageOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipesLargerFilteredOnePageTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 
@@ -108,6 +109,7 @@ describe('Search Functionality', () => {
         await user.keyboard('{Backspace>3/}');
 
         // Expect -----------------------------------------------
+        haveValueByLabelText(screen, 'Search for recipes', '');
         expect(await screen.findAllByLabelText('View Mock Recipe')).toHaveLength(2);
         expect(screen.queryByLabelText('View Mock Recipe Three')).not.toBeNull();
         expect(screen.queryAllByLabelText('View Mock Recipe Two')).toHaveLength(2);

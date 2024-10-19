@@ -503,6 +503,36 @@ export const mockCountRecipesLargerFilteredOne = {
         } satisfies CountRecipesQuery,
     },
 };
+export const mockGetRecipesFilteredTwo = {
+    request: {
+        query: GET_RECIPES,
+        variables: {
+            offset: 0,
+            limit: 5,
+            filter: { _operators: { title: { regex: '/two/i' } } },
+        } satisfies GetRecipesQueryVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeMany: [{ ...mockRecipeTwo, _id: 'mock-recipe-two' }],
+        } satisfies GetRecipesQuery,
+    },
+};
+export const mockCountRecipesFilteredTwo = {
+    request: {
+        query: COUNT_RECIPES,
+        variables: {
+            filter: { _operators: { title: { regex: '/two/i' } } },
+        } satisfies GetRecipesQueryVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeCount: 1,
+        } satisfies CountRecipesQuery,
+    },
+};
 export const mockGetRecipesLargerFilteredTwo = {
     request: {
         query: GET_RECIPES,

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { useColorModeValue, useDisclosure } from '@chakra-ui/react';
 import { Outlet, Link as ReactRouterLink, useLocation } from 'react-router-dom';
 import { Box, Collapse, Flex, Icon, IconButton, Slide, Stack, Text } from '@chakra-ui/react';
@@ -6,13 +6,13 @@ import { Link as ChakraLink, Popover, PopoverContent, PopoverTrigger } from '@ch
 import { ChevronDownIcon, ChevronRightIcon, CloseIcon, HamburgerIcon } from '@chakra-ui/icons';
 
 import { PATH } from '@recipe/constants';
-import { SearchBar } from '@recipe/features/search';
 import { UserOptions, useUser } from '@recipe/features/user';
+import { SearchBar, useSearch } from '@recipe/features/search';
 
 export function Navbar() {
     const location = useLocation();
     const { isOpen, onToggle, onClose } = useDisclosure();
-    const [searchQuery, setSearchQuery] = useState('');
+    const { searchQuery, delayedSearchQuery, onSearch } = useSearch();
     const { isLoggedIn } = useUser();
 
     const isHomePage = location.pathname === PATH.ROOT;
@@ -62,7 +62,12 @@ export function Navbar() {
                             to={PATH.ROOT}
                             as={ReactRouterLink}
                             aria-label='Navigate to home page'
-                            onClick={onClose}
+                            onClick={() => {
+                                if (delayedSearchQuery !== '') {
+                                    onSearch('');
+                                }
+                                onClose();
+                            }}
                             display={{ base: isHomePage ? 'none' : 'inline', md: 'inline' }}
                             width={{ base: '100%', md: 'auto' }}
                         >
@@ -80,10 +85,7 @@ export function Navbar() {
                                 display={isHomePage ? 'flex' : 'none'}
                                 pr={{ base: '0px', md: '20px' }}
                             >
-                                <SearchBar
-                                    searchQuery={searchQuery}
-                                    setSearchQuery={setSearchQuery}
-                                />
+                                <SearchBar searchQuery={searchQuery} onSearch={onSearch} />
                             </Box>
                         </Flex>
                         <UserOptions />
@@ -93,7 +95,7 @@ export function Navbar() {
                     <MobileNav isLoggedIn={isLoggedIn} parentOnToggle={onToggle} />
                 </Slide>
             </Box>
-            <Outlet context={{ searchQuery, setSearchQuery }} />
+            <Outlet context={{ delayedSearchQuery }} />
         </>
     );
 }

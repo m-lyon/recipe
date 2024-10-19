@@ -1,13 +1,13 @@
 import { useQuery } from '@apollo/client';
 import { Container, Grid, GridItem, Text } from '@chakra-ui/react';
 
-import { useSearchQuery } from '@recipe/features/navbar';
 import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
+import { useDelayedSearchQuery } from '@recipe/features/search';
 import { RecipeCardsContainer } from '@recipe/features/viewing';
 import { FETCH_MORE_NUM, INIT_LOAD_NUM } from '@recipe/constants';
 
 export function Home() {
-    const { searchQuery } = useSearchQuery();
+    const { searchQuery } = useDelayedSearchQuery();
     const { data, loading, error, fetchMore } = useQuery(GET_RECIPES, {
         variables: { offset: 0, limit: INIT_LOAD_NUM },
     });
