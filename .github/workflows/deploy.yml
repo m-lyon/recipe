@@ -118,10 +118,14 @@ jobs:
         working-directory: ./client
         run: |
           echo "VITE_GRAPHQL_URL = ${{ secrets.VITE_GRAPHQL_URL }}" > .env.production.local
-          echo "VITE_ROOT_PATH = ${{ secrets.VITE_ROOT_PATH }}" >> .env.production.local
-          echo "VITE_DELAY_SHORT = ${{ secrets.VITE_DELAY_SHORT }}" >> .env.production.local
-          echo "VITE_DELAY_LONG = ${{ secrets.VITE_DELAY_LONG }}" >> .env.production.local
-
+          echo "VITE_DEBOUNCE_TIME = ${{ vars.VITE_DEBOUNCE_TIME }}" > .env.production.local
+          echo "VITE_DELAY_LONG = ${{ vars.VITE_DELAY_LONG }}" >> .env.production.local
+          echo "VITE_DELAY_SHORT = ${{ vars.VITE_DELAY_SHORT }}" >> .env.production.local
+          echo "VITE_FETCH_MORE_NUM = ${{ vars.VITE_FETCH_MORE_NUM }}" >> .env.production.local
+          echo "VITE_INIT_LOAD_NUM = ${{ vars.VITE_INIT_LOAD_NUM }}" >> .env.production.local
+          echo "VITE_LOGIN_ENDPOINT = ${{ vars.VITE_LOGIN_ENDPOINT }}" >> .env.production.local
+          echo "VITE_ROOT_PATH = ${{ vars.VITE_ROOT_PATH }}" >> .env.production.local
+          
       - name: Compile API
         working-directory: ./api
         run: npm run prod:compile

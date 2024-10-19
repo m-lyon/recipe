@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
-import { Outlet, Link as ReactRouterLink } from 'react-router-dom';
 import { useColorModeValue, useDisclosure } from '@chakra-ui/react';
+import { Outlet, Link as ReactRouterLink, useLocation } from 'react-router-dom';
 import { Box, Collapse, Flex, Icon, IconButton, Slide, Stack, Text } from '@chakra-ui/react';
 import { Link as ChakraLink, Popover, PopoverContent, PopoverTrigger } from '@chakra-ui/react';
 import { ChevronDownIcon, ChevronRightIcon, CloseIcon, HamburgerIcon } from '@chakra-ui/icons';
@@ -10,9 +10,12 @@ import { SearchBar } from '@recipe/features/search';
 import { UserOptions, useUser } from '@recipe/features/user';
 
 export function Navbar() {
+    const location = useLocation();
     const { isOpen, onToggle, onClose } = useDisclosure();
     const [searchQuery, setSearchQuery] = useState('');
     const { isLoggedIn } = useUser();
+
+    const isHomePage = location.pathname === PATH.ROOT;
 
     return (
         <>
@@ -60,16 +63,23 @@ export function Navbar() {
                             as={ReactRouterLink}
                             aria-label='Navigate to home page'
                             onClick={onClose}
-                            display={{ base: 'none', md: 'inline' }}
+                            display={{ base: isHomePage ? 'none' : 'inline', md: 'inline' }}
+                            width={{ base: '100%', md: 'auto' }}
                         >
                             Home
                         </ChakraLink>
-
                         <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
                             <DesktopNav isLoggedIn={isLoggedIn} />
                         </Flex>
-                        <Flex width='100%'>
-                            <Box ml='auto' pr={{ base: '0px', md: '20px' }}>
+                        <Flex
+                            display={{ base: isHomePage ? 'flex' : 'none', md: 'flex' }}
+                            width='100%'
+                        >
+                            <Box
+                                ml='auto'
+                                display={isHomePage ? 'flex' : 'none'}
+                                pr={{ base: '0px', md: '20px' }}
+                            >
                                 <SearchBar
                                     searchQuery={searchQuery}
                                     setSearchQuery={setSearchQuery}

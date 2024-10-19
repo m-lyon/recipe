@@ -1,17 +1,15 @@
 import { useLazyQuery } from '@apollo/client';
 import { SearchIcon } from '@chakra-ui/icons';
-import { useLocation } from 'react-router-dom';
 import { useDebouncedCallback } from 'use-debounce';
 import { Input, InputGroup, InputLeftElement } from '@chakra-ui/react';
 
 import { UseSearchQuery } from '@recipe/features/navbar';
 import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
-import { DEBOUNCE_TIME, INIT_LOAD_NUM, PATH } from '@recipe/constants';
+import { DEBOUNCE_TIME, INIT_LOAD_NUM } from '@recipe/constants';
 
 export function SearchBar(props: UseSearchQuery) {
     const { setSearchQuery } = props;
     const [searchRecipes] = useLazyQuery(GET_RECIPES, { fetchPolicy: 'network-only' });
-    const location = useLocation();
     const debounced = useDebouncedCallback((value: string) => {
         setSearchQuery(value);
         searchRecipes({
@@ -28,7 +26,7 @@ export function SearchBar(props: UseSearchQuery) {
     }, DEBOUNCE_TIME);
 
     return (
-        <InputGroup display={location.pathname === PATH.ROOT ? 'flex' : 'none'}>
+        <InputGroup>
             <InputLeftElement pointerEvents='none'>
                 <SearchIcon color='gray.300' />
             </InputLeftElement>
