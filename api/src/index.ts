@@ -17,7 +17,7 @@ import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHt
 import { schema } from './schema/index.js';
 import { uploadRouter } from './routes/uploads.js';
 import { createHttpServer, createHttpsServer } from './utils/server.js';
-import { HTTPS, PORT, SESSION_SECRET, SESSION_URI, WHITELIST } from './constants.js';
+import { DELAY, HTTPS, PORT, SESSION_SECRET, SESSION_URI, WHITELIST } from './constants.js';
 
 const app = express();
 const server = HTTPS ? createHttpsServer(app) : createHttpServer(app);
@@ -58,7 +58,18 @@ app.use(
     '/',
     cors<cors.CorsRequest>(corsOptions),
     bodyParser.json({ limit: '50mb' }),
-    expressMiddleware(apolloServer, { context: async ({ req, res }) => buildContext({ req, res }) })
+    (req, res, next) => {
+        if (DELAY) {
+            setTimeout(() => {
+                next();
+            }, DELAY);
+        } else {
+            next();
+        }
+    },
+    expressMiddleware(apolloServer, {
+        context: async ({ req, res }) => buildContext({ req, res }),
+    })
 );
 
 await new Promise<void>((resolve) => server.listen({ port: PORT }, resolve));

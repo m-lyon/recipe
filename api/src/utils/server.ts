@@ -1,8 +1,10 @@
-import { PRIVKEY_PEM, FULLCHAIN_PEM } from '../constants.js';
 import fs from 'fs';
 import http from 'http';
 import https from 'https';
+
 import express from 'express';
+
+import { FULLCHAIN_PEM, PRIVKEY_PEM } from '../constants.js';
 
 export function createHttpServer(app: express.Application): http.Server {
     console.log('Creating HTTP Server...');

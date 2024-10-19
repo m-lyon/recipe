@@ -3,13 +3,18 @@ declare global {
         interface ProcessEnv {
             GITHUB_AUTH_TOKEN: string;
             NODE_ENV: 'development' | 'production';
+            HTTPS?: 'true';
+            DELAY?: string;
             PORT?: string;
-            PWD: string;
             MONGODB_URI: string;
+            SESSION_SECRET: string;
+            SESSION_URI: string;
+            WHITELISTED_DOMAINS?: string;
+            PRIVKEY_PEM?: string;
+            FULLCHAIN_PEM?: string;
+            IMAGE_DIR?: string;
         }
     }
 }
 
-// If this file has no import/export statements (i.e. is a script)
-// convert it into a module by adding an empty export statement.
 export {};
