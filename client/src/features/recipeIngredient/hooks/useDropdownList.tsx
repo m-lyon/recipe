@@ -20,6 +20,7 @@ export function useDropdownList(
     const [saveBespokePrepMethod] = useMutation(CREATE_PREP_METHOD, {
         onCompleted: (data: CreatePrepMethodMutation) => {
             setItem(data.prepMethodCreateOne!.record!);
+            setHighlighted(0);
         },
         onError: (error) => {
             toast({
@@ -72,7 +73,6 @@ export function useDropdownList(
                                 },
                             },
                         });
-                        setHighlighted(0);
                     }
                     break;
             }
