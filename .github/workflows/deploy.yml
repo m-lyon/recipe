@@ -118,7 +118,7 @@ jobs:
         working-directory: ./client
         run: |
           echo "VITE_GRAPHQL_URL = ${{ secrets.VITE_GRAPHQL_URL }}" > .env.production.local
-          echo "VITE_DEBOUNCE_TIME = ${{ vars.VITE_DEBOUNCE_TIME }}" > .env.production.local
+          echo "VITE_DEBOUNCE_TIME = ${{ vars.VITE_DEBOUNCE_TIME }}" >> .env.production.local
           echo "VITE_DELAY_LONG = ${{ vars.VITE_DELAY_LONG }}" >> .env.production.local
           echo "VITE_DELAY_SHORT = ${{ vars.VITE_DELAY_SHORT }}" >> .env.production.local
           echo "VITE_FETCH_MORE_NUM = ${{ vars.VITE_FETCH_MORE_NUM }}" >> .env.production.local
