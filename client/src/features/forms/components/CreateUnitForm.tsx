@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { Reference, useMutation } from '@apollo/client';
 
 import { useErrorToast } from '@recipe/common/hooks';
@@ -50,11 +49,10 @@ export function CreateUnitForm(props: Props) {
             }
         },
     });
-    const initData = useMemo(() => ({ hasSpace: true }), []);
 
     const handleSubmit = (formData: ModifyableUnit) => {
         createUnit({ variables: { record: formData } });
     };
 
-    return <BaseUnitForm {...rest} initData={initData} submitForm={handleSubmit} />;
+    return <BaseUnitForm {...rest} initData={{ hasSpace: true }} submitForm={handleSubmit} />;
 }

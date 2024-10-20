@@ -1,6 +1,6 @@
 import { ApolloError } from '@apollo/client';
 import { boolean, object, string } from 'yup';
-import { MutableRefObject, useMemo } from 'react';
+import { MutableRefObject, useCallback, useEffect } from 'react';
 import { Button, ButtonGroup, Stack, StackProps } from '@chakra-ui/react';
 
 import { FloatingLabelInput } from '@recipe/common/components';
@@ -29,16 +29,25 @@ export interface BasePrepMethodFormProps extends StackProps {
 }
 export function BasePrepMethodForm(props: BasePrepMethodFormProps) {
     const { fieldRef, initData, disabled, submitForm, onDelete, ...rest } = props;
-    const disabledData = useMemo(() => ({ value: '' }), []);
-    const { formData, hasError, handleSubmit, handleChange } = useFormLogic<ModifyablePrepMethod>(
-        formSchema,
-        (data) => ({ value: data.value, unique: true }),
-        initData,
-        submitForm,
-        'prep method',
-        disabled && disabledData
+    const xfm = useCallback(
+        (data: Partial<ModifyablePrepMethod>) => ({ value: data.value, unique: true }),
+        []
     );
+    const { formData, hasError, handleSubmit, handleChange, setData } =
+        useFormLogic<ModifyablePrepMethod>(
+            formSchema,
+            xfm,
+            initData || {},
+            submitForm,
+            'prep method'
+        );
     const { setIsFocused } = useKeyboardSubmit(handleSubmit);
+
+    useEffect(() => {
+        if (disabled) {
+            setData({ value: '' });
+        }
+    }, [disabled, setData]);
 
     return (
         <Stack

@@ -1,5 +1,5 @@
 import { ApolloError } from '@apollo/client';
-import { MutableRefObject, useMemo } from 'react';
+import { MutableRefObject, useCallback, useEffect } from 'react';
 import { array, boolean, mixed, number, object, string } from 'yup';
 import { Button, ButtonGroup, Checkbox, HStack, Stack, StackProps } from '@chakra-ui/react';
 
@@ -36,26 +36,30 @@ export interface BaseIngredientFormProps extends StackProps {
 }
 export function BaseIngredientForm(props: BaseIngredientFormProps) {
     const { fieldRef, initData, disabled, submitForm, onDelete, ...rest } = props;
-    const disabledData = useMemo(
-        () => ({ name: '', pluralName: '', isCountable: false, tags: [] }),
+    const xfm = useCallback(
+        (data: Partial<ModifyableIngredient>) => ({
+            name: data.name,
+            pluralName: data.pluralName || data.name,
+            tags: data.tags || [],
+            density: data.density || undefined,
+            isCountable: data.isCountable || false,
+        }),
         []
     );
-    const xfm = (data: Partial<ModifyableIngredient>) => ({
-        name: data.name,
-        pluralName: data.pluralName || data.name,
-        tags: data.tags || [],
-        density: data.density || undefined,
-        isCountable: data.isCountable || false,
-    });
-    const { formData, hasError, handleSubmit, handleChange } = useFormLogic<ModifyableIngredient>(
-        formSchema,
-        xfm,
-        initData,
-        submitForm,
-        'ingredient',
-        disabled && disabledData
-    );
+    const { formData, hasError, handleSubmit, handleChange, setData } =
+        useFormLogic<ModifyableIngredient>(
+            formSchema,
+            xfm,
+            initData || {},
+            submitForm,
+            'ingredient'
+        );
     const { setIsFocused } = useKeyboardSubmit(handleSubmit);
+    useEffect(() => {
+        if (disabled) {
+            setData({ name: '', pluralName: '', isCountable: false, tags: [] });
+        }
+    }, [disabled, setData]);
 
     return (
         <Stack

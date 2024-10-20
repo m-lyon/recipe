@@ -1,27 +1,25 @@
+import { useCallback, useState } from 'react';
 import { ObjectSchema, ValidationError } from 'yup';
-import { useCallback, useEffect, useState } from 'react';
+import useDeepCompareEffect from 'use-deep-compare-effect';
 
 import { useErrorToast } from '@recipe/common/hooks';
 
 export function useFormLogic<TData>(
     schema: ObjectSchema<any>,
     preValidationTransform: (data: Partial<TData>) => any,
-    initialData: Partial<TData> | undefined,
+    initialData: Partial<TData>,
     onSubmit: (data: TData) => void,
-    name: string = 'data',
-    disabledData?: false | Partial<TData>
+    name: string = 'data'
 ) {
     const toast = useErrorToast();
     const [formData, setFormData] = useState<Partial<TData>>(initialData || {});
     const [hasError, setHasError] = useState(false);
 
-    useEffect(() => {
-        if (disabledData) {
-            setFormData(disabledData);
-        } else if (initialData) {
+    useDeepCompareEffect(() => {
+        if (initialData) {
             setFormData(initialData);
         }
-    }, [initialData, disabledData]);
+    }, [initialData]);
 
     const handleSubmit = useCallback(() => {
         try {
@@ -44,5 +42,10 @@ export function useFormLogic<TData>(
         setHasError(false);
     }, []);
 
-    return { formData, hasError, handleSubmit, handleChange };
+    const setData = useCallback((data: Partial<TData>) => {
+        setFormData(data);
+        setHasError(false);
+    }, []);
+
+    return { formData, hasError, handleSubmit, handleChange, setData };
 }
