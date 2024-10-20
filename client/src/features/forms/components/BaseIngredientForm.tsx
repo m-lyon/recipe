@@ -8,7 +8,7 @@ import { FloatingLabelInput } from '@recipe/common/components';
 import { useFormLogic } from '../hooks/useFormLogic';
 import { useKeyboardSubmit } from '../hooks/useKeyboardSubmit';
 
-const reservedTags: ReservedTags[] = ['vegan', 'vegetarian'];
+const reservedTags: IngredientTags[] = ['vegan', 'vegetarian'];
 
 export function formatIngredientError(error: ApolloError) {
     if (error.message.startsWith('E11000')) {
@@ -24,7 +24,7 @@ const formSchema = object({
     density: number(),
     tags: array()
         .required()
-        .of(mixed<ReservedTags>().required().oneOf(reservedTags, 'Invalid tag')),
+        .of(mixed<IngredientTags>().required().oneOf(reservedTags, 'Invalid tag')),
 });
 
 export interface BaseIngredientFormProps extends StackProps {
