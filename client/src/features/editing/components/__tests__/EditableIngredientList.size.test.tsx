@@ -157,6 +157,20 @@ describe('EditableIngredient Size Keyboard', () => {
         nullByText(screen, 'chicken', 'cup', 'small');
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1');
     });
+    it('should display one debounced toast message for multiple invalid inputs', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        const quantityInput = screen.getByText('Enter ingredient');
+        await user.click(quantityInput);
+        await user.keyboard('{1}{ }{ArrowDown}{Enter}{1}{1}');
+
+        // Expect
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup ');
+        expect(screen.queryAllByText('Invalid input').length).toBe(1);
+    });
 });
 describe('EditableIngredient Size Spacebar', () => {
     afterEach(() => {

@@ -155,6 +155,19 @@ describe('EditableIngredient Unit Keyboard', () => {
         nullByText(screen, 'chicken', 'cup');
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1');
     });
+    it('should display one debounced toast message for multiple invalid inputs', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        const quantityInput = screen.getByText('Enter ingredient');
+        await user.click(quantityInput);
+        await user.keyboard('{1}{ }{1}{1}');
+
+        // Expect
+        expect(screen.queryAllByText('Invalid input').length).toBe(1);
+    });
 });
 describe('EditableIngredient Unit Spacebar', () => {
     afterEach(() => {

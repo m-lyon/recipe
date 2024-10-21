@@ -11,16 +11,10 @@ interface UseWarningToastOptions {
 }
 export function useWarningToast() {
     const toast = useToast();
-    const [toastId] = useState(Math.random().toString());
+    const [id] = useState(`warning-${Math.random().toString()}`);
     return (opts: UseWarningToastOptions) => {
-        if (!toast.isActive(toastId)) {
-            toast({
-                id: toastId,
-                status: 'warning',
-                duration: DELAY_LONG,
-                isClosable: true,
-                ...opts,
-            });
+        if (!toast.isActive(id)) {
+            toast({ id, status: 'warning', duration: DELAY_LONG, isClosable: true, ...opts });
         }
     };
 }

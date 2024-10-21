@@ -11,15 +11,10 @@ interface UseErrorToastOptions {
 }
 export function useErrorToast() {
     const toast = useToast();
-    const [toastId] = useState(Math.random().toString());
+    const [id] = useState(`error-${Math.random().toString()}`);
     return (opts: UseErrorToastOptions) => {
-        if (!toast.isActive(toastId)) {
-            toast({
-                status: 'error',
-                duration: DELAY_LONG,
-                isClosable: true,
-                ...opts,
-            });
+        if (!toast.isActive(id)) {
+            toast({ id, status: 'error', duration: DELAY_LONG, isClosable: true, ...opts });
         }
     };
 }

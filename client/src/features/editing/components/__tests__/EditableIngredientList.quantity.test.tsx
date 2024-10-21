@@ -174,6 +174,18 @@ describe('EditableIngredient Quantity Keyboard', () => {
         // Expect
         expect(screen.queryByLabelText('Dropdown suggestion list')).toBeNull();
     });
+    it('should display one debounced toast message for multiple invalid inputs', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{a}{c}');
+
+        // Expect
+        expect(screen.queryAllByText('Invalid input').length).toBe(1);
+    });
 });
 describe('EditableIngredient Quantity Click', () => {
     afterEach(() => {
