@@ -36,7 +36,6 @@ export function EditableIngredient(props: Props) {
     const { isOpen, onOpen, onClose } = useDisclosure({
         onClose: () => {
             setPopover('none');
-            previewRef.current?.focus();
         },
     });
     const [deleteUnit] = useMutation(DELETE_UNIT, {
@@ -69,6 +68,7 @@ export function EditableIngredient(props: Props) {
             if (item.quantity !== null || item.show) {
                 handleReset();
             }
+            onClose();
         },
     });
     const strValue = actionHandler.currentEditableAttributeValue(subsection) ?? '';
@@ -93,7 +93,14 @@ export function EditableIngredient(props: Props) {
             actionHandler.setCurrentEditableAttribute(subsection, attr);
             setHighlighted(0);
         };
-        const popoverProps = { fieldRef, onClose, setItem };
+        const popoverProps = {
+            fieldRef,
+            onClose: () => {
+                onClose();
+                previewRef.current?.focus();
+            },
+            setItem,
+        };
         switch (popover) {
             case 'unit':
                 return <NewUnitPopover {...popoverProps} />;

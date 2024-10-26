@@ -69,6 +69,24 @@ describe('Creating new items', () => {
         haveValueByLabelText(screen, 'Short singular name', '');
     });
 
+    it('should reset state and close unit popover when clicked outside', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }{c}');
+        await user.click(screen.getByText('add new unit'));
+        await user.keyboard('{c}{u}{t}');
+        await user.click(document.body);
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '');
+        expect(screen.queryByText('add new unit')).toBeNull();
+        expect(screen.queryByLabelText('Short singular name')).toBeNull();
+    });
+
     it('should create a new bespoke unit', async () => {
         const user = userEvent.setup();
         // Render
@@ -107,6 +125,23 @@ describe('Creating new items', () => {
         expect(screen.queryByLabelText('1 bump chicken')).not.toBeNull();
         expect(screen.queryByText('teaspoon')).not.toBeNull;
         expect(screen.queryByText('bump')).toBeNull();
+    });
+
+    it('should reset state and close bespoke unit popover when clicked outside', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }{b}{u}{m}{p}');
+        await user.click(screen.getByText('use "bump" as unit'));
+        await user.click(document.body);
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '');
+        expect(screen.queryByText('add new unit')).toBeNull();
+        expect(screen.queryByLabelText('Unit name')).toBeNull();
     });
 
     it('should create a new size', async () => {
@@ -159,6 +194,26 @@ describe('Creating new items', () => {
         haveValueByLabelText(screen, 'Name', '');
     });
 
+    it('should reset state and close size popover when clicked outside', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await user.click(screen.getByText('skip unit'));
+        await user.keyboard('a');
+        await user.click(screen.getByText('add new size'));
+        await user.keyboard('extra large');
+        await user.click(document.body);
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '');
+        expect(screen.queryByText('add new size')).toBeNull();
+        expect(screen.queryByLabelText('Name')).toBeNull();
+    });
+
     it('should create a new ingredient', async () => {
         const user = userEvent.setup();
         // Render
@@ -204,6 +259,24 @@ describe('Creating new items', () => {
 
         // Expect --------------------------------------------------------------
         haveValueByLabelText(screen, 'Name', '');
+    });
+
+    it('should reset state and close ingredient popover when clicked outside', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await clickGetByText(screen, user, 'skip unit', 'skip size', 'add new ingredient');
+        await user.keyboard('beef');
+        await user.click(document.body);
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '');
+        expect(screen.queryByText('add new ingredient')).toBeNull();
+        expect(screen.queryByLabelText('Plural name')).toBeNull();
     });
 
     it('should create a new prep method', async () => {
@@ -252,6 +325,26 @@ describe('Creating new items', () => {
 
         // Expect --------------------------------------------------------------
         haveValueByLabelText(screen, 'Name', '');
+    });
+
+    it('should reset state and close prep method popover when clicked outside', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await clickGetByText(screen, user, 'skip unit', 'chicken');
+        await user.keyboard('{p}');
+        await user.click(screen.getByText('add new prep method'));
+        await user.keyboard('pipped');
+        await user.click(document.body);
+
+        // Expect --------------------------------------------------------------
+        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
+        expect(screen.queryByText('add new prep method')).toBeNull();
+        expect(screen.queryByLabelText('Name')).toBeNull();
     });
 
     it('should create a new bespoke prep method', async () => {
