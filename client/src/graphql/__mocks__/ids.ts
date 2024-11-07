@@ -56,6 +56,7 @@ export const mockPostedId = '60f4d2e5c3d5a0a4f1b9c0ff';
 
 // Users
 export const mockAdminId = '60f4d2e5c3d5a0a4f1b9c0e0';
+export const mockUserId = '60f4d2e5c3d5a1a4f1b9c0e1';
 
 // Ratings
 export const mockRatingIdOne = '60f4d2e5c3d5a0a4f1b9c0e1';

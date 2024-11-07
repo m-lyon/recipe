@@ -1,6 +1,5 @@
 import { GetRecipeQueryVariables } from '@recipe/graphql/generated';
 import { GetIngredientComponentsQuery } from '@recipe/graphql/generated';
-import { mockRecipeIngredientIdTen } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdFour } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdFive } from '@recipe/graphql/__mocks__/ids';
@@ -20,8 +19,8 @@ import { mockImageNew, mockImageTwo } from '@recipe/graphql/mutations/__mocks__/
 import { COUNT_RECIPES, GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { mockRecipeIdFour, mockRecipeIngredientIdOne } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIdNewAsIngr, mockRecipeIngredientIdSix } from '@recipe/graphql/__mocks__/ids';
+import { mockAdminId, mockRecipeIngredientIdTen, mockUserId } from '@recipe/graphql/__mocks__/ids';
 
-import { mockAdmin, mockUser } from './user';
 import { mockDiced, mockPrepMethods } from './prepMethod';
 import { mockMedium, mockSizes, mockSmall } from './size';
 import { mockCup, mockOunce, mockTeaspoon, mockUnits } from './unit';
@@ -128,7 +127,7 @@ export const mockRecipeOne: CompletedRecipeView = {
     notes: null,
     images: [],
     source: null,
-    owner: mockAdmin,
+    owner: mockAdminId,
 };
 export const mockRecipeTwo: CompletedRecipeView = {
     ...mockRecipeOne,
@@ -148,7 +147,7 @@ export const mockRecipeTwo: CompletedRecipeView = {
     images: [mockImageTwo],
     calculatedTags: [],
     numServings: 3,
-    owner: mockUser,
+    owner: mockUserId,
 };
 export const mockRecipeThree: CompletedRecipeView = {
     ...mockRecipeOne,
@@ -313,7 +312,7 @@ export const mockRecipeNew: CompletedRecipeView = {
     notes: 'Recipe Notes.',
     source: 'Recipe Source',
     images: [],
-    owner: mockAdmin,
+    owner: mockAdminId,
 };
 export const mockRecipeNewAsIngr: CompletedRecipeView = {
     ...mockRecipeNew,

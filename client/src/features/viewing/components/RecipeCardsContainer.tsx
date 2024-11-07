@@ -15,7 +15,7 @@ function hasPermission(user: CurrentUser, recipe: RecipePreview): boolean {
     if (!user) {
         return false;
     }
-    return user._id === recipe.owner._id || user.role === 'admin';
+    return user._id === recipe.owner || user.role === 'admin';
 }
 
 const gutter = 24;
