@@ -16,9 +16,7 @@ import { CreateRecipeMutation, CreateRecipeMutationVariables } from '@recipe/gra
 
 import { mockCreateTag } from './tag';
 
-const getMockRecipeVariables = (
-    mockRecipe: NonNullable<GetRecipeQuery['recipeOne']> = mockRecipeOne
-) => {
+const getMockRecipeVariables = (mockRecipe: CompletedRecipeView = mockRecipeOne) => {
     return {
         id: mockRecipe._id,
         recipe: {

@@ -6,7 +6,7 @@ import { cleanup, fireEvent, screen, waitForElementToBeRemoved } from '@testing-
 
 import { Navbar } from '@recipe/features/navbar';
 import { renderPage } from '@recipe/utils/tests';
-import { mockCurrentUser } from '@recipe/graphql/queries/__mocks__/user';
+import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetRecipesLarger } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCountRecipesLarger } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipesLargerFilteredTwo } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -27,7 +27,12 @@ const renderComponent = (mocks: MockedResponses = []) => {
             <Route index element={<Home />} />
         </Route>
     );
-    renderPage(routes, [mockCurrentUser, mockGetRecipesLarger, mockCountRecipesLarger, ...mocks]);
+    renderPage(routes, [
+        mockCurrentUserAdmin,
+        mockGetRecipesLarger,
+        mockCountRecipesLarger,
+        ...mocks,
+    ]);
 };
 
 describe('Search Functionality', () => {

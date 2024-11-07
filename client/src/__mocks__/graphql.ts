@@ -1,5 +1,5 @@
 import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
-import { mockCurrentUser } from '@recipe/graphql/queries/__mocks__/user';
+import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRatingsRecipeOne } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockGetRatingsRecipeTwo } from '@recipe/graphql/queries/__mocks__/rating';
@@ -10,7 +10,7 @@ import { mockGetRecipeTwo, mockGetRecipes } from '@recipe/graphql/queries/__mock
 import { mockCountRecipes, mockGetRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
 
 export const mocks = [
-    mockCurrentUser,
+    mockCurrentUserAdmin,
     mockGetTags,
     mockGetIngredientComponents,
     mockGetUnitConversions,

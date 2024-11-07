@@ -6,7 +6,7 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
 import { haveValueByLabelText, renderPage } from '@recipe/utils/tests';
-import { mockCurrentUser } from '@recipe/graphql/queries/__mocks__/user';
+import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
 
@@ -21,7 +21,7 @@ const renderComponent = () => {
         mockGetIngredientComponents,
         mockGetTags,
         mockGetUnitConversions,
-        mockCurrentUser,
+        mockCurrentUserAdmin,
     ]);
 };
 

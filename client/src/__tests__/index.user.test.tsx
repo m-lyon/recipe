@@ -4,11 +4,19 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { PATH } from '@recipe/constants';
-import { mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
+import { renderPage } from '@recipe/utils/tests';
+import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
+import { mockCurrentUserNull } from '@recipe/graphql/queries/__mocks__/user';
 import { mockLogin, mockLogout } from '@recipe/graphql/mutations/__mocks__/user';
-import { MockedResponses, enterViewRecipePage, renderPage } from '@recipe/utils/tests';
-import { mockCurrentUser, mockCurrentUserNull } from '@recipe/graphql/queries/__mocks__/user';
+import { mockDeleteRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockGetRatingsRecipeOne } from '@recipe/graphql/queries/__mocks__/rating';
+import { mockGetRatingsRecipeTwo } from '@recipe/graphql/queries/__mocks__/rating';
+import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
+import { mockGetRecipeTwo, mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCountRecipes, mockGetRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockCurrentUser, mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
+import { MockedResponses, enterEditRecipePage, enterViewRecipePage } from '@recipe/utils/tests';
 
 import { routes } from '../routes';
 
@@ -46,17 +54,90 @@ describe('Auth Workflow', () => {
 
     it('should log out', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockCurrentUser, mockGetRecipeOne, mockLogout]);
+        renderComponent([
+            mockCurrentUserAdmin,
+            mockGetRecipeOne,
+            mockGetUnitConversions,
+            mockGetRatingsRecipeOne,
+            mockLogout,
+        ]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
         expect(await screen.findByText('Recipes'));
-        enterViewRecipePage(screen, user, 'Recipe One', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
         await user.click(screen.getByLabelText('Logout'));
 
         // Expect ------------------------------------------------
         expect(await screen.findByText('Recipes')).not.toBeNull();
         expect(screen.queryByLabelText('Logout')).toBeNull();
         expect(screen.queryByLabelText('Log in or sign up')).not.toBeNull();
+    });
+});
+
+describe('Edit & Delete Permissions', () => {
+    afterEach(() => {
+        cleanup();
+    });
+
+    it('should allow non-admin owner to edit recipe', async () => {
+        // Render -----------------------------------------------
+        renderComponent([
+            mockCurrentUser,
+            mockGetRecipeTwo,
+            mockGetIngredientComponents,
+            mockGetUnitConversions,
+            mockGetTags,
+            mockGetRatingsRecipeTwo,
+        ]);
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        expect(await screen.findByText('Recipes'));
+
+        // Expect ------------------------------------------------
+        await enterEditRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one');
+    });
+
+    it('should NOT allow non-admin non-owner to edit recipe', async () => {
+        // Render -----------------------------------------------
+        renderComponent([mockCurrentUser, mockGetRecipeTwo]);
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        expect(await screen.findByText('Recipes'));
+        await user.hover(await screen.findByLabelText('View Mock Recipe'));
+
+        // Expect ------------------------------------------------
+        expect(screen.queryByLabelText('Edit Mock Recipe')).toBeNull();
+    });
+
+    it('should allow non-admin owner to delete recipe', async () => {
+        // Render -----------------------------------------------
+        renderComponent([mockCurrentUser, mockDeleteRecipeTwo]);
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        expect(await screen.findByText('Recipes'));
+        await user.hover(await screen.findByLabelText('View Mock Recipe'));
+        await user.click(screen.getByLabelText('Delete Mock Recipe Two'));
+        await user.click(screen.getByLabelText('Confirm delete action'));
+
+        // Expect ------------------------------------------------
+        expect(await screen.findByText('Recipes')).not.toBeNull();
+        expect(screen.queryByText('Mock Recipe Two')).toBeNull();
+    });
+
+    it('should NOT allow non-admin non-owner to delete recipe', async () => {
+        // Render -----------------------------------------------
+        renderComponent([mockCurrentUser, mockGetRecipeTwo]);
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        expect(await screen.findByText('Recipes'));
+        await user.hover(await screen.findByLabelText('View Mock Recipe'));
+
+        // Expect ------------------------------------------------
+        expect(screen.queryByLabelText('Delete Mock Recipe')).toBeNull();
     });
 });

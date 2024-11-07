@@ -11,7 +11,16 @@ export const mockAdmin: User = {
     lastName: 'User',
 };
 
-export const mockCurrentUser = {
+export const mockUser: User = {
+    __typename: 'User',
+    _id: 'mockUserId',
+    role: 'user',
+    username: 'user',
+    firstName: 'Mock',
+    lastName: 'User',
+};
+
+export const mockCurrentUserAdmin = {
     request: {
         query: CURRENT_USER,
     },
@@ -19,6 +28,18 @@ export const mockCurrentUser = {
         data: {
             __typename: 'Query',
             currentUser: mockAdmin,
+        } satisfies CurrentUserQuery,
+    },
+};
+
+export const mockCurrentUser = {
+    request: {
+        query: CURRENT_USER,
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            currentUser: mockUser,
         } satisfies CurrentUserQuery,
     },
 };

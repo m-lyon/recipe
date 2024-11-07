@@ -6,8 +6,8 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { renderPage } from '@recipe/utils/tests';
 import { mockKilogram } from '@recipe/graphql/queries/__mocks__/unit';
-import { mockCurrentUser } from '@recipe/graphql/queries/__mocks__/user';
 import { mockChicken } from '@recipe/graphql/queries/__mocks__/ingredient';
+import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetRatingsRecipeOne } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
@@ -23,7 +23,7 @@ const renderComponent = () => {
             recipeId: '60f4d2e5c3d5a0a4f1b9c0eb',
             ingredients: [
                 {
-                    __typename: 'IngredientSubsections',
+                    __typename: 'IngredientSubsection',
                     name: 'Section One',
                     ingredients: [
                         {
@@ -51,7 +51,7 @@ const renderComponent = () => {
         mockGetIngredientComponents,
         mockGetUnitConversions,
         mockGetRatingsRecipeOne,
-        mockCurrentUser,
+        mockCurrentUserAdmin,
     ]);
 };
 

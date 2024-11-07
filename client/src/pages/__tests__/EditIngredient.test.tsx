@@ -4,8 +4,8 @@ import { cleanup, screen, waitFor } from '@testing-library/react';
 import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { mockCurrentUser } from '@recipe/graphql/queries/__mocks__/user';
 import { mockCarrotId, mockChickenId } from '@recipe/graphql/__mocks__/ids';
+import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockUpdateIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
 import { mockDeleteIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
@@ -18,7 +18,7 @@ loadDevMessages();
 
 const renderComponent = (mocks: MockedResponses = []) => {
     const routes = createRoutesFromElements(<Route path='/' element={<EditIngredient />} />);
-    renderPage(routes, [mockGetIngredients, mockCurrentUser, ...mocks]);
+    renderPage(routes, [mockGetIngredients, mockCurrentUserAdmin, ...mocks]);
 };
 
 describe('Edit Ingredient', () => {

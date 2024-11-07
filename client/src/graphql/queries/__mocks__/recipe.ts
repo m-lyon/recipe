@@ -21,7 +21,7 @@ import { COUNT_RECIPES, GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/
 import { mockRecipeIdFour, mockRecipeIngredientIdOne } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIdNewAsIngr, mockRecipeIngredientIdSix } from '@recipe/graphql/__mocks__/ids';
 
-import { mockAdmin } from './user';
+import { mockAdmin, mockUser } from './user';
 import { mockDiced, mockPrepMethods } from './prepMethod';
 import { mockMedium, mockSizes, mockSmall } from './size';
 import { mockCup, mockOunce, mockTeaspoon, mockUnits } from './unit';
@@ -44,7 +44,7 @@ export const mockGetIngredientComponents = {
     },
 };
 
-export const mockRecipeOne: RecipeView = {
+export const mockRecipeOne: CompletedRecipeView = {
     __typename: 'Recipe',
     _id: mockRecipeIdOne,
     title: mockTitleOne,
@@ -130,7 +130,7 @@ export const mockRecipeOne: RecipeView = {
     source: null,
     owner: mockAdmin,
 };
-export const mockRecipeTwo: RecipeView = {
+export const mockRecipeTwo: CompletedRecipeView = {
     ...mockRecipeOne,
     _id: mockRecipeIdTwo,
     title: mockTitleTwo,
@@ -148,8 +148,9 @@ export const mockRecipeTwo: RecipeView = {
     images: [mockImageTwo],
     calculatedTags: [],
     numServings: 3,
+    owner: mockUser,
 };
-export const mockRecipeThree: RecipeView = {
+export const mockRecipeThree: CompletedRecipeView = {
     ...mockRecipeOne,
     _id: mockRecipeIdThree,
     title: 'Mock Recipe Three',
@@ -242,7 +243,7 @@ export const mockRecipeThree: RecipeView = {
         },
     ],
 };
-export const mockRecipeFour: RecipeView = {
+export const mockRecipeFour: CompletedRecipeView = {
     ...mockRecipeOne,
     _id: mockRecipeIdFour,
     title: 'Mock Recipe Four',
@@ -275,7 +276,7 @@ export const mockRecipeFour: RecipeView = {
         },
     ],
 };
-export const mockRecipeNew: RecipeView = {
+export const mockRecipeNew: CompletedRecipeView = {
     _id: mockRecipeIdNew,
     __typename: 'Recipe',
     title: 'New Recipe',
@@ -314,7 +315,7 @@ export const mockRecipeNew: RecipeView = {
     images: [],
     owner: mockAdmin,
 };
-export const mockRecipeNewAsIngr: RecipeView = {
+export const mockRecipeNewAsIngr: CompletedRecipeView = {
     ...mockRecipeNew,
     _id: mockRecipeIdNewAsIngr,
     isIngredient: true,

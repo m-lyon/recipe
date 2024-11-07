@@ -5,8 +5,8 @@ import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
-import { mockCurrentUser } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGramId, mockTeaspoonId } from '@recipe/graphql/__mocks__/ids';
+import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { MockedResponses, haveValueByLabelText, renderPage } from '@recipe/utils/tests';
 import { mockDeleteUnit, mockUpdateUnit } from '@recipe/graphql/mutations/__mocks__/unit';
 
@@ -17,7 +17,7 @@ loadDevMessages();
 
 const renderComponent = (mocks: MockedResponses = []) => {
     const routes = createRoutesFromElements(<Route path='/' element={<EditUnit />} />);
-    renderPage(routes, [mockGetUnits, mockCurrentUser, ...mocks]);
+    renderPage(routes, [mockGetUnits, mockCurrentUserAdmin, ...mocks]);
 };
 
 describe('Edit Unit', () => {
