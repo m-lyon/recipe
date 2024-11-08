@@ -5,7 +5,6 @@ import { ResponsiveValue, useBreakpointValue } from '@chakra-ui/react';
 import { ImageCarousel } from '@recipe/common/components';
 
 export const imageCardWidth = 360;
-export const sliderBarHeight = 36;
 
 interface Props {
     images: ImageView[];

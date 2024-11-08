@@ -3,8 +3,8 @@ import { Box, Flex, Spacer, VStack } from '@chakra-ui/react';
 
 import { TagList } from '@recipe/features/tags';
 import { tagsHeight } from '@recipe/features/tags';
+import { imageCardWidth } from '@recipe/features/images';
 import { ImageViewerRecipe } from '@recipe/features/images';
-import { imageCardWidth, sliderBarHeight } from '@recipe/features/images';
 
 import { Source } from './Source';
 import { InstructionList } from './InstructionList';
@@ -40,7 +40,7 @@ export function InstructionsTab(props: Props) {
                         />
                         <Box pr='24px'>
                             <Box
-                                h={images.length > 1 ? boxHeight + sliderBarHeight : boxHeight}
+                                h={boxHeight}
                                 w={imageCardWidth - 24}
                                 marginLeft='4'
                                 marginBottom='4'

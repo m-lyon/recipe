@@ -1,5 +1,4 @@
 import * as CSS from 'csstype';
-import { useMeasure } from 'react-use';
 import { UseMeasureRef } from 'react-use/lib/useMeasure';
 import { Box, ResponsiveValue, Skeleton } from '@chakra-ui/react';
 import { AspectRatio, Card, CardBody, CardProps, Image } from '@chakra-ui/react';
@@ -18,7 +17,6 @@ interface ImageCarouselProps extends CardProps {
 }
 export function ImageCarousel(props: ImageCarouselProps) {
     const { images, width, ratio, cardRef, bottomLeftRadius, bottomRightRadius, ...rest } = props;
-    const [ref, { height }] = useMeasure<HTMLImageElement>();
 
     const imagesCards = images.map((image, index) => {
         let queryStr = '';
@@ -45,7 +43,7 @@ export function ImageCarousel(props: ImageCarouselProps) {
                         borderBottomRightRadius={borderRight}
                         alt={`Image ${index + 1} for ${image.recipe.title}`}
                         fallback={
-                            <Box ref={index === 0 ? ref : undefined}>
+                            <Box>
                                 <Skeleton
                                     height='90%'
                                     width='95%'
@@ -60,12 +58,7 @@ export function ImageCarousel(props: ImageCarouselProps) {
     });
 
     return (
-        <Card
-            height={images.length > 1 ? height + 36 : height}
-            width={width}
-            ref={cardRef}
-            {...rest}
-        >
+        <Card width={width} ref={cardRef} {...rest}>
             {images.length > 1 ? <Carousel gap={0}>{imagesCards}</Carousel> : imagesCards[0]}
         </Card>
     );
