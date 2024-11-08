@@ -75,5 +75,5 @@ module.exports = {
             },
         },
     },
-    ignorePatterns: ['**/*.cjs'], // Exclude files ending in .cjs from linting
+    ignorePatterns: ['**/*.cjs', '**/__generated__/**'], // Exclude files ending in .cjs from linting
 };

@@ -779,6 +779,30 @@ export function useIngredientList(): UseIngredientListReturnType {
                             return;
                     }
                 }
+                if (attr === undefined) {
+                    // this happens when enter is pressed on an empty dropdown list.
+                    // is relevant for quantity change. should do nothing for other states.
+                    if (state[subsection].editable.state === 'quantity') {
+                        try {
+                            if (!data) {
+                                throw new Error('Could not load ingredient components');
+                            }
+                            const opts = {
+                                subsection,
+                                char: ' ',
+                                item: state[subsection].editable,
+                                data,
+                                editableActions,
+                            };
+                            handleQuantityChange(opts);
+                        } catch (e: unknown) {
+                            if (e instanceof Error) {
+                                toast({ title: 'Invalid input', description: e.message });
+                            }
+                        }
+                    }
+                    return;
+                }
                 switch (attr.__typename) {
                     case 'Unit':
                         editableActions.unit.set(subsection, attr);

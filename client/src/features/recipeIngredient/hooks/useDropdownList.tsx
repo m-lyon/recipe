@@ -36,7 +36,12 @@ export function useDropdownList(
         }
     }, [highlighted, suggestions.length]);
 
-    const handleSelect = (item: Suggestion) => {
+    const handleSelect = (item: Suggestion | undefined) => {
+        if (!item) {
+            setItem(undefined);
+            setHighlighted(0);
+            return;
+        }
         if (typeof item.value === 'string') {
             switch (item.value) {
                 case 'add new unit':

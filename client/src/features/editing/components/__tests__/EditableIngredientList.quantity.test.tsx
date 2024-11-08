@@ -52,6 +52,18 @@ describe('EditableIngredient Quantity Keyboard', () => {
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '2.5 ');
         expect(screen.queryByText('skip unit')).not.toBeNull();
     });
+    it('should switch to unit state when enter is pressed after valid quantity', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{Enter}');
+
+        // Expect
+        expect(screen.queryByText('skip unit')).not.toBeNull();
+    });
     it('should display a fraction', async () => {
         const user = userEvent.setup();
         // Render

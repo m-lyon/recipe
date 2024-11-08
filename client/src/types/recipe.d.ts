@@ -65,9 +65,10 @@ declare global {
     /**
      * This type is used to represent the attribute that is set when a dropdown choice is
      * selected by the user. This includes null, which is set when skip actions are selected,
-     * such as 'skip unit' or 'skip prep method'.
+     * such as 'skip unit' or 'skip prep method'. It also includes undefined, which is set when
+     * no attribute is selected, e.g. when Enter is pressed when in quantity state.
      */
-    type SetAttr = null | RecipeIngredientDropdown;
+    type SetAttr = null | undefined | RecipeIngredientDropdown;
 
     // - Editables ----------------------------------------------------------------
     // ----------- Types for the RecipeIngredient Edit Workflow -------------------
