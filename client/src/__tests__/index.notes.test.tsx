@@ -24,9 +24,9 @@ describe('Update Recipe Workflow: Notes', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         await user.click(screen.getByLabelText('Edit recipe notes'));
-        await user.keyboard('A new note{Enter}');
+        await user.keyboard('A new note {Enter}');
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
@@ -34,7 +34,7 @@ describe('Update Recipe Workflow: Notes', () => {
         await enterViewRecipePage(screen, user, 'Mock Recipe', 'A new note.');
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         expect(await screen.findByText('A new note.')).not.toBeNull();
     });
 
@@ -44,19 +44,19 @@ describe('Update Recipe Workflow: Notes', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one');
-        expect(screen.getByLabelText('Edit recipe notes')).toHaveProperty('value', 'Notes');
+        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
+        expect(screen.getByLabelText('Edit recipe notes')).toHaveProperty('value', 'Notes.');
         await user.click(screen.getByLabelText('Edit recipe notes'));
         await user.keyboard('{Backspace>6/}');
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
         // ------ View Recipe Page -------------------------------
-        await enterViewRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
         expect(screen.queryByText('Notes:')).toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
         expect(screen.getByLabelText('Edit recipe notes')).toHaveProperty('value', '');
     });
 
@@ -66,7 +66,7 @@ describe('Update Recipe Workflow: Notes', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
         await user.click(screen.getByLabelText('Edit recipe notes'));
         await user.keyboard('{Backspace>6/}A new note.');
         await user.click(screen.getByLabelText('Save recipe'));
@@ -76,7 +76,7 @@ describe('Update Recipe Workflow: Notes', () => {
         await enterViewRecipePage(screen, user, 'Mock Recipe Three', 'A new note.');
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
         expect(await screen.findByText('A new note.')).not.toBeNull();
     });
 });

@@ -33,9 +33,6 @@ export function EditableInstructionList(props: Props) {
                     setLine(index, '');
                 }
             } else {
-                if (!instr.value.endsWith('.')) {
-                    setLine(index, instr.value + '.');
-                }
                 if (isLast) {
                     addLine();
                 }

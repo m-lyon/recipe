@@ -53,7 +53,7 @@ export const mockRecipeOne: CompletedRecipeView = {
         {
             __typename: 'InstructionSubsection',
             name: null,
-            instructions: ['Instruction one', 'Instruction two'],
+            instructions: ['Instruction one.', 'Instruction two.'],
         },
     ],
     ingredientSubsections: [
@@ -140,7 +140,7 @@ export const mockRecipeTwo: CompletedRecipeView = {
         {
             __typename: 'InstructionSubsection',
             name: 'Instruct One',
-            instructions: ['Instruction one', 'Instruction two'],
+            instructions: ['Instruction one.', 'Instruction two.'],
         },
     ],
     pluralTitle: 'Mock Recipes Two',
@@ -156,7 +156,7 @@ export const mockRecipeThree: CompletedRecipeView = {
     titleIdentifier: 'mock-recipe-three',
     tags: [],
     source: 'Example',
-    notes: 'Notes',
+    notes: 'Notes.',
     calculatedTags: [],
     ingredientSubsections: [
         {

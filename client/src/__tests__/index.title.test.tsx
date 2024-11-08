@@ -27,7 +27,7 @@ describe('Update Recipe Workflow: Title', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         await user.click(screen.getByLabelText('Enter recipe title'));
         await user.keyboard('{Backspace>11/}New Title');
         await user.click(screen.getByLabelText('Save recipe'));
@@ -37,11 +37,11 @@ describe('Update Recipe Workflow: Title', () => {
         expect(await screen.findByText('Recipes')).not.toBeNull();
         expect(screen.queryByText('New Title')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
-        await enterViewRecipePage(screen, user, 'New Title', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'New Title', 'Instruction one.');
         expect(screen.queryByText('New Title')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage(screen, user, 'New Title', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'New Title', 'Instruction one.');
         expect(screen.queryByText('New Title')).not.toBeNull();
     });
 
@@ -53,7 +53,7 @@ describe('Update Recipe Workflow: Title', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one.');
         await user.click(screen.getByLabelText('Enter recipe title'));
         await user.keyboard('{Backspace>15/}New Title');
         await user.click(screen.getByLabelText('Edit recipe plural title'));
@@ -65,11 +65,11 @@ describe('Update Recipe Workflow: Title', () => {
         expect(await screen.findByText('Recipes')).not.toBeNull();
         expect(screen.queryByText('New Titles')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
-        await enterViewRecipePage(screen, user, 'New Title', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'New Title', 'Instruction one.');
         expect(screen.queryByText('New Titles')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage(screen, user, 'New Title', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'New Title', 'Instruction one.');
         expect(screen.queryByText('New Title')).not.toBeNull();
         expect(screen.getByLabelText('Edit recipe plural title')).toHaveProperty(
             'value',

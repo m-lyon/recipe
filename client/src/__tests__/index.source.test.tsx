@@ -24,7 +24,7 @@ describe('Update Recipe Workflow: Source', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         await user.click(screen.getByLabelText('Edit recipe source'));
         await user.keyboard('A new source');
         await user.click(screen.getByLabelText('Save recipe'));
@@ -34,7 +34,7 @@ describe('Update Recipe Workflow: Source', () => {
         await enterViewRecipePage(screen, user, 'Mock Recipe', 'Source: A new source');
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         expect(await screen.findByDisplayValue('A new source')).not.toBeNull();
     });
 
@@ -44,7 +44,7 @@ describe('Update Recipe Workflow: Source', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
         expect(screen.getByLabelText('Edit recipe source')).toHaveProperty('value', 'Example');
         await user.click(screen.getByLabelText('Edit recipe source'));
         await user.keyboard('{Backspace>7/}');
@@ -52,11 +52,11 @@ describe('Update Recipe Workflow: Source', () => {
 
         // Expect ------------------------------------------------
         // ------ View Recipe Page -------------------------------
-        await enterViewRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
         expect(screen.queryByText('Source:')).toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
         expect(screen.getByLabelText('Edit recipe source')).toHaveProperty('value', '');
     });
 
@@ -66,7 +66,7 @@ describe('Update Recipe Workflow: Source', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
         await user.click(screen.getByLabelText('Edit recipe source'));
         await user.keyboard('{Backspace>4/}');
         await user.click(screen.getByLabelText('Save recipe'));
@@ -76,7 +76,7 @@ describe('Update Recipe Workflow: Source', () => {
         await enterViewRecipePage(screen, user, 'Mock Recipe Three', 'Source: Exa');
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
         expect(screen.queryByDisplayValue('Exa')).not.toBeNull();
     });
 });

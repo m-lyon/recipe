@@ -28,7 +28,7 @@ describe('Update Recipe Workflow: Rating', () => {
             ({ width: 100, left: 0, right: 100 }) as DOMRect;
 
         // Act --------------------------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         const starContainer = screen.getByRole('rating').querySelector('.react-simple-star-rating');
         const svgStar = screen.getAllByLabelText('Select star rating')[3];
         await userEvent.pointer({ target: svgStar, coords: { clientX: 30 } });
@@ -38,14 +38,14 @@ describe('Update Recipe Workflow: Rating', () => {
 
         // Expect ------------------------------------------------
         // ------ View Recipe Page -------------------------------
-        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         expect(screen.getByRole('rating').querySelector('.filled-icons')).toHaveProperty(
             'title',
             '2.25 out of 5'
         );
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         expect(screen.getByRole('rating').querySelector('.filled-icons')).toHaveProperty(
             'title',
             '2.25 out of 5'
@@ -60,7 +60,7 @@ describe('Update Recipe Workflow: Rating', () => {
             ({ width: 100, left: 0, right: 100 }) as DOMRect;
 
         // Act --------------------------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         const starContainer = screen.getByRole('rating').querySelector('.react-simple-star-rating');
         const svgStar = screen.getAllByLabelText('Select star rating')[3];
         await userEvent.pointer({ target: svgStar, coords: { clientX: 30 } });
@@ -70,14 +70,14 @@ describe('Update Recipe Workflow: Rating', () => {
 
         // Expect ------------------------------------------------
         // ------ View Recipe Page -------------------------------
-        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         expect(screen.getByRole('rating').querySelector('.filled-icons')).toHaveProperty(
             'title',
             '2.25 out of 5'
         );
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         expect(screen.getByRole('rating').querySelector('.filled-icons')).toHaveProperty(
             'title',
             '2.25 out of 5'
@@ -101,7 +101,7 @@ describe('View Recipe Workflow: Rating', () => {
             ({ width: 100, left: 0, right: 100 }) as DOMRect;
 
         // Act --------------------------------------------------
-        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         const starContainer = screen.getByRole('rating').querySelector('.react-simple-star-rating');
         const svgStar = screen.getAllByLabelText('Select star rating')[3];
         await userEvent.pointer({ target: svgStar, coords: { clientX: 30 } });
@@ -111,14 +111,14 @@ describe('View Recipe Workflow: Rating', () => {
 
         // Expect ------------------------------------------------
         // ------ View Recipe Page -------------------------------
-        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         expect(screen.getByRole('rating').querySelector('.filled-icons')).toHaveProperty(
             'title',
             '2.25 out of 5'
         );
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         expect(screen.getByRole('rating').querySelector('.filled-icons')).toHaveProperty(
             'title',
             '2.25 out of 5'

@@ -32,7 +32,7 @@ describe('Update Image Workflow', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         user.upload(screen.getByLabelText('Upload image'), mockImageFileOne);
         await user.click(screen.getByLabelText('Save recipe'));
 
@@ -41,11 +41,11 @@ describe('Update Image Workflow', () => {
         expect(await screen.findByText('Recipes')).not.toBeNull();
         expect(screen.queryByLabelText('Loading image 1 for Mock Recipe')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
-        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         expect(screen.queryAllByAltText('Image 1 for Mock Recipe')).not.toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         expect(screen.queryByAltText('test_image.png')).not.toBeNull();
     });
 
@@ -57,7 +57,7 @@ describe('Update Image Workflow', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one.');
         await user.click(screen.getByLabelText('Remove test_image.png'));
         await user.click(screen.getByLabelText('Save recipe'));
 
@@ -66,11 +66,11 @@ describe('Update Image Workflow', () => {
         expect(await screen.findByText('Recipes')).not.toBeNull();
         expect(screen.queryByAltText('Image 1 for Mock Recipe Two')).toBeNull();
         // ------ View Recipe Page -------------------------------
-        await enterViewRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one.');
         expect(screen.queryByAltText('Image 1 for Mock Recipe Two')).toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one.');
         expect(screen.queryByAltText('test_image.png')).toBeNull();
     });
 });

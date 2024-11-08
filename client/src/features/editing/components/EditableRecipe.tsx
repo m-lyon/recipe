@@ -133,7 +133,8 @@ export function EditableRecipe(props: Props) {
                     name: section.name,
                     instructions: section.instructions
                         .filter((line) => line.value.trim() !== '')
-                        .map((line) => line.value),
+                        .map((line) => line.value.trimEnd())
+                        .map((value) => (/[.!?]$/.test(value) ? value : value + '.')),
                 };
             });
         if (!isLoggedIn) {
@@ -153,7 +154,11 @@ export function EditableRecipe(props: Props) {
             instructionSubsections,
             ingredientSubsections,
             tags,
-            notes: state.notes.notes ? state.notes.notes : undefined,
+            notes: state.notes.notes
+                ? /[.!?]$/.test(state.notes.notes.trimEnd())
+                    ? state.notes.notes.trimEnd()
+                    : state.notes.notes.trimEnd() + '.'
+                : undefined,
             source: state.source.source ? state.source.source : undefined,
             isIngredient,
         };

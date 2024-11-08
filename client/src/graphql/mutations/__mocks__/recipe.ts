@@ -114,7 +114,9 @@ export const mockUpdateRecipeInstructionsEdit = {
             id: recipeOneVars.id,
             recipe: {
                 ...recipeOneVars.recipe,
-                instructionSubsections: [{ instructions: ['Instruction one', 'New instruction.'] }],
+                instructionSubsections: [
+                    { instructions: ['Instruction one.', 'New instruction!'] },
+                ],
             },
         } satisfies UpdateRecipeMutationVariables,
     },
@@ -129,7 +131,7 @@ export const mockUpdateRecipeInstructionsEdit = {
                         {
                             __typename: 'InstructionSubsection',
                             name: null,
-                            instructions: ['Instruction one', 'New instruction.'],
+                            instructions: ['Instruction one.', 'New instruction!'],
                         },
                     ],
                 },
@@ -145,7 +147,7 @@ export const mockUpdateRecipeInstructionsAdd = {
             recipe: {
                 ...recipeOneVars.recipe,
                 instructionSubsections: [
-                    { instructions: ['Instruction one', 'Instruction two.', 'New instruction.'] },
+                    { instructions: ['Instruction one.', 'Instruction two.', 'New instruction.'] },
                 ],
             },
         } satisfies UpdateRecipeMutationVariables,
@@ -162,7 +164,7 @@ export const mockUpdateRecipeInstructionsAdd = {
                             __typename: 'InstructionSubsection',
                             name: null,
                             instructions: [
-                                'Instruction one',
+                                'Instruction one.',
                                 'Instruction two.',
                                 'New instruction.',
                             ],
@@ -180,7 +182,7 @@ export const mockUpdateRecipeInstructionsRemove = {
             id: recipeOneVars.id,
             recipe: {
                 ...recipeOneVars.recipe,
-                instructionSubsections: [{ instructions: ['Instruction one'] }],
+                instructionSubsections: [{ instructions: ['Instruction one.'] }],
             },
         } satisfies UpdateRecipeMutationVariables,
     },
@@ -195,7 +197,7 @@ export const mockUpdateRecipeInstructionsRemove = {
                         {
                             __typename: 'InstructionSubsection',
                             name: null,
-                            instructions: ['Instruction one'],
+                            instructions: ['Instruction one.'],
                         },
                     ],
                 },

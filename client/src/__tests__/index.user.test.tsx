@@ -65,7 +65,7 @@ describe('Auth Workflow', () => {
 
         // Act --------------------------------------------------
         expect(await screen.findByText('Recipes'));
-        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         await user.click(screen.getByLabelText('Logout'));
 
         // Expect ------------------------------------------------
@@ -96,7 +96,7 @@ describe('Edit & Delete Permissions', () => {
         expect(await screen.findByText('Recipes'));
 
         // Expect ------------------------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one.');
     });
 
     it('should NOT allow non-admin non-owner to edit recipe', async () => {

@@ -25,14 +25,14 @@ describe('Update Recipe Workflow: Calculated Tags', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
         // ------ Home Page --------------------------------------
         await notNullByText(screen, 'Recipes', 'vegetarian', 'special', 'vegan');
         // ------ View Recipe Page -------------------------------
-        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         allNotNullByText(screen, 'vegetarian', 'special', 'vegan');
     });
 
@@ -42,7 +42,7 @@ describe('Update Recipe Workflow: Calculated Tags', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
@@ -61,7 +61,7 @@ describe('Update Recipe Workflow: Calculated Tags', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
@@ -69,7 +69,7 @@ describe('Update Recipe Workflow: Calculated Tags', () => {
         await notNullByText(screen, 'Recipes', 'vegetarian');
         expect(screen.queryByText('vegan')).toBeNull();
         // ------ View Recipe Page -------------------------------
-        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         expect(screen.queryAllByText('vegetarian')).not.toBeNull();
         expect(screen.queryByText('vegan')).toBeNull();
     });

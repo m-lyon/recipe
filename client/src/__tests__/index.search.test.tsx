@@ -47,7 +47,7 @@ describe('Search Functionality', () => {
         await user.click(screen.getByLabelText('Search for recipes'));
         await user.keyboard('two');
         await waitForElementToBeRemoved(() => screen.queryAllByLabelText('View Mock Recipe'));
-        await enterViewRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one.');
         await user.click(screen.getByLabelText('Navigate to home page'));
 
         // Expect ------------------------------------------------

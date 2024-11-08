@@ -37,7 +37,7 @@ describe('View Recipe Workflow', () => {
         await userEvent.click(recipe);
 
         // Expect ------------------------------------------------
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        expect(await screen.findByText('Instruction one.')).not.toBeNull();
     });
 });
 
@@ -57,7 +57,7 @@ describe('Update Recipe Workflow', () => {
         await user.click(screen.getByLabelText('Edit Mock Recipe'));
 
         // Expect ------------------------------------------------
-        expect(await screen.findByText('Instruction one')).not.toBeNull();
+        expect(await screen.findByText('Instruction one.')).not.toBeNull();
     });
 });
 

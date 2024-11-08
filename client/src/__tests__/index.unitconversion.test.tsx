@@ -53,7 +53,7 @@ describe('Update Recipe Workflow: Servings', () => {
         const user = userEvent.setup();
 
         // Act ---------------------------------------------------
-        await enterViewRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one.');
         await user.click(screen.getByLabelText('Increase serving size'));
 
         // Expect ------------------------------------------------

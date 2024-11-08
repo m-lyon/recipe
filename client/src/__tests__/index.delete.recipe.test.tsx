@@ -64,7 +64,7 @@ describe('Delete Recipe Workflow', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         await user.click(screen.getByLabelText('Navigate to home page'));
         await user.hover(await screen.findByLabelText('View Mock Recipe'));
         await user.click(screen.getByLabelText('Delete Mock Recipe'));

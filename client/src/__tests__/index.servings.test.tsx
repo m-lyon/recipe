@@ -23,7 +23,7 @@ describe('Update Recipe Workflow: Servings', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         await user.click(screen.getByLabelText('Increase serving size'));
         expect(await screen.findByText('5 Servings')).not.toBeNull();
         await user.click(screen.getByLabelText('Save recipe'));
@@ -33,7 +33,7 @@ describe('Update Recipe Workflow: Servings', () => {
         await enterViewRecipePage(screen, user, 'Mock Recipe', '5 Servings');
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         expect(await screen.findByText('5 Servings')).not.toBeNull();
     });
 
@@ -43,7 +43,7 @@ describe('Update Recipe Workflow: Servings', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterViewRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
         await user.click(screen.getByLabelText('Increase serving size'));
 
         // Expect ------------------------------------------------
@@ -57,7 +57,7 @@ describe('Update Recipe Workflow: Servings', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterViewRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
         await user.click(screen.getByLabelText('Increase serving size'));
 
         // Expect ------------------------------------------------
@@ -71,7 +71,7 @@ describe('Update Recipe Workflow: Servings', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterViewRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
         await user.click(screen.getByLabelText('Increase serving size'));
 
         // Expect ------------------------------------------------
@@ -85,7 +85,7 @@ describe('Update Recipe Workflow: Servings', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterViewRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
         await user.click(screen.getByLabelText('Increase serving size'));
 
         // Expect ------------------------------------------------
@@ -99,7 +99,7 @@ describe('Update Recipe Workflow: Servings', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterViewRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one');
+        await enterViewRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
         await user.click(screen.getByLabelText('Increase serving size'));
 
         // Expect ------------------------------------------------

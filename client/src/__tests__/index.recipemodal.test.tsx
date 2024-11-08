@@ -26,11 +26,11 @@ describe('Recipe Modal', () => {
 
         // Act --------------------------------------------------
         await enterViewRecipePage(screen, user, 'Mock Recipe Four', 'Instr #1.');
-        nullByText(screen, 'Section One', '2 apples, diced', 'Instruction one');
+        nullByText(screen, 'Section One', '2 apples, diced', 'Instruction one.');
         await user.click(screen.getByLabelText('View Mock Recipe Two'));
 
         // Expect ------------------------------------------------
-        await notNullByText(screen, 'Section One', '2 apples, diced', 'Instruction one');
+        await notNullByText(screen, 'Section One', '2 apples, diced', 'Instruction one.');
     });
 
     it('should display an updated recipe ingredient modal', async () => {
@@ -53,7 +53,7 @@ describe('Recipe Modal', () => {
         await user.click(screen.getByLabelText('Navigate to home page'));
 
         // Act --------------------------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one');
+        await enterEditRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one.');
         await user.click(screen.getByLabelText('Enter title for ingredient subsection 2'));
         await user.keyboard('Two');
         await user.click(screen.getByLabelText('Remove 1 oz apples'));
@@ -65,7 +65,7 @@ describe('Recipe Modal', () => {
         nullByText(screen, 'Section One', '2 apples, diced', 'Section TwoTwo');
         await user.click(screen.getByLabelText('View Mock Recipe Two'));
         await notNullByText(screen, '2 apples, diced');
-        await notNullByText(screen, 'Instruction one', 'Section TwoTwo');
+        await notNullByText(screen, 'Instruction one.', 'Section TwoTwo');
         nullByText(screen, 'Section Two', '1 oz apples');
     });
 });

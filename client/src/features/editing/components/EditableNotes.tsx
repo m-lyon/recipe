@@ -16,10 +16,6 @@ export function EditableNotes(props: EditableNotesProps) {
     const handleSubmit = () => {
         if (notes.trim() === '') {
             setNotes('');
-        } else {
-            if (!notes.endsWith('.')) {
-                setNotes(notes + '.');
-            }
         }
     };
 
