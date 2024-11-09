@@ -15,5 +15,9 @@ export const renderComponent = (mockedResponses: MockedResponses = []) => {
     const routes = createRoutesFromElements(
         <Route path='/' element={<MockEditableIngredientList />} />
     );
-    renderPage(routes, [mockGetIngredientComponents, mockGetUnitConversions, ...mockedResponses]);
+    return renderPage(routes, [
+        mockGetIngredientComponents,
+        mockGetUnitConversions,
+        ...mockedResponses,
+    ]);
 };

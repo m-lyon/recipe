@@ -21,7 +21,7 @@ import { MockedResponses, enterEditRecipePage, enterViewRecipePage } from '@reci
 import { routes } from '../routes';
 
 const renderComponent = (mockedResponses: MockedResponses = []) => {
-    renderPage(routes, [mockGetRecipes, mockCountRecipes, ...mockedResponses], [PATH.ROOT]);
+    return renderPage(routes, [mockGetRecipes, mockCountRecipes, ...mockedResponses], [PATH.ROOT]);
 };
 
 loadErrorMessages();

@@ -18,7 +18,7 @@ loadDevMessages();
 
 const renderComponent = (mocks: MockedResponses = []) => {
     const routes = createRoutesFromElements(<Route path='/' element={<EditPrepMethod />} />);
-    renderPage(routes, [mockGetPrepMethods, mockCurrentUserAdmin, ...mocks]);
+    return renderPage(routes, [mockGetPrepMethods, mockCurrentUserAdmin, ...mocks]);
 };
 
 describe('Edit Prep Method', () => {

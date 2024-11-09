@@ -16,7 +16,7 @@ loadDevMessages();
 
 const renderComponent = () => {
     const routes = createRoutesFromElements(<Route path='/' element={<ViewRecipe />} />);
-    renderPage(routes, [
+    return renderPage(routes, [
         mockGetRecipe,
         mockGetRatingsRecipeOne,
         mockGetUnitConversions,

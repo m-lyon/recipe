@@ -3,9 +3,10 @@ import { AddIcon } from '@chakra-ui/icons';
 
 interface Props {
     handleAddFile: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    numImages: number;
 }
 export function UploadBox(props: Props) {
-    const { handleAddFile } = props;
+    const { handleAddFile, numImages } = props;
     return (
         <Box
             border='3px dashed'
@@ -16,6 +17,11 @@ export function UploadBox(props: Props) {
             rounded='lg'
             justifyContent='center'
             alignItems='center'
+            minH={200}
+            minW={{ base: undefined, md: 282 }}
+            mb='16px'
+            mt={{ base: numImages > 0 ? '0px' : '16px', md: '16px' }}
+            mx={{ base: '16px', md: '0px' }}
         >
             <label htmlFor='file-input'>
                 <AddIcon

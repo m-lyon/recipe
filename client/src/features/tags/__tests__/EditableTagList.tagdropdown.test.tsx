@@ -2,9 +2,10 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Route, createRoutesFromElements } from 'react-router-dom';
 
+import { renderPage } from '@recipe/utils/tests';
 import { mockGetManyTags } from '@recipe/graphql/queries/__mocks__/tag';
+import { MockedResponses, notNullByText, nullByText } from '@recipe/utils/tests';
 import { mockGetTags, mockGetTagsEmpty } from '@recipe/graphql/queries/__mocks__/tag';
-import { MockedResponses, notNullByText, nullByText, renderPage } from '@recipe/utils/tests';
 
 import { EditableTag } from '../components/EditableTag';
 
@@ -28,7 +29,7 @@ const renderComponent = (mocks: MockedResponses, additionalProps = {}) => {
     const routes = createRoutesFromElements(
         <Route path='/' element={<EditableTag {...props} />} />
     );
-    renderPage(routes, mocks);
+    return renderPage(routes, mocks);
 };
 
 describe('TagDropdown', () => {

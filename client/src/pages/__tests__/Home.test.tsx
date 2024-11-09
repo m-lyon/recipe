@@ -27,7 +27,7 @@ const renderComponent = (mocks: MockedResponses = []) => {
             <Route index element={<Home />} />
         </Route>
     );
-    renderPage(routes, [
+    return renderPage(routes, [
         mockCurrentUserAdmin,
         mockGetRecipesLarger,
         mockCountRecipesLarger,

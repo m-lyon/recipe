@@ -47,7 +47,7 @@ const renderComponent = () => {
     };
 
     const routes = createRoutesFromElements(<Route path='/' element={<MockIngredientsTab />} />);
-    renderPage(routes, [
+    return renderPage(routes, [
         mockGetIngredientComponents,
         mockGetUnitConversions,
         mockGetRatingsRecipeOne,

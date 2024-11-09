@@ -103,7 +103,7 @@ export function renderPage(
     mockedResponses: MockedResponses = [],
     initialEntries?: string[]
 ) {
-    render(
+    return render(
         <MockedProvider mocks={mockedResponses} cache={getCache()}>
             <ChakraProvider>
                 <RouterProvider

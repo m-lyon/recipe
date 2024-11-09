@@ -243,7 +243,9 @@ export function EditableRecipe(props: Props) {
                 </GridItem>
                 <GridItem
                     boxShadow='lg'
-                    padding='6'
+                    px='6'
+                    pt='6'
+                    pb='2'
                     area='images'
                     display='flex'
                     flexDirection='column'

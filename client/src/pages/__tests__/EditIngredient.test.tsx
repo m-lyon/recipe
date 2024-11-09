@@ -18,7 +18,7 @@ loadDevMessages();
 
 const renderComponent = (mocks: MockedResponses = []) => {
     const routes = createRoutesFromElements(<Route path='/' element={<EditIngredient />} />);
-    renderPage(routes, [mockGetIngredients, mockCurrentUserAdmin, ...mocks]);
+    return renderPage(routes, [mockGetIngredients, mockCurrentUserAdmin, ...mocks]);
 };
 
 describe('Edit Ingredient', () => {

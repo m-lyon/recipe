@@ -17,7 +17,7 @@ loadDevMessages();
 
 const renderComponent = (mocks: MockedResponses = []) => {
     const routes = createRoutesFromElements(<Route path='/' element={<EditUnit />} />);
-    renderPage(routes, [mockGetUnits, mockCurrentUserAdmin, ...mocks]);
+    return renderPage(routes, [mockGetUnits, mockCurrentUserAdmin, ...mocks]);
 };
 
 describe('Edit Unit', () => {

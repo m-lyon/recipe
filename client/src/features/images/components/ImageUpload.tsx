@@ -1,4 +1,4 @@
-import { Box, Container, HStack } from '@chakra-ui/react';
+import { Box, Container, Stack } from '@chakra-ui/react';
 import { ChangeEvent, Dispatch, SetStateAction } from 'react';
 
 import { useErrorToast } from '@recipe/common/hooks';
@@ -41,13 +41,18 @@ export function ImageUpload(props: ImageUploadProps) {
             paddingLeft='0px'
             paddingRight='0px'
         >
-            <Box textAlign='center' fontSize='lg' paddingBottom='6px'>
+            <Box textAlign='center' fontSize='lg'>
                 Upload your images
             </Box>
-            <HStack h='100%' align='stretch'>
+            <Stack
+                h='100%'
+                align='stretch'
+                direction={{ base: 'column', md: 'row' }}
+                overflowX={{ base: undefined, md: 'auto' }}
+            >
                 {imagePreviews}
-                <UploadBox handleAddFile={handleAddFile} />
-            </HStack>
+                <UploadBox handleAddFile={handleAddFile} numImages={imagePreviews.length} />
+            </Stack>
         </Container>
     );
 }

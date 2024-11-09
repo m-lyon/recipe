@@ -15,7 +15,7 @@ const renderComponent = () => {
         return <EditableTagList {...props} />;
     };
     const routes = createRoutesFromElements(<Route path='/' element={<MockCreateRecipe />} />);
-    renderPage(routes, [mockGetTags]);
+    return renderPage(routes, [mockGetTags]);
 };
 
 describe('EditableTag Click Action', () => {
