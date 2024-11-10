@@ -9,7 +9,7 @@ interface Props extends TextareaProps {
 }
 export function CentredTextArea(props: Props) {
     const { value, setValue, fontSize, fontWeight, placeholder, ...rest } = props;
-    const inputRef = useRef<HTMLTextAreaElement | null>(null);
+    const inputRef = useRef<HTMLTextAreaElement>(null);
     const placeholderRef = useRef<HTMLSpanElement>(null);
 
     return (

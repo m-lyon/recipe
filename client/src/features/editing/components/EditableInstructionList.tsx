@@ -15,7 +15,7 @@ interface Props {
 }
 export function EditableInstructionList(props: Props) {
     const { instructions, addLine, removeLine, setLine, sectionNum } = props;
-    const lastInputRef = useRef<HTMLTextAreaElement | null>(null);
+    const lastInputRef = useRef<HTMLTextAreaElement>(null);
 
     const instructionsList = instructions.map((instr, index) => {
         const isLast = index + 1 === instructions.length;

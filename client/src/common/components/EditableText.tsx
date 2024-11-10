@@ -7,7 +7,7 @@ interface Props extends InputProps {
 }
 export function EditableText(props: Props) {
     const { optionalRef, onSubmit, ...rest } = props;
-    const ref = useRef<HTMLInputElement | null>(null);
+    const ref = useRef<HTMLInputElement>(null);
     const refs = useMergeRefs(ref, optionalRef);
 
     return (

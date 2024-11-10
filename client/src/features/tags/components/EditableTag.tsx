@@ -15,8 +15,8 @@ interface Props {
 }
 export function EditableTag(props: Props) {
     const { tag, actions, tagStr, selectedTags } = props;
-    const parentRef = useRef<HTMLDivElement | null>(null);
-    const inputRef = useRef<HTMLInputElement | null>(null);
+    const parentRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
     useOutsideClick({
         ref: parentRef,
         handler: () => {

@@ -29,17 +29,17 @@ export const getCache = () =>
             Recipe: {
                 fields: {
                     tags: {
-                        merge(existing, incoming) {
+                        merge(_existing, incoming) {
                             return incoming;
                         },
                     },
                     ingredientSubsections: {
-                        merge(existing, incoming) {
+                        merge(_existing, incoming) {
                             return incoming;
                         },
                     },
                     instructionSubsections: {
-                        merge(existing, incoming) {
+                        merge(_existing, incoming) {
                             return incoming;
                         },
                     },

@@ -1,5 +1,5 @@
+import { RefObject } from 'react';
 import { List } from '@chakra-ui/react';
-import { MutableRefObject } from 'react';
 import { useQuery } from '@apollo/client';
 import { LayoutGroup, motion } from 'framer-motion';
 
@@ -11,7 +11,7 @@ import { EditableTag, EditableTagActionHandler, FinishedTag } from '../hooks/use
 interface Props {
     tag: EditableTag;
     actions: EditableTagActionHandler;
-    inputRef: MutableRefObject<HTMLInputElement | null>;
+    inputRef: RefObject<HTMLInputElement>;
     selectedTags: FinishedTag[];
 }
 export function TagDropdown(props: Props) {

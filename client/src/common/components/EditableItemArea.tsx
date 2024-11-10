@@ -13,7 +13,7 @@ interface Props extends TextareaProps {
 export function EditableItemArea(props: Props) {
     const { defaultStr, value, handleChange, handleSubmit, handleEnter, optionalRef, ...rest } =
         props;
-    const ref = useRef<HTMLTextAreaElement | null>(null);
+    const ref = useRef<HTMLTextAreaElement>(null);
     const refs = useMergeRefs(ref, optionalRef);
 
     useEffect(() => {

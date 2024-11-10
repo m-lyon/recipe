@@ -1,4 +1,4 @@
-import { MutableRefObject } from 'react';
+import { RefObject } from 'react';
 import { matchSorter } from 'match-sorter';
 import { LayoutGroup } from 'framer-motion';
 import { useMutation } from '@apollo/client';
@@ -14,7 +14,7 @@ interface Props {
     strValue: string;
     tags: TagChoice[];
     setAndSubmit: SetAndSubmit;
-    inputRef: MutableRefObject<HTMLInputElement | null>;
+    inputRef: RefObject<HTMLInputElement>;
     selectedTags: FinishedTag[];
 }
 export function TagDropdownList(props: Props) {

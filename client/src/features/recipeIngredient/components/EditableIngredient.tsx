@@ -26,10 +26,10 @@ interface Props {
 }
 export function EditableIngredient(props: Props) {
     const { subsection, item, actionHandler, queryData, ingredientNum, fontSize } = props;
-    const previewRef = useRef<HTMLInputElement | null>(null);
-    const inputRef = useRef<HTMLInputElement | null>(null);
-    const parentRef = useRef<HTMLDivElement | null>(null);
-    const fieldRef = useRef<HTMLInputElement | null>(null);
+    const previewRef = useRef<HTMLInputElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const parentRef = useRef<HTMLDivElement>(null);
+    const fieldRef = useRef<HTMLInputElement>(null);
     const [popover, setPopover] = useState<PopoverType>('unit');
     const [bespokeValue, setBespokeValue] = useState('');
     const toast = useErrorToast();

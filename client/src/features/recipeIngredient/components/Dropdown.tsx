@@ -1,4 +1,4 @@
-import { MutableRefObject } from 'react';
+import { RefObject, useRef } from 'react';
 import { Box, List } from '@chakra-ui/react';
 import { LayoutGroup, motion } from 'framer-motion';
 
@@ -10,13 +10,14 @@ import { Suggestion } from '../utils/suggestions';
 interface Props {
     item: EditableRecipeIngredient;
     suggestions: Suggestion[];
-    previewRef: MutableRefObject<HTMLDivElement | null>;
+    previewRef: RefObject<HTMLInputElement>;
     highlighted: number;
     setHighlighted: (index: number) => void;
     handleSelect: (suggestion: Suggestion) => void;
 }
 export function Dropdown(props: Props) {
     const { item, suggestions, previewRef, highlighted, setHighlighted, handleSelect } = props;
+    const ref = useRef<HTMLUListElement>(null);
 
     return (
         item.show && (
@@ -33,6 +34,7 @@ export function Dropdown(props: Props) {
                         maxHeight={item.show ? '14em' : undefined}
                         overflowY={item.show ? 'auto' : undefined}
                         aria-label='Dropdown suggestion list'
+                        ref={ref}
                     >
                         <LayoutGroup>
                             {suggestions.map((i, index) => (
@@ -43,6 +45,7 @@ export function Dropdown(props: Props) {
                                     onClick={() => {
                                         handleSelect(i);
                                         previewRef?.current?.focus();
+                                        ref.current?.scrollTo({ top: 0, behavior: 'instant' });
                                     }}
                                     isHighlighted={index === highlighted}
                                     setHighlighted={() => setHighlighted(index)}
