@@ -1,4 +1,5 @@
 import { defineWorkspace } from 'vitest/config';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 export default defineWorkspace([
     {
@@ -10,10 +11,11 @@ export default defineWorkspace([
                 enabled: true,
                 name: 'chromium',
                 provider: 'playwright',
-                headless: false,
+                headless: true,
             },
             name: 'browser',
             unstubGlobals: true,
         },
+        plugins: [nodePolyfills()],
     },
 ]);

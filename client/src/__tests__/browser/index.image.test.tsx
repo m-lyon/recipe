@@ -1,9 +1,9 @@
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'fs';
+import path from 'path';
 
 import { cleanup, screen } from '@testing-library/react';
 import { page, userEvent } from '@vitest/browser/context';
-// import { toMatchImageSnapshot } from 'jest-image-snapshot';
+import { toMatchImageSnapshot } from 'jest-image-snapshot';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
@@ -15,11 +15,7 @@ import { renderBrowserComponent } from './utils';
 loadErrorMessages();
 loadDevMessages();
 
-if (typeof __dirname === 'undefined') {
-    global.__dirname = dirname(fileURLToPath(import.meta.url));
-}
-
-// expect.extend({ toMatchImageSnapshot });
+expect.extend({ toMatchImageSnapshot });
 
 describe('Image Workflow', () => {
     afterEach(() => {
@@ -43,6 +39,16 @@ describe('Image Workflow', () => {
 
         // Expect ------------------------------------------------
         const image = await page.screenshot();
-        // expect(image).toMatchImageSnapshot({ customSnapshotsDir: './__screenshots__/' });
+        console.log('image', image);
+        console.log(
+            'fs.existsSync("./__screenshots__/")',
+            fs.readdir('__screenshots__/', (exists) => {
+                console.log('done', exists);
+            })
+        );
+        expect(image).toMatchImageSnapshot({
+            customSnapshotsDir: './__screenshots__/',
+            runInProcess: true,
+        });
     });
 });
