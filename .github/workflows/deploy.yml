@@ -152,7 +152,7 @@ jobs:
           TARGET: ${{ secrets.API_REMOTE_TARGET }}
 
       - name: Install API dependencies on server
-        uses: appleboy/ssh-action@v1.0.1
+        uses: appleboy/ssh-action@v1.1.0
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
@@ -163,7 +163,7 @@ jobs:
             npm ci --production
 
       - name: Start API server
-        uses: appleboy/ssh-action@v1.0.1
+        uses: appleboy/ssh-action@v1.1.0
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
