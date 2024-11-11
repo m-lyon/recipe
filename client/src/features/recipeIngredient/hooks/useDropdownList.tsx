@@ -16,11 +16,11 @@ export function useDropdownList(
     deleteChar: () => void
 ) {
     const toast = useErrorToast();
-    const [highlighted, setHighlighted] = useState(0);
+    const [activeIndex, setActiveIndex] = useState(0);
     const [saveBespokePrepMethod] = useMutation(CREATE_PREP_METHOD, {
         onCompleted: (data: CreatePrepMethodMutation) => {
             setItem(data.prepMethodCreateOne!.record!);
-            setHighlighted(0);
+            setActiveIndex(0);
         },
         onError: (error) => {
             toast({
@@ -31,15 +31,15 @@ export function useDropdownList(
         },
     });
     useEffect(() => {
-        if (highlighted > suggestions.length - 1) {
-            setHighlighted(Math.max(suggestions.length - 1, 0));
+        if (activeIndex > suggestions.length - 1) {
+            setActiveIndex(Math.max(suggestions.length - 1, 0));
         }
-    }, [highlighted, suggestions.length]);
+    }, [activeIndex, suggestions.length]);
 
     const handleSelect = (item: Suggestion | undefined) => {
         if (!item) {
             setItem(undefined);
-            setHighlighted(0);
+            setActiveIndex(0);
             return;
         }
         if (typeof item.value === 'string') {
@@ -55,13 +55,13 @@ export function useDropdownList(
                     break;
                 case 'skip prep method':
                     setItem(null);
-                    setHighlighted(0);
+                    setActiveIndex(0);
                     break;
                 case 'skip unit':
                 case 'skip size':
                 case 'skip quantity':
                     setItem(null);
-                    setHighlighted(0);
+                    setActiveIndex(0);
                     break;
                 case 'add new prep method':
                     openPopover('prepMethod');
@@ -83,7 +83,7 @@ export function useDropdownList(
             }
         } else {
             setItem(item.value);
-            setHighlighted(0);
+            setActiveIndex(0);
         }
     };
 
@@ -91,18 +91,18 @@ export function useDropdownList(
         if (['ArrowDown', 'ArrowUp', 'Enter', 'Backspace'].includes(e.key)) {
             e.preventDefault();
         }
-        if (e.key === 'ArrowDown' && highlighted < suggestions.length - 1) {
-            setHighlighted((index) => (index += 1));
-        } else if (e.key === 'ArrowUp' && highlighted > 0) {
-            setHighlighted((index) => (index -= 1));
+        if (e.key === 'ArrowDown' && activeIndex < suggestions.length - 1) {
+            setActiveIndex((index) => (index += 1));
+        } else if (e.key === 'ArrowUp' && activeIndex > 0) {
+            setActiveIndex((index) => (index -= 1));
         } else if (e.key === 'Enter') {
-            if (highlighted !== -1) {
-                handleSelect(suggestions[highlighted]);
+            if (activeIndex !== -1) {
+                handleSelect(suggestions[activeIndex]);
             }
         } else if (e.key === 'Backspace') {
             deleteChar();
         }
     };
 
-    return { highlighted, setHighlighted, handleKeyboardEvent, handleSelect };
+    return { activeIndex, setActiveIndex, handleKeyboardEvent, handleSelect };
 }

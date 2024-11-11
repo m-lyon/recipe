@@ -56,7 +56,7 @@ export function EditableIngredient(props: Props) {
         },
     });
     const handleReset = () => {
-        setHighlighted(0);
+        setActiveIndex(0);
         actionHandler.resetEditable(subsection);
         if (item.unit.data && !item.unit.data.unique) {
             deleteUnit({ variables: { id: item.unit.data._id } });
@@ -80,7 +80,7 @@ export function EditableIngredient(props: Props) {
         }
         onOpen();
     };
-    const { setHighlighted, handleKeyboardEvent, ...dropdownProps } = useDropdownList(
+    const { setActiveIndex, handleKeyboardEvent, ...dropdownProps } = useDropdownList(
         strValue,
         suggestions,
         (attr: SetAttr) => actionHandler.setCurrentEditableAttribute(subsection, attr),
@@ -91,7 +91,7 @@ export function EditableIngredient(props: Props) {
     const getPopover = () => {
         const setItem = (attr: RecipeIngredientDropdown) => {
             actionHandler.setCurrentEditableAttribute(subsection, attr);
-            setHighlighted(0);
+            setActiveIndex(0);
         };
         const popoverProps = {
             fieldRef,
@@ -180,7 +180,7 @@ export function EditableIngredient(props: Props) {
                     suggestions={suggestions}
                     item={item}
                     previewRef={previewRef}
-                    setHighlighted={setHighlighted}
+                    setActiveIndex={setActiveIndex}
                     {...dropdownProps}
                 />
                 {getPopover()}
