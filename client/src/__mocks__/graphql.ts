@@ -9,11 +9,15 @@ import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitCo
 import { mockGetRecipeTwo, mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCountRecipes, mockGetRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
 
-export const mocks = [
+export const mocksMinimal = [
     mockCurrentUserAdmin,
     mockGetTags,
     mockGetIngredientComponents,
     mockGetUnitConversions,
+];
+
+export const mocks = [
+    ...mocksMinimal,
     mockGetRecipeOne,
     mockGetRecipeTwo,
     mockGetRecipeThree,

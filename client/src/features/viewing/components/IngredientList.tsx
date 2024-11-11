@@ -1,6 +1,6 @@
 import { CgBowl } from 'react-icons/cg';
 import { TbWeight } from 'react-icons/tb';
-import { UnorderedList, VStack, useToast } from '@chakra-ui/react';
+import { BoxProps, UnorderedList, VStack, useToast } from '@chakra-ui/react';
 import { Box, Flex, HStack, IconButton, ListItem, Spacer, Text } from '@chakra-ui/react';
 
 import { DELAY_SHORT } from '@recipe/constants';
@@ -10,14 +10,14 @@ import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 
 import { RecipeIngredient } from './RecipeIngredient';
 
-export interface IngredientListProps {
+export interface IngredientListProps extends BoxProps {
     subsections: IngredientSubsectionView[];
     currentServings: number;
     origServings: number;
     weightAndVolumeBtns?: boolean;
 }
 export function IngredientList(props: IngredientListProps) {
-    const { subsections, currentServings, origServings, weightAndVolumeBtns } = props;
+    const { subsections, currentServings, origServings, weightAndVolumeBtns, ...rest } = props;
     const { apply } = useUnitConversion();
     const toast = useToast();
 
@@ -67,7 +67,7 @@ export function IngredientList(props: IngredientListProps) {
     });
 
     return (
-        <Box>
+        <Box {...rest}>
             <Flex pb='10px'>
                 <Text fontSize='2xl'>{modifiedSubsections[0].name ?? 'Ingredients'}</Text>
                 <Spacer />

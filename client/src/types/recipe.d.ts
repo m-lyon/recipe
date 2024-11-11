@@ -246,9 +246,9 @@ declare global {
 
     /**
      * Represents a recipe object for use in the view recipe page. Can be null if the recipe
-     * does not exist.
+     * does not exist, or undefined if the query has not yet completed.
      */
-    type RecipeView = GetRecipeQuery['recipeOne'];
+    type RecipeView = GetRecipeQuery['recipeOne'] | undefined;
     /**
      * Represents a resolved recipe object for use in the view recipe page.
      */

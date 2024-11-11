@@ -1,6 +1,8 @@
+import { useLazyQuery } from '@apollo/client';
 import { ChevronRightIcon } from '@chakra-ui/icons';
 import { Box, Flex, ListItem, Spacer, useDisclosure } from '@chakra-ui/react';
 
+import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 
 import { RecipeModal } from './RecipeModal';
@@ -10,6 +12,7 @@ interface Props {
 }
 export function RecipeIngredient({ ingredient }: Props) {
     const { isOpen, onOpen, onClose } = useDisclosure();
+    const [getRecipe, { data }] = useLazyQuery(GET_RECIPE);
 
     return (
         <ListItem key={ingredient._id}>
@@ -34,7 +37,10 @@ export function RecipeIngredient({ ingredient }: Props) {
                         },
                         cursor: 'pointer',
                     }}
-                    onClick={onOpen}
+                    onClick={() => {
+                        onOpen();
+                        getRecipe({ variables: { filter: { _id: ingredient.ingredient._id } } });
+                    }}
                     aria-label={`View ${ingredient.ingredient.title}`}
                 >
                     {getFinishedRecipeIngredientStr(ingredient)}
@@ -42,7 +48,7 @@ export function RecipeIngredient({ ingredient }: Props) {
                 </Box>
                 <Spacer />
             </Flex>
-            <RecipeModal recipe={ingredient.ingredient} isOpen={isOpen} onClose={onClose} />
+            <RecipeModal recipe={data?.recipeOne} isOpen={isOpen} onClose={onClose} />
         </ListItem>
     );
 }

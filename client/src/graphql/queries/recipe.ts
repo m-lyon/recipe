@@ -75,32 +75,6 @@ export const RECIPE_FIELDS_FULL = gql(`
                         _id
                         title
                         pluralTitle
-                        ingredientSubsections {
-                            name
-                            ingredients {
-                                _id
-                                quantity
-                                unit {
-                                    ...UnitFields
-                                }
-                                size {
-                                    ...SizeFields
-                                }
-                                ingredient {
-                                    ... on Ingredient {
-                                        ...IngredientFields
-                                    }
-                                }
-                                prepMethod {
-                                    ...PrepMethodFields
-                                }
-                            }
-                        }
-                        instructionSubsections {
-                            name
-                            instructions
-                        }
-                        numServings
                     }
                     ... on Ingredient {
                         ...IngredientFields
