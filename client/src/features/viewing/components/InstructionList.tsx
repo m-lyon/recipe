@@ -46,5 +46,5 @@ export function InstructionList(props: Props) {
         }
     });
 
-    return <Box>{subsectionsList}</Box>;
+    return <Box mb='16px'>{subsectionsList}</Box>;
 }
