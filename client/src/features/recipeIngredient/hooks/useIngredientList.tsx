@@ -24,6 +24,7 @@ export function dbIngredientToFinished(ingr: RecipeIngredientView): FinishedReci
     }
     return { key, quantity, unit, size, ingredient, prepMethod };
 }
+const VALID_CHAR = /^[a-zA-Z ,.\-"]$/;
 
 interface handleChangeOpts {
     subsection: number;
@@ -72,7 +73,7 @@ function handleQuantityChange(opts: handleChangeOpts) {
 
 function handleUnitChange(opts: handleChangeOpts) {
     const { subsection, char, item, data, editableActions } = opts;
-    if (/^[a-zA-Z ]$/.test(char)) {
+    if (VALID_CHAR.test(char)) {
         if (char === ' ') {
             const value = item.unit.value;
             for (const unit of data.units) {
@@ -97,15 +98,13 @@ function handleUnitChange(opts: handleChangeOpts) {
         }
         editableActions.unit.append(subsection, char);
     } else {
-        throw new Error(
-            'Only letters and spaces are allowed when inputting unit, size, or ingredient.'
-        );
+        throw new Error('Invalid character.');
     }
 }
 
 function handleSizeChange(opts: handleChangeOpts) {
     const { subsection, char, item, data, editableActions } = opts;
-    if (/^[a-zA-Z ]$/.test(char)) {
+    if (VALID_CHAR.test(char)) {
         if (char === ' ') {
             const value = item.size.value;
             for (const size of data.sizes) {
@@ -117,25 +116,25 @@ function handleSizeChange(opts: handleChangeOpts) {
         }
         editableActions.size.append(subsection, char);
     } else {
-        throw new Error(`Only letters and spaces are allowed when inputting a size or ingredient.`);
+        throw new Error('Invalid character.');
     }
 }
 
 function handleIngredientChange(opts: handleChangeOpts) {
     const { subsection, char, editableActions } = opts;
-    if (/^[a-zA-Z -]$/.test(char)) {
+    if (VALID_CHAR.test(char)) {
         editableActions.ingredient.append(subsection, char);
     } else {
-        throw new Error('Only letters and spaces are allowed when inputting an ingredient.');
+        throw new Error('Invalid character.');
     }
 }
 
 function handlePrepMethodChange(opts: handleChangeOpts) {
     const { subsection, char, editableActions } = opts;
-    if (/^[a-zA-Z ]$/.test(char)) {
+    if (VALID_CHAR.test(char)) {
         editableActions.prepMethod.append(subsection, char);
     } else {
-        throw new Error(`Only letters and spaces are allowed when inputting a prep method.`);
+        throw new Error('Invalid character.');
     }
 }
 
