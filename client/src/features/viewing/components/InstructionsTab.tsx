@@ -35,7 +35,7 @@ export function InstructionsTab(props: Props) {
                     <VStack spacing={{ base: undefined, md: `${instrSpacing}px` }} align='left'>
                         <TagList
                             tags={tags.map((tag) => tag.value).concat(calculatedTags)}
-                            displayBoxMargin={true}
+                            displayBoxMargin={images.length !== 0}
                             display={{ base: 'none', md: 'block' }}
                         />
                         <Box pr='24px'>
