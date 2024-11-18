@@ -102,20 +102,21 @@ describe('Instruction Subsections', () => {
 
         // Act --------------------------------------------------
         await enterEditRecipePage(screen, user, 'Mock Recipe Four', 'Instr #1.');
-        await user.click(screen.getByLabelText('Enter title for instruction subsection 2'));
-        await user.keyboard('{Backspace>12/}');
+        await user.click(screen.getByLabelText('Enter title for instruction subsection 1'));
+        await user.keyboard('{Backspace>12/}{Enter}');
+        await user.click(screen.getByLabelText('Confirm delete subsection'));
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
         // ------ View Recipe Page -------------------------------
-        await enterViewRecipePage(screen, user, 'Mock Recipe Four', 'Instr #1.');
-        await notNullByText(screen, 'Instruct One');
-        nullByText(screen, 'Instruct Two', 'Instr #3.');
+        await enterViewRecipePage(screen, user, 'Mock Recipe Four', 'Instr #3.');
+        await notNullByText(screen, 'Instruct Two');
+        nullByText(screen, 'Instruct One', 'Instr #1.', 'Instr #2.');
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
-        await enterEditRecipePage(screen, user, 'Mock Recipe Four', 'Instr #1.');
-        haveValueByLabelText(screen, 'Enter title for instruction subsection 1', 'Instruct One');
-        expect(screen.queryByLabelText('Enter instruction #3 for subsection 1')).not.toBeNull();
+        await enterEditRecipePage(screen, user, 'Mock Recipe Four', 'Instr #3.');
+        haveValueByLabelText(screen, 'Enter title for instruction subsection 1', 'Instruct Two');
+        expect(screen.queryByLabelText('Enter instruction #2 for subsection 1')).not.toBeNull();
         haveValueByLabelText(screen, 'Enter title for instruction subsection 2', '');
         expect(screen.queryByLabelText('Enter instruction #1 for subsection 2')).not.toBeNull();
         expect(screen.queryByLabelText('Enter instruction #2 for subsection 2')).toBeNull();
@@ -204,7 +205,7 @@ describe('Instruction Subsections', () => {
         expect(screen.queryByLabelText('Enter instruction #1 for subsection 4')).toBeNull();
     });
 
-    it.skip('should keep list items after removing title, enter', async () => {
+    it('should keep list items after removing title, enter', async () => {
         // Render -----------------------------------------------
         renderComponent();
         const user = userEvent.setup();
@@ -216,13 +217,21 @@ describe('Instruction Subsections', () => {
 
         // Expect -----------------------------------------------
         haveValueByLabelText(screen, 'Enter title for instruction subsection 1', '');
-        haveTextContentByLabelText(screen, 'Enter instruction #1 for subsection 1', 'Instruct one');
-        haveTextContentByLabelText(screen, 'Enter instruction #2 for subsection 1', 'Instruct two');
+        haveTextContentByLabelText(
+            screen,
+            'Enter instruction #1 for subsection 1',
+            'Instruction one.'
+        );
+        haveTextContentByLabelText(
+            screen,
+            'Enter instruction #2 for subsection 1',
+            'Instruction two.'
+        );
         expect(screen.queryByLabelText('Enter title for instruction subsection 2')).toBeNull();
         expect(screen.queryByLabelText('Enter instruction #1 for subsection 2')).toBeNull();
     });
 
-    it.skip('should keep list items after removing title, click', async () => {
+    it('should keep list items after removing title, click', async () => {
         // Render -----------------------------------------------
         renderComponent();
         const user = userEvent.setup();
@@ -235,13 +244,21 @@ describe('Instruction Subsections', () => {
 
         // Expect -----------------------------------------------
         haveValueByLabelText(screen, 'Enter title for instruction subsection 1', '');
-        haveTextContentByLabelText(screen, 'Enter instruction #1 for subsection 1', 'Instruct one');
-        haveTextContentByLabelText(screen, 'Enter instruction #2 for subsection 1', 'Instruct two');
+        haveTextContentByLabelText(
+            screen,
+            'Enter instruction #1 for subsection 1',
+            'Instruction one.'
+        );
+        haveTextContentByLabelText(
+            screen,
+            'Enter instruction #2 for subsection 1',
+            'Instruction two.'
+        );
         expect(screen.queryByLabelText('Enter title for instruction subsection 2')).toBeNull();
         expect(screen.queryByLabelText('Enter instruction #1 for subsection 2')).toBeNull();
     });
 
-    it.skip('should keep 1st list items after removing 1st title, enter', async () => {
+    it('should remove 1st list items after removing 1st title of many, enter', async () => {
         // Render -----------------------------------------------
         renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
         const user = userEvent.setup();
@@ -250,16 +267,16 @@ describe('Instruction Subsections', () => {
         await enterEditRecipePage(screen, user, 'Mock Recipe Four', 'Instr #1.');
         await user.click(screen.getByLabelText('Enter title for instruction subsection 1'));
         await user.keyboard('{Backspace>12/}{Enter}');
+        await user.click(screen.getByLabelText('Confirm delete subsection'));
 
         // Expect -----------------------------------------------
-        haveValueByLabelText(screen, 'Enter title for instruction subsection 1', '');
-        haveTextContentByLabelText(screen, 'Enter instruction #1 for subsection 1', 'Instruct one');
-        haveTextContentByLabelText(screen, 'Enter instruction #2 for subsection 1', 'Instruct two');
-        expect(screen.queryByLabelText('Enter title for instruction subsection 2')).toBeNull();
-        expect(screen.queryByLabelText('Enter instruction #1 for subsection 2')).toBeNull();
+        haveValueByLabelText(screen, 'Enter title for instruction subsection 1', 'Instruct Two');
+        haveTextContentByLabelText(screen, 'Enter instruction #1 for subsection 1', 'Instr #3.');
+        haveValueByLabelText(screen, 'Enter title for instruction subsection 2', '');
+        haveTextContentByLabelText(screen, 'Enter instruction #1 for subsection 2', '');
     });
 
-    it.skip('should keep 1st list items after removing 1st title, click', async () => {
+    it('should keep 1st list items after removing 1st title of many, click', async () => {
         // Render -----------------------------------------------
         renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
         const user = userEvent.setup();
@@ -269,16 +286,38 @@ describe('Instruction Subsections', () => {
         await user.click(screen.getByLabelText('Enter title for instruction subsection 1'));
         await user.keyboard('{Backspace>12/}');
         await user.click(screen.getByLabelText('Enter recipe title'));
+        await user.click(screen.getByLabelText('Confirm delete subsection'));
 
         // Expect -----------------------------------------------
-        haveValueByLabelText(screen, 'Enter title for instruction subsection 1', '');
-        haveTextContentByLabelText(screen, 'Enter instruction #1 for subsection 1', 'Instruct one');
-        haveTextContentByLabelText(screen, 'Enter instruction #2 for subsection 1', 'Instruct two');
-        expect(screen.queryByLabelText('Enter title for instruction subsection 2')).toBeNull();
-        expect(screen.queryByLabelText('Enter instruction #1 for subsection 2')).toBeNull();
+        haveValueByLabelText(screen, 'Enter title for instruction subsection 1', 'Instruct Two');
+        haveTextContentByLabelText(screen, 'Enter instruction #1 for subsection 1', 'Instr #3.');
+        haveValueByLabelText(screen, 'Enter title for instruction subsection 2', '');
+        haveTextContentByLabelText(screen, 'Enter instruction #1 for subsection 2', '');
     });
 
-    it.skip('should keep 2nd list items after removing 2nd title, enter', async () => {
+    it('should cancel subsection deletion, click cancel', async () => {
+        // Render -----------------------------------------------
+        renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        await enterEditRecipePage(screen, user, 'Mock Recipe Four', 'Instr #1.');
+        await user.click(screen.getByLabelText('Enter title for instruction subsection 1'));
+        await user.keyboard('{Backspace>12/}{Enter}');
+        await user.click(screen.getByLabelText('Cancel delete subsection action'));
+
+        // Expect -----------------------------------------------
+        await waitFor(() =>
+            expect(screen.queryByLabelText('Confirm delete subsection')).toBeNull()
+        );
+        expect(screen.queryByLabelText('Cancel delete subsection action')).toBeNull();
+        haveTextContentByLabelText(screen, 'Enter instruction #1 for subsection 1', 'Instr #1.');
+        haveTextContentByLabelText(screen, 'Enter instruction #2 for subsection 1', 'Instr #2.');
+        haveValueByLabelText(screen, 'Enter title for instruction subsection 2', 'Instruct Two');
+        haveTextContentByLabelText(screen, 'Enter instruction #1 for subsection 2', 'Instr #3.');
+    });
+
+    it('should remove empty 3rd subsection after removing 2nd title, enter', async () => {
         // Render -----------------------------------------------
         renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
         const user = userEvent.setup();
@@ -290,15 +329,15 @@ describe('Instruction Subsections', () => {
 
         // Expect -----------------------------------------------
         haveValueByLabelText(screen, 'Enter title for instruction subsection 1', 'Instruct One');
-        haveTextContentByLabelText(screen, 'Enter instruction #1 for subsection 1', 'Instruct one');
-        haveTextContentByLabelText(screen, 'Enter instruction #2 for subsection 1', 'Instruct two');
+        haveTextContentByLabelText(screen, 'Enter instruction #1 for subsection 1', 'Instr #1.');
+        haveTextContentByLabelText(screen, 'Enter instruction #2 for subsection 1', 'Instr #2.');
         haveValueByLabelText(screen, 'Enter title for instruction subsection 2', '');
-        haveTextContentByLabelText(screen, 'Enter instruction #1 for subsection 2', 'Instruct one');
+        haveTextContentByLabelText(screen, 'Enter instruction #1 for subsection 2', 'Instr #3.');
         expect(screen.queryByLabelText('Enter title for instruction subsection 3')).toBeNull();
         expect(screen.queryByLabelText('Enter instruction #1 for subsection 3')).toBeNull();
     });
 
-    it.skip('should keep 2nd list items after removing 2nd title, click', async () => {
+    it('should remove empty 3rd subsection after removing 2nd title, click', async () => {
         // Render -----------------------------------------------
         renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
         const user = userEvent.setup();
@@ -311,10 +350,10 @@ describe('Instruction Subsections', () => {
 
         // Expect -----------------------------------------------
         haveValueByLabelText(screen, 'Enter title for instruction subsection 1', 'Instruct One');
-        haveTextContentByLabelText(screen, 'Enter instruction #1 for subsection 1', 'Instruct one');
-        haveTextContentByLabelText(screen, 'Enter instruction #2 for subsection 1', 'Instruct two');
+        haveTextContentByLabelText(screen, 'Enter instruction #1 for subsection 1', 'Instr #1.');
+        haveTextContentByLabelText(screen, 'Enter instruction #2 for subsection 1', 'Instr #2.');
         haveValueByLabelText(screen, 'Enter title for instruction subsection 2', '');
-        haveTextContentByLabelText(screen, 'Enter instruction #1 for subsection 2', 'Instruct one');
+        haveTextContentByLabelText(screen, 'Enter instruction #1 for subsection 2', 'Instr #3.');
         expect(screen.queryByLabelText('Enter title for instruction subsection 3')).toBeNull();
         expect(screen.queryByLabelText('Enter instruction #1 for subsection 3')).toBeNull();
     });

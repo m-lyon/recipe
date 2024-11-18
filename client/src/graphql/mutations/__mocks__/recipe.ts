@@ -667,7 +667,7 @@ export const mockUpdateRecipeRemoveIngredientSubsection = {
             id: recipeOneVars.id,
             recipe: {
                 ...recipeOneVars.recipe,
-                ingredientSubsections: [recipeOneVars.recipe.ingredientSubsections[0]],
+                ingredientSubsections: [recipeOneVars.recipe.ingredientSubsections[1]],
             },
         } satisfies UpdateRecipeMutationVariables,
     },
@@ -678,7 +678,7 @@ export const mockUpdateRecipeRemoveIngredientSubsection = {
                 __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeOneData.record,
-                    ingredientSubsections: [recipeOneData.record.ingredientSubsections[0]],
+                    ingredientSubsections: [recipeOneData.record.ingredientSubsections[1]],
                 },
             },
         } satisfies UpdateRecipeMutation,
@@ -934,7 +934,7 @@ export const mockUpdateRemoveInstructionSubsection = {
             id: recipeFourVars.id,
             recipe: {
                 ...recipeFourVars.recipe,
-                instructionSubsections: [recipeFourVars.recipe.instructionSubsections[0]],
+                instructionSubsections: [recipeFourVars.recipe.instructionSubsections[1]],
             },
         } satisfies UpdateRecipeMutationVariables,
     },
@@ -945,7 +945,7 @@ export const mockUpdateRemoveInstructionSubsection = {
                 __typename: 'UpdateByIdRecipePayload',
                 record: {
                     ...recipeFourData.record,
-                    instructionSubsections: [recipeFourData.record.instructionSubsections[0]],
+                    instructionSubsections: [recipeFourData.record.instructionSubsections[1]],
                 },
             },
         } satisfies UpdateRecipeMutation,

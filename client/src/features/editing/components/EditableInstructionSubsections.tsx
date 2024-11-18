@@ -1,13 +1,18 @@
+import { useRef } from 'react';
 import { OrderedList } from '@chakra-ui/react';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 
-import { EditableText } from '@recipe/common/components';
+import { ConfirmDeleteAlert, EditableText } from '@recipe/common/components';
 
+import { useSubsectionDelete } from '../hooks/useSubsectionDelete';
 import { EditableInstructionList } from './EditableInstructionList';
 import { UseInstructionListReturnType } from '../hooks/useInstructionsList';
 
 export function EditableInstructionSubsections(props: UseInstructionListReturnType) {
     const { state, actionHandler } = props;
+    const ref = useRef<HTMLInputElement>(null);
+    const { isOpen, handleOpen, handleConfirm, handleCancel, indexToDelete, returnFocus } =
+        useSubsectionDelete();
 
     const subsections = state.map((subsection, sectionIndex) => {
         const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -15,8 +20,18 @@ export function EditableInstructionSubsections(props: UseInstructionListReturnTy
         };
         const onSubmit = () => {
             if (state.length > 1 && sectionIndex !== state.length - 1) {
+                if (
+                    sectionIndex === state.length - 2 &&
+                    (!subsection.name || subsection.name.trim() === '') &&
+                    (!state.at(-1)!.name || state.at(-1)!.name!.trim() === '') &&
+                    state.at(-1)!.instructions[0].value.trim() === ''
+                ) {
+                    // Special case where the last subsection is empty and the penultimate
+                    // subsection title is removed. In this case, remove the last subsection.
+                    return actionHandler.removeSubsection(sectionIndex + 1);
+                }
                 if (!subsection.name || subsection.name.trim() === '') {
-                    actionHandler.removeSubsection(sectionIndex);
+                    return handleOpen(sectionIndex);
                 }
             }
             if (
@@ -46,6 +61,7 @@ export function EditableInstructionSubsections(props: UseInstructionListReturnTy
                         fontSize='2xl'
                         textAlign='left'
                         pb='8px'
+                        optionalRef={indexToDelete === sectionIndex ? ref : null}
                         fontWeight={600}
                         aria-label={`Enter title for instruction subsection ${sectionIndex + 1}`}
                     />
@@ -67,8 +83,19 @@ export function EditableInstructionSubsections(props: UseInstructionListReturnTy
     });
 
     return (
-        <AnimatePresence>
-            <LayoutGroup>{subsections}</LayoutGroup>
-        </AnimatePresence>
+        <>
+            <AnimatePresence>
+                <LayoutGroup>{subsections}</LayoutGroup>
+            </AnimatePresence>
+            <ConfirmDeleteAlert
+                title='Delete Subsection'
+                dialogText='Are you sure you want to delete this subsection and its contents?'
+                isOpen={isOpen}
+                onConfirm={() => handleConfirm(actionHandler.removeSubsection)}
+                onCancel={handleCancel}
+                finalFocusRef={ref}
+                returnFocus={returnFocus}
+            />
+        </>
     );
 }

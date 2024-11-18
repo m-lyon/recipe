@@ -15,6 +15,7 @@ export function EditableText(props: Props) {
             ref={refs}
             onKeyDown={(e) => {
                 if (e.key === 'Enter') {
+                    e.preventDefault();
                     ref.current?.blur();
                 }
             }}

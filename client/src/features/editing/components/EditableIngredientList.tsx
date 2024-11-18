@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { Reorder } from 'framer-motion';
 import { VStack } from '@chakra-ui/react';
 import { useMutation } from '@apollo/client';
@@ -5,14 +6,19 @@ import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 
 import { DEBUG } from '@recipe/constants';
 import { useErrorToast } from '@recipe/common/hooks';
-import { EditableText } from '@recipe/common/components';
 import { DELETE_UNIT } from '@recipe/graphql/mutations/unit';
 import { DELETE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
+import { ConfirmDeleteAlert, EditableText } from '@recipe/common/components';
 import { UseIngredientListReturnType } from '@recipe/features/recipeIngredient';
 import { EditableIngredient, FinishedIngredient } from '@recipe/features/recipeIngredient';
 
+import { useSubsectionDelete } from '../hooks/useSubsectionDelete';
+
 export function EditableIngredientList(props: UseIngredientListReturnType) {
     const { state, actionHandler, queryData } = props;
+    const ref = useRef<HTMLInputElement>(null);
+    const { isOpen, handleOpen, handleConfirm, handleCancel, indexToDelete, returnFocus } =
+        useSubsectionDelete();
     const errorToast = useErrorToast();
     const [deleteUnit] = useMutation(DELETE_UNIT, {
         onCompleted: (data) => {
@@ -77,10 +83,18 @@ export function EditableIngredientList(props: UseIngredientListReturnType) {
         };
         const onSubmit = () => {
             if (state.length > 1 && sectionIndex !== state.length - 1) {
-                if (state.length === 2 && !state.at(-1)?.name) {
-                    actionHandler.subsection.remove(sectionIndex + 1);
-                } else if (!subsection.name || subsection.name.trim() === '') {
-                    actionHandler.subsection.remove(sectionIndex);
+                if (
+                    sectionIndex === state.length - 2 &&
+                    (!subsection.name || subsection.name.trim() === '') &&
+                    (!state.at(-1)!.name || state.at(-1)!.name!.trim() === '') &&
+                    state.at(-1)!.finished.length === 0
+                ) {
+                    // Special case where the last subsection is empty and the penultimate
+                    // subsection title is removed. In this case, remove the last subsection.
+                    return actionHandler.subsection.remove(sectionIndex + 1);
+                }
+                if (!subsection.name || subsection.name.trim() === '') {
+                    return handleOpen(sectionIndex);
                 }
             }
             if (
@@ -109,6 +123,7 @@ export function EditableIngredientList(props: UseIngredientListReturnType) {
                         fontSize='2xl'
                         textAlign='left'
                         pb='8px'
+                        optionalRef={indexToDelete === sectionIndex ? ref : null}
                         fontWeight={600}
                         aria-label={`Enter title for ingredient subsection ${sectionIndex + 1}`}
                     />
@@ -140,6 +155,15 @@ export function EditableIngredientList(props: UseIngredientListReturnType) {
     return (
         <VStack spacing='24px' align='left'>
             <AnimatePresence>{subsections}</AnimatePresence>
+            <ConfirmDeleteAlert
+                title='Delete Subsection'
+                dialogText='Are you sure you want to delete this subsection and its contents?'
+                isOpen={isOpen}
+                onConfirm={() => handleConfirm(actionHandler.subsection.remove)}
+                onCancel={handleCancel}
+                finalFocusRef={ref}
+                returnFocus={returnFocus}
+            />
         </VStack>
     );
 }
