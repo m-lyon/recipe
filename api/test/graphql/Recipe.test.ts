@@ -244,6 +244,10 @@ describe('recipeCreateOne', () => {
             doc.ingredientSubsections[0].ingredients[0].ingredient._id.equals(recipeIngredient._id),
             'Recipe should be an ingredient'
         );
+        assert.isDefined(
+            doc.calculatedTags.includes('ingredient'),
+            'Recipe should have ingredient tag'
+        );
     });
 
     it('should NOT create a recipe, duplicate title', async function () {
@@ -656,6 +660,27 @@ describe('recipeUpdateById', () => {
         assert.equal(record.title, 'Chicken broth');
         const updatedRecipe = await Recipe.findById(recipe._id);
         assert.notEqual(updatedRecipe.titleIdentifier, 'chicken-soup');
+    });
+
+    it('should update a recipe to be an ingredient', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient1 = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const newRecipe = new Recipe(getDefaultRecipe(user, ingredient1, unit, prepMethod));
+        const recipe = await newRecipe.save();
+        const response = await updateRecipe(this, user, recipe._id, {
+            isIngredient: true,
+            pluralTitle: 'Tomato Soup',
+        });
+        const record = parseUpdatedRecipe(response);
+        const doc = await Recipe.findById(record._id);
+        assert.isTrue(doc.isIngredient, 'Recipe should be an ingredient');
+        assert.equal(doc.pluralTitle, 'Tomato Soup');
+        assert.isDefined(
+            doc.calculatedTags.includes('ingredient'),
+            'Recipe should have ingredient tag'
+        );
     });
 
     it('should update a recipe to have recipe as ingredient', async function () {

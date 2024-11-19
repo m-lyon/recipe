@@ -6,11 +6,15 @@ import { Unit } from './Unit.js';
 import { PrepMethod } from './PrepMethod.js';
 import { capitalise } from '../utils/string.js';
 import { generateRandomString } from '../utils/random.js';
-import { ALLOWED_TAGS, Ingredient } from './Ingredient.js';
 import type { Ingredient as IngredientType } from './Ingredient.js';
+import { Ingredient, ReservedIngredientTags } from './Ingredient.js';
 import { ownerExists, tagsExist, unique, uniqueInAdminsAndUser } from './validation.js';
 
 const quantityRegex = /^((\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*)(-(\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*))?)$/;
+export enum ReservedRecipeTags {
+    Ingredient = 'ingredient',
+}
+type ReservedTags = ReservedIngredientTags | ReservedRecipeTags;
 
 export interface RecipeIngredientType extends Document {
     quantity?: string;
@@ -247,26 +251,30 @@ const recipeSchema = new Schema<Recipe>({
 });
 
 recipeSchema.pre('save', async function () {
+    const calculatedTags: ReservedTags[] = [];
     await this.populate('ingredientSubsections.ingredients.ingredient');
-    this.calculatedTags = [];
-    for (const tag of ALLOWED_TAGS) {
+    if (this.isIngredient) {
+        calculatedTags.push(ReservedRecipeTags.Ingredient);
+    }
+    for (const tag in ReservedIngredientTags) {
         const allMembers = this.ingredientSubsections.every((collection: IngredientSubsection) => {
             return collection.ingredients.every((recipeIngr: RecipeIngredientType) => {
                 if (recipeIngr.type === 'ingredient') {
                     const ingr: IngredientType = recipeIngr.ingredient;
-                    return ingr.tags.includes(tag);
+                    return ingr.tags.includes(ReservedIngredientTags[tag]);
                 } else if (recipeIngr.type === 'recipe') {
                     const recipe: Recipe = recipeIngr.ingredient;
-                    return recipe.calculatedTags.includes(tag);
+                    return recipe.calculatedTags.includes(ReservedIngredientTags[tag]);
                 } else {
                     throw new Error('Invalid RecipeIngredient type');
                 }
             });
         });
         if (allMembers) {
-            this.calculatedTags.push(tag);
+            calculatedTags.push(ReservedIngredientTags[tag]);
         }
     }
+    this.calculatedTags = calculatedTags;
 });
 
 export const RecipeIngredient = model<RecipeIngredientType>(

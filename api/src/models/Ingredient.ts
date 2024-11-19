@@ -4,14 +4,17 @@ import { composeMongoose } from 'graphql-compose-mongoose';
 import { ownerExists } from './validation.js';
 import { uniqueInAdminsAndUser } from './validation.js';
 
-export const ALLOWED_TAGS: ReadonlyArray<string> = ['vegan', 'vegetarian'];
+export enum ReservedIngredientTags {
+    Vegan = 'vegan',
+    Vegetarian = 'vegetarian',
+}
 export interface Ingredient extends Document {
     name: string;
     pluralName: string;
     density?: number;
     isCountable: boolean;
     owner: Types.ObjectId;
-    tags: (typeof ALLOWED_TAGS)[number][];
+    tags: ReservedIngredientTags[];
 }
 const ingredientSchema = new Schema<Ingredient>({
     name: {
@@ -40,7 +43,7 @@ const ingredientSchema = new Schema<Ingredient>({
     tags: {
         type: [String],
         required: true,
-        enum: ALLOWED_TAGS,
+        enum: ReservedIngredientTags,
     },
 });
 

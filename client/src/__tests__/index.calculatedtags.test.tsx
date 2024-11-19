@@ -36,7 +36,7 @@ describe('Update Recipe Workflow: Calculated Tags', () => {
         allNotNullByText(screen, 'vegetarian', 'special', 'vegan');
     });
 
-    it('should display edit calculated tags', async () => {
+    it('should display modified calculated tags', async () => {
         // Render -----------------------------------------------
         renderComponent([mockUpdateRecipeCalculatedTagsEdit]);
         const user = userEvent.setup();
