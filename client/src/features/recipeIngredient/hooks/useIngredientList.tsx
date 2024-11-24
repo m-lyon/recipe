@@ -46,24 +46,24 @@ function handleQuantityChange(opts: handleChangeOpts) {
             }
         }
         editableActions.incrementState(subsection);
-        editableActions.setShow.on(subsection);
+        editableActions.setShowDropdown.on(subsection);
         // Skip quantity with alphabetical characters
     } else if (item.quantity === null && /^[a-zA-Z]$/.test(char)) {
         editableActions.incrementState(subsection, 2);
-        editableActions.setShow.on(subsection);
+        editableActions.setShowDropdown.on(subsection);
         editableActions.unit.set(subsection, null);
         handleSizeChange(opts);
         // Starting input should be a number
     } else if (item.quantity === null && /^[\d]$/.test(char)) {
         editableActions.quantity.append(subsection, char);
-        if (item.show) {
-            editableActions.setShow.off(subsection);
+        if (item.showDropdown) {
+            editableActions.setShowDropdown.off(subsection);
         }
         // Valid numerical input
     } else if (item.quantity !== null && /^[\d/.-]$/.test(char)) {
         editableActions.quantity.append(subsection, char);
-        if (item.show) {
-            editableActions.setShow.off(subsection);
+        if (item.showDropdown) {
+            editableActions.setShowDropdown.off(subsection);
         }
         // Throw error for invalid input
     } else {
@@ -161,7 +161,8 @@ function getEmptyIngredient(): EditableRecipeIngredient {
         ingredient: { value: null, data: undefined },
         prepMethod: { value: null, data: undefined },
         state: 'quantity',
-        show: false,
+        showDropdown: false,
+        popover: null,
         key: crypto.randomUUID(),
     };
 }
@@ -170,9 +171,11 @@ function setPrevState(editable: EditableRecipeIngredient) {
         case 'quantity':
             break;
         case 'unit':
+            editable.popover = null;
             editable.state = 'quantity';
             break;
         case 'size':
+            editable.popover = null;
             if (editable.unit.value === null) {
                 editable.state = 'quantity';
                 break;
@@ -181,6 +184,7 @@ function setPrevState(editable: EditableRecipeIngredient) {
             editable.state = 'unit';
             break;
         case 'ingredient':
+            editable.popover = null;
             if (editable.size.value === null) {
                 if (editable.unit.value === null) {
                     editable.state = 'quantity';
@@ -194,6 +198,7 @@ function setPrevState(editable: EditableRecipeIngredient) {
             editable.state = 'size';
             break;
         case 'prepMethod':
+            editable.popover = null;
             editable.state = 'ingredient';
             break;
         default:
@@ -211,6 +216,7 @@ type Action =
     | RemoveFinishedItemAction
     | ResetEditableAction
     | SetShowAction
+    | SetPopoverAction
     | SetFinishedAction
     | AppendQuantityAction
     | AppendOtherRecipeIngredientComponentAction
@@ -257,26 +263,43 @@ interface SetShowAction {
     payload: ShowStates;
     subsection: number;
 }
-function setEditableShow(state: IngredientListState, action: SetShowAction): IngredientListState {
+function setEditableShowDropdown(
+    state: IngredientListState,
+    action: SetShowAction
+): IngredientListState {
     return produce(state, (draft) => {
         const subsection = getActionSubsection(draft, action);
-        _setEditableShow(subsection, action.payload);
+        _setEditableShowDropdown(subsection, action.payload);
     });
 }
-function _setEditableShow(subsection: EditableSubsection, state: ShowStates) {
+function _setEditableShowDropdown(subsection: EditableSubsection, state: ShowStates) {
     switch (state) {
         case 'on':
-            subsection.editable.show = true;
+            subsection.editable.showDropdown = true;
             break;
         case 'off':
-            subsection.editable.show = false;
+            subsection.editable.showDropdown = false;
             break;
         case 'toggle':
-            subsection.editable.show = !subsection.editable.show;
+            subsection.editable.showDropdown = !subsection.editable.showDropdown;
             break;
         default:
             break;
     }
+}
+interface SetPopoverAction {
+    type: 'set_editable_popover';
+    payload: PopoverType;
+    subsection: number;
+}
+function setEditablePopover(
+    state: IngredientListState,
+    action: SetPopoverAction
+): IngredientListState {
+    return produce(state, (draft) => {
+        const subsection = getActionSubsection(draft, action);
+        subsection.editable.popover = action.payload;
+    });
 }
 interface SetFinishedAction {
     type: 'set_finished';
@@ -483,6 +506,9 @@ function incrementEditableState(
 ): IngredientListState {
     return produce(state, (draft) => {
         const subsection = getActionSubsection(draft, action);
+        if (subsection.editable.popover !== null) {
+            subsection.editable.popover = null;
+        }
         if (typeof action.increment === 'string') {
             subsection.editable.state = action.increment;
             return;
@@ -511,7 +537,7 @@ function deleteEditableChar(
             }
             if (currentValue.length === 1) {
                 subsection.editable.quantity = null;
-                _setEditableShow(subsection, 'on');
+                _setEditableShowDropdown(subsection, 'on');
             } else {
                 subsection.editable.quantity = currentValue.slice(0, -1);
             }
@@ -520,7 +546,7 @@ function deleteEditableChar(
             if (currentItem.value === null) {
                 setPrevState(subsection.editable);
                 if (currentState === 'unit' && subsection.editable.quantity !== null) {
-                    _setEditableShow(subsection, 'off');
+                    _setEditableShowDropdown(subsection, 'off');
                 }
             } else if (currentItem.value.length === 1) {
                 currentItem.value = null;
@@ -565,7 +591,10 @@ function reducer(state: IngredientListState, action: Action): IngredientListStat
             return resetEditable(state, action);
         }
         case 'set_editable_show': {
-            return setEditableShow(state, action);
+            return setEditableShowDropdown(state, action);
+        }
+        case 'set_editable_popover': {
+            return setEditablePopover(state, action);
         }
         case 'set_editable_quantity': {
             return setQuantity(state, action);
@@ -647,7 +676,7 @@ interface InternalActionHandler {
     size: RecipeIngredientActionHandler<FinishedSize>;
     ingredient: RecipeIngredientActionHandler<FinishedIngredient>;
     prepMethod: RecipeIngredientActionHandler<FinishedPrepMethod>;
-    setShow: SetShow;
+    setShowDropdown: SetShow;
 }
 interface SetShow {
     on: (subsection: number) => void;
@@ -665,7 +694,8 @@ export interface IngredientActionHandler {
     resetEditable: (subsection: number) => void;
     setCurrentEditableAttribute: (subsection: number, attr: SetAttr) => void;
     currentEditableAttributeValue: (subsection: number) => string | null;
-    setEditableShow: SetShow;
+    setEditableShowDropdown: SetShow;
+    setEditablePopover: (subsection: number, popover: PopoverType) => void;
     deleteChar: (subsection: number) => void;
     handleEditableChange: (subsection: number, value: string) => void;
     setFinishedArray: (subsection: number, finished: FinishedRecipeIngredient[]) => void;
@@ -737,7 +767,7 @@ export function useIngredientList(): UseIngredientListReturnType {
                 append: (subsection, value) =>
                     dispatch({ type: 'append_editable_prepMethod', payload: value, subsection }),
             },
-            setShow: {
+            setShowDropdown: {
                 on: (subsection) =>
                     dispatch({ type: 'set_editable_show', payload: 'on', subsection }),
                 off: (subsection) =>
@@ -827,7 +857,9 @@ export function useIngredientList(): UseIngredientListReturnType {
                     return sub.editable[sub.editable.state].value;
                 }
             },
-            setEditableShow: editableActions.setShow,
+            setEditableShowDropdown: editableActions.setShowDropdown,
+            setEditablePopover: (subsection, popover) =>
+                dispatch({ type: 'set_editable_popover', payload: popover, subsection }),
             deleteChar: (subsection) => dispatch({ type: 'delete_editable_char', subsection }),
             handleEditableChange: (subsection, value) => {
                 const sub = getSubsection(state, subsection);

@@ -22,7 +22,7 @@ export function NewBespokeUnitPopover(props: Props) {
     return (
         <PopoverContent paddingRight={4} paddingBottom={3} paddingLeft={2}>
             <PopoverArrow />
-            <PopoverCloseButton />
+            <PopoverCloseButton aria-label='Close new bespoke unit form' />
             <PopoverHeader border='hidden'>Use bespoke unit</PopoverHeader>
             <CreateBespokeUnitForm
                 fieldRef={fieldRef}

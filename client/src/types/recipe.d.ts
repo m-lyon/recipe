@@ -127,7 +127,8 @@ declare global {
         ingredient: EditableIngredient;
         prepMethod: EditablePrepMethod;
         state: EditableState;
-        show: boolean;
+        showDropdown: boolean;
+        popover: PopoverType;
         key: string;
     }
     /**
@@ -147,6 +148,11 @@ declare global {
     interface FinishableEditableRecipeIngredient extends EditableRecipeIngredient {
         ingredient: FinishableEditableIngredient;
     }
+    /**
+     * Represents the type of popover that is currently open within the recipe ingredient
+     * editing flow. Setting this value to null will close the popover.
+     */
+    type PopoverType = null | 'unit' | 'bespokeUnit' | 'size' | 'ingredient' | 'prepMethod';
 
     // - Finished -----------------------------------------------------------------
     // ----------- Types for the RecipeIngredient Edit Workflow -------------------

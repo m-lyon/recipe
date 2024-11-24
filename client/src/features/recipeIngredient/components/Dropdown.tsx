@@ -28,19 +28,19 @@ export function Dropdown(props: Props) {
     }, [activeIndex]);
 
     return (
-        item.show && (
+        item.showDropdown && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <Box pb={4} mb={4} zIndex={1} width='100%' position='absolute'>
                     <List
                         color='rgba(0, 0, 0, 0.64)'
                         bg='white'
                         borderRadius='4px'
-                        borderBottom={item.show ? '1px solid rgba(0,0,0,0.1)' : undefined}
-                        borderLeft={item.show ? '1px solid rgba(0,0,0,0.1)' : undefined}
-                        borderRight={item.show ? '1px solid rgba(0,0,0,0.1)' : undefined}
+                        borderBottom={item.showDropdown ? '1px solid rgba(0,0,0,0.1)' : undefined}
+                        borderLeft={item.showDropdown ? '1px solid rgba(0,0,0,0.1)' : undefined}
+                        borderRight={item.showDropdown ? '1px solid rgba(0,0,0,0.1)' : undefined}
                         boxShadow='6px 5px 8px rgba(0,50,30,0.02)'
-                        maxHeight={item.show ? '14em' : undefined}
-                        overflowY={item.show ? 'auto' : undefined}
+                        maxHeight={item.showDropdown ? '14em' : undefined}
+                        overflowY={item.showDropdown ? 'auto' : undefined}
                         aria-label='Dropdown suggestion list'
                         ref={ref}
                     >

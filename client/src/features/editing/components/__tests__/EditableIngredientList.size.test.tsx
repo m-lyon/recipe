@@ -1,16 +1,18 @@
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, screen } from '@testing-library/react';
+import { cleanup, screen, waitFor } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { haveValueByLabelText, notNullByText, nullByText } from '@recipe/utils/tests';
+import { nullByText } from '@recipe/utils/tests';
+import { mockCreateSize } from '@recipe/graphql/mutations/__mocks__/size';
+import { clickGetByText, haveValueByLabelText, notNullByText } from '@recipe/utils/tests';
 
 import { renderComponent } from './utils';
 
 loadErrorMessages();
 loadDevMessages();
 
-describe('EditableIngredient Size Keyboard', () => {
+describe('Size Keyboard', () => {
     afterEach(() => {
         cleanup();
     });
@@ -172,7 +174,7 @@ describe('EditableIngredient Size Keyboard', () => {
         expect(screen.queryAllByText('Invalid input').length).toBe(1);
     });
 });
-describe('EditableIngredient Size Spacebar', () => {
+describe('Size Spacebar', () => {
     afterEach(() => {
         cleanup();
     });
@@ -207,7 +209,7 @@ describe('EditableIngredient Size Spacebar', () => {
         nullByText(screen, 'small', 'cup');
     });
 });
-describe('EditableIngredient Size Click', () => {
+describe('Size Click', () => {
     afterEach(() => {
         cleanup();
     });
@@ -294,5 +296,256 @@ describe('EditableIngredient Size Click', () => {
 
         // Expect
         await notNullByText(screen, 'Add new size', 'Save');
+    });
+});
+describe('Create new Size', () => {
+    afterEach(() => {
+        cleanup();
+    });
+    it('should create a new size', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent([mockCreateSize]);
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await user.click(screen.getByText('skip unit'));
+        await user.keyboard('a');
+        await user.click(screen.getByText('add new size'));
+        await user.keyboard('extra large');
+        await user.click(screen.getByLabelText('Save size'));
+
+        // Expect --------------------------------------------------------------
+        await waitFor(() =>
+            haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 extra large ')
+        );
+        // ------ Available as new size -----------------------------------------
+        await user.keyboard('{Escape}');
+        await user.click(screen.getByLabelText('Enter ingredient #1 for subsection 1'));
+        await user.keyboard('{2}{ }');
+        await clickGetByText(screen, user, 'skip unit');
+        expect(await screen.findByLabelText('extra large')).not.toBeNull();
+        expect(screen.queryByLabelText('large')).not.toBeNull();
+        // ------ New size form is reset ----------------------------------------
+        await user.keyboard('{c}');
+        await user.click(screen.getByText('add new size'));
+        haveValueByLabelText(screen, 'Name', '');
+    });
+});
+describe('Size Popover Behaviour', () => {
+    afterEach(() => {
+        cleanup();
+    });
+    it('should reset new size form after close', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await user.click(screen.getByText('skip unit'));
+        await user.keyboard('a');
+        await user.click(screen.getByText('add new size'));
+        await user.keyboard('extra large');
+        await user.click(screen.getByLabelText('Close new size form'));
+        await user.click(screen.getByText('add new size'));
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Name', '');
+    });
+    it('should reset state and close size popover when clicked outside', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await user.click(screen.getByText('skip unit'));
+        await user.keyboard('a');
+        await user.click(screen.getByText('add new size'));
+        await user.keyboard('extra large');
+        await user.click(document.body);
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '');
+        expect(screen.queryByText('add new size')).toBeNull();
+        expect(screen.queryByLabelText('Name')).toBeNull();
+    });
+    it('should close new size popover if bespoke unit is selected', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }{c}{u}{t}');
+        await user.click(screen.getByText('add new size'));
+        waitFor(() => expect(screen.queryByText('Add new size')).not.toBeNull());
+        await user.click(screen.getByText('use "cut" as unit'));
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cut');
+        nullByText(screen, 'Add new size');
+    });
+    it('should close new size popover if existing unit is selected', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }{c}');
+        await user.click(screen.getByText('add new size'));
+        waitFor(() => expect(screen.queryByText('Add new size')).not.toBeNull());
+        await user.click(screen.getByText('cup'));
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup ');
+        nullByText(screen, 'Add new size');
+    });
+    it('should close new size popover if existing size is selected', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }{s}');
+        await user.click(screen.getByText('add new size'));
+        waitFor(() => expect(screen.queryByText('Add new size')).not.toBeNull());
+        await user.click(screen.getByText('small'));
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 small ');
+        nullByText(screen, 'Add new size');
+    });
+    it('should close new size popover if existing ingredient is selected', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }{c}');
+        await user.click(screen.getByText('add new size'));
+        waitFor(() => expect(screen.queryByText('Add new size')).not.toBeNull());
+        await user.click(screen.getByText('chicken'));
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 chicken, ');
+        nullByText(screen, 'Add new size');
+    });
+    it('should close new size popover if skip unit is selected', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }{a}');
+        await user.click(screen.getByText('add new size'));
+        waitFor(() => expect(screen.queryByText('Add new size')).not.toBeNull());
+        await user.click(screen.getByLabelText('Enter ingredient #1 for subsection 1'));
+        await user.keyboard('{Backspace}');
+        await user.click(screen.getByText('skip unit'));
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 ');
+        nullByText(screen, 'Add new size');
+    });
+    it('should close new size popover if skip size is selected', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await user.click(screen.getByText('skip unit'));
+        await user.keyboard('a');
+        await user.click(screen.getByText('add new size'));
+        waitFor(() => expect(screen.queryByText('Add new size')).not.toBeNull());
+        await user.click(screen.getByLabelText('Enter ingredient #1 for subsection 1'));
+        await user.keyboard('{Backspace}');
+        await user.click(screen.getByText('skip size'));
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 ');
+        nullByText(screen, 'Add new size');
+    });
+    it('should close new size popover if state is moved back to unit', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }{c}');
+        await user.click(screen.getByText('cup'));
+        await user.keyboard('{c}');
+        await user.click(screen.getByText('add new size'));
+        waitFor(() => expect(screen.queryByText('Add new size')).not.toBeNull());
+        await user.click(screen.getByLabelText('Enter ingredient #1 for subsection 1'));
+        await user.keyboard('{Backspace>2/}');
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup');
+        nullByText(screen, 'Add new size');
+    });
+    it('should close new size popover if state is moved back to unit after skip unit', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await user.click(screen.getByText('skip unit'));
+        await user.keyboard('{c}');
+        await user.click(screen.getByText('add new size'));
+        waitFor(() => expect(screen.queryByText('Add new size')).not.toBeNull());
+        await user.click(screen.getByLabelText('Enter ingredient #1 for subsection 1'));
+        await user.keyboard('{Backspace>2/}');
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1');
+        nullByText(screen, 'Add new size');
+    });
+    it('should close new size popover if state is moved back to quantity', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }{c}');
+        await user.click(screen.getByText('add new size'));
+        waitFor(() => expect(screen.queryByText('Add new size')).not.toBeNull());
+        await user.click(screen.getByLabelText('Enter ingredient #1 for subsection 1'));
+        await user.keyboard('{Backspace>2/}');
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1');
+        nullByText(screen, 'Add new size');
+    });
+    it('should close new size popover if state is moved back to quantity after skip quantity', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{s}');
+        await user.click(screen.getByText('add new size'));
+        waitFor(() => expect(screen.queryByText('Add new size')).not.toBeNull());
+        await user.click(screen.getByLabelText('Enter ingredient #1 for subsection 1'));
+        await user.keyboard('{Backspace>2/}');
+
+        // Expect --------------------------------------------------------------
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '');
+        nullByText(screen, 'Add new size');
     });
 });

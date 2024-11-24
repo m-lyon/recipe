@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { useBreakpointValue } from '@chakra-ui/react';
+import { Popover, PopoverAnchor, useOutsideClick } from '@chakra-ui/react';
 import { Box, Editable, EditableInput, EditablePreview } from '@chakra-ui/react';
-import { Popover, PopoverAnchor, useDisclosure, useOutsideClick } from '@chakra-ui/react';
 
 import { DEBUG } from '@recipe/constants';
 import { useErrorToast } from '@recipe/common/hooks';
@@ -15,7 +15,6 @@ import { getSuggestions } from '../utils/suggestions';
 import { useDropdownList } from '../hooks/useDropdownList';
 import { IngredientActionHandler } from '../hooks/useIngredientList';
 
-export type PopoverType = 'unit' | 'bespokeUnit' | 'size' | 'ingredient' | 'prepMethod' | 'none';
 interface Props {
     subsection: number;
     item: EditableRecipeIngredient;
@@ -30,14 +29,8 @@ export function EditableIngredient(props: Props) {
     const inputRef = useRef<HTMLInputElement>(null);
     const parentRef = useRef<HTMLDivElement>(null);
     const fieldRef = useRef<HTMLInputElement>(null);
-    const [popover, setPopover] = useState<PopoverType>('unit');
     const [bespokeValue, setBespokeValue] = useState('');
     const toast = useErrorToast();
-    const { isOpen, onOpen, onClose } = useDisclosure({
-        onClose: () => {
-            setPopover('none');
-        },
-    });
     const [deleteUnit] = useMutation(DELETE_UNIT, {
         onCompleted: (data) => {
             if (DEBUG) {
@@ -65,20 +58,18 @@ export function EditableIngredient(props: Props) {
     useOutsideClick({
         ref: parentRef,
         handler: () => {
-            if (item.quantity !== null || item.show) {
+            if (item.quantity !== null || item.showDropdown) {
                 handleReset();
             }
-            onClose();
         },
     });
     const strValue = actionHandler.currentEditableAttributeValue(subsection) ?? '';
     const suggestions = getSuggestions(item, queryData, strValue);
     const openPopover = (type: PopoverType) => {
-        setPopover(type);
         if (type === 'bespokeUnit') {
             setBespokeValue(actionHandler.currentEditableAttributeValue(subsection) ?? '');
         }
-        onOpen();
+        actionHandler.setEditablePopover(subsection, type);
     };
     const { setActiveIndex, handleKeyboardEvent, ...dropdownProps } = useDropdownList(
         strValue,
@@ -96,12 +87,12 @@ export function EditableIngredient(props: Props) {
         const popoverProps = {
             fieldRef,
             onClose: () => {
-                onClose();
+                actionHandler.setEditablePopover(subsection, null);
                 previewRef.current?.focus();
             },
             setItem,
         };
-        switch (popover) {
+        switch (item.popover) {
             case 'unit':
                 return <NewUnitPopover {...popoverProps} />;
             case 'bespokeUnit':
@@ -127,9 +118,8 @@ export function EditableIngredient(props: Props) {
         // Position relative is needed for the dropdown to be positioned correctly
         <Box ref={parentRef} position='relative'>
             <Popover
-                isOpen={isOpen}
-                onOpen={onOpen}
-                onClose={onClose}
+                isOpen={item.popover !== null}
+                onClose={() => actionHandler.setEditablePopover(subsection, null)}
                 closeOnBlur={false}
                 placement={useBreakpointValue({ base: 'bottom', md: 'right' })}
                 initialFocusRef={fieldRef}
@@ -149,7 +139,7 @@ export function EditableIngredient(props: Props) {
                             actionHandler.handleEditableChange(subsection, value);
                         }}
                         onCancel={handleReset}
-                        onEdit={() => actionHandler.setEditableShow.on(subsection)}
+                        onEdit={() => actionHandler.setEditableShowDropdown.on(subsection)}
                         textAlign='left'
                         fontSize={fontSize}
                         color={
