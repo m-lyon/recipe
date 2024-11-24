@@ -34,7 +34,8 @@ describe('getEditableRecipeIngredientStr', () => {
             },
             prepMethod: { value: null, data: undefined },
             state: 'prepMethod',
-            show: true,
+            showDropdown: false,
+            popover: null,
             key: '1',
         };
         const result = getEditableRecipeIngredientStr(item);
@@ -58,7 +59,8 @@ describe('getEditableRecipeIngredientStr', () => {
             },
             prepMethod: { value: null, data: undefined },
             state: 'prepMethod',
-            show: true,
+            showDropdown: false,
+            popover: null,
             key: '1',
         };
         const result = getEditableRecipeIngredientStr(item);

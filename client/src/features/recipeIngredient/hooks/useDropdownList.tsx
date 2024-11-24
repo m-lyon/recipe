@@ -6,7 +6,6 @@ import { CreatePrepMethodMutation } from '@recipe/graphql/generated';
 import { CREATE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 
 import { Suggestion } from '../utils/suggestions';
-import { PopoverType } from '../components/EditableIngredient';
 
 export function useDropdownList(
     strValue: string,
