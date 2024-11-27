@@ -114,6 +114,19 @@ jobs:
         working-directory: ./client
         run: npm install
 
+      - name: Create API environment file
+        working-directory: ./api
+        run: |
+          echo "HTTPS = ${{ vars.HTTPS }}" > .env.production.local
+          echo "PRIVKEY_PEM = ${{ secrets.PRIVKEY_PEM }}" >> .env.production.local
+          echo "FULLCHAIN_PEM = ${{ secrets.FULLCHAIN_PEM }}" >> .env.production.local
+          echo "MONGODB_URI = ${{ secrets.MONGODB_URI }}" >> .env.production.local
+          echo "PORT = ${{ secrets.PORT }}" >> .env.production.local
+          echo "SESSION_SECRET = ${{ secrets.SESSION_SECRET }}" >> .env.production.local
+          echo "SESSION_URI = ${{ secrets.SESSION_URI }}" >> .env.production.local
+          echo "WHITELISTED_DOMAINS = ${{ secrets.WHITELISTED_DOMAINS }}" >> .env.production.local
+          echo "IMAGE_DIR = ${{ secrets.IMAGE_DIR }}" >> .env.production.local
+
       - name: Create client environment file
         working-directory: ./client
         run: |
@@ -144,7 +157,7 @@ jobs:
         uses: easingthemes/ssh-deploy@v5.1.0
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          ARGS: "-avzr --delete --include='dist/' --include='dist/**' --include='package.json' --include='package-lock.json' --exclude='*'"
+          ARGS: "-avzr --delete --include='dist/' --include='dist/**' --include='package.json' --include='package-lock.json' --include='.env.production.local' --exclude='*'"
           SOURCE: ./api/
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
