@@ -1,12 +1,15 @@
-import { Dispatch, SetStateAction } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { Input, InputGroup, InputLeftAddon, Text, VStack } from '@chakra-ui/react';
 
-export interface EditableSourceProps {
-    source: string;
-    setSource: Dispatch<SetStateAction<string>>;
-}
-export function EditableSource(props: EditableSourceProps) {
-    const { source, setSource } = props;
+import { useRecipeStore } from '@recipe/stores';
+
+export function EditableSource() {
+    const { source, setSource } = useRecipeStore(
+        useShallow((state) => ({
+            source: state.source,
+            setSource: state.setSource,
+        }))
+    );
     return (
         <VStack width='100%' justifyContent='flex-end'>
             <InputGroup justifyContent={{ base: 'flex-start', md: 'flex-end' }}>

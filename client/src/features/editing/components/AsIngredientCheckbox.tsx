@@ -1,10 +1,18 @@
 import { motion } from 'framer-motion';
+import { useShallow } from 'zustand/shallow';
 import { Checkbox, HStack, Input, Text, VStack } from '@chakra-ui/react';
 
-import { UseAsIngredientReturnType } from '../hooks/useAsIngredient';
+import { useRecipeStore } from '@recipe/stores';
 
-export function AsIngredientCheckbox(props: UseAsIngredientReturnType) {
-    const { state, actionHandler } = props;
+export function AsIngredientCheckbox() {
+    const { isIngredient, pluralTitle, toggleIsIngredient, setPluralTitle } = useRecipeStore(
+        useShallow((state) => ({
+            isIngredient: state.isIngredient,
+            pluralTitle: state.pluralTitle,
+            toggleIsIngredient: state.toggleIsIngredient,
+            setPluralTitle: state.setPluralTitle,
+        }))
+    );
 
     return (
         <motion.div
@@ -17,20 +25,20 @@ export function AsIngredientCheckbox(props: UseAsIngredientReturnType) {
             <VStack width='100%' justifyContent='flex-end'>
                 <HStack width='100%'>
                     <Checkbox
-                        isChecked={state.isIngredient}
-                        onChange={() => actionHandler.toggleIsIngredient()}
+                        isChecked={isIngredient}
+                        onChange={toggleIsIngredient}
                         colorScheme='teal'
                         aria-label='Toggle recipe as ingredient'
                     />
-                    <Text fontWeight='medium' color={state.isIngredient ? undefined : 'gray.400'}>
+                    <Text fontWeight='medium' color={isIngredient ? undefined : 'gray.400'}>
                         Register recipe as ingredient
                     </Text>
                 </HStack>
-                {state.isIngredient && (
+                {isIngredient && (
                     <Input
                         placeholder='Plural title'
-                        value={state.pluralTitle ?? ''}
-                        onChange={(e) => actionHandler.setPluralTitle(e.target.value)}
+                        value={pluralTitle ?? ''}
+                        onChange={(e) => setPluralTitle(e.target.value)}
                         variant='unstyled'
                         aria-label='Edit recipe plural title'
                     />

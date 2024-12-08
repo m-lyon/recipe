@@ -438,6 +438,18 @@ export const mockGetRecipeNew = {
     result: {
         data: {
             __typename: 'Query',
+            recipeOne: { ...mockRecipeNew, images: [] },
+        } satisfies GetRecipeQuery,
+    },
+};
+export const mockGetRecipeNewWithImages = {
+    request: {
+        query: GET_RECIPE,
+        variables: { filter: { titleIdentifier: 'new-recipe' } } satisfies GetRecipeQueryVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Query',
             recipeOne: { ...mockRecipeNew, images: [mockImageNew] },
         } satisfies GetRecipeQuery,
     },

@@ -1,16 +1,19 @@
 import { number, object } from 'yup';
-import { Dispatch, SetStateAction } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { AddIcon, MinusIcon } from '@chakra-ui/icons';
 import { Button, IconButton } from '@chakra-ui/react';
 
+import { useRecipeStore } from '@recipe/stores';
 import { useErrorToast } from '@recipe/common/hooks';
 
-export interface ServingsProps {
-    num: number;
-    setNum: Dispatch<SetStateAction<number>>;
-}
-export function Servings(props: ServingsProps) {
-    const { num, setNum } = props;
+export function Servings() {
+    const { num, increase, decrease } = useRecipeStore(
+        useShallow((state) => ({
+            num: state.numServings,
+            increase: state.increaseNumServings,
+            decrease: state.decreaseNumServings,
+        }))
+    );
     const toast = useErrorToast();
     const schema = object().shape({
         numServings: number()
@@ -30,7 +33,7 @@ export function Servings(props: ServingsProps) {
                 onClick={() => {
                     schema
                         .validate({ numServings: num - 1 })
-                        .then(() => setNum((num) => num - 1))
+                        .then(() => decrease())
                         .catch((err) => {
                             toast({ title: 'Error', description: err.message });
                         });
@@ -64,7 +67,7 @@ export function Servings(props: ServingsProps) {
                 onClick={() => {
                     schema
                         .validate({ numServings: num + 1 })
-                        .then(() => setNum((num) => num + 1))
+                        .then(() => increase())
                         .catch((err) => {
                             toast({ title: 'Error', description: err.message });
                         });

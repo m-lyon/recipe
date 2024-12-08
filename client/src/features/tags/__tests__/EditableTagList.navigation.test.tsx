@@ -1,20 +1,15 @@
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, screen } from '@testing-library/react';
+import { cleanup, screen, waitFor } from '@testing-library/react';
 import { Route, createRoutesFromElements } from 'react-router-dom';
 
 import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
 import { clickGetByText, notNullByText, renderPage } from '@recipe/utils/tests';
 
-import { useTagList } from '../hooks/useTagList';
 import { EditableTagList } from '../components/EditableTagList';
 
 const renderComponent = () => {
-    const MockCreateRecipe = () => {
-        const props = useTagList();
-        return <EditableTagList {...props} />;
-    };
-    const routes = createRoutesFromElements(<Route path='/' element={<MockCreateRecipe />} />);
+    const routes = createRoutesFromElements(<Route path='/' element={<EditableTagList />} />);
     return renderPage(routes, [mockGetTags]);
 };
 
@@ -28,8 +23,7 @@ describe('EditableTag Click Action', () => {
         renderComponent();
 
         // Act
-        const tagInput = screen.getByText('Add a tag...');
-        await user.click(tagInput);
+        await user.click(screen.getByText('Add a tag...'));
 
         // Expect
         await notNullByText(screen, 'Add a tag...', 'lunch');
@@ -41,8 +35,7 @@ describe('EditableTag Click Action', () => {
         renderComponent();
 
         // Act
-        const tagInput = screen.getByText('Add a tag...');
-        await user.click(tagInput);
+        await user.click(screen.getByText('Add a tag...'));
         await user.keyboard('{L}');
         const tag = screen.getByText('lunch');
         await user.click(tag);
@@ -75,9 +68,10 @@ describe('EditableTag Key Arrow Action', () => {
         renderComponent();
 
         // Act
-        const tagInput = screen.getByText('Add a tag...');
-        await user.click(tagInput);
-        await user.keyboard('{l}{Enter}');
+        await user.click(screen.getByText('Add a tag...'));
+        await user.keyboard('{l}');
+        await waitFor(() => expect(screen.queryByText('lunch')).not.toBeNull());
+        await user.keyboard('{Enter}');
 
         // Expect
         await notNullByText(screen, 'Add a tag...', 'lunch');
@@ -89,8 +83,7 @@ describe('EditableTag Key Arrow Action', () => {
         renderComponent();
 
         // Act
-        const tagInput = screen.getByText('Add a tag...');
-        await user.click(tagInput);
+        await user.click(screen.getByText('Add a tag...'));
         await user.keyboard('{l}{ArrowDown}{Enter}');
 
         // Expect

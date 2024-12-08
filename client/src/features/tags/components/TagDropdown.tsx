@@ -1,26 +1,20 @@
 import { RefObject } from 'react';
 import { List } from '@chakra-ui/react';
-import { useQuery } from '@apollo/client';
 import { LayoutGroup, motion } from 'framer-motion';
 
-import { GET_TAGS } from '@recipe/graphql/queries/tag';
+import { useRecipeStore } from '@recipe/stores';
 
 import { TagDropdownList } from './TagDropdownList';
-import { EditableTag, EditableTagActionHandler, FinishedTag } from '../hooks/useTagList';
 
 interface Props {
-    tag: EditableTag;
-    actions: EditableTagActionHandler;
     inputRef: RefObject<HTMLInputElement>;
-    selectedTags: FinishedTag[];
 }
 export function TagDropdown(props: Props) {
-    const { tag, actions, inputRef, selectedTags } = props;
-    const { data } = useQuery(GET_TAGS);
-    const strValue = tag.value !== null ? tag.value : '';
+    const { inputRef } = props;
+    const dropdownIsOpen = useRecipeStore((state) => state.tagsDropdownIsOpen);
 
     return (
-        tag.show && (
+        dropdownIsOpen && (
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -41,16 +35,7 @@ export function TagDropdown(props: Props) {
                     aria-label='Tag suggestions'
                 >
                     <LayoutGroup>
-                        <TagDropdownList
-                            strValue={strValue}
-                            tags={data ? data.tagMany : []}
-                            setAndSubmit={(value: string, _id: string, isNew?: boolean) => {
-                                actions.setAndSubmit(value, _id, isNew);
-                                actions.setShow('off');
-                            }}
-                            inputRef={inputRef}
-                            selectedTags={selectedTags}
-                        />
+                        <TagDropdownList inputRef={inputRef} />
                     </LayoutGroup>
                 </List>
             </motion.div>

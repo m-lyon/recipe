@@ -1,17 +1,26 @@
-import { useMutation } from '@apollo/client';
+import { useShallow } from 'zustand/shallow';
+import { useMutation, useQuery } from '@apollo/client';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 import { Tag, TagCloseButton, TagLabel, VStack, Wrap, WrapItem } from '@chakra-ui/react';
 
+import { useRecipeStore } from '@recipe/stores';
+import { GET_TAGS } from '@recipe/graphql/queries/tag';
 import { REMOVE_TAG } from '@recipe/graphql/mutations/tag';
 import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 
 import { EditableTag } from './EditableTag';
-import { UseTagListReturnType } from '../hooks/useTagList';
 
-export function EditableTagList(props: UseTagListReturnType) {
-    const { state, removeTag, actions, tagStr } = props;
+export function EditableTagList() {
     const errorToast = useErrorToast();
     const successToast = useSuccessToast();
+    // Preload tags
+    useQuery(GET_TAGS);
+    const { finished, removeTag } = useRecipeStore(
+        useShallow((state) => ({
+            finished: state.finishedTags,
+            removeTag: state.removeTag,
+        }))
+    );
     const [removeTagMutation] = useMutation(REMOVE_TAG, {
         onCompleted: (data) => {
             successToast({
@@ -32,7 +41,7 @@ export function EditableTagList(props: UseTagListReturnType) {
         },
     });
 
-    const tagsList = state.finished.map((tag, index) => {
+    const tagsList = finished.map((tag, index) => {
         return (
             <motion.div
                 initial={{ opacity: 0 }}
@@ -60,18 +69,13 @@ export function EditableTagList(props: UseTagListReturnType) {
     });
 
     return (
-        <VStack align='left' spacing={state.finished.length > 0 ? 3 : 0}>
+        <VStack align='left' spacing={finished.length > 0 ? 3 : 0}>
             <LayoutGroup>
                 <Wrap spacing='10px'>
                     <AnimatePresence>{tagsList}</AnimatePresence>
                 </Wrap>
                 <motion.div layout='position'>
-                    <EditableTag
-                        tag={state.editable}
-                        actions={actions}
-                        tagStr={tagStr}
-                        selectedTags={state.finished}
-                    />
+                    <EditableTag />
                 </motion.div>
             </LayoutGroup>
         </VStack>

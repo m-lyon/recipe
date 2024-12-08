@@ -1,15 +1,18 @@
+import { ChangeEvent } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { Box, Container, Stack } from '@chakra-ui/react';
-import { ChangeEvent, Dispatch, SetStateAction } from 'react';
 
 import { useErrorToast } from '@recipe/common/hooks';
-import { ImageUploadPreview, UploadBox } from '@recipe/features/images';
+import { ImageUploadPreview, UploadBox, useImagesStore } from '@recipe/features/images';
 
-export interface ImageUploadProps {
-    images: File[];
-    setImages: Dispatch<SetStateAction<File[]>>;
-}
-export function ImageUpload(props: ImageUploadProps) {
-    const { images, setImages } = props;
+export function ImageUpload() {
+    const { images, addImage, removeImage } = useImagesStore(
+        useShallow((state) => ({
+            images: state.images,
+            addImage: state.addImage,
+            removeImage: state.removeImage,
+        }))
+    );
     const toast = useErrorToast();
     const handleAddFile = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -20,7 +23,7 @@ export function ImageUpload(props: ImageUploadProps) {
             toast({ title: 'Invalid file type', description: 'Please upload an image file' });
             return;
         }
-        setImages((prevImages) => [...prevImages, file]);
+        addImage(file);
     };
 
     const imagePreviews = images.map((image, index) => {
@@ -28,7 +31,7 @@ export function ImageUpload(props: ImageUploadProps) {
             <ImageUploadPreview
                 key={index}
                 image={image}
-                handleRemoveImage={() => setImages((prev) => prev.filter((_, i) => i !== index))}
+                handleRemoveImage={() => removeImage(index)}
             />
         );
     });

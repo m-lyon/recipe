@@ -1,17 +1,17 @@
+import createFetchMock from 'vitest-fetch-mock';
 import { userEvent } from '@testing-library/user-event';
 import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { enterEditRecipePage, enterViewRecipePage } from '@recipe/utils/tests';
 import { mockUpdateRecipeNewTitle } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeNewTitleAsIngredient } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { enterEditRecipePage, enterViewRecipePage, getMockedImageBlob } from '@recipe/utils/tests';
 
 import { renderComponent } from './utils';
 
-vi.mock('global', () => ({
-    fetch: vi.fn(),
-}));
+const fetchMocker = createFetchMock(vi);
+fetchMocker.enableMocks();
 
 loadErrorMessages();
 loadDevMessages();
@@ -47,8 +47,7 @@ describe('Update Recipe Workflow: Title', () => {
 
     it('should update the title when recipe is an ingredient', async () => {
         // Render -----------------------------------------------
-        const mockBlob = new Blob(['dummy image data'], { type: 'image/jpeg' });
-        global.fetch = vi.fn().mockResolvedValue({ blob: () => Promise.resolve(mockBlob) });
+        fetchMock.mockResponseOnce(getMockedImageBlob());
         renderComponent([mockUpdateRecipeNewTitleAsIngredient]);
         const user = userEvent.setup();
 
