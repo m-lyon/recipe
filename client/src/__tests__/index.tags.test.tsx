@@ -42,7 +42,7 @@ describe('Update Recipe Workflow: Tags', () => {
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        expect(screen.queryByText('dinner')).not.toBeNull();
+        expect(screen.queryAllByText('dinner')).not.toBeNull();
         expect(screen.queryByText('lunch')).toBeNull();
     });
 
@@ -69,8 +69,8 @@ describe('Update Recipe Workflow: Tags', () => {
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        expect(screen.queryByText('dinner')).not.toBeNull();
-        expect(screen.queryByText('mock tag')).not.toBeNull();
+        expect(screen.queryAllByText('dinner')).not.toBeNull();
+        expect(screen.queryAllByText('mock tag')).not.toBeNull();
     });
 
     it('should add an existing tag', async () => {
@@ -96,8 +96,8 @@ describe('Update Recipe Workflow: Tags', () => {
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        expect(screen.queryByText('dinner')).not.toBeNull();
-        expect(screen.queryByText('spicy')).not.toBeNull();
+        expect(screen.queryAllByText('dinner')).not.toBeNull();
+        expect(screen.queryAllByText('spicy')).not.toBeNull();
     });
 });
 

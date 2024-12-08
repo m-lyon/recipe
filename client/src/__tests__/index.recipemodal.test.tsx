@@ -1,10 +1,10 @@
+import createFetchMock from 'vitest-fetch-mock';
 import { afterEach, describe, it, vi } from 'vitest';
 import { userEvent } from '@testing-library/user-event';
 import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { PATH } from '@recipe/constants';
-import { enterEditRecipePage, enterViewRecipePage } from '@recipe/utils/tests';
 import { mockGetRecipeFourById } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRatingsRecipeTwo } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockGetRatingsRecipeFour } from '@recipe/graphql/queries/__mocks__/rating';
@@ -13,10 +13,14 @@ import { MockedResponses, notNullByText, nullByText, renderPage } from '@recipe/
 import { mockUpdateRecipeEditAsIngredient } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetRecipeTwo, mockGetRecipeTwoById } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipeFour, mockGetRecipesExtra } from '@recipe/graphql/queries/__mocks__/recipe';
+import { enterEditRecipePage, enterViewRecipePage, getMockedImageBlob } from '@recipe/utils/tests';
 import { mockCountRecipesExtra, mockGetRecipeFive } from '@recipe/graphql/queries/__mocks__/recipe';
 
 import { routes } from '../routes';
 import { mocksMinimal } from '../__mocks__/graphql';
+
+const fetchMocker = createFetchMock(vi);
+fetchMocker.enableMocks();
 
 loadErrorMessages();
 loadDevMessages();
@@ -56,8 +60,7 @@ describe('Recipe Modal', () => {
 
     it('should display an updated recipe ingredient modal', async () => {
         // Render -----------------------------------------------
-        const mockBlob = new Blob(['dummy image data'], { type: 'image/jpeg' });
-        global.fetch = vi.fn().mockResolvedValue({ blob: () => Promise.resolve(mockBlob) });
+        fetchMock.mockResponseOnce(getMockedImageBlob());
         renderComponent([
             mockGetRecipeFour,
             mockGetRatingsRecipeFour,

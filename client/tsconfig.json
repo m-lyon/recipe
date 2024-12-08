@@ -2,11 +2,18 @@
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "skipLibCheck": true,
-    "types": ["vite/client", "node"],
-
+    "types": [
+      "vite/client",
+      "node",
+      "@testing-library/jest-dom"
+    ],
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -14,27 +21,52 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noErrorTruncation": true,
-
     /* Paths */
     "baseUrl": "src",
-    "paths":{
-      "@recipe/graphql/*": ["graphql/*"],
-      "@recipe/graphql/generated": ["__generated__/graphql"],
-      "@recipe/features/*": ["features/*"],
-      "@recipe/utils/*": ["utils/*"],
-      "@recipe/layouts": ["layouts"],
-      "@recipe/constants": ["constants.ts"],
-      "@recipe/common/components": ["common/components"],
-      "@recipe/common/hooks": ["common/hooks"],
+    "paths": {
+      "@recipe/graphql/*": [
+        "graphql/*"
+      ],
+      "@recipe/graphql/generated": [
+        "__generated__/graphql"
+      ],
+      "@recipe/features/*": [
+        "features/*"
+      ],
+      "@recipe/utils/*": [
+        "utils/*"
+      ],
+      "@recipe/layouts": [
+        "layouts"
+      ],
+      "@recipe/stores": [
+        "stores"
+      ],
+      "@recipe/constants": [
+        "constants.ts"
+      ],
+      "@recipe/common/components": [
+        "common/components"
+      ],
+      "@recipe/common/hooks": [
+        "common/hooks"
+      ],
     }
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }],
+  "include": [
+    "src",
+    "__mocks__/zustand.ts",
+    "./vitest-setup.ts"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ],
 }

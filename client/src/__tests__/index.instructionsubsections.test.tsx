@@ -1,18 +1,22 @@
+import createFetchMock from 'vitest-fetch-mock';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, screen, waitFor } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { mockGetRecipeFour } from '@recipe/graphql/queries/__mocks__/recipe';
-import { enterEditRecipePage, haveValueByLabelText } from '@recipe/utils/tests';
 import { enterCreateNewRecipePage, enterViewRecipePage } from '@recipe/utils/tests';
 import { mockGetRatingsRecipeFour } from '@recipe/graphql/queries/__mocks__/rating';
 import { haveTextContentByLabelText, notNullByText, nullByText } from '@recipe/utils/tests';
 import { mockUpdateAddInstructionSubsection } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateEditInstructionSubsection } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRemoveInstructionSubsection } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { enterEditRecipePage, getMockedImageBlob, haveValueByLabelText } from '@recipe/utils/tests';
 
 import { renderComponent } from './utils';
+
+const fetchMocker = createFetchMock(vi);
+fetchMocker.enableMocks();
 
 loadErrorMessages();
 loadDevMessages();
@@ -36,8 +40,7 @@ describe('Instruction Subsections', () => {
 
     it('should add a new instruction subsection', async () => {
         // Render -----------------------------------------------
-        const mockBlob = new Blob(['dummy image data'], { type: 'image/jpeg' });
-        global.fetch = vi.fn().mockResolvedValue({ blob: () => Promise.resolve(mockBlob) });
+        fetchMock.mockResponseOnce(getMockedImageBlob());
         renderComponent([mockUpdateAddInstructionSubsection]);
         const user = userEvent.setup();
 

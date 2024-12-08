@@ -1,13 +1,16 @@
 import { Text } from '@chakra-ui/react';
+import { useShallow } from 'zustand/shallow';
 
+import { useRecipeStore } from '@recipe/stores';
 import { EditableItemArea } from '@recipe/common/components';
 
-export interface EditableNotesProps {
-    notes: string;
-    setNotes: (notes: string) => void;
-}
-export function EditableNotes(props: EditableNotesProps) {
-    const { notes, setNotes } = props;
+export function EditableNotes() {
+    const { notes, setNotes } = useRecipeStore(
+        useShallow((state) => ({
+            notes: state.notes,
+            setNotes: state.setNotes,
+        }))
+    );
     const defaultStr = 'Enter notes...';
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {

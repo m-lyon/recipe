@@ -1,34 +1,40 @@
 import { RefObject } from 'react';
 import { matchSorter } from 'match-sorter';
 import { LayoutGroup } from 'framer-motion';
-import { useMutation } from '@apollo/client';
+import { useShallow } from 'zustand/shallow';
+import { useMutation, useQuery } from '@apollo/client';
 
-import { TAG_FIELDS } from '@recipe/graphql/queries/tag';
+import { useRecipeStore } from '@recipe/stores';
 import { DropdownItem } from '@recipe/common/components';
 import { CREATE_TAG } from '@recipe/graphql/mutations/tag';
+import { GET_TAGS, TAG_FIELDS } from '@recipe/graphql/queries/tag';
 import { useNavigatableList, useSuccessToast, useWarningToast } from '@recipe/common/hooks';
 
-import { FinishedTag, SetAndSubmit } from '../hooks/useTagList';
-
 interface Props {
-    strValue: string;
-    tags: TagChoice[];
-    setAndSubmit: SetAndSubmit;
     inputRef: RefObject<HTMLInputElement>;
-    selectedTags: FinishedTag[];
 }
 export function TagDropdownList(props: Props) {
-    const { strValue, tags, setAndSubmit, inputRef, selectedTags } = props;
+    const { inputRef } = props;
     const successToast = useSuccessToast();
     const warningToast = useWarningToast();
+    const { data } = useQuery(GET_TAGS);
+    const { setAndSubmit, hideDropdown, editableTag, finishedTags } = useRecipeStore(
+        useShallow((state) => ({
+            setAndSubmit: state.setAndSubmitTag,
+            hideDropdown: state.hideTagsDropdown,
+            editableTag: state.editableTag,
+            finishedTags: state.finishedTags,
+        }))
+    );
     const [createNewTag] = useMutation(CREATE_TAG, {
         variables: {
             record: {
-                value: strValue,
+                value: editableTag,
             },
         },
         onCompleted: (data) => {
-            setAndSubmit(data!.tagCreateOne!.record!.value, data?.tagCreateOne?.record?._id, true);
+            setAndSubmit(data!.tagCreateOne!.record!.value, data!.tagCreateOne!.record!._id, true);
+            hideDropdown();
             successToast({
                 title: 'Tag created',
                 description: `Tag ${data?.tagCreateOne?.record?.value} created`,
@@ -55,21 +61,21 @@ export function TagDropdownList(props: Props) {
             });
         },
     });
+    const tags = data ? data.tagMany : [];
     const suggestions = matchSorter<TagChoice>(
-        tags.filter((tag) => {
-            return !selectedTags.find((selectedTag) => selectedTag._id === tag._id);
-        }),
-        strValue,
+        tags.filter((tag) => !finishedTags.find((finishedTag) => finishedTag._id === tag._id)),
+        editableTag,
         { keys: ['value'] }
     );
 
     const handleSelect = (item: TagChoice) => {
         setAndSubmit(item.value, item._id);
+        hideDropdown();
         inputRef.current?.blur();
     };
 
     const handleOutsideEnter = () => {
-        if (selectedTags.map((tag) => tag.value).includes(strValue)) {
+        if (finishedTags.map((tag) => tag.value).includes(editableTag)) {
             warningToast({
                 title: 'Tag already exists',
                 description: `Cannot add duplicate tags.`,

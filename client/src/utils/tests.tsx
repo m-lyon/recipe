@@ -120,3 +120,13 @@ export function renderPage(
         </MockedProvider>
     );
 }
+
+export const getMockedImageBlob = () => {
+    const mockBlob = new Blob(['dummy image data'], { type: 'image/jpeg' });
+    return () =>
+        Promise.resolve({
+            ok: true,
+            status: 200,
+            blob: () => Promise.resolve(mockBlob),
+        });
+};

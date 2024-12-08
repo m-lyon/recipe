@@ -1,19 +1,19 @@
+import createFetchMock from 'vitest-fetch-mock';
 import { userEvent } from '@testing-library/user-event';
 import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { mockImageFileOne } from '@recipe/graphql/mutations/__mocks__/image';
-import { enterEditRecipePage, enterViewRecipePage } from '@recipe/utils/tests';
 import { mockUpdateRecipeOne } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockDeleteImages, mockUploadImages } from '@recipe/graphql/mutations/__mocks__/image';
+import { enterEditRecipePage, enterViewRecipePage, getMockedImageBlob } from '@recipe/utils/tests';
 
 import { renderComponent } from './utils';
 
-vi.mock('global', () => ({
-    fetch: vi.fn(),
-}));
+const fetchMocker = createFetchMock(vi);
+fetchMocker.enableMocks();
 
 loadErrorMessages();
 loadDevMessages();
@@ -26,8 +26,7 @@ describe('Update Image Workflow', () => {
 
     it('should add an image', async () => {
         // Render -----------------------------------------------
-        const mockBlob = new Blob(['dummy image data'], { type: 'image/jpeg' });
-        global.fetch = vi.fn().mockResolvedValue({ blob: () => Promise.resolve(mockBlob) });
+        fetchMock.mockResponseOnce(getMockedImageBlob());
         renderComponent([mockUpdateRecipeOne, mockUploadImages]);
         const user = userEvent.setup();
 
@@ -51,8 +50,7 @@ describe('Update Image Workflow', () => {
 
     it('should remove an image', async () => {
         // Render -----------------------------------------------
-        const mockBlob = new Blob(['dummy image data'], { type: 'image/jpeg' });
-        global.fetch = vi.fn().mockResolvedValue({ blob: () => Promise.resolve(mockBlob) });
+        fetchMock.mockResponseOnce(getMockedImageBlob());
         renderComponent([mockUpdateRecipeTwo, mockDeleteImages]);
         const user = userEvent.setup();
 

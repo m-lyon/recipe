@@ -1,15 +1,18 @@
+import { useShallow } from 'zustand/shallow';
+
+import { useRecipeStore } from '@recipe/stores';
 import { CentredTextArea } from '@recipe/common/components';
 
-export interface EditableTitleProps {
-    value: string;
-    setTitle: (value: string) => void;
-}
-
-export function EditableTitle(props: EditableTitleProps) {
-    const { value, setTitle } = props;
+export function EditableTitle() {
+    const { title, setTitle } = useRecipeStore(
+        useShallow((state) => ({
+            title: state.title,
+            setTitle: state.setTitle,
+        }))
+    );
     return (
         <CentredTextArea
-            value={value}
+            value={title}
             setValue={setTitle}
             fontSize='3xl'
             placeholder='Enter Recipe Title'

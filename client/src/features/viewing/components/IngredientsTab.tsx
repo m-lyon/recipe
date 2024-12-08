@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { TagList } from '@recipe/features/tags';
 import { useUser } from '@recipe/features/user';
+import { useRecipeStore } from '@recipe/stores';
 import { Servings } from '@recipe/features/servings';
 import { IngredientsTabLayout } from '@recipe/layouts';
 import { StarRating, useViewStarRating } from '@recipe/features/rating';
@@ -19,7 +20,8 @@ interface Props {
 }
 export function IngredientsTab(props: Props) {
     const { recipeId, ingredients, notes, numServings, tags, calculatedTags } = props;
-    const [servings, setServings] = useState(numServings);
+    const setNumServings = useRecipeStore((state) => state.setNumServings);
+    const currentServings = useRecipeStore((state) => state.numServings);
     const { isLoggedIn } = useUser();
     const { avgRating, getRatings, setRating } = useViewStarRating();
 
@@ -30,9 +32,13 @@ export function IngredientsTab(props: Props) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [recipeId]);
 
+    useEffect(() => {
+        setNumServings(numServings);
+    }, [numServings, setNumServings]);
+
     return (
         <IngredientsTabLayout
-            Servings={<Servings num={servings} setNum={setServings} />}
+            Servings={<Servings />}
             StarRating={
                 <StarRating rating={avgRating} setRating={setRating} readonly={!isLoggedIn} />
             }
@@ -40,7 +46,7 @@ export function IngredientsTab(props: Props) {
                 <IngredientList
                     subsections={ingredients}
                     origServings={numServings}
-                    currentServings={servings}
+                    currentServings={currentServings}
                     weightAndVolumeBtns
                 />
             }
