@@ -1,5 +1,7 @@
 import { StateCreator } from 'zustand';
 
+import { RecipeState } from './useRecipeStore';
+
 export interface NumServingsSlice {
     numServings: number;
     increaseNumServings: () => void;
@@ -7,7 +9,7 @@ export interface NumServingsSlice {
     setNumServings: (value: number) => void;
     resetNumServings: () => void;
 }
-export const createNumServingsSlice: StateCreator<NumServingsSlice, [], [], NumServingsSlice> = (
+export const createNumServingsSlice: StateCreator<RecipeState, [], [], NumServingsSlice> = (
     set
 ) => ({
     numServings: 1,

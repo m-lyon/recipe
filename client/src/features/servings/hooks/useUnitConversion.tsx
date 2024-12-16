@@ -9,7 +9,11 @@ export interface UnitConversionArgs {
     quantity: FinishedQuantity;
     unit: FinishedUnit;
 }
-export function useUnitConversion() {
+export type ApplyUnitConversion = ({ quantity, unit }: UnitConversionArgs) => UnitConversionArgs;
+interface UseUnitConversionReturnType {
+    apply: ApplyUnitConversion;
+}
+export function useUnitConversion(): UseUnitConversionReturnType {
     const { data, loading, error } = useQuery(GET_UNIT_CONVERSIONS);
 
     const apply = ({ quantity, unit }: UnitConversionArgs): UnitConversionArgs => {

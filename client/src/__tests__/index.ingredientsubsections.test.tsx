@@ -267,7 +267,8 @@ describe('Ingredient Subsections', () => {
         expect(screen.queryByLabelText('Enter title for ingredient subsection 2')).not.toBeNull();
         expect(screen.queryByLabelText('Enter ingredient #1 for subsection 2')).not.toBeNull();
         expect(screen.queryByLabelText('Enter ingredient #1 for subsection 3')).toBeNull();
-        nullByLabelText(screen, '2 tsp apple, diced', '1 apple, diced', '2 apples, diced');
+        await waitFor(() => expect(screen.queryByLabelText('2 apples, diced')).toBeNull());
+        nullByLabelText(screen, '2 tsp apple, diced', '1 apple, diced');
         await notNullByLabelText(screen, '⅓ cup medium apples, diced', '1 oz apples');
     });
 
@@ -291,7 +292,8 @@ describe('Ingredient Subsections', () => {
         expect(screen.queryByLabelText('Enter title for ingredient subsection 2')).not.toBeNull();
         expect(screen.queryByLabelText('Enter ingredient #1 for subsection 2')).not.toBeNull();
         expect(screen.queryByLabelText('Enter ingredient #1 for subsection 3')).toBeNull();
-        nullByLabelText(screen, '2 tsp apple, diced', '1 apple, diced', '2 apples, diced');
+        await waitFor(() => expect(screen.queryByLabelText('2 apples, diced')).toBeNull());
+        nullByLabelText(screen, '2 tsp apple, diced', '1 apple, diced');
         await notNullByLabelText(screen, '⅓ cup medium apples, diced', '1 oz apples');
     });
 

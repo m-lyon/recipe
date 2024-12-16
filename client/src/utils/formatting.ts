@@ -1,4 +1,4 @@
-import { STATES_ORDER } from '@recipe/features/recipeIngredient';
+import { STATES_ORDER } from '@recipe/stores';
 
 import { isPlural } from './plural';
 import { formatFloat, formatFraction, isFraction, isRange } from './number';

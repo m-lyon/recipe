@@ -1,5 +1,7 @@
 import { StateCreator } from 'zustand';
 
+import { RecipeState } from './useRecipeStore';
+
 interface FinishedTag {
     _id: string;
     value: string;
@@ -19,7 +21,7 @@ export interface TagsSlice {
     setTags: (tags: FinishedTag[]) => void;
     removeTag: (index: number) => void;
 }
-export const createTagsSlice: StateCreator<TagsSlice> = (set) => ({
+export const createTagsSlice: StateCreator<RecipeState, [], [], TagsSlice> = (set) => ({
     editableTag: '',
     finishedTags: [],
     tagsDropdownIsOpen: false,

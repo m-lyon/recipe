@@ -11,7 +11,6 @@ export function EditableNotes() {
             setNotes: state.setNotes,
         }))
     );
-    const defaultStr = 'Enter notes...';
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setNotes(e.target.value);
@@ -26,7 +25,7 @@ export function EditableNotes() {
         <>
             <Text fontSize='2xl'>Notes</Text>
             <EditableItemArea
-                defaultStr={defaultStr}
+                defaultStr='Enter notes...'
                 value={notes}
                 handleChange={handleChange}
                 handleSubmit={handleSubmit}

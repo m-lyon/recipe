@@ -7,7 +7,6 @@ import { RequireAuth } from '@recipe/features/user';
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { Search } from './pages/Search';
-import { TestPage } from './pages/TestPage';
 import { EditUnit } from './pages/EditUnit';
 import { EditSize } from './pages/EditSize';
 import { ErrorBoundary } from './pages/Error';
@@ -47,6 +46,5 @@ export const routes = createRoutesFromElements(
             <Route path='login' element={<Login />} />
             <Route path='search' element={<Search />} />
         </Route>
-        <Route path='test' element={<TestPage />} />
     </Route>
 );

@@ -1,22 +1,39 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation } from '@apollo/client';
+import { useShallow } from 'zustand/shallow';
 import { useNavigate } from 'react-router-dom';
 
+import { useRecipeStore } from '@recipe/stores';
+import { useImagesStore } from '@recipe/features/images';
+import { EditableRecipe } from '@recipe/features/editing';
 import { ADD_RATING } from '@recipe/graphql/mutations/rating';
 import { CREATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { DELAY_LONG, DELAY_SHORT, PATH } from '@recipe/constants';
 import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
-import { EditableRecipe, useRecipeState } from '@recipe/features/editing';
 import { IMAGE_FIELDS, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
 import { RECIPE_FIELDS_SUBSET, RECIPE_INGR_FIELDS } from '@recipe/graphql/queries/recipe';
 
 export function CreateRecipe() {
     const errorToast = useErrorToast();
     const successToast = useSuccessToast();
-    const state = useRecipeState();
     const navigate = useNavigate();
     const [rating, setRating] = useState<number>(0);
+    // -- Stores ----------------------------------------------------------
+    const { images, resetImages } = useImagesStore(
+        useShallow((state) => ({ images: state.images, resetImages: state.resetImages }))
+    );
+    const resetRecipe = useRecipeStore((state) => state.resetRecipe);
+    useEffect(() => {
+        // Resets on unmount and mount
+        resetImages();
+        resetRecipe();
+        return () => {
+            resetImages();
+            resetRecipe();
+        };
+    }, [resetImages, resetRecipe]);
+    // --------------------------------------------------------------------
     const [createRecipe, { loading: recipeLoading, data: response }] = useMutation(CREATE_RECIPE, {
         update(cache, { data }) {
             const { record } = data?.recipeCreateOne || {};
@@ -118,8 +135,8 @@ export function CreateRecipe() {
 
         try {
             // Upload Images
-            if (state.images.images.length > 0) {
-                await uploadImages({ variables: { recipeId, images: state.images.images } });
+            if (images.length > 0) {
+                await uploadImages({ variables: { recipeId, images } });
             }
         } catch (e: unknown) {
             let description = 'An error occurred while uploading images';
@@ -143,7 +160,6 @@ export function CreateRecipe() {
 
     return (
         <EditableRecipe
-            state={state}
             rating={{ rating, setRating }}
             handleSubmitMutation={handleSubmitMutation}
             submitButtonProps={{

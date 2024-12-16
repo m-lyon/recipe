@@ -1,40 +1,44 @@
 import { useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useShallow } from 'zustand/shallow';
 import { ListItem, OrderedList } from '@chakra-ui/react';
 
+import { useRecipeStore } from '@recipe/stores';
 import { EditableItemArea } from '@recipe/common/components';
 
-import { UseInstructionListReturnType } from '../hooks/useInstructionsList';
-
 interface Props {
-    instructions: UseInstructionListReturnType['state'][0]['instructions'];
-    addLine: () => void;
-    removeLine: (index: number) => void;
-    setLine: (index: number, value: string) => void;
-    sectionNum: number;
+    section: number;
 }
 export function EditableInstructionList(props: Props) {
-    const { instructions, addLine, removeLine, setLine, sectionNum } = props;
+    const { section } = props;
     const lastInputRef = useRef<HTMLTextAreaElement>(null);
+    const { instructions, addLine, setInstruction, removeLine } = useRecipeStore(
+        useShallow((state) => ({
+            instructions: state.instructionSections[section].instructions,
+            addLine: state.addEmptyInstructionLine,
+            setInstruction: state.setInstruction,
+            removeLine: state.removeInstruction,
+        }))
+    );
 
     const instructionsList = instructions.map((instr, index) => {
         const isLast = index + 1 === instructions.length;
 
         const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-            setLine(index, e.target.value);
+            setInstruction(section, index, e.target.value);
         };
         const handleSubmit = () => {
             // Reset the value to the default text when the field is empty, if last
             // in list, or remove item if not
             if (instr.value.trim() === '') {
                 if (!isLast) {
-                    removeLine(index);
+                    removeLine(section, index);
                 } else {
-                    setLine(index, '');
+                    setInstruction(section, index, '');
                 }
             } else {
                 if (isLast) {
-                    addLine();
+                    addLine(section);
                 }
             }
         };
@@ -64,12 +68,12 @@ export function EditableInstructionList(props: Props) {
                         optionalRef={index === instructions.length - 1 ? lastInputRef : null}
                         fontSize='lg'
                         fontWeight='600'
-                        aria-label={`Enter instruction #${index + 1} for subsection ${sectionNum}`}
+                        aria-label={`Enter instruction #${index + 1} for subsection ${section + 1}`}
                     />
                 </ListItem>
             </motion.div>
         );
     });
 
-    return <OrderedList>{instructionsList}</OrderedList>;
+    return <OrderedList pb='14px'>{instructionsList}</OrderedList>;
 }
