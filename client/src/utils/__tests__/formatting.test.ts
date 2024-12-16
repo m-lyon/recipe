@@ -36,7 +36,6 @@ describe('getEditableRecipeIngredientStr', () => {
             state: 'prepMethod',
             showDropdown: false,
             popover: null,
-            key: '1',
         };
         const result = getEditableRecipeIngredientStr(item);
         expect(result).toBe('1½ cups onions, ');
@@ -61,7 +60,6 @@ describe('getEditableRecipeIngredientStr', () => {
             state: 'prepMethod',
             showDropdown: false,
             popover: null,
-            key: '1',
         };
         const result = getEditableRecipeIngredientStr(item);
         expect(result).toBe('1½ onions, ');

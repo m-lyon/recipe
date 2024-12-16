@@ -1,10 +1,12 @@
 import { useRef, useState } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { useMutation } from '@apollo/client';
 import { useBreakpointValue } from '@chakra-ui/react';
 import { Popover, PopoverAnchor, useOutsideClick } from '@chakra-ui/react';
 import { Box, Editable, EditableInput, EditablePreview } from '@chakra-ui/react';
 
 import { DEBUG } from '@recipe/constants';
+import { useRecipeStore } from '@recipe/stores';
 import { useErrorToast } from '@recipe/common/hooks';
 import { DELETE_UNIT } from '@recipe/graphql/mutations/unit';
 import { NewBespokeUnitPopover, NewIngredientPopover } from '@recipe/features/popovers';
@@ -13,22 +15,33 @@ import { NewPrepMethodPopover, NewSizePopover, NewUnitPopover } from '@recipe/fe
 import { Dropdown } from './Dropdown';
 import { getSuggestions } from '../utils/suggestions';
 import { useDropdownList } from '../hooks/useDropdownList';
-import { IngredientActionHandler } from '../hooks/useIngredientList';
+import { useEditableIngredient } from '../hooks/useEditableIngredient';
 
 interface Props {
-    subsection: number;
-    item: EditableRecipeIngredient;
-    actionHandler: IngredientActionHandler;
-    queryData: IngredientComponentQuery;
-    ingredientNum: number;
+    section: number;
     fontSize?: string;
 }
 export function EditableIngredient(props: Props) {
-    const { subsection, item, actionHandler, queryData, ingredientNum, fontSize } = props;
+    const { section, fontSize } = props;
     const previewRef = useRef<HTMLInputElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const parentRef = useRef<HTMLDivElement>(null);
     const fieldRef = useRef<HTMLInputElement>(null);
+    const { item, reset, isOpen, open, numFinished, popover, setPopover } = useRecipeStore(
+        useShallow((state) => ({
+            item: state.ingredientSections[section].editable,
+            reset: state.resetEditableIngredient,
+            isOpen: state.ingredientSections[section].editable.showDropdown,
+            open: state.showIngredientDropdown,
+            numFinished: state.ingredientSections[section].finished.length,
+            popover: state.ingredientSections[section].editable.popover,
+            setPopover: state.setIngredientPopover,
+        }))
+    );
+    const deleteChar = useRecipeStore((state) => state.removeIngredientCharacter);
+    const editableStr = useRecipeStore((state) => state.getIngredientString(section));
+    const { data, setIngredientAttribute, handleIngredientChange } = useEditableIngredient(section);
+    const attributeStr = useRecipeStore((state) => state.getIngredientAttributeString(section));
     const [bespokeValue, setBespokeValue] = useState('');
     const toast = useErrorToast();
     const [deleteUnit] = useMutation(DELETE_UNIT, {
@@ -50,7 +63,7 @@ export function EditableIngredient(props: Props) {
     });
     const handleReset = () => {
         setActiveIndex(0);
-        actionHandler.resetEditable(subsection);
+        reset(section);
         if (item.unit.data && !item.unit.data.unique) {
             deleteUnit({ variables: { id: item.unit.data._id } });
         }
@@ -58,41 +71,40 @@ export function EditableIngredient(props: Props) {
     useOutsideClick({
         ref: parentRef,
         handler: () => {
-            if (item.quantity !== null || item.showDropdown) {
+            if (item.quantity !== null || isOpen) {
                 handleReset();
             }
         },
     });
-    const strValue = actionHandler.currentEditableAttributeValue(subsection) ?? '';
-    const suggestions = getSuggestions(item, queryData, strValue);
+    const suggestions = getSuggestions(item, data, attributeStr);
     const openPopover = (type: PopoverType) => {
         if (type === 'bespokeUnit') {
-            setBespokeValue(actionHandler.currentEditableAttributeValue(subsection) ?? '');
+            setBespokeValue(attributeStr);
         }
-        actionHandler.setEditablePopover(subsection, type);
+        setPopover(section, type);
     };
     const { setActiveIndex, handleKeyboardEvent, ...dropdownProps } = useDropdownList(
-        strValue,
+        attributeStr,
         suggestions,
-        (attr: SetAttr) => actionHandler.setCurrentEditableAttribute(subsection, attr),
+        setIngredientAttribute,
         openPopover,
-        () => actionHandler.deleteChar(subsection)
+        () => deleteChar(section)
     );
 
     const getPopover = () => {
         const setItem = (attr: RecipeIngredientDropdown) => {
-            actionHandler.setCurrentEditableAttribute(subsection, attr);
+            setIngredientAttribute(attr);
             setActiveIndex(0);
         };
         const popoverProps = {
             fieldRef,
             onClose: () => {
-                actionHandler.setEditablePopover(subsection, null);
+                setPopover(section, null);
                 previewRef.current?.focus();
             },
             setItem,
         };
-        switch (item.popover) {
+        switch (popover) {
             case 'unit':
                 return <NewUnitPopover {...popoverProps} />;
             case 'bespokeUnit':
@@ -118,8 +130,8 @@ export function EditableIngredient(props: Props) {
         // Position relative is needed for the dropdown to be positioned correctly
         <Box ref={parentRef} position='relative'>
             <Popover
-                isOpen={item.popover !== null}
-                onClose={() => actionHandler.setEditablePopover(subsection, null)}
+                isOpen={popover !== null}
+                onClose={() => setPopover(section, null)}
                 closeOnBlur={false}
                 placement={useBreakpointValue({ base: 'bottom', md: 'right' })}
                 initialFocusRef={fieldRef}
@@ -127,7 +139,7 @@ export function EditableIngredient(props: Props) {
             >
                 <PopoverAnchor>
                     <Editable
-                        value={actionHandler.editableStringValue(subsection)}
+                        value={editableStr}
                         onMouseDown={(e) => {
                             if (item.quantity !== null) {
                                 e.preventDefault();
@@ -135,11 +147,9 @@ export function EditableIngredient(props: Props) {
                             }
                         }}
                         selectAllOnFocus={false}
-                        onChange={(value: string) => {
-                            actionHandler.handleEditableChange(subsection, value);
-                        }}
+                        onChange={handleIngredientChange}
                         onCancel={handleReset}
-                        onEdit={() => actionHandler.setEditableShowDropdown.on(subsection)}
+                        onEdit={() => open(section)}
                         textAlign='left'
                         fontSize={fontSize}
                         color={
@@ -155,20 +165,21 @@ export function EditableIngredient(props: Props) {
                         <EditablePreview
                             ref={previewRef}
                             width='100%'
-                            aria-label={`Enter ingredient #${ingredientNum} for subsection ${subsection + 1}`}
+                            aria-label={`Enter ingredient #${numFinished + 1} for subsection ${section + 1}`}
                         />
                         <EditableInput
                             ref={inputRef}
-                            value={strValue}
+                            value={attributeStr}
                             _focusVisible={{ outline: 'none' }}
                             onKeyDown={handleKeyboardEvent}
-                            aria-label={`Input ingredient #${ingredientNum} for subsection ${subsection + 1}`}
+                            aria-label={`Input ingredient #${numFinished + 1} for subsection ${section + 1}`}
                         />
                     </Editable>
                 </PopoverAnchor>
                 <Dropdown
                     suggestions={suggestions}
                     item={item}
+                    show={isOpen}
                     previewRef={previewRef}
                     setActiveIndex={setActiveIndex}
                     {...dropdownProps}

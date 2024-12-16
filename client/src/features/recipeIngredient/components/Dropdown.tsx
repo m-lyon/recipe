@@ -9,6 +9,7 @@ import { Suggestion } from '../utils/suggestions';
 
 interface Props {
     item: EditableRecipeIngredient;
+    show: boolean;
     suggestions: Suggestion[];
     previewRef: RefObject<HTMLInputElement>;
     activeIndex: number;
@@ -16,7 +17,8 @@ interface Props {
     handleSelect: (suggestion: Suggestion) => void;
 }
 export function Dropdown(props: Props) {
-    const { item, suggestions, previewRef, activeIndex, setActiveIndex, handleSelect } = props;
+    const { item, show, suggestions, previewRef, activeIndex, setActiveIndex, handleSelect } =
+        props;
     const ref = useRef<HTMLUListElement>(null);
 
     useEffect(() => {
@@ -28,19 +30,19 @@ export function Dropdown(props: Props) {
     }, [activeIndex]);
 
     return (
-        item.showDropdown && (
+        show && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <Box pb={4} mb={4} zIndex={1} width='100%' position='absolute'>
                     <List
                         color='rgba(0, 0, 0, 0.64)'
                         bg='white'
                         borderRadius='4px'
-                        borderBottom={item.showDropdown ? '1px solid rgba(0,0,0,0.1)' : undefined}
-                        borderLeft={item.showDropdown ? '1px solid rgba(0,0,0,0.1)' : undefined}
-                        borderRight={item.showDropdown ? '1px solid rgba(0,0,0,0.1)' : undefined}
+                        borderBottom='1px solid rgba(0,0,0,0.1)'
+                        borderLeft='1px solid rgba(0,0,0,0.1)'
+                        borderRight='1px solid rgba(0,0,0,0.1)'
                         boxShadow='6px 5px 8px rgba(0,50,30,0.02)'
-                        maxHeight={item.showDropdown ? '14em' : undefined}
-                        overflowY={item.showDropdown ? 'auto' : undefined}
+                        maxHeight='14em'
+                        overflowY='auto'
                         aria-label='Dropdown suggestion list'
                         ref={ref}
                     >

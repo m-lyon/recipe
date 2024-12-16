@@ -1,22 +1,61 @@
 import { useState } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Reference, useMutation, useQuery } from '@apollo/client';
 
+import { useRecipeStore } from '@recipe/stores';
+import { useImagesStore } from '@recipe/features/images';
+import { EditableRecipe } from '@recipe/features/editing';
 import { useViewStarRating } from '@recipe/features/rating';
 import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { RECIPE_FIELDS_SUBSET } from '@recipe/graphql/queries/recipe';
 import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 import { UpdateByIdRecipeModifyInput } from '@recipe/graphql/generated';
-import { EditableRecipe, useRecipeState } from '@recipe/features/editing';
-import { dbIngredientToFinished } from '@recipe/features/recipeIngredient';
 import { DELAY_LONG, DELAY_SHORT, GRAPHQL_URL, PATH } from '@recipe/constants';
 import { GET_RECIPE, RECIPE_INGR_FIELDS } from '@recipe/graphql/queries/recipe';
 import { DELETE_IMAGES, IMAGE_FIELDS, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
 
+function queryIngredientToFinished(ingr: RecipeIngredientView): FinishedRecipeIngredient {
+    const { quantity, unit, size, ingredient, prepMethod } = ingr;
+    const key = crypto.randomUUID();
+    if (
+        quantity === undefined ||
+        unit === undefined ||
+        size === undefined ||
+        ingredient == undefined ||
+        prepMethod === undefined
+    ) {
+        throw new Error('One or more property is undefined');
+    }
+    return { key, quantity, unit, size, ingredient, prepMethod };
+}
+
 export function EditRecipe() {
     const errorToast = useErrorToast();
     const successToast = useSuccessToast();
-    const state = useRecipeState();
+    // -- Stores ----------------------------------------------------------
+    const { images, setImages } = useImagesStore(
+        useShallow((state) => ({ images: state.images, setImages: state.setImages }))
+    );
+    const recipeState = useRecipeStore(
+        useShallow((state) => ({
+            setTags: state.setTags,
+            setSource: state.setSource,
+            setTitle: state.setTitle,
+            setNotes: state.setNotes,
+            setAsIngredient: state.setAsIngredient,
+            setPluralTitle: state.setPluralTitle,
+            resetAsIngredient: state.resetAsIngredient,
+            setNumServings: state.setNumServings,
+            setInstructionSection: state.setInstructionSection,
+            addInstructionSection: state.addInstructionSection,
+            resetInstructions: state.resetInstructions,
+            setIngredientSection: state.setIngredientSection,
+            addIngredientSection: state.addIngredientSection,
+            resetIngredients: state.resetIngredients,
+        }))
+    );
+    // ---------------------------------------------------------------------
     const [recipe, setRecipe] = useState<RecipeView>(null);
     const navigate = useNavigate();
     const { titleIdentifier } = useParams();
@@ -107,6 +146,10 @@ export function EditRecipe() {
             });
         },
     });
+    // TODO: if after switching to zustand, simple interaction still triggers re-renders
+    // to the entire component, could try refactoring the useQuery and useState recipe into
+    // a custom hook that returns the recipe (and loading state?). Hopefully this would
+    // prevent the entire component from re-rendering when the recipe isnt being requeried.
     const { data, loading, error } = useQuery(GET_RECIPE, {
         variables: { filter: titleIdentifier ? { titleIdentifier } : {} },
         onCompleted: async (data) => {
@@ -116,26 +159,25 @@ export function EditRecipe() {
             getRatings(data.recipeOne._id);
             const recipe = data.recipeOne;
             setRecipe(recipe);
-            state.title.setTitle(recipe.title);
-            state.numServings.setNum(recipe.numServings);
+            recipeState.setTitle(recipe.title);
+            recipeState.setNumServings(recipe.numServings);
+            recipeState.resetIngredients();
             recipe.ingredientSubsections.forEach((sub, index) => {
-                state.ingredient.actionHandler.subsection.setTitle(index, sub.name);
-                const ingredients = sub.ingredients.map((ing) => {
-                    return dbIngredientToFinished(ing);
-                });
-                state.ingredient.actionHandler.setFinishedArray(index, ingredients);
+                recipeState.setIngredientSection(
+                    index,
+                    sub.ingredients.map((i) => queryIngredientToFinished(i)),
+                    sub.name || undefined
+                );
                 if (
                     recipe.ingredientSubsections.length > 1 ||
                     recipe.ingredientSubsections[0].name
                 ) {
-                    state.ingredient.actionHandler.subsection.add();
+                    recipeState.addIngredientSection();
                 }
             });
+            recipeState.resetInstructions();
             recipe.instructionSubsections.forEach((sub, index) => {
-                if (!sub) {
-                    return;
-                }
-                state.instructions.actionHandler.setSubsection(
+                recipeState.setInstructionSection(
                     index,
                     [...sub.instructions, ''],
                     sub.name || undefined
@@ -144,13 +186,15 @@ export function EditRecipe() {
                     recipe.instructionSubsections.length > 1 ||
                     recipe.instructionSubsections[0].name
                 ) {
-                    state.instructions.actionHandler.addSubsection();
+                    recipeState.addInstructionSection();
                 }
             });
             if (recipe.notes) {
-                state.notes.setNotes(recipe.notes);
+                recipeState.setNotes(recipe.notes);
+            } else {
+                recipeState.setNotes('');
             }
-            state.tags.setTags(
+            recipeState.setTags(
                 data.recipeOne.tags.map((tag) => {
                     return {
                         _id: tag._id,
@@ -161,11 +205,15 @@ export function EditRecipe() {
                 })
             );
             if (recipe.source) {
-                state.source.setSource(recipe.source);
+                recipeState.setSource(recipe.source);
+            } else {
+                recipeState.setSource('');
             }
             if (recipe.isIngredient && recipe.pluralTitle) {
-                state.asIngredient.actionHandler.toggleIsIngredient();
-                state.asIngredient.actionHandler.setPluralTitle(recipe.pluralTitle);
+                recipeState.setAsIngredient();
+                recipeState.setPluralTitle(recipe.pluralTitle);
+            } else {
+                recipeState.resetAsIngredient();
             }
             if (recipe.images) {
                 try {
@@ -176,7 +224,7 @@ export function EditRecipe() {
                             return new File([blob], img.origUrl, { type: blob.type });
                         })
                     );
-                    state.images.setImages(images);
+                    setImages(images);
                 } catch (e: unknown) {
                     let description = 'An error occurred while loading images';
                     if (e instanceof Error) {
@@ -210,11 +258,10 @@ export function EditRecipe() {
         try {
             // Upload Images
             const originalImages = recipe!.images ? recipe!.images : [];
-            const newImages = state.images.images;
             const imagesToDelete = originalImages.filter(
-                (img) => !newImages.map((img) => img.name).includes(img.origUrl)
+                (img) => !images.map((img) => img.name).includes(img.origUrl)
             );
-            const imagesToAdd = newImages.filter(
+            const imagesToAdd = images.filter(
                 (img) => !originalImages.map((img) => img.origUrl).includes(img.name)
             );
             if (imagesToDelete.length > 0) {
@@ -247,7 +294,6 @@ export function EditRecipe() {
 
     return (
         <EditableRecipe
-            state={state}
             rating={{ rating, setRating }}
             handleSubmitMutation={handleSubmitMutation}
             submitButtonProps={{

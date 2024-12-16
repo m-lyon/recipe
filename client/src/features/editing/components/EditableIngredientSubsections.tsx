@@ -1,28 +1,28 @@
 import { useRef } from 'react';
+import { VStack } from '@chakra-ui/react';
 import { useShallow } from 'zustand/shallow';
 
+import { useRecipeStore } from '@recipe/stores';
 import { ConfirmDeleteAlert } from '@recipe/common/components';
 
-import { useRecipeStore } from 'stores/useRecipeStore';
-
 import { useSubsectionDelete } from '../hooks/useSubsectionDelete';
-import { EditableInstructionSubsection } from './EditableInstructionSubsection';
+import { EditableIngredientSubsection } from './EditableIngredientSubsection';
 
-export function EditableInstructionSubsections() {
+export function EditableIngredientSubsections() {
+    const ref = useRef<HTMLInputElement>(null);
     const { numSections, remove } = useRecipeStore(
         useShallow((state) => ({
-            numSections: state.instructionSections.length,
-            remove: state.removeInstructionSection,
+            numSections: state.ingredientSections.length,
+            remove: state.removeIngredientSection,
         }))
     );
-    const ref = useRef<HTMLInputElement>(null);
     const { isOpen, handleOpen, handleConfirm, handleCancel, indexToDelete, returnFocus } =
         useSubsectionDelete();
 
     return (
-        <>
+        <VStack spacing='24px' align='left'>
             {Array.from({ length: numSections }, (_, index) => (
-                <EditableInstructionSubsection
+                <EditableIngredientSubsection
                     key={index}
                     section={index}
                     optionalRef={index === indexToDelete ? ref : null}
@@ -38,6 +38,6 @@ export function EditableInstructionSubsections() {
                 finalFocusRef={ref}
                 returnFocus={returnFocus}
             />
-        </>
+        </VStack>
     );
 }

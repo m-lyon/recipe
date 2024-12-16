@@ -1,5 +1,7 @@
 import { StateCreator } from 'zustand';
 
+import { RecipeState } from './useRecipeStore';
+
 export interface AsIngredientSlice {
     pluralTitle?: string;
     isIngredient: boolean;
@@ -8,7 +10,7 @@ export interface AsIngredientSlice {
     toggleIsIngredient: () => void;
     resetAsIngredient: () => void;
 }
-export const createAsIngredientSlice: StateCreator<AsIngredientSlice, [], [], AsIngredientSlice> = (
+export const createAsIngredientSlice: StateCreator<RecipeState, [], [], AsIngredientSlice> = (
     set
 ) => ({
     pluralTitle: undefined,

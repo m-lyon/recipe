@@ -129,7 +129,6 @@ declare global {
         state: EditableState;
         showDropdown: boolean;
         popover: PopoverType;
-        key: string;
     }
     /**
      * Represents an editable ingredient object that is valid for transformation into a
@@ -367,13 +366,13 @@ declare global {
      * Represents a completed query object that is a list of ingredient components
      * that can be used to populate dropdown choices in the recipe ingredient editing
      */
-    type CompletedIngredientComponentQuery = GetIngredientComponentsQuery;
+    type IngredientComponents = GetIngredientComponentsQuery;
     /**
      * Represents a query object that is a list of ingredient components
      * that can be used to populate dropdown choices in the recipe ingredient editing.
      * Can be undefined if the query has not been completed.
      */
-    type IngredientComponentQuery = CompletedIngredientComponentQuery | undefined;
+    type IngredientComponentQuery = IngredientComponents | undefined;
     /**
      * Represents a completed create converion rule mutation object.
      */
