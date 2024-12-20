@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { haveValueByLabelText, notNullByText } from '@recipe/utils/tests';
+import { haveValueByLabelText, notNullByText, nullByText } from '@recipe/utils/tests';
 
 import { renderComponent } from './utils';
 
@@ -38,6 +38,7 @@ describe('EditableIngredient Quantity Keyboard', () => {
 
         // Expect
         expect(screen.queryByText('Enter ingredient')).not.toBeNull();
+        nullByText(screen, 'Invalid character.');
     });
     it('should switch to the unit state', async () => {
         const user = userEvent.setup();

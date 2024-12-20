@@ -55,6 +55,7 @@ describe('Ingredient Keyboard', () => {
 
         // Expect
         expect(screen.queryByText('Enter ingredient')).not.toBeNull();
+        nullByText(screen, 'Invalid character.');
     });
     it('should display all ingredient options', async () => {
         const user = userEvent.setup();

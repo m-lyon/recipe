@@ -184,7 +184,7 @@ function handleQuantityChange(opts: handleChangeOpts) {
         throw new Error('Only numbers and fractions are allowed when inputting a quantity.');
     }
 }
-const VALID_CHAR = /^[a-zA-Z ,.\-"]$/;
+const VALID_CHAR = /^[a-zA-Z ,.\-"]?$/;
 function handleUnitChange(opts: handleChangeOpts) {
     const { state, section, char, item, data, apply } = opts;
     if (VALID_CHAR.test(char)) {
@@ -236,9 +236,20 @@ function handleSizeChange(opts: handleChangeOpts) {
         throw new Error('Invalid character.');
     }
 }
-function handleOtherChange(opts: handleChangeOpts) {
+const VALID_CHAR_WITH_NUMBERS = /^[a-zA-Z0-9 ,.\-"]?$/;
+function handleIngredientChange(opts: handleChangeOpts) {
     const { state, section, char } = opts;
     if (VALID_CHAR.test(char)) {
+        append(state, section, char);
+    } else {
+        throw new Error('Invalid character.');
+    }
+}
+function handlePrepMethodChange(opts: handleChangeOpts) {
+    const { state, section, char } = opts;
+    // Prep method can contain numbers, to allow for less strict bespoke
+    // prep methods.
+    if (VALID_CHAR_WITH_NUMBERS.test(char)) {
         append(state, section, char);
     } else {
         throw new Error('Invalid character.');
@@ -474,8 +485,9 @@ export const createIngredientsSlice: StateCreator<RecipeState, [], [], Ingredien
                     case 'size':
                         return handleSizeChange(opts);
                     case 'ingredient':
+                        return handleIngredientChange(opts);
                     case 'prepMethod':
-                        return handleOtherChange(opts);
+                        return handlePrepMethodChange(opts);
                     default:
                         return;
                 }

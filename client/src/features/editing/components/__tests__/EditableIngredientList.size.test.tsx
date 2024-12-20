@@ -30,6 +30,7 @@ describe('Size Keyboard', () => {
 
         // Expect
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '');
+        nullByText(screen, 'Invalid character.');
         expect(screen.queryByText('Enter ingredient')).not.toBeNull();
     });
     it('should switch to the ingredient state singular', async () => {

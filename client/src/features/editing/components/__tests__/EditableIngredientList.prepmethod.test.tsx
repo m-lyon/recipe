@@ -33,6 +33,7 @@ describe('PrepMethod Keyboard', () => {
 
         // Expect
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '');
+        nullByText(screen, 'Invalid character.');
     });
     it('should display skip prepMethod', async () => {
         const user = userEvent.setup();
