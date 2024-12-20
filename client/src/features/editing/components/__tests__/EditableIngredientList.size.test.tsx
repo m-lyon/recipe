@@ -297,6 +297,24 @@ describe('Size Click', () => {
         // Expect
         await notNullByText(screen, 'Add new size', 'Save');
     });
+    it('should revert back to size state after skip size and backspace', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        const quantityInput = screen.getByText('Enter ingredient');
+        await user.click(quantityInput);
+        await user.keyboard('{1}{ }');
+        await user.click(screen.getByText('skip unit'));
+        await user.click(screen.getByText('skip size'));
+        await user.keyboard('{Backspace}');
+
+        // Expect
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 ');
+        await notNullByText(screen, 'skip size', 'small', 'medium', 'large');
+        nullByText(screen, 'ounce', 'cup', 'skip unit');
+    });
 });
 describe('Create new Size', () => {
     afterEach(() => {
@@ -511,7 +529,7 @@ describe('Size Popover Behaviour', () => {
         await user.keyboard('{Backspace>2/}');
 
         // Expect --------------------------------------------------------------
-        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1');
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 ');
         nullByText(screen, 'Add new size');
     });
     it('should close new size popover if state is moved back to quantity', async () => {

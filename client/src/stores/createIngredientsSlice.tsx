@@ -252,7 +252,8 @@ function setPreviousState(editable: EditableRecipeIngredient) {
             editable.state = 'quantity';
             break;
         case 'size':
-            if (editable.unit.value === null) {
+            if (editable.quantity === null) {
+                // this is the scenario where quantity (and therefore unit) have been skipped.
                 editable.state = 'quantity';
                 break;
             }
@@ -260,15 +261,6 @@ function setPreviousState(editable: EditableRecipeIngredient) {
             editable.state = 'unit';
             break;
         case 'ingredient':
-            if (editable.size.value === null) {
-                if (editable.unit.value === null) {
-                    editable.state = 'quantity';
-                    break;
-                }
-                editable.unit.data = undefined;
-                editable.state = 'unit';
-                break;
-            }
             editable.size.data = undefined;
             editable.state = 'size';
             break;

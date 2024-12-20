@@ -272,6 +272,21 @@ describe('Unit Click', () => {
         // Expect
         await notNullByText(screen, 'Add new unit', 'Save');
     });
+    it('should revert back to unit state after unit skip and backspace', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await user.click(screen.getByText('skip unit'));
+        await user.keyboard('{Backspace}');
+
+        // Expect
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 ');
+        await notNullByText(screen, 'skip unit', 'gram', 'ounce', 'cup');
+    });
 });
 describe('Create new Unit', () => {
     afterEach(() => {

@@ -469,7 +469,7 @@ describe('Ingredient Popover Behaviour', () => {
         await user.keyboard('{Backspace>2/}');
 
         // Expect --------------------------------------------------------------
-        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup');
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup ');
         nullByText(screen, 'Add new ingredient');
     });
     it('should close new ingredient popover if state is moved back to unit', async () => {
@@ -491,7 +491,7 @@ describe('Ingredient Popover Behaviour', () => {
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup');
         nullByText(screen, 'Add new ingredient');
     });
-    it('should close new ingredient popover if state is moved back to quantity after skip unit', async () => {
+    it('should close new ingredient popover if state is moved back to unit after skip unit', async () => {
         const user = userEvent.setup();
         // Render
         renderComponent();
@@ -507,7 +507,7 @@ describe('Ingredient Popover Behaviour', () => {
         await user.keyboard('{Backspace>2/}');
 
         // Expect --------------------------------------------------------------
-        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1');
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 ');
         nullByText(screen, 'Add new ingredient');
     });
     it('should close new ingredient popover if state is moved back to quantity', async () => {
