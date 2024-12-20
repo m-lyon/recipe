@@ -1,5 +1,5 @@
 import { useMutation } from '@apollo/client';
-import { KeyboardEvent, useEffect, useState } from 'react';
+import { KeyboardEvent, RefObject, useEffect, useState } from 'react';
 
 import { useErrorToast } from '@recipe/common/hooks';
 import { CreatePrepMethodMutation } from '@recipe/graphql/generated';
@@ -12,14 +12,15 @@ export function useDropdownList(
     suggestions: Suggestion[],
     setItem: (attr: SetAttr) => void,
     openPopover: (type: PopoverType) => void,
-    deleteChar: () => void
+    deleteChar: () => void,
+    listRef: RefObject<HTMLUListElement>
 ) {
     const toast = useErrorToast();
-    const [activeIndex, setActiveIndex] = useState(0);
+    const [active, setActive] = useState(0);
     const [saveBespokePrepMethod] = useMutation(CREATE_PREP_METHOD, {
         onCompleted: (data: CreatePrepMethodMutation) => {
             setItem(data.prepMethodCreateOne!.record!);
-            setActiveIndex(0);
+            setActive(0);
         },
         onError: (error) => {
             toast({
@@ -30,15 +31,28 @@ export function useDropdownList(
         },
     });
     useEffect(() => {
-        if (activeIndex > suggestions.length - 1) {
-            setActiveIndex(Math.max(suggestions.length - 1, 0));
+        if (active > suggestions.length - 1) {
+            setActive(Math.max(suggestions.length - 1, 0));
         }
-    }, [activeIndex, suggestions.length]);
+    }, [active, suggestions.length]);
+
+    useEffect(() => {
+        // Scroll the active item into view if it exists
+        if (active !== -1 && listRef.current) {
+            const activeItem = listRef.current.children[active];
+            activeItem?.scrollIntoView({ block: 'nearest' });
+        }
+    }, [active, listRef]);
+
+    const resetView = () => {
+        setActive(0);
+        listRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+    };
 
     const handleSelect = (item: Suggestion | undefined) => {
         if (!item) {
             setItem(undefined);
-            setActiveIndex(0);
+            resetView();
             return;
         }
         if (typeof item.value === 'string') {
@@ -52,18 +66,15 @@ export function useDropdownList(
                 case 'add new ingredient':
                     openPopover('ingredient');
                     break;
-                case 'skip prep method':
-                    setItem(null);
-                    setActiveIndex(0);
+                case 'add new prep method':
+                    openPopover('prepMethod');
                     break;
+                case 'skip prep method':
                 case 'skip unit':
                 case 'skip size':
                 case 'skip quantity':
                     setItem(null);
-                    setActiveIndex(0);
-                    break;
-                case 'add new prep method':
-                    openPopover('prepMethod');
+                    resetView();
                     break;
                 default:
                     if (/^use ".*" as unit$/.test(item.value)) {
@@ -77,12 +88,13 @@ export function useDropdownList(
                                 },
                             },
                         });
+                        resetView();
                     }
                     break;
             }
         } else {
             setItem(item.value);
-            setActiveIndex(0);
+            resetView();
         }
     };
 
@@ -90,18 +102,18 @@ export function useDropdownList(
         if (['ArrowDown', 'ArrowUp', 'Enter', 'Backspace'].includes(e.key)) {
             e.preventDefault();
         }
-        if (e.key === 'ArrowDown' && activeIndex < suggestions.length - 1) {
-            setActiveIndex((index) => (index += 1));
-        } else if (e.key === 'ArrowUp' && activeIndex > 0) {
-            setActiveIndex((index) => (index -= 1));
+        if (e.key === 'ArrowDown' && active < suggestions.length - 1) {
+            setActive((index) => (index += 1));
+        } else if (e.key === 'ArrowUp' && active > 0) {
+            setActive((index) => (index -= 1));
         } else if (e.key === 'Enter') {
-            if (activeIndex !== -1) {
-                handleSelect(suggestions[activeIndex]);
+            if (active !== -1) {
+                handleSelect(suggestions[active]);
             }
         } else if (e.key === 'Backspace') {
             deleteChar();
         }
     };
 
-    return { activeIndex, setActiveIndex, handleKeyboardEvent, handleSelect };
+    return { active, setActive, handleKeyboardEvent, handleSelect };
 }

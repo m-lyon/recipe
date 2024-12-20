@@ -29,6 +29,31 @@ describe('FinishedIngredient', () => {
         // Expect
         expect(screen.queryByLabelText('1 oz chicken, chopped')).not.toBeNull();
     });
+    it('should display the next dropdown after completing an ingredient through clicking', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await clickGetByText(screen, user, 'Enter ingredient', 'skip quantity', 'chicken');
+        await user.click(screen.getByText('chopped'));
+
+        // Expect
+        await notNullByLabelText(screen, 'chicken, chopped');
+    });
+    it('should display the next dropdown after completing an ingredient through typing', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{c}{h}{i}{Enter}{ArrowDown}{Enter}');
+
+        // Expect
+        await notNullByLabelText(screen, 'chicken, chopped');
+        await notNullByText(screen, 'skip quantity');
+    });
     it('should display two completed items', async () => {
         const user = userEvent.setup();
         // Render

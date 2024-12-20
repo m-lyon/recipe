@@ -1,6 +1,6 @@
+import { RefObject } from 'react';
 import { Box, List } from '@chakra-ui/react';
 import { LayoutGroup, motion } from 'framer-motion';
-import { RefObject, useEffect, useRef } from 'react';
 
 import { displayValue } from '@recipe/utils/formatting';
 import { DropdownItem } from '@recipe/common/components';
@@ -11,23 +11,14 @@ interface Props {
     item: EditableRecipeIngredient;
     show: boolean;
     suggestions: Suggestion[];
-    previewRef: RefObject<HTMLInputElement>;
-    activeIndex: number;
-    setActiveIndex: (index: number) => void;
+    listRef: RefObject<HTMLUListElement>;
+    previewRef?: RefObject<HTMLInputElement>;
+    active: number;
+    setActive: (index: number) => void;
     handleSelect: (suggestion: Suggestion) => void;
 }
 export function Dropdown(props: Props) {
-    const { item, show, suggestions, previewRef, activeIndex, setActiveIndex, handleSelect } =
-        props;
-    const ref = useRef<HTMLUListElement>(null);
-
-    useEffect(() => {
-        // Scroll the active item into view if it exists
-        if (activeIndex !== -1 && ref.current) {
-            const activeItem = ref.current.children[activeIndex];
-            activeItem?.scrollIntoView({ block: 'nearest' });
-        }
-    }, [activeIndex]);
+    const { item, show, suggestions, listRef, previewRef, active, setActive, handleSelect } = props;
 
     return (
         show && (
@@ -44,7 +35,7 @@ export function Dropdown(props: Props) {
                         maxHeight='14em'
                         overflowY='auto'
                         aria-label='Dropdown suggestion list'
-                        ref={ref}
+                        ref={listRef}
                     >
                         <LayoutGroup>
                             {suggestions.map((i, index) => (
@@ -55,11 +46,10 @@ export function Dropdown(props: Props) {
                                     onClick={() => {
                                         handleSelect(i);
                                         previewRef?.current?.focus();
-                                        ref.current?.scrollTo({ top: 0, behavior: 'instant' });
                                     }}
-                                    isHighlighted={index === activeIndex}
-                                    setHighlighted={() => setActiveIndex(index)}
-                                    resetHighlighted={() => setActiveIndex(-1)}
+                                    isHighlighted={index === active}
+                                    setHighlighted={() => setActive(index)}
+                                    resetHighlighted={() => setActive(-1)}
                                 />
                             ))}
                         </LayoutGroup>

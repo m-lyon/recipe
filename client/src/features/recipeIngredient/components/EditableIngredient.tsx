@@ -27,6 +27,7 @@ export function EditableIngredient(props: Props) {
     const inputRef = useRef<HTMLInputElement>(null);
     const parentRef = useRef<HTMLDivElement>(null);
     const fieldRef = useRef<HTMLInputElement>(null);
+    const listRef = useRef<HTMLUListElement>(null);
     const { item, reset, isOpen, open, numFinished, popover, setPopover } = useRecipeStore(
         useShallow((state) => ({
             item: state.ingredientSections[section].editable,
@@ -62,7 +63,7 @@ export function EditableIngredient(props: Props) {
         },
     });
     const handleReset = () => {
-        setActiveIndex(0);
+        setActive(0);
         reset(section);
         if (item.unit.data && !item.unit.data.unique) {
             deleteUnit({ variables: { id: item.unit.data._id } });
@@ -83,26 +84,23 @@ export function EditableIngredient(props: Props) {
         }
         setPopover(section, type);
     };
-    const { setActiveIndex, handleKeyboardEvent, ...dropdownProps } = useDropdownList(
+    const { setActive, handleKeyboardEvent, handleSelect, ...dropdownProps } = useDropdownList(
         attributeStr,
         suggestions,
         setIngredientAttribute,
         openPopover,
-        () => deleteChar(section)
+        () => deleteChar(section),
+        listRef
     );
 
     const getPopover = () => {
-        const setItem = (attr: RecipeIngredientDropdown) => {
-            setIngredientAttribute(attr);
-            setActiveIndex(0);
-        };
         const popoverProps = {
             fieldRef,
             onClose: () => {
                 setPopover(section, null);
                 previewRef.current?.focus();
             },
-            setItem,
+            setItem: (attr: RecipeIngredientDropdown) => handleSelect({ value: attr }),
         };
         switch (popover) {
             case 'unit':
@@ -180,8 +178,10 @@ export function EditableIngredient(props: Props) {
                     suggestions={suggestions}
                     item={item}
                     show={isOpen}
+                    listRef={listRef}
                     previewRef={previewRef}
-                    setActiveIndex={setActiveIndex}
+                    handleSelect={handleSelect}
+                    setActive={setActive}
                     {...dropdownProps}
                 />
                 {getPopover()}

@@ -141,7 +141,9 @@ function setPrepMethod(state: IngredientSectionsSlice, section: number, data: Fi
         return;
     }
     state.ingredientSections[section].finished.push(getFinishedFromEditable({ ...item }));
-    state.ingredientSections[section].editable = getEmptyIngredient();
+    const newEditable = getEmptyIngredient();
+    newEditable.showDropdown = true;
+    state.ingredientSections[section].editable = newEditable;
 }
 interface handleChangeOpts {
     state: IngredientSectionsSlice;
