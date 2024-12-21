@@ -14,7 +14,31 @@ interface Props extends InputProps {
 export function FloatingLabelInput(props: Props) {
     const { inputRef, id, label, isInvalid, isRequired, isDisabled, fontWeight, ...rest } = props;
     return (
-        <FormControl variant='floating' isInvalid={isInvalid} isDisabled={isDisabled}>
+        <FormControl
+            isInvalid={isInvalid}
+            isDisabled={isDisabled}
+            sx={{
+                '&:focus-within label': {
+                    transform: 'scale(0.85) translateY(-24px)',
+                },
+                'input:not(:placeholder-shown) + label, .chakra-select__wrapper + label, textarea:not(:placeholder-shown) ~ label':
+                    {
+                        transform: 'scale(0.85) translateY(-24px)',
+                    },
+                label: {
+                    top: 0,
+                    left: 0,
+                    zIndex: 1,
+                    position: 'absolute',
+                    backgroundColor: 'white',
+                    pointerEvents: 'none',
+                    mx: 3,
+                    px: 1,
+                    my: 2,
+                    transformOrigin: 'left top',
+                },
+            }}
+        >
             <Input
                 placeholder=''
                 fontWeight={fontWeight ?? 600}

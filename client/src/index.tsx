@@ -8,7 +8,6 @@ import { getCache } from '@recipe/utils/cache';
 import { GRAPHQL_URL } from '@recipe/constants';
 
 import { routes } from './routes';
-import { theme } from './theme/chakraTheme';
 
 const domNode = document.getElementById('root')!;
 const root = createRoot(domNode);
@@ -20,7 +19,7 @@ const client = new ApolloClient({
 
 root.render(
     <ApolloProvider client={client}>
-        <ChakraProvider theme={theme}>
+        <ChakraProvider>
             <RouterProvider router={createBrowserRouter(routes)} />
         </ChakraProvider>
     </ApolloProvider>
