@@ -303,7 +303,7 @@ describe('Create new Unit', () => {
         await user.keyboard('{1}{ }{c}');
         await user.click(screen.getByText('add new unit'));
         await user.keyboard('{c}{u}{t}');
-        await user.click(screen.getByText('Long singular name'));
+        await user.click(screen.getByLabelText('Long singular name'));
         await user.keyboard('{c}{u}{t}{t}{i}{n}{g}');
         await user.click(screen.getByText('decimal'));
         await user.click(screen.getByLabelText('Save unit'));

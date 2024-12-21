@@ -61,11 +61,6 @@ export async function clickGetByText(
 
 export function nullByText(screen: Screen, ...text: string[]) {
     for (const t of text) {
-        // if (t.startsWith('Add new ') || t.startsWith('Use bespoke unit')) {
-        //     expect(true).toBe(true);
-        // } else {
-        //     expect(screen.queryByText(t)).toBeNull();
-        // }
         expect(screen.queryByText(t)).toBeNull();
     }
 }
