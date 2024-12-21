@@ -1,9 +1,8 @@
-import { CgBowl } from 'react-icons/cg';
-import { TbWeight } from 'react-icons/tb';
-import { BoxProps, UnorderedList, VStack, useToast } from '@chakra-ui/react';
-import { Box, Flex, HStack, IconButton, ListItem, Spacer, Text } from '@chakra-ui/react';
+import { TbLock, TbLockOpen2 } from 'react-icons/tb';
+import { BoxProps, Tooltip, UnorderedList, VStack } from '@chakra-ui/react';
+import { Box, Flex, IconButton, ListItem, Spacer, Text } from '@chakra-ui/react';
 
-import { DELAY_SHORT } from '@recipe/constants';
+import { useWakeLock } from '@recipe/common/hooks';
 import { changeQuantity } from '@recipe/utils/quantity';
 import { useUnitConversion } from '@recipe/features/servings';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
@@ -14,12 +13,12 @@ export interface IngredientListProps extends BoxProps {
     subsections: IngredientSubsectionView[];
     currentServings: number;
     origServings: number;
-    weightAndVolumeBtns?: boolean;
+    showWakeLockBtn?: boolean;
 }
 export function IngredientList(props: IngredientListProps) {
-    const { subsections, currentServings, origServings, weightAndVolumeBtns, ...rest } = props;
+    const { subsections, currentServings, origServings, showWakeLockBtn, ...rest } = props;
     const { apply } = useUnitConversion();
-    const toast = useToast();
+    const { isAwake, toggleWakeLock } = useWakeLock();
 
     const modifiedSubsections = subsections.map((collection) => {
         const modifiedCollection = collection.ingredients.map((ingredient) => {
@@ -71,35 +70,17 @@ export function IngredientList(props: IngredientListProps) {
             <Flex pb='10px'>
                 <Text fontSize='2xl'>{modifiedSubsections[0].name ?? 'Ingredients'}</Text>
                 <Spacer />
-                {weightAndVolumeBtns ? (
-                    <HStack spacing={2}>
+                {showWakeLockBtn ? (
+                    <Tooltip
+                        label={isAwake ? 'Allow screen to sleep' : 'Keep screen awake'}
+                        openDelay={500}
+                    >
                         <IconButton
-                            aria-label='weight'
-                            icon={<TbWeight />}
-                            onClick={() =>
-                                toast({
-                                    title: 'Weight',
-                                    description: 'Weight conversion is not supported yet',
-                                    status: 'info',
-                                    duration: DELAY_SHORT,
-                                    isClosable: true,
-                                })
-                            }
+                            aria-label={isAwake ? 'Allow screen to sleep' : 'Keep screen awake'}
+                            icon={isAwake ? <TbLockOpen2 /> : <TbLock />}
+                            onClick={toggleWakeLock}
                         />
-                        <IconButton
-                            aria-label='volume'
-                            icon={<CgBowl />}
-                            onClick={() =>
-                                toast({
-                                    title: 'Volume',
-                                    description: 'Volume conversion is not supported yet',
-                                    status: 'info',
-                                    duration: DELAY_SHORT,
-                                    isClosable: true,
-                                })
-                            }
-                        />
-                    </HStack>
+                    </Tooltip>
                 ) : undefined}
             </Flex>
             <VStack spacing='24px' align='left'>

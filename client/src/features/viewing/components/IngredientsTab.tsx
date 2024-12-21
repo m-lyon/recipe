@@ -47,7 +47,7 @@ export function IngredientsTab(props: Props) {
                     subsections={ingredients}
                     origServings={numServings}
                     currentServings={currentServings}
-                    weightAndVolumeBtns
+                    showWakeLockBtn
                 />
             }
             Notes={<Notes notes={notes} />}
