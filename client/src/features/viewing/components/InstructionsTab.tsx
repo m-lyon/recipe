@@ -20,8 +20,8 @@ interface Props {
 export function InstructionsTab(props: Props) {
     const { tags, instructions, source, images, calculatedTags } = props;
     const [ref, { height }] = useMeasure();
-
-    const boxHeight = (height ? height : 0) - tagsHeight - instrSpacing;
+    const actualTagsHeight = tags.length > 0 ? tagsHeight : 0;
+    const boxHeight = (height ? height : 0) - actualTagsHeight - instrSpacing;
 
     return (
         <Flex direction='column' justifyContent='space-between' height='100%'>

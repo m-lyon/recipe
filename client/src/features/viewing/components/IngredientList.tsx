@@ -66,7 +66,7 @@ export function IngredientList(props: IngredientListProps) {
     });
 
     return (
-        <Box {...rest}>
+        <Box mb='2em' {...rest}>
             <Flex pb='10px'>
                 <Text fontSize='2xl'>{modifiedSubsections[0].name ?? 'Ingredients'}</Text>
                 <Spacer />

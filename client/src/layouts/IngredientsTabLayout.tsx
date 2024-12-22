@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Box, Flex, Spacer, VStack } from '@chakra-ui/react';
+import { Flex, Spacer, VStack } from '@chakra-ui/react';
 
 interface Props {
     Servings: ReactNode;
@@ -23,7 +23,6 @@ export function IngredientsTabLayout(props: Props) {
                 {IngredientList}
             </VStack>
             <Spacer />
-            <Box height='4em' />
             {Notes}
         </Flex>
     );

@@ -25,11 +25,9 @@ export function InstructionList(props: Props) {
         if (index === 0) {
             return (
                 <Box key={section.name ?? 'main-instructions'}>
-                    {section.name ? (
-                        <Text fontSize='2xl' pb='10px'>
-                            {section.name}
-                        </Text>
-                    ) : undefined}
+                    <Text fontSize='2xl' pb='10px'>
+                        {section.name ? section.name : 'Instructions'}
+                    </Text>
                     <OrderedList spacing='2'>{instructionsList}</OrderedList>
                 </Box>
             );

@@ -1,4 +1,4 @@
-import { Text } from '@chakra-ui/react';
+import { Text, VStack } from '@chakra-ui/react';
 
 interface Props {
     notes: CompletedRecipeView['notes'];
@@ -9,11 +9,11 @@ export function Notes(props: Props) {
         return null;
     }
     return (
-        <>
+        <VStack spacing='8px' align='left'>
             <Text fontSize='2xl'>Notes</Text>
             <Text fontSize='md' fontWeight={'medium'}>
                 {notes}
             </Text>
-        </>
+        </VStack>
     );
 }

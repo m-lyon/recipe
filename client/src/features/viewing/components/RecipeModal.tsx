@@ -1,8 +1,10 @@
-import { Badge, Divider, ModalCloseButton, useBreakpointValue } from '@chakra-ui/react';
 import { Modal, ModalBody, ModalContent, ModalHeader, ModalOverlay } from '@chakra-ui/react';
 import { Box, Grid, GridItem, Skeleton, SkeletonCircle, SkeletonText } from '@chakra-ui/react';
+import { Badge, Divider, ModalCloseButton, VStack, useBreakpointValue } from '@chakra-ui/react';
 
 import { IngredientList, InstructionList } from '@recipe/features/viewing';
+
+import { Notes } from './Notes';
 
 interface Props {
     recipe: RecipeView;
@@ -35,12 +37,15 @@ export function RecipeModal(props: Props) {
                     <Grid templateColumns='repeat(20, 1fr)' pb='12px'>
                         <GridItem colSpan={{ base: 20, md: 8 }}>
                             {recipe ? (
-                                <IngredientList
-                                    subsections={recipe.ingredientSubsections}
-                                    currentServings={recipe.numServings}
-                                    origServings={recipe.numServings}
-                                    mr='16px'
-                                />
+                                <VStack align='left'>
+                                    <IngredientList
+                                        subsections={recipe.ingredientSubsections}
+                                        currentServings={recipe.numServings}
+                                        origServings={recipe.numServings}
+                                        mr='16px'
+                                    />
+                                    <Notes notes={recipe.notes} />
+                                </VStack>
                             ) : (
                                 <Box mr='26px'>
                                     <SkeletonCircle size='10' />
