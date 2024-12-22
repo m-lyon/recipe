@@ -16,6 +16,7 @@ export function EditableTitle() {
             setValue={setTitle}
             fontSize='3xl'
             placeholder='Enter Recipe Title'
+            placeholderColor='gray.400'
             aria-label='Enter recipe title'
             fontWeight={600}
         />

@@ -133,6 +133,7 @@ export function EditableIngredientSubsection(props: Props) {
                         value={title ?? ''}
                         onChange={onChange}
                         onSubmit={onSubmit}
+                        placeholderColor='gray.400'
                         fontSize='2xl'
                         textAlign='left'
                         pb='8px'

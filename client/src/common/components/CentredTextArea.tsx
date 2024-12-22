@@ -6,9 +6,10 @@ interface Props extends TextareaProps {
     value: string;
     setValue: (value: string) => void;
     optionalRef?: React.RefObject<HTMLTextAreaElement> | null;
+    placeholderColor?: string;
 }
 export function CentredTextArea(props: Props) {
-    const { value, setValue, fontSize, fontWeight, placeholder, ...rest } = props;
+    const { value, setValue, fontSize, fontWeight, placeholder, placeholderColor, ...rest } = props;
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const placeholderRef = useRef<HTMLSpanElement>(null);
 
@@ -49,6 +50,9 @@ export function CentredTextArea(props: Props) {
                 pb={0}
                 _focusVisible={{ outline: 'none' }}
                 {...rest}
+                sx={
+                    placeholderColor ? { '&::placeholder': { color: placeholderColor } } : undefined
+                }
             />
         </Box>
     );

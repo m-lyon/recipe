@@ -26,6 +26,7 @@ export function EditableSource() {
                 </InputLeftAddon>
                 <Input
                     fontStyle='italic'
+                    fontWeight='medium'
                     width='40%'
                     _focusVisible={{ outline: 'none' }}
                     border='inherit'

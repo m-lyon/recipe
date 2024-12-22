@@ -1,4 +1,3 @@
-import { Text } from '@chakra-ui/react';
 import { useShallow } from 'zustand/shallow';
 
 import { useRecipeStore } from '@recipe/stores';
@@ -23,9 +22,9 @@ export function EditableNotes() {
 
     return (
         <>
-            <Text fontSize='2xl'>Notes</Text>
             <EditableItemArea
-                defaultStr='Enter notes...'
+                placeholder='Enter notes...'
+                placeholderColor='gray.400'
                 value={notes}
                 handleChange={handleChange}
                 handleSubmit={handleSubmit}
@@ -33,6 +32,7 @@ export function EditableNotes() {
                 fontWeight='medium'
                 textAlign='left'
                 aria-label='Edit recipe notes'
+                pb={0}
             />
         </>
     );

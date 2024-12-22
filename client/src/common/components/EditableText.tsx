@@ -4,9 +4,10 @@ import { Input, InputProps, useMergeRefs } from '@chakra-ui/react';
 interface Props extends InputProps {
     onSubmit: () => void;
     optionalRef?: React.RefObject<HTMLInputElement> | null;
+    placeholderColor?: string;
 }
 export function EditableText(props: Props) {
-    const { optionalRef, onSubmit, ...rest } = props;
+    const { optionalRef, onSubmit, placeholderColor, ...rest } = props;
     const ref = useRef<HTMLInputElement>(null);
     const refs = useMergeRefs(ref, optionalRef);
 
@@ -25,6 +26,7 @@ export function EditableText(props: Props) {
             px={0}
             pt={0}
             _focusVisible={{ outline: 'none' }}
+            sx={placeholderColor ? { '&::placeholder': { color: placeholderColor } } : undefined}
             {...rest}
         />
     );

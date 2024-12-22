@@ -37,6 +37,8 @@ export function AsIngredientCheckbox() {
                 {isIngredient && (
                     <Input
                         placeholder='Plural title'
+                        sx={{ '&::placeholder': { color: 'gray.400' } }}
+                        fontWeight='medium'
                         value={pluralTitle ?? ''}
                         onChange={(e) => setPluralTitle(e.target.value)}
                         variant='unstyled'

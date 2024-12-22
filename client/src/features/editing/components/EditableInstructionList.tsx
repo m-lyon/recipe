@@ -60,7 +60,8 @@ export function EditableInstructionList(props: Props) {
             >
                 <ListItem color={instr.value ? '' : 'gray.400'}>
                     <EditableItemArea
-                        defaultStr='Enter instructions...'
+                        placeholder='Enter instructions...'
+                        placeholderColor='gray.400'
                         value={instr.value}
                         handleChange={handleChange}
                         handleSubmit={handleSubmit}
