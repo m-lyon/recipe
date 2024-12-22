@@ -1,9 +1,8 @@
 import { useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 
+import { useRecipeStore } from '@recipe/stores';
 import { ConfirmDeleteAlert } from '@recipe/common/components';
-
-import { useRecipeStore } from 'stores/useRecipeStore';
 
 import { useSubsectionDelete } from '../hooks/useSubsectionDelete';
 import { EditableInstructionSubsection } from './EditableInstructionSubsection';

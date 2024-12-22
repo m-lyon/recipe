@@ -8,7 +8,7 @@ interface IngredientInput {
     ingredient?: IngredientView;
 }
 
-describe('changeIngredientQuantity', () => {
+describe('changeQuantity', () => {
     const getIngredient = (ingr: IngredientInput) => {
         const ingredient = {
             __typename: 'Ingredient',
@@ -61,7 +61,7 @@ describe('changeIngredientQuantity', () => {
         const newServings = 8;
         const oldServings = 4;
         const result = changeQuantity(ingr, newServings, oldServings, (ingr) => ingr);
-        expect(result.quantity).toBe('1/1');
+        expect(result.quantity).toBe('1');
     });
 
     it('should adjust quantity to whole number when quantity is a decimal', () => {
@@ -69,7 +69,7 @@ describe('changeIngredientQuantity', () => {
         const newServings = 8;
         const oldServings = 4;
         const result = changeQuantity(ingr, newServings, oldServings, (ingr) => ingr);
-        expect(result.quantity).toBe('1/1');
+        expect(result.quantity).toBe('1');
     });
 
     it('should adjust quantity to fraction when unit preferred number format is fraction', () => {

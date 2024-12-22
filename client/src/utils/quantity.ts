@@ -35,7 +35,7 @@ function calculateQuantity(
 
 export function returnQuantityFromFraction(num: Fraction, unit: FinishedUnit): string {
     if (unit == null || unit.preferredNumberFormat === 'fraction') {
-        return `${num.n}/${num.d}`;
+        return num.d === 1 ? num.n.toString() : `${num.n}/${num.d}`;
     }
     return (num.n / num.d).toString();
 }
@@ -43,7 +43,7 @@ export function returnQuantityFromFraction(num: Fraction, unit: FinishedUnit): s
 export function returnQuantityFromFloat(num: number, unit: FinishedUnit): string {
     if (unit == null || unit.preferredNumberFormat === 'fraction') {
         const fract = fraction(num);
-        return `${fract.n}/${fract.d}`;
+        return fract.d === 1 ? fract.n.toString() : `${fract.n}/${fract.d}`;
     }
     return num.toString();
 }
