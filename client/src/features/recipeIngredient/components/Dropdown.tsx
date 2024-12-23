@@ -1,4 +1,5 @@
 import { RefObject } from 'react';
+import { TbSoup } from 'react-icons/tb';
 import { Box, List } from '@chakra-ui/react';
 import { LayoutGroup, motion } from 'framer-motion';
 
@@ -38,20 +39,28 @@ export function Dropdown(props: Props) {
                         ref={listRef}
                     >
                         <LayoutGroup>
-                            {suggestions.map((i, index) => (
-                                <DropdownItem
-                                    key={index}
-                                    color={i.colour}
-                                    value={displayValue(item, i.value)}
-                                    onClick={() => {
-                                        handleSelect(i);
-                                        previewRef?.current?.focus();
-                                    }}
-                                    isHighlighted={index === active}
-                                    setHighlighted={() => setActive(index)}
-                                    resetHighlighted={() => setActive(-1)}
-                                />
-                            ))}
+                            {suggestions.map((i, index) => {
+                                return (
+                                    <DropdownItem
+                                        key={index}
+                                        color={i.colour}
+                                        value={displayValue(item, i.value)}
+                                        icon={
+                                            typeof i.value === 'object' &&
+                                            i.value.__typename === 'Recipe'
+                                                ? TbSoup
+                                                : undefined
+                                        }
+                                        onClick={() => {
+                                            handleSelect(i);
+                                            previewRef?.current?.focus();
+                                        }}
+                                        isHighlighted={index === active}
+                                        setHighlighted={() => setActive(index)}
+                                        resetHighlighted={() => setActive(-1)}
+                                    />
+                                );
+                            })}
                         </LayoutGroup>
                     </List>
                 </Box>
