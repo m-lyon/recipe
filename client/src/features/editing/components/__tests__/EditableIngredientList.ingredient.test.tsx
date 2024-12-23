@@ -256,6 +256,17 @@ describe('Ingredient Click', () => {
         // Expect
         expect(screen.queryByLabelText('2 apples')).not.toBeNull();
     });
+    it('should have empty ingredient after skipping quantity and size', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await clickGetByText(screen, user, 'Enter ingredient', 'skip quantity', 'skip size');
+
+        // Expect
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '');
+    });
 });
 describe('Create new Ingredient', () => {
     afterEach(() => {

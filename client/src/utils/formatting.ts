@@ -87,7 +87,7 @@ function getEditableIngredientStr(item: EditableRecipeIngredient): string {
         return '';
     }
     if (STATES_ORDER[item.state] === STATES_ORDER['ingredient']) {
-        const delim = item.quantity === null && item.size === null ? '' : ' ';
+        const delim = item.quantity === null && item.size.value === null ? '' : ' ';
         if (item.ingredient.value === null) {
             return delim;
         } else {

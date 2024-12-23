@@ -16,7 +16,6 @@ import { Dropdown } from './Dropdown';
 import { getSuggestions } from '../utils/suggestions';
 import { useDropdownList } from '../hooks/useDropdownList';
 import { useEditableIngredient } from '../hooks/useEditableIngredient';
-
 interface Props {
     section: number;
     fontSize?: string;
@@ -28,14 +27,12 @@ export function EditableIngredient(props: Props) {
     const parentRef = useRef<HTMLDivElement>(null);
     const fieldRef = useRef<HTMLInputElement>(null);
     const listRef = useRef<HTMLUListElement>(null);
-    const { item, reset, isOpen, open, numFinished, popover, setPopover } = useRecipeStore(
+    const { item, reset, open, numFinished, setPopover } = useRecipeStore(
         useShallow((state) => ({
             item: state.ingredientSections[section].editable,
             reset: state.resetEditableIngredient,
-            isOpen: state.ingredientSections[section].editable.showDropdown,
             open: state.showIngredientDropdown,
             numFinished: state.ingredientSections[section].finished.length,
-            popover: state.ingredientSections[section].editable.popover,
             setPopover: state.setIngredientPopover,
         }))
     );
@@ -72,7 +69,7 @@ export function EditableIngredient(props: Props) {
     useOutsideClick({
         ref: parentRef,
         handler: () => {
-            if (item.quantity !== null || isOpen) {
+            if (item.quantity !== null || item.showDropdown) {
                 handleReset();
             }
         },
@@ -102,7 +99,7 @@ export function EditableIngredient(props: Props) {
             },
             setItem: (attr: RecipeIngredientDropdown) => handleSelect({ value: attr }),
         };
-        switch (popover) {
+        switch (item.popover) {
             case 'unit':
                 return <NewUnitPopover {...popoverProps} />;
             case 'bespokeUnit':
@@ -128,7 +125,7 @@ export function EditableIngredient(props: Props) {
         // Position relative is needed for the dropdown to be positioned correctly
         <Box ref={parentRef} position='relative'>
             <Popover
-                isOpen={popover !== null}
+                isOpen={item.popover !== null}
                 onClose={() => setPopover(section, null)}
                 closeOnBlur={false}
                 placement={useBreakpointValue({ base: 'bottom', md: 'right' })}
@@ -158,7 +155,7 @@ export function EditableIngredient(props: Props) {
                                 : 'gray.400'
                         }
                         pl='0px'
-                        placeholder='Enter ingredient'
+                        placeholder={item.showDropdown ? `Enter ${item.state}` : 'Enter ingredient'}
                     >
                         <EditablePreview
                             ref={previewRef}
@@ -177,7 +174,7 @@ export function EditableIngredient(props: Props) {
                 <Dropdown
                     suggestions={suggestions}
                     item={item}
-                    show={isOpen}
+                    show={item.showDropdown}
                     listRef={listRef}
                     previewRef={previewRef}
                     handleSelect={handleSelect}

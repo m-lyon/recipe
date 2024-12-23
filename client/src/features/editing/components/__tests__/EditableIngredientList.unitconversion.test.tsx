@@ -51,7 +51,7 @@ describe('Unit conversion', () => {
 
         // Expect
         expect(screen.queryByLabelText('500g chicken, chopped')).not.toBeNull();
-        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #2 for subsection 1', '');
     });
     it('should convert to 1 and a half teaspoons when given 1/2 tablespoon', async () => {
         const user = userEvent.setup();

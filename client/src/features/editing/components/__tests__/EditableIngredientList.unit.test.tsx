@@ -498,8 +498,7 @@ describe('Bespoke Unit', () => {
         await user.click(screen.getByText('decimal'));
         await user.click(screen.getByLabelText('Save unit'));
         await clickFindByText(screen, user, 'chicken', 'skip prep method');
-
-        await user.click(screen.getByText('Enter ingredient'));
+        haveValueByLabelText(screen, 'Input ingredient #2 for subsection 1', '');
         await user.keyboard('{1}{ }');
 
         // Expect --------------------------------------------------------------

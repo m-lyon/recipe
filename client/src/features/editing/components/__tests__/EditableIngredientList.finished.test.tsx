@@ -3,7 +3,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { clickGetByText, notNullByLabelText, notNullByText } from '@recipe/utils/tests';
+import { notNullByText } from '@recipe/utils/tests';
+import { clickGetByText, haveValueByLabelText, notNullByLabelText } from '@recipe/utils/tests';
 
 import { renderComponent } from './utils';
 
@@ -69,7 +70,7 @@ describe('FinishedIngredient', () => {
 
         // Expect
         await notNullByLabelText(screen, '1 oz chicken, chopped', '2 oz iceberg lettuce, diced');
-        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #3 for subsection 1', '');
     });
     it('should display a completed item without a unit', async () => {
         const user = userEvent.setup();
@@ -83,7 +84,7 @@ describe('FinishedIngredient', () => {
 
         // Expect
         await notNullByLabelText(screen, '1 chicken, chopped');
-        await notNullByText(screen, 'Enter ingredient');
+        haveValueByLabelText(screen, 'Input ingredient #2 for subsection 1', '');
     });
     it('should display a completed item without a prepMethod', async () => {
         const user = userEvent.setup();
@@ -97,7 +98,7 @@ describe('FinishedIngredient', () => {
 
         // Expect
         await notNullByLabelText(screen, '1 oz chicken');
-        await notNullByText(screen, 'Enter ingredient');
+        haveValueByLabelText(screen, 'Input ingredient #2 for subsection 1', '');
     });
     it('should display a completed item without a prepMethod or unit', async () => {
         const user = userEvent.setup();
@@ -111,7 +112,7 @@ describe('FinishedIngredient', () => {
 
         // Expect
         await notNullByLabelText(screen, '1 chicken');
-        await notNullByText(screen, 'Enter ingredient');
+        haveValueByLabelText(screen, 'Input ingredient #2 for subsection 1', '');
     });
     it('should display a completed item with plural units', async () => {
         const user = userEvent.setup();
@@ -125,7 +126,7 @@ describe('FinishedIngredient', () => {
 
         // Expect
         await notNullByLabelText(screen, '2 cups chicken, chopped');
-        await notNullByText(screen, 'Enter ingredient');
+        await notNullByText(screen, 'Enter quantity');
     });
     it('should display a completed item with no unit and plural ingredient', async () => {
         const user = userEvent.setup();
@@ -139,7 +140,7 @@ describe('FinishedIngredient', () => {
 
         // Expect
         await notNullByLabelText(screen, '2 chickens, chopped');
-        await notNullByText(screen, 'Enter ingredient');
+        await notNullByText(screen, 'Enter quantity');
     });
     it('should displat a completed item with a size', async () => {
         const user = userEvent.setup();
@@ -153,7 +154,7 @@ describe('FinishedIngredient', () => {
 
         // Expect
         await notNullByLabelText(screen, '1 large chicken, chopped');
-        await notNullByText(screen, 'Enter ingredient');
+        haveValueByLabelText(screen, 'Input ingredient #2 for subsection 1', '');
     });
     it('should display a completed item with no quantity or unit', async () => {
         const user = userEvent.setup();
@@ -166,7 +167,7 @@ describe('FinishedIngredient', () => {
 
         // Expect
         await notNullByLabelText(screen, 'chicken, chopped');
-        await notNullByText(screen, 'Enter ingredient');
+        haveValueByLabelText(screen, 'Input ingredient #2 for subsection 1', '');
     });
     it('should display a completed item with no quantity or unit from typing', async () => {
         const user = userEvent.setup();
@@ -180,6 +181,6 @@ describe('FinishedIngredient', () => {
 
         // Expect
         await notNullByLabelText(screen, 'chicken, chopped');
-        await notNullByText(screen, 'Enter ingredient');
+        await notNullByText(screen, 'Enter quantity');
     });
 });

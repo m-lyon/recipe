@@ -100,7 +100,7 @@ describe('PrepMethod Keyboard', () => {
         await user.click(screen.getByText('skip prep method'));
 
         // Expect
-        await notNullByText(screen, 'Enter ingredient');
+        haveValueByLabelText(screen, 'Input ingredient #2 for subsection 1', '');
         await notNullByLabelText(screen, '1 cup carrots');
     });
     it('should open up the new prepMethod popover', async () => {
@@ -198,7 +198,7 @@ describe('Create new PrepMethod', () => {
 
         // Expect --------------------------------------------------------------
         expect(await screen.findByLabelText('1 chicken, pipped')).not.toBeNull();
-        expect(screen.queryByText('Enter ingredient')).not.toBeNull();
+        haveValueByLabelText(screen, 'Input ingredient #2 for subsection 1', '');
         // ------ Available as new prepMethod -----------------------------------
         expect(await screen.findByLabelText('skip quantity')).not.toBeNull();
         await user.keyboard('{2}{ }');
@@ -364,7 +364,7 @@ describe('Bespoke PrepMethod', () => {
 
         // Expect --------------------------------------------------------------
         await notNullByLabelText(screen, '1 chicken, posted');
-        await notNullByText(screen, 'Enter ingredient');
+        haveValueByLabelText(screen, 'Input ingredient #2 for subsection 1', '');
     });
 
     it('should create a new bespoke prep method, and not be a dropdown option', async () => {
