@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LinkBox, LinkOverlay, VStack } from '@chakra-ui/react';
-import { Card, CardBody, CardHeader, Heading, Spacer } from '@chakra-ui/react';
+import { Card, CardBody, CardHeader, Heading } from '@chakra-ui/react';
 
 import { PATH } from '@recipe/constants';
 import { TagList } from '@recipe/features/tags';
+import { StarRating } from '@recipe/features/rating';
 import { ImageViewerHome } from '@recipe/features/images';
+import { getAverageRating } from '@recipe/features/rating';
 
 import { getCardTitle } from './RecipeCard';
 import { ModifyButtons } from './ModifyButtons';
@@ -48,19 +50,21 @@ export function ImageRecipeCard(props: Props) {
                         to={`${PATH.ROOT}/view/recipe/${recipe.titleIdentifier}`}
                         aria-label={`View ${recipe.title}`}
                     >
-                        <VStack
-                            height='100%'
-                            justifyContent='space-between'
-                            spacing='20px'
-                            alignItems='flex-start'
-                        >
+                        <VStack spacing={2} align='left'>
+                            <StarRating
+                                rating={getAverageRating(recipe.ratings)}
+                                addRating={() => {}}
+                                readonly
+                                size={15}
+                                colour='rgb(160, 174, 192)'
+                                px='20px'
+                            />
                             <TagList
                                 tags={recipe.tags
                                     .map((tag) => tag.value)
                                     .concat(recipe.calculatedTags)}
-                                paddingX='20px'
+                                px='20px'
                             />
-                            <Spacer />
                             <ImageViewerHome
                                 images={recipe.images.filter((image) => image !== null) || []}
                             />

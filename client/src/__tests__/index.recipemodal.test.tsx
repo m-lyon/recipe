@@ -6,9 +6,6 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { PATH } from '@recipe/constants';
 import { mockGetRecipeFourById } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockGetRatingsRecipeTwo } from '@recipe/graphql/queries/__mocks__/rating';
-import { mockGetRatingsRecipeFour } from '@recipe/graphql/queries/__mocks__/rating';
-import { mockGetRatingsRecipeFive } from '@recipe/graphql/queries/__mocks__/rating';
 import { MockedResponses, notNullByText, nullByText, renderPage } from '@recipe/utils/tests';
 import { mockUpdateRecipeEditAsIngredient } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetRecipeTwo, mockGetRecipeTwoById } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -46,7 +43,7 @@ describe('Recipe Modal', () => {
 
     it('should display the recipe ingredient modal', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
+        renderComponent([mockGetRecipeFour]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -61,13 +58,7 @@ describe('Recipe Modal', () => {
     it('should display an updated recipe ingredient modal', async () => {
         // Render -----------------------------------------------
         fetchMock.mockResponseOnce(getMockedImageBlob());
-        renderComponent([
-            mockGetRecipeFour,
-            mockGetRatingsRecipeFour,
-            mockGetRecipeTwo,
-            mockGetRatingsRecipeTwo,
-            mockUpdateRecipeEditAsIngredient,
-        ]);
+        renderComponent([mockGetRecipeFour, mockGetRecipeTwo, mockUpdateRecipeEditAsIngredient]);
         const user = userEvent.setup();
 
         // ------ Initial View Recipe Page -----------------------
@@ -97,7 +88,7 @@ describe('Recipe Modal', () => {
 
     it('should display a nested recipe ingredient modal', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockGetRecipeFive, mockGetRatingsRecipeFive, mockGetRecipeFourById]);
+        renderComponent([mockGetRecipeFive, mockGetRecipeFourById]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------

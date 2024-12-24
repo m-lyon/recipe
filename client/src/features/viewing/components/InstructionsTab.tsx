@@ -11,16 +11,12 @@ import { InstructionList } from './InstructionList';
 
 export const instrSpacing = 24;
 interface Props {
-    tags: RecipeTagsView;
-    instructions: InstructionSubsectionView[];
-    source: SourceView;
-    images: ImageView[];
-    calculatedTags: CalculatedTagsView;
+    recipe: CompletedRecipeView;
 }
 export function InstructionsTab(props: Props) {
-    const { tags, instructions, source, images, calculatedTags } = props;
+    const { recipe } = props;
     const [ref, { height }] = useMeasure();
-    const actualTagsHeight = tags.length > 0 ? tagsHeight : 0;
+    const actualTagsHeight = recipe.tags.length > 0 ? tagsHeight : 0;
     const boxHeight = (height ? height : 0) - actualTagsHeight - instrSpacing;
 
     return (
@@ -28,14 +24,14 @@ export function InstructionsTab(props: Props) {
             <Flex direction='row'>
                 <Box position='relative' w='100%'>
                     <ImageViewerRecipe
-                        images={images}
+                        images={recipe.images}
                         cardRef={ref}
                         display={{ base: 'none', md: 'block' }}
                     />
                     <VStack spacing={{ base: undefined, md: `${instrSpacing}px` }} align='left'>
                         <TagList
-                            tags={tags.map((tag) => tag.value).concat(calculatedTags)}
-                            displayBoxMargin={images.length !== 0}
+                            tags={recipe.tags.map((tag) => tag.value).concat(recipe.calculatedTags)}
+                            displayBoxMargin={recipe.images.length !== 0}
                             display={{ base: 'none', md: 'block' }}
                         />
                         <Box pr='24px'>
@@ -48,16 +44,16 @@ export function InstructionsTab(props: Props) {
                                 position='relative'
                                 display={{
                                     base: 'none',
-                                    md: images.length !== 0 ? 'block' : 'none',
+                                    md: recipe.images.length !== 0 ? 'block' : 'none',
                                 }}
                             />
-                            <InstructionList instructions={instructions} />
+                            <InstructionList instructions={recipe.instructionSubsections} />
                         </Box>
                     </VStack>
                 </Box>
             </Flex>
             <Spacer />
-            <Source source={source} />
+            <Source source={recipe.source} />
         </Flex>
     );
 }

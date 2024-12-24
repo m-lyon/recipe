@@ -160,7 +160,8 @@ export function CreateRecipe() {
 
     return (
         <EditableRecipe
-            rating={{ rating, setRating }}
+            rating={rating}
+            addRating={setRating}
             handleSubmitMutation={handleSubmitMutation}
             submitButtonProps={{
                 submitText: 'Submit',

@@ -6,7 +6,6 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { mockGetRecipeFour } from '@recipe/graphql/queries/__mocks__/recipe';
 import { enterCreateNewRecipePage, enterViewRecipePage } from '@recipe/utils/tests';
-import { mockGetRatingsRecipeFour } from '@recipe/graphql/queries/__mocks__/rating';
 import { haveTextContentByLabelText, notNullByText, nullByText } from '@recipe/utils/tests';
 import { mockUpdateAddInstructionSubsection } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateEditInstructionSubsection } from '@recipe/graphql/mutations/__mocks__/recipe';
@@ -28,7 +27,7 @@ describe('Instruction Subsections', () => {
 
     it('should display the instruction subsections', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
+        renderComponent([mockGetRecipeFour]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -96,11 +95,7 @@ describe('Instruction Subsections', () => {
 
     it('should remove an instruction subsection', async () => {
         // Render -----------------------------------------------
-        renderComponent([
-            mockGetRecipeFour,
-            mockGetRatingsRecipeFour,
-            mockUpdateRemoveInstructionSubsection,
-        ]);
+        renderComponent([mockGetRecipeFour, mockUpdateRemoveInstructionSubsection]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -192,7 +187,7 @@ describe('Instruction Subsections', () => {
 
     it('should have three instruction subsections, one empty', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
+        renderComponent([mockGetRecipeFour]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -263,7 +258,7 @@ describe('Instruction Subsections', () => {
 
     it('should remove 1st list items after removing 1st title of many, enter', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
+        renderComponent([mockGetRecipeFour]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -281,7 +276,7 @@ describe('Instruction Subsections', () => {
 
     it('should keep 1st list items after removing 1st title of many, click', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
+        renderComponent([mockGetRecipeFour]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -300,7 +295,7 @@ describe('Instruction Subsections', () => {
 
     it('should cancel subsection deletion, click cancel', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
+        renderComponent([mockGetRecipeFour]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -322,7 +317,7 @@ describe('Instruction Subsections', () => {
 
     it('should remove empty 3rd subsection after removing 2nd title, enter', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
+        renderComponent([mockGetRecipeFour]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -342,7 +337,7 @@ describe('Instruction Subsections', () => {
 
     it('should remove empty 3rd subsection after removing 2nd title, click', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
+        renderComponent([mockGetRecipeFour]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------

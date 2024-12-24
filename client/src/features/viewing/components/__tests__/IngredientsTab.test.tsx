@@ -6,9 +6,9 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { renderPage } from '@recipe/utils/tests';
 import { mockKilogram } from '@recipe/graphql/queries/__mocks__/unit';
+import { mockRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockChicken } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
-import { mockGetRatingsRecipeOne } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
 
@@ -20,28 +20,26 @@ loadDevMessages();
 const renderComponent = () => {
     const MockIngredientsTab = () => {
         const props = {
-            recipeId: '60f4d2e5c3d5a0a4f1b9c0eb',
-            ingredients: [
-                {
-                    __typename: 'IngredientSubsection',
-                    name: 'Section One',
-                    ingredients: [
-                        {
-                            _id: '60f4d2e5c3d5a0a4f1b9c0ec',
-                            __typename: 'RecipeIngredient',
-                            quantity: '1',
-                            unit: mockKilogram,
-                            size: null,
-                            ingredient: mockChicken,
-                            prepMethod: null,
-                        } satisfies RecipeIngredientView,
-                    ],
-                },
-            ] satisfies IngredientSubsectionView[],
-            notes: null satisfies NotesView,
-            numServings: 4,
-            tags: [] satisfies RecipeTagsView,
-            calculatedTags: [] satisfies CalculatedTagsView,
+            recipe: {
+                ...mockRecipeOne,
+                ingredientSubsections: [
+                    {
+                        __typename: 'IngredientSubsection',
+                        name: 'Section One',
+                        ingredients: [
+                            {
+                                _id: '60f4d2e5c3d5a0a4f1b9c0ec',
+                                __typename: 'RecipeIngredient',
+                                quantity: '1',
+                                unit: mockKilogram,
+                                size: null,
+                                ingredient: mockChicken,
+                                prepMethod: null,
+                            },
+                        ],
+                    },
+                ],
+            } satisfies CompletedRecipeView,
         };
         return <IngredientsTab {...props} />;
     };
@@ -50,7 +48,6 @@ const renderComponent = () => {
     return renderPage(routes, [
         mockGetIngredientComponents,
         mockGetUnitConversions,
-        mockGetRatingsRecipeOne,
         mockCurrentUserAdmin,
     ]);
 };

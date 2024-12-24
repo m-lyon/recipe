@@ -6,11 +6,11 @@ import { Reference, useMutation, useQuery } from '@apollo/client';
 import { useRecipeStore } from '@recipe/stores';
 import { useImagesStore } from '@recipe/features/images';
 import { EditableRecipe } from '@recipe/features/editing';
-import { useViewStarRating } from '@recipe/features/rating';
 import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { RECIPE_FIELDS_SUBSET } from '@recipe/graphql/queries/recipe';
 import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 import { UpdateByIdRecipeModifyInput } from '@recipe/graphql/generated';
+import { getAverageRating, useAddRating } from '@recipe/features/rating';
 import { DELAY_LONG, DELAY_SHORT, GRAPHQL_URL, PATH } from '@recipe/constants';
 import { GET_RECIPE, RECIPE_INGR_FIELDS } from '@recipe/graphql/queries/recipe';
 import { DELETE_IMAGES, IMAGE_FIELDS, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
@@ -59,7 +59,6 @@ export function EditRecipe() {
     const [recipe, setRecipe] = useState<RecipeView>(null);
     const navigate = useNavigate();
     const { titleIdentifier } = useParams();
-    const { avgRating: rating, getRatings, setRating } = useViewStarRating();
     const [saveRecipe, { data: response, loading: recipeLoading }] = useMutation(UPDATE_RECIPE, {
         update(cache, { data }) {
             const { record } = data?.recipeUpdateById || {};
@@ -129,9 +128,6 @@ export function EditRecipe() {
                 id: cache.identify(recipe),
                 fields: {
                     images(existing) {
-                        if (!records) {
-                            return existing;
-                        }
                         const refs = records.map((img) => {
                             return cache.writeFragment({
                                 data: img,
@@ -146,17 +142,12 @@ export function EditRecipe() {
             });
         },
     });
-    // TODO: if after switching to zustand, simple interaction still triggers re-renders
-    // to the entire component, could try refactoring the useQuery and useState recipe into
-    // a custom hook that returns the recipe (and loading state?). Hopefully this would
-    // prevent the entire component from re-rendering when the recipe isnt being requeried.
     const { data, loading, error } = useQuery(GET_RECIPE, {
         variables: { filter: titleIdentifier ? { titleIdentifier } : {} },
         onCompleted: async (data) => {
             if (!data.recipeOne) {
                 return;
             }
-            getRatings(data.recipeOne._id);
             const recipe = data.recipeOne;
             setRecipe(recipe);
             recipeState.setTitle(recipe.title);
@@ -235,6 +226,7 @@ export function EditRecipe() {
             }
         },
     });
+    const { addRating } = useAddRating(data?.recipeOne);
 
     if (loading) {
         return <div>Loading...</div>;
@@ -294,7 +286,8 @@ export function EditRecipe() {
 
     return (
         <EditableRecipe
-            rating={{ rating, setRating }}
+            rating={getAverageRating(data.recipeOne.ratings)}
+            addRating={addRating}
             handleSubmitMutation={handleSubmitMutation}
             submitButtonProps={{
                 submitText: 'Save',

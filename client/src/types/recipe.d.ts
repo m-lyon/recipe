@@ -284,6 +284,10 @@ declare global {
      */
     type ImageView = CompletedRecipeView['images'][number];
     /**
+     * Represents a rating object for use in the view recipe page.
+     */
+    type RatingView = CompletedRecipeView['ratings'][number];
+    /**
      * Represents an ingredient object for use in the view recipe page.
      * This is an attribute of the RecipeIngredientView object.
      */

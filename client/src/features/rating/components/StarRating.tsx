@@ -1,33 +1,36 @@
+import { Box, BoxProps } from '@chakra-ui/react';
 import { Rating } from 'react-simple-star-rating';
 import { FaRegStar, FaStar } from 'react-icons/fa6';
 
-export interface StarRatingProps {
+export interface StarRatingProps extends BoxProps {
     rating: number;
-    setRating: (rating: number) => void;
+    addRating: (rating: number) => void;
+    colour: string;
     readonly?: boolean;
+    size?: number;
 }
 export function StarRating(props: StarRatingProps) {
-    const { rating, setRating, readonly } = props;
+    const { rating, addRating, colour, readonly, size = 20, ...rest } = props;
 
     return (
-        <div role='rating'>
+        <Box role='rating' {...rest}>
             <Rating
                 readonly={readonly}
                 initialValue={rating}
-                onClick={setRating}
+                onClick={addRating}
                 allowFraction
                 SVGstorkeWidth={1.5}
-                fillColor='rgba(0, 0, 0, 0.64)'
-                SVGstrokeColor='rgba(0, 0, 0, 0.64)'
-                fillIcon={<FaStar size={20} style={{ display: 'inline-block' }} />}
+                fillColor={colour}
+                SVGstrokeColor={colour}
+                fillIcon={<FaStar size={size} style={{ display: 'inline-block' }} />}
                 emptyIcon={
                     <FaRegStar
-                        size={20}
+                        size={size}
                         style={{ display: 'inline-block' }}
                         aria-label='Select star rating'
                     />
                 }
             />
-        </div>
+        </Box>
     );
 }

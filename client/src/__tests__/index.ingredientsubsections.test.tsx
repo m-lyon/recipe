@@ -6,7 +6,6 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { nullByText } from '@recipe/utils/tests';
 import { mockGetRecipeFour } from '@recipe/graphql/queries/__mocks__/recipe';
 import { clickFindByText, enterCreateNewRecipePage } from '@recipe/utils/tests';
-import { mockGetRatingsRecipeFour } from '@recipe/graphql/queries/__mocks__/rating';
 import { enterEditRecipePage, haveValueByLabelText, notNullByText } from '@recipe/utils/tests';
 import { enterViewRecipePage, notNullByLabelText, nullByLabelText } from '@recipe/utils/tests';
 import { mockUpdateRecipeAddIngredientSubsection } from '@recipe/graphql/mutations/__mocks__/recipe';
@@ -172,7 +171,7 @@ describe('Ingredient Subsections', () => {
 
     it('should have exactly two ingredient subsections, one empty', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
+        renderComponent([mockGetRecipeFour]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -208,7 +207,7 @@ describe('Ingredient Subsections', () => {
 
     it('should keep ingredient list items after removing only subsection name, enter', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
+        renderComponent([mockGetRecipeFour]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -228,7 +227,7 @@ describe('Ingredient Subsections', () => {
 
     it('should keep ingredient list items after removing only subsection name, click', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
+        renderComponent([mockGetRecipeFour]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -369,7 +368,7 @@ describe('Ingredient Subsections', () => {
 
     it('should stop recipe submission if there is a second non-named ingredient subsection', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
+        renderComponent([mockGetRecipeFour]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -389,7 +388,7 @@ describe('Ingredient Subsections', () => {
 
     it('should stop recipe submission if there is a second named subsection with no ingredients', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockGetRecipeFour, mockGetRatingsRecipeFour]);
+        renderComponent([mockGetRecipeFour]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------

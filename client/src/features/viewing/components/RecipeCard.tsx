@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { LinkOverlay } from '@chakra-ui/react';
+import { LinkOverlay, VStack } from '@chakra-ui/react';
 import { Card, CardBody, CardHeader, Heading, LinkBox } from '@chakra-ui/react';
 
 import { PATH } from '@recipe/constants';
 import { TagList } from '@recipe/features/tags';
+import { StarRating } from '@recipe/features/rating';
+import { getAverageRating } from '@recipe/features/rating';
 
 import { ModifyButtons } from './ModifyButtons';
 
@@ -52,10 +54,19 @@ export function RecipeCard(props: Props) {
                         {getCardTitle(recipe)}
                     </Heading>
                 </CardHeader>
-                <CardBody>
-                    <TagList
-                        tags={recipe.tags.map((tag) => tag.value).concat(recipe.calculatedTags)}
-                    />
+                <CardBody pt={0}>
+                    <VStack align='left' spacing={2}>
+                        <StarRating
+                            rating={getAverageRating(recipe.ratings)}
+                            addRating={() => {}}
+                            readonly
+                            size={15}
+                            colour='rgb(160, 174, 192)'
+                        />
+                        <TagList
+                            tags={recipe.tags.map((tag) => tag.value).concat(recipe.calculatedTags)}
+                        />
+                    </VStack>
                 </CardBody>
             </Card>
         </LinkBox>

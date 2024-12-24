@@ -6,11 +6,9 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { getMockedImageBlob, nullByText } from '@recipe/utils/tests';
 import { mockCreateRecipe } from '@recipe/graphql/mutations/__mocks__/recipe';
-import { mockGetRatingsNewRecipe } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockAddRatingNewRecipe } from '@recipe/graphql/mutations/__mocks__/rating';
 import { mockCreateRecipeAsIngr } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetRecipeNewWithImages } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockGetRatingsNewRecipeAsIngr } from '@recipe/graphql/queries/__mocks__/rating';
 import { enterEditRecipePage, enterViewRecipePage, notNullByText } from '@recipe/utils/tests';
 import { mockImageFileNew, mockUploadImagesNew } from '@recipe/graphql/mutations/__mocks__/image';
 import { clickFindByText, enterCreateNewRecipePage, notNullByLabelText } from '@recipe/utils/tests';
@@ -35,7 +33,7 @@ describe('Create Recipe Workflow', () => {
 
     it('should create a recipe only', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockCreateRecipe, mockGetRecipeNew, mockGetRatingsNewRecipe]);
+        renderComponent([mockCreateRecipe, mockGetRecipeNew]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -93,7 +91,6 @@ describe('Create Recipe Workflow', () => {
         fetchMock.mockResponseOnce(getMockedImageBlob());
         renderComponent([
             mockCreateRecipe,
-            mockGetRatingsNewRecipe,
             mockUploadImagesNew,
             mockAddRatingNewRecipe,
             mockGetRecipeNewWithImages,
@@ -171,13 +168,7 @@ describe('Create Recipe Workflow', () => {
     it('should reset create recipe fields when navigating to and from home', async () => {
         // Render -----------------------------------------------
         fetchMock.mockResponseOnce(getMockedImageBlob());
-        renderComponent([
-            mockCreateRecipe,
-            mockGetRatingsNewRecipe,
-            mockUploadImagesNew,
-            mockAddRatingNewRecipe,
-            mockGetRecipeNew,
-        ]);
+        renderComponent();
         const user = userEvent.setup();
         window.HTMLElement.prototype.getBoundingClientRect = () =>
             ({ width: 100, left: 0, right: 100 }) as DOMRect;
@@ -233,11 +224,7 @@ describe('Create Recipe Workflow', () => {
 
     it('should create a recipe as an ingredient', async () => {
         // Render -----------------------------------------------
-        renderComponent([
-            mockCreateRecipeAsIngr,
-            mockGetRecipeNewAsIngr,
-            mockGetRatingsNewRecipeAsIngr,
-        ]);
+        renderComponent([mockCreateRecipeAsIngr, mockGetRecipeNewAsIngr]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------

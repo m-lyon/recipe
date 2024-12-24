@@ -7,6 +7,7 @@ import { TagTC } from '../models/Tag.js';
 import { SizeTC } from '../models/Size.js';
 import { UnitTC } from '../models/Unit.js';
 import { ImageTC } from '../models/Image.js';
+import { RatingTC } from '../models/Rating.js';
 import { PrepMethodTC } from '../models/PrepMethod.js';
 import { Ingredient, IngredientTC } from '../models/Ingredient.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
@@ -143,6 +144,16 @@ RecipeTC.addFields({
         type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(ImageTC.getType()))),
         resolve: async (source) => {
             return await ImageTC.mongooseResolvers.findMany().resolve({
+                args: { filter: { recipe: source._id } },
+            });
+        },
+    },
+});
+RecipeTC.addFields({
+    ratings: {
+        type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(RatingTC.getType()))),
+        resolve: async (source) => {
+            return await RatingTC.mongooseResolvers.findMany().resolve({
                 args: { filter: { recipe: source._id } },
             });
         },

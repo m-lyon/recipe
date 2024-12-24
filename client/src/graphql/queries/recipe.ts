@@ -39,13 +39,15 @@ export const RECIPE_FIELDS_SUBSET = gql(`
         ...RecipeIngrFields
         titleIdentifier
         tags {
-            _id
-            value
+            ...TagFields
         }
         isIngredient
         numServings
         images {
             ...ImageFields
+        }
+        ratings {
+            ...RatingFields
         }
         calculatedTags
         owner

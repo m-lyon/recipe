@@ -19,25 +19,9 @@ export function ViewRecipe() {
     if (error || !data || !data.recipeOne) {
         return <div>Error: {error?.message}</div>;
     }
-    const {
-        title,
-        instructionSubsections,
-        ingredientSubsections,
-        tags,
-        calculatedTags,
-        notes,
-        source,
-        numServings,
-        isIngredient,
-        pluralTitle,
-        images,
-    } = data.recipeOne;
-    let titleNormed: string;
-    if (isIngredient && pluralTitle) {
-        titleNormed = numServings > 1 ? pluralTitle : title;
-    } else {
-        titleNormed = title;
-    }
+    const { title, numServings, isIngredient, pluralTitle } = data.recipeOne;
+    const titleNormed =
+        isIngredient && pluralTitle ? (numServings > 1 ? pluralTitle : title) : title;
     return (
         <Container maxW='container.xl' pt='60px'>
             <Grid
@@ -68,27 +52,14 @@ export function ViewRecipe() {
                     display={{ base: 'inline', md: 'none' }}
                 >
                     <Box position='relative' w='100%'>
-                        <ImageViewerRecipe images={images} position='relative' />
+                        <ImageViewerRecipe images={data.recipeOne.images} position='relative' />
                     </Box>
                 </GridItem>
                 <GridItem area='ingredients' boxShadow='lg' p='6'>
-                    <IngredientsTab
-                        recipeId={data.recipeOne._id}
-                        ingredients={ingredientSubsections}
-                        notes={notes}
-                        numServings={numServings}
-                        tags={tags}
-                        calculatedTags={calculatedTags}
-                    />
+                    <IngredientsTab recipe={data.recipeOne} />
                 </GridItem>
                 <GridItem boxShadow='lg' py='6' pl='6' area='instructions' minH='600px'>
-                    <InstructionsTab
-                        tags={tags}
-                        instructions={instructionSubsections}
-                        source={source}
-                        images={images}
-                        calculatedTags={calculatedTags}
-                    />
+                    <InstructionsTab recipe={data.recipeOne} />
                 </GridItem>
             </Grid>
         </Container>

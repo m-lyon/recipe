@@ -9,8 +9,6 @@ import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
 import { mockCurrentUserNull } from '@recipe/graphql/queries/__mocks__/user';
 import { mockLogin, mockLogout } from '@recipe/graphql/mutations/__mocks__/user';
 import { mockDeleteRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
-import { mockGetRatingsRecipeOne } from '@recipe/graphql/queries/__mocks__/rating';
-import { mockGetRatingsRecipeTwo } from '@recipe/graphql/queries/__mocks__/rating';
 import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
 import { mockGetRecipeTwo, mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -58,7 +56,6 @@ describe('Auth Workflow', () => {
             mockCurrentUserAdmin,
             mockGetRecipeOne,
             mockGetUnitConversions,
-            mockGetRatingsRecipeOne,
             mockLogout,
         ]);
         const user = userEvent.setup();
@@ -88,7 +85,6 @@ describe('Edit & Delete Permissions', () => {
             mockGetIngredientComponents,
             mockGetUnitConversions,
             mockGetTags,
-            mockGetRatingsRecipeTwo,
         ]);
         const user = userEvent.setup();
 

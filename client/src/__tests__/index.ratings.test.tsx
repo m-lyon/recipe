@@ -4,8 +4,8 @@ import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { enterEditRecipePage, enterViewRecipePage } from '@recipe/utils/tests';
-import { mockUpdateRecipeOne } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockAddRatingRecipeOne } from '@recipe/graphql/mutations/__mocks__/rating';
+import { mockUpdateRecipeOneRatingAdded } from '@recipe/graphql/mutations/__mocks__/recipe';
 
 import { renderComponent } from './utils';
 
@@ -22,7 +22,7 @@ describe('Update Recipe Workflow: Rating', () => {
 
     it('should add a rating', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockAddRatingRecipeOne, mockUpdateRecipeOne]);
+        renderComponent([mockAddRatingRecipeOne, mockUpdateRecipeOneRatingAdded]);
         const user = userEvent.setup();
         window.HTMLElement.prototype.getBoundingClientRect = () =>
             ({ width: 100, left: 0, right: 100 }) as DOMRect;
@@ -54,7 +54,7 @@ describe('Update Recipe Workflow: Rating', () => {
 
     it('should add a rating without saving', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockAddRatingRecipeOne, mockUpdateRecipeOne]);
+        renderComponent([mockAddRatingRecipeOne]);
         const user = userEvent.setup();
         window.HTMLElement.prototype.getBoundingClientRect = () =>
             ({ width: 100, left: 0, right: 100 }) as DOMRect;
@@ -95,7 +95,7 @@ describe('View Recipe Workflow: Rating', () => {
 
     it('should add a rating', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockAddRatingRecipeOne, mockUpdateRecipeOne]);
+        renderComponent([mockAddRatingRecipeOne]);
         const user = userEvent.setup();
         window.HTMLElement.prototype.getBoundingClientRect = () =>
             ({ width: 100, left: 0, right: 100 }) as DOMRect;

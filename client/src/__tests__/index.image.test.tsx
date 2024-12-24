@@ -5,8 +5,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { mockImageFileOne } from '@recipe/graphql/mutations/__mocks__/image';
-import { mockUpdateRecipeOne } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockUpdateRecipeOneNoChange } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockDeleteImages, mockUploadImages } from '@recipe/graphql/mutations/__mocks__/image';
 import { enterEditRecipePage, enterViewRecipePage, getMockedImageBlob } from '@recipe/utils/tests';
 
@@ -27,7 +27,7 @@ describe('Update Image Workflow', () => {
     it('should add an image', async () => {
         // Render -----------------------------------------------
         fetchMock.mockResponseOnce(getMockedImageBlob());
-        renderComponent([mockUpdateRecipeOne, mockUploadImages]);
+        renderComponent([mockUpdateRecipeOneNoChange, mockUploadImages]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------

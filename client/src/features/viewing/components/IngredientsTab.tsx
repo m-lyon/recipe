@@ -5,55 +5,48 @@ import { useUser } from '@recipe/features/user';
 import { useRecipeStore } from '@recipe/stores';
 import { Servings } from '@recipe/features/servings';
 import { IngredientsTabLayout } from '@recipe/layouts';
-import { StarRating, useViewStarRating } from '@recipe/features/rating';
+import { useAddRating } from '@recipe/features/rating';
+import { StarRating, getAverageRating } from '@recipe/features/rating';
 
 import { Notes } from './Notes';
 import { IngredientList } from './IngredientList';
 
 interface Props {
-    recipeId: string;
-    ingredients: IngredientSubsectionView[];
-    notes: NotesView;
-    numServings: ServingNumberView;
-    tags: RecipeTagsView;
-    calculatedTags: CalculatedTagsView;
+    recipe: CompletedRecipeView;
 }
 export function IngredientsTab(props: Props) {
-    const { recipeId, ingredients, notes, numServings, tags, calculatedTags } = props;
+    const { recipe } = props;
     const setNumServings = useRecipeStore((state) => state.setNumServings);
     const currentServings = useRecipeStore((state) => state.numServings);
     const { isLoggedIn } = useUser();
-    const { avgRating, getRatings, setRating } = useViewStarRating();
-
+    const { addRating } = useAddRating(recipe);
     useEffect(() => {
-        getRatings(recipeId);
-        // do not include getRatings in the dependency array
-        // because it will cause an infinite loop
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [recipeId]);
-
-    useEffect(() => {
-        setNumServings(numServings);
-    }, [numServings, setNumServings]);
+        setNumServings(recipe.numServings);
+    }, [recipe.numServings, setNumServings]);
 
     return (
         <IngredientsTabLayout
             Servings={<Servings />}
             StarRating={
-                <StarRating rating={avgRating} setRating={setRating} readonly={!isLoggedIn} />
+                <StarRating
+                    rating={getAverageRating(recipe.ratings)}
+                    addRating={addRating}
+                    readonly={!isLoggedIn}
+                    colour='rgba(0, 0, 0, 0.64)'
+                />
             }
             IngredientList={
                 <IngredientList
-                    subsections={ingredients}
-                    origServings={numServings}
+                    subsections={recipe.ingredientSubsections}
+                    origServings={recipe.numServings}
                     currentServings={currentServings}
                     showWakeLockBtn
                 />
             }
-            Notes={<Notes notes={notes} />}
+            Notes={<Notes notes={recipe.notes} />}
             Tags={
                 <TagList
-                    tags={tags.map((tag) => tag.value).concat(calculatedTags)}
+                    tags={recipe.tags.map((tag) => tag.value).concat(recipe.calculatedTags)}
                     pb='24px'
                     display={{ base: 'block', md: 'none' }}
                 />

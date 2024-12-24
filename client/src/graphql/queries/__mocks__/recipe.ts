@@ -27,6 +27,7 @@ import { mockMedium, mockSizes, mockSmall } from './size';
 import { mockCup, mockOunce, mockTeaspoon, mockUnits } from './unit';
 import { mockDinnerTag, mockFreezableTag, mockLunchTag } from './tag';
 import { mockApple, mockIngredients, mockRecipeFromIngredients } from './ingredient';
+import { mockRatingNewOne, mockRatingOne, mockRatingThree, mockRatingTwo } from './rating';
 
 export const mockGetIngredientComponents = {
     request: {
@@ -127,6 +128,7 @@ export const mockRecipeOne: CompletedRecipeView = {
     isIngredient: false,
     notes: null,
     images: [],
+    ratings: [mockRatingOne],
     source: null,
     owner: mockAdminId,
 };
@@ -146,6 +148,7 @@ export const mockRecipeTwo: CompletedRecipeView = {
     ],
     pluralTitle: 'Mock Recipes Two',
     images: [mockImageTwo],
+    ratings: [mockRatingTwo],
     calculatedTags: [],
     numServings: 3,
     owner: mockUserId,
@@ -159,6 +162,7 @@ export const mockRecipeThree: CompletedRecipeView = {
     source: 'Example',
     notes: 'Notes.',
     calculatedTags: [],
+    ratings: [mockRatingThree],
     ingredientSubsections: [
         {
             __typename: 'IngredientSubsection',
@@ -250,6 +254,7 @@ export const mockRecipeFour: CompletedRecipeView = {
     titleIdentifier: 'mock-recipe-four',
     tags: [],
     calculatedTags: [],
+    ratings: [],
     instructionSubsections: [
         {
             __typename: 'InstructionSubsection',
@@ -282,6 +287,7 @@ export const mockRecipeFive: CompletedRecipeView = {
     title: 'Mock Recipe Five',
     titleIdentifier: 'mock-recipe-five',
     tags: [],
+    ratings: [],
     calculatedTags: [],
     instructionSubsections: [
         {
@@ -345,6 +351,7 @@ export const mockRecipeNew: CompletedRecipeView = {
     notes: 'Recipe Notes.',
     source: 'Recipe Source',
     images: [],
+    ratings: [],
     owner: mockAdminId,
 };
 export const mockRecipeNewAsIngr: CompletedRecipeView = {
@@ -355,6 +362,7 @@ export const mockRecipeNewAsIngr: CompletedRecipeView = {
     titleIdentifier: 'new-ingredient-recipe',
     pluralTitle: 'New Ingredient Recipes',
     tags: [],
+    ratings: [],
     numServings: 1,
     notes: null,
     source: null,
@@ -450,7 +458,7 @@ export const mockGetRecipeNewWithImages = {
     result: {
         data: {
             __typename: 'Query',
-            recipeOne: { ...mockRecipeNew, images: [mockImageNew] },
+            recipeOne: { ...mockRecipeNew, images: [mockImageNew], ratings: [mockRatingNewOne] },
         } satisfies GetRecipeQuery,
     },
 };

@@ -2,10 +2,10 @@ import { Container, Grid, GridItem, useBreakpointValue } from '@chakra-ui/react'
 
 import { useUser } from '@recipe/features/user';
 import { Servings } from '@recipe/features/servings';
+import { StarRating } from '@recipe/features/rating';
 import { ImageUpload } from '@recipe/features/images';
 import { IngredientsTabLayout } from '@recipe/layouts';
 import { EditableTagList } from '@recipe/features/tags';
-import { StarRating, StarRatingProps } from '@recipe/features/rating';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
 
 import { SubmitButton } from './SubmitButton';
@@ -21,12 +21,13 @@ interface SubmitButtonProps {
     loading?: boolean;
 }
 interface Props {
-    rating: StarRatingProps;
+    rating: number;
+    addRating: (rating: number) => void;
     handleSubmitMutation: (recipe: CreateOneRecipeCreateInput) => void;
     submitButtonProps: SubmitButtonProps;
 }
 export function EditableRecipe(props: Props) {
-    const { rating, handleSubmitMutation, submitButtonProps } = props;
+    const { rating, addRating, handleSubmitMutation, submitButtonProps } = props;
     const { isLoggedIn } = useUser();
 
     const isMobile = useBreakpointValue({ base: true, md: false });
@@ -88,7 +89,14 @@ export function EditableRecipe(props: Props) {
                 >
                     <IngredientsTabLayout
                         Servings={<Servings />}
-                        StarRating={<StarRating {...rating} readonly={isMobile || !isLoggedIn} />}
+                        StarRating={
+                            <StarRating
+                                rating={rating}
+                                addRating={addRating}
+                                readonly={isMobile || !isLoggedIn}
+                                colour='rgba(0, 0, 0, 0.64)'
+                            />
+                        }
                         IngredientList={<EditableIngredientSubsections />}
                         Notes={<EditableNotes />}
                     />

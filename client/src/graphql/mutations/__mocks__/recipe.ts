@@ -6,6 +6,7 @@ import { mockDiced } from '@recipe/graphql/queries/__mocks__/prepMethod';
 import { UpdateRecipeMutationVariables } from '@recipe/graphql/generated';
 import { mockRecipeIngredientIdThree } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdSeven } from '@recipe/graphql/__mocks__/ids';
+import { mockRatingNewTwo } from '@recipe/graphql/queries/__mocks__/rating';
 import { GetRecipeQuery, RecipeIngredient } from '@recipe/graphql/generated';
 import { mockRecipeOne, mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockRecipeNew, mockRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -53,7 +54,7 @@ const getMockRecipeReturn = (mockRecipe: UpdateReturn = mockRecipeOne) => {
 
 const recipeOneVars = getMockRecipeVariables();
 const recipeOneData = getMockRecipeReturn();
-export const mockUpdateRecipeOne = {
+export const mockUpdateRecipeOneNoChange = {
     request: {
         query: UPDATE_RECIPE,
         variables: {
@@ -67,6 +68,27 @@ export const mockUpdateRecipeOne = {
             recipeUpdateById: {
                 __typename: 'UpdateByIdRecipePayload',
                 record: recipeOneData.record,
+            },
+        } satisfies UpdateRecipeMutation,
+    },
+};
+export const mockUpdateRecipeOneRatingAdded = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: recipeOneVars.recipe,
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: {
+                    ...recipeOneData.record,
+                    ratings: [...recipeOneData.record.ratings, mockRatingNewTwo],
+                },
             },
         } satisfies UpdateRecipeMutation,
     },
