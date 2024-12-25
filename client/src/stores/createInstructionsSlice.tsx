@@ -1,6 +1,8 @@
 import { produce } from 'immer';
 import { StateCreator } from 'zustand';
 
+import { replaceSymbols } from '@recipe/utils/symbol';
+
 import { RecipeState } from './useRecipeStore';
 
 interface InstructionLine {
@@ -48,7 +50,8 @@ export const createInstructionsSlice: StateCreator<
     setInstruction: (section: number, index: number, value: string) =>
         set(
             produce((state: InstructionSectionsSlice) => {
-                state.instructionSections[section].instructions[index].value = value;
+                state.instructionSections[section].instructions[index].value =
+                    replaceSymbols(value);
             })
         ),
     setInstructionSection: (section: number, lines: string[], name?: string) =>

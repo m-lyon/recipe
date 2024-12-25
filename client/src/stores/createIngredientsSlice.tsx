@@ -2,6 +2,7 @@ import { produce } from 'immer';
 import { StateCreator } from 'zustand';
 
 import { isPlural } from '@recipe/utils/plural';
+import { replaceSymbols } from '@recipe/utils/symbol';
 import { ApplyUnitConversion } from '@recipe/features/servings';
 import { VALID_NUMBER_REGEX, isRange, validateRange } from '@recipe/utils/number';
 import { ingredientDisplayValue, sizeDisplayValue } from '@recipe/utils/formatting';
@@ -84,10 +85,15 @@ function append(state: IngredientSectionsSlice, section: number, value: string) 
             item.quantity += value;
         }
     } else {
-        if (item[item.state].value === null) {
-            item[item.state].value = value;
+        const component = item[item.state];
+        if (component.value === null) {
+            component.value = value;
         } else {
-            item[item.state].value += value;
+            if (value === ' ') {
+                component.value = replaceSymbols(component.value + value);
+            } else {
+                component.value += value;
+            }
         }
     }
 }
@@ -238,7 +244,7 @@ function handleSizeChange(opts: handleChangeOpts) {
         throw new Error('Invalid character.');
     }
 }
-const VALID_CHAR_WITH_NUMBERS = /^[a-zA-Z0-9 ,.\-"]?$/;
+const VALID_CHAR_WITH_NUMBERS = /^[a-zA-Z0-9 ,.\-/"]?$/;
 function handleIngredientChange(opts: handleChangeOpts) {
     const { state, section, char } = opts;
     if (VALID_CHAR.test(char)) {
