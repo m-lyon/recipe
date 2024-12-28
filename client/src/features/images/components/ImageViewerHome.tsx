@@ -17,6 +17,7 @@ export function ImageViewerHome(props: Props) {
             ratio={3 / 2}
             right={0}
             top={0}
+            pt='1em'
             shadow='none'
             bottomLeftRadius='md'
             bottomRightRadius='md'
