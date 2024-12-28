@@ -21,19 +21,18 @@ export function EditableNotes() {
     };
 
     return (
-        <>
-            <EditableItemArea
-                placeholder='Enter notes...'
-                placeholderColor='gray.400'
-                value={notes}
-                handleChange={handleChange}
-                handleSubmit={handleSubmit}
-                fontSize='md'
-                fontWeight='medium'
-                textAlign='left'
-                aria-label='Edit recipe notes'
-                pb={0}
-            />
-        </>
+        <EditableItemArea
+            placeholder='Enter notes...'
+            placeholderColor='gray.400'
+            value={notes}
+            handleChange={handleChange}
+            handleSubmit={handleSubmit}
+            fontSize='md'
+            fontWeight='medium'
+            textAlign='left'
+            aria-label='Edit recipe notes'
+            pb={0}
+            mt='2em'
+        />
     );
 }
