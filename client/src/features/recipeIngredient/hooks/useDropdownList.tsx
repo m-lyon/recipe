@@ -20,7 +20,7 @@ export function useDropdownList(
     const [saveBespokePrepMethod] = useMutation(CREATE_PREP_METHOD, {
         onCompleted: (data: CreatePrepMethodMutation) => {
             setItem(data.prepMethodCreateOne!.record!);
-            setActive(0);
+            resetView();
         },
         onError: (error) => {
             toast({
@@ -81,14 +81,8 @@ export function useDropdownList(
                         openPopover('bespokeUnit');
                     } else if (/^use ".*" as prep method$/.test(item.value)) {
                         saveBespokePrepMethod({
-                            variables: {
-                                record: {
-                                    value: strValue,
-                                    unique: false,
-                                },
-                            },
+                            variables: { record: { value: strValue, unique: false } },
                         });
-                        resetView();
                     }
                     break;
             }
