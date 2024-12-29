@@ -33,6 +33,11 @@ describe('replaceDegrees', () => {
         const result = replaceDegrees(input);
         expect(result).toEqual('350°C ');
     });
+    it('should replace " degrees c." with °C', () => {
+        const input = '350 degrees c.';
+        const result = replaceDegrees(input);
+        expect(result).toEqual('350°C.');
+    });
     it('should replace degrees F with °F in a sentence', () => {
         const input = 'Preheat oven to 350 degrees F ';
         const result = replaceDegrees(input);

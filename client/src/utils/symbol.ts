@@ -1,9 +1,9 @@
 import fractionUnicode from 'fraction-unicode';
 
 export function replaceDegrees(input: string): string {
-    return input.replace(/(\d+\.?\d*)\s?degrees\s(c|f)\s/gi, (_, number, unit) => {
+    return input.replace(/(\d+\.?\d*)\s?degrees\s(c|f)(\s|\.)/gi, (_, number, unit, ending) => {
         const symbol = unit.toUpperCase() === 'C' ? '°C' : '°F';
-        return `${number}${symbol} `;
+        return `${number}${symbol}${ending}`;
     });
 }
 
