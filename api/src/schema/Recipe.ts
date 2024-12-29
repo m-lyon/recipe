@@ -33,6 +33,14 @@ RecipeModifyTC.addResolver({
     resolve: updateByIdResolver(Recipe, RecipeModifyTC),
 });
 
+RecipeModifyTC.addResolver({
+    name: 'removeById',
+    description: 'Remove a recipe by its ID',
+    type: RecipeTC.mongooseResolvers.removeById().getType(),
+    args: RecipeModifyTC.mongooseResolvers.removeById().getArgs(),
+    resolve: RecipeModifyTC.mongooseResolvers.removeById().resolve,
+});
+
 RecipeCreateTC.addResolver({
     name: 'createOne',
     description: 'Create a new recipe',
@@ -49,7 +57,7 @@ RecipeIngredientTC.addResolver({
     args: { _id: 'MongoID!' },
     resolve: async (rp) => {
         if (!rp?.args?._id) {
-            throw new Error(
+            throw new GraphQLError(
                 `${IngredientOrRecipeTC.getTypeName()}.ingredientOrRecipe resolver requires args._id value`
             );
         }
@@ -160,14 +168,6 @@ RecipeTC.addFields({
     },
 });
 
-RecipeModifyTC.addResolver({
-    name: 'removeById',
-    description: 'Remove a recipe by its ID',
-    type: RecipeTC.mongooseResolvers.removeById().getType(),
-    args: RecipeModifyTC.mongooseResolvers.removeById().getArgs(),
-    resolve: RecipeModifyTC.mongooseResolvers.removeById().resolve,
-});
-
 export const RecipeQuery = {
     recipeById: RecipeTC.mongooseResolvers
         .findById()
@@ -217,7 +217,19 @@ export const RecipeMutation = {
         rp.args.record.lastModified = new Date();
         return next(rp);
     }),
-    recipeRemoveById: RecipeModifyTC.mongooseResolvers
-        .removeById()
-        .setDescription('Remove a recipe by its ID'),
+    recipeRemoveById: RecipeModifyTC.getResolver('removeById').wrapResolve((next) => async (rp) => {
+        // delete all images associated with the recipe
+        const images = await ImageTC.mongooseResolvers.findMany().resolve({
+            args: { filter: { recipe: rp.args._id } },
+        });
+        await ImageTC.getResolver('imageRemoveMany').resolve({
+            args: { ids: images.map((o) => o._id) },
+            context: rp.context,
+        });
+        // delete all rating associated with the recipe
+        await RatingTC.mongooseResolvers.removeMany().resolve({
+            args: { filter: { recipe: rp.args._id } },
+        });
+        return next(rp);
+    }),
 };

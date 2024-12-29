@@ -1,8 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 
+import { GraphQLString } from 'graphql';
 import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
-import { GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
+import { GraphQLError, GraphQLList, GraphQLNonNull, GraphQLObjectType } from 'graphql';
 
 import { IMAGE_DIR } from '../constants.js';
 import { RecipeTC } from '../models/Recipe.js';
@@ -66,7 +67,7 @@ ImageTC.addResolver({
 });
 
 ImageTC.addResolver({
-    name: 'imageRemoveManyByIds',
+    name: 'imageRemoveMany',
     description: 'Remove multiple images by their IDs',
     type: new GraphQLObjectType({
         name: 'ImageRemoveManyPayload',
@@ -86,12 +87,18 @@ ImageTC.addResolver({
         // Remove the images from the database
         await Image.deleteMany({ _id: { $in: args.ids } });
         // Remove files from disk
-        images.forEach((image) => {
+        const errs: string[] = [];
+        for (const image of images) {
             const filepath = path.join(IMAGE_DIR, path.basename(image.origUrl));
-            fs.unlink(filepath, (err) => {
-                if (err) throw err;
-            });
-        });
+            try {
+                fs.unlinkSync(filepath);
+            } catch (err) {
+                errs.push(image.origUrl);
+            }
+        }
+        if (errs.length > 0) {
+            throw new GraphQLError(`Error deleting images from disk: ${errs.join(', ')}`);
+        }
         return { records: images };
     },
 });
@@ -114,5 +121,5 @@ export const ImageQuery = {
 export const ImageMutation = {
     imageUploadOne: ImageTC.getResolver('imageUploadOne'),
     imageUploadMany: ImageTC.getResolver('imageUploadMany'),
-    imageRemoveMany: ImageTC.getResolver('imageRemoveManyByIds'),
+    imageRemoveMany: ImageTC.getResolver('imageRemoveMany'),
 };
