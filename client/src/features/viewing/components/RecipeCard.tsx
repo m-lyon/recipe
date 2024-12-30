@@ -38,11 +38,6 @@ export function RecipeCard(props: Props) {
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
-                <LinkOverlay
-                    as={Link}
-                    to={`${PATH.ROOT}/view/recipe/${recipe.titleIdentifier}`}
-                    aria-label={`View ${recipe.title}`}
-                />
                 <ModifyButtons
                     recipe={recipe}
                     isHovering={isHovered}
@@ -50,23 +45,37 @@ export function RecipeCard(props: Props) {
                     handleDelete={handleDelete}
                 />
                 <CardHeader>
-                    <Heading size='md' color='blackAlpha.700'>
-                        {getCardTitle(recipe)}
-                    </Heading>
+                    <LinkOverlay
+                        as={Link}
+                        to={`${PATH.ROOT}/view/recipe/${recipe.titleIdentifier}`}
+                    >
+                        <Heading size='md' color='blackAlpha.700'>
+                            {getCardTitle(recipe)}
+                        </Heading>
+                    </LinkOverlay>
                 </CardHeader>
                 <CardBody pt={0}>
-                    <VStack align='left' spacing={2}>
-                        <StarRating
-                            rating={getAverageRating(recipe.ratings)}
-                            addRating={() => {}}
-                            readonly
-                            size={15}
-                            colour='rgb(160, 174, 192)'
-                        />
-                        <TagList
-                            tags={recipe.tags.map((tag) => tag.value).concat(recipe.calculatedTags)}
-                        />
-                    </VStack>
+                    <LinkOverlay
+                        as={Link}
+                        to={`${PATH.ROOT}/view/recipe/${recipe.titleIdentifier}`}
+                        aria-label={`View ${recipe.title}`}
+                    >
+                        <VStack align='left' spacing={2}>
+                            <StarRating
+                                rating={getAverageRating(recipe.ratings)}
+                                addRating={() => {}}
+                                readonly
+                                size={15}
+                                colour='rgb(160, 174, 192)'
+                                aria-label={`Rating for ${recipe.title}`}
+                            />
+                            <TagList
+                                tags={recipe.tags
+                                    .map((tag) => tag.value)
+                                    .concat(recipe.calculatedTags)}
+                            />
+                        </VStack>
+                    </LinkOverlay>
                 </CardBody>
             </Card>
         </LinkBox>

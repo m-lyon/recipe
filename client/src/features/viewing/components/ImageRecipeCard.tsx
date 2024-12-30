@@ -35,14 +35,14 @@ export function ImageRecipeCard(props: Props) {
                     handleDelete={handleDelete}
                 />
                 <CardHeader>
-                    <Heading size='md' color='blackAlpha.700'>
-                        <LinkOverlay
-                            as={Link}
-                            to={`${PATH.ROOT}/view/recipe/${recipe.titleIdentifier}`}
-                        >
+                    <LinkOverlay
+                        as={Link}
+                        to={`${PATH.ROOT}/view/recipe/${recipe.titleIdentifier}`}
+                    >
+                        <Heading size='md' color='blackAlpha.700'>
                             {getCardTitle(recipe)}
-                        </LinkOverlay>
-                    </Heading>
+                        </Heading>
+                    </LinkOverlay>
                 </CardHeader>
                 <CardBody p='0'>
                     <LinkOverlay
@@ -58,6 +58,7 @@ export function ImageRecipeCard(props: Props) {
                                 size={15}
                                 colour='rgb(160, 174, 192)'
                                 px='20px'
+                                aria-label={`Rating for ${recipe.title}`}
                             />
                             <TagList
                                 tags={recipe.tags

@@ -19,7 +19,7 @@ export function IngredientsTab(props: Props) {
     const setNumServings = useRecipeStore((state) => state.setNumServings);
     const currentServings = useRecipeStore((state) => state.numServings);
     const { isVerified } = useUser();
-    const { addRating } = useAddRating(recipe);
+    const { addRatingWithToast } = useAddRating();
     useEffect(() => {
         setNumServings(recipe.numServings);
     }, [recipe.numServings, setNumServings]);
@@ -30,7 +30,7 @@ export function IngredientsTab(props: Props) {
             StarRating={
                 <StarRating
                     rating={getAverageRating(recipe.ratings)}
-                    addRating={addRating}
+                    addRating={(rating: number) => addRatingWithToast(rating, recipe)}
                     readonly={!isVerified}
                     colour='rgba(0, 0, 0, 0.64)'
                 />

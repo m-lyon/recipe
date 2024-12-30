@@ -137,6 +137,9 @@ describe('Create Recipe Workflow', () => {
         // Expect ------------------------------------------------
         // ------ Home Page --------------------------------------
         await notNullByText(screen, 'Recipes', 'New Recipe', 'freezable');
+        expect(
+            screen.getByLabelText('Rating for New Recipe').querySelector('.filled-icons')
+        ).toHaveProperty('title', '1.5 out of 5');
         expect(screen.queryByLabelText('Loading image 1 for New Recipe')).not.toBeNull();
         // ------ View Recipe Page -------------------------------
         await enterViewRecipePage(screen, user, 'New Recipe', 'Instr #1.');

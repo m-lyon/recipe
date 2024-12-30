@@ -1,18 +1,16 @@
 import { useEffect, useState } from 'react';
-import { useMutation } from '@apollo/client';
 import { useShallow } from 'zustand/shallow';
+import { useMutation } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
 
 import { useRecipeStore } from '@recipe/stores';
-import { useImagesStore } from '@recipe/features/images';
-import { EditableRecipe } from '@recipe/features/editing';
-import { ADD_RATING } from '@recipe/graphql/mutations/rating';
+import { useAddRating } from '@recipe/features/rating';
 import { CREATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { DELAY_LONG, DELAY_SHORT, PATH } from '@recipe/constants';
 import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
-import { IMAGE_FIELDS, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
-import { RECIPE_FIELDS_SUBSET, RECIPE_INGR_FIELDS } from '@recipe/graphql/queries/recipe';
+import { useImagesStore, useUploadImages } from '@recipe/features/images';
+import { EditableRecipe, updateRecipeCache } from '@recipe/features/editing';
 
 export function CreateRecipe() {
     const errorToast = useErrorToast();
@@ -40,74 +38,18 @@ export function CreateRecipe() {
             if (!record) {
                 return;
             }
-            cache.modify({
-                fields: {
-                    recipeMany(existingRecipes = [], { storeFieldName }) {
-                        let newRef;
-                        if (storeFieldName === 'recipeMany:{"filter":{"isIngredient":true}}') {
-                            if (!record.isIngredient) {
-                                return existingRecipes;
-                            }
-                            newRef = cache.writeFragment({
-                                data: record,
-                                fragment: RECIPE_INGR_FIELDS,
-                                fragmentName: 'RecipeIngrFields',
-                            });
-                        } else {
-                            newRef = cache.writeFragment({
-                                data: record,
-                                fragment: RECIPE_FIELDS_SUBSET,
-                                fragmentName: 'RecipeFieldsSubset',
-                            });
-                        }
-                        return [newRef, ...existingRecipes];
-                    },
-                    recipeCount: (existingCount) => existingCount + 1,
-                },
-            });
+            updateRecipeCache(cache, record, true);
         },
     });
-    const [addRating, { loading: ratingLoading }] = useMutation(ADD_RATING);
-    const [uploadImages, { loading: uploadLoading }] = useMutation(UPLOAD_IMAGES, {
-        context: { headers: { 'apollo-require-preflight': true } },
-        update(cache, { data }) {
-            const { records } = data?.imageUploadMany || {};
-            const { record: recipe } = response?.recipeCreateOne || { record: undefined };
-            if (!records || !recipe) {
-                return;
-            }
-            cache.modify({
-                id: cache.identify(recipe),
-                fields: {
-                    images(existing) {
-                        if (!records) {
-                            return existing;
-                        }
-                        try {
-                            const refs = records.map((img) => {
-                                return cache.writeFragment({
-                                    data: img,
-                                    fragment: IMAGE_FIELDS,
-                                    fragmentName: 'ImageFields',
-                                });
-                            });
-                            return refs;
-                        } catch (error) {
-                            console.error('Error writing fragments to cache', error);
-                            return existing;
-                        }
-                    },
-                },
-            });
-        },
-    });
+    const { addRating, loading: ratingLoading } = useAddRating();
+    const { uploadImages, loading: uploadLoading } = useUploadImages();
 
     const handleSubmitMutation = async (recipe: CreateOneRecipeCreateInput) => {
-        let recipeId: string;
+        let recipeResult: RecipeView;
         try {
             // Create Recipe
             const result = await createRecipe({ variables: { recipe } });
-            recipeId = result.data?.recipeCreateOne?.record?._id;
+            recipeResult = result.data?.recipeCreateOne?.record;
         } catch (e) {
             let description = 'An error occurred while creating the recipe';
             if (e instanceof Error) {
@@ -118,7 +60,7 @@ export function CreateRecipe() {
         try {
             // Add Rating
             if (rating !== 0) {
-                await addRating({ variables: { recipeId, rating } });
+                await addRating(rating, recipeResult);
             }
         } catch (e: unknown) {
             let description = 'An error occurred while adding the rating to the recipe';
@@ -136,7 +78,7 @@ export function CreateRecipe() {
         try {
             // Upload Images
             if (images.length > 0) {
-                await uploadImages({ variables: { recipeId, images } });
+                await uploadImages(images, recipeResult);
             }
         } catch (e: unknown) {
             let description = 'An error occurred while uploading images';

@@ -4,16 +4,15 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Reference, useMutation, useQuery } from '@apollo/client';
 
 import { useRecipeStore } from '@recipe/stores';
-import { useImagesStore } from '@recipe/features/images';
-import { EditableRecipe } from '@recipe/features/editing';
+import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
+import { DELETE_IMAGES } from '@recipe/graphql/mutations/image';
 import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
-import { RECIPE_FIELDS_SUBSET } from '@recipe/graphql/queries/recipe';
 import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 import { UpdateByIdRecipeModifyInput } from '@recipe/graphql/generated';
 import { getAverageRating, useAddRating } from '@recipe/features/rating';
+import { useImagesStore, useUploadImages } from '@recipe/features/images';
+import { EditableRecipe, updateRecipeCache } from '@recipe/features/editing';
 import { DELAY_LONG, DELAY_SHORT, GRAPHQL_URL, PATH } from '@recipe/constants';
-import { GET_RECIPE, RECIPE_INGR_FIELDS } from '@recipe/graphql/queries/recipe';
-import { DELETE_IMAGES, IMAGE_FIELDS, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
 
 function queryIngredientToFinished(ingr: RecipeIngredientView): FinishedRecipeIngredient {
     const { quantity, unit, size, ingredient, prepMethod } = ingr;
@@ -65,35 +64,7 @@ export function EditRecipe() {
             if (!record) {
                 return;
             }
-            cache.modify({
-                fields: {
-                    recipeMany(existing = [], { storeFieldName, readField }) {
-                        let newRef;
-                        if (storeFieldName === 'recipeMany:{"filter":{"isIngredient":true}}') {
-                            if (!record.isIngredient) {
-                                return existing;
-                            }
-                            newRef = cache.writeFragment({
-                                data: record,
-                                fragment: RECIPE_INGR_FIELDS,
-                                fragmentName: 'RecipeIngrFields',
-                            });
-                        } else {
-                            newRef = cache.writeFragment({
-                                data: record,
-                                fragment: RECIPE_FIELDS_SUBSET,
-                                fragmentName: 'RecipeFieldsSubset',
-                            });
-                        }
-                        if (
-                            existing.some((ref: Reference) => readField('_id', ref) === record._id)
-                        ) {
-                            return existing;
-                        }
-                        return [newRef, ...existing];
-                    },
-                },
-            });
+            updateRecipeCache(cache, record);
         },
     });
     const [deleteImages] = useMutation(DELETE_IMAGES, {
@@ -117,31 +88,7 @@ export function EditRecipe() {
             });
         },
     });
-    const [uploadImages, { loading: uploadLoading }] = useMutation(UPLOAD_IMAGES, {
-        context: { headers: { 'apollo-require-preflight': true } },
-        update(cache, { data }) {
-            const { records } = data?.imageUploadMany || {};
-            if (!records || !recipe) {
-                return;
-            }
-            cache.modify({
-                id: cache.identify(recipe),
-                fields: {
-                    images(existing) {
-                        const refs = records.map((img) => {
-                            return cache.writeFragment({
-                                data: img,
-                                fragment: IMAGE_FIELDS,
-                                fragmentName: 'ImageFields',
-                            });
-                        });
-                        const newRefs = refs.filter((ref) => !existing.includes(ref));
-                        return [...existing, ...newRefs];
-                    },
-                },
-            });
-        },
-    });
+    const { uploadImages, loading: uploadLoading } = useUploadImages();
     const { data, loading, error } = useQuery(GET_RECIPE, {
         variables: { filter: titleIdentifier ? { titleIdentifier } : {} },
         onCompleted: async (data) => {
@@ -226,7 +173,7 @@ export function EditRecipe() {
             }
         },
     });
-    const { addRating } = useAddRating(data?.recipeOne);
+    const { addRatingWithToast } = useAddRating();
 
     if (loading) {
         return <div>Loading...</div>;
@@ -260,9 +207,7 @@ export function EditRecipe() {
                 await deleteImages({ variables: { ids: imagesToDelete.map((img) => img._id) } });
             }
             if (imagesToAdd.length > 0) {
-                await uploadImages({
-                    variables: { recipeId: recipe!._id, images: imagesToAdd },
-                });
+                await uploadImages(imagesToAdd, recipe);
             }
         } catch (e: unknown) {
             let description = 'An error occurred while uploading images';
@@ -287,7 +232,7 @@ export function EditRecipe() {
     return (
         <EditableRecipe
             rating={getAverageRating(data.recipeOne.ratings)}
-            addRating={addRating}
+            addRating={(rating: number) => addRatingWithToast(rating, data.recipeOne)}
             handleSubmitMutation={handleSubmitMutation}
             submitButtonProps={{
                 submitText: 'Save',
