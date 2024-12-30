@@ -1,198 +1,201 @@
 name: Deploy
 
 on:
-  push:
-    branches:
-      - main
+    push:
+        branches:
+            - main
 
 env:
-  MONGODB_VERSION: "8.0.3"
-  NODE_VERSION: 18
+    MONGODB_VERSION: '8.0.3'
+    NODE_VERSION: 18
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    environment: test
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    test:
+        runs-on: ubuntu-latest
+        environment: test
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-      
-      - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.11.0
-        with:
-            mongodb-version: ${{ env.MONGODB_VERSION }}
-            
-      - name: Install API dependencies
-        working-directory: ./api
-        run: npm install
+            - name: Setup node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install client dependencies
-        working-directory: ./client
-        run: npm install
+            - name: Start MongoDB
+              uses: supercharge/mongodb-github-action@1.11.0
+              with:
+                  mongodb-version: ${{ env.MONGODB_VERSION }}
 
-      - name: Load MongoDB binary cache
-        id: cache-mongodb-binaries
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/mongodb-binaries
-          key: ${{ runner.os }}-mongodb-${{ env.MONGODB_VERSION }}
+            - name: Install API dependencies
+              working-directory: ./api
+              run: npm install
 
-      - name: Download MongoDB Memory Server
-        working-directory: ./api
-        run: npm run dl_memory
+            - name: Install client dependencies
+              working-directory: ./client
+              run: npm install
 
-      - name: Run API tests
-        working-directory: ./api
-        run: npm run start:test
+            - name: Load MongoDB binary cache
+              id: cache-mongodb-binaries
+              uses: actions/cache@v4
+              with:
+                  path: ~/.cache/mongodb-binaries
+                  key: ${{ runner.os }}-mongodb-${{ env.MONGODB_VERSION }}
 
-      - name: Create API environment file
-        working-directory: ./api
-        run: |
-          echo "HTTPS = ${{ vars.HTTPS }}" > .env.test.local
-          echo "MONGODB_URI = ${{ vars.MONGODB_URI }}" >> .env.test.local
-          echo "PORT = ${{ vars.PORT }}" >> .env.test.local
-          echo "SESSION_SECRET = ${{ secrets.SESSION_SECRET }}" >> .env.test.local
-          echo "SESSION_URI = ${{ secrets.SESSION_URI }}" >> .env.test.local
-          echo "WHITELISTED_DOMAINS = ${{ secrets.WHITELISTED_DOMAINS }}" >> .env.test.local
+            - name: Download MongoDB Memory Server
+              working-directory: ./api
+              run: npm run dl_memory
 
-      - name: Create client environment file
-        working-directory: ./client
-        run: |
-          echo "VITE_GRAPHQL_URL = ${{ vars.VITE_GRAPHQL_URL }}" > .env.test.local
-          echo "VITE_ROOT_PATH = ${{ vars.VITE_ROOT_PATH }}" >> .env.test.local
-          echo "VITE_DELAY_SHORT = ${{ vars.VITE_DELAY_SHORT }}" >> .env.test.local
-          echo "VITE_DELAY_LONG = ${{ vars.VITE_DELAY_LONG }}" >> .env.test.local
-          echo "VITE_DEBUG = ${{ vars.VITE_DEBUG }}" >> .env.test.local
-          echo "VITE_DEBOUNCE_TIME = ${{ vars.VITE_DEBOUNCE_TIME }}" >> .env.test.local
-          echo "VITE_INIT_LOAD_NUM = ${{ vars.VITE_INIT_LOAD_NUM }}" >> .env.test.local
-          echo "VITE_FETCH_MORE_NUM = ${{ vars.VITE_FETCH_MORE_NUM }}" >> .env.test.local
+            - name: Run API tests
+              working-directory: ./api
+              run: npm run start:test
 
-      - name: Start server in development mode
-        working-directory: ./api
-        run: NODE_ENV=test npm run start &
+            - name: Create API environment file
+              working-directory: ./api
+              run: |
+                  echo "HTTPS = ${{ vars.HTTPS }}" > .env.test.local
+                  echo "MONGODB_URI = ${{ vars.MONGODB_URI }}" >> .env.test.local
+                  echo "PORT = ${{ vars.PORT }}" >> .env.test.local
+                  echo "SESSION_SECRET = ${{ secrets.SESSION_SECRET }}" >> .env.test.local
+                  echo "SESSION_URI = ${{ secrets.SESSION_URI }}" >> .env.test.local
+                  echo "WHITELISTED_DOMAINS = ${{ secrets.WHITELISTED_DOMAINS }}" >> .env.test.local
 
-      - name: Wait for server start
-        run: sleep 3s
+            - name: Create client environment file
+              working-directory: ./client
+              run: |
+                  echo "VITE_GRAPHQL_URL = ${{ vars.VITE_GRAPHQL_URL }}" > .env.test.local
+                  echo "VITE_ROOT_PATH = ${{ vars.VITE_ROOT_PATH }}" >> .env.test.local
+                  echo "VITE_DELAY_SHORT = ${{ vars.VITE_DELAY_SHORT }}" >> .env.test.local
+                  echo "VITE_DELAY_LONG = ${{ vars.VITE_DELAY_LONG }}" >> .env.test.local
+                  echo "VITE_DEBUG = ${{ vars.VITE_DEBUG }}" >> .env.test.local
+                  echo "VITE_DEBOUNCE_TIME = ${{ vars.VITE_DEBOUNCE_TIME }}" >> .env.test.local
+                  echo "VITE_INIT_LOAD_NUM = ${{ vars.VITE_INIT_LOAD_NUM }}" >> .env.test.local
+                  echo "VITE_FETCH_MORE_NUM = ${{ vars.VITE_FETCH_MORE_NUM }}" >> .env.test.local
 
-      - name: Generate GraphQL types
-        working-directory: ./client
-        run: npm run test:generate
+            - name: Start server in development mode
+              working-directory: ./api
+              run: NODE_ENV=test npm run start &
 
-      - name: Test client
-        working-directory: ./client
-        run: npm run test -- run
+            - name: Wait for server start
+              run: sleep 3s
 
-      - name: Upload GraphQL types
-        uses: actions/upload-artifact@v4
-        with:
-          name: graphql-types
-          path: ./client/src/__generated__/
+            - name: Generate GraphQL types
+              working-directory: ./client
+              run: npm run test:generate
 
-  deploy:
-    runs-on: ubuntu-latest
-    environment: production
-    needs: test
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+            - name: Test client
+              working-directory: ./client
+              run: npm run test -- run
 
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
+            - name: Upload GraphQL types
+              uses: actions/upload-artifact@v4
+              with:
+                  name: graphql-types
+                  path: ./client/src/__generated__/
 
-      - name: Install API dependencies
-        working-directory: ./api
-        run: npm install --production
+    deploy:
+        runs-on: ubuntu-latest
+        environment: production
+        needs: test
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-      - name: Install client dependencies
-        working-directory: ./client
-        run: npm install
+            - name: Setup node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
 
-      - name: Create API environment file
-        working-directory: ./api
-        run: |
-          echo "HTTPS = ${{ vars.HTTPS }}" > .env.production.local
-          echo "PRIVKEY_PEM = ${{ secrets.PRIVKEY_PEM }}" >> .env.production.local
-          echo "FULLCHAIN_PEM = ${{ secrets.FULLCHAIN_PEM }}" >> .env.production.local
-          echo "MONGODB_URI = ${{ secrets.MONGODB_URI }}" >> .env.production.local
-          echo "PORT = ${{ secrets.PORT }}" >> .env.production.local
-          echo "SESSION_SECRET = ${{ secrets.SESSION_SECRET }}" >> .env.production.local
-          echo "SESSION_URI = ${{ secrets.SESSION_URI }}" >> .env.production.local
-          echo "WHITELISTED_DOMAINS = ${{ secrets.WHITELISTED_DOMAINS }}" >> .env.production.local
-          echo "IMAGE_DIR = ${{ secrets.IMAGE_DIR }}" >> .env.production.local
+            - name: Install API dependencies
+              working-directory: ./api
+              run: npm install --production
 
-      - name: Create client environment file
-        working-directory: ./client
-        run: |
-          echo "VITE_GRAPHQL_URL = ${{ secrets.VITE_GRAPHQL_URL }}" > .env.production.local
-          echo "VITE_DEBOUNCE_TIME = ${{ vars.VITE_DEBOUNCE_TIME }}" >> .env.production.local
-          echo "VITE_DELAY_LONG = ${{ vars.VITE_DELAY_LONG }}" >> .env.production.local
-          echo "VITE_DELAY_SHORT = ${{ vars.VITE_DELAY_SHORT }}" >> .env.production.local
-          echo "VITE_FETCH_MORE_NUM = ${{ vars.VITE_FETCH_MORE_NUM }}" >> .env.production.local
-          echo "VITE_INIT_LOAD_NUM = ${{ vars.VITE_INIT_LOAD_NUM }}" >> .env.production.local
-          echo "VITE_LOGIN_ENDPOINT = ${{ vars.VITE_LOGIN_ENDPOINT }}" >> .env.production.local
-          echo "VITE_ROOT_PATH = ${{ vars.VITE_ROOT_PATH }}" >> .env.production.local
-          
-      - name: Compile API
-        working-directory: ./api
-        run: npm run prod:compile
+            - name: Install client dependencies
+              working-directory: ./client
+              run: npm install
 
-      - name: Download GraphQL types
-        uses: actions/download-artifact@v4
-        with:
-          name: graphql-types
-          path: ./client/src/__generated__/
+            - name: Create API environment file
+              working-directory: ./api
+              run: |
+                  echo "HTTPS = ${{ vars.HTTPS }}" > .env.production.local
+                  echo "PRIVKEY_PEM = ${{ secrets.PRIVKEY_PEM }}" >> .env.production.local
+                  echo "FULLCHAIN_PEM = ${{ secrets.FULLCHAIN_PEM }}" >> .env.production.local
+                  echo "MONGODB_URI = ${{ secrets.MONGODB_URI }}" >> .env.production.local
+                  echo "PORT = ${{ secrets.PORT }}" >> .env.production.local
+                  echo "SESSION_SECRET = ${{ secrets.SESSION_SECRET }}" >> .env.production.local
+                  echo "SESSION_URI = ${{ secrets.SESSION_URI }}" >> .env.production.local
+                  echo "WHITELISTED_DOMAINS = ${{ secrets.WHITELISTED_DOMAINS }}" >> .env.production.local
+                  echo "IMAGE_DIR = ${{ secrets.IMAGE_DIR }}" >> .env.production.local
+                  echo "SMTP_FROM_DOMAIN = ${{ secrets.SMTP_FROM_DOMAIN }}" >> .env.production.local
+                  echo "SMTP_ADMIN_EMAIL = ${{ secrets.SMTP_ADMIN_EMAIL }}" >> .env.production.local
+                  echo "SENDGRID_API_KEY = ${{ secrets.SENDGRID_API_KEY }}" >> .env.production.local
 
-      - name: Compile client
-        working-directory: ./client
-        run: npm run build
+            - name: Create client environment file
+              working-directory: ./client
+              run: |
+                  echo "VITE_GRAPHQL_URL = ${{ secrets.VITE_GRAPHQL_URL }}" > .env.production.local
+                  echo "VITE_DEBOUNCE_TIME = ${{ vars.VITE_DEBOUNCE_TIME }}" >> .env.production.local
+                  echo "VITE_DELAY_LONG = ${{ vars.VITE_DELAY_LONG }}" >> .env.production.local
+                  echo "VITE_DELAY_SHORT = ${{ vars.VITE_DELAY_SHORT }}" >> .env.production.local
+                  echo "VITE_FETCH_MORE_NUM = ${{ vars.VITE_FETCH_MORE_NUM }}" >> .env.production.local
+                  echo "VITE_INIT_LOAD_NUM = ${{ vars.VITE_INIT_LOAD_NUM }}" >> .env.production.local
+                  echo "VITE_LOGIN_ENDPOINT = ${{ vars.VITE_LOGIN_ENDPOINT }}" >> .env.production.local
+                  echo "VITE_ROOT_PATH = ${{ vars.VITE_ROOT_PATH }}" >> .env.production.local
 
-      - name: Deploy API to server
-        uses: easingthemes/ssh-deploy@v5.1.0
-        with:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          ARGS: "-avzr --delete --include='dist/' --include='dist/**' --include='package.json' --include='package-lock.json' --include='.env.production.local' --exclude='*'"
-          SOURCE: ./api/
-          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-          REMOTE_USER: ${{ secrets.REMOTE_USER }}
-          REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
-          TARGET: ${{ secrets.API_REMOTE_TARGET }}
+            - name: Compile API
+              working-directory: ./api
+              run: npm run prod:compile
 
-      - name: Install API dependencies on server
-        uses: appleboy/ssh-action@v1.1.0
-        with:
-          host: ${{ secrets.REMOTE_HOST }}
-          username: ${{ secrets.REMOTE_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.REMOTE_PORT }}
-          script: |
-            cd ${{ secrets.API_REMOTE_TARGET }}
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
-            npm ci --production
+            - name: Download GraphQL types
+              uses: actions/download-artifact@v4
+              with:
+                  name: graphql-types
+                  path: ./client/src/__generated__/
 
-      - name: Start API server
-        uses: appleboy/ssh-action@v1.1.0
-        with:
-          host: ${{ secrets.REMOTE_HOST }}
-          username: ${{ secrets.REMOTE_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.REMOTE_PORT }}
-          script: touch $HOME/scripts/restart/recipe-api
+            - name: Compile client
+              working-directory: ./client
+              run: npm run build
 
-      - name: Deploy client to server
-        uses: easingthemes/ssh-deploy@v5.1.0
-        with:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          ARGS: "-avzr --delete"
-          SOURCE: ./client/dist/
-          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-          REMOTE_USER: ${{ secrets.REMOTE_USER }}
-          REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
-          TARGET: ${{ secrets.CLIENT_REMOTE_TARGET }}
+            - name: Deploy API to server
+              uses: easingthemes/ssh-deploy@v5.1.0
+              with:
+                  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+                  ARGS: "-avzr --delete --include='dist/' --include='dist/**' --include='package.json' --include='package-lock.json' --include='.env.production.local' --exclude='*'"
+                  SOURCE: ./api/
+                  REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+                  REMOTE_USER: ${{ secrets.REMOTE_USER }}
+                  REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
+                  TARGET: ${{ secrets.API_REMOTE_TARGET }}
+
+            - name: Install API dependencies on server
+              uses: appleboy/ssh-action@v1.1.0
+              with:
+                  host: ${{ secrets.REMOTE_HOST }}
+                  username: ${{ secrets.REMOTE_USER }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  port: ${{ secrets.REMOTE_PORT }}
+                  script: |
+                      cd ${{ secrets.API_REMOTE_TARGET }}
+                      export NVM_DIR="$HOME/.nvm"
+                      [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
+                      npm ci --production
+
+            - name: Start API server
+              uses: appleboy/ssh-action@v1.1.0
+              with:
+                  host: ${{ secrets.REMOTE_HOST }}
+                  username: ${{ secrets.REMOTE_USER }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  port: ${{ secrets.REMOTE_PORT }}
+                  script: touch $HOME/scripts/restart/recipe-api
+
+            - name: Deploy client to server
+              uses: easingthemes/ssh-deploy@v5.1.0
+              with:
+                  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+                  ARGS: '-avzr --delete'
+                  SOURCE: ./client/dist/
+                  REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+                  REMOTE_USER: ${{ secrets.REMOTE_USER }}
+                  REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
+                  TARGET: ${{ secrets.CLIENT_REMOTE_TARGET }}
