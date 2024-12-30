@@ -18,7 +18,7 @@ export function IngredientsTab(props: Props) {
     const { recipe } = props;
     const setNumServings = useRecipeStore((state) => state.setNumServings);
     const currentServings = useRecipeStore((state) => state.numServings);
-    const { isLoggedIn } = useUser();
+    const { isVerified } = useUser();
     const { addRating } = useAddRating(recipe);
     useEffect(() => {
         setNumServings(recipe.numServings);
@@ -31,7 +31,7 @@ export function IngredientsTab(props: Props) {
                 <StarRating
                     rating={getAverageRating(recipe.ratings)}
                     addRating={addRating}
-                    readonly={!isLoggedIn}
+                    readonly={!isVerified}
                     colour='rgba(0, 0, 0, 0.64)'
                 />
             }

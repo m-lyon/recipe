@@ -14,3 +14,6 @@ export const PRIVKEY_PEM = process.env.PRIVKEY_PEM;
 export const FULLCHAIN_PEM = process.env.FULLCHAIN_PEM;
 export const HTTPS = process.env.HTTPS === 'true';
 export const IMAGE_DIR = process.env.IMAGE_DIR ? process.env.IMAGE_DIR : '/data/recipe/images';
+export const SMTP_FROM_DOMAIN = process.env.SMTP_FROM_DOMAIN;
+export const SMTP_ADMIN_EMAIL = process.env.SMTP_ADMIN_EMAIL;
+export const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;

@@ -13,6 +13,9 @@ declare global {
             PRIVKEY_PEM?: string;
             FULLCHAIN_PEM?: string;
             IMAGE_DIR?: string;
+            SMTP_FROM_DOMAIN?: string;
+            SMTP_ADMIN_EMAIL?: string;
+            SENDGRID_API_KEY?: string;
         }
     }
 }

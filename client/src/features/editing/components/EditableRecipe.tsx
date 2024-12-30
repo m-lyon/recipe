@@ -28,7 +28,7 @@ interface Props {
 }
 export function EditableRecipe(props: Props) {
     const { rating, addRating, handleSubmitMutation, submitButtonProps } = props;
-    const { isLoggedIn } = useUser();
+    const { isVerified } = useUser();
 
     const isMobile = useBreakpointValue({ base: true, md: false });
 
@@ -93,7 +93,7 @@ export function EditableRecipe(props: Props) {
                             <StarRating
                                 rating={rating}
                                 addRating={addRating}
-                                readonly={isMobile || !isLoggedIn}
+                                readonly={isMobile || !isVerified}
                                 colour='rgba(0, 0, 0, 0.64)'
                             />
                         }
@@ -120,7 +120,7 @@ export function EditableRecipe(props: Props) {
                     <SubmitButton
                         {...submitButtonProps}
                         handleSubmit={handleSubmitMutation}
-                        isLoggedIn={isLoggedIn}
+                        isLoggedIn={isVerified}
                     />
                 </GridItem>
             </Grid>

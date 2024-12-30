@@ -1,4 +1,6 @@
+import { sendEmail } from '../utils/email.js';
 import { User, UserTC } from '../models/User.js';
+import { SMTP_ADMIN_EMAIL, SMTP_FROM_DOMAIN, TEST } from '../constants.js';
 
 UserTC.addResolver({
     name: 'currentUser',
@@ -50,11 +52,21 @@ UserTC.addResolver({
                 username: args.username,
                 firstName: args.firstName,
                 lastName: args.lastName,
-                role: 'user',
+                role: 'unverified',
             }),
             args.password
         );
-
+        if (!TEST) {
+            const text = `Please verify the user:
+            Username: ${args.username}
+            First Name: ${args.firstName}
+            Last Name: ${args.lastName}`;
+            sendEmail(`noreply@${SMTP_FROM_DOMAIN}`, SMTP_ADMIN_EMAIL, 'Verify User', text).catch(
+                (error) => {
+                    console.error('Failed to send verification email:', error);
+                }
+            );
+        }
         await context.login(user);
         return user;
     },

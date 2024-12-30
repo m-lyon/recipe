@@ -3,9 +3,15 @@ import { Document, Model, Types } from 'mongoose';
 
 import { Image } from '../models/Image.js';
 
-export const isAuthenticated = () => (next) => (rp) => {
-    if (!rp.context.getUser()) {
+export const isVerified = () => (next) => (rp) => {
+    const user = rp.context.getUser();
+    if (!user) {
         throw new GraphQLError('You are not authenticated!', {
+            extensions: { code: 'FORBIDDEN' },
+        });
+    }
+    if (user.role === 'unverified') {
+        throw new GraphQLError('You are not verified!', {
             extensions: { code: 'FORBIDDEN' },
         });
     }

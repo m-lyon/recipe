@@ -469,7 +469,7 @@ export async function populateUsers() {
                 username: 'jane@gmail.com',
                 firstName: 'Jane',
                 lastName: 'Doe',
-                role: 'user',
+                role: 'unverified',
             },
             {
                 username: 'matt@gmail.com',

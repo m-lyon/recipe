@@ -17,7 +17,7 @@ import { IngredientMutation, IngredientQuery } from './Ingredient.js';
 import { isAdmin, isImageOwnerOrAdmin } from '../middleware/authorisation.js';
 import { UnitConversionMutation, UnitConversionQuery } from './UnitConversion.js';
 import { ConversionRuleMutation, ConversionRuleQuery } from './UnitConversion.js';
-import { isAuthenticated, isDocumentOwnerOrAdmin } from '../middleware/authorisation.js';
+import { isDocumentOwnerOrAdmin, isVerified } from '../middleware/authorisation.js';
 import { PrepMethodMutation, PrepMethodQuery, PrepMethodQueryAdmin } from './PrepMethod.js';
 
 const isAdminMutations = composeResolvers(
@@ -51,7 +51,7 @@ const isAuthenticatedMutations = composeResolvers(
             ingredientCreateOne: IngredientMutation.ingredientCreateOne,
         },
     },
-    { 'Mutation.*': [isAuthenticated()] }
+    { 'Mutation.*': [isVerified()] }
 );
 const isImageOwnerOrAdminMutations = composeResolvers(
     {
