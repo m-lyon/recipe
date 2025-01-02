@@ -1,13 +1,13 @@
 import { useMutation } from '@apollo/client';
-import { KeyboardEvent, RefObject, useEffect, useState } from 'react';
+import { KeyboardEvent, RefObject } from 'react';
 
-import { useErrorToast } from '@recipe/common/hooks';
+import { useDropdown, useErrorToast } from '@recipe/common/hooks';
 import { CreatePrepMethodMutation } from '@recipe/graphql/generated';
 import { CREATE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 
 import { Suggestion } from '../utils/suggestions';
 
-export function useDropdownList(
+export function useIngredientDropdown(
     strValue: string,
     suggestions: Suggestion[],
     setItem: (attr: SetAttr) => void,
@@ -16,7 +16,10 @@ export function useDropdownList(
     listRef: RefObject<HTMLUListElement>
 ) {
     const toast = useErrorToast();
-    const [active, setActive] = useState(0);
+    const { active, handleSetActive, handleKeyboardEvent, resetView } = useDropdown(
+        suggestions,
+        listRef
+    );
     const [saveBespokePrepMethod] = useMutation(CREATE_PREP_METHOD, {
         onCompleted: (data: CreatePrepMethodMutation) => {
             setItem(data.prepMethodCreateOne!.record!);
@@ -30,24 +33,6 @@ export function useDropdownList(
             });
         },
     });
-    useEffect(() => {
-        if (active > suggestions.length - 1) {
-            setActive(Math.max(suggestions.length - 1, 0));
-        }
-    }, [active, suggestions.length]);
-
-    useEffect(() => {
-        // Scroll the active item into view if it exists
-        if (active !== -1 && listRef.current) {
-            const activeItem = listRef.current.children[active];
-            activeItem?.scrollIntoView({ block: 'nearest' });
-        }
-    }, [active, listRef]);
-
-    const resetView = () => {
-        setActive(0);
-        listRef.current?.scrollTo({ top: 0, behavior: 'instant' });
-    };
 
     const handleSelect = (item: Suggestion | undefined) => {
         if (!item) {
@@ -92,22 +77,15 @@ export function useDropdownList(
         }
     };
 
-    const handleKeyboardEvent = (e: KeyboardEvent<HTMLInputElement>) => {
-        if (['ArrowDown', 'ArrowUp', 'Enter', 'Backspace'].includes(e.key)) {
+    const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+        if (['Backspace'].includes(e.key)) {
             e.preventDefault();
         }
-        if (e.key === 'ArrowDown' && active < suggestions.length - 1) {
-            setActive((index) => (index += 1));
-        } else if (e.key === 'ArrowUp' && active > 0) {
-            setActive((index) => (index -= 1));
-        } else if (e.key === 'Enter') {
-            if (active !== -1) {
-                handleSelect(suggestions[active]);
-            }
-        } else if (e.key === 'Backspace') {
+        if (e.key === 'Backspace') {
             deleteChar();
         }
+        handleKeyboardEvent(e, handleSelect);
     };
 
-    return { active, setActive, handleKeyboardEvent, handleSelect };
+    return { active, handleSetActive, onKeyDown, handleSelect };
 }

@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import { useShallow } from 'zustand/shallow';
 import { useMutation } from '@apollo/client';
 import { useBreakpointValue } from '@chakra-ui/react';
 import { Popover, PopoverAnchor, useOutsideClick } from '@chakra-ui/react';
@@ -9,13 +8,13 @@ import { DEBUG } from '@recipe/constants';
 import { useRecipeStore } from '@recipe/stores';
 import { useErrorToast } from '@recipe/common/hooks';
 import { DELETE_UNIT } from '@recipe/graphql/mutations/unit';
-import { NewBespokeUnitPopover, NewIngredientPopover } from '@recipe/features/popovers';
-import { NewPrepMethodPopover, NewSizePopover, NewUnitPopover } from '@recipe/features/popovers';
 
-import { Dropdown } from './Dropdown';
+import { NewItemPopover } from './NewItemPopover';
 import { getSuggestions } from '../utils/suggestions';
-import { useDropdownList } from '../hooks/useDropdownList';
+import { IngredientDropdown } from './IngredientDropdown';
 import { useEditableIngredient } from '../hooks/useEditableIngredient';
+import { useIngredientDropdown } from '../hooks/useIngredientDropdown';
+
 interface Props {
     section: number;
     fontSize?: string;
@@ -27,15 +26,14 @@ export function EditableIngredient(props: Props) {
     const parentRef = useRef<HTMLDivElement>(null);
     const fieldRef = useRef<HTMLInputElement>(null);
     const listRef = useRef<HTMLUListElement>(null);
-    const { item, reset, open, numFinished, setPopover } = useRecipeStore(
-        useShallow((state) => ({
-            item: state.ingredientSections[section].editable,
-            reset: state.resetEditableIngredient,
-            open: state.showIngredientDropdown,
-            numFinished: state.ingredientSections[section].finished.length,
-            setPopover: state.setIngredientPopover,
-        }))
+    // ------------------ State ------------------
+    const item = useRecipeStore((state) => state.ingredientSections[section].editable);
+    const reset = useRecipeStore((state) => state.resetEditableIngredient);
+    const open = useRecipeStore((state) => state.showIngredientDropdown);
+    const numFinished = useRecipeStore(
+        (state) => state.ingredientSections[section].finished.length
     );
+    const setPopover = useRecipeStore((state) => state.setIngredientPopover);
     const deleteChar = useRecipeStore((state) => state.removeIngredientCharacter);
     const editableStr = useRecipeStore((state) => state.getIngredientString(section));
     const { data, setIngredientAttribute, handleIngredientChange } = useEditableIngredient(section);
@@ -60,7 +58,7 @@ export function EditableIngredient(props: Props) {
         },
     });
     const handleReset = () => {
-        setActive(0);
+        handleSetActive(0);
         reset(section);
         if (item.unit.data && !item.unit.data.unique) {
             deleteUnit({ variables: { id: item.unit.data._id } });
@@ -81,7 +79,7 @@ export function EditableIngredient(props: Props) {
         }
         setPopover(section, type);
     };
-    const { setActive, handleKeyboardEvent, handleSelect, ...dropdownProps } = useDropdownList(
+    const { handleSetActive, onKeyDown, handleSelect, active } = useIngredientDropdown(
         attributeStr,
         suggestions,
         setIngredientAttribute,
@@ -89,37 +87,6 @@ export function EditableIngredient(props: Props) {
         () => deleteChar(section),
         listRef
     );
-
-    const getPopover = () => {
-        const popoverProps = {
-            fieldRef,
-            onClose: () => {
-                setPopover(section, null);
-                previewRef.current?.focus();
-            },
-            setItem: (attr: RecipeIngredientDropdown) => handleSelect({ value: attr }),
-        };
-        switch (item.popover) {
-            case 'unit':
-                return <NewUnitPopover {...popoverProps} />;
-            case 'bespokeUnit':
-                return (
-                    <NewBespokeUnitPopover
-                        {...popoverProps}
-                        value={bespokeValue}
-                        setValue={setBespokeValue}
-                    />
-                );
-            case 'size':
-                return <NewSizePopover {...popoverProps} />;
-            case 'ingredient':
-                return <NewIngredientPopover {...popoverProps} />;
-            case 'prepMethod':
-                return <NewPrepMethodPopover {...popoverProps} />;
-            default:
-                return null;
-        }
-    };
 
     return (
         // Position relative is needed for the dropdown to be positioned correctly
@@ -166,22 +133,31 @@ export function EditableIngredient(props: Props) {
                             ref={inputRef}
                             value={attributeStr}
                             _focusVisible={{ outline: 'none' }}
-                            onKeyDown={handleKeyboardEvent}
+                            onKeyDown={onKeyDown}
                             aria-label={`Input ingredient #${numFinished + 1} for subsection ${section + 1}`}
                         />
                     </Editable>
                 </PopoverAnchor>
-                <Dropdown
+                <IngredientDropdown
                     suggestions={suggestions}
                     item={item}
-                    show={item.showDropdown}
                     listRef={listRef}
                     previewRef={previewRef}
                     handleSelect={handleSelect}
-                    setActive={setActive}
-                    {...dropdownProps}
+                    setActive={handleSetActive}
+                    active={active}
                 />
-                {getPopover()}
+                <NewItemPopover
+                    fieldRef={fieldRef}
+                    onClose={() => {
+                        setPopover(section, null);
+                        previewRef.current?.focus();
+                    }}
+                    setItem={(attr: RecipeIngredientDropdown) => handleSelect({ value: attr })}
+                    item={item}
+                    bespokeValue={bespokeValue}
+                    setBespokeValue={setBespokeValue}
+                />
             </Popover>
         </Box>
     );

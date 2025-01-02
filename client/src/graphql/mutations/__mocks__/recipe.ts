@@ -1018,7 +1018,7 @@ export const mockDeleteRecipeOne = {
         data: {
             __typename: 'Mutation',
             recipeRemoveById: {
-                __typename: 'RemoveByIdRecipeModifyPayload',
+                __typename: 'RemoveByIdRecipePayload',
                 recordId: recipeOneVars.id,
             },
         } satisfies DeleteRecipeMutation,
@@ -1033,7 +1033,7 @@ export const mockDeleteRecipeTwo = {
         data: {
             __typename: 'Mutation',
             recipeRemoveById: {
-                __typename: 'RemoveByIdRecipeModifyPayload',
+                __typename: 'RemoveByIdRecipePayload',
                 recordId: recipeTwoVars.id,
             },
         } satisfies DeleteRecipeMutation,

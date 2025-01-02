@@ -81,7 +81,7 @@ jobs:
 
             - name: Generate GraphQL types
               working-directory: ./client
-              run: npm run test:generate
+              run: npm run generate:test
 
             - name: Test client
               working-directory: ./client

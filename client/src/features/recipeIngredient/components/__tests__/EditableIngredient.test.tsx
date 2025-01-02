@@ -20,8 +20,7 @@ describe('Dropdown Action Keyboard', () => {
         renderComponent();
 
         // Act
-        const ingredientInput = screen.getByText('Enter ingredient');
-        await user.click(ingredientInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{ }{Enter>2/}{ArrowDown>10/}{Enter}');
 
         // Expect
@@ -35,8 +34,7 @@ describe('Dropdown Action Keyboard', () => {
         renderComponent();
 
         // Act
-        const ingredientInput = screen.getByText('Enter ingredient');
-        await user.click(ingredientInput);
+        await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{ }{Enter>2/}{ArrowUp>4/}{Enter}');
 
         // Expect

@@ -7,12 +7,14 @@ import { useRecipeStore } from '@recipe/stores';
 import { useWarningToast } from '@recipe/common/hooks';
 
 import { TagDropdown } from './TagDropdown';
+import { useTagDropdown } from '../hooks/useTagDropdown';
 
 const FORBIDDEN_TAGS = ['vegan', 'vegetarian'];
 
 export function EditableTag() {
     const parentRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+    const listRef = useRef<HTMLUListElement>(null);
     const toast = useWarningToast();
     const { tag, reset, dropdownIsOpen, showDropdown, setTag } = useRecipeStore(
         useShallow((state) => ({
@@ -31,6 +33,7 @@ export function EditableTag() {
             }
         },
     });
+    const { onKeyDown, ...dropdownProps } = useTagDropdown(listRef, inputRef);
 
     return (
         <motion.div layout='position' ref={parentRef}>
@@ -55,9 +58,14 @@ export function EditableTag() {
                 placeholder='Add a tag...'
             >
                 <EditablePreview aria-label='Add a tag' />
-                <EditableInput ref={inputRef} value={tag} _focusVisible={{ outline: 'none' }} />
+                <EditableInput
+                    ref={inputRef}
+                    value={tag}
+                    _focusVisible={{ outline: 'none' }}
+                    onKeyDown={onKeyDown}
+                />
             </Editable>
-            <TagDropdown inputRef={inputRef} />
+            <TagDropdown {...dropdownProps} listRef={listRef} />
         </motion.div>
     );
 }

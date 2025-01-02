@@ -12,7 +12,8 @@
     "types": [
       "vite/client",
       "node",
-      "@testing-library/jest-dom"
+      "@testing-library/jest-dom",
+      "@vitest/browser/providers/playwright"
     ],
     /* Bundler mode */
     "moduleResolution": "bundler",

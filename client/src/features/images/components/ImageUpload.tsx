@@ -2,8 +2,9 @@ import { ChangeEvent } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { Box, Container, Stack } from '@chakra-ui/react';
 
+import { useImagesStore } from '@recipe/stores';
 import { useErrorToast } from '@recipe/common/hooks';
-import { ImageUploadPreview, UploadBox, useImagesStore } from '@recipe/features/images';
+import { ImageUploadPreview, UploadBox } from '@recipe/features/images';
 
 export function ImageUpload() {
     const { images, addImage, removeImage } = useImagesStore(

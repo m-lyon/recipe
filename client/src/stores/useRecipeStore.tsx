@@ -40,9 +40,9 @@ export const useRecipeStore = create<RecipeState>()((...a) => ({
     ...createSourceSlice(...a),
     ...createTitleSlice(...a),
     ...createAsIngredientSlice(...a),
-    ...createSharedSlice(...a),
     ...createNumServingsSlice(...a),
     ...createTagsSlice(...a),
     ...createInstructionsSlice(...a),
     ...createIngredientsSlice(...a),
+    ...createSharedSlice(...a),
 }));

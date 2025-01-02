@@ -1,17 +1,14 @@
-import { act } from 'react';
-export { useStore } from 'zustand';
+import * as zustand from 'zustand';
 import { afterEach, vi } from 'vitest';
-import type * as ZustandExportedTypes from 'zustand';
-export type { StoreMutatorIdentifier, StoreMutators } from 'zustand';
-export type { StateCreator, StoreApi, Mutate, UseBoundStore } from 'zustand';
+import { act } from '@testing-library/react';
 
 const { create: actualCreate, createStore: actualCreateStore } =
-    await vi.importActual<typeof ZustandExportedTypes>('zustand');
+    await vi.importActual<typeof zustand>('zustand');
 
 // a variable to hold reset functions for all stores declared in the app
 const storeResetFns = new Set<() => void>();
 
-const createUncurried = <T>(stateCreator: ZustandExportedTypes.StateCreator<T>) => {
+const createUncurried = <T>(stateCreator: zustand.StateCreator<T>) => {
     const store = actualCreate(stateCreator);
     const initialState = store.getInitialState();
     storeResetFns.add(() => {
@@ -21,14 +18,12 @@ const createUncurried = <T>(stateCreator: ZustandExportedTypes.StateCreator<T>) 
 };
 
 // when creating a store, we get its initial state, create a reset function and add it in the set
-export const create = (<T>(stateCreator: ZustandExportedTypes.StateCreator<T>) => {
-    // console.log('zustand create mock');
-
+export const create = (<T>(stateCreator: zustand.StateCreator<T>) => {
     // to support curried version of create
     return typeof stateCreator === 'function' ? createUncurried(stateCreator) : createUncurried;
-}) as typeof ZustandExportedTypes.create;
+}) as typeof zustand.create;
 
-const createStoreUncurried = <T>(stateCreator: ZustandExportedTypes.StateCreator<T>) => {
+const createStoreUncurried = <T>(stateCreator: zustand.StateCreator<T>) => {
     const store = actualCreateStore(stateCreator);
     const initialState = store.getInitialState();
     storeResetFns.add(() => {
@@ -38,12 +33,12 @@ const createStoreUncurried = <T>(stateCreator: ZustandExportedTypes.StateCreator
 };
 
 // when creating a store, we get its initial state, create a reset function and add it in the set
-export const createStore = (<T>(stateCreator: ZustandExportedTypes.StateCreator<T>) => {
+export const createStore = (<T>(stateCreator: zustand.StateCreator<T>) => {
     // to support curried version of createStore
     return typeof stateCreator === 'function'
         ? createStoreUncurried(stateCreator)
         : createStoreUncurried;
-}) as typeof ZustandExportedTypes.createStore;
+}) as typeof zustand.createStore;
 
 // reset all stores after each test run
 afterEach(() => {

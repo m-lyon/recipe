@@ -9,10 +9,9 @@ interface Props {
     onClick: () => void;
     isHighlighted: boolean;
     setHighlighted: () => void;
-    resetHighlighted: () => void;
 }
 export function DropdownItem(props: Props) {
-    const { color, value, icon, onClick, isHighlighted, setHighlighted, resetHighlighted } = props;
+    const { color, value, icon, onClick, isHighlighted, setHighlighted } = props;
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -21,11 +20,10 @@ export function DropdownItem(props: Props) {
                 py={1}
                 onClick={onClick}
                 onMouseEnter={setHighlighted}
-                onMouseLeave={resetHighlighted}
                 cursor='default'
                 color={color}
                 background={isHighlighted ? 'gray.100' : undefined}
-                aria-label={value}
+                aria-label={isHighlighted ? `Highlighted selection: ${value}` : value}
             >
                 <HStack>
                     <Text>{value}</Text>

@@ -200,10 +200,10 @@ describe('Create new PrepMethod', () => {
         expect(await screen.findByLabelText('1 chicken, pipped')).not.toBeNull();
         haveValueByLabelText(screen, 'Input ingredient #2 for subsection 1', '');
         // ------ Available as new prepMethod -----------------------------------
-        expect(await screen.findByLabelText('skip quantity')).not.toBeNull();
+        await notNullByLabelText(screen, 'Highlighted selection: skip quantity');
         await user.keyboard('{2}{ }');
         await clickGetByText(screen, user, 'skip unit', 'chickens');
-        expect(await screen.findByLabelText('skip prep method')).not.toBeNull();
+        await notNullByLabelText(screen, 'Highlighted selection: skip prep method');
         expect(screen.queryByLabelText('pipped')).not.toBeNull();
         // ------ New prep method form is reset ----------------------------------------
         await user.keyboard('{c}');

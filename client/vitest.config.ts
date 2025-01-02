@@ -9,8 +9,7 @@ export default mergeConfig(
             environment: 'happy-dom',
             css: true,
             testTimeout: 15000,
-            include: ['**/__tests__/*.{spec,test}.{js,ts,tsx}'],
-            setupFiles: ['./setup-vitest.ts'],
+            setupFiles: ['./setup.vitest.ts'],
         },
     })
 );

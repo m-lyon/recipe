@@ -3,14 +3,14 @@ import { useShallow } from 'zustand/shallow';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Reference, useMutation, useQuery } from '@apollo/client';
 
-import { useRecipeStore } from '@recipe/stores';
+import { useUploadImages } from '@recipe/features/images';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
+import { useImagesStore, useRecipeStore } from '@recipe/stores';
 import { DELETE_IMAGES } from '@recipe/graphql/mutations/image';
 import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 import { UpdateByIdRecipeModifyInput } from '@recipe/graphql/generated';
 import { getAverageRating, useAddRating } from '@recipe/features/rating';
-import { useImagesStore, useUploadImages } from '@recipe/features/images';
 import { EditableRecipe, updateRecipeCache } from '@recipe/features/editing';
 import { DELAY_LONG, DELAY_SHORT, GRAPHQL_URL, PATH } from '@recipe/constants';
 

@@ -6,13 +6,13 @@ import { Tag, TagCloseButton, TagLabel, VStack, Wrap, WrapItem } from '@chakra-u
 import { useRecipeStore } from '@recipe/stores';
 import { GET_TAGS } from '@recipe/graphql/queries/tag';
 import { REMOVE_TAG } from '@recipe/graphql/mutations/tag';
-import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
+import { useErrorToast, useInfoToast } from '@recipe/common/hooks';
 
 import { EditableTag } from './EditableTag';
 
 export function EditableTagList() {
     const errorToast = useErrorToast();
-    const successToast = useSuccessToast();
+    const infoToast = useInfoToast();
     // Preload tags
     useQuery(GET_TAGS);
     const { finished, removeTag } = useRecipeStore(
@@ -23,7 +23,7 @@ export function EditableTagList() {
     );
     const [removeTagMutation] = useMutation(REMOVE_TAG, {
         onCompleted: (data) => {
-            successToast({
+            infoToast({
                 title: 'Tag removed',
                 description: `Tag ${data?.tagRemoveById?.record?.value} removed`,
                 position: 'top',
