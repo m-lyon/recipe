@@ -18,7 +18,6 @@ describe('Update Recipe Workflow: Ingredients', () => {
     afterEach(() => {
         cleanup();
     });
-
     it('should add an ingredient', async () => {
         // Render -----------------------------------------------
         renderComponent([mockUpdateRecipeIngredientsAdd]);
@@ -42,7 +41,6 @@ describe('Update Recipe Workflow: Ingredients', () => {
         await notNullByLabelText(screen, '1 small apple, diced', '4 tsp apples, diced');
         await notNullByLabelText(screen, '2 apples, diced');
     });
-
     it('should edit the ingredients', async () => {
         // Render -----------------------------------------------
         renderComponent([mockUpdateRecipeIngredientsEdit]);
@@ -68,7 +66,6 @@ describe('Update Recipe Workflow: Ingredients', () => {
         await notNullByLabelText(screen, '1 small apple, diced', '4 tsp apples, diced');
         expect(screen.queryByLabelText('2 apples, diced')).toBeNull();
     });
-
     it('should remove an ingredient', async () => {
         // Render -----------------------------------------------
         renderComponent([mockUpdateRecipeIngredientsRemove]);
@@ -88,5 +85,18 @@ describe('Update Recipe Workflow: Ingredients', () => {
         await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         expect(await screen.findByLabelText('1 small apple, diced')).not.toBeNull();
         expect(screen.queryByLabelText('2 apples, diced')).toBeNull();
+    });
+    it('should display only one copy of each recipe dropdown option in edit mode', async () => {
+        // Render
+        renderComponent();
+        const user = userEvent.setup();
+
+        // Act
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+        await user.click(screen.getByLabelText('Enter ingredient #3 for subsection 2'));
+        await user.keyboard('{1}{ }{ArrowDown}{Enter}{r}{h}{u}');
+
+        // Expect
+        expect(screen.queryAllByText('rhubarb pie').length).toBe(1);
     });
 });

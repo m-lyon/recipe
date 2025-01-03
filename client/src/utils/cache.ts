@@ -15,12 +15,16 @@ export const getCache = () =>
                             return [];
                         },
                         merge(existing = [], incoming, { args, storage }) {
-                            const currFilter = args?.filter;
-                            if (JSON.stringify(currFilter) === JSON.stringify(storage.prevFilter)) {
-                                storage.prevFilter = currFilter;
+                            const { filter, limit, skip } = args || {};
+                            // Filter is the same as before but skip is different, indicates pagination.
+                            if (
+                                JSON.stringify(filter) === JSON.stringify(storage.prev?.filter) &&
+                                JSON.stringify(skip) !== JSON.stringify(storage.prev?.skip)
+                            ) {
+                                storage.prev = { filter, limit, skip };
                                 return [...existing, ...incoming];
                             }
-                            storage.prevFilter = currFilter;
+                            storage.prev = { filter, limit, skip };
                             return incoming;
                         },
                     },

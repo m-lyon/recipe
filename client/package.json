@@ -9,7 +9,7 @@
         "experimental": "vite build --outDir=dist/experimental --base=/recipe-experimental --mode=experimental",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
         "preview": "vite preview",
-        "test": "NODE_ENV=test vitest --workspace=vitest.dom.config.ts",
+        "test": "NODE_ENV=test vitest --workspace=vitest.default.config.ts",
         "test:browser": "NODE_ENV=test vitest --workspace=vitest.browser.config.ts",
         "test-ui": "npm run test -- --ui",
         "test-coverage": "npm run test -- run --coverage",
