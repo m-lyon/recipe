@@ -49,7 +49,7 @@ declare global {
      * Represents a tag document dropdown choice that can be selected by the user when selecting
      * tags for a recipe.
      */
-    type TagChoice = GetTagsQuery['tagMany'][number];
+    type TagChoice = Omit<GetTagsQuery['tagMany'][number], '__typename'>;
     /**
      * Represents a dropdown choice that can be selected by the user when editing a recipe.
      * This includes 'string' which is used for the quantity field, as well as the various

@@ -1,7 +1,6 @@
 import { useRef } from 'react';
-import { motion } from 'framer-motion';
 import { useShallow } from 'zustand/shallow';
-import { Editable, EditableInput, EditablePreview, useOutsideClick } from '@chakra-ui/react';
+import { Box, Editable, EditableInput, EditablePreview, useOutsideClick } from '@chakra-ui/react';
 
 import { useRecipeStore } from '@recipe/stores';
 import { useWarningToast } from '@recipe/common/hooks';
@@ -16,13 +15,14 @@ export function EditableTag() {
     const inputRef = useRef<HTMLInputElement>(null);
     const listRef = useRef<HTMLUListElement>(null);
     const toast = useWarningToast();
-    const { tag, reset, dropdownIsOpen, showDropdown, setTag } = useRecipeStore(
+    const { tag, reset, dropdownIsOpen, showDropdown, setTag, isOpen } = useRecipeStore(
         useShallow((state) => ({
             tag: state.editableTag,
             reset: state.resetEditableTag,
             dropdownIsOpen: state.tagsDropdownIsOpen,
             showDropdown: state.showTagsDropdown,
             setTag: state.setTag,
+            isOpen: state.tagsDropdownIsOpen,
         }))
     );
     useOutsideClick({
@@ -36,7 +36,7 @@ export function EditableTag() {
     const { onKeyDown, ...dropdownProps } = useTagDropdown(listRef, inputRef);
 
     return (
-        <motion.div layout='position' ref={parentRef}>
+        <Box ref={parentRef} position='relative'>
             <Editable
                 value={tag}
                 selectAllOnFocus={false}
@@ -65,7 +65,7 @@ export function EditableTag() {
                     onKeyDown={onKeyDown}
                 />
             </Editable>
-            <TagDropdown {...dropdownProps} listRef={listRef} />
-        </motion.div>
+            <TagDropdown isOpen={isOpen} {...dropdownProps} listRef={listRef} />
+        </Box>
     );
 }

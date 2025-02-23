@@ -1,11 +1,12 @@
-import { matchSorter } from 'match-sorter';
+import { useMutation } from '@apollo/client';
 import { KeyboardEvent, RefObject } from 'react';
-import { useMutation, useQuery } from '@apollo/client';
 
 import { useRecipeStore } from '@recipe/stores';
+import { TAG_FIELDS } from '@recipe/graphql/queries/tag';
 import { CREATE_TAG } from '@recipe/graphql/mutations/tag';
-import { GET_TAGS, TAG_FIELDS } from '@recipe/graphql/queries/tag';
 import { useDropdown, useSuccessToast, useWarningToast } from '@recipe/common/hooks';
+
+import { useTagSuggestions } from './useTagSuggestions';
 
 export function useTagDropdown(
     listRef: RefObject<HTMLUListElement>,
@@ -17,13 +18,7 @@ export function useTagDropdown(
     const hideDropdown = useRecipeStore((state) => state.hideTagsDropdown);
     const finished = useRecipeStore((state) => state.finishedTags);
     const editable = useRecipeStore((state) => state.editableTag);
-    const { data } = useQuery(GET_TAGS);
-    const tags = data ? data.tagMany : [];
-    const suggestions = matchSorter<TagChoice>(
-        tags.filter((tag) => !finished.find((fin) => fin._id === tag._id)),
-        editable,
-        { keys: ['value'] }
-    );
+    const suggestions = useTagSuggestions(finished, editable);
     const { active, handleSetActive, handleKeyboardEvent } = useDropdown(suggestions, listRef);
     const [createNewTag] = useMutation(CREATE_TAG, {
         variables: { record: { value: editable } },

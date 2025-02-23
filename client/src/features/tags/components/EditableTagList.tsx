@@ -74,7 +74,9 @@ export function EditableTagList() {
                 <Wrap spacing='10px'>
                     <AnimatePresence>{tagsList}</AnimatePresence>
                 </Wrap>
-                <EditableTag />
+                <motion.div layout='position'>
+                    <EditableTag />
+                </motion.div>
             </LayoutGroup>
         </VStack>
     );

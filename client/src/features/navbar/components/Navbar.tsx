@@ -1,49 +1,42 @@
-import { Link as ChakraLink } from '@chakra-ui/react';
 import { CloseIcon, HamburgerIcon } from '@chakra-ui/icons';
+import { Link as ChakraLink, VStack } from '@chakra-ui/react';
 import { Box, Flex, IconButton, Slide } from '@chakra-ui/react';
 import { useColorModeValue, useDisclosure } from '@chakra-ui/react';
 import { Outlet, Link as ReactRouterLink, useLocation } from 'react-router-dom';
 
 import { PATH } from '@recipe/constants';
+import { useSearchStore } from '@recipe/stores';
 import { UserOptions, useUser } from '@recipe/features/user';
 import { SearchBar, useSearch } from '@recipe/features/search';
 
+import { FlexNav } from './FlexNav';
 import { MobileNav } from './MobileNav';
 import { DesktopNav } from './DesktopNav';
+import { SearchFilter } from './SearchFilter';
 
 export function Navbar() {
     const location = useLocation();
     const { isOpen, onToggle, onClose } = useDisclosure();
-    const { searchQuery, delayedSearchQuery, onSearch } = useSearch();
+    const { searchQuery, onSearch, resetSearch } = useSearch();
+    const setShowSearch = useSearchStore((state) => state.setShowSearch);
     const { isLoggedIn, isVerified } = useUser();
 
     const isHomePage = location.pathname === PATH.ROOT;
 
     return (
         <>
-            <Box>
-                <Flex
-                    as='nav'
-                    bg={useColorModeValue('white', 'gray.800')}
-                    color={useColorModeValue('gray.600', 'white')}
-                    minH='60px'
-                    py={{ base: 2 }}
-                    px={{ base: 4 }}
-                    borderBottom={1}
-                    borderStyle='solid'
-                    borderColor={useColorModeValue('gray.200', 'gray.900')}
-                    align='center'
-                    position='fixed'
-                    zIndex={12}
-                    w='100%'
-                >
+            <VStack>
+                <FlexNav>
                     <Flex
                         flex={{ base: 0, md: 'auto' }}
                         ml={{ base: -2 }}
                         display={{ base: 'flex', md: 'none' }}
                     >
                         <IconButton
-                            onClick={onToggle}
+                            onClick={() => {
+                                setShowSearch(false);
+                                onToggle();
+                            }}
                             isDisabled={!isLoggedIn || !isVerified}
                             icon={
                                 isOpen ? <CloseIcon w={3} h={3} /> : <HamburgerIcon w={5} h={5} />
@@ -66,9 +59,7 @@ export function Navbar() {
                             as={ReactRouterLink}
                             aria-label='Navigate to home page'
                             onClick={() => {
-                                if (delayedSearchQuery !== '') {
-                                    onSearch('');
-                                }
+                                resetSearch();
                                 onClose();
                             }}
                             display={{ base: isHomePage ? 'none' : 'inline', md: 'inline' }}
@@ -88,17 +79,28 @@ export function Navbar() {
                                 display={isHomePage ? 'flex' : 'none'}
                                 pr={{ base: '0px', md: '20px' }}
                             >
-                                <SearchBar searchQuery={searchQuery} onSearch={onSearch} />
+                                <SearchBar
+                                    searchQuery={searchQuery}
+                                    onSearch={onSearch}
+                                    resetSearch={resetSearch}
+                                    closeNavDropdown={onClose}
+                                />
                             </Box>
                         </Flex>
                         <UserOptions />
                     </Flex>
-                </Flex>
-                <Slide in={isOpen} direction='top' style={{ zIndex: 11, marginTop: '60px' }}>
+                </FlexNav>
+                <SearchFilter />
+                <Slide
+                    in={isOpen}
+                    direction='top'
+                    style={{ zIndex: 11, marginTop: '60px' }}
+                    transition={{ enter: { duration: 0.3 } }}
+                >
                     <MobileNav isVerified={isVerified} parentOnToggle={onToggle} />
                 </Slide>
-            </Box>
-            <Outlet context={{ delayedSearchQuery }} />
+            </VStack>
+            <Outlet />
         </>
     );
 }

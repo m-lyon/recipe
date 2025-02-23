@@ -55,7 +55,6 @@ function MobileNavItem({ label, ariaLabel, children, href, parentOnToggle }: Nav
                     )}
                 </Flex>
             </ChakraLink>
-
             <Collapse in={isOpen} animateOpacity style={{ marginTop: '0!important' }}>
                 <Stack
                     mt={2}

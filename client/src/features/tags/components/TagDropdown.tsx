@@ -1,10 +1,11 @@
 import { RefObject } from 'react';
-import { motion } from 'framer-motion';
+import { BoxProps } from '@chakra-ui/react';
 
-import { useRecipeStore } from '@recipe/stores';
 import { DropdownItem, DropdownList } from '@recipe/common/components';
 
 interface Props {
+    isOpen: boolean;
+    width?: BoxProps['width'];
     suggestions: TagChoice[];
     active: number;
     handleSetActive: (index: number) => void;
@@ -12,33 +13,21 @@ interface Props {
     listRef: RefObject<HTMLUListElement>;
 }
 export function TagDropdown(props: Props) {
-    const { suggestions, active, handleSetActive, handleSelect, listRef } = props;
-    const isOpen = useRecipeStore((state) => state.tagsDropdownIsOpen);
+    const { isOpen, width, suggestions, active, handleSetActive, handleSelect, listRef } = props;
 
-    const listItems = suggestions.map((item, index) => {
-        return (
-            <DropdownItem
-                key={index}
-                value={item.value}
-                onClick={() => handleSelect(item)}
-                isHighlighted={index === active}
-                setHighlighted={() => handleSetActive(index)}
-            />
-        );
-    });
+    const listItems = suggestions.map((i, index) => (
+        <DropdownItem
+            key={index}
+            value={i.value}
+            onClick={() => handleSelect(i)}
+            isHighlighted={index === active}
+            setHighlighted={() => handleSetActive(index)}
+        />
+    ));
 
     return (
-        isOpen && (
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                style={{ position: 'absolute', zIndex: 1 }}
-            >
-                <DropdownList aria-label='Tag suggestions' position='absolute' ref={listRef}>
-                    {listItems}
-                </DropdownList>
-            </motion.div>
-        )
+        <DropdownList isOpen={isOpen} aria-label='Tag suggestions' ref={listRef} width={width}>
+            {listItems}
+        </DropdownList>
     );
 }

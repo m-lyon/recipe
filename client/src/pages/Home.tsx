@@ -1,27 +1,18 @@
-import { useQuery } from '@apollo/client';
 import { Container, Grid, GridItem, Text } from '@chakra-ui/react';
 
-import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
-import { useDelayedSearchQuery } from '@recipe/features/search';
+import { useSearchStore } from '@recipe/stores';
 import { RecipeCardsContainer } from '@recipe/features/viewing';
-import { FETCH_MORE_NUM, INIT_LOAD_NUM } from '@recipe/constants';
 
 export function Home() {
-    const { searchQuery } = useDelayedSearchQuery();
-    const { data, loading, error, fetchMore } = useQuery(GET_RECIPES, {
-        variables: { offset: 0, limit: INIT_LOAD_NUM },
-    });
-
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    if (error || !data) {
-        return <div>Error: {error?.message}</div>;
-    }
+    const showSearch = useSearchStore((state) => state.showSearch);
 
     return (
-        <Container maxW='container.xl' pt='60px' px='16px'>
+        <Container
+            maxW='container.xl'
+            mt={showSearch ? '120px' : '60px'}
+            px='16px'
+            transition='margin-top 0.3s'
+        >
             <Grid
                 templateAreas={`'title'
                                 'recipes'`}
@@ -40,21 +31,7 @@ export function Home() {
                     </Text>
                 </GridItem>
                 <GridItem boxShadow='lg' area='recipes'>
-                    <RecipeCardsContainer
-                        recipes={data.recipeMany}
-                        fetchMore={() => {
-                            fetchMore({
-                                variables: {
-                                    offset: data!.recipeMany.length,
-                                    limit: FETCH_MORE_NUM,
-                                    filter: searchQuery
-                                        ? { _operators: { title: { regex: `/${searchQuery}/i` } } }
-                                        : undefined,
-                                },
-                            });
-                        }}
-                        searchQuery={searchQuery}
-                    />
+                    <RecipeCardsContainer />
                 </GridItem>
             </Grid>
         </Container>

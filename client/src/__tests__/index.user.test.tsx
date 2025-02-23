@@ -19,7 +19,11 @@ import { MockedResponses, enterEditRecipePage, enterViewRecipePage } from '@reci
 import { routes } from '../routes';
 
 const renderComponent = (mockedResponses: MockedResponses = []) => {
-    return renderPage(routes, [mockGetRecipes, mockCountRecipes, ...mockedResponses], [PATH.ROOT]);
+    return renderPage(
+        routes,
+        [mockGetRecipes, mockCountRecipes, mockGetTags, ...mockedResponses],
+        [PATH.ROOT]
+    );
 };
 
 loadErrorMessages();
@@ -84,7 +88,6 @@ describe('Edit & Delete Permissions', () => {
             mockGetRecipeTwo,
             mockGetIngredientComponents,
             mockGetUnitConversions,
-            mockGetTags,
         ]);
         const user = userEvent.setup();
 
