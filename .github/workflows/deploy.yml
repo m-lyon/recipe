@@ -6,7 +6,7 @@ on:
             - main
 
 env:
-    MONGODB_VERSION: '8.0.3'
+    MONGODB_VERSION: '8.0.5'
     NODE_VERSION: 18
 
 jobs:
