@@ -11,6 +11,7 @@ export const WHITELIST = WHITELISTED_DOMAINS ? WHITELISTED_DOMAINS.split(',') : 
 export const SESSION_SECRET = process.env.SESSION_SECRET;
 export const SESSION_URI = process.env.SESSION_URI;
 export const MONGODB_URI = process.env.MONGODB_URI;
+export const MONGODB_VERSION = process.env.MONGODB_VERSION;
 export const PORT = process.env.PORT ? normalisePort(process.env.PORT) : 4000;
 export const PRIVKEY_PEM = process.env.PRIVKEY_PEM;
 export const FULLCHAIN_PEM = process.env.FULLCHAIN_PEM;
@@ -28,6 +29,14 @@ if (!TEST) {
         SENDGRID_API_KEY,
         MONGODB_URI,
     };
+    for (const [key, value] of Object.entries(requiredEnvVars)) {
+        if (!value) {
+            throw new Error(`${key} is required`);
+        }
+    }
+}
+if (TEST) {
+    const requiredEnvVars = { MONGODB_VERSION };
     for (const [key, value] of Object.entries(requiredEnvVars)) {
         if (!value) {
             throw new Error(`${key} is required`);

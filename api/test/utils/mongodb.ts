@@ -4,8 +4,9 @@ import { ApolloServer } from '@apollo/server';
 import { MongoMemoryServer } from 'mongodb-memory-server-core';
 
 import { schema } from '../../src/schema/index.js';
+import { MONGODB_VERSION } from '../../src/constants.js';
 
-export const MONGODB_OPTS = { binary: { version: '4.4.18' } };
+export const MONGODB_OPTS = { binary: { version: MONGODB_VERSION } };
 
 export async function startServer() {
     try {
