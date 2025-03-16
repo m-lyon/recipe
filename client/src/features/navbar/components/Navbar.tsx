@@ -18,7 +18,7 @@ import { SelectedFilters } from './SelectedFilters';
 export function Navbar() {
     const location = useLocation();
     const { isOpen, onToggle, onClose } = useDisclosure();
-    const { setTitle, reset } = useSearch();
+    const { setTitle, reset, addFilter, removeFilter } = useSearch();
     const setShowSearch = useSearchStore((state) => state.setShowSearch);
     const { isLoggedIn, isVerified } = useUser();
 
@@ -90,8 +90,8 @@ export function Navbar() {
                         <UserOptions />
                     </Flex>
                 </FlexNav>
-                <SelectedFilters />
-                <SearchFilter />
+                <SelectedFilters removeFilter={removeFilter} />
+                <SearchFilter addFilter={addFilter} />
                 <Slide
                     in={isOpen}
                     direction='top'

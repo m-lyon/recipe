@@ -33,12 +33,12 @@ describe('Update Recipe Workflow: Ingredients', () => {
 
         // Expect ------------------------------------------------
         // ------ View Recipe Page -------------------------------
-        await enterViewRecipePage(screen, user, 'Mock Recipe', '1 small apple, diced');
+        await enterViewRecipePage(screen, user, 'Mock Recipe', '1 small carrot, diced');
         await notNullByText(screen, '4 tsp apples, diced', '2 apples, diced');
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        await notNullByLabelText(screen, '1 small apple, diced', '4 tsp apples, diced');
+        await notNullByLabelText(screen, '1 small carrot, diced', '4 tsp apples, diced');
         await notNullByLabelText(screen, '2 apples, diced');
     });
     it('should edit the ingredients', async () => {
@@ -58,12 +58,12 @@ describe('Update Recipe Workflow: Ingredients', () => {
         // Expect ------------------------------------------------
         // ------ View Recipe Page -------------------------------
         await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        await notNullByText(screen, '1 small apple, diced', '4 tsp apples, diced');
+        await notNullByText(screen, '1 small carrot, diced', '4 tsp apples, diced');
         expect(screen.queryByText('2 apples, diced')).toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        await notNullByLabelText(screen, '1 small apple, diced', '4 tsp apples, diced');
+        await notNullByLabelText(screen, '1 small carrot, diced', '4 tsp apples, diced');
         expect(screen.queryByLabelText('2 apples, diced')).toBeNull();
     });
     it('should remove an ingredient', async () => {
@@ -78,12 +78,12 @@ describe('Update Recipe Workflow: Ingredients', () => {
 
         // Expect ------------------------------------------------
         // ------ View Recipe Page -------------------------------
-        await enterViewRecipePage(screen, user, 'Mock Recipe', '1 small apple, diced');
+        await enterViewRecipePage(screen, user, 'Mock Recipe', '1 small carrot, diced');
         expect(screen.queryByText('2 apples, diced')).toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        expect(await screen.findByLabelText('1 small apple, diced')).not.toBeNull();
+        expect(await screen.findByLabelText('1 small carrot, diced')).not.toBeNull();
         expect(screen.queryByLabelText('2 apples, diced')).toBeNull();
     });
     it('should display only one copy of each recipe dropdown option in edit mode', async () => {

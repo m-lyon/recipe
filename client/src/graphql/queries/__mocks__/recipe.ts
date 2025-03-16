@@ -2,8 +2,6 @@ import { GetRecipeQuery } from '@recipe/graphql/generated';
 import { GetRecipeQueryVariables } from '@recipe/graphql/generated';
 import { GetIngredientComponentsQuery } from '@recipe/graphql/generated';
 import { GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
-import { mockRecipeIngredientIdTwo } from '@recipe/graphql/__mocks__/ids';
-import { mockRecipeIngredientIdFour } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdFive } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdNine } from '@recipe/graphql/__mocks__/ids';
 import { GET_INGREDIENT_COMPONENTS } from '@recipe/graphql/queries/recipe';
@@ -19,6 +17,8 @@ import { GetIngredientAndRecipeIngredientsQuery } from '@recipe/graphql/generate
 import { GetRecipesQuery, GetRecipesQueryVariables } from '@recipe/graphql/generated';
 import { mockImageNew, mockImageTwo } from '@recipe/graphql/mutations/__mocks__/image';
 import { GET_INGREDIENT_AND_RECIPE_INGREDIENTS } from '@recipe/graphql/queries/recipe';
+import { mockCarrotId, mockRecipeIngredientIdFour } from '@recipe/graphql/__mocks__/ids';
+import { mockDinnerTagId, mockRecipeIngredientIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIdFour, mockRecipeIngredientIdOne } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIdNewAsIngr, mockRecipeIngredientIdSix } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIdFive, mockRecipeIngredientIdFourteen } from '@recipe/graphql/__mocks__/ids';
@@ -28,8 +28,8 @@ import { mockDiced, mockPrepMethods } from './prepMethod';
 import { mockMedium, mockSizes, mockSmall } from './size';
 import { mockCup, mockOunce, mockTeaspoon, mockUnits } from './unit';
 import { mockDinnerTag, mockFreezableTag, mockLunchTag } from './tag';
-import { mockApple, mockIngredients, mockRecipeFromIngredients } from './ingredient';
 import { mockRatingNewOne, mockRatingOne, mockRatingThree, mockRatingTwo } from './rating';
+import { mockApple, mockCarrot, mockIngredients, mockRecipeFromIngredients } from './ingredient';
 
 export const mockGetIngredientAndRecipeIngredients = {
     request: {
@@ -95,7 +95,7 @@ export const mockRecipeOne: CompletedRecipeView = {
                     quantity: '1',
                     unit: null,
                     size: mockSmall,
-                    ingredient: mockApple,
+                    ingredient: mockCarrot,
                     prepMethod: mockDiced,
                 },
                 {
@@ -578,6 +578,68 @@ export const mockGetRecipesLargerFilteredOnePageTwo = {
         } satisfies GetRecipesQuery,
     },
 };
+export const mockGetRecipesFilteredTag = {
+    request: {
+        query: GET_RECIPES,
+        variables: {
+            offset: 0,
+            limit: 5,
+            filter: { tags: [mockDinnerTagId] },
+            countFilter: { tags: [mockDinnerTagId] },
+        } satisfies GetRecipesQueryVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeMany: [mockRecipeOne],
+            recipeCount: 1,
+        } satisfies GetRecipesQuery,
+    },
+};
+export const mockGetRecipesFilteredIngr = {
+    request: {
+        query: GET_RECIPES,
+        variables: {
+            offset: 0,
+            limit: 5,
+            filter: { ingredientSubsections: [{ ingredients: [{ ingredient: mockCarrotId }] }] },
+            countFilter: {
+                ingredientSubsections: [{ ingredients: [{ ingredient: mockCarrotId }] }],
+            },
+        } satisfies GetRecipesQueryVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeMany: [mockRecipeOne],
+            recipeCount: 1,
+        } satisfies GetRecipesQuery,
+    },
+};
+export const mockGetRecipesFilteredTagIngr = {
+    request: {
+        query: GET_RECIPES,
+        variables: {
+            offset: 0,
+            limit: 5,
+            filter: {
+                tags: [mockDinnerTagId],
+                ingredientSubsections: [{ ingredients: [{ ingredient: mockCarrotId }] }],
+            },
+            countFilter: {
+                tags: [mockDinnerTagId],
+                ingredientSubsections: [{ ingredients: [{ ingredient: mockCarrotId }] }],
+            },
+        } satisfies GetRecipesQueryVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeMany: [mockRecipeOne],
+            recipeCount: 1,
+        } satisfies GetRecipesQuery,
+    },
+};
 export const mockGetRecipesFilteredTwo = {
     request: {
         query: GET_RECIPES,
@@ -593,6 +655,32 @@ export const mockGetRecipesFilteredTwo = {
             __typename: 'Query',
             recipeMany: [{ ...mockRecipeTwo, _id: 'mock-recipe-two' }],
             recipeCount: 1,
+        } satisfies GetRecipesQuery,
+    },
+};
+export const mockGetRecipesFilteredTwoTagIngr = {
+    request: {
+        query: GET_RECIPES,
+        variables: {
+            offset: 0,
+            limit: 5,
+            filter: {
+                _operators: { title: { regex: '/two/i' } },
+                tags: [mockDinnerTagId],
+                ingredientSubsections: [{ ingredients: [{ ingredient: mockCarrotId }] }],
+            },
+            countFilter: {
+                _operators: { title: { regex: '/two/i' } },
+                tags: [mockDinnerTagId],
+                ingredientSubsections: [{ ingredients: [{ ingredient: mockCarrotId }] }],
+            },
+        } satisfies GetRecipesQueryVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeMany: [],
+            recipeCount: 0,
         } satisfies GetRecipesQuery,
     },
 };

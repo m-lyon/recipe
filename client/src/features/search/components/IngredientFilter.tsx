@@ -5,15 +5,17 @@ import { useSearchStore } from '@recipe/stores';
 import { GET_INGREDIENT_AND_RECIPE_INGREDIENTS } from '@recipe/graphql/queries/recipe';
 
 import { Filter } from './Filter';
-import { useSearch } from '../hooks/useSearch';
 
-export function IngredientFilter() {
+interface Props {
+    addFilter: (item: FilterChoice, type: FilterChoiceType) => void;
+}
+export function IngredientFilter(props: Props) {
+    const { addFilter } = props;
     const query = useSearchStore((state) => state.ingrQuery);
     const setQuery = useSearchStore((state) => state.setIngrQuery);
     const isOpen = useSearchStore((state) => state.showIngrDropdown);
     const selected = useSearchStore((state) => state.selectedIngredients);
     const setIsOpen = useSearchStore((state) => state.setShowIngrDropdown);
-    const { addFilter } = useSearch();
 
     const { data } = useQuery(GET_INGREDIENT_AND_RECIPE_INGREDIENTS);
     const ingrs: FilterChoice[] = data

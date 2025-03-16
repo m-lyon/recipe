@@ -17,7 +17,11 @@ export function SearchBar(props: Props) {
     return (
         <InputGroup>
             <InputLeftElement pointerEvents={show ? 'auto' : 'none'}>
-                {show ? <CloseButton onClick={resetSearch} /> : <SearchIcon color='gray.300' />}
+                {show ? (
+                    <CloseButton onClick={resetSearch} aria-label='Reset search' />
+                ) : (
+                    <SearchIcon color='gray.300' />
+                )}
             </InputLeftElement>
             <Input
                 placeholder='Find a recipe...'

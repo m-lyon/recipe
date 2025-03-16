@@ -2,11 +2,14 @@ import { useShallow } from 'zustand/shallow';
 import { HStack, Tag, TagCloseButton, TagLabel } from '@chakra-ui/react';
 
 import { useSearchStore } from '@recipe/stores';
-import { useSearch } from '@recipe/features/search';
 
 import { FlexNav } from './FlexNav';
 
-export function SelectedFilters() {
+interface Props {
+    removeFilter: (id: string) => void;
+}
+export function SelectedFilters(props: Props) {
+    const { removeFilter } = props;
     const showSearch = useSearchStore((state) => state.showSearch);
     const showSelected = useSearchStore(
         (state) => state.selectedTags.length > 0 || state.selectedIngredients.length > 0
@@ -14,7 +17,6 @@ export function SelectedFilters() {
     const items = useSearchStore(
         useShallow((state) => [...state.selectedTags, ...state.selectedIngredients])
     );
-    const { removeFilter } = useSearch();
 
     return (
         <FlexNav

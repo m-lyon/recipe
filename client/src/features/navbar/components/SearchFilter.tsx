@@ -5,7 +5,11 @@ import { IngredientFilter, TagFilter } from '@recipe/features/search';
 
 import { FlexNav } from './FlexNav';
 
-export function SearchFilter() {
+interface Props {
+    addFilter: (item: FilterChoice, type: FilterChoiceType) => void;
+}
+export function SearchFilter(props: Props) {
+    const { addFilter } = props;
     const showSearch = useSearchStore((state) => state.showSearch);
     const showSelected = useSearchStore(
         (state) => state.selectedTags.length > 0 || state.selectedIngredients.length > 0
@@ -20,8 +24,8 @@ export function SearchFilter() {
             justifyContent='center'
         >
             <HStack spacing={4}>
-                <TagFilter />
-                <IngredientFilter />
+                <TagFilter addFilter={addFilter} />
+                <IngredientFilter addFilter={addFilter} />
             </HStack>
         </FlexNav>
     );

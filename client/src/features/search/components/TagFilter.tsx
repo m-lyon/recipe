@@ -2,16 +2,18 @@ import { useSearchStore } from '@recipe/stores';
 import { useTagSuggestions } from '@recipe/features/tags';
 
 import { Filter } from './Filter';
-import { useSearch } from '../hooks/useSearch';
 
-export function TagFilter() {
+interface Props {
+    addFilter: (item: FilterChoice, type: FilterChoiceType) => void;
+}
+export function TagFilter(props: Props) {
+    const { addFilter } = props;
     const query = useSearchStore((state) => state.tagQuery);
     const setQuery = useSearchStore((state) => state.setTagQuery);
     const tags = useSearchStore((state) => state.selectedTags);
     const isOpen = useSearchStore((state) => state.showTagDropdown);
     const setIsOpen = useSearchStore((state) => state.setShowTagDropdown);
     const suggestions = useTagSuggestions(tags, query);
-    const { addFilter } = useSearch();
 
     return (
         <Filter

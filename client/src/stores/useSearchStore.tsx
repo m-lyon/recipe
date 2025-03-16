@@ -23,6 +23,7 @@ const createSharedSlice: StateCreator<SearchState, [], [], SharedSlice> = (set, 
     resetSearch: () => {
         get().resetTitleFilter();
         get().resetTagFilter();
+        get().resetIngrFilter();
         set(() => ({ showSearch: false }));
     },
     setTitle(value) {
