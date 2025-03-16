@@ -34,21 +34,6 @@ jobs:
               working-directory: ./client
               run: npm install
 
-            - name: Load MongoDB binary cache
-              id: cache-mongodb-binaries
-              uses: actions/cache@v4
-              with:
-                  path: ~/.cache/mongodb-binaries
-                  key: ${{ runner.os }}-mongodb-${{ vars.MONGODB_VERSION }}
-
-            - name: Download MongoDB Memory Server
-              working-directory: ./api
-              run: npm run dl_memory
-
-            - name: Run API tests
-              working-directory: ./api
-              run: npm run start:test
-
             - name: Create API environment file
               working-directory: ./api
               run: |
@@ -71,6 +56,21 @@ jobs:
                   echo "VITE_DEBOUNCE_TIME = ${{ vars.VITE_DEBOUNCE_TIME }}" >> .env.test.local
                   echo "VITE_INIT_LOAD_NUM = ${{ vars.VITE_INIT_LOAD_NUM }}" >> .env.test.local
                   echo "VITE_FETCH_MORE_NUM = ${{ vars.VITE_FETCH_MORE_NUM }}" >> .env.test.local
+
+            - name: Load MongoDB binary cache
+              id: cache-mongodb-binaries
+              uses: actions/cache@v4
+              with:
+                  path: ~/.cache/mongodb-binaries
+                  key: ${{ runner.os }}-mongodb-${{ vars.MONGODB_VERSION }}
+
+            - name: Download MongoDB Memory Server
+              working-directory: ./api
+              run: npm run dl_memory
+
+            - name: Run API tests
+              working-directory: ./api
+              run: npm run start:test
 
             - name: Start server in development mode
               working-directory: ./api
