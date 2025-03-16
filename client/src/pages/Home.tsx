@@ -5,11 +5,14 @@ import { RecipeCardsContainer } from '@recipe/features/viewing';
 
 export function Home() {
     const showSearch = useSearchStore((state) => state.showSearch);
+    const showSelected = useSearchStore(
+        (state) => state.selectedTags.length > 0 || state.selectedIngredients.length > 0
+    );
 
     return (
         <Container
             maxW='container.xl'
-            mt={showSearch ? '120px' : '60px'}
+            mt={showSearch ? (showSelected ? '152px' : '120px') : '60px'}
             px='16px'
             transition='margin-top 0.3s'
         >

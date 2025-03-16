@@ -13,11 +13,12 @@ import { FlexNav } from './FlexNav';
 import { MobileNav } from './MobileNav';
 import { DesktopNav } from './DesktopNav';
 import { SearchFilter } from './SearchFilter';
+import { SelectedFilters } from './SelectedFilters';
 
 export function Navbar() {
     const location = useLocation();
     const { isOpen, onToggle, onClose } = useDisclosure();
-    const { searchQuery, onSearch, resetSearch } = useSearch();
+    const { setTitle, reset } = useSearch();
     const setShowSearch = useSearchStore((state) => state.setShowSearch);
     const { isLoggedIn, isVerified } = useUser();
 
@@ -59,7 +60,7 @@ export function Navbar() {
                             as={ReactRouterLink}
                             aria-label='Navigate to home page'
                             onClick={() => {
-                                resetSearch();
+                                reset();
                                 onClose();
                             }}
                             display={{ base: isHomePage ? 'none' : 'inline', md: 'inline' }}
@@ -80,9 +81,8 @@ export function Navbar() {
                                 pr={{ base: '0px', md: '20px' }}
                             >
                                 <SearchBar
-                                    searchQuery={searchQuery}
-                                    onSearch={onSearch}
-                                    resetSearch={resetSearch}
+                                    setTitleFilter={setTitle}
+                                    resetSearch={reset}
                                     closeNavDropdown={onClose}
                                 />
                             </Box>
@@ -90,6 +90,7 @@ export function Navbar() {
                         <UserOptions />
                     </Flex>
                 </FlexNav>
+                <SelectedFilters />
                 <SearchFilter />
                 <Slide
                     in={isOpen}

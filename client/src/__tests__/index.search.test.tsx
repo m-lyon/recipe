@@ -5,7 +5,6 @@ import { cleanup, screen, waitForElementToBeRemoved } from '@testing-library/rea
 
 import { mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipesFilteredTwo } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockCountRecipesFilteredTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { enterViewRecipePage, haveValueByLabelText, notNullByLabelText } from '@recipe/utils/tests';
 
 import { renderComponent } from './utils';
@@ -20,7 +19,7 @@ describe('Search Functionality', () => {
 
     it('should reset search form when clicking on home button', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockGetRecipesFilteredTwo, mockCountRecipesFilteredTwo, mockGetRecipes]);
+        renderComponent([mockGetRecipesFilteredTwo, mockGetRecipes]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -38,7 +37,7 @@ describe('Search Functionality', () => {
 
     it('should reset search form when navigating back to home', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockGetRecipesFilteredTwo, mockCountRecipesFilteredTwo, mockGetRecipes]);
+        renderComponent([mockGetRecipesFilteredTwo, mockGetRecipes]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------

@@ -3,12 +3,12 @@ import { Box } from '@chakra-ui/react';
 import { useQuery } from '@apollo/client';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
-import { useSearchStore } from 'stores/useSearchStore';
 
 import { useUser } from '@recipe/features/user';
+import { useSearch } from '@recipe/features/search';
+import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { ConfirmDeleteModal } from '@recipe/features/editing';
 import { FETCH_MORE_NUM, INIT_LOAD_NUM } from '@recipe/constants';
-import { COUNT_RECIPES, GET_RECIPES } from '@recipe/graphql/queries/recipe';
 
 import { RecipeCard } from './RecipeCard';
 import { ImageRecipeCard } from './ImageRecipeCard';
@@ -36,20 +36,13 @@ const generateBreakPoints = (maxColumns: number): { [key: number]: number } => {
 const breakPoints: { [key: number]: number } = generateBreakPoints(4);
 
 export function RecipeCardsContainer() {
-    const searchQuery = useSearchStore((state) => state.delayedTitleFilter);
     const { data, loading, error, fetchMore } = useQuery(GET_RECIPES, {
         variables: { offset: 0, limit: INIT_LOAD_NUM },
     });
     const [show, setShow] = useState(false);
     const [recipeId, setRecipeId] = useState('');
     const { user } = useUser();
-    const { data: countData } = useQuery(COUNT_RECIPES, {
-        variables: {
-            filter: searchQuery
-                ? { _operators: { title: { regex: `/${searchQuery}/i` } } }
-                : undefined,
-        },
-    });
+    const { filter } = useSearch();
 
     const handleDelete = (id: string) => {
         setRecipeId(id);
@@ -93,13 +86,12 @@ export function RecipeCardsContainer() {
                     variables: {
                         offset: recipes.length,
                         limit: FETCH_MORE_NUM,
-                        filter: searchQuery
-                            ? { _operators: { title: { regex: `/${searchQuery}/i` } } }
-                            : undefined,
+                        filter,
+                        countFilter: filter,
                     },
                 });
             }}
-            hasMore={countData?.recipeCount ? countData?.recipeCount > recipes.length : false}
+            hasMore={data.recipeCount ? data.recipeCount > recipes.length : false}
             loader={<h4 style={{ textAlign: 'center' }}>Loading...</h4>}
         >
             <ResponsiveMasonry

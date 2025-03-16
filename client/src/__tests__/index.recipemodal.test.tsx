@@ -5,13 +5,13 @@ import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { PATH } from '@recipe/constants';
+import { mockGetRecipeFive } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipeFourById } from '@recipe/graphql/queries/__mocks__/recipe';
 import { MockedResponses, notNullByText, nullByText, renderPage } from '@recipe/utils/tests';
 import { mockUpdateRecipeEditAsIngredient } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetRecipeTwo, mockGetRecipeTwoById } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipeFour, mockGetRecipesExtra } from '@recipe/graphql/queries/__mocks__/recipe';
 import { enterEditRecipePage, enterViewRecipePage, getMockedImageBlob } from '@recipe/utils/tests';
-import { mockCountRecipesExtra, mockGetRecipeFive } from '@recipe/graphql/queries/__mocks__/recipe';
 
 import { routes } from '../routes';
 import { mocksMinimal } from '../__mocks__/graphql';
@@ -25,13 +25,7 @@ loadDevMessages();
 const renderComponent = (mockedResponses: MockedResponses = []) => {
     return renderPage(
         routes,
-        [
-            ...mocksMinimal,
-            mockGetRecipesExtra,
-            mockCountRecipesExtra,
-            mockGetRecipeTwoById,
-            ...mockedResponses,
-        ],
+        [...mocksMinimal, mockGetRecipesExtra, mockGetRecipeTwoById, ...mockedResponses],
         [PATH.ROOT]
     );
 };

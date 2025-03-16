@@ -6,22 +6,23 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { PATH } from '@recipe/constants';
 import { renderPage } from '@recipe/utils/tests';
 import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
+import { mockGetRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCurrentUserNull } from '@recipe/graphql/queries/__mocks__/user';
 import { mockLogin, mockLogout } from '@recipe/graphql/mutations/__mocks__/user';
 import { mockDeleteRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
 import { mockGetRecipeTwo, mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockCountRecipes, mockGetRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCurrentUser, mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { MockedResponses, enterEditRecipePage, enterViewRecipePage } from '@recipe/utils/tests';
+import { mockGetIngredientAndRecipeIngredients } from '@recipe/graphql/queries/__mocks__/recipe';
 
 import { routes } from '../routes';
 
 const renderComponent = (mockedResponses: MockedResponses = []) => {
     return renderPage(
         routes,
-        [mockGetRecipes, mockCountRecipes, mockGetTags, ...mockedResponses],
+        [mockGetRecipes, mockGetTags, mockGetIngredientAndRecipeIngredients, ...mockedResponses],
         [PATH.ROOT]
     );
 };

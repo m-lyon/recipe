@@ -4,9 +4,7 @@ import { SearchState } from './useSearchStore';
 
 export interface TitleFilterSlice {
     titleFilter: string;
-    delayedTitleFilter: string;
-    setTitleFilter: (value: string) => void;
-    setDelayedTitleFilter: (value: string) => void;
+    setTitleFilter: (value: string) => string;
     resetTitleFilter: () => void;
 }
 
@@ -14,8 +12,9 @@ export const createTitleFilterSlice: StateCreator<SearchState, [], [], TitleFilt
     set
 ) => ({
     titleFilter: '',
-    delayedTitleFilter: '',
-    setTitleFilter: (value: string) => set(() => ({ titleFilter: value })),
-    setDelayedTitleFilter: (value: string) => set(() => ({ delayedTitleFilter: value })),
-    resetTitleFilter: () => set(() => ({ titleFilter: '', delayedTitleFilter: '' })),
+    setTitleFilter: (value: string) => {
+        set(() => ({ titleFilter: value }));
+        return value;
+    },
+    resetTitleFilter: () => set(() => ({ titleFilter: '' })),
 });

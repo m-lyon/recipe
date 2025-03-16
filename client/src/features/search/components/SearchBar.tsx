@@ -3,12 +3,14 @@ import { CloseButton, Input, InputGroup, InputLeftElement } from '@chakra-ui/rea
 
 import { useSearchStore } from '@recipe/stores';
 
-import { SearchHook } from '../hooks/useSearch';
-interface Props extends Omit<SearchHook, 'showSearch'> {
+interface Props {
+    setTitleFilter: (value: string) => void;
+    resetSearch: () => void;
     closeNavDropdown: () => void;
 }
 export function SearchBar(props: Props) {
-    const { searchQuery, onSearch, resetSearch, closeNavDropdown } = props;
+    const { setTitleFilter, resetSearch, closeNavDropdown } = props;
+    const titleFilter = useSearchStore((state) => state.titleFilter);
     const show = useSearchStore((state) => state.showSearch);
     const setShow = useSearchStore((state) => state.setShowSearch);
 
@@ -19,8 +21,8 @@ export function SearchBar(props: Props) {
             </InputLeftElement>
             <Input
                 placeholder='Find a recipe...'
-                value={searchQuery}
-                onChange={(e) => onSearch(e.currentTarget.value)}
+                value={titleFilter}
+                onChange={(e) => setTitleFilter(e.currentTarget.value)}
                 onFocus={() => {
                     setShow(true);
                     closeNavDropdown();

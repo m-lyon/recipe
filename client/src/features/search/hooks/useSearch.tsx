@@ -1,48 +1,77 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { useLazyQuery } from '@apollo/client';
 import { useDebouncedCallback } from 'use-debounce';
-import { useSearchStore } from 'stores/useSearchStore';
 
+import { useSearchStore } from '@recipe/stores';
 import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { DEBOUNCE_TIME, INIT_LOAD_NUM } from '@recipe/constants';
 
-export interface SearchHook {
-    searchQuery: string;
-    onSearch: (value: string) => void;
-    resetSearch: () => void;
+import { Query, getSearchFilter } from '../utils/filter';
+
+interface SearchHook {
+    filter: ReturnType<typeof getSearchFilter>;
+    setTitle: (value: string) => void;
+    reset: () => void;
+    addFilter: (item: FilterChoice, type: FilterChoiceType) => void;
+    removeFilter: (_id: string) => void;
 }
-export function useSearch() {
-    const searchQuery = useSearchStore((state) => state.titleFilter);
-    const setSearchQuery = useSearchStore((state) => state.setTitleFilter);
-    const reset = useSearchStore((state) => state.resetSearch);
-    const setDelayedSearchQuery = useSearchStore((state) => state.setDelayedTitleFilter);
+export function useSearch(): SearchHook {
+    const title = useSearchStore((state) => state.titleFilter);
+    const tags = useSearchStore(useShallow((state) => state.selectedTags.map((tag) => tag._id)));
+    const ingredients = useSearchStore(
+        useShallow((state) => state.selectedIngredients.map((ingredient) => ingredient._id))
+    );
+    const setTitleStore = useSearchStore((state) => state.setTitle);
+    const resetSearch = useSearchStore((state) => state.resetSearch);
+    const addItem = useSearchStore((state) => state.addItem);
+    const removeItem = useSearchStore((state) => state.removeItem);
     const [searchRecipes] = useLazyQuery(GET_RECIPES, { fetchPolicy: 'network-only' });
-    const debounced = useDebouncedCallback((value: string) => {
-        setDelayedSearchQuery(value);
+    const debouncedSearch = useDebouncedCallback((newQuery: Query) => {
+        const newFilter = getSearchFilter(newQuery);
         searchRecipes({
             variables: {
                 offset: 0,
                 limit: INIT_LOAD_NUM,
-                filter: value ? { _operators: { title: { regex: `/${value}/i` } } } : undefined,
+                filter: newFilter,
+                countFilter: newFilter,
             },
         });
     }, DEBOUNCE_TIME);
-
-    const resetSearch = useCallback(() => {
-        reset();
-        // TODO: add logic to check if other filters are active here
-        if (searchQuery) {
+    const filter = useMemo(
+        () => getSearchFilter({ title, tags, ingredients }),
+        [title, tags, ingredients]
+    );
+    const reset = useCallback(() => {
+        if (filter) {
             searchRecipes({ variables: { offset: 0, limit: INIT_LOAD_NUM } });
         }
-    }, [searchQuery, reset, searchRecipes]);
+        resetSearch();
+    }, [filter, resetSearch, searchRecipes]);
 
-    const onSearch = useCallback(
+    const setTitle = useCallback(
         (value: string) => {
-            setSearchQuery(value);
-            debounced(value);
+            const query = setTitleStore(value);
+            debouncedSearch(query);
         },
-        [debounced, setSearchQuery]
+        [debouncedSearch, setTitleStore]
     );
 
-    return { searchQuery, onSearch, resetSearch };
+    const addFilter = useCallback(
+        (item: FilterChoice, type: FilterChoiceType) => {
+            const query = addItem(item, type);
+            debouncedSearch(query);
+        },
+        [addItem, debouncedSearch]
+    );
+
+    const removeFilter = useCallback(
+        (_id: string) => {
+            const query = removeItem(_id);
+            debouncedSearch(query);
+        },
+        [removeItem, debouncedSearch]
+    );
+
+    return { filter, setTitle, reset, addFilter, removeFilter };
 }

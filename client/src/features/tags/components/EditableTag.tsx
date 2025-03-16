@@ -11,7 +11,7 @@ import { useTagDropdown } from '../hooks/useTagDropdown';
 const FORBIDDEN_TAGS = ['vegan', 'vegetarian'];
 
 export function EditableTag() {
-    const parentRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const listRef = useRef<HTMLUListElement>(null);
     const toast = useWarningToast();
@@ -26,7 +26,7 @@ export function EditableTag() {
         }))
     );
     useOutsideClick({
-        ref: parentRef,
+        ref: containerRef,
         handler: () => {
             if (tag || dropdownIsOpen) {
                 reset();
@@ -36,7 +36,7 @@ export function EditableTag() {
     const { onKeyDown, ...dropdownProps } = useTagDropdown(listRef, inputRef);
 
     return (
-        <Box ref={parentRef} position='relative'>
+        <Box ref={containerRef} position='relative'>
             <Editable
                 value={tag}
                 selectAllOnFocus={false}

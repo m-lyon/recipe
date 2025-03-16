@@ -418,5 +418,20 @@ declare global {
      */
     type Image = ImageView | ImagePreview;
 
+    // - Search -------------------------------------------------------------------
+
+    /**
+     * Represents the selectable filter choices that can be used to filter the recipe
+     * search results.
+     */
+    interface FilterChoice {
+        _id: string;
+        value: string;
+    }
+    /**
+     * Represents the filter choices type that can be used to filter the recipe search results.
+     */
+    type FilterChoiceType = 'Tag' | 'Ingredient';
+
     // ----------------------------------------------------------------------------
 }

@@ -9,11 +9,9 @@ import { renderPage } from '@recipe/utils/tests';
 import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
 import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetRecipesLarger } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockCountRecipesLarger } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipesLargerFilteredTwo } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockCountRecipesLargerFilteredOne } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockCountRecipesLargerFilteredTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { MockedResponses, haveValueByLabelText, nullByLabelText } from '@recipe/utils/tests';
+import { mockGetIngredientAndRecipeIngredients } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipesLargerFilteredOnePageOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipesLargerFilteredOnePageTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 
@@ -31,8 +29,8 @@ const renderComponent = (mocks: MockedResponses = []) => {
     return renderPage(routes, [
         mockCurrentUserAdmin,
         mockGetRecipesLarger,
-        mockCountRecipesLarger,
         mockGetTags,
+        mockGetIngredientAndRecipeIngredients,
         ...mocks,
     ]);
 };
@@ -43,7 +41,7 @@ describe('Search Functionality', () => {
     });
     it('should repopulate recipe card list with only relevant cards', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockGetRecipesLargerFilteredTwo, mockCountRecipesLargerFilteredTwo]);
+        renderComponent([mockGetRecipesLargerFilteredTwo]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -59,7 +57,7 @@ describe('Search Functionality', () => {
     });
     it('should limit scrolldown pagination correctly after search, no more pages', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockGetRecipesLargerFilteredTwo, mockCountRecipesLargerFilteredTwo]);
+        renderComponent([mockGetRecipesLargerFilteredTwo]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -80,7 +78,6 @@ describe('Search Functionality', () => {
         renderComponent([
             mockGetRecipesLargerFilteredOnePageOne,
             mockGetRecipesLargerFilteredOnePageTwo,
-            mockCountRecipesLargerFilteredOne,
         ]);
         const user = userEvent.setup();
 
@@ -100,11 +97,7 @@ describe('Search Functionality', () => {
     });
     it('should reset card list after blank search term', async () => {
         // Render -----------------------------------------------
-        renderComponent([
-            mockGetRecipesLarger,
-            mockGetRecipesLargerFilteredTwo,
-            mockCountRecipesLargerFilteredTwo,
-        ]);
+        renderComponent([mockGetRecipesLarger, mockGetRecipesLargerFilteredTwo]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------

@@ -28,6 +28,7 @@ export const getCache = () =>
                             return incoming;
                         },
                     },
+                    recipeCount: { keyArgs: [] },
                 },
             },
             Recipe: {
