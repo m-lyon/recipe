@@ -488,7 +488,7 @@ export const mockGetRecipeNewAsIngr = {
         data: { __typename: 'Query', recipeOne: mockRecipeNewAsIngr } satisfies GetRecipeQuery,
     },
 };
-// GetRecipes
+// GetRecipes --------------------------------------------------------
 export const mockGetRecipes = {
     request: {
         query: GET_RECIPES,
@@ -531,14 +531,16 @@ export const mockGetRecipesLarger = {
         } satisfies GetRecipesQuery,
     },
 };
+// GetRecipes filtered ----------------------------------------------
+const mockFilterOne = { AND: [{ _operators: { title: { regex: '/one/i' } } }] };
 export const mockGetRecipesLargerFilteredOnePageOne = {
     request: {
         query: GET_RECIPES,
         variables: {
             offset: 0,
             limit: 5,
-            filter: { _operators: { title: { regex: '/one/i' } } },
-            countFilter: { _operators: { title: { regex: '/one/i' } } },
+            filter: mockFilterOne,
+            countFilter: mockFilterOne,
         } satisfies GetRecipesQueryVariables,
     },
     result: {
@@ -561,8 +563,8 @@ export const mockGetRecipesLargerFilteredOnePageTwo = {
         variables: {
             offset: 5,
             limit: 5,
-            filter: { _operators: { title: { regex: '/one/i' } } },
-            countFilter: { _operators: { title: { regex: '/one/i' } } },
+            filter: mockFilterOne,
+            countFilter: mockFilterOne,
         } satisfies GetRecipesQueryVariables,
     },
     result: {
@@ -578,14 +580,15 @@ export const mockGetRecipesLargerFilteredOnePageTwo = {
         } satisfies GetRecipesQuery,
     },
 };
+const mockFilterTag = { AND: [{ _operators: { tags: { in: [mockDinnerTagId] } } }] };
 export const mockGetRecipesFilteredTag = {
     request: {
         query: GET_RECIPES,
         variables: {
             offset: 0,
             limit: 5,
-            filter: { tags: [mockDinnerTagId] },
-            countFilter: { tags: [mockDinnerTagId] },
+            filter: mockFilterTag,
+            countFilter: mockFilterTag,
         } satisfies GetRecipesQueryVariables,
     },
     result: {
@@ -595,6 +598,17 @@ export const mockGetRecipesFilteredTag = {
             recipeCount: 1,
         } satisfies GetRecipesQuery,
     },
+};
+const mockFilterIngr = {
+    AND: [
+        {
+            _operators: {
+                ingredientSubsections: {
+                    ingredients: { ingredient: { in: [mockCarrotId] } },
+                },
+            },
+        },
+    ],
 };
 export const mockGetRecipesFilteredIngr = {
     request: {
@@ -602,10 +616,8 @@ export const mockGetRecipesFilteredIngr = {
         variables: {
             offset: 0,
             limit: 5,
-            filter: { ingredientSubsections: [{ ingredients: [{ ingredient: mockCarrotId }] }] },
-            countFilter: {
-                ingredientSubsections: [{ ingredients: [{ ingredient: mockCarrotId }] }],
-            },
+            filter: mockFilterIngr,
+            countFilter: mockFilterIngr,
         } satisfies GetRecipesQueryVariables,
     },
     result: {
@@ -615,6 +627,22 @@ export const mockGetRecipesFilteredIngr = {
             recipeCount: 1,
         } satisfies GetRecipesQuery,
     },
+};
+const mockFilterTagIngr = {
+    AND: [
+        {
+            _operators: {
+                tags: { in: [mockDinnerTagId] },
+            },
+        },
+        {
+            _operators: {
+                ingredientSubsections: {
+                    ingredients: { ingredient: { in: [mockCarrotId] } },
+                },
+            },
+        },
+    ],
 };
 export const mockGetRecipesFilteredTagIngr = {
     request: {
@@ -622,14 +650,8 @@ export const mockGetRecipesFilteredTagIngr = {
         variables: {
             offset: 0,
             limit: 5,
-            filter: {
-                tags: [mockDinnerTagId],
-                ingredientSubsections: [{ ingredients: [{ ingredient: mockCarrotId }] }],
-            },
-            countFilter: {
-                tags: [mockDinnerTagId],
-                ingredientSubsections: [{ ingredients: [{ ingredient: mockCarrotId }] }],
-            },
+            filter: mockFilterTagIngr,
+            countFilter: mockFilterTagIngr,
         } satisfies GetRecipesQueryVariables,
     },
     result: {
@@ -640,14 +662,15 @@ export const mockGetRecipesFilteredTagIngr = {
         } satisfies GetRecipesQuery,
     },
 };
+const mockFilterTwo = { AND: [{ _operators: { title: { regex: '/two/i' } } }] };
 export const mockGetRecipesFilteredTwo = {
     request: {
         query: GET_RECIPES,
         variables: {
             offset: 0,
             limit: 5,
-            filter: { _operators: { title: { regex: '/two/i' } } },
-            countFilter: { _operators: { title: { regex: '/two/i' } } },
+            filter: mockFilterTwo,
+            countFilter: mockFilterTwo,
         } satisfies GetRecipesQueryVariables,
     },
     result: {
@@ -658,22 +681,35 @@ export const mockGetRecipesFilteredTwo = {
         } satisfies GetRecipesQuery,
     },
 };
+const mockFilterTwoTagIngr = {
+    AND: [
+        {
+            _operators: {
+                title: { regex: '/two/i' },
+            },
+        },
+        {
+            _operators: {
+                tags: { in: [mockDinnerTagId] },
+            },
+        },
+        {
+            _operators: {
+                ingredientSubsections: {
+                    ingredients: { ingredient: { in: [mockCarrotId] } },
+                },
+            },
+        },
+    ],
+};
 export const mockGetRecipesFilteredTwoTagIngr = {
     request: {
         query: GET_RECIPES,
         variables: {
             offset: 0,
             limit: 5,
-            filter: {
-                _operators: { title: { regex: '/two/i' } },
-                tags: [mockDinnerTagId],
-                ingredientSubsections: [{ ingredients: [{ ingredient: mockCarrotId }] }],
-            },
-            countFilter: {
-                _operators: { title: { regex: '/two/i' } },
-                tags: [mockDinnerTagId],
-                ingredientSubsections: [{ ingredients: [{ ingredient: mockCarrotId }] }],
-            },
+            filter: mockFilterTwoTagIngr,
+            countFilter: mockFilterTwoTagIngr,
         } satisfies GetRecipesQueryVariables,
     },
     result: {
@@ -690,8 +726,8 @@ export const mockGetRecipesLargerFilteredTwo = {
         variables: {
             offset: 0,
             limit: 5,
-            filter: { _operators: { title: { regex: '/two/i' } } },
-            countFilter: { _operators: { title: { regex: '/two/i' } } },
+            filter: mockFilterTwo,
+            countFilter: mockFilterTwo,
         } satisfies GetRecipesQueryVariables,
     },
     result: {
@@ -705,3 +741,4 @@ export const mockGetRecipesLargerFilteredTwo = {
         } satisfies GetRecipesQuery,
     },
 };
+// -------------------------------------------------------------------

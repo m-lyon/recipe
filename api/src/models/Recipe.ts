@@ -196,6 +196,7 @@ const recipeSchema = new Schema<Recipe>({
                 message: 'Duplicate tags are not allowed.',
             },
         ],
+        index: true,
     },
     ingredientSubsections: {
         type: [ingredientSubsection],
@@ -249,6 +250,8 @@ const recipeSchema = new Schema<Recipe>({
     createdAt: { type: Date, required: true },
     lastModified: { type: Date, required: true },
 });
+
+recipeSchema.index({ 'ingredientSubsections.ingredients.ingredient': 1 });
 
 recipeSchema.pre('save', async function () {
     const calculatedTags: ReservedTags[] = [];
