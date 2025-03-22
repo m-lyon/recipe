@@ -145,4 +145,35 @@ describe('Tag Workflow', () => {
         expect(await screen.findByText('dinner')).not.toBeNull();
         expect(screen.queryByText('mock tag')).toBeNull();
     });
+
+    it('should show a warning for a reserved ingredient tag', async () => {
+        // Render -----------------------------------------------
+        renderComponent([]);
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        await enterCreateNewRecipePage(screen, user);
+        await user.click(screen.getByLabelText('Add a tag'));
+        await user.keyboard('{v}{e}{g}{a}{n}');
+
+        // Expect ------------------------------------------------
+        expect(await screen.findByText('Reserved tag')).not.toBeNull();
+        expect(
+            await screen.findByText('vegan tag is automatically determined from ingredients.')
+        ).not.toBeNull();
+    });
+    it('should show a warning for a reserved recipe tag', async () => {
+        // Render -----------------------------------------------
+        renderComponent([]);
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        await enterCreateNewRecipePage(screen, user);
+        await user.click(screen.getByLabelText('Add a tag'));
+        await user.keyboard('{i}{n}{g}{r}{e}{d}{i}{e}{n}{t}');
+
+        // Expect ------------------------------------------------
+        expect(await screen.findByText('Reserved tag')).not.toBeNull();
+        expect(await screen.findByText('ingredient is a reserved tag.')).not.toBeNull();
+    });
 });

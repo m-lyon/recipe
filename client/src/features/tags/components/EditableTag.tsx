@@ -3,8 +3,8 @@ import { useShallow } from 'zustand/shallow';
 import { Box, Editable, EditableInput, EditablePreview, useOutsideClick } from '@chakra-ui/react';
 
 import { useRecipeStore } from '@recipe/stores';
-import { ReservedTags } from '@recipe/graphql/enums';
 import { useWarningToast } from '@recipe/common/hooks';
+import { IngredientTags, ReservedTags } from '@recipe/graphql/enums';
 
 import { TagDropdown } from './TagDropdown';
 import { useTagDropdown } from '../hooks/useTagDropdown';
@@ -42,13 +42,20 @@ export function EditableTag() {
                 onEdit={() => !dropdownIsOpen && showDropdown()}
                 onChange={(value: string) => {
                     if (
-                        (Object.values(ReservedTags) satisfies string[] as string[]).includes(
-                            value.toLowerCase()
+                        Object.values(IngredientTags).includes(
+                            value.toLowerCase() as IngredientTags
                         )
                     ) {
                         return toast({
                             title: 'Reserved tag',
                             description: `${value} tag is automatically determined from ingredients.`,
+                            position: 'top',
+                        });
+                    }
+                    if (Object.values(ReservedTags).includes(value.toLowerCase() as ReservedTags)) {
+                        return toast({
+                            title: 'Reserved tag',
+                            description: `${value} is a reserved tag.`,
                             position: 'top',
                         });
                     }
