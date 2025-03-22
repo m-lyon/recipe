@@ -10,6 +10,7 @@ import { mockGetRecipesFilteredTag } from '@recipe/graphql/queries/__mocks__/rec
 import { mockGetRecipesFilteredIngr } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipesFilteredTagIngr } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipesFilteredTwoTagIngr } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockGetRecipesFilteredCalculatedTag } from '@recipe/graphql/queries/__mocks__/recipe';
 import { enterViewRecipePage, haveValueByLabelText, notNullByLabelText } from '@recipe/utils/tests';
 
 import { renderComponent } from './utils';
@@ -48,6 +49,23 @@ describe('Search Functionality', () => {
         await screen.findAllByLabelText('View Mock Recipe');
         await user.click(screen.getByLabelText('Filter by tags'));
         await user.click(await screen.findByLabelText('Highlighted selection: dinner'));
+        await waitForElementToBeRemoved(() => screen.queryAllByLabelText('View Mock Recipe Two'));
+
+        // Expect ------------------------------------------------
+        await notNullByLabelText(screen, 'View Mock Recipe');
+        nullByLabelText(screen, 'View Mock Recipe Two', 'View Mock Recipe Three');
+        nullByLabelText(screen, 'View Mock Recipe Four');
+    });
+    it('should filter recipes by calculated tag', async () => {
+        // Render -----------------------------------------------
+        renderComponent([mockGetRecipesFilteredCalculatedTag]);
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        expect(await screen.findByText('Recipes'));
+        await screen.findAllByLabelText('View Mock Recipe');
+        await user.click(screen.getByLabelText('Filter by tags'));
+        await user.click(await screen.findByLabelText('vegan'));
         await waitForElementToBeRemoved(() => screen.queryAllByLabelText('View Mock Recipe Two'));
 
         // Expect ------------------------------------------------

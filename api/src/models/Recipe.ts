@@ -11,10 +11,9 @@ import { Ingredient, ReservedIngredientTags } from './Ingredient.js';
 import { ownerExists, tagsExist, unique, uniqueInAdminsAndUser } from './validation.js';
 
 const quantityRegex = /^((\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*)(-(\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*))?)$/;
-export enum ReservedRecipeTags {
-    Ingredient = 'ingredient',
-}
-type ReservedTags = ReservedIngredientTags | ReservedRecipeTags;
+const ReservedRecipeTags = { Ingredient: 'ingredient' } as const;
+export const ReservedTags = { ...ReservedRecipeTags, ...ReservedIngredientTags } as const;
+type ReservedTags = (typeof ReservedTags)[keyof typeof ReservedTags];
 
 export interface RecipeIngredientType extends Document {
     quantity?: string;
@@ -154,7 +153,7 @@ export interface Recipe extends Document {
     titleIdentifier: string;
     pluralTitle?: string;
     subTitle?: string;
-    calculatedTags: string[];
+    calculatedTags: ReservedTags[];
     tags?: Types.ObjectId[];
     ingredientSubsections: IngredientSubsection[];
     instructionSubsections: InstructionSubsection[];
@@ -180,7 +179,11 @@ const recipeSchema = new Schema<Recipe>({
     },
     pluralTitle: { type: String },
     subTitle: { type: String },
-    calculatedTags: { type: [String!]!, required: true, text: true },
+    calculatedTags: {
+        type: [{ type: String, enum: ReservedTags }],
+        required: true,
+        text: true,
+    },
     tags: {
         type: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
         validate: [

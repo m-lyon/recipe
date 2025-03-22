@@ -5,6 +5,7 @@ import { MutableRefObject, useCallback, useEffect } from 'react';
 import { Button, ButtonGroup, Checkbox } from '@chakra-ui/react';
 import { FormControl, FormHelperText, HStack, Radio, RadioGroup, Stack } from '@chakra-ui/react';
 
+import { NumberFormat } from '@recipe/graphql/enums';
 import { FloatingLabelInput } from '@recipe/common/components';
 
 import { useFormLogic } from '../hooks/useFormLogic';
@@ -17,7 +18,6 @@ export function formatUnitError(error: ApolloError) {
     return error.message;
 }
 
-const numberFormat: NumberFormat[] = ['decimal', 'fraction'];
 export const unitFormSchema = object({
     shortSingular: string().required('Short singular name is required'),
     shortPlural: string().required('Short plural name is required'),
@@ -25,7 +25,7 @@ export const unitFormSchema = object({
     longPlural: string().required('Long plural name is required'),
     preferredNumberFormat: mixed<NumberFormat>()
         .required()
-        .oneOf(Object.values(numberFormat), 'You must select a number format'),
+        .oneOf(Object.values(NumberFormat), 'You must select a number format'),
     hasSpace: boolean().required(),
     unique: boolean().required(),
 });

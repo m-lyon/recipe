@@ -1,3 +1,4 @@
+import { ReservedTags } from '@recipe/graphql/enums';
 import { GetRecipeQuery } from '@recipe/graphql/generated';
 import { GetRecipeQueryVariables } from '@recipe/graphql/generated';
 import { GetIngredientComponentsQuery } from '@recipe/graphql/generated';
@@ -589,6 +590,27 @@ export const mockGetRecipesFilteredTag = {
             limit: 5,
             filter: mockFilterTag,
             countFilter: mockFilterTag,
+        } satisfies GetRecipesQueryVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeMany: [mockRecipeOne],
+            recipeCount: 1,
+        } satisfies GetRecipesQuery,
+    },
+};
+const mockFilterCalculatedTag = {
+    AND: [{ _operators: { calculatedTags: { in: [ReservedTags.Vegan] } } }],
+};
+export const mockGetRecipesFilteredCalculatedTag = {
+    request: {
+        query: GET_RECIPES,
+        variables: {
+            offset: 0,
+            limit: 5,
+            filter: mockFilterCalculatedTag,
+            countFilter: mockFilterCalculatedTag,
         } satisfies GetRecipesQueryVariables,
     },
     result: {

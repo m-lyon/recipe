@@ -1,6 +1,6 @@
-import { GetUnitsQuery } from '@recipe/graphql/generated';
 import { GetRecipeQuery, GetRecipesQuery } from '@recipe/graphql/generated';
 import { EnumIngredientTags, GetTagsQuery } from '@recipe/graphql/generated';
+import { EnumRecipeCalculatedTags, GetUnitsQuery } from '@recipe/graphql/generated';
 import { CurrentUserQuery, GetUnitConversionsQuery } from '@recipe/graphql/generated';
 import { CreateConversionRuleMutation, GetSizesQuery } from '@recipe/graphql/generated';
 import { GetIngredientComponentsQuery, GetIngredientsQuery } from '@recipe/graphql/generated';
@@ -394,7 +394,10 @@ declare global {
      * Represents the tags that are assignable to an ingredient.
      */
     type IngredientTags = EnumIngredientTags;
-
+    /**
+     * Represents the tags that are calculated for a recipe.
+     */
+    type ReservedTags = EnumRecipeCalculatedTags;
     // - Unit Conversions ---------------------------------------------------------
 
     /**

@@ -3,12 +3,11 @@ import { useShallow } from 'zustand/shallow';
 import { Box, Editable, EditableInput, EditablePreview, useOutsideClick } from '@chakra-ui/react';
 
 import { useRecipeStore } from '@recipe/stores';
+import { ReservedTags } from '@recipe/graphql/enums';
 import { useWarningToast } from '@recipe/common/hooks';
 
 import { TagDropdown } from './TagDropdown';
 import { useTagDropdown } from '../hooks/useTagDropdown';
-
-const FORBIDDEN_TAGS = ['vegan', 'vegetarian', 'ingredient'];
 
 export function EditableTag() {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -42,9 +41,13 @@ export function EditableTag() {
                 selectAllOnFocus={false}
                 onEdit={() => !dropdownIsOpen && showDropdown()}
                 onChange={(value: string) => {
-                    if (FORBIDDEN_TAGS.includes(value.toLowerCase())) {
+                    if (
+                        (Object.values(ReservedTags) satisfies string[] as string[]).includes(
+                            value.toLowerCase()
+                        )
+                    ) {
                         return toast({
-                            title: 'Forbidden tag',
+                            title: 'Reserved tag',
                             description: `${value} tag is automatically determined from ingredients.`,
                             position: 'top',
                         });

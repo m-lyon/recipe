@@ -3,7 +3,7 @@ import { FilterFindManyRecipeInput } from '@recipe/graphql/generated';
 export interface Query {
     title?: string;
     tags?: string[];
-    calculatedTags?: string[];
+    calculatedTags?: ReservedTags[];
     ingredients?: string[];
 }
 
@@ -19,8 +19,8 @@ export function getSearchFilter(query: Query): FilterFindManyRecipeInput | undef
         }
     }
     if (calculatedTags?.length) {
-        for (const calculatedTag of calculatedTags) {
-            filters.push({ _operators: { calculatedTags: { in: [calculatedTag] } } });
+        for (const cTag of calculatedTags) {
+            filters.push({ _operators: { calculatedTags: { in: [cTag] } } });
         }
     }
     if (ingredients?.length) {

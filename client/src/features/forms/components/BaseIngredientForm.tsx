@@ -3,12 +3,11 @@ import { MutableRefObject, useCallback, useEffect } from 'react';
 import { array, boolean, mixed, number, object, string } from 'yup';
 import { Button, ButtonGroup, Checkbox, HStack, Stack, StackProps } from '@chakra-ui/react';
 
+import { IngredientTags } from '@recipe/graphql/enums';
 import { FloatingLabelInput } from '@recipe/common/components';
 
 import { useFormLogic } from '../hooks/useFormLogic';
 import { useKeyboardSubmit } from '../hooks/useKeyboardSubmit';
-
-const reservedTags: IngredientTags[] = ['vegan', 'vegetarian'];
 
 export function formatIngredientError(error: ApolloError) {
     if (error.message.startsWith('E11000')) {
@@ -24,7 +23,7 @@ const formSchema = object({
     density: number(),
     tags: array()
         .required()
-        .of(mixed<IngredientTags>().required().oneOf(reservedTags, 'Invalid tag')),
+        .of(mixed<IngredientTags>().required().oneOf(Object.values(IngredientTags), 'Invalid tag')),
 });
 
 export interface BaseIngredientFormProps extends StackProps {
@@ -105,22 +104,22 @@ export function BaseIngredientForm(props: BaseIngredientFormProps) {
                 <Checkbox
                     isDisabled={disabled}
                     pr={6}
-                    isChecked={formData.tags?.includes('vegan')}
+                    isChecked={formData.tags?.includes(IngredientTags.Vegan)}
                     onChange={(e) => {
                         const newTags = e.target.checked
-                            ? ['vegan', 'vegetarian']
-                            : formData.tags?.filter((tag) => tag !== 'vegan') || [];
+                            ? Object.values(IngredientTags)
+                            : formData.tags?.filter((tag) => tag !== IngredientTags.Vegan) || [];
                         handleChange('tags', [...new Set(newTags)]);
                     }}
                 >
                     Vegan
                 </Checkbox>
                 <Checkbox
-                    isChecked={formData.tags?.includes('vegetarian')}
+                    isChecked={formData.tags?.includes(IngredientTags.Vegetarian)}
                     isDisabled={disabled}
                     onChange={(e) => {
                         const newTags = e.target.checked
-                            ? [...(formData.tags || []), 'vegetarian']
+                            ? [...(formData.tags || []), IngredientTags.Vegetarian]
                             : [];
                         handleChange('tags', newTags);
                     }}

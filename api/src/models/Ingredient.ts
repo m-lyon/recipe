@@ -4,10 +4,11 @@ import { composeMongoose } from 'graphql-compose-mongoose';
 import { ownerExists } from './validation.js';
 import { uniqueInAdminsAndUser } from './validation.js';
 
-export enum ReservedIngredientTags {
-    Vegan = 'vegan',
-    Vegetarian = 'vegetarian',
-}
+export const ReservedIngredientTags = {
+    Vegan: 'vegan',
+    Vegetarian: 'vegetarian',
+} as const;
+type ReservedIngredientTags = (typeof ReservedIngredientTags)[keyof typeof ReservedIngredientTags];
 export interface Ingredient extends Document {
     name: string;
     pluralName: string;

@@ -49,8 +49,8 @@
         "zustand": "^5.0.2"
     },
     "devDependencies": {
-        "@graphql-codegen/cli": "^5.0.0",
-        "@graphql-codegen/client-preset": "^4.3.3",
+        "@graphql-codegen/cli": "^5.0.5",
+        "@graphql-codegen/client-preset": "^4.7.0",
         "@testing-library/jest-dom": "^6.6.3",
         "@testing-library/react": "^14.0.0",
         "@testing-library/user-event": "^14.4.3",

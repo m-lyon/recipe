@@ -1,6 +1,7 @@
 import { StateCreator, create } from 'zustand';
 
 import type { Query } from '@recipe/features/search';
+import { ReservedTags } from '@recipe/graphql/enums';
 
 import { TagFilterSlice } from './createTagFilterSlice';
 import { createTagFilterSlice } from './createTagFilterSlice';
@@ -39,11 +40,14 @@ const createSharedSlice: StateCreator<SearchState, [], [], SharedSlice> = (set, 
 
         if (type === 'CalculatedTag') {
             if (_id !== undefined) throw new Error('CalculatedTag should not have an _id');
+            if (!Object.values(ReservedTags).includes(value as ReservedTags)) {
+                throw new Error('Invalid value for CalculatedTag');
+            }
             return {
                 title,
                 tags: get().selectedTags.map((tag) => tag._id),
                 calculatedTags: get()
-                    .addCalculatedTag({ _id, value })
+                    .addCalculatedTag({ _id, value: value as ReservedTags })
                     .map((tag) => tag.value),
                 ingredients: get().selectedIngredients.map((ingr) => ingr._id),
             };

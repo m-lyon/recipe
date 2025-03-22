@@ -15,7 +15,7 @@ const config: CodegenConfig = {
                     defaultValue: false,
                 },
                 nonOptionalTypename: true,
-                enumsAsTypes: true,
+                enumsAsConst: true,
             },
             presetConfig: {
                 gqlTagName: 'gql',

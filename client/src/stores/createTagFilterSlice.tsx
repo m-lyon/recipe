@@ -1,7 +1,8 @@
 import { StateCreator } from 'zustand';
 
 import { SearchState } from './useSearchStore';
-export interface CalculatedTagChoice extends FilterChoice {
+export interface CalculatedTagChoice {
+    value: ReservedTags;
     _id: undefined;
 }
 export interface TagFilterSlice {

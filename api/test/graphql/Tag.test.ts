@@ -82,7 +82,7 @@ describe('tagCreateOne', function () {
         assert.isDefined(response.body.singleResult.errors);
         assert.equal(
             response.body.singleResult.errors[0].message,
-            'Tag validation failed: value: Forbidden tag.'
+            'Tag validation failed: value: Reserved tag.'
         );
     });
 
@@ -184,7 +184,7 @@ describe('tagUpdateById', function () {
         assert.isDefined(response.body.singleResult.errors);
         assert.equal(
             response.body.singleResult.errors[0].message,
-            'Tag validation failed: value: Forbidden tag.'
+            'Tag validation failed: value: Reserved tag.'
         );
     });
 
