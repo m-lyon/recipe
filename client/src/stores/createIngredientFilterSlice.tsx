@@ -8,9 +8,9 @@ export interface IngredientFilterSlice {
     resetIngrFilter: () => void;
     showIngrDropdown: boolean;
     setShowIngrDropdown: (value: boolean) => void;
-    selectedIngredients: FilterChoice[];
-    addIngr: (tag: FilterChoice) => FilterChoice[];
-    removeIngr: (_id: string) => FilterChoice[];
+    selectedIngredients: FilterChoiceWithId[];
+    addIngr: (ingr: FilterChoiceWithId) => FilterChoiceWithId[];
+    removeIngr: (_id: string) => FilterChoiceWithId[];
 }
 
 export const createIngredientFilterSlice: StateCreator<

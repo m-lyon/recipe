@@ -1,7 +1,7 @@
 import { useSearchStore } from '@recipe/stores';
-import { useTagSuggestions } from '@recipe/features/tags';
 
 import { Filter } from './Filter';
+import { useAllTagSuggestions } from '../hooks/useAllTagsSuggestions';
 
 interface Props {
     addFilter: (item: FilterChoice, type: FilterChoiceType) => void;
@@ -13,7 +13,7 @@ export function TagFilter(props: Props) {
     const tags = useSearchStore((state) => state.selectedTags);
     const isOpen = useSearchStore((state) => state.showTagDropdown);
     const setIsOpen = useSearchStore((state) => state.setShowTagDropdown);
-    const suggestions = useTagSuggestions(tags, query);
+    const suggestions = useAllTagSuggestions(tags, query);
 
     return (
         <Filter
@@ -22,7 +22,13 @@ export function TagFilter(props: Props) {
             placeholder='Filter by tags'
             isOpen={isOpen}
             setIsOpen={setIsOpen}
-            addItem={(item) => addFilter(item, 'Tag')}
+            addItem={(item) => {
+                if (item._id) {
+                    addFilter(item, 'Tag');
+                } else {
+                    addFilter(item, 'CalculatedTag');
+                }
+            }}
             suggestions={suggestions}
         />
     );

@@ -425,13 +425,17 @@ declare global {
      * search results.
      */
     interface FilterChoice {
+        _id: string | undefined;
+        value: string;
+    }
+    interface FilterChoiceWithId {
         _id: string;
         value: string;
     }
     /**
      * Represents the filter choices type that can be used to filter the recipe search results.
      */
-    type FilterChoiceType = 'Tag' | 'Ingredient';
+    type FilterChoiceType = 'Tag' | 'Ingredient' | 'CalculatedTag';
 
     // ----------------------------------------------------------------------------
 }

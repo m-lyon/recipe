@@ -8,7 +8,7 @@ import { useWarningToast } from '@recipe/common/hooks';
 import { TagDropdown } from './TagDropdown';
 import { useTagDropdown } from '../hooks/useTagDropdown';
 
-const FORBIDDEN_TAGS = ['vegan', 'vegetarian'];
+const FORBIDDEN_TAGS = ['vegan', 'vegetarian', 'ingredient'];
 
 export function EditableTag() {
     const containerRef = useRef<HTMLDivElement>(null);

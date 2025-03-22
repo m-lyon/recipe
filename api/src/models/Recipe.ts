@@ -180,7 +180,7 @@ const recipeSchema = new Schema<Recipe>({
     },
     pluralTitle: { type: String },
     subTitle: { type: String },
-    calculatedTags: { type: [String!]!, required: true },
+    calculatedTags: { type: [String!]!, required: true, text: true },
     tags: {
         type: [{ type: Schema.Types.ObjectId, ref: 'Tag' }],
         validate: [

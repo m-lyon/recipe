@@ -14,11 +14,14 @@ interface SearchHook {
     setTitle: (value: string) => void;
     reset: () => void;
     addFilter: (item: FilterChoice, type: FilterChoiceType) => void;
-    removeFilter: (_id: string) => void;
+    removeFilter: (item: FilterChoice) => void;
 }
 export function useSearch(): SearchHook {
     const title = useSearchStore((state) => state.titleFilter);
     const tags = useSearchStore(useShallow((state) => state.selectedTags.map((tag) => tag._id)));
+    const calculatedTags = useSearchStore(
+        useShallow((state) => state.selectedCalculatedTags.map((tag) => tag.value))
+    );
     const ingredients = useSearchStore(
         useShallow((state) => state.selectedIngredients.map((ingredient) => ingredient._id))
     );
@@ -39,8 +42,8 @@ export function useSearch(): SearchHook {
         });
     }, DEBOUNCE_TIME);
     const filter = useMemo(
-        () => getSearchFilter({ title, tags, ingredients }),
-        [title, tags, ingredients]
+        () => getSearchFilter({ title, tags, calculatedTags, ingredients }),
+        [title, tags, calculatedTags, ingredients]
     );
     const reset = useCallback(() => {
         if (filter) {
@@ -66,8 +69,8 @@ export function useSearch(): SearchHook {
     );
 
     const removeFilter = useCallback(
-        (_id: string) => {
-            const query = removeItem(_id);
+        (item: FilterChoice) => {
+            const query = removeItem(item);
             debouncedSearch(query);
         },
         [removeItem, debouncedSearch]

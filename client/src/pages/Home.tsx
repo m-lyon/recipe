@@ -1,13 +1,10 @@
 import { Container, Grid, GridItem, Text } from '@chakra-ui/react';
 
-import { useSearchStore } from '@recipe/stores';
+import { useSelectedFilters } from '@recipe/features/search';
 import { RecipeCardsContainer } from '@recipe/features/viewing';
 
 export function Home() {
-    const showSearch = useSearchStore((state) => state.showSearch);
-    const showSelected = useSearchStore(
-        (state) => state.selectedTags.length > 0 || state.selectedIngredients.length > 0
-    );
+    const { showSearch, showSelected } = useSelectedFilters();
 
     return (
         <Container

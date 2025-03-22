@@ -1,7 +1,6 @@
 import { HStack } from '@chakra-ui/react';
 
-import { useSearchStore } from '@recipe/stores';
-import { IngredientFilter, TagFilter } from '@recipe/features/search';
+import { IngredientFilter, TagFilter, useSelectedFilters } from '@recipe/features/search';
 
 import { FlexNav } from './FlexNav';
 
@@ -10,10 +9,7 @@ interface Props {
 }
 export function SearchFilter(props: Props) {
     const { addFilter } = props;
-    const showSearch = useSearchStore((state) => state.showSearch);
-    const showSelected = useSearchStore(
-        (state) => state.selectedTags.length > 0 || state.selectedIngredients.length > 0
-    );
+    const { showSearch, showSelected } = useSelectedFilters();
 
     return (
         <FlexNav

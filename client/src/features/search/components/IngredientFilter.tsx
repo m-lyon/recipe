@@ -1,10 +1,7 @@
-import { useQuery } from '@apollo/client';
-import { matchSorter } from 'match-sorter';
-
 import { useSearchStore } from '@recipe/stores';
-import { GET_INGREDIENT_AND_RECIPE_INGREDIENTS } from '@recipe/graphql/queries/recipe';
 
 import { Filter } from './Filter';
+import { useIngredientSuggestions } from '../hooks/useIngredientSuggestions';
 
 interface Props {
     addFilter: (item: FilterChoice, type: FilterChoiceType) => void;
@@ -16,25 +13,7 @@ export function IngredientFilter(props: Props) {
     const isOpen = useSearchStore((state) => state.showIngrDropdown);
     const selected = useSearchStore((state) => state.selectedIngredients);
     const setIsOpen = useSearchStore((state) => state.setShowIngrDropdown);
-
-    const { data } = useQuery(GET_INGREDIENT_AND_RECIPE_INGREDIENTS);
-    const ingrs: FilterChoice[] = data
-        ? [
-              ...data.ingredients.map((ingr) => ({
-                  value: ingr.name,
-                  _id: ingr._id,
-              })),
-              ...data.recipes.map((recipe) => ({
-                  value: recipe.title,
-                  _id: recipe._id,
-              })),
-          ]
-        : [];
-    const suggestions = matchSorter<FilterChoice>(
-        ingrs.filter((ingr) => !selected.find((s) => s._id === ingr._id)),
-        query,
-        { keys: ['value'] }
-    );
+    const suggestions = useIngredientSuggestions(selected, query);
 
     return (
         <Filter
