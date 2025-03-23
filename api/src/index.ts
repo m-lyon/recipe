@@ -19,6 +19,7 @@ import { uploadRouter } from './routes/uploads.js';
 import { createHttpServer, createHttpsServer } from './utils/server.js';
 import { DELAY, HTTPS, PORT, SESSION_SECRET, SESSION_URI, WHITELIST } from './constants.js';
 
+console.log('Node version:', process.version);
 const app = express();
 const server = HTTPS ? createHttpsServer(app) : createHttpServer(app);
 const apolloServer = new ApolloServer({
