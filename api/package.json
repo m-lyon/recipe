@@ -10,7 +10,7 @@
         "compile": "rm -rf ./dist && tsc",
         "start": "node ./dist/src/index.js",
         "dev": "NODE_ENV=development nodemon -e ts --exec \"npm run compile && npm run start\"",
-        "prod": "NODE_ENV=production node ./dist/index.js",
+        "prod": "NODE_ENV=production nvm exec 20 node ./dist/index.js",
         "prod:watch": "nodemon -e ts --exec \"npm run prod\"",
         "prod:compile": "tsc -p tsconfig.prod.json",
         "test": "npm run compile && npm run start:test --",
