@@ -90,8 +90,8 @@ export function Navbar() {
                         <UserOptions />
                     </Flex>
                 </FlexNav>
-                <SelectedFilters removeFilter={removeFilter} />
-                <SearchFilter addFilter={addFilter} />
+                {isHomePage ? <SelectedFilters removeFilter={removeFilter} /> : undefined}
+                {isHomePage ? <SearchFilter addFilter={addFilter} /> : undefined}
                 <Slide
                     in={isOpen}
                     direction='top'

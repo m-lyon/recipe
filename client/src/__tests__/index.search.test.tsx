@@ -4,11 +4,11 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { cleanup, screen, waitForElementToBeRemoved } from '@testing-library/react';
 
 import { nullByLabelText } from '@recipe/utils/tests';
-import { mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipesFilteredTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipesFilteredTag } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipesFilteredIngr } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipesFilteredTagIngr } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockGetRecipeOne, mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipesFilteredTwoTagIngr } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipesFilteredCalculatedTag } from '@recipe/graphql/queries/__mocks__/recipe';
 import { enterViewRecipePage, haveValueByLabelText, notNullByLabelText } from '@recipe/utils/tests';
@@ -185,5 +185,23 @@ describe('Search Functionality', () => {
         // Expect ------------------------------------------------
         await notNullByLabelText(screen, 'View Mock Recipe', 'View Mock Recipe Two');
         nullByLabelText(screen, 'Remove dinner filter', 'Remove carrot filter');
+    });
+
+    it('should remove filters when navigating to a recipe page', async () => {
+        // Render -----------------------------------------------
+        renderComponent([mockGetRecipesFilteredCalculatedTag, mockGetRecipeOne]);
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        expect(await screen.findByText('Recipes'));
+        await screen.findAllByLabelText('View Mock Recipe');
+        await user.click(screen.getByLabelText('Filter by tags'));
+        await user.click(await screen.findByLabelText('vegan'));
+        await waitForElementToBeRemoved(() => screen.queryAllByLabelText('View Mock Recipe Two'));
+        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+
+        // Expect ------------------------------------------------
+        nullByLabelText(screen, 'Remove vegan filter', 'Filter by tags');
+        nullByLabelText(screen, 'Filter by ingredients');
     });
 });
