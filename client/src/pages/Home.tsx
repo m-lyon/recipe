@@ -1,17 +1,29 @@
-import { Container, Grid, GridItem, Text } from '@chakra-ui/react';
+import { Container, Grid, GridItem, Text, useBreakpointValue } from '@chakra-ui/react';
 
 import { useSelectedFilters } from '@recipe/features/search';
 import { RecipeCardsContainer } from '@recipe/features/viewing';
+import { SELECTED_FILTERS_HEIGHT } from '@recipe/features/navbar';
+import { NAV_HEIGHT, SEARCH_FILTER_MOBILE_HEIGHT } from '@recipe/features/navbar';
 
 export function Home() {
     const { showSearch, showSelected } = useSelectedFilters();
-
+    const isMobile = useBreakpointValue({ base: true, md: false });
     return (
         <Container
             maxW='container.xl'
-            mt={showSearch ? (showSelected ? '152px' : '120px') : '60px'}
+            pt={
+                showSearch
+                    ? isMobile
+                        ? showSelected
+                            ? `${NAV_HEIGHT + SEARCH_FILTER_MOBILE_HEIGHT + SELECTED_FILTERS_HEIGHT}px`
+                            : `${NAV_HEIGHT + SEARCH_FILTER_MOBILE_HEIGHT}px`
+                        : showSelected
+                          ? `${NAV_HEIGHT * 2 + SELECTED_FILTERS_HEIGHT}px`
+                          : `${NAV_HEIGHT * 2}px`
+                    : `${NAV_HEIGHT}px`
+            }
             px='16px'
-            transition='margin-top 0.3s'
+            transition='padding-top 0.3s'
         >
             <Grid
                 templateAreas={`'title'

@@ -73,3 +73,6 @@ export const USER_NAV_ITEMS: Array<NavItem> = [
 ];
 
 export const PUBLIC_NAV_ITEMS: Array<NavItem> = [];
+export const NAV_HEIGHT = 60;
+export const SEARCH_FILTER_MOBILE_HEIGHT = 110;
+export const SELECTED_FILTERS_HEIGHT = 32;
