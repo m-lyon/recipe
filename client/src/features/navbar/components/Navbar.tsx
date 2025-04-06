@@ -26,7 +26,7 @@ export function Navbar() {
 
     return (
         <>
-            <VStack>
+            <VStack as='nav' position='fixed' w='100%' zIndex={10}>
                 <FlexNav>
                     <Flex
                         flex={{ base: 0, md: 'auto' }}
