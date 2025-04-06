@@ -25,8 +25,10 @@ export function TagFilter(props: Props) {
             addItem={(item) => {
                 if (item._id) {
                     addFilter(item, 'Tag');
+                    setQuery('');
                 } else {
                     addFilter(item, 'CalculatedTag');
+                    setQuery('');
                 }
             }}
             suggestions={suggestions}

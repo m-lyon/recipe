@@ -22,7 +22,10 @@ export function IngredientFilter(props: Props) {
             placeholder='Filter by ingredients'
             isOpen={isOpen}
             setIsOpen={setIsOpen}
-            addItem={(item) => addFilter(item, 'Ingredient')}
+            addItem={(item) => {
+                addFilter(item, 'Ingredient');
+                setQuery('');
+            }}
             suggestions={suggestions}
         />
     );
