@@ -2,6 +2,6 @@ import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
-    base: '/recipe',
+    base: '/recipes',
     plugins: [tsconfigPaths()],
 });
