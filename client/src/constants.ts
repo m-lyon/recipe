@@ -1,6 +1,6 @@
 // Expose environment variables here
 const TEST = import.meta.env.MODE === 'test';
-const ROOT = import.meta.env.VITE_ROOT_PATH || '/recipe';
+const ROOT = import.meta.env.VITE_ROOT_PATH || '/recipes';
 const LOGIN_ENDPOINT = import.meta.env.VITE_LOGIN_ENDPOINT || 'login';
 const LOGIN = `${ROOT}/${LOGIN_ENDPOINT}`;
 export const GRAPHQL_URL = import.meta.env.VITE_GRAPHQL_URL;
