@@ -7,10 +7,13 @@ export default defineWorkspace([
             include: ['**/__tests__/*.browser.{spec,test}.{js,ts,tsx}'],
             browser: {
                 enabled: true,
-                name: 'firefox',
                 provider: 'playwright',
-                providerOptions: {},
-                headless: true,
+                instances: [
+                    {
+                        browser: 'firefox',
+                        headless: true,
+                    },
+                ],
             },
         },
     },

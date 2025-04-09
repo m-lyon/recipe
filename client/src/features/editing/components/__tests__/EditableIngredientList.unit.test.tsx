@@ -642,13 +642,12 @@ describe('Bespoke Unit', () => {
     });
 });
 describe('Delete Bespoke Unit', () => {
-    const consoleMock = vi.spyOn(console, 'log').mockImplementation(() => undefined);
-
     afterEach(() => {
         cleanup();
-        consoleMock.mockReset();
+        vi.resetAllMocks();
     });
     it('should delete a bespoke unit via click away', async () => {
+        const consoleMock = vi.spyOn(console, 'log').mockImplementation(() => undefined);
         const user = userEvent.setup();
         // Render
         renderComponent([mockCreateBespokeUnit, mockDeleteBespokeUnit]);
@@ -668,6 +667,7 @@ describe('Delete Bespoke Unit', () => {
         expect(consoleMock).toHaveBeenLastCalledWith(`Successfully deleted unit ${mockBumpId}`);
     });
     it('should delete a bespoke unit via escape key', async () => {
+        const consoleMock = vi.spyOn(console, 'log').mockImplementation(() => undefined);
         const user = userEvent.setup();
         // Render
         renderComponent([mockCreateBespokeUnit, mockDeleteBespokeUnit]);
@@ -687,6 +687,7 @@ describe('Delete Bespoke Unit', () => {
         expect(consoleMock).toHaveBeenLastCalledWith(`Successfully deleted unit ${mockBumpId}`);
     });
     it('should delete a bespoke unit via remove finished ingredient', async () => {
+        const consoleMock = vi.spyOn(console, 'log').mockImplementation(() => undefined);
         const user = userEvent.setup();
         // Render
         renderComponent([mockCreateBespokeUnit, mockDeleteBespokeUnit]);

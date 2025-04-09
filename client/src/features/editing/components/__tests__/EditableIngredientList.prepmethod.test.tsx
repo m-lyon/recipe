@@ -343,11 +343,9 @@ describe('PrepMethod Popover Behaviour', () => {
 });
 
 describe('Bespoke PrepMethod', () => {
-    const consoleMock = vi.spyOn(console, 'log').mockImplementation(() => undefined);
-
     afterEach(() => {
         cleanup();
-        consoleMock.mockReset();
+        vi.resetAllMocks();
     });
 
     it('should create a new bespoke prep method', async () => {
@@ -390,6 +388,7 @@ describe('Bespoke PrepMethod', () => {
 
     it('should delete a bespoke prep method via remove finished ingredient', async () => {
         const user = userEvent.setup();
+        const consoleMock = vi.spyOn(console, 'log').mockImplementation(() => undefined);
         // Render
         renderComponent([mockCreateBespokePrepMethod, mockDeleteBespokePrepMethod]);
 
