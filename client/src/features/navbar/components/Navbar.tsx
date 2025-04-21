@@ -1,7 +1,9 @@
-import { CloseIcon, HamburgerIcon } from '@chakra-ui/icons';
+import { IoClose } from 'react-icons/io5';
+import { RxHamburgerMenu } from 'react-icons/rx';
+import { Icon, useDisclosure } from '@chakra-ui/react';
+import { Box, Flex, IconButton } from '@chakra-ui/react';
 import { Link as ChakraLink, VStack } from '@chakra-ui/react';
-import { Box, Flex, IconButton, Slide } from '@chakra-ui/react';
-import { useColorModeValue, useDisclosure } from '@chakra-ui/react';
+// import { Slide } from '@chakra-ui/react';
 import { Outlet, Link as ReactRouterLink, useLocation } from 'react-router-dom';
 
 import { PATH } from '@recipe/constants';
@@ -17,7 +19,7 @@ import { SelectedFilters } from './SelectedFilters';
 
 export function Navbar() {
     const location = useLocation();
-    const { isOpen, onToggle, onClose } = useDisclosure();
+    const { open, onToggle, onClose } = useDisclosure();
     const { setTitle, reset, addFilter, removeFilter } = useSearch();
     const setShowSearch = useSearchStore((state) => state.setShowSearch);
     const { isLoggedIn, isVerified } = useUser();
@@ -38,13 +40,20 @@ export function Navbar() {
                                 setShowSearch(false);
                                 onToggle();
                             }}
-                            isDisabled={!isLoggedIn || !isVerified}
-                            icon={
-                                isOpen ? <CloseIcon w={3} h={3} /> : <HamburgerIcon w={5} h={5} />
-                            }
+                            disabled={!isLoggedIn || !isVerified}
                             variant='ghost'
                             aria-label='Toggle Navigation'
-                        />
+                        >
+                            {open ? (
+                                <Icon w={3} h={3}>
+                                    <IoClose />
+                                </Icon>
+                            ) : (
+                                <Icon w={3} h={3}>
+                                    <RxHamburgerMenu />
+                                </Icon>
+                            )}
+                        </IconButton>
                     </Flex>
                     <Flex
                         flex={{ base: 1 }}
@@ -54,10 +63,9 @@ export function Navbar() {
                         <ChakraLink
                             textAlign={{ base: 'center', md: 'left' }}
                             fontFamily='heading'
-                            color={useColorModeValue('gray.800', 'white')}
+                            color='gray.800'
                             _hover={{ textDecoration: 'none' }}
-                            to={PATH.ROOT}
-                            as={ReactRouterLink}
+                            asChild
                             aria-label='Navigate to home page'
                             onClick={() => {
                                 reset();
@@ -66,7 +74,7 @@ export function Navbar() {
                             display={{ base: isHomePage ? 'none' : 'inline', md: 'inline' }}
                             width={{ base: '100%', md: 'auto' }}
                         >
-                            Home
+                            <ReactRouterLink to={PATH.ROOT}>Home</ReactRouterLink>
                         </ChakraLink>
                         <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
                             <DesktopNav isLoggedIn={isLoggedIn} isVerified={isVerified} />
@@ -92,14 +100,14 @@ export function Navbar() {
                 </FlexNav>
                 {isHomePage ? <SelectedFilters removeFilter={removeFilter} /> : undefined}
                 {isHomePage ? <SearchFilter addFilter={addFilter} /> : undefined}
-                <Slide
-                    in={isOpen}
+                {/* <Slide
+                    in={open}
                     direction='top'
                     style={{ zIndex: 11, marginTop: '60px' }}
                     transition={{ enter: { duration: 0.3 } }}
-                >
-                    <MobileNav isVerified={isVerified} parentOnToggle={onToggle} />
-                </Slide>
+                > */}
+                <MobileNav isVerified={isVerified} parentOnToggle={onToggle} />
+                {/* </Slide> */}
             </VStack>
             <Outlet />
         </>

@@ -28,7 +28,7 @@ export function InstructionsTab(props: Props) {
                         cardRef={ref}
                         display={{ base: 'none', md: 'block' }}
                     />
-                    <VStack spacing={{ base: undefined, md: `${instrSpacing}px` }} align='left'>
+                    <VStack gap={{ base: undefined, md: `${instrSpacing}px` }} align='left'>
                         <TagList
                             tags={recipe.tags.map((tag) => tag.value).concat(recipe.calculatedTags)}
                             displayBoxMargin={recipe.images.length !== 0}

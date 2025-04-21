@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useDisclosure } from '@chakra-ui/react';
 
 export function useSubsectionDelete() {
-    const { isOpen, onOpen, onClose } = useDisclosure();
+    const { open, onOpen, onClose } = useDisclosure();
     const [returnFocus, setReturnFocus] = useState<boolean>(true);
     const [indexToDelete, setIndexToDelete] = useState<number>(0);
 
@@ -23,7 +23,7 @@ export function useSubsectionDelete() {
     };
 
     return {
-        isOpen,
+        open,
         handleOpen,
         handleConfirm,
         handleCancel,

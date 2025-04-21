@@ -1,5 +1,5 @@
 import { useShallow } from 'zustand/shallow';
-import { Input, InputGroup, InputLeftAddon, Text, VStack } from '@chakra-ui/react';
+import { Input, InputGroup, Text, VStack } from '@chakra-ui/react';
 
 import { useRecipeStore } from '@recipe/stores';
 
@@ -12,18 +12,23 @@ export function EditableSource() {
     );
     return (
         <VStack width='100%' justifyContent='flex-end'>
-            <InputGroup justifyContent={{ base: 'flex-start', md: 'flex-end' }}>
-                <InputLeftAddon backgroundColor='inherit' border='inhreit' padding={0}>
+            <InputGroup
+                justifyContent={{ base: 'flex-start', md: 'flex-end' }}
+                startElement={
                     <Text
                         as='i'
                         color={source ? undefined : 'gray.400'}
                         fontWeight='medium'
                         alignSelf='flex-end'
                         height='auto'
+                        backgroundColor='inherit'
+                        border='inhreit'
+                        padding={0}
                     >
                         Source:
                     </Text>
-                </InputLeftAddon>
+                }
+            >
                 <Input
                     fontStyle='italic'
                     fontWeight='medium'

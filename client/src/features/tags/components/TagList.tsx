@@ -1,4 +1,4 @@
-import { Box, BoxProps, Tag, TagLabel, VStack, Wrap, WrapItem } from '@chakra-ui/react';
+import { Box, BoxProps, Tag, VStack, Wrap, WrapItem } from '@chakra-ui/react';
 
 import { imageCardWidth } from '@recipe/features/images';
 
@@ -14,9 +14,9 @@ export function TagList(props: Props) {
     const tagsList = tags.map((tag) => {
         return (
             <WrapItem key={tag}>
-                <Tag size='lg'>
-                    <TagLabel>{tag}</TagLabel>
-                </Tag>
+                <Tag.Root size='lg'>
+                    <Tag.Label>{tag}</Tag.Label>
+                </Tag.Root>
             </WrapItem>
         );
     });
@@ -36,8 +36,8 @@ export function TagList(props: Props) {
                     marginLeft='4'
                 />
             ) : null}
-            <VStack align='left' spacing={tagsList.length > 0 ? 3 : 0}>
-                <Wrap spacing='10px'>{tagsList}</Wrap>
+            <VStack align='left' gap={tagsList.length > 0 ? 3 : 0}>
+                <Wrap gap='10px'>{tagsList}</Wrap>
             </VStack>
         </Box>
     );

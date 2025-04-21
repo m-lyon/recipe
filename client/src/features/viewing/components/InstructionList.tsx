@@ -1,4 +1,4 @@
-import { Box, ListItem, OrderedList, Text } from '@chakra-ui/react';
+import { Box, List, Text } from '@chakra-ui/react';
 
 interface Props {
     instructions: InstructionSubsectionView[];
@@ -17,9 +17,9 @@ export function InstructionList(props: Props) {
                 return null;
             }
             return (
-                <ListItem fontWeight={fontWeight} fontSize={fontSize} key={index}>
+                <List.Item fontWeight={fontWeight} fontSize={fontSize} key={index}>
                     <Text>{instr}</Text>
-                </ListItem>
+                </List.Item>
             );
         });
         if (index === 0) {
@@ -28,7 +28,9 @@ export function InstructionList(props: Props) {
                     <Text fontSize='2xl' pb='10px'>
                         {section.name ? section.name : 'Instructions'}
                     </Text>
-                    <OrderedList spacing='2'>{instructionsList}</OrderedList>
+                    <List.Root as='ol' gap='2'>
+                        {instructionsList}
+                    </List.Root>
                 </Box>
             );
         } else {
@@ -38,7 +40,9 @@ export function InstructionList(props: Props) {
                         {section.name}
                     </Text>
 
-                    <OrderedList spacing='2'>{instructionsList}</OrderedList>
+                    <List.Root as='ol' gap='2'>
+                        {instructionsList}
+                    </List.Root>
                 </Box>
             );
         }

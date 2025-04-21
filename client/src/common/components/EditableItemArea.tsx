@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import ResizeTextarea from 'react-textarea-autosize';
-import { Textarea, TextareaProps, useMergeRefs } from '@chakra-ui/react';
+import { Textarea, TextareaProps, mergeRefs } from '@chakra-ui/react';
 
 interface Props extends TextareaProps {
     handleChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
@@ -13,7 +13,6 @@ export function EditableItemArea(props: Props) {
     const { handleChange, handleSubmit, handleEnter, optionalRef, placeholderColor, ...rest } =
         props;
     const ref = useRef<HTMLTextAreaElement>(null);
-    const refs = useMergeRefs(ref, optionalRef);
 
     useEffect(() => {
         const onEnter = (e: KeyboardEvent) => {
@@ -41,14 +40,13 @@ export function EditableItemArea(props: Props) {
 
     return (
         <Textarea
-            ref={refs}
+            ref={mergeRefs(ref, optionalRef)}
             onChange={handleChange}
             onBlur={handleSubmit}
-            sx={placeholderColor ? { '&::placeholder': { color: placeholderColor } } : undefined}
+            css={placeholderColor ? { '& ::placeholder': { color: placeholderColor } } : undefined}
             as={ResizeTextarea}
-            minRows={1}
+            minH='1lh'
             resize='none'
-            minH='unset'
             border='none'
             px={0}
             pt={0}

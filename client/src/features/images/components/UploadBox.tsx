@@ -1,5 +1,5 @@
-import { Box } from '@chakra-ui/react';
-import { AddIcon } from '@chakra-ui/icons';
+import { FaPlus } from 'react-icons/fa6';
+import { Box, Icon } from '@chakra-ui/react';
 
 interface Props {
     handleAddFile: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -24,12 +24,9 @@ export function UploadBox(props: Props) {
             mx={{ base: '16px', md: '0px' }}
         >
             <label htmlFor='file-input'>
-                <AddIcon
-                    boxSize={8}
-                    color='gray.300'
-                    cursor='pointer'
-                    _hover={{ color: 'gray.400' }}
-                />
+                <Icon boxSize={8} color='gray.300' cursor='pointer' _hover={{ color: 'gray.400' }}>
+                    <FaPlus />
+                </Icon>
             </label>
             <input
                 id='file-input'

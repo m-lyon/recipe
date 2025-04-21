@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { LinkOverlay, VStack } from '@chakra-ui/react';
-import { Card, CardBody, CardHeader, Heading, LinkBox } from '@chakra-ui/react';
+import { Card, Heading, LinkBox, LinkOverlay, VStack } from '@chakra-ui/react';
 
 import { PATH } from '@recipe/constants';
 import { TagList } from '@recipe/features/tags';
@@ -32,7 +31,7 @@ export function RecipeCard(props: Props) {
 
     return (
         <LinkBox display='flex' flexDirection='column'>
-            <Card
+            <Card.Root
                 minH='10em'
                 width='18rem'
                 onMouseEnter={() => setIsHovered(true)}
@@ -44,40 +43,37 @@ export function RecipeCard(props: Props) {
                     hasEditPermission={hasEditPermission}
                     handleDelete={handleDelete}
                 />
-                <CardHeader>
-                    <LinkOverlay
-                        as={Link}
-                        to={`${PATH.ROOT}/view/recipe/${recipe.titleIdentifier}`}
-                    >
-                        <Heading size='md' color='blackAlpha.700'>
-                            {getCardTitle(recipe)}
-                        </Heading>
+                <Card.Header>
+                    <LinkOverlay asChild>
+                        <Link to={`${PATH.ROOT}/view/recipe/${recipe.titleIdentifier}`}>
+                            <Heading size='md' color='blackAlpha.700'>
+                                {getCardTitle(recipe)}
+                            </Heading>
+                        </Link>
                     </LinkOverlay>
-                </CardHeader>
-                <CardBody pt={0}>
-                    <LinkOverlay
-                        as={Link}
-                        to={`${PATH.ROOT}/view/recipe/${recipe.titleIdentifier}`}
-                        aria-label={`View ${recipe.title}`}
-                    >
-                        <VStack align='left' spacing={2}>
-                            <StarRating
-                                rating={getAverageRating(recipe.ratings)}
-                                addRating={() => {}}
-                                readonly
-                                size={15}
-                                colour='rgb(160, 174, 192)'
-                                aria-label={`Rating for ${recipe.title}`}
-                            />
-                            <TagList
-                                tags={recipe.tags
-                                    .map((tag) => tag.value)
-                                    .concat(recipe.calculatedTags)}
-                            />
-                        </VStack>
+                </Card.Header>
+                <Card.Body pt={0}>
+                    <LinkOverlay asChild aria-label={`View ${recipe.title}`}>
+                        <Link to={`${PATH.ROOT}/view/recipe/${recipe.titleIdentifier}`}>
+                            <VStack align='left' gap={2}>
+                                <StarRating
+                                    rating={getAverageRating(recipe.ratings)}
+                                    addRating={() => {}}
+                                    readonly
+                                    size={15}
+                                    colour='rgb(160, 174, 192)'
+                                    aria-label={`Rating for ${recipe.title}`}
+                                />
+                                <TagList
+                                    tags={recipe.tags
+                                        .map((tag) => tag.value)
+                                        .concat(recipe.calculatedTags)}
+                                />
+                            </VStack>
+                        </Link>
                     </LinkOverlay>
-                </CardBody>
-            </Card>
+                </Card.Body>
+            </Card.Root>
         </LinkBox>
     );
 }

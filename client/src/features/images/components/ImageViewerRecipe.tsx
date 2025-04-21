@@ -1,6 +1,6 @@
 import * as CSS from 'csstype';
 import { UseMeasureRef } from 'react-use/lib/useMeasure';
-import { ResponsiveValue, useBreakpointValue } from '@chakra-ui/react';
+import { CardRootProps, useBreakpointValue } from '@chakra-ui/react';
 
 import { ImageCarousel } from '@recipe/common/components';
 
@@ -9,8 +9,8 @@ export const imageCardWidth = 360;
 interface Props {
     images: ImageView[];
     cardRef?: UseMeasureRef<Element>;
-    position?: ResponsiveValue<CSS.Property.Position>;
-    display?: ResponsiveValue<CSS.Property.Display>;
+    position?: CardRootProps['position'];
+    display?: CardRootProps['display'];
 }
 export function ImageViewerRecipe(props: Props) {
     const { images, cardRef, position, display } = props;

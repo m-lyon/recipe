@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
-import { CloseIcon, EditIcon } from '@chakra-ui/icons';
-import { Box, Flex, IconButton, Spacer, Tooltip } from '@chakra-ui/react';
+import { IoClose } from 'react-icons/io5';
+import { FaRegEdit } from 'react-icons/fa';
+import { Box, Flex, IconButton, Spacer } from '@chakra-ui/react';
 
 import { PATH } from '@recipe/constants';
+import { Tooltip } from '@recipe/common/components';
 
 interface Props {
     recipe: RecipePreview;
@@ -17,13 +19,13 @@ export function ModifyButtons(props: Props) {
             <Flex minWidth='max-content' direction='row'>
                 <Box zIndex={1}>
                     <Box position='absolute'>
-                        <Tooltip label={`Edit ${recipe.title}`} openDelay={500}>
+                        <Tooltip content={`Edit ${recipe.title}`} showArrow openDelay={500}>
                             <IconButton
+                                asChild
                                 variant='solid'
-                                colorScheme='gray'
+                                colorPalette='gray'
                                 aria-label={`Edit ${recipe.title}`}
-                                icon={<EditIcon />}
-                                isRound={true}
+                                borderRadius='full'
                                 shadow='base'
                                 opacity={{ base: 1, md: isHovering ? 1 : 0 }}
                                 transform={{
@@ -31,22 +33,23 @@ export function ModifyButtons(props: Props) {
                                     md: `translate(-50%, -50%) scale(${isHovering ? 1 : 0})`,
                                 }}
                                 transition='opacity 0.3s, transform 0.3s'
-                                as={Link}
-                                to={`${PATH.ROOT}/edit/recipe/${recipe.titleIdentifier}`}
-                            />
+                            >
+                                <Link to={`${PATH.ROOT}/edit/recipe/${recipe.titleIdentifier}`}>
+                                    <FaRegEdit />
+                                </Link>
+                            </IconButton>
                         </Tooltip>
                     </Box>
                 </Box>
                 <Spacer />
                 <Box zIndex={1}>
                     <Box position='absolute'>
-                        <Tooltip label={`Delete ${recipe.title}`} openDelay={500}>
+                        <Tooltip content={`Delete ${recipe.title}`} showArrow openDelay={500}>
                             <IconButton
                                 variant='solid'
-                                colorScheme='gray'
+                                colorPalette='gray'
                                 aria-label={`Delete ${recipe.title}`}
-                                icon={<CloseIcon />}
-                                isRound={true}
+                                borderRadius='full'
                                 shadow='base'
                                 opacity={{ base: 1, md: isHovering ? 1 : 0 }}
                                 transform={{
@@ -55,7 +58,9 @@ export function ModifyButtons(props: Props) {
                                 }}
                                 transition='opacity 0.3s, transform 0.3s'
                                 onClick={() => handleDelete(recipe._id)}
-                            />
+                            >
+                                <IoClose />
+                            </IconButton>
                         </Tooltip>
                     </Box>
                 </Box>

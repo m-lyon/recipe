@@ -1,5 +1,5 @@
+import { Tag } from '@chakra-ui/react';
 import { Reorder } from 'framer-motion';
-import { Tag, TagCloseButton, TagLabel } from '@chakra-ui/react';
 
 import { getFinishedRecipeIngredientParts } from '@recipe/utils/formatting';
 
@@ -18,14 +18,14 @@ export function FinishedIngredient(props: Props) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
         >
-            <Tag
+            <Tag.Root
                 size='lg'
                 marginBottom='5px'
                 maxWidth='80%'
                 aria-label={`${tagQuantity}${rest.trim()}`}
             >
                 <span style={{ display: 'flex', flexDirection: 'row' }}>
-                    <TagLabel
+                    <Tag.Label
                         display={quantity ? 'inline-block' : 'none'}
                         py={1}
                         lineHeight={1.3}
@@ -33,16 +33,18 @@ export function FinishedIngredient(props: Props) {
                         whiteSpace={'pre-wrap'}
                     >
                         {tagQuantity}
-                    </TagLabel>
-                    <TagLabel display='inline-block' py={1} lineHeight={1.3}>
+                    </Tag.Label>
+                    <Tag.Label display='inline-block' py={1} lineHeight={1.3}>
                         {rest}
-                    </TagLabel>
+                    </Tag.Label>
                 </span>
-                <TagCloseButton
-                    onClick={() => removeFinished()}
-                    aria-label={`Remove ${quantity}${rest}`}
-                />
-            </Tag>
+                <Tag.EndElement>
+                    <Tag.CloseTrigger
+                        onClick={() => removeFinished()}
+                        aria-label={`Remove ${quantity}${rest}`}
+                    />
+                </Tag.EndElement>
+            </Tag.Root>
         </Reorder.Item>
     );
 }

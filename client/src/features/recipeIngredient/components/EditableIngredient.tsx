@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react';
+import { useClickAway } from 'react-use';
+import { Popover } from '@chakra-ui/react';
 import { useMutation } from '@apollo/client';
+import { Box, Editable } from '@chakra-ui/react';
 import { useBreakpointValue } from '@chakra-ui/react';
-import { Popover, PopoverAnchor, useOutsideClick } from '@chakra-ui/react';
-import { Box, Editable, EditableInput, EditablePreview } from '@chakra-ui/react';
 
 import { DEBUG } from '@recipe/constants';
 import { useRecipeStore } from '@recipe/stores';
@@ -64,13 +65,10 @@ export function EditableIngredient(props: Props) {
             deleteUnit({ variables: { id: item.unit.data._id } });
         }
     };
-    useOutsideClick({
-        ref: parentRef,
-        handler: () => {
-            if (item.quantity !== null || item.showDropdown) {
-                handleReset();
-            }
-        },
+    useClickAway(parentRef, () => {
+        if (item.quantity !== null || item.showDropdown) {
+            handleReset();
+        }
     });
     const suggestions = getSuggestions(item, data, attributeStr);
     const openPopover = (type: PopoverType) => {
@@ -91,16 +89,15 @@ export function EditableIngredient(props: Props) {
     return (
         // Position relative is needed for the dropdown to be positioned correctly
         <Box ref={parentRef} position='relative'>
-            <Popover
-                isOpen={item.popover !== null}
-                onClose={() => setPopover(section, null)}
-                closeOnBlur={false}
-                placement={useBreakpointValue({ base: 'bottom', md: 'right' })}
-                initialFocusRef={fieldRef}
-                returnFocusOnClose={true}
+            <Popover.Root
+                open={item.popover !== null}
+                onOpenChange={() => setPopover(section, null)}
+                positioning={{ placement: useBreakpointValue({ base: 'bottom', md: 'right' }) }}
+                initialFocusEl={() => fieldRef.current}
+                // returnFocusOnClose={true} // This is not supported
             >
-                <PopoverAnchor>
-                    <Editable
+                <Popover.Positioner>
+                    <Editable.Root
                         value={editableStr}
                         onMouseDown={(e) => {
                             if (item.quantity !== null) {
@@ -108,10 +105,10 @@ export function EditableIngredient(props: Props) {
                                 previewRef.current?.focus();
                             }
                         }}
-                        selectAllOnFocus={false}
-                        onChange={handleIngredientChange}
-                        onCancel={handleReset}
-                        onEdit={() => open(section)}
+                        onValueChange={(e) => handleIngredientChange(e.value)}
+                        selectOnFocus={false}
+                        onInteractOutside={handleReset}
+                        onEditChange={(details) => details.edit && open(section)}
                         textAlign='left'
                         fontSize={fontSize}
                         color={
@@ -124,20 +121,20 @@ export function EditableIngredient(props: Props) {
                         pl='0px'
                         placeholder={item.showDropdown ? `Enter ${item.state}` : 'Enter ingredient'}
                     >
-                        <EditablePreview
+                        <Editable.Preview
                             ref={previewRef}
                             width='100%'
                             aria-label={`Enter ingredient #${numFinished + 1} for subsection ${section + 1}`}
                         />
-                        <EditableInput
+                        <Editable.Input
                             ref={inputRef}
                             value={attributeStr}
                             _focusVisible={{ outline: 'none' }}
                             onKeyDown={onKeyDown}
                             aria-label={`Input ingredient #${numFinished + 1} for subsection ${section + 1}`}
                         />
-                    </Editable>
-                </PopoverAnchor>
+                    </Editable.Root>
+                </Popover.Positioner>
                 <IngredientDropdown
                     suggestions={suggestions}
                     item={item}
@@ -158,7 +155,7 @@ export function EditableIngredient(props: Props) {
                     bespokeValue={bespokeValue}
                     setBespokeValue={setBespokeValue}
                 />
-            </Popover>
+            </Popover.Root>
         </Box>
     );
 }

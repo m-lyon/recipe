@@ -1,11 +1,12 @@
-import { useSize } from '@chakra-ui/react-use-size';
+import { useMeasure } from 'react-use';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
-import { Box, Button, Flex, Progress, VStack } from '@chakra-ui/react';
+import { Box, Button, Flex, Icon, VStack } from '@chakra-ui/react';
 import { PanInfo, motion, useAnimation, useMotionValue } from 'framer-motion';
 import { Dispatch, ReactNode, SetStateAction, useLayoutEffect, useRef } from 'react';
 
 import { percentage } from '@recipe/utils/number';
+import { Progress } from '@recipe/common/components';
 
 interface Props {
     children: ReactNode[];
@@ -90,14 +91,13 @@ function Slider(props: SliderProps) {
         setTrackIsActive,
         initSliderWidth,
     } = props;
-    const ref = useRef<HTMLDivElement>(null);
-    const dims = useSize(ref);
+    const [ref, { width }] = useMeasure();
 
     useLayoutEffect(() => {
-        if (dims) {
-            initSliderWidth(Math.round(dims.width));
+        if (width) {
+            initSliderWidth(Math.round(width));
         }
-    }, [dims, dims?.width, initSliderWidth]);
+    }, [width, initSliderWidth]);
 
     const handleFocus = () => setTrackIsActive(true);
     const handleDecrementClick = () => {
@@ -119,7 +119,9 @@ function Slider(props: SliderProps) {
                 position='relative'
                 overflow='hidden'
                 _before={{
-                    bgGradient: 'linear(to-r, base.d400, transparent)',
+                    bgGradient: 'to-r',
+                    gradientFrom: 'base.d400',
+                    gradientTo: 'transparent',
                     position: 'absolute',
                     w: `${gap / 2}px`,
                     content: "''",
@@ -129,7 +131,9 @@ function Slider(props: SliderProps) {
                     top: 0,
                 }}
                 _after={{
-                    bgGradient: 'linear(to-l, base.d400, transparent)',
+                    bgGradient: 'to-l',
+                    gradientFrom: 'base.d400',
+                    gradientTo: 'transparent',
                     position: 'absolute',
                     w: `${gap / 2}px`,
                     content: "''",
@@ -148,10 +152,12 @@ function Slider(props: SliderProps) {
                     onFocus={handleFocus}
                     mr={`${gap / 3}px`}
                     color='gray.200'
-                    variant='link'
+                    variant='ghost'
                     minW={0}
                 >
-                    <ChevronLeftIcon boxSize={9} />
+                    <Icon boxSize={9}>
+                        <FaChevronLeft />
+                    </Icon>
                 </Button>
 
                 <Progress
@@ -161,8 +167,8 @@ function Slider(props: SliderProps) {
                     bg='base.d100'
                     flex={1}
                     h='3px'
-                    sx={{
-                        '> div': {
+                    css={{
+                        '& > div': {
                             backgroundColor: 'gray.400',
                         },
                     }}
@@ -173,11 +179,13 @@ function Slider(props: SliderProps) {
                     onFocus={handleFocus}
                     ml={`${gap / 3}px`}
                     color='gray.200'
-                    variant='link'
+                    variant='ghost'
                     zIndex={2}
                     minW={0}
                 >
-                    <ChevronRightIcon boxSize={9} />
+                    <Icon boxSize={9}>
+                        <FaChevronRight />
+                    </Icon>
                 </Button>
             </Flex>
         </>
@@ -313,7 +321,7 @@ function Track(props: TrackProps) {
     return (
         <>
             {itemWidth && (
-                <VStack ref={node} spacing={5} alignItems='stretch'>
+                <VStack ref={node} gap={5} alignItems='stretch'>
                     <MotionFlex
                         dragConstraints={node}
                         onDragStart={handleDragStart}

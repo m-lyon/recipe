@@ -1,11 +1,12 @@
 import { ApolloError } from '@apollo/client';
 import { StackProps } from '@chakra-ui/react';
 import { boolean, mixed, object, string } from 'yup';
+import { Button, ButtonGroup } from '@chakra-ui/react';
 import { MutableRefObject, useCallback, useEffect } from 'react';
-import { Button, ButtonGroup, Checkbox } from '@chakra-ui/react';
-import { FormControl, FormHelperText, HStack, Radio, RadioGroup, Stack } from '@chakra-ui/react';
+import { Field, HStack, RadioGroup, Stack } from '@chakra-ui/react';
 
 import { NumberFormat } from '@recipe/graphql/enums';
+import { Checkbox, Radio } from '@recipe/common/components';
 import { FloatingLabelInput } from '@recipe/common/components';
 
 import { useFormLogic } from '../hooks/useFormLogic';
@@ -68,7 +69,7 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
 
     return (
         <Stack
-            spacing={4}
+            gap={4}
             pt={3}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
@@ -79,68 +80,73 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
                 id='short-singular-name'
                 label='Short singular name'
                 value={formData.shortSingular || ''}
-                isInvalid={hasError}
-                isRequired
-                isDisabled={disabled}
+                invalid={hasError}
+                required
+                disabled={disabled}
                 onChange={(e) => handleChange('shortSingular', e.target.value.toLowerCase())}
             />
             <FloatingLabelInput
                 label='Short plural name'
                 id='short-plural-name'
                 value={formData.shortPlural || ''}
-                isInvalid={hasError}
-                isDisabled={disabled}
+                invalid={hasError}
+                disabled={disabled}
                 onChange={(e) => handleChange('shortPlural', e.target.value.toLowerCase())}
             />
             <FloatingLabelInput
                 label='Long singular name'
                 id='long-singular-name'
                 value={formData.longSingular || ''}
-                isRequired
-                isDisabled={disabled}
-                isInvalid={hasError}
+                required
+                disabled={disabled}
+                invalid={hasError}
                 onChange={(e) => handleChange('longSingular', e.target.value.toLowerCase())}
             />
             <FloatingLabelInput
                 label='Long plural name'
                 id='long-plural-name'
                 value={formData.longPlural || ''}
-                isDisabled={disabled}
-                isInvalid={hasError}
+                disabled={disabled}
+                invalid={hasError}
                 onChange={(e) => handleChange('longPlural', e.target.value.toLowerCase())}
             />
-            <FormControl isDisabled={disabled} isInvalid={hasError}>
-                <FormHelperText>Preferred number format</FormHelperText>
-                <RadioGroup
-                    onChange={(value) => handleChange('preferredNumberFormat', value)}
+            <Field.Root disabled={disabled} invalid={hasError}>
+                <Field.HelperText>Preferred number format</Field.HelperText>
+                <RadioGroup.Root
+                    onValueChange={(e) => handleChange('preferredNumberFormat', e.value)}
                     value={formData.preferredNumberFormat}
                 >
-                    <HStack spacing='12px'>
+                    <HStack gap='12px'>
                         <Radio value='decimal'>decimal</Radio>
                         <Radio value='fraction'>fraction</Radio>
                     </HStack>
-                </RadioGroup>
-            </FormControl>
+                </RadioGroup.Root>
+            </Field.Root>
             <Checkbox
-                isDisabled={disabled}
-                isInvalid={hasError}
-                onChange={(e) => handleChange('hasSpace', e.target.checked)}
-                isChecked={formData.hasSpace}
+                disabled={disabled}
+                invalid={hasError}
+                onCheckedChange={(e) => handleChange('hasSpace', !!e.checked)}
+                checked={formData.hasSpace}
             >
                 Space after quantity
             </Checkbox>
-            <ButtonGroup
-                display='flex'
-                justifyContent='flex-end'
-                paddingTop={2}
-                isDisabled={disabled}
-            >
+            <ButtonGroup display='flex' justifyContent='flex-end' paddingTop={2}>
                 {onDelete && (
-                    <Button colorScheme='red' onClick={onDelete} aria-label='Delete unit'>
+                    <Button
+                        colorPalette='red'
+                        disabled={disabled}
+                        onClick={onDelete}
+                        aria-label='Delete unit'
+                    >
                         Delete
                     </Button>
                 )}
-                <Button colorScheme='teal' onClick={handleSubmit} aria-label='Save unit'>
+                <Button
+                    colorPalette='teal'
+                    disabled={disabled}
+                    onClick={handleSubmit}
+                    aria-label='Save unit'
+                >
                     Save
                 </Button>
             </ButtonGroup>

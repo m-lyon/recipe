@@ -1,18 +1,14 @@
 import { motion } from 'framer-motion';
-import { useShallow } from 'zustand/shallow';
-import { Checkbox, HStack, Input, Text, VStack } from '@chakra-ui/react';
+import { HStack, Input, Text, VStack } from '@chakra-ui/react';
 
 import { useRecipeStore } from '@recipe/stores';
+import { Checkbox } from '@recipe/common/components';
 
 export function AsIngredientCheckbox() {
-    const { isIngredient, pluralTitle, toggleIsIngredient, setPluralTitle } = useRecipeStore(
-        useShallow((state) => ({
-            isIngredient: state.isIngredient,
-            pluralTitle: state.pluralTitle,
-            toggleIsIngredient: state.toggleIsIngredient,
-            setPluralTitle: state.setPluralTitle,
-        }))
-    );
+    const isIngredient = useRecipeStore((state) => state.isIngredient);
+    const pluralTitle = useRecipeStore((state) => state.pluralTitle);
+    const setIsIngredient = useRecipeStore((state) => state.setIsIngredient);
+    const setPluralTitle = useRecipeStore((state) => state.setPluralTitle);
 
     return (
         <motion.div
@@ -25,9 +21,9 @@ export function AsIngredientCheckbox() {
             <VStack width='100%' justifyContent='flex-end'>
                 <HStack width='100%'>
                     <Checkbox
-                        isChecked={isIngredient}
-                        onChange={toggleIsIngredient}
-                        colorScheme='teal'
+                        checked={isIngredient}
+                        onCheckedChange={(e) => setIsIngredient(!!e.checked)}
+                        colorPalette='teal'
                         aria-label='Toggle recipe as ingredient'
                     />
                     <Text fontWeight='medium' color={isIngredient ? undefined : 'gray.400'}>
@@ -37,11 +33,11 @@ export function AsIngredientCheckbox() {
                 {isIngredient && (
                     <Input
                         placeholder='Plural title'
-                        sx={{ '&::placeholder': { color: 'gray.400' } }}
+                        css={{ '& ::placeholder': { color: 'gray.400' } }}
                         fontWeight='medium'
                         value={pluralTitle ?? ''}
                         onChange={(e) => setPluralTitle(e.target.value)}
-                        variant='unstyled'
+                        variant='flushed'
                         aria-label='Edit recipe plural title'
                     />
                 )}

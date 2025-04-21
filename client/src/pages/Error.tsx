@@ -19,8 +19,8 @@ export function ErrorBoundary() {
                 <Text fontSize='xl' mb={4}>
                     Sorry, the page you are looking for does not exist. Root path is {PATH.ROOT}.
                 </Text>
-                <Button as={Link} to={PATH.ROOT} colorScheme='teal' size='lg' fontWeight='normal'>
-                    Back to homepage
+                <Button asChild colorPalette='teal' size='lg' fontWeight='normal'>
+                    <Link to={PATH.ROOT}>Back to homepage</Link>
                 </Button>
             </Box>
         </Flex>

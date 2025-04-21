@@ -35,7 +35,7 @@ export function UserOptions() {
     const toast = useErrorToast();
 
     if (loading) {
-        return <LoginOptions isLoading={true} />;
+        return <LoginOptions loading={true} />;
     }
     if (data?.currentUser) {
         return (
@@ -43,7 +43,7 @@ export function UserOptions() {
                 flex={{ base: 1, md: 0 }}
                 justify='flex-end'
                 direction='row'
-                spacing={6}
+                gap={6}
                 ml={{ base: 3, md: 0 }}
             >
                 <Button fontSize='sm' fontWeight={400} onClick={() => logout()} aria-label='Logout'>
@@ -55,28 +55,27 @@ export function UserOptions() {
     return <LoginOptions />;
 }
 
-function LoginOptions(props: { isLoading?: boolean }) {
+function LoginOptions(props: { loading?: boolean }) {
+    const { loading } = props;
     const location = useLocation();
-    const { isLoading } = props;
     return (
         <Stack
             flex={{ base: 1, md: 0 }}
             justify='flex-end'
             direction='row'
-            spacing={6}
+            gap={6}
             ml={{ base: 3, md: 0 }}
             display={location.pathname === PATH.LOGIN ? 'none' : undefined}
         >
             <Button
-                as={Link}
+                asChild
                 fontSize='sm'
-                isLoading={isLoading}
+                loading={loading}
                 fontWeight={600}
-                colorScheme='teal'
-                to={PATH.LOGIN}
+                colorPalette='teal'
                 aria-label='Log in or sign up'
             >
-                Sign In
+                <Link to={PATH.LOGIN}>Sign In</Link>
             </Button>
         </Stack>
     );

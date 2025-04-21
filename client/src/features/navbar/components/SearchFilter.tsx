@@ -31,7 +31,7 @@ export function SearchFilter(props: Props) {
             zIndex={11}
             justifyContent='center'
         >
-            <Stack spacing={isMobile ? 2 : 4}>
+            <Stack gap={isMobile ? 2 : 4}>
                 <TagFilter addFilter={addFilter} />
                 <IngredientFilter addFilter={addFilter} />
             </Stack>

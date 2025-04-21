@@ -1,10 +1,11 @@
+import { Tag } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { array, number, object, string } from 'yup';
 import { useMutation, useQuery } from '@apollo/client';
-import { FormLabel, Input, ListItem, Select } from '@chakra-ui/react';
+import { Input, List, Select } from '@chakra-ui/react';
+import { createListCollection } from '@chakra-ui/react';
 import { Dispatch, FormEvent, SetStateAction, useState } from 'react';
-import { List, Tag, TagCloseButton, TagLabel } from '@chakra-ui/react';
-import { Box, Button, FormControl, HStack, Heading, VStack } from '@chakra-ui/react';
+import { Box, Button, Field, HStack, Heading, VStack } from '@chakra-ui/react';
 
 import { DELAY_SHORT, PATH } from '@recipe/constants';
 import { GET_UNITS } from '@recipe/graphql/queries/unit';
@@ -26,6 +27,7 @@ function CreateConversionRule(props: CreateConversionRuleProps) {
     const [baseToUnitConversion, setbaseToUnitConversion] = useState(0);
     const [createConversionRule, { loading }] = useMutation(CREATE_CONVERSION_RULE);
     const toast = useErrorToast();
+    const unitsCollection = createListCollection({ items: units });
 
     const formSchema = object({
         baseUnitThreshold: number().required(),
@@ -61,44 +63,58 @@ function CreateConversionRule(props: CreateConversionRuleProps) {
         <Box borderWidth='1px' borderRadius='lg' p={4}>
             <form onSubmit={handleSubmit}>
                 <HStack height='4em' alignItems='flex-end'>
-                    <FormControl isDisabled={!baseUnit}>
-                        <FormLabel>Unit</FormLabel>
-                        <Select
-                            placeholder='-'
+                    <Field.Root disabled={!baseUnit}>
+                        <Field.Label>Unit</Field.Label>
+                        <Select.Root
+                            collection={unitsCollection}
                             value={unit?._id}
-                            onChange={(e) => {
-                                setUnit(units.find((unit) => unit._id === e.target.value));
+                            onValueChange={(e) => {
+                                setUnit(units.find((unit) => unit._id === e.value));
                             }}
                         >
-                            {units.map((unit) => (
-                                <option key={unit._id} value={unit._id}>
-                                    {unit.shortSingular}
-                                </option>
-                            ))}
-                        </Select>
-                    </FormControl>
-                    <FormControl isDisabled={!baseUnit}>
-                        <FormLabel>Threshold</FormLabel>
+                            <Select.HiddenSelect />
+                            <Select.Control>
+                                <Select.Trigger>
+                                    <Select.ValueText placeholder='-' />
+                                </Select.Trigger>
+                                <Select.IndicatorGroup>
+                                    <Select.Indicator />
+                                </Select.IndicatorGroup>
+                            </Select.Control>
+                            <Select.Positioner>
+                                <Select.Content>
+                                    {unitsCollection.items.map((unit) => (
+                                        <Select.Item key={unit._id} item={unit._id}>
+                                            {unit.shortSingular}
+                                            <Select.ItemIndicator />
+                                        </Select.Item>
+                                    ))}
+                                </Select.Content>
+                            </Select.Positioner>
+                        </Select.Root>
+                    </Field.Root>
+                    <Field.Root disabled={!baseUnit}>
+                        <Field.Label>Threshold</Field.Label>
                         <Input
                             placeholder='Threshold'
                             value={baseUnitThreshold}
                             onChange={(e) => setThreshold(Number(e.target.value))}
                         />
-                    </FormControl>
-                    <FormControl isDisabled={!baseUnit}>
-                        <FormLabel>Conversion</FormLabel>
+                    </Field.Root>
+                    <Field.Root disabled={!baseUnit}>
+                        <Field.Label>Conversion</Field.Label>
                         <Input
                             placeholder='Base Conversion'
                             value={baseToUnitConversion}
                             onChange={(e) => setbaseToUnitConversion(Number(e.target.value))}
                         />
-                    </FormControl>
+                    </Field.Root>
                     <Button
-                        colorScheme='teal'
-                        isLoading={loading}
+                        colorPalette='teal'
+                        loading={loading}
                         type='submit'
                         minW='6em'
-                        isDisabled={!baseUnit}
+                        disabled={!baseUnit}
                     >
                         Add Rule
                     </Button>
@@ -117,7 +133,9 @@ export function CreateUnitConversion() {
     const navigate = useNavigate();
     const errorToast = useErrorToast();
     const successToast = useSuccessToast();
-
+    const baseUnitCollection = createListCollection({
+        items: data?.unitMany || [],
+    });
     const formSchema = object({
         baseUnit: string().required(),
         rules: array(string().required()).min(1).required(),
@@ -147,35 +165,43 @@ export function CreateUnitConversion() {
     };
 
     const ruleList = rules.map((rule) => (
-        <ListItem key={rule._id}>
-            <Tag maxW='100%' whiteSpace='nowrap' overflow='hidden' textOverflow='ellipsis' mb={2}>
-                <TagLabel>
+        <List.Item key={rule._id}>
+            <Tag.Root
+                maxW='100%'
+                whiteSpace='nowrap'
+                overflow='hidden'
+                textOverflow='ellipsis'
+                mb={2}
+            >
+                <Tag.Label>
                     {rule.baseToUnitConversion} {baseUnit?.shortSingular} = 1{' '}
                     {rule.unit!.shortSingular}, {baseUnit?.shortSingular} &gt;={' '}
                     {rule.baseUnitThreshold}
-                </TagLabel>
-                <TagCloseButton
-                    onClick={(e) => {
-                        e.preventDefault();
-                        removeConversionRule({
-                            variables: { id: rule._id },
-                        })
-                            .then(() => {
-                                setRules((rules) => rules.filter((r) => r._id !== rule._id));
+                </Tag.Label>
+                <Tag.EndElement>
+                    <Tag.CloseTrigger
+                        onClick={(e) => {
+                            e.preventDefault();
+                            removeConversionRule({
+                                variables: { id: rule._id },
                             })
-                            .catch((err) => {
-                                if (err instanceof Error) {
-                                    console.error(err);
-                                    errorToast({
-                                        title: 'An error occurred.',
-                                        description: err.message,
-                                    });
-                                }
-                            });
-                    }}
-                />
-            </Tag>
-        </ListItem>
+                                .then(() => {
+                                    setRules((rules) => rules.filter((r) => r._id !== rule._id));
+                                })
+                                .catch((err) => {
+                                    if (err instanceof Error) {
+                                        console.error(err);
+                                        errorToast({
+                                            title: 'An error occurred.',
+                                            description: err.message,
+                                        });
+                                    }
+                                });
+                        }}
+                    />
+                </Tag.EndElement>
+            </Tag.Root>
+        </List.Item>
     ));
 
     return (
@@ -189,29 +215,43 @@ export function CreateUnitConversion() {
                 />
                 <form onSubmit={handleSubmit}>
                     <HStack mt={8}>
-                        <FormControl>
-                            <FormLabel>Base Unit</FormLabel>
-                            <Select
-                                placeholder='-'
+                        <Field.Root>
+                            <Field.Label>Base Unit</Field.Label>
+                            <Select.Root
+                                collection={baseUnitCollection}
                                 value={baseUnit?._id}
-                                onChange={(e) => {
+                                onValueChange={(e) => {
                                     setBaseUnit(
-                                        data?.unitMany.find((unit) => unit._id === e.target.value)
+                                        data?.unitMany.find((unit) => unit._id === e.value)
                                     );
                                 }}
                             >
-                                {data?.unitMany.map((unit) => (
-                                    <option key={unit._id} value={unit._id}>
-                                        {unit.shortSingular}
-                                    </option>
-                                ))}
-                            </Select>
-                        </FormControl>
-                        <FormControl>
-                            <List>{ruleList}</List>
-                        </FormControl>
+                                <Select.HiddenSelect />
+                                <Select.Control>
+                                    <Select.Trigger>
+                                        <Select.ValueText placeholder='-' />
+                                    </Select.Trigger>
+                                    <Select.IndicatorGroup>
+                                        <Select.Indicator />
+                                    </Select.IndicatorGroup>
+                                </Select.Control>
+                                <Select.Positioner>
+                                    <Select.Content>
+                                        {baseUnitCollection.items.map((unit) => (
+                                            <Select.Item key={unit._id} item={unit._id}>
+                                                {unit.shortSingular}
+                                                <Select.ItemIndicator />
+                                            </Select.Item>
+                                        ))}
+                                    </Select.Content>
+                                </Select.Positioner>
+                            </Select.Root>
+                        </Field.Root>
+                        <Field.Root>
+                            <List.Root>{ruleList}</List.Root>
+                        </Field.Root>
                     </HStack>
-                    <Button mt={8} colorScheme='teal' isLoading={loading} type='submit'>
+                    <Button mt={8} colorPalette='teal' loading={loading} type='submit'>
                         Create Unit Conversion
                     </Button>
                 </form>

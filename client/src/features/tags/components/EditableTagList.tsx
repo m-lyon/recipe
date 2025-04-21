@@ -1,7 +1,7 @@
 import { useShallow } from 'zustand/shallow';
 import { useMutation, useQuery } from '@apollo/client';
+import { Tag, VStack, Wrap, WrapItem } from '@chakra-ui/react';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
-import { Tag, TagCloseButton, TagLabel, VStack, Wrap, WrapItem } from '@chakra-ui/react';
 
 import { useRecipeStore } from '@recipe/stores';
 import { GET_TAGS } from '@recipe/graphql/queries/tag';
@@ -51,27 +51,29 @@ export function EditableTagList() {
                 layout='position'
             >
                 <WrapItem>
-                    <Tag colorScheme={tag.isNew ? 'green' : undefined}>
-                        <TagLabel>{tag.value}</TagLabel>
-                        <TagCloseButton
-                            onClick={() => {
-                                removeTag(index);
-                                if (tag.isNew) {
-                                    removeTagMutation({ variables: { recordId: tag._id } });
-                                }
-                            }}
-                            aria-label={`Remove ${tag.value} tag`}
-                        />
-                    </Tag>
+                    <Tag.Root colorPalette={tag.isNew ? 'green' : undefined}>
+                        <Tag.Label>{tag.value}</Tag.Label>
+                        <Tag.EndElement>
+                            <Tag.CloseTrigger
+                                onClick={() => {
+                                    removeTag(index);
+                                    if (tag.isNew) {
+                                        removeTagMutation({ variables: { recordId: tag._id } });
+                                    }
+                                }}
+                                aria-label={`Remove ${tag.value} tag`}
+                            />
+                        </Tag.EndElement>
+                    </Tag.Root>
                 </WrapItem>
             </motion.div>
         );
     });
 
     return (
-        <VStack align='left' spacing={finished.length > 0 ? 3 : 0}>
+        <VStack align='left' gap={finished.length > 0 ? 3 : 0}>
             <LayoutGroup>
-                <Wrap spacing='10px'>
+                <Wrap gap='10px'>
                     <AnimatePresence>{tagsList}</AnimatePresence>
                 </Wrap>
                 <motion.div layout='position'>

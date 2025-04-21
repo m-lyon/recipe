@@ -1,6 +1,6 @@
 import { useLazyQuery } from '@apollo/client';
-import { ChevronRightIcon } from '@chakra-ui/icons';
-import { Box, Flex, ListItem, Spacer, useDisclosure } from '@chakra-ui/react';
+import { FaChevronRight } from 'react-icons/fa';
+import { Box, Flex, Icon, List, Spacer, useDisclosure } from '@chakra-ui/react';
 
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
@@ -11,11 +11,11 @@ interface Props {
     ingredient: RecipeIngredientAsRecipeView;
 }
 export function RecipeIngredient({ ingredient }: Props) {
-    const { isOpen, onOpen, onClose } = useDisclosure();
+    const { open, onOpen, onClose } = useDisclosure();
     const [getRecipe, { data }] = useLazyQuery(GET_RECIPE);
 
     return (
-        <ListItem key={ingredient._id}>
+        <List.Item key={ingredient._id}>
             <Flex direction='row'>
                 <Box
                     position='relative'
@@ -44,11 +44,13 @@ export function RecipeIngredient({ ingredient }: Props) {
                     aria-label={`View ${ingredient.ingredient.title}`}
                 >
                     {getFinishedRecipeIngredientStr(ingredient)}
-                    <ChevronRightIcon style={{ marginLeft: 5 }} />
+                    <Icon style={{ marginLeft: 5 }}>
+                        <FaChevronRight />
+                    </Icon>
                 </Box>
                 <Spacer />
             </Flex>
-            <RecipeModal recipe={data?.recipeOne} isOpen={isOpen} onClose={onClose} />
-        </ListItem>
+            <RecipeModal recipe={data?.recipeOne} open={open} onClose={onClose} />
+        </List.Item>
     );
 }

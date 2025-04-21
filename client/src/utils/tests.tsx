@@ -1,11 +1,11 @@
 import { expect } from 'vitest';
-import { ChakraProvider } from '@chakra-ui/react';
 import { userEvent } from '@testing-library/user-event';
 import { Screen, render } from '@testing-library/react';
 import { MockedProvider, MockedResponse } from '@apollo/client/testing';
 import { RouteObject, RouterProvider, createMemoryRouter } from 'react-router-dom';
 
 import { getCache } from '@recipe/utils/cache';
+import { Provider } from '@recipe/common/components';
 
 export async function enterCreateNewRecipePage(
     screen: Screen,
@@ -105,13 +105,13 @@ export function renderPage(
 ) {
     return render(
         <MockedProvider mocks={mockedResponses} cache={getCache()}>
-            <ChakraProvider>
+            <Provider>
                 <RouterProvider
                     router={createMemoryRouter(route, {
                         initialEntries,
                     })}
                 />
-            </ChakraProvider>
+            </Provider>
         </MockedProvider>
     );
 }

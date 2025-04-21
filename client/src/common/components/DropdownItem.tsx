@@ -1,11 +1,10 @@
 import { motion } from 'framer-motion';
-import { IconType } from 'react-icons';
-import { HStack, Icon, ListItem, Text } from '@chakra-ui/react';
+import { HStack, Icon, List, Text } from '@chakra-ui/react';
 
 interface Props {
     color?: string;
     value: string;
-    icon?: IconType;
+    icon?: React.ReactNode;
     onClick: () => void;
     isHighlighted: boolean;
     setHighlighted: () => void;
@@ -15,7 +14,7 @@ export function DropdownItem(props: Props) {
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ListItem
+            <List.Item
                 px={2}
                 py={1}
                 onClick={onClick}
@@ -27,9 +26,9 @@ export function DropdownItem(props: Props) {
             >
                 <HStack>
                     <Text>{value}</Text>
-                    {icon ? <Icon as={icon} /> : undefined}
+                    {icon ? <Icon>{icon}</Icon> : undefined}
                 </HStack>
-            </ListItem>
+            </List.Item>
         </motion.div>
     );
 }

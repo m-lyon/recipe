@@ -1,5 +1,5 @@
 import { MutableRefObject } from 'react';
-import { PopoverArrow, PopoverCloseButton, PopoverContent, PopoverHeader } from '@chakra-ui/react';
+import { CloseButton, Popover } from '@chakra-ui/react';
 
 import { useSuccessToast } from '@recipe/common/hooks';
 
@@ -34,11 +34,11 @@ export function BasePopover<TChoice, TData>(props: BasePopoverProps<TChoice, TDa
     };
 
     return (
-        <PopoverContent paddingRight={4} paddingBottom={3} paddingLeft={2}>
-            <PopoverArrow />
-            <PopoverCloseButton aria-label={`Close new ${title.toLowerCase()} form`} />
-            <PopoverHeader border='hidden'>Add new {title.toLowerCase()}</PopoverHeader>
+        <Popover.Content paddingRight={4} paddingBottom={3} paddingLeft={2}>
+            <Popover.Arrow />
+            <CloseButton aria-label={`Close new ${title.toLowerCase()} form`} />
+            <Popover.Header border='hidden'>Add new {title.toLowerCase()}</Popover.Header>
             <FormComponent fieldRef={fieldRef} handleComplete={handleComplete} pl={2} />
-        </PopoverContent>
+        </Popover.Content>
     );
 }

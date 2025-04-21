@@ -23,7 +23,7 @@ export function CreateSize() {
             <Box maxW='32em' mx='auto' mt={32} borderWidth='1px' borderRadius='lg' p={8}>
                 <Heading pb={6}>Create Size</Heading>
                 <form>
-                    <VStack mt={0} spacing={8}>
+                    <VStack mt={0} gap={8}>
                         <CreateSizeForm handleComplete={handleComplete} />
                     </VStack>
                 </form>

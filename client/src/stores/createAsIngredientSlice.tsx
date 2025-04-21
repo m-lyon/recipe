@@ -7,7 +7,7 @@ export interface AsIngredientSlice {
     isIngredient: boolean;
     setPluralTitle: (value: string) => void;
     setAsIngredient: () => void;
-    toggleIsIngredient: () => void;
+    setIsIngredient: (value: boolean) => void;
     resetAsIngredient: () => void;
 }
 export const createAsIngredientSlice: StateCreator<RecipeState, [], [], AsIngredientSlice> = (
@@ -17,6 +17,6 @@ export const createAsIngredientSlice: StateCreator<RecipeState, [], [], AsIngred
     isIngredient: false,
     setPluralTitle: (value: string) => set(() => ({ pluralTitle: value })),
     setAsIngredient: () => set(() => ({ isIngredient: true })),
-    toggleIsIngredient: () => set((state) => ({ isIngredient: !state.isIngredient })),
+    setIsIngredient: (value: boolean) => set(() => ({ isIngredient: value })),
     resetAsIngredient: () => set(() => ({ pluralTitle: undefined, isIngredient: false })),
 });

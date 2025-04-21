@@ -1,6 +1,6 @@
 import { MutableRefObject } from 'react';
-import { PopoverArrow, PopoverHeader } from '@chakra-ui/react';
-import { PopoverCloseButton, PopoverContent } from '@chakra-ui/react';
+import { Popover } from '@chakra-ui/react';
+import { CloseButton } from '@chakra-ui/react';
 
 import { CreateUnitMutation } from '@recipe/graphql/generated';
 import { CreateBespokeUnitForm } from '@recipe/features/forms';
@@ -20,10 +20,10 @@ export function NewBespokeUnitPopover(props: Props) {
         setItem(data.unitCreateOne!.record!);
     };
     return (
-        <PopoverContent paddingRight={4} paddingBottom={3} paddingLeft={2}>
-            <PopoverArrow />
-            <PopoverCloseButton aria-label='Close new bespoke unit form' />
-            <PopoverHeader border='hidden'>Use bespoke unit</PopoverHeader>
+        <Popover.Content paddingRight={4} paddingBottom={3} paddingLeft={2}>
+            <Popover.Arrow />
+            <CloseButton aria-label='Close new bespoke unit form' />
+            <Popover.Header border='hidden'>Use bespoke unit</Popover.Header>
             <CreateBespokeUnitForm
                 fieldRef={fieldRef}
                 value={value}
@@ -31,6 +31,6 @@ export function NewBespokeUnitPopover(props: Props) {
                 handleComplete={handleComplete}
                 pl={2}
             />
-        </PopoverContent>
+        </Popover.Content>
     );
 }

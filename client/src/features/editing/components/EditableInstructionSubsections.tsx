@@ -15,7 +15,7 @@ export function EditableInstructionSubsections() {
         }))
     );
     const ref = useRef<HTMLInputElement>(null);
-    const { isOpen, handleOpen, handleConfirm, handleCancel, indexToDelete, returnFocus } =
+    const { open, handleOpen, handleConfirm, handleCancel, indexToDelete, returnFocus } =
         useSubsectionDelete();
 
     return (
@@ -31,7 +31,7 @@ export function EditableInstructionSubsections() {
             <ConfirmDeleteAlert
                 title='Delete Subsection'
                 dialogText='Are you sure you want to delete this subsection and its contents?'
-                isOpen={isOpen}
+                open={open}
                 onConfirm={() => handleConfirm(remove)}
                 onCancel={handleCancel}
                 finalFocusRef={ref}

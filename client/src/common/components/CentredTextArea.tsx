@@ -35,10 +35,9 @@ export function CentredTextArea(props: Props) {
                 }}
                 onChange={(e) => setValue(e.target.value)}
                 as={ResizeTextarea}
-                minH='unset'
                 resize='none'
                 border='none'
-                minRows={1}
+                minH='1lh'
                 fontSize={fontSize}
                 fontWeight={fontWeight}
                 textAlign={value ? 'center' : 'left'}
@@ -50,8 +49,10 @@ export function CentredTextArea(props: Props) {
                 pb={0}
                 _focusVisible={{ outline: 'none' }}
                 {...rest}
-                sx={
-                    placeholderColor ? { '&::placeholder': { color: placeholderColor } } : undefined
+                css={
+                    placeholderColor
+                        ? { '& ::placeholder': { color: placeholderColor } }
+                        : undefined
                 }
             />
         </Box>

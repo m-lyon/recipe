@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { FormLabel, Select } from '@chakra-ui/react';
-import { Box, FormControl, Heading, VStack } from '@chakra-ui/react';
+import { Box, Field, Heading, Select, VStack, createListCollection } from '@chakra-ui/react';
 
 import { useSuccessToast } from '@recipe/common/hooks';
 import { ModifyIngredientForm } from '@recipe/features/forms';
@@ -11,34 +10,48 @@ export function EditIngredient() {
     const toast = useSuccessToast();
     const [currentIngredient, setCurrentIngredient] = useState<ModifyableIngredient>();
     const { data } = useEditPermissionRecipeIngredients(GET_INGREDIENTS);
-
+    const ingrCollection = createListCollection({ items: data?.ingredientMany || [] });
     return (
         <VStack>
             <Box maxW='32em' mx='auto' mt={32} borderWidth='1px' borderRadius='lg' p={8}>
                 <Heading pb={6}>Edit Ingredient</Heading>
                 <form>
-                    <VStack mt={0} spacing={8}>
-                        <FormControl>
-                            <FormLabel>Select ingredient</FormLabel>
-                            <Select
-                                placeholder='-'
-                                aria-label='Select ingredient'
+                    <VStack mt={0} gap={8}>
+                        <Field.Root>
+                            <Field.Label>Select ingredient</Field.Label>
+                            <Select.Root
+                                collection={ingrCollection}
                                 value={currentIngredient?._id}
-                                onChange={(e) => {
+                                onValueChange={(e) => {
                                     setCurrentIngredient(
-                                        data?.ingredientMany.find(
-                                            (ingr) => ingr._id === e.target.value
-                                        )
+                                        ingrCollection.items.find((ingr) => ingr._id === e.value)
                                     );
                                 }}
                             >
-                                {data?.ingredientMany.map((ingr) => (
-                                    <option key={ingr._id} value={ingr._id} aria-label={ingr.name}>
-                                        {ingr.name}
-                                    </option>
-                                ))}
-                            </Select>
-                        </FormControl>
+                                <Select.HiddenSelect />
+                                <Select.Control>
+                                    <Select.Trigger>
+                                        <Select.ValueText placeholder='-' />
+                                    </Select.Trigger>
+                                    <Select.IndicatorGroup>
+                                        <Select.Indicator />
+                                    </Select.IndicatorGroup>
+                                </Select.Control>
+                                <Select.Positioner>
+                                    <Select.Content>
+                                        {ingrCollection.items.map((ingr) => (
+                                            <Select.Item
+                                                key={ingr._id}
+                                                item={ingr._id}
+                                                aria-label={ingr.name}
+                                            >
+                                                {ingr.name}
+                                            </Select.Item>
+                                        ))}
+                                    </Select.Content>
+                                </Select.Positioner>
+                            </Select.Root>
+                        </Field.Root>
                         <ModifyIngredientForm
                             ingredientId={currentIngredient?._id}
                             initData={currentIngredient}

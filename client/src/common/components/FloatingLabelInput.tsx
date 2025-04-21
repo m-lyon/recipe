@@ -1,31 +1,31 @@
+import { Field, Input, InputProps } from '@chakra-ui/react';
 import { ChangeEventHandler, MutableRefObject } from 'react';
-import { FormControl, FormLabel, Input, InputProps } from '@chakra-ui/react';
 
 interface Props extends InputProps {
     id: string;
     label: string;
     value: string;
-    isInvalid: boolean;
+    invalid: boolean;
     onChange: ChangeEventHandler<HTMLInputElement>;
     inputRef?: MutableRefObject<HTMLInputElement | null>;
-    isRequired?: boolean;
-    isDisabled?: boolean;
+    required?: boolean;
+    disabled?: boolean;
 }
 export function FloatingLabelInput(props: Props) {
-    const { inputRef, id, label, isInvalid, isRequired, isDisabled, fontWeight, ...rest } = props;
+    const { inputRef, id, label, invalid, required, disabled, fontWeight, ...rest } = props;
     return (
-        <FormControl
-            isInvalid={isInvalid}
-            isDisabled={isDisabled}
-            sx={{
-                '&:focus-within label': {
+        <Field.Root
+            invalid={invalid}
+            disabled={disabled}
+            css={{
+                '& :focus-within label': {
                     transform: 'scale(0.85) translateY(-24px)',
                 },
-                'input:not(:placeholder-shown) + label, .chakra-select__wrapper + label, textarea:not(:placeholder-shown) ~ label':
+                '& input:not(:placeholder-shown) + label, .chakra-select__wrapper + label, textarea:not(:placeholder-shown) ~ label':
                     {
                         transform: 'scale(0.85) translateY(-24px)',
                     },
-                label: {
+                '& label': {
                     top: 0,
                     left: 0,
                     zIndex: 1,
@@ -47,10 +47,10 @@ export function FloatingLabelInput(props: Props) {
                 {...rest}
                 aria-label={label}
             />
-            <FormLabel htmlFor={id} color='gray.400' fontWeight={fontWeight ?? 600}>
+            <Field.Label htmlFor={id} color='gray.400' fontWeight={fontWeight ?? 600}>
                 {label}
-                {isRequired ? <span style={{ marginLeft: '0.1em' }}>*</span> : null}
-            </FormLabel>
-        </FormControl>
+                {required ? <span style={{ marginLeft: '0.1em' }}>*</span> : null}
+            </Field.Label>
+        </Field.Root>
     );
 }

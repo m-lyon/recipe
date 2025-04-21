@@ -1,52 +1,56 @@
-import { RefObject, useRef } from 'react';
-import { AlertDialog, AlertDialogBody, AlertDialogContent } from '@chakra-ui/react';
-import { AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, Button } from '@chakra-ui/react';
+import { useRef } from 'react';
+import { RefObject } from 'react';
+import { Button, Dialog, Portal } from '@chakra-ui/react';
 
 interface Props {
     title: string;
     dialogText: string;
-    isOpen: boolean;
+    open: boolean;
     onConfirm: () => void;
     onCancel: () => void;
     finalFocusRef?: RefObject<HTMLInputElement>;
     returnFocus?: boolean;
 }
 export function ConfirmDeleteAlert(props: Props) {
-    const { title, dialogText, isOpen, onConfirm, onCancel, finalFocusRef, returnFocus } = props;
+    const { title, dialogText, open, onConfirm, onCancel, finalFocusRef, returnFocus } = props;
     const cancelRef = useRef<HTMLButtonElement>(null);
 
     return (
-        <AlertDialog
-            isOpen={isOpen}
-            leastDestructiveRef={cancelRef}
-            onClose={onCancel}
-            finalFocusRef={returnFocus ? finalFocusRef : undefined}
+        <Dialog.Root
+            open={open}
+            initialFocusEl={() => cancelRef.current}
+            onOpenChange={onCancel}
+            finalFocusEl={() => (returnFocus && finalFocusRef ? finalFocusRef.current : null)}
+            role='alertdialog'
         >
-            <AlertDialogOverlay>
-                <AlertDialogContent>
-                    <AlertDialogHeader fontSize='lg' fontWeight='bold'>
-                        {title}
-                    </AlertDialogHeader>
-                    <AlertDialogBody>{dialogText}</AlertDialogBody>
-                    <AlertDialogFooter>
-                        <Button
-                            ref={cancelRef}
-                            onClick={onCancel}
-                            aria-label={`Cancel ${title.toLowerCase()} action`}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            colorScheme='red'
-                            onClick={onConfirm}
-                            ml={3}
-                            aria-label={`Confirm ${title.toLowerCase()}`}
-                        >
-                            Delete
-                        </Button>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialogOverlay>
-        </AlertDialog>
+            <Portal>
+                <Dialog.Backdrop />
+                <Dialog.Positioner>
+                    <Dialog.Content>
+                        <Dialog.Header fontSize='lg' fontWeight='bold'>
+                            {title}
+                        </Dialog.Header>
+                        <Dialog.Body>{dialogText}</Dialog.Body>
+                        <Dialog.Footer>
+                            <Button
+                                ref={cancelRef}
+                                onClick={onCancel}
+                                aria-label={`Cancel ${title.toLowerCase()} action`}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                colorPalette='red'
+                                onClick={onConfirm}
+                                ml={3}
+                                aria-label={`Confirm ${title.toLowerCase()}`}
+                            >
+                                Delete
+                            </Button>
+                        </Dialog.Footer>
+                    </Dialog.Content>
+                </Dialog.Positioner>
+            </Portal>
+        </Dialog.Root>
     );
 }

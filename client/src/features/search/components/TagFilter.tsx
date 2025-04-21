@@ -11,7 +11,7 @@ export function TagFilter(props: Props) {
     const query = useSearchStore((state) => state.tagQuery);
     const setQuery = useSearchStore((state) => state.setTagQuery);
     const tags = useSearchStore((state) => state.selectedTags);
-    const isOpen = useSearchStore((state) => state.showTagDropdown);
+    const open = useSearchStore((state) => state.showTagDropdown);
     const setIsOpen = useSearchStore((state) => state.setShowTagDropdown);
     const suggestions = useAllTagSuggestions(tags, query);
 
@@ -20,7 +20,7 @@ export function TagFilter(props: Props) {
             value={query}
             setValue={setQuery}
             placeholder='Filter by tags'
-            isOpen={isOpen}
+            open={open}
             setIsOpen={setIsOpen}
             addItem={(item) => {
                 if (item._id) {

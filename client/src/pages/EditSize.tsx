@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { FormLabel, Select } from '@chakra-ui/react';
-import { Box, FormControl, Heading, VStack } from '@chakra-ui/react';
+import { Box, Field, Heading, Select, VStack, createListCollection } from '@chakra-ui/react';
 
 import { useSuccessToast } from '@recipe/common/hooks';
 import { ModifySizeForm } from '@recipe/features/forms';
@@ -11,32 +10,49 @@ export function EditSize() {
     const toast = useSuccessToast();
     const [currentSize, setCurrentSize] = useState<ModifyableSize>();
     const { data } = useEditPermissionRecipeIngredients(GET_SIZES);
+    const sizeCollection = createListCollection({ items: data?.sizeMany || [] });
 
     return (
         <VStack>
             <Box maxW='32em' mx='auto' mt={32} borderWidth='1px' borderRadius='lg' p={8}>
                 <Heading pb={6}>Edit Size</Heading>
                 <form>
-                    <VStack mt={0} spacing={8}>
-                        <FormControl>
-                            <FormLabel>Select prep method</FormLabel>
-                            <Select
-                                placeholder='-'
-                                aria-label='Select prep method'
+                    <VStack mt={0} gap={8}>
+                        <Field.Root>
+                            <Field.Label>Select size</Field.Label>
+                            <Select.Root
+                                collection={sizeCollection}
                                 value={currentSize?._id}
-                                onChange={(e) => {
+                                onValueChange={(e) => {
                                     setCurrentSize(
-                                        data?.sizeMany.find((prep) => prep._id === e.target.value)
+                                        sizeCollection.items.find((size) => size._id === e.value)
                                     );
                                 }}
                             >
-                                {data?.sizeMany.map((prep) => (
-                                    <option key={prep._id} value={prep._id} aria-label={prep.value}>
-                                        {prep.value}
-                                    </option>
-                                ))}
-                            </Select>
-                        </FormControl>
+                                <Select.HiddenSelect />
+                                <Select.Control>
+                                    <Select.Trigger>
+                                        <Select.ValueText placeholder='-' />
+                                    </Select.Trigger>
+                                    <Select.IndicatorGroup>
+                                        <Select.Indicator />
+                                    </Select.IndicatorGroup>
+                                </Select.Control>
+                                <Select.Positioner>
+                                    <Select.Content>
+                                        {sizeCollection.items.map((size) => (
+                                            <Select.Item
+                                                key={size._id}
+                                                item={size._id}
+                                                aria-label={size.value}
+                                            >
+                                                {size.value}
+                                            </Select.Item>
+                                        ))}
+                                    </Select.Content>
+                                </Select.Positioner>
+                            </Select.Root>
+                        </Field.Root>
                         <ModifySizeForm
                             sizeId={currentSize?._id}
                             initData={currentSize}

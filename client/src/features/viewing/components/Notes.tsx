@@ -9,7 +9,7 @@ export function Notes(props: Props) {
         return null;
     }
     return (
-        <VStack spacing='8px' align='left'>
+        <VStack gap='8px' align='left'>
             <Text fontSize='2xl'>Notes</Text>
             <Text fontSize='md' fontWeight={'medium'}>
                 {notes}

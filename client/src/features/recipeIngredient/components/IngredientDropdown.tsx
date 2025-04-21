@@ -24,7 +24,9 @@ export function IngredientDropdown(props: Props) {
             color={i.colour}
             value={displayValue(item, i.value)}
             icon={
-                typeof i.value === 'object' && i.value.__typename === 'Recipe' ? TbSoup : undefined
+                typeof i.value === 'object' && i.value.__typename === 'Recipe' ? (
+                    <TbSoup />
+                ) : undefined
             }
             onClick={() => {
                 handleSelect(i);
@@ -37,7 +39,7 @@ export function IngredientDropdown(props: Props) {
 
     return (
         <DropdownList
-            isOpen={item.showDropdown}
+            open={item.showDropdown}
             width='100%'
             aria-label='Dropdown suggestion list'
             ref={listRef}

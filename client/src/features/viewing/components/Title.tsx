@@ -6,7 +6,7 @@ interface Props {
 export function Title(props: Props) {
     const { title } = props;
     return (
-        <VStack spacing={3} align='left'>
+        <VStack gap={3} align='left'>
             <Text fontSize='3xl' textAlign='center' aria-label='recipe-title'>
                 {title}
             </Text>

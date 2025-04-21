@@ -1,11 +1,12 @@
 import { ValidationError } from 'yup';
+import { Field } from '@chakra-ui/react';
 import { useMutation } from '@apollo/client';
 import { MutableRefObject, useEffect, useState } from 'react';
-import { FormControl, FormHelperText } from '@chakra-ui/react';
 import { Button, ButtonGroup, HStack } from '@chakra-ui/react';
-import { Checkbox, Radio, RadioGroup, Stack, StackProps } from '@chakra-ui/react';
+import { RadioGroup, Stack, StackProps } from '@chakra-ui/react';
 
 import { useErrorToast } from '@recipe/common/hooks';
+import { Checkbox, Radio } from '@recipe/common/components';
 import { CREATE_UNIT } from '@recipe/graphql/mutations/unit';
 import { FloatingLabelInput } from '@recipe/common/components';
 import { CreateUnitMutation } from '@recipe/graphql/generated';
@@ -22,7 +23,7 @@ export function CreateBespokeUnitForm(props: Props) {
     const { fieldRef, value, setValue, handleComplete, ...rest } = props;
     const toast = useErrorToast();
     const [hasError, setHasError] = useState(false);
-    const [preferredNumberFormat, setpreferredNumberFormat] = useState('');
+    const [preferredNumberFormat, setpreferredNumberFormat] = useState<null | string>(null);
     const [hasSpace, setHasSpace] = useState(true);
     const [isFocused, setIsFocused] = useState(false);
 
@@ -79,7 +80,7 @@ export function CreateBespokeUnitForm(props: Props) {
 
     return (
         <Stack
-            spacing={4}
+            gap={4}
             pt={3}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
@@ -90,31 +91,34 @@ export function CreateBespokeUnitForm(props: Props) {
                 label='Unit name'
                 inputRef={fieldRef}
                 value={value}
-                isInvalid={hasError}
-                isRequired
+                invalid={hasError}
+                required
                 onChange={(e) => {
                     setValue(e.target.value.toLowerCase());
                     hasError && setHasError(false);
                 }}
             />
-            <FormControl isInvalid={hasError}>
-                <FormHelperText>Preferred number format</FormHelperText>
-                <RadioGroup onChange={setpreferredNumberFormat} value={preferredNumberFormat}>
-                    <HStack spacing='12px'>
+            <Field.Root invalid={hasError}>
+                <Field.HelperText>Preferred number format</Field.HelperText>
+                <RadioGroup.Root
+                    onValueChange={(e) => setpreferredNumberFormat(e.value)}
+                    value={preferredNumberFormat}
+                >
+                    <HStack gap='12px'>
                         <Radio value='decimal'>decimal</Radio>
                         <Radio value='fraction'>fraction</Radio>
                     </HStack>
-                </RadioGroup>
-            </FormControl>
+                </RadioGroup.Root>
+            </Field.Root>
             <Checkbox
-                isInvalid={hasError}
-                onChange={(e) => setHasSpace(e.target.checked)}
-                isChecked={hasSpace}
+                invalid={hasError}
+                onCheckedChange={(e) => setHasSpace(!!e.checked)}
+                checked={hasSpace}
             >
                 Space after quantity
             </Checkbox>
             <ButtonGroup display='flex' justifyContent='flex-end' paddingTop={2}>
-                <Button colorScheme='teal' onClick={handleSubmit} aria-label='Save unit'>
+                <Button colorPalette='teal' onClick={handleSubmit} aria-label='Save unit'>
                     Save
                 </Button>
             </ButtonGroup>

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useMutation } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
 import { FormEvent, useEffect, useState } from 'react';
-import { Box, Button, FormControl, HStack, Heading, Stack } from '@chakra-ui/react';
+import { Box, Button, Field, HStack, Heading, Stack } from '@chakra-ui/react';
 
 import { PATH } from '@recipe/constants';
 import { useUser } from '@recipe/features/user';
@@ -128,28 +128,28 @@ export function Login() {
                                 <Stack
                                     mb={4}
                                     direction={{ base: 'column', md: 'row' }}
-                                    spacing={{ base: 4, md: 4 }}
+                                    gap={{ base: 4, md: 4 }}
                                 >
-                                    <FormControl>
+                                    <Field.Root>
                                         <FloatingLabelInput
                                             id='first-name'
                                             label='First name'
                                             value={firstName}
-                                            isInvalid={false}
+                                            invalid={false}
                                             fontWeight={400}
                                             onChange={(e) => setFirstName(e.target.value)}
                                         />
-                                    </FormControl>
-                                    <FormControl>
+                                    </Field.Root>
+                                    <Field.Root>
                                         <FloatingLabelInput
                                             id='last-name'
                                             label='Surname'
                                             value={lastName}
-                                            isInvalid={false}
+                                            invalid={false}
                                             fontWeight={400}
                                             onChange={(e) => setLastName(e.target.value)}
                                         />
-                                    </FormControl>
+                                    </Field.Root>
                                 </Stack>
                             </motion.div>
                         )}
@@ -159,35 +159,35 @@ export function Login() {
                             exit={{ opacity: 0 }}
                             layout='position'
                         >
-                            <FormControl>
+                            <Field.Root>
                                 <FloatingLabelInput
                                     id='email'
                                     label='Email'
                                     value={email}
-                                    isInvalid={false}
+                                    invalid={false}
                                     fontWeight={400}
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
-                            </FormControl>
-                            <FormControl mt={4}>
+                            </Field.Root>
+                            <Field.Root mt={4}>
                                 <FloatingLabelInput
                                     id='password'
                                     type='password'
                                     label='Password'
                                     value={password}
-                                    isInvalid={false}
+                                    invalid={false}
                                     fontWeight={400}
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
-                            </FormControl>
+                            </Field.Root>
                             <HStack mt={8}>
                                 <Button
                                     mt={4}
-                                    colorScheme='teal'
-                                    isLoading={loginLoading || SignupLoading}
+                                    colorPalette='teal'
+                                    loading={loginLoading || SignupLoading}
                                     type='submit'
                                     aria-label={isSignup ? 'Register' : 'Login'}
-                                    isDisabled={
+                                    disabled={
                                         !email ||
                                         !password ||
                                         (!firstName && isSignup) ||
@@ -198,7 +198,7 @@ export function Login() {
                                 </Button>
                                 <Button
                                     mt={4}
-                                    colorScheme='teal'
+                                    colorPalette='teal'
                                     onClick={() => setIsSignup(!isSignup)}
                                     variant='outline'
                                 >

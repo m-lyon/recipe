@@ -1,5 +1,6 @@
-import { CloseIcon, EditIcon } from '@chakra-ui/icons';
-import { Box, Card, CardBody, IconButton, Image } from '@chakra-ui/react';
+import { IoClose } from 'react-icons/io5';
+import { FaRegEdit } from 'react-icons/fa';
+import { Box, Card, IconButton, Image } from '@chakra-ui/react';
 
 interface Props {
     image: File;
@@ -16,20 +17,21 @@ export function ImageUploadPreview(props: Props) {
             flexDirection={{ base: 'row', md: 'column' }}
             minW={{ base: undefined, md: 282 }}
         >
-            <Card shadow='none'>
-                <CardBody padding='16px'>
+            <Card.Root shadow='none'>
+                <Card.Body padding='16px'>
                     <IconButton
                         variant='solid'
-                        colorScheme='gray'
+                        colorPalette='gray'
                         aria-label={`Edit ${image.name}`}
-                        icon={<EditIcon />}
-                        isRound={true}
+                        borderRadius='full'
                         position='absolute'
                         shadow='base'
                         top='0'
                         left='0'
                         zIndex='1'
-                    />
+                    >
+                        <FaRegEdit />
+                    </IconButton>
                     <Image
                         src={imgSource}
                         w={{ base: undefined, md: '250px' }}
@@ -39,11 +41,10 @@ export function ImageUploadPreview(props: Props) {
                     />
                     <IconButton
                         variant='solid'
-                        colorScheme='gray'
+                        colorPalette='gray'
                         aria-label={`Remove ${image.name}`}
                         shadow='base'
-                        icon={<CloseIcon />}
-                        isRound={true}
+                        borderRadius='full'
                         position='absolute'
                         top='0'
                         right='0'
@@ -52,9 +53,11 @@ export function ImageUploadPreview(props: Props) {
                             URL.revokeObjectURL(imgSource);
                             handleRemoveImage();
                         }}
-                    />
-                </CardBody>
-            </Card>
+                    >
+                        <IoClose />
+                    </IconButton>
+                </Card.Body>
+            </Card.Root>
         </Box>
     );
 }
