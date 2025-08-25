@@ -24,14 +24,14 @@ export interface RecipeIngredientType extends Document {
     type: 'ingredient' | 'recipe';
 }
 
-export function generateRecipeIdentifier(title: string): string {
+export function generateRecipeIdentifier(title: string, existingSuffix?: string): string {
     // Remove special characters
     let sanitizedTitle = title.replace(/[^a-zA-Z0-9\s]/g, '');
     // Remove leading and trailing whitespaces
     sanitizedTitle = sanitizedTitle.trim();
     // Replace spaces with dashes and convert to lowercase
     sanitizedTitle = sanitizedTitle.replace(/\s+/g, '-').toLowerCase();
-    const suffix = generateRandomString(4);
+    const suffix = existingSuffix || generateRandomString(4);
     return `${sanitizedTitle}-${suffix}`;
 }
 

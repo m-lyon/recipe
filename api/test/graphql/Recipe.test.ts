@@ -523,6 +523,44 @@ describe('recipeCreateOne', () => {
             'Recipe validation failed: instructionSubsections: At least one instruction subsection is required.'
         );
     });
+
+    it('should generate different suffixes for different recipes with same title', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        // Create two recipes with the same title content
+        const record1 = getDefaultRecipeRecord(ingredient, unit, prepMethod);
+        const record2 = getDefaultRecipeRecord(ingredient, unit, prepMethod);
+
+        const createResponse1 = await createRecipe(this, user, record1);
+        const createdRecipe1 = parseCreatedRecipe(createResponse1);
+
+        // Modify title slightly to avoid unique constraint violation
+        record2.title = 'Chicken Soup 2';
+        const createResponse2 = await createRecipe(this, user, record2);
+        const createdRecipe2 = parseCreatedRecipe(createResponse2);
+
+        // Get both recipes from database
+        const recipe1 = await Recipe.findById(createdRecipe1._id);
+        const recipe2 = await Recipe.findById(createdRecipe2._id);
+
+        const suffix1 = recipe1.titleIdentifier.split('-').pop();
+        const suffix2 = recipe2.titleIdentifier.split('-').pop();
+
+        assert.notEqual(suffix1, suffix2, 'Different recipes should have different suffixes');
+        assert.equal(suffix1.length, 4, 'First recipe suffix should be 4 characters long');
+        assert.equal(suffix2.length, 4, 'Second recipe suffix should be 4 characters long');
+        assert.isTrue(
+            recipe1.titleIdentifier.endsWith(`-${suffix1}`),
+            'First recipe should end with its suffix'
+        );
+        assert.isTrue(
+            recipe2.titleIdentifier.endsWith(`-${suffix2}`),
+            'Second recipe should end with its suffix'
+        );
+    });
 });
 
 describe('recipeUpdateById', () => {
@@ -1044,5 +1082,111 @@ describe('recipeUpdateById', () => {
             response.body.singleResult.errors[0].message,
             'Recipe validation failed: instructions: At least one instruction is required.'
         );
+    });
+
+    // URL Suffix preservation tests
+    it('should preserve the random suffix when updating a recipe title', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        // Create a recipe
+        const newRecipe = new Recipe(getDefaultRecipe(user, ingredient, unit, prepMethod));
+        const recipe = await newRecipe.save();
+
+        // Get the original suffix
+        const originalSuffix = recipe.titleIdentifier.split('-').pop();
+
+        // Update the recipe title
+        const response = await updateRecipe(this, user, recipe._id, {
+            title: 'Updated Chicken Soup',
+        });
+        const updatedRecord = parseUpdatedRecipe(response);
+
+        // Verify the updated recipe
+        const updatedRecipe = await Recipe.findById(updatedRecord._id);
+        const updatedSuffix = updatedRecipe.titleIdentifier.split('-').pop();
+
+        assert.equal(originalSuffix, updatedSuffix, 'URL suffix should remain the same');
+        assert.equal(updatedRecipe.title, 'Updated Chicken Soup');
+        assert.isTrue(
+            updatedRecipe.titleIdentifier.startsWith('updated-chicken-soup-'),
+            'Title identifier should reflect new title but keep original suffix'
+        );
+    });
+
+    it('should preserve the random suffix when updating multiple times', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        // Create a recipe
+        const newRecipe = new Recipe(getDefaultRecipe(user, ingredient, unit, prepMethod));
+        const recipe = await newRecipe.save();
+
+        // Get the original suffix
+        const originalSuffix = recipe.titleIdentifier.split('-').pop();
+
+        // Update the recipe title multiple times
+        await updateRecipe(this, user, recipe._id, {
+            title: 'First Update',
+        });
+
+        await updateRecipe(this, user, recipe._id, {
+            title: 'Second Update',
+        });
+
+        const finalUpdateResponse = await updateRecipe(this, user, recipe._id, {
+            title: 'Final Update',
+        });
+        const finalRecord = parseUpdatedRecipe(finalUpdateResponse);
+
+        // Verify the final recipe
+        const finalRecipe = await Recipe.findById(finalRecord._id);
+        const finalSuffix = finalRecipe.titleIdentifier.split('-').pop();
+
+        assert.equal(
+            originalSuffix,
+            finalSuffix,
+            'URL suffix should remain the same after multiple updates'
+        );
+        assert.equal(finalRecipe.title, 'Final Update');
+        assert.isTrue(
+            finalRecipe.titleIdentifier.startsWith('final-update-'),
+            'Title identifier should reflect final title but keep original suffix'
+        );
+    });
+
+    it('should not change suffix when updating non-title fields', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        // Create a recipe
+        const newRecipe = new Recipe(getDefaultRecipe(user, ingredient, unit, prepMethod));
+        const recipe = await newRecipe.save();
+
+        // Get the original identifier
+        const originalTitleIdentifier = recipe.titleIdentifier;
+
+        // Update non-title fields
+        await updateRecipe(this, user, recipe._id, {
+            numServings: 6,
+            notes: 'Updated notes',
+        });
+
+        // Verify the recipe
+        const updatedRecipe = await Recipe.findById(recipe._id);
+
+        assert.equal(
+            originalTitleIdentifier,
+            updatedRecipe.titleIdentifier,
+            'Title identifier should not change when updating non-title fields'
+        );
+        assert.equal(updatedRecipe.numServings, 6);
+        assert.equal(updatedRecipe.notes, 'Updated notes');
     });
 });
