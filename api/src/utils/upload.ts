@@ -21,7 +21,9 @@ export async function storeUpload(file: Promise<FileUpload>): Promise<string> {
 
     await new Promise((resolve, reject) => {
         const writeStream = createWriteStream(savePath);
-        writeStream.on('finish', resolve);
+        writeStream.on('finish', () => {
+            resolve(true);
+        });
         writeStream.on('error', (error) => {
             unlink(savePath, () => {
                 reject(error);
