@@ -217,7 +217,10 @@ export const RecipeMutation = {
             if (existingRecipe) {
                 // Extract existing suffix from titleIdentifier
                 const existingSuffix = existingRecipe.titleIdentifier.split('-').pop();
-                rp.args.record.titleIdentifier = generateRecipeIdentifier(rp.args.record.title, existingSuffix);
+                rp.args.record.titleIdentifier = generateRecipeIdentifier(
+                    rp.args.record.title,
+                    existingSuffix
+                );
             }
         }
         rp.args.record.lastModified = new Date();
