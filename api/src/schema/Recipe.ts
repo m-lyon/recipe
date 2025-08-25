@@ -210,9 +210,15 @@ export const RecipeMutation = {
         rp.args.record.lastModified = new Date();
         return next(rp);
     }),
-    recipeUpdateById: RecipeModifyTC.getResolver('updateById').wrapResolve((next) => (rp) => {
+    recipeUpdateById: RecipeModifyTC.getResolver('updateById').wrapResolve((next) => async (rp) => {
         if (rp.args.record.title) {
-            rp.args.record.titleIdentifier = generateRecipeIdentifier(rp.args.record.title);
+            // Fetch existing recipe to get the current suffix
+            const existingRecipe = await Recipe.findById(rp.args._id);
+            if (existingRecipe) {
+                // Extract existing suffix from titleIdentifier
+                const existingSuffix = existingRecipe.titleIdentifier.split('-').pop();
+                rp.args.record.titleIdentifier = generateRecipeIdentifier(rp.args.record.title, existingSuffix);
+            }
         }
         rp.args.record.lastModified = new Date();
         return next(rp);
