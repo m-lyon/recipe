@@ -1179,4 +1179,39 @@ describe('recipeUpdateById', () => {
         assert.equal(updatedRecipe.numServings, 6);
         assert.equal(updatedRecipe.notes, 'Updated notes');
     });
+
+    it('should generate different suffixes for different recipes with same title', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        
+        // Create first recipe with a specific title
+        const recipe1 = new Recipe({
+            ...getDefaultRecipe(user, ingredient, unit, prepMethod),
+            title: 'Chicken Soup'
+        });
+        await recipe1.save();
+        
+        // Create second recipe with the same title
+        const recipe2 = new Recipe({
+            ...getDefaultRecipe(user, ingredient, unit, prepMethod),
+            title: 'Chicken Soup'
+        });
+        await recipe2.save();
+        
+        // Get the suffixes
+        const suffix1 = recipe1.titleIdentifier.split('-').pop();
+        const suffix2 = recipe2.titleIdentifier.split('-').pop();
+        
+        assert.notEqual(suffix1, suffix2, 'Different recipes should have different suffixes');
+        assert.isTrue(
+            recipe1.titleIdentifier.startsWith('chicken-soup-'),
+            'First recipe should have correct title identifier format'
+        );
+        assert.isTrue(
+            recipe2.titleIdentifier.startsWith('chicken-soup-'),
+            'Second recipe should have correct title identifier format'
+        );
+    });
 });
