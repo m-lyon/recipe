@@ -146,6 +146,12 @@ export async function createRecipesAsIngredients(user: User) {
     const chicken = await Ingredient.findOne({ name: 'chicken' });
     const cup = await Unit.findOne({ shortSingular: 'cup' });
     const chopped = await PrepMethod.findOne({ value: 'chopped' });
+    const small = await Size.findOne({ value: 'small' });
+
+    if (!small) {
+        throw new Error('Small size not found during recipe creation');
+    }
+
     const recipe = await new Recipe({
         title: 'Bimibap',
         titleIdentifier: 'bimibap',
@@ -157,6 +163,7 @@ export async function createRecipesAsIngredients(user: User) {
                         ingredient: chicken._id,
                         quantity: '3',
                         unit: cup._id,
+                        size: small._id,
                         prepMethod: chopped._id,
                     },
                 ],

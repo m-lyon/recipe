@@ -4,7 +4,9 @@ import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { createUser } from '../utils/data.js';
 import { User } from '../../src/models/User.js';
+import { Recipe } from '../../src/models/Recipe.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
+import { createRecipeIngredientData, removeRecipeIngredientData } from './Recipe.test.js';
 
 async function createSize(context, user, record) {
     const query = `
@@ -216,5 +218,84 @@ describe('sizeUpdateById', () => {
             response.body.singleResult.errors[0].message,
             'Size validation failed: owner: The owner must be a valid user.'
         );
+    });
+});
+
+describe('sizeRemoveById', () => {
+    before(startServer);
+    after(stopServer);
+
+    beforeEach(async function () {
+        await createRecipeIngredientData();
+    });
+
+    afterEach(removeRecipeIngredientData);
+
+    async function deleteSize(context, user, id) {
+        const query = `
+        mutation SizeRemoveById($id: MongoID!) {
+            sizeRemoveById(_id: $id) {
+                recordId
+            }
+        }`;
+        const response = await context.apolloServer.executeOperation(
+            { query: query, variables: { id } },
+            {
+                contextValue: {
+                    isAuthenticated: () => true,
+                    getUser: () => user,
+                },
+            }
+        );
+        return response;
+    }
+
+    it('should delete a size that is not used in recipes', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+
+        // Create a new size that won't be used in recipes
+        const unusedSize = {
+            value: 'extra-large',
+            unique: true,
+        };
+
+        const createResponse = await createSize(this, user, unusedSize);
+        const createdSize = parseCreatedSize(createResponse);
+
+        // Try to delete the unused size - should succeed
+        const response = await deleteSize(this, user, createdSize._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(response.body.singleResult.errors);
+        const result = response.body.singleResult.data as { sizeRemoveById: { recordId: string } };
+        assert.equal(result.sizeRemoveById.recordId, createdSize._id);
+    });
+
+    it('should NOT delete a size that is used in recipes', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+
+        // Find the recipe and get the size that's used in one of its ingredients
+        const recipe = await Recipe.findOne({ title: 'Bimibap' });
+
+        if (!recipe) {
+            throw new Error('Recipe not found - test setup issue');
+        }
+
+        const ingredient = recipe.get('ingredientSubsections.0.ingredients.0');
+        const sizeId = ingredient?.size;
+
+        if (!sizeId) {
+            throw new Error('Recipe ingredient with size not found - test setup issue');
+        }
+
+        // Try to delete the size that's used in recipes - should fail
+        const response = await deleteSize(this, user, sizeId);
+
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Cannot delete size as it is currently being used in existing recipes.'
+        );
+        assert.equal(response.body.singleResult.errors[0].extensions.code, 'ITEM_IN_USE');
     });
 });

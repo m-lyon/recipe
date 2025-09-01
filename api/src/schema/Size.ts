@@ -1,7 +1,8 @@
 import { setRecordOwnerAsUser } from '../middleware/create.js';
-import { createOneResolver, updateByIdResolver } from './utils.js';
-import { filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
 import { Size, SizeCreateTC, SizeTC } from '../models/Size.js';
+import { createOneResolver, updateByIdResolver } from './utils.js';
+import { validateItemNotInRecipe } from '../utils/deleteValidation.js';
+import { filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
 
 SizeTC.addResolver({
     name: 'updateById',
@@ -40,6 +41,11 @@ export const SizeMutation = {
     sizeCreateOne: SizeCreateTC.getResolver('createOne').wrapResolve(setRecordOwnerAsUser()),
     sizeUpdateById: SizeTC.getResolver('updateById'),
     sizeUpdateOne: SizeTC.mongooseResolvers.updateOne().setDescription('Update a single size'),
-    sizeRemoveById: SizeTC.mongooseResolvers.removeById().setDescription('Remove a size by its ID'),
-    sizeRemoveOne: SizeTC.mongooseResolvers.removeOne().setDescription('Remove a single size'),
+    sizeRemoveById: SizeTC.mongooseResolvers
+        .removeById()
+        .setDescription('Remove a size by its ID')
+        .wrapResolve((next) => async (rp) => {
+            await validateItemNotInRecipe(rp.args._id, 'size');
+            return next(rp);
+        }),
 };

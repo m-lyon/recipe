@@ -1,5 +1,6 @@
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
+import { validateItemNotInRecipe } from '../utils/deleteValidation.js';
 import { filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
 import { PrepMethod, PrepMethodCreateTC, PrepMethodTC } from '../models/PrepMethod.js';
 
@@ -51,8 +52,9 @@ export const PrepMethodMutation = {
         .setDescription('Update a single prep method'),
     prepMethodRemoveById: PrepMethodTC.mongooseResolvers
         .removeById()
-        .setDescription('Remove a prep method by its ID'),
-    prepMethodRemoveOne: PrepMethodTC.mongooseResolvers
-        .removeOne()
-        .setDescription('Remove a single prep method'),
+        .setDescription('Remove a prep method by its ID')
+        .wrapResolve((next) => async (rp) => {
+            await validateItemNotInRecipe(rp.args._id, 'prepMethod');
+            return next(rp);
+        }),
 };

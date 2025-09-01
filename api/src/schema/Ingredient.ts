@@ -1,6 +1,7 @@
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { filterIsOwnerOrAdmin } from '../middleware/filters.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
+import { validateItemNotInRecipe } from '../utils/deleteValidation.js';
 import { Ingredient, IngredientCreateTC, IngredientTC } from '../models/Ingredient.js';
 
 IngredientTC.addResolver({
@@ -44,8 +45,9 @@ export const IngredientMutation = {
     ingredientUpdateById: IngredientTC.getResolver('updateById'),
     ingredientRemoveById: IngredientTC.mongooseResolvers
         .removeById()
-        .setDescription('Remove an ingredient by its ID'),
-    ingredientRemoveOne: IngredientTC.mongooseResolvers
-        .removeOne()
-        .setDescription('Remove a single ingredient'),
+        .setDescription('Remove an ingredient by its ID')
+        .wrapResolve((next) => async (rp) => {
+            await validateItemNotInRecipe(rp.args._id, 'ingredient');
+            return next(rp);
+        }),
 };
