@@ -319,4 +319,34 @@ describe('unitRemoveById', () => {
         );
         assert.equal(response.body.singleResult.errors[0].extensions.code, 'ITEM_IN_USE');
     });
+
+    it('should NOT delete a unit that is a base unit in a conversion', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const unit = await Unit.findOne({ shortSingular: 'tsp' });
+
+        // Try to delete the unit that's used in conversions - should fail
+        const response = await deleteUnit(this, user, unit._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Cannot delete unit as it is currently being used in existing conversions.'
+        );
+        assert.equal(response.body.singleResult.errors[0].extensions.code, 'ITEM_IN_USE');
+    });
+
+    it('should NOT delete a unit that is used in a conversion rule', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const unit = await Unit.findOne({ shortSingular: 'tbsp' });
+
+        // Try to delete the unit that's used in conversions - should fail
+        const response = await deleteUnit(this, user, unit._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Cannot delete unit as it is currently being used in existing conversions.'
+        );
+        assert.equal(response.body.singleResult.errors[0].extensions.code, 'ITEM_IN_USE');
+    });
 });

@@ -7,6 +7,7 @@ import { Size } from '../../src/models/Size.js';
 import { Recipe } from '../../src/models/Recipe.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
+import { ConversionRule, UnitConversion } from '../../src/models/UnitConversion.js';
 
 export async function createUser() {
     const user = await User.register(
@@ -140,6 +141,39 @@ export async function createIngredients(user: User) {
         tags: ['vegan', 'vegetarian'],
     }).save();
     assert(ingredient3);
+}
+
+export async function createUnitConversions() {
+    const cup = await Unit.findOne({ shortSingular: 'cup' });
+    const tablespoon = await Unit.findOne({ shortSingular: 'tbsp' });
+    const teaspoon = await Unit.findOne({ shortSingular: 'tsp' });
+    const gram = await Unit.findOne({ shortSingular: 'g' });
+
+    if (!cup || !tablespoon || !teaspoon || !gram) {
+        throw new Error('Units not found during conversion creation');
+    }
+
+    const rule1 = await new ConversionRule({
+        baseUnit: teaspoon._id,
+        baseUnitThreshold: 3,
+        unit: tablespoon._id,
+        baseToUnitConversion: 3,
+    }).save();
+    assert(rule1);
+
+    const rule2 = await new ConversionRule({
+        baseUnit: teaspoon._id,
+        baseUnitThreshold: 12,
+        unit: cup._id,
+        baseToUnitConversion: 48,
+    }).save();
+    assert(rule2);
+
+    const conversion1 = await new UnitConversion({
+        baseUnit: teaspoon._id,
+        rules: [rule1._id, rule2._id],
+    }).save();
+    assert(conversion1);
 }
 
 export async function createRecipesAsIngredients(user: User) {

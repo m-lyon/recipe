@@ -10,7 +10,8 @@ import { Recipe } from '../../src/models/Recipe.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
-import { createIngredients, createPrepMethods, createRecipeTags } from '../utils/data.js';
+import { createIngredients, createPrepMethods } from '../utils/data.js';
+import { createRecipeTags, createUnitConversions } from '../utils/data.js';
 import { createRecipesAsIngredients, createSizes, createUnits, createUser } from '../utils/data.js';
 
 export async function createRecipeIngredientData() {
@@ -21,6 +22,7 @@ export async function createRecipeIngredientData() {
     await createPrepMethods(user);
     await createRecipeTags();
     await createRecipesAsIngredients(user);
+    await createUnitConversions();
 }
 
 export function removeRecipeIngredientData(done) {
