@@ -4,6 +4,7 @@ import { Tag } from '../../src/models/Tag.js';
 import { User } from '../../src/models/User.js';
 import { Unit } from '../../src/models/Unit.js';
 import { Size } from '../../src/models/Size.js';
+import { Image } from '../../src/models/Image.js';
 import { Recipe } from '../../src/models/Recipe.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
@@ -174,6 +175,19 @@ export async function createUnitConversions() {
         rules: [rule1._id, rule2._id],
     }).save();
     assert(conversion1);
+}
+
+export async function createImages() {
+    const recipe = await Recipe.findOne({ title: 'Bimibap' });
+    if (!recipe) {
+        throw new Error('Recipe not found during image creation');
+    }
+    const image1 = await new Image({
+        origUrl: 'http://example.com/image1.jpg',
+        recipe: recipe._id,
+        note: 'A delicious bimibap',
+    }).save();
+    assert(image1);
 }
 
 export async function createRecipesAsIngredients(user: User) {

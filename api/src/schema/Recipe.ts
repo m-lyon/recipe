@@ -11,6 +11,7 @@ import { RatingTC } from '../models/Rating.js';
 import { PrepMethodTC } from '../models/PrepMethod.js';
 import { Ingredient, IngredientTC } from '../models/Ingredient.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
+import { validateItemNotInRecipe } from '../middleware/validation.js';
 import { RecipeModifyTC, generateRecipeIdentifier } from '../models/Recipe.js';
 import { Recipe, RecipeCreateTC, RecipeIngredientTC, RecipeTC } from '../models/Recipe.js';
 
@@ -226,19 +227,24 @@ export const RecipeMutation = {
         rp.args.record.lastModified = new Date();
         return next(rp);
     }),
-    recipeRemoveById: RecipeModifyTC.getResolver('removeById').wrapResolve((next) => async (rp) => {
-        // delete all images associated with the recipe
-        const images = await ImageTC.mongooseResolvers.findMany().resolve({
-            args: { filter: { recipe: rp.args._id } },
-        });
-        await ImageTC.getResolver('imageRemoveMany').resolve({
-            args: { ids: images.map((o) => o._id) },
-            context: rp.context,
-        });
-        // delete all rating associated with the recipe
-        await RatingTC.mongooseResolvers.removeMany().resolve({
-            args: { filter: { recipe: rp.args._id } },
-        });
-        return next(rp);
-    }),
+    recipeRemoveById: RecipeModifyTC.getResolver('removeById')
+        .wrapResolve((next) => async (rp) => {
+            // delete all images associated with the recipe
+            const images = await ImageTC.mongooseResolvers.findMany().resolve({
+                args: { filter: { recipe: rp.args._id } },
+            });
+            await ImageTC.getResolver('imageRemoveMany').resolve({
+                args: { ids: images.map((o) => o._id) },
+                context: rp.context,
+            });
+            // delete all rating associated with the recipe
+            await RatingTC.mongooseResolvers.removeMany().resolve({
+                args: { filter: { recipe: rp.args._id } },
+            });
+            return next(rp);
+        })
+        .wrapResolve((next) => async (rp) => {
+            await validateItemNotInRecipe(rp.args._id, 'recipe');
+            return next(rp);
+        }),
 };

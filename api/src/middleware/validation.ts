@@ -6,7 +6,7 @@ import { ConversionRule, UnitConversion } from '../models/UnitConversion.js';
 
 export async function validateItemNotInRecipe(
     itemId: Types.ObjectId,
-    itemType: 'unit' | 'size' | 'ingredient' | 'prepMethod'
+    itemType: 'unit' | 'size' | 'ingredient' | 'prepMethod' | 'recipe'
 ) {
     type QueryType = {
         'ingredientSubsections.ingredients': { $elemMatch: Record<string, Types.ObjectId> };
@@ -29,6 +29,7 @@ export async function validateItemNotInRecipe(
                 },
             };
             break;
+        case 'recipe':
         case 'ingredient':
             query = {
                 'ingredientSubsections.ingredients': {
@@ -48,8 +49,9 @@ export async function validateItemNotInRecipe(
     const recipesUsingItem = await Recipe.find(query).limit(1);
 
     if (recipesUsingItem.length > 0) {
+        const otherStr = itemType == 'recipe' ? 'other ' : '';
         throw new GraphQLError(
-            `Cannot delete ${itemType} as it is currently being used in existing recipes.`,
+            `Cannot delete ${itemType} as it is currently being used in ${otherStr}existing recipes.`,
             {
                 extensions: {
                     code: 'ITEM_IN_USE',

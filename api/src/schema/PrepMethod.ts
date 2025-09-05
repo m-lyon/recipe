@@ -1,6 +1,6 @@
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
-import { validateItemNotInRecipe } from '../utils/deleteValidation.js';
+import { validateItemNotInRecipe } from '../middleware/validation.js';
 import { filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
 import { PrepMethod, PrepMethodCreateTC, PrepMethodTC } from '../models/PrepMethod.js';
 

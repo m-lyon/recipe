@@ -2,7 +2,7 @@ import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { Unit, UnitCreateTC, UnitTC } from '../models/Unit.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
 import { filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
-import { validateItemNotInRecipe, validateUnitNotInConversion } from '../utils/deleteValidation.js';
+import { validateItemNotInRecipe, validateUnitNotInConversion } from '../middleware/validation.js';
 
 UnitTC.addResolver({
     name: 'updateById',

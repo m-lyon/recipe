@@ -1,3 +1,6 @@
+import fs from 'fs';
+
+import { stub } from 'sinon';
 import { assert } from 'chai';
 import mongoose from 'mongoose';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
@@ -6,12 +9,13 @@ import { Tag } from '../../src/models/Tag.js';
 import { Size } from '../../src/models/Size.js';
 import { User } from '../../src/models/User.js';
 import { Unit } from '../../src/models/Unit.js';
+import { Image } from '../../src/models/Image.js';
 import { Recipe } from '../../src/models/Recipe.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
-import { createIngredients, createPrepMethods } from '../utils/data.js';
 import { createRecipeTags, createUnitConversions } from '../utils/data.js';
+import { createImages, createIngredients, createPrepMethods } from '../utils/data.js';
 import { createRecipesAsIngredients, createSizes, createUnits, createUser } from '../utils/data.js';
 
 export async function createRecipeIngredientData() {
@@ -23,6 +27,7 @@ export async function createRecipeIngredientData() {
     await createRecipeTags();
     await createRecipesAsIngredients(user);
     await createUnitConversions();
+    await createImages();
 }
 
 export function removeRecipeIngredientData(done) {
@@ -1190,5 +1195,106 @@ describe('recipeUpdateById', () => {
         );
         assert.equal(updatedRecipe.numServings, 6);
         assert.equal(updatedRecipe.notes, 'Updated notes');
+    });
+});
+
+describe('recipeRemoveById', () => {
+    before(startServer);
+    after(stopServer);
+    beforeEach(createRecipeIngredientData);
+    afterEach(removeRecipeIngredientData);
+
+    async function removeRecipe(context, user, id) {
+        const query = `
+        mutation RecipeRemoveById($id: MongoID!) {
+            recipeRemoveById(_id: $id) {
+              recordId
+            }
+          }`;
+        const response = await context.apolloServer.executeOperation(
+            { query: query, variables: { id } },
+            {
+                contextValue: {
+                    isAuthenticated: () => true,
+                    getUser: () => user,
+                },
+            }
+        );
+        return response;
+    }
+
+    it('should remove a recipe that is not an ingredient in another recipe', async function () {
+        // Mock fs.unlinkSync to prevent actual file deletion
+        const unlinkSyncStub = stub(fs, 'unlinkSync');
+
+        try {
+            const user = await User.findOne({ username: 'testuser1' });
+            const recipe = await Recipe.findOne({ title: 'Bimibap' });
+            const response = await removeRecipe(this, user, recipe._id);
+            assert.equal(response.body.kind, 'single');
+            assert.isUndefined(
+                response.body.singleResult.errors,
+                response.body.singleResult.errors
+                    ? response.body.singleResult.errors[0].message
+                    : ''
+            );
+            const recordId = (
+                response.body.singleResult.data as {
+                    recipeRemoveById: { recordId: string };
+                }
+            ).recipeRemoveById.recordId;
+            assert.equal(recordId, recipe._id.toString());
+            const deletedRecipe = await Recipe.findById(recipe._id);
+            assert.isNull(deletedRecipe);
+
+            // Check the image is also deleted
+            const images = await Image.find({ recipe: recipe._id });
+            assert.isEmpty(images);
+            assert.equal(unlinkSyncStub.callCount, 1);
+            assert.isTrue(unlinkSyncStub.calledWith('/data/recipe/images/image1.jpg'));
+        } finally {
+            // Restore the original function
+            unlinkSyncStub.restore();
+        }
+    });
+
+    it('should NOT remove a recipe that is an ingredient in another recipe', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const recipeIngredient = await Recipe.findOne({ title: 'Bimibap' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const newRecipe = new Recipe({
+            ...getDefaultRecipeRecord(ingredient, unit, prepMethod),
+            owner: user._id,
+            titleIdentifier: 'chicken-soup',
+            createdAt: new Date(),
+            lastModified: new Date(),
+            ingredientSubsections: [
+                {
+                    name: 'Main',
+                    ingredients: [
+                        {
+                            ingredient: recipeIngredient._id,
+                            quantity: '300',
+                            unit: unit._id,
+                        },
+                    ],
+                },
+            ],
+        });
+        await newRecipe.save();
+        const response = await removeRecipe(this, user, recipeIngredient._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Error should be returned');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Cannot delete recipe as it is currently being used in other existing recipes.'
+        );
+        const existingRecipe = await Recipe.findById(recipeIngredient._id);
+        assert.isNotNull(existingRecipe, 'Recipe should not be deleted');
+        // Check the image is not deleted
+        const images = await Image.find({ recipe: recipeIngredient._id });
+        assert.isNotEmpty(images, 'Images should not be deleted');
     });
 });
