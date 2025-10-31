@@ -1,5 +1,7 @@
-import { Size } from '@recipe/graphql/generated';
+import { GetSizesQuery, GetSizesQueryVariables, Size } from '@recipe/graphql/generated';
 import { mockAdminId, mockLargeId, mockMediumId, mockSmallId } from '@recipe/graphql/__mocks__/ids';
+
+import { GET_SIZES } from '../size';
 
 export const mockSmall: Size = {
     __typename: 'Size',
@@ -23,3 +25,8 @@ export const mockLarge: Size = {
     owner: mockAdminId,
 };
 export const mockSizes = [mockSmall, mockMedium, mockLarge];
+
+export const mockGetSizes = {
+    request: { query: GET_SIZES, variables: { filter: {} } satisfies GetSizesQueryVariables },
+    result: { data: { __typename: 'Query', sizeMany: mockSizes } satisfies GetSizesQuery },
+};

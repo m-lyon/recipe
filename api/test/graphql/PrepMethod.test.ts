@@ -4,7 +4,9 @@ import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { createUser } from '../utils/data.js';
 import { User } from '../../src/models/User.js';
+import { Recipe } from '../../src/models/Recipe.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
+import { createRecipeIngredientData, removeRecipeIngredientData } from './Recipe.test.js';
 
 async function createPrepMethod(context, user, record) {
     const query = `
@@ -186,5 +188,85 @@ describe('prepMethodUpdateById', () => {
             }
         ).prepMethodUpdateById.record;
         assert.equal(updatedRecord.value, 'diced');
+    });
+});
+
+describe('prepMethodRemoveById', () => {
+    before(startServer);
+    after(stopServer);
+
+    beforeEach(async function () {
+        await createRecipeIngredientData();
+    });
+
+    afterEach(removeRecipeIngredientData);
+
+    async function deletePrepMethod(context, user, id) {
+        const query = `
+        mutation PrepMethodRemoveById($id: MongoID!) {
+            prepMethodRemoveById(_id: $id) {
+                recordId
+            }
+        }`;
+        const response = await context.apolloServer.executeOperation(
+            { query: query, variables: { id } },
+            {
+                contextValue: {
+                    isAuthenticated: () => true,
+                    getUser: () => user,
+                },
+            }
+        );
+        return response;
+    }
+
+    it('should delete a prep method that is not used in recipes', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+
+        // Create a new prep method that won't be used in recipes
+        const unusedPrepMethod = {
+            value: 'unused-method',
+            unique: true,
+        };
+
+        const createResponse = await createPrepMethod(this, user, unusedPrepMethod);
+        const createdPrepMethod = parseCreatedPrepMethod(createResponse);
+
+        // Try to delete the unused prep method - should succeed
+        const response = await deletePrepMethod(this, user, createdPrepMethod._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(response.body.singleResult.errors);
+        const result = response.body.singleResult.data as {
+            prepMethodRemoveById: { recordId: string };
+        };
+        assert.equal(result.prepMethodRemoveById.recordId, createdPrepMethod._id);
+    });
+
+    it('should NOT delete a prep method that is used in recipes', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+
+        // Find the recipe and get the prep method that's used in one of its ingredients
+        const recipe = await Recipe.findOne({ title: 'Bimibap' });
+
+        if (!recipe) {
+            throw new Error('Recipe not found - test setup issue');
+        }
+
+        const ingredient = recipe.get('ingredientSubsections.0.ingredients.0');
+        const prepMethodId = ingredient?.prepMethod;
+
+        if (!prepMethodId) {
+            throw new Error('Recipe ingredient with prep method not found - test setup issue');
+        }
+
+        // Try to delete the prep method that's used in recipes - should fail
+        const response = await deletePrepMethod(this, user, prepMethodId);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Cannot delete prepMethod as it is currently being used in existing recipes.'
+        );
+        assert.equal(response.body.singleResult.errors[0].extensions.code, 'ITEM_IN_USE');
     });
 });

@@ -3,8 +3,10 @@ import mongoose from 'mongoose';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { createUser } from '../utils/data.js';
+import { Unit } from '../../src/models/Unit.js';
 import { User } from '../../src/models/User.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
+import { createRecipeIngredientData, removeRecipeIngredientData } from './Recipe.test.js';
 
 async function createUnit(context, user, record) {
     const query = `
@@ -246,5 +248,105 @@ describe('unitUpdateById', () => {
             response.body.singleResult.errors[0].message,
             'Unit validation failed: owner: The owner must be a valid user.'
         );
+    });
+});
+
+describe('unitRemoveById', () => {
+    before(startServer);
+    after(stopServer);
+
+    beforeEach(async function () {
+        await createRecipeIngredientData();
+    });
+
+    afterEach(removeRecipeIngredientData);
+
+    async function deleteUnit(context, user, id) {
+        const query = `
+        mutation UnitRemoveById($id: MongoID!) {
+            unitRemoveById(_id: $id) {
+                recordId
+            }
+        }`;
+        const response = await context.apolloServer.executeOperation(
+            { query: query, variables: { id } },
+            {
+                contextValue: {
+                    isAuthenticated: () => true,
+                    getUser: () => user,
+                },
+            }
+        );
+        return response;
+    }
+
+    it('should delete a unit that is not used in recipes', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+
+        // Create a new unit that won't be used in recipes
+        const unusedUnit = {
+            shortSingular: 'xyz',
+            shortPlural: 'xyzs',
+            longSingular: 'xyz unit',
+            longPlural: 'xyz units',
+            preferredNumberFormat: 'fraction',
+            hasSpace: false,
+            unique: true,
+        };
+
+        const createResponse = await createUnit(this, user, unusedUnit);
+        const createdUnit = parseCreatedUnit(createResponse);
+
+        // Try to delete the unused unit - should succeed
+        const response = await deleteUnit(this, user, createdUnit._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(response.body.singleResult.errors);
+        const result = response.body.singleResult.data as { unitRemoveById: { recordId: string } };
+        assert.equal(result.unitRemoveById.recordId, createdUnit._id);
+    });
+
+    it('should NOT delete a unit that is used in recipes', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const unit = await Unit.findOne({ shortSingular: 'cup' });
+
+        // Try to delete the unit that's used in recipes - should fail
+        const response = await deleteUnit(this, user, unit._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Cannot delete unit as it is currently being used in existing recipes.'
+        );
+        assert.equal(response.body.singleResult.errors[0].extensions.code, 'ITEM_IN_USE');
+    });
+
+    it('should NOT delete a unit that is a base unit in a conversion', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const unit = await Unit.findOne({ shortSingular: 'tsp' });
+
+        // Try to delete the unit that's used in conversions - should fail
+        const response = await deleteUnit(this, user, unit._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Cannot delete unit as it is currently being used in existing conversions.'
+        );
+        assert.equal(response.body.singleResult.errors[0].extensions.code, 'ITEM_IN_USE');
+    });
+
+    it('should NOT delete a unit that is used in a conversion rule', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const unit = await Unit.findOne({ shortSingular: 'tbsp' });
+
+        // Try to delete the unit that's used in conversions - should fail
+        const response = await deleteUnit(this, user, unit._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Cannot delete unit as it is currently being used in existing conversions.'
+        );
+        assert.equal(response.body.singleResult.errors[0].extensions.code, 'ITEM_IN_USE');
     });
 });

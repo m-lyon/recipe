@@ -1,3 +1,6 @@
+import fs from 'fs';
+
+import { stub } from 'sinon';
 import { assert } from 'chai';
 import mongoose from 'mongoose';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
@@ -6,11 +9,13 @@ import { Tag } from '../../src/models/Tag.js';
 import { Size } from '../../src/models/Size.js';
 import { User } from '../../src/models/User.js';
 import { Unit } from '../../src/models/Unit.js';
+import { Image } from '../../src/models/Image.js';
 import { Recipe } from '../../src/models/Recipe.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
-import { createIngredients, createPrepMethods, createRecipeTags } from '../utils/data.js';
+import { createRecipeTags, createUnitConversions } from '../utils/data.js';
+import { createImages, createIngredients, createPrepMethods } from '../utils/data.js';
 import { createRecipesAsIngredients, createSizes, createUnits, createUser } from '../utils/data.js';
 
 export async function createRecipeIngredientData() {
@@ -21,6 +26,8 @@ export async function createRecipeIngredientData() {
     await createPrepMethods(user);
     await createRecipeTags();
     await createRecipesAsIngredients(user);
+    await createUnitConversions();
+    await createImages();
 }
 
 export function removeRecipeIngredientData(done) {
@@ -521,6 +528,44 @@ describe('recipeCreateOne', () => {
         assert.equal(
             response.body.singleResult.errors[0].message,
             'Recipe validation failed: instructionSubsections: At least one instruction subsection is required.'
+        );
+    });
+
+    it('should generate different suffixes for different recipes with same title', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        // Create two recipes with the same title content
+        const record1 = getDefaultRecipeRecord(ingredient, unit, prepMethod);
+        const record2 = getDefaultRecipeRecord(ingredient, unit, prepMethod);
+
+        const createResponse1 = await createRecipe(this, user, record1);
+        const createdRecipe1 = parseCreatedRecipe(createResponse1);
+
+        // Modify title slightly to avoid unique constraint violation
+        record2.title = 'Chicken Soup 2';
+        const createResponse2 = await createRecipe(this, user, record2);
+        const createdRecipe2 = parseCreatedRecipe(createResponse2);
+
+        // Get both recipes from database
+        const recipe1 = await Recipe.findById(createdRecipe1._id);
+        const recipe2 = await Recipe.findById(createdRecipe2._id);
+
+        const suffix1 = recipe1.titleIdentifier.split('-').pop();
+        const suffix2 = recipe2.titleIdentifier.split('-').pop();
+
+        assert.notEqual(suffix1, suffix2, 'Different recipes should have different suffixes');
+        assert.equal(suffix1.length, 4, 'First recipe suffix should be 4 characters long');
+        assert.equal(suffix2.length, 4, 'Second recipe suffix should be 4 characters long');
+        assert.isTrue(
+            recipe1.titleIdentifier.endsWith(`-${suffix1}`),
+            'First recipe should end with its suffix'
+        );
+        assert.isTrue(
+            recipe2.titleIdentifier.endsWith(`-${suffix2}`),
+            'Second recipe should end with its suffix'
         );
     });
 });
@@ -1044,5 +1089,212 @@ describe('recipeUpdateById', () => {
             response.body.singleResult.errors[0].message,
             'Recipe validation failed: instructions: At least one instruction is required.'
         );
+    });
+
+    // URL Suffix preservation tests
+    it('should preserve the random suffix when updating a recipe title', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        // Create a recipe
+        const newRecipe = new Recipe(getDefaultRecipe(user, ingredient, unit, prepMethod));
+        const recipe = await newRecipe.save();
+
+        // Get the original suffix
+        const originalSuffix = recipe.titleIdentifier.split('-').pop();
+
+        // Update the recipe title
+        const response = await updateRecipe(this, user, recipe._id, {
+            title: 'Updated Chicken Soup',
+        });
+        const updatedRecord = parseUpdatedRecipe(response);
+
+        // Verify the updated recipe
+        const updatedRecipe = await Recipe.findById(updatedRecord._id);
+        const updatedSuffix = updatedRecipe.titleIdentifier.split('-').pop();
+
+        assert.equal(originalSuffix, updatedSuffix, 'URL suffix should remain the same');
+        assert.equal(updatedRecipe.title, 'Updated Chicken Soup');
+        assert.isTrue(
+            updatedRecipe.titleIdentifier.startsWith('updated-chicken-soup-'),
+            'Title identifier should reflect new title but keep original suffix'
+        );
+    });
+
+    it('should preserve the random suffix when updating multiple times', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        // Create a recipe
+        const newRecipe = new Recipe(getDefaultRecipe(user, ingredient, unit, prepMethod));
+        const recipe = await newRecipe.save();
+
+        // Get the original suffix
+        const originalSuffix = recipe.titleIdentifier.split('-').pop();
+
+        // Update the recipe title multiple times
+        await updateRecipe(this, user, recipe._id, {
+            title: 'First Update',
+        });
+
+        await updateRecipe(this, user, recipe._id, {
+            title: 'Second Update',
+        });
+
+        const finalUpdateResponse = await updateRecipe(this, user, recipe._id, {
+            title: 'Final Update',
+        });
+        const finalRecord = parseUpdatedRecipe(finalUpdateResponse);
+
+        // Verify the final recipe
+        const finalRecipe = await Recipe.findById(finalRecord._id);
+        const finalSuffix = finalRecipe.titleIdentifier.split('-').pop();
+
+        assert.equal(
+            originalSuffix,
+            finalSuffix,
+            'URL suffix should remain the same after multiple updates'
+        );
+        assert.equal(finalRecipe.title, 'Final Update');
+        assert.isTrue(
+            finalRecipe.titleIdentifier.startsWith('final-update-'),
+            'Title identifier should reflect final title but keep original suffix'
+        );
+    });
+
+    it('should not change suffix when updating non-title fields', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        // Create a recipe
+        const newRecipe = new Recipe(getDefaultRecipe(user, ingredient, unit, prepMethod));
+        const recipe = await newRecipe.save();
+
+        // Get the original identifier
+        const originalTitleIdentifier = recipe.titleIdentifier;
+
+        // Update non-title fields
+        await updateRecipe(this, user, recipe._id, {
+            numServings: 6,
+            notes: 'Updated notes',
+        });
+
+        // Verify the recipe
+        const updatedRecipe = await Recipe.findById(recipe._id);
+
+        assert.equal(
+            originalTitleIdentifier,
+            updatedRecipe.titleIdentifier,
+            'Title identifier should not change when updating non-title fields'
+        );
+        assert.equal(updatedRecipe.numServings, 6);
+        assert.equal(updatedRecipe.notes, 'Updated notes');
+    });
+});
+
+describe('recipeRemoveById', () => {
+    before(startServer);
+    after(stopServer);
+    beforeEach(createRecipeIngredientData);
+    afterEach(removeRecipeIngredientData);
+
+    async function removeRecipe(context, user, id) {
+        const query = `
+        mutation RecipeRemoveById($id: MongoID!) {
+            recipeRemoveById(_id: $id) {
+              recordId
+            }
+          }`;
+        const response = await context.apolloServer.executeOperation(
+            { query: query, variables: { id } },
+            {
+                contextValue: {
+                    isAuthenticated: () => true,
+                    getUser: () => user,
+                },
+            }
+        );
+        return response;
+    }
+
+    it('should remove a recipe that is not an ingredient in another recipe', async function () {
+        // Mock fs.unlinkSync to prevent actual file deletion
+        const unlinkSyncStub = stub(fs, 'unlinkSync');
+
+        try {
+            const user = await User.findOne({ username: 'testuser1' });
+            const recipe = await Recipe.findOne({ title: 'Bimibap' });
+            const response = await removeRecipe(this, user, recipe._id);
+            assert.equal(response.body.kind, 'single');
+            assert.isUndefined(
+                response.body.singleResult.errors,
+                response.body.singleResult.errors
+                    ? response.body.singleResult.errors[0].message
+                    : ''
+            );
+            const recordId = (
+                response.body.singleResult.data as {
+                    recipeRemoveById: { recordId: string };
+                }
+            ).recipeRemoveById.recordId;
+            assert.equal(recordId, recipe._id.toString());
+            const deletedRecipe = await Recipe.findById(recipe._id);
+            assert.isNull(deletedRecipe);
+
+            // Check the image is also deleted
+            const images = await Image.find({ recipe: recipe._id });
+            assert.isEmpty(images);
+            assert.equal(unlinkSyncStub.callCount, 1);
+            assert.isTrue(unlinkSyncStub.calledWith('/data/recipe/images/image1.jpg'));
+        } finally {
+            // Restore the original function
+            unlinkSyncStub.restore();
+        }
+    });
+
+    it('should NOT remove a recipe that is an ingredient in another recipe', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const recipeIngredient = await Recipe.findOne({ title: 'Bimibap' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const newRecipe = new Recipe({
+            ...getDefaultRecipeRecord(ingredient, unit, prepMethod),
+            owner: user._id,
+            titleIdentifier: 'chicken-soup',
+            createdAt: new Date(),
+            lastModified: new Date(),
+            ingredientSubsections: [
+                {
+                    name: 'Main',
+                    ingredients: [
+                        {
+                            ingredient: recipeIngredient._id,
+                            quantity: '300',
+                            unit: unit._id,
+                        },
+                    ],
+                },
+            ],
+        });
+        await newRecipe.save();
+        const response = await removeRecipe(this, user, recipeIngredient._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Error should be returned');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Cannot delete recipe as it is currently being used in other existing recipes.'
+        );
+        const existingRecipe = await Recipe.findById(recipeIngredient._id);
+        assert.isNotNull(existingRecipe, 'Recipe should not be deleted');
+        // Check the image is not deleted
+        const images = await Image.find({ recipe: recipeIngredient._id });
+        assert.isNotEmpty(images, 'Images should not be deleted');
     });
 });

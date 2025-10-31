@@ -4,7 +4,9 @@ import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { createUser } from '../utils/data.js';
 import { User } from '../../src/models/User.js';
+import { Ingredient } from '../../src/models/Ingredient.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
+import { createRecipeIngredientData, removeRecipeIngredientData } from './Recipe.test.js';
 
 async function createIngredient(context, user, record) {
     const query = `
@@ -282,5 +284,75 @@ describe('ingredientUpdateById', () => {
             response.body.singleResult.errors[0].message,
             'Variable "$record" got invalid value "beef" at "record.tags[0]"; Value "beef" does not exist in "EnumIngredientTags" enum.'
         );
+    });
+});
+
+describe('ingredientRemoveById', () => {
+    before(startServer);
+    after(stopServer);
+
+    beforeEach(async function () {
+        await createRecipeIngredientData();
+    });
+
+    afterEach(removeRecipeIngredientData);
+
+    async function deleteIngredient(context, user, id) {
+        const query = `
+        mutation IngredientRemoveById($id: MongoID!) {
+            ingredientRemoveById(_id: $id) {
+                recordId
+            }
+        }`;
+        const response = await context.apolloServer.executeOperation(
+            { query: query, variables: { id } },
+            {
+                contextValue: {
+                    isAuthenticated: () => true,
+                    getUser: () => user,
+                },
+            }
+        );
+        return response;
+    }
+
+    it('should delete an ingredient that is not used in recipes', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+
+        // Create a new ingredient that won't be used in recipes
+        const unusedIngredient = {
+            name: 'unused-ingredient',
+            pluralName: 'unused-ingredients',
+            isCountable: true,
+            density: null,
+            tags: [],
+        };
+
+        const createResponse = await createIngredient(this, user, unusedIngredient);
+        const createdIngredient = parseCreatedIngredient(createResponse);
+
+        // Try to delete the unused ingredient - should succeed
+        const response = await deleteIngredient(this, user, createdIngredient._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(response.body.singleResult.errors);
+        const result = response.body.singleResult.data as {
+            ingredientRemoveById: { recordId: string };
+        };
+        assert.equal(result.ingredientRemoveById.recordId, createdIngredient._id);
+    });
+
+    it('should NOT delete an ingredient that is used in recipes', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+
+        // Try to delete the ingredient that's used in recipes - should fail
+        const response = await deleteIngredient(this, user, ingredient._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Cannot delete ingredient as it is currently being used in existing recipes.'
+        );
+        assert.equal(response.body.singleResult.errors[0].extensions.code, 'ITEM_IN_USE');
     });
 });

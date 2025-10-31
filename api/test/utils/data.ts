@@ -4,9 +4,11 @@ import { Tag } from '../../src/models/Tag.js';
 import { User } from '../../src/models/User.js';
 import { Unit } from '../../src/models/Unit.js';
 import { Size } from '../../src/models/Size.js';
+import { Image } from '../../src/models/Image.js';
 import { Recipe } from '../../src/models/Recipe.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
+import { ConversionRule, UnitConversion } from '../../src/models/UnitConversion.js';
 
 export async function createUser() {
     const user = await User.register(
@@ -142,10 +144,62 @@ export async function createIngredients(user: User) {
     assert(ingredient3);
 }
 
+export async function createUnitConversions() {
+    const cup = await Unit.findOne({ shortSingular: 'cup' });
+    const tablespoon = await Unit.findOne({ shortSingular: 'tbsp' });
+    const teaspoon = await Unit.findOne({ shortSingular: 'tsp' });
+    const gram = await Unit.findOne({ shortSingular: 'g' });
+
+    if (!cup || !tablespoon || !teaspoon || !gram) {
+        throw new Error('Units not found during conversion creation');
+    }
+
+    const rule1 = await new ConversionRule({
+        baseUnit: teaspoon._id,
+        baseUnitThreshold: 3,
+        unit: tablespoon._id,
+        baseToUnitConversion: 3,
+    }).save();
+    assert(rule1);
+
+    const rule2 = await new ConversionRule({
+        baseUnit: teaspoon._id,
+        baseUnitThreshold: 12,
+        unit: cup._id,
+        baseToUnitConversion: 48,
+    }).save();
+    assert(rule2);
+
+    const conversion1 = await new UnitConversion({
+        baseUnit: teaspoon._id,
+        rules: [rule1._id, rule2._id],
+    }).save();
+    assert(conversion1);
+}
+
+export async function createImages() {
+    const recipe = await Recipe.findOne({ title: 'Bimibap' });
+    if (!recipe) {
+        throw new Error('Recipe not found during image creation');
+    }
+    const image1 = await new Image({
+        origUrl: 'http://example.com/image1.jpg',
+        recipe: recipe._id,
+        note: 'A delicious bimibap',
+    }).save();
+    assert(image1);
+}
+
 export async function createRecipesAsIngredients(user: User) {
     const chicken = await Ingredient.findOne({ name: 'chicken' });
     const cup = await Unit.findOne({ shortSingular: 'cup' });
     const chopped = await PrepMethod.findOne({ value: 'chopped' });
+    const small = await Size.findOne({ value: 'small' });
+
+    if (!small) {
+        throw new Error('Small size not found during recipe creation');
+    }
+
     const recipe = await new Recipe({
         title: 'Bimibap',
         titleIdentifier: 'bimibap',
@@ -157,6 +211,7 @@ export async function createRecipesAsIngredients(user: User) {
                         ingredient: chicken._id,
                         quantity: '3',
                         unit: cup._id,
+                        size: small._id,
                         prepMethod: chopped._id,
                     },
                 ],

@@ -2,6 +2,7 @@ import { GraphQLError } from 'graphql';
 import { Document, Model, Types } from 'mongoose';
 
 import { Image } from '../models/Image.js';
+import { Recipe } from '../models/Recipe.js';
 
 export const isVerified = () => (next) => (rp) => {
     const user = rp.context.getUser();
@@ -60,10 +61,15 @@ export const isImageOwnerOrAdmin = () => (next) => async (rp) => {
             extensions: { code: 'FORBIDDEN' },
         });
     }
-    const images = await Image.find({ _id: { $in: rp.args.ids } });
+    const images = await Image.find({ _id: { $in: rp.args.ids } }).populate<{
+        recipe: Recipe;
+    }>({
+        path: 'recipe',
+        select: 'owner',
+    });
     // Ensure user has permission to remove any and all images
     images.forEach((image) => {
-        if (!image.recipe._id.equals(user._id) && user.role !== 'admin') {
+        if (!image.recipe.owner.equals(user._id) && user.role !== 'admin') {
             throw new GraphQLError('You are not authorised!', {
                 extensions: { code: 'FORBIDDEN' },
             });

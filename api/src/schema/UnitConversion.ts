@@ -63,9 +63,6 @@ export const ConversionRuleMutation = {
     conversionRuleRemoveById: ConversionRuleTC.mongooseResolvers
         .removeById()
         .setDescription('Remove a conversion rule by its ID'),
-    conversionRuleRemoveOne: ConversionRuleTC.mongooseResolvers
-        .removeOne()
-        .setDescription('Remove a single conversion rule'),
 };
 
 UnitConversionTC.addResolver({
@@ -129,7 +126,4 @@ export const UnitConversionMutation = {
     unitConversionRemoveById: UnitConversionTC.mongooseResolvers
         .removeById()
         .setDescription('Remove a unit conversion by its ID'),
-    unitConversionRemoveOne: UnitConversionTC.mongooseResolvers
-        .removeOne()
-        .setDescription('Remove a single unit conversion'),
 };
