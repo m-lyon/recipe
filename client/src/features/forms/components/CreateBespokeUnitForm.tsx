@@ -79,7 +79,7 @@ export function CreateBespokeUnitForm(props: Props) {
 
     return (
         <Stack
-            spacing={4}
+            gap={4}
             pt={3}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
@@ -90,31 +90,31 @@ export function CreateBespokeUnitForm(props: Props) {
                 label='Unit name'
                 inputRef={fieldRef}
                 value={value}
-                isInvalid={hasError}
+                invalid={hasError}
                 isRequired
                 onChange={(e) => {
                     setValue(e.target.value.toLowerCase());
                     hasError && setHasError(false);
                 }}
             />
-            <FormControl isInvalid={hasError}>
+            <FormControl invalid={hasError}>
                 <FormHelperText>Preferred number format</FormHelperText>
                 <RadioGroup onChange={setpreferredNumberFormat} value={preferredNumberFormat}>
-                    <HStack spacing='12px'>
+                    <HStack gap='12px'>
                         <Radio value='decimal'>decimal</Radio>
                         <Radio value='fraction'>fraction</Radio>
                     </HStack>
                 </RadioGroup>
             </FormControl>
             <Checkbox
-                isInvalid={hasError}
+                invalid={hasError}
                 onChange={(e) => setHasSpace(e.target.checked)}
                 isChecked={hasSpace}
             >
                 Space after quantity
             </Checkbox>
             <ButtonGroup display='flex' justifyContent='flex-end' paddingTop={2}>
-                <Button colorScheme='teal' onClick={handleSubmit} aria-label='Save unit'>
+                <Button colorPalette='teal' onClick={handleSubmit} aria-label='Save unit'>
                     Save
                 </Button>
             </ButtonGroup>

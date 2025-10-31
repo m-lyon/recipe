@@ -15,8 +15,8 @@ export function FloatingLabelInput(props: Props) {
     const { inputRef, id, label, isInvalid, isRequired, isDisabled, fontWeight, ...rest } = props;
     return (
         <FormControl
-            isInvalid={isInvalid}
-            isDisabled={isDisabled}
+            invalid={isInvalid}
+            disabled={isDisabled}
             sx={{
                 '&:focus-within label': {
                     transform: 'scale(0.85) translateY(-24px)',

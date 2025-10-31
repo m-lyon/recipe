@@ -1,4 +1,4 @@
-import { ChevronDownIcon } from '@chakra-ui/icons';
+
 import { Link as ChakraLink } from '@chakra-ui/react';
 import { Link as ReactRouterLink } from 'react-router-dom';
 import { useColorModeValue, useDisclosure } from '@chakra-ui/react';
@@ -26,7 +26,7 @@ function MobileNavItem({ label, ariaLabel, children, href, parentOnToggle }: Nav
     const { isOpen, onToggle } = useDisclosure();
 
     return (
-        <Stack spacing={0} onClick={children && onToggle}>
+        <Stack gap={0} onClick={children && onToggle}>
             <ChakraLink
                 _hover={{ textDecoration: 'none' }}
                 as={children ? undefined : ReactRouterLink}

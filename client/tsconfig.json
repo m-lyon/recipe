@@ -58,6 +58,9 @@
       "@recipe/common/hooks": [
         "common/hooks"
       ],
+      "@recipe/components/*": [
+        "components/*"
+      ]
     }
   },
   "include": [

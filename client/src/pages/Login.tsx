@@ -128,14 +128,14 @@ export function Login() {
                                 <Stack
                                     mb={4}
                                     direction={{ base: 'column', md: 'row' }}
-                                    spacing={{ base: 4, md: 4 }}
+                                    gap={{ base: 4, md: 4 }}
                                 >
                                     <FormControl>
                                         <FloatingLabelInput
                                             id='first-name'
                                             label='First name'
                                             value={firstName}
-                                            isInvalid={false}
+                                            invalid={false}
                                             fontWeight={400}
                                             onChange={(e) => setFirstName(e.target.value)}
                                         />
@@ -145,7 +145,7 @@ export function Login() {
                                             id='last-name'
                                             label='Surname'
                                             value={lastName}
-                                            isInvalid={false}
+                                            invalid={false}
                                             fontWeight={400}
                                             onChange={(e) => setLastName(e.target.value)}
                                         />
@@ -164,7 +164,7 @@ export function Login() {
                                     id='email'
                                     label='Email'
                                     value={email}
-                                    isInvalid={false}
+                                    invalid={false}
                                     fontWeight={400}
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
@@ -175,7 +175,7 @@ export function Login() {
                                     type='password'
                                     label='Password'
                                     value={password}
-                                    isInvalid={false}
+                                    invalid={false}
                                     fontWeight={400}
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
@@ -183,11 +183,11 @@ export function Login() {
                             <HStack mt={8}>
                                 <Button
                                     mt={4}
-                                    colorScheme='teal'
+                                    colorPalette='teal'
                                     isLoading={loginLoading || SignupLoading}
                                     type='submit'
                                     aria-label={isSignup ? 'Register' : 'Login'}
-                                    isDisabled={
+                                    disabled={
                                         !email ||
                                         !password ||
                                         (!firstName && isSignup) ||
@@ -198,7 +198,7 @@ export function Login() {
                                 </Button>
                                 <Button
                                     mt={4}
-                                    colorScheme='teal'
+                                    colorPalette='teal'
                                     onClick={() => setIsSignup(!isSignup)}
                                     variant='outline'
                                 >

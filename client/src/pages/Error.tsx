@@ -19,7 +19,7 @@ export function ErrorBoundary() {
                 <Text fontSize='xl' mb={4}>
                     Sorry, the page you are looking for does not exist. Root path is {PATH.ROOT}.
                 </Text>
-                <Button as={Link} to={PATH.ROOT} colorScheme='teal' size='lg' fontWeight='normal'>
+                <Button as={Link} to={PATH.ROOT} colorPalette='teal' size='lg' fontWeight='normal'>
                     Back to homepage
                 </Button>
             </Box>

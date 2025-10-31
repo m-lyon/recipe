@@ -27,7 +27,7 @@ export function AsIngredientCheckbox() {
                     <Checkbox
                         isChecked={isIngredient}
                         onChange={toggleIsIngredient}
-                        colorScheme='teal'
+                        colorPalette='teal'
                         aria-label='Toggle recipe as ingredient'
                     />
                     <Text fontWeight='medium' color={isIngredient ? undefined : 'gray.400'}>

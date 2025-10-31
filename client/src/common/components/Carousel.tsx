@@ -1,11 +1,12 @@
-import { useSize } from '@chakra-ui/react-use-size';
+import { useMeasure } from 'react-use';
+import { Box, Button, Flex, VStack } from '@chakra-ui/react';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
-import { Box, Button, Flex, Progress, VStack } from '@chakra-ui/react';
 import { PanInfo, motion, useAnimation, useMotionValue } from 'framer-motion';
 import { Dispatch, ReactNode, SetStateAction, useLayoutEffect, useRef } from 'react';
 
 import { percentage } from '@recipe/utils/number';
+import { ProgressBar, ProgressRoot } from '@recipe/components/ui/progress';
 
 interface Props {
     children: ReactNode[];
@@ -90,14 +91,13 @@ function Slider(props: SliderProps) {
         setTrackIsActive,
         initSliderWidth,
     } = props;
-    const ref = useRef<HTMLDivElement>(null);
-    const dims = useSize(ref);
+    const [ref, { width }] = useMeasure<HTMLDivElement>();
 
     useLayoutEffect(() => {
-        if (dims) {
-            initSliderWidth(Math.round(dims.width));
+        if (width) {
+            initSliderWidth(Math.round(width));
         }
-    }, [dims, dims?.width, initSliderWidth]);
+    }, [width, initSliderWidth]);
 
     const handleFocus = () => setTrackIsActive(true);
     const handleDecrementClick = () => {
@@ -148,36 +148,38 @@ function Slider(props: SliderProps) {
                     onFocus={handleFocus}
                     mr={`${gap / 3}px`}
                     color='gray.200'
-                    variant='link'
+                    variant='ghost'
                     minW={0}
                 >
-                    <ChevronLeftIcon boxSize={9} />
+                    <FaChevronLeft size={36} />
                 </Button>
 
-                <Progress
+                <ProgressRoot
                     value={percentage(activeItem, positions.length - 1)}
                     alignSelf='center'
                     borderRadius='2px'
                     bg='base.d100'
                     flex={1}
                     h='3px'
-                    sx={{
-                        '> div': {
+                    css={{
+                        '& [data-part="range"]': {
                             backgroundColor: 'gray.400',
                         },
                     }}
-                />
+                >
+                    <ProgressBar />
+                </ProgressRoot>
 
                 <Button
                     onClick={handleIncrementClick}
                     onFocus={handleFocus}
                     ml={`${gap / 3}px`}
                     color='gray.200'
-                    variant='link'
+                    variant='ghost'
                     zIndex={2}
                     minW={0}
                 >
-                    <ChevronRightIcon boxSize={9} />
+                    <FaChevronRight size={36} />
                 </Button>
             </Flex>
         </>
@@ -187,7 +189,7 @@ function Slider(props: SliderProps) {
 const MotionFlex = motion(Flex);
 const transitionProps = {
     stiffness: 400,
-    type: 'spring',
+    type: 'spring' as const,
     damping: 60,
     mass: 3,
 };
@@ -313,7 +315,7 @@ function Track(props: TrackProps) {
     return (
         <>
             {itemWidth && (
-                <VStack ref={node} spacing={5} alignItems='stretch'>
+                <VStack ref={node} gap={5} alignItems='stretch'>
                     <MotionFlex
                         dragConstraints={node}
                         onDragStart={handleDragStart}

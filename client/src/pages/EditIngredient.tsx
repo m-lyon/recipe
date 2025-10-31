@@ -17,7 +17,7 @@ export function EditIngredient() {
             <Box maxW='32em' mx='auto' mt={32} borderWidth='1px' borderRadius='lg' p={8}>
                 <Heading pb={6}>Edit Ingredient</Heading>
                 <form>
-                    <VStack mt={0} spacing={8}>
+                    <VStack mt={0} gap={8}>
                         <FormControl>
                             <FormLabel>Select ingredient</FormLabel>
                             <Select

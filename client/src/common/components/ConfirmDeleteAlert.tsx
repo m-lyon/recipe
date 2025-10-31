@@ -1,34 +1,44 @@
 import { RefObject, useRef } from 'react';
-import { AlertDialog, AlertDialogBody, AlertDialogContent } from '@chakra-ui/react';
-import { AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, Button } from '@chakra-ui/react';
+import { Button } from '@chakra-ui/react';
+
+import { Dialog } from '@recipe/components/ui/dialog';
 
 interface Props {
     title: string;
     dialogText: string;
-    isOpen: boolean;
+    open: boolean;
     onConfirm: () => void;
     onCancel: () => void;
     finalFocusRef?: RefObject<HTMLInputElement>;
     returnFocus?: boolean;
 }
 export function ConfirmDeleteAlert(props: Props) {
-    const { title, dialogText, isOpen, onConfirm, onCancel, finalFocusRef, returnFocus } = props;
+    const { title, dialogText, open, onConfirm, onCancel, finalFocusRef, returnFocus } = props;
     const cancelRef = useRef<HTMLButtonElement>(null);
 
+    const handleOpenChange = (details: { open: boolean }) => {
+        if (!details.open) {
+            onCancel();
+        }
+    };
+
     return (
-        <AlertDialog
-            isOpen={isOpen}
-            leastDestructiveRef={cancelRef}
-            onClose={onCancel}
-            finalFocusRef={returnFocus ? finalFocusRef : undefined}
+        <Dialog.Root
+            open={open}
+            initialFocusEl={returnFocus && finalFocusRef ? () => finalFocusRef.current : undefined}
+            onOpenChange={handleOpenChange}
+            role='alertdialog'
         >
-            <AlertDialogOverlay>
-                <AlertDialogContent>
-                    <AlertDialogHeader fontSize='lg' fontWeight='bold'>
-                        {title}
-                    </AlertDialogHeader>
-                    <AlertDialogBody>{dialogText}</AlertDialogBody>
-                    <AlertDialogFooter>
+            <Dialog.Backdrop />
+            <Dialog.Positioner>
+                <Dialog.Content>
+                    <Dialog.Header>
+                        <Dialog.Title fontSize='lg' fontWeight='bold'>
+                            {title}
+                        </Dialog.Title>
+                    </Dialog.Header>
+                    <Dialog.Body>{dialogText}</Dialog.Body>
+                    <Dialog.Footer>
                         <Button
                             ref={cancelRef}
                             onClick={onCancel}
@@ -37,16 +47,16 @@ export function ConfirmDeleteAlert(props: Props) {
                             Cancel
                         </Button>
                         <Button
-                            colorScheme='red'
+                            colorPalette='red'
                             onClick={onConfirm}
                             ml={3}
                             aria-label={`Confirm ${title.toLowerCase()}`}
                         >
                             Delete
                         </Button>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialogOverlay>
-        </AlertDialog>
+                    </Dialog.Footer>
+                </Dialog.Content>
+            </Dialog.Positioner>
+        </Dialog.Root>
     );
 }

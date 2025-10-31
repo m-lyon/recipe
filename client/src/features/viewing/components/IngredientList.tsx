@@ -83,7 +83,7 @@ export function IngredientList(props: IngredientListProps) {
                     </Tooltip>
                 ) : undefined}
             </Flex>
-            <VStack spacing='24px' align='left'>
+            <VStack gap='24px' align='left'>
                 {subsectionsList}
             </VStack>
         </Box>

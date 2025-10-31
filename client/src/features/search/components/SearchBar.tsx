@@ -1,4 +1,4 @@
-import { SearchIcon } from '@chakra-ui/icons';
+
 import { CloseButton, Input, InputGroup, InputLeftElement } from '@chakra-ui/react';
 
 import { useSearchStore } from '@recipe/stores';

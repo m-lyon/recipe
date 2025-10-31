@@ -38,7 +38,7 @@ export function ConfirmDeleteModal(props: Props) {
                         Cancel
                     </Button>
                     <Button
-                        colorScheme='red'
+                        colorPalette='red'
                         onClick={() => {
                             deleteRecipe();
                             setShow(false);

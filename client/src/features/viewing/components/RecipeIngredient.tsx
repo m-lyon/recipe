@@ -1,5 +1,5 @@
 import { useLazyQuery } from '@apollo/client';
-import { ChevronRightIcon } from '@chakra-ui/icons';
+
 import { Box, Flex, ListItem, Spacer, useDisclosure } from '@chakra-ui/react';
 
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';

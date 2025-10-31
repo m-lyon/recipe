@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { CloseIcon, EditIcon } from '@chakra-ui/icons';
+
 import { Box, Flex, IconButton, Spacer, Tooltip } from '@chakra-ui/react';
 
 import { PATH } from '@recipe/constants';
@@ -20,7 +20,7 @@ export function ModifyButtons(props: Props) {
                         <Tooltip label={`Edit ${recipe.title}`} openDelay={500}>
                             <IconButton
                                 variant='solid'
-                                colorScheme='gray'
+                                colorPalette='gray'
                                 aria-label={`Edit ${recipe.title}`}
                                 icon={<EditIcon />}
                                 isRound={true}
@@ -43,7 +43,7 @@ export function ModifyButtons(props: Props) {
                         <Tooltip label={`Delete ${recipe.title}`} openDelay={500}>
                             <IconButton
                                 variant='solid'
-                                colorScheme='gray'
+                                colorPalette='gray'
                                 aria-label={`Delete ${recipe.title}`}
                                 icon={<CloseIcon />}
                                 isRound={true}

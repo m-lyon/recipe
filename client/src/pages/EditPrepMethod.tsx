@@ -17,7 +17,7 @@ export function EditPrepMethod() {
             <Box maxW='32em' mx='auto' mt={32} borderWidth='1px' borderRadius='lg' p={8}>
                 <Heading pb={6}>Edit Prep Method</Heading>
                 <form>
-                    <VStack mt={0} spacing={8}>
+                    <VStack mt={0} gap={8}>
                         <FormControl>
                             <FormLabel>Select prep method</FormLabel>
                             <Select

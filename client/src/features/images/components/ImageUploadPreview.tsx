@@ -1,4 +1,4 @@
-import { CloseIcon, EditIcon } from '@chakra-ui/icons';
+
 import { Box, Card, CardBody, IconButton, Image } from '@chakra-ui/react';
 
 interface Props {
@@ -20,7 +20,7 @@ export function ImageUploadPreview(props: Props) {
                 <CardBody padding='16px'>
                     <IconButton
                         variant='solid'
-                        colorScheme='gray'
+                        colorPalette='gray'
                         aria-label={`Edit ${image.name}`}
                         icon={<EditIcon />}
                         isRound={true}
@@ -39,7 +39,7 @@ export function ImageUploadPreview(props: Props) {
                     />
                     <IconButton
                         variant='solid'
-                        colorScheme='gray'
+                        colorPalette='gray'
                         aria-label={`Remove ${image.name}`}
                         shadow='base'
                         icon={<CloseIcon />}

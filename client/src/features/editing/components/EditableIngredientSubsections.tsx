@@ -20,7 +20,7 @@ export function EditableIngredientSubsections() {
         useSubsectionDelete();
 
     return (
-        <VStack spacing='24px' align='left'>
+        <VStack gap='24px' align='left'>
             {Array.from({ length: numSections }, (_, index) => (
                 <EditableIngredientSubsection
                     key={index}
@@ -32,7 +32,7 @@ export function EditableIngredientSubsections() {
             <ConfirmDeleteAlert
                 title='Delete Subsection'
                 dialogText='Are you sure you want to delete this subsection and its contents?'
-                isOpen={isOpen}
+                open={isOpen}
                 onConfirm={() => handleConfirm(remove)}
                 onCancel={handleCancel}
                 finalFocusRef={ref}

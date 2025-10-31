@@ -23,7 +23,7 @@ export function SelectedFilters(props: Props) {
             borderBottom={0}
             pb={0}
         >
-            <HStack spacing={4}>
+            <HStack gap={4}>
                 {selectedFilters.map((item) => (
                     <Tag key={item.value}>
                         <TagLabel>{item.value}</TagLabel>

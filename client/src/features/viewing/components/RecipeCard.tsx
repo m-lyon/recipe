@@ -60,7 +60,7 @@ export function RecipeCard(props: Props) {
                         to={`${PATH.ROOT}/view/recipe/${recipe.titleIdentifier}`}
                         aria-label={`View ${recipe.title}`}
                     >
-                        <VStack align='left' spacing={2}>
+                        <VStack align='left' gap={2}>
                             <StarRating
                                 rating={getAverageRating(recipe.ratings)}
                                 addRating={() => {}}

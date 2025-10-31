@@ -23,7 +23,7 @@ export function CreateUnit() {
             <Box maxW='32em' mx='auto' mt={32} borderWidth='1px' borderRadius='lg' p={8}>
                 <Heading pb={6}>Create Unit</Heading>
                 <form>
-                    <VStack mt={0} spacing={8}>
+                    <VStack mt={0} gap={8}>
                         <CreateUnitForm handleComplete={handleComplete} />
                     </VStack>
                 </form>

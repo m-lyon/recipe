@@ -51,7 +51,7 @@ export function EditableTagList() {
                 layout='position'
             >
                 <WrapItem>
-                    <Tag colorScheme={tag.isNew ? 'green' : undefined}>
+                    <Tag colorPalette={tag.isNew ? 'green' : undefined}>
                         <TagLabel>{tag.value}</TagLabel>
                         <TagCloseButton
                             onClick={() => {
@@ -69,9 +69,9 @@ export function EditableTagList() {
     });
 
     return (
-        <VStack align='left' spacing={finished.length > 0 ? 3 : 0}>
+        <VStack align='left' gap={finished.length > 0 ? 3 : 0}>
             <LayoutGroup>
-                <Wrap spacing='10px'>
+                <Wrap gap='10px'>
                     <AnimatePresence>{tagsList}</AnimatePresence>
                 </Wrap>
                 <motion.div layout='position'>

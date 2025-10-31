@@ -13,7 +13,7 @@ export function Search() {
                 <Text fontSize='xl' mb={4}>
                     Keep an eye on this space 👀
                 </Text>
-                <Button as={Link} to={PATH.ROOT} colorScheme='teal' size='lg' fontWeight='normal'>
+                <Button as={Link} to={PATH.ROOT} colorPalette='teal' size='lg' fontWeight='normal'>
                     Back to homepage
                 </Button>
             </Box>

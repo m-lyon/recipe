@@ -1,4 +1,4 @@
-import { CloseIcon, HamburgerIcon } from '@chakra-ui/icons';
+
 import { Link as ChakraLink, VStack } from '@chakra-ui/react';
 import { Box, Flex, IconButton, Slide } from '@chakra-ui/react';
 import { useColorModeValue, useDisclosure } from '@chakra-ui/react';
@@ -38,7 +38,7 @@ export function Navbar() {
                                 setShowSearch(false);
                                 onToggle();
                             }}
-                            isDisabled={!isLoggedIn || !isVerified}
+                            disabled={!isLoggedIn || !isVerified}
                             icon={
                                 isOpen ? <CloseIcon w={3} h={3} /> : <HamburgerIcon w={5} h={5} />
                             }

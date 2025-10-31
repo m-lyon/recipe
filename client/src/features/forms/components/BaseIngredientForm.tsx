@@ -62,7 +62,7 @@ export function BaseIngredientForm(props: BaseIngredientFormProps) {
 
     return (
         <Stack
-            spacing={4}
+            gap={4}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             {...rest}
@@ -72,37 +72,37 @@ export function BaseIngredientForm(props: BaseIngredientFormProps) {
                 id='name'
                 inputRef={fieldRef}
                 value={formData.name || ''}
-                isInvalid={hasError}
+                invalid={hasError}
                 isRequired
-                isDisabled={disabled}
+                disabled={disabled}
                 onChange={(e) => handleChange('name', e.target.value.toLowerCase())}
             />
             <FloatingLabelInput
                 label='Plural name'
                 id='plural-name'
                 value={formData.pluralName || ''}
-                isInvalid={hasError}
-                isDisabled={disabled}
+                invalid={hasError}
+                disabled={disabled}
                 onChange={(e) => handleChange('pluralName', e.target.value.toLowerCase())}
             />
             <FloatingLabelInput
                 label='Density (g/ml)'
                 id='density'
                 value={formData.density?.toString() || ''}
-                isInvalid={hasError}
-                isDisabled={disabled}
+                invalid={hasError}
+                disabled={disabled}
                 onChange={(e) => handleChange('density', parseFloat(e.target.value) || undefined)}
             />
             <Checkbox
                 isChecked={formData.isCountable}
                 onChange={(e) => handleChange('isCountable', e.target.checked)}
-                isDisabled={disabled}
+                disabled={disabled}
             >
                 Countable
             </Checkbox>
             <HStack>
                 <Checkbox
-                    isDisabled={disabled}
+                    disabled={disabled}
                     pr={6}
                     isChecked={formData.tags?.includes(IngredientTags.Vegan)}
                     onChange={(e) => {
@@ -116,7 +116,7 @@ export function BaseIngredientForm(props: BaseIngredientFormProps) {
                 </Checkbox>
                 <Checkbox
                     isChecked={formData.tags?.includes(IngredientTags.Vegetarian)}
-                    isDisabled={disabled}
+                    disabled={disabled}
                     onChange={(e) => {
                         const newTags = e.target.checked
                             ? [...(formData.tags || []), IngredientTags.Vegetarian]
@@ -127,13 +127,13 @@ export function BaseIngredientForm(props: BaseIngredientFormProps) {
                     Vegetarian
                 </Checkbox>
             </HStack>
-            <ButtonGroup display='flex' justifyContent='flex-end' isDisabled={disabled}>
+            <ButtonGroup display='flex' justifyContent='flex-end' disabled={disabled}>
                 {onDelete && (
-                    <Button colorScheme='red' onClick={onDelete} aria-label='Delete ingredient'>
+                    <Button colorPalette='red' onClick={onDelete} aria-label='Delete ingredient'>
                         Delete
                     </Button>
                 )}
-                <Button colorScheme='teal' onClick={handleSubmit} aria-label='Save ingredient'>
+                <Button colorPalette='teal' onClick={handleSubmit} aria-label='Save ingredient'>
                     Save
                 </Button>
             </ButtonGroup>

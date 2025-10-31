@@ -1,6 +1,6 @@
 import { number, object } from 'yup';
 import { useShallow } from 'zustand/shallow';
-import { AddIcon, MinusIcon } from '@chakra-ui/icons';
+import { FaMinus, FaPlus } from 'react-icons/fa';
 import { Button, IconButton } from '@chakra-ui/react';
 
 import { useRecipeStore } from '@recipe/stores';
@@ -28,7 +28,6 @@ export function Servings() {
                 borderRight={0}
                 borderRightRadius={0}
                 aria-label='Decrease serving size'
-                icon={<MinusIcon />}
                 size='xs'
                 onClick={() => {
                     schema
@@ -38,7 +37,9 @@ export function Servings() {
                             toast({ title: 'Error', description: err.message });
                         });
                 }}
-            />
+            >
+                <FaMinus />
+            </IconButton>
             <Button
                 position='static'
                 variant='outline'
@@ -46,10 +47,10 @@ export function Servings() {
                 borderRightRadius={0}
                 size='xs'
                 paddingRight={num === 1 ? 4 : 2}
-                sx={{
+                css={{
                     cursor: 'default',
-                    ':hover': { bg: 'inherit', color: 'inherit' },
-                    ':active': { bg: 'inherit', color: 'inherit' },
+                    '&:hover': { bg: 'inherit', color: 'inherit' },
+                    '&:active': { bg: 'inherit', color: 'inherit' },
                     pointerEvents: 'none',
                     userSelect: 'none',
                 }}
@@ -62,7 +63,6 @@ export function Servings() {
                 borderLeft={0}
                 borderLeftRadius={0}
                 aria-label='Increase serving size'
-                icon={<AddIcon />}
                 size='xs'
                 onClick={() => {
                     schema
@@ -72,7 +72,9 @@ export function Servings() {
                             toast({ title: 'Error', description: err.message });
                         });
                 }}
-            />
+            >
+                <FaPlus />
+            </IconButton>
         </>
     );
 }

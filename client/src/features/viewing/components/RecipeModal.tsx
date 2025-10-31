@@ -49,7 +49,7 @@ export function RecipeModal(props: Props) {
                             ) : (
                                 <Box mr='26px'>
                                     <SkeletonCircle size='10' />
-                                    <SkeletonText mt='4' noOfLines={6} spacing='4' />
+                                    <SkeletonText mt='4' noOfLines={6} gap='4' />
                                 </Box>
                             )}
                         </GridItem>
@@ -73,7 +73,7 @@ export function RecipeModal(props: Props) {
                             ) : (
                                 <Box>
                                     <SkeletonCircle size='10' />
-                                    <SkeletonText mt='4' noOfLines={6} spacing='4' />
+                                    <SkeletonText mt='4' noOfLines={6} gap='4' />
                                 </Box>
                             )}
                         </GridItem>

@@ -36,8 +36,8 @@ export function TagList(props: Props) {
                     marginLeft='4'
                 />
             ) : null}
-            <VStack align='left' spacing={tagsList.length > 0 ? 3 : 0}>
-                <Wrap spacing='10px'>{tagsList}</Wrap>
+            <VStack align='left' gap={tagsList.length > 0 ? 3 : 0}>
+                <Wrap gap='10px'>{tagsList}</Wrap>
             </VStack>
         </Box>
     );

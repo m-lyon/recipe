@@ -50,7 +50,7 @@ export function ImageRecipeCard(props: Props) {
                         to={`${PATH.ROOT}/view/recipe/${recipe.titleIdentifier}`}
                         aria-label={`View ${recipe.title}`}
                     >
-                        <VStack spacing={2} align='left'>
+                        <VStack gap={2} align='left'>
                             <StarRating
                                 rating={getAverageRating(recipe.ratings)}
                                 addRating={() => {}}

@@ -166,7 +166,7 @@ export function SubmitButton(props: Props) {
                     borderColor='gray.200'
                     onClick={onSubmit}
                     loadingText={loadingText}
-                    isDisabled={disabled}
+                    disabled={disabled}
                     isLoading={loading}
                 >
                     {submitText}

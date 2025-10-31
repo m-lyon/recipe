@@ -68,7 +68,7 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
 
     return (
         <Stack
-            spacing={4}
+            gap={4}
             pt={3}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
@@ -79,17 +79,17 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
                 id='short-singular-name'
                 label='Short singular name'
                 value={formData.shortSingular || ''}
-                isInvalid={hasError}
+                invalid={hasError}
                 isRequired
-                isDisabled={disabled}
+                disabled={disabled}
                 onChange={(e) => handleChange('shortSingular', e.target.value.toLowerCase())}
             />
             <FloatingLabelInput
                 label='Short plural name'
                 id='short-plural-name'
                 value={formData.shortPlural || ''}
-                isInvalid={hasError}
-                isDisabled={disabled}
+                invalid={hasError}
+                disabled={disabled}
                 onChange={(e) => handleChange('shortPlural', e.target.value.toLowerCase())}
             />
             <FloatingLabelInput
@@ -97,33 +97,33 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
                 id='long-singular-name'
                 value={formData.longSingular || ''}
                 isRequired
-                isDisabled={disabled}
-                isInvalid={hasError}
+                disabled={disabled}
+                invalid={hasError}
                 onChange={(e) => handleChange('longSingular', e.target.value.toLowerCase())}
             />
             <FloatingLabelInput
                 label='Long plural name'
                 id='long-plural-name'
                 value={formData.longPlural || ''}
-                isDisabled={disabled}
-                isInvalid={hasError}
+                disabled={disabled}
+                invalid={hasError}
                 onChange={(e) => handleChange('longPlural', e.target.value.toLowerCase())}
             />
-            <FormControl isDisabled={disabled} isInvalid={hasError}>
+            <FormControl disabled={disabled} invalid={hasError}>
                 <FormHelperText>Preferred number format</FormHelperText>
                 <RadioGroup
                     onChange={(value) => handleChange('preferredNumberFormat', value)}
                     value={formData.preferredNumberFormat}
                 >
-                    <HStack spacing='12px'>
+                    <HStack gap='12px'>
                         <Radio value='decimal'>decimal</Radio>
                         <Radio value='fraction'>fraction</Radio>
                     </HStack>
                 </RadioGroup>
             </FormControl>
             <Checkbox
-                isDisabled={disabled}
-                isInvalid={hasError}
+                disabled={disabled}
+                invalid={hasError}
                 onChange={(e) => handleChange('hasSpace', e.target.checked)}
                 isChecked={formData.hasSpace}
             >
@@ -133,14 +133,14 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
                 display='flex'
                 justifyContent='flex-end'
                 paddingTop={2}
-                isDisabled={disabled}
+                disabled={disabled}
             >
                 {onDelete && (
-                    <Button colorScheme='red' onClick={onDelete} aria-label='Delete unit'>
+                    <Button colorPalette='red' onClick={onDelete} aria-label='Delete unit'>
                         Delete
                     </Button>
                 )}
-                <Button colorScheme='teal' onClick={handleSubmit} aria-label='Save unit'>
+                <Button colorPalette='teal' onClick={handleSubmit} aria-label='Save unit'>
                     Save
                 </Button>
             </ButtonGroup>

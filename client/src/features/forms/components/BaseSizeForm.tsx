@@ -45,7 +45,7 @@ export function BaseSizeForm(props: BaseSizeFormProps) {
 
     return (
         <Stack
-            spacing={4}
+            gap={4}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             {...rest}
@@ -55,18 +55,18 @@ export function BaseSizeForm(props: BaseSizeFormProps) {
                 id='name'
                 inputRef={fieldRef}
                 value={formData.value || ''}
-                isInvalid={hasError}
+                invalid={hasError}
                 isRequired
-                isDisabled={disabled}
+                disabled={disabled}
                 onChange={(e) => handleChange('value', e.target.value.toLowerCase())}
             />
-            <ButtonGroup display='flex' justifyContent='flex-end' isDisabled={disabled}>
+            <ButtonGroup display='flex' justifyContent='flex-end' disabled={disabled}>
                 {onDelete && (
-                    <Button colorScheme='red' onClick={onDelete} aria-label='Delete size'>
+                    <Button colorPalette='red' onClick={onDelete} aria-label='Delete size'>
                         Delete
                     </Button>
                 )}
-                <Button colorScheme='teal' onClick={handleSubmit} aria-label='Save size'>
+                <Button colorPalette='teal' onClick={handleSubmit} aria-label='Save size'>
                     Save
                 </Button>
             </ButtonGroup>

@@ -13,7 +13,7 @@ export function IngredientsTabLayout(props: Props) {
 
     return (
         <Flex direction='column' justifyContent='space-between' height='100%'>
-            <VStack spacing='24px' align='left'>
+            <VStack gap='24px' align='left'>
                 {Tags}
                 <Flex paddingBottom={3}>
                     {Servings}

@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { FaUserClock } from 'react-icons/fa';
-import { ChevronRightIcon } from '@chakra-ui/icons';
+
 import { Link as ReactRouterLink } from 'react-router-dom';
 import { Tooltip, useColorModeValue } from '@chakra-ui/react';
 import { Box, Flex, Icon, Stack, Text } from '@chakra-ui/react';
@@ -31,7 +31,7 @@ export function DesktopNav(props: DesktopNavProps) {
     }
 
     return (
-        <Stack direction='row' spacing={4}>
+        <Stack direction='row' gap={4}>
             {navItems.map((navItem) => (
                 <Box key={navItem.label}>
                     <Popover trigger='hover' placement='bottom-start' closeOnBlur>

@@ -31,7 +31,7 @@ export function EditableInstructionSubsections() {
             <ConfirmDeleteAlert
                 title='Delete Subsection'
                 dialogText='Are you sure you want to delete this subsection and its contents?'
-                isOpen={isOpen}
+                open={isOpen}
                 onConfirm={() => handleConfirm(remove)}
                 onCancel={handleCancel}
                 finalFocusRef={ref}

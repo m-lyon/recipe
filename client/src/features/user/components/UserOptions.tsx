@@ -43,7 +43,7 @@ export function UserOptions() {
                 flex={{ base: 1, md: 0 }}
                 justify='flex-end'
                 direction='row'
-                spacing={6}
+                gap={6}
                 ml={{ base: 3, md: 0 }}
             >
                 <Button fontSize='sm' fontWeight={400} onClick={() => logout()} aria-label='Logout'>
@@ -63,7 +63,7 @@ function LoginOptions(props: { isLoading?: boolean }) {
             flex={{ base: 1, md: 0 }}
             justify='flex-end'
             direction='row'
-            spacing={6}
+            gap={6}
             ml={{ base: 3, md: 0 }}
             display={location.pathname === PATH.LOGIN ? 'none' : undefined}
         >
@@ -72,7 +72,7 @@ function LoginOptions(props: { isLoading?: boolean }) {
                 fontSize='sm'
                 isLoading={isLoading}
                 fontWeight={600}
-                colorScheme='teal'
+                colorPalette='teal'
                 to={PATH.LOGIN}
                 aria-label='Log in or sign up'
             >

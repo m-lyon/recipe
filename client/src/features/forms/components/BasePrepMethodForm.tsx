@@ -51,7 +51,7 @@ export function BasePrepMethodForm(props: BasePrepMethodFormProps) {
 
     return (
         <Stack
-            spacing={4}
+            gap={4}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             {...rest}
@@ -61,23 +61,23 @@ export function BasePrepMethodForm(props: BasePrepMethodFormProps) {
                 id='name'
                 inputRef={fieldRef}
                 value={formData.value || ''}
-                isInvalid={hasError}
+                invalid={hasError}
                 isRequired
-                isDisabled={disabled}
+                disabled={disabled}
                 onChange={(e) => handleChange('value', e.target.value.toLowerCase())}
             />
             <ButtonGroup
                 display='flex'
                 justifyContent='flex-end'
                 paddingTop={2}
-                isDisabled={disabled}
+                disabled={disabled}
             >
                 {onDelete && (
-                    <Button colorScheme='red' onClick={onDelete} aria-label='Delete prep method'>
+                    <Button colorPalette='red' onClick={onDelete} aria-label='Delete prep method'>
                         Delete
                     </Button>
                 )}
-                <Button colorScheme='teal' onClick={handleSubmit} aria-label='Save prep method'>
+                <Button colorPalette='teal' onClick={handleSubmit} aria-label='Save prep method'>
                     Save
                 </Button>
             </ButtonGroup>

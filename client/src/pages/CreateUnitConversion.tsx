@@ -61,7 +61,7 @@ function CreateConversionRule(props: CreateConversionRuleProps) {
         <Box borderWidth='1px' borderRadius='lg' p={4}>
             <form onSubmit={handleSubmit}>
                 <HStack height='4em' alignItems='flex-end'>
-                    <FormControl isDisabled={!baseUnit}>
+                    <FormControl disabled={!baseUnit}>
                         <FormLabel>Unit</FormLabel>
                         <Select
                             placeholder='-'
@@ -77,7 +77,7 @@ function CreateConversionRule(props: CreateConversionRuleProps) {
                             ))}
                         </Select>
                     </FormControl>
-                    <FormControl isDisabled={!baseUnit}>
+                    <FormControl disabled={!baseUnit}>
                         <FormLabel>Threshold</FormLabel>
                         <Input
                             placeholder='Threshold'
@@ -85,7 +85,7 @@ function CreateConversionRule(props: CreateConversionRuleProps) {
                             onChange={(e) => setThreshold(Number(e.target.value))}
                         />
                     </FormControl>
-                    <FormControl isDisabled={!baseUnit}>
+                    <FormControl disabled={!baseUnit}>
                         <FormLabel>Conversion</FormLabel>
                         <Input
                             placeholder='Base Conversion'
@@ -94,11 +94,11 @@ function CreateConversionRule(props: CreateConversionRuleProps) {
                         />
                     </FormControl>
                     <Button
-                        colorScheme='teal'
+                        colorPalette='teal'
                         isLoading={loading}
                         type='submit'
                         minW='6em'
-                        isDisabled={!baseUnit}
+                        disabled={!baseUnit}
                     >
                         Add Rule
                     </Button>
@@ -211,7 +211,7 @@ export function CreateUnitConversion() {
                             <List>{ruleList}</List>
                         </FormControl>
                     </HStack>
-                    <Button mt={8} colorScheme='teal' isLoading={loading} type='submit'>
+                    <Button mt={8} colorPalette='teal' isLoading={loading} type='submit'>
                         Create Unit Conversion
                     </Button>
                 </form>

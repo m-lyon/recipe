@@ -1,7 +1,8 @@
 import { render } from 'vitest-browser-react';
-import { ChakraProvider } from '@chakra-ui/react';
 import { MockedProvider, MockedResponse } from '@apollo/client/testing';
 import { RouteObject, RouterProvider, createMemoryRouter } from 'react-router-dom';
+
+import { Provider } from '@recipe/components/ui/provider';
 
 import { getCache } from './cache';
 
@@ -13,13 +14,13 @@ export function renderBrowserPage(
 ) {
     return render(
         <MockedProvider mocks={mockedResponses} cache={getCache()}>
-            <ChakraProvider>
+            <Provider>
                 <RouterProvider
                     router={createMemoryRouter(route, {
                         initialEntries,
                     })}
                 />
-            </ChakraProvider>
+            </Provider>
         </MockedProvider>
     );
 }

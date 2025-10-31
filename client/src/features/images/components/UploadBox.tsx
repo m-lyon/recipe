@@ -1,5 +1,5 @@
 import { Box } from '@chakra-ui/react';
-import { AddIcon } from '@chakra-ui/icons';
+
 
 interface Props {
     handleAddFile: (event: React.ChangeEvent<HTMLInputElement>) => void;

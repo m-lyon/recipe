@@ -28,7 +28,7 @@ export function InstructionList(props: Props) {
                     <Text fontSize='2xl' pb='10px'>
                         {section.name ? section.name : 'Instructions'}
                     </Text>
-                    <OrderedList spacing='2'>{instructionsList}</OrderedList>
+                    <OrderedList gap='2'>{instructionsList}</OrderedList>
                 </Box>
             );
         } else {
@@ -38,7 +38,7 @@ export function InstructionList(props: Props) {
                         {section.name}
                     </Text>
 
-                    <OrderedList spacing='2'>{instructionsList}</OrderedList>
+                    <OrderedList gap='2'>{instructionsList}</OrderedList>
                 </Box>
             );
         }
