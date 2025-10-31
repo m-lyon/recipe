@@ -1,11 +1,11 @@
 import { useRef } from 'react';
 import { FaUserClock } from 'react-icons/fa';
-
+import { FiChevronRight } from 'react-icons/fi';
 import { Link as ReactRouterLink } from 'react-router-dom';
-import { Tooltip, useColorModeValue } from '@chakra-ui/react';
+import { Link as ChakraLink, Popover } from '@chakra-ui/react';
 import { Box, Flex, Icon, Stack, Text } from '@chakra-ui/react';
-import { Link as ChakraLink, Popover, PopoverContent, PopoverTrigger } from '@chakra-ui/react';
 
+import { Tooltip } from '../../../components/ui/tooltip';
 import { NavItem, PUBLIC_NAV_ITEMS, USER_NAV_ITEMS } from '../constants';
 
 interface DesktopNavProps {
@@ -15,14 +15,14 @@ interface DesktopNavProps {
 export function DesktopNav(props: DesktopNavProps) {
     const { isLoggedIn, isVerified } = props;
     const ref = useRef<HTMLAnchorElement>(null);
-    const linkColor = useColorModeValue('gray.600', 'gray.200');
-    const linkHoverColor = useColorModeValue('gray.800', 'white');
-    const popoverContentBgColor = useColorModeValue('white', 'gray.800');
+    const linkColor = 'gray.600';
+    const linkHoverColor = 'gray.800';
+    const popoverContentBgColor = 'white';
     const navItems = isVerified ? USER_NAV_ITEMS : PUBLIC_NAV_ITEMS;
 
     if (isLoggedIn && !isVerified) {
         return (
-            <Tooltip label='Awaiting user verification' openDelay={500}>
+            <Tooltip content='Awaiting user verification' openDelay={500}>
                 <span>
                     <Icon as={FaUserClock} color='gray.400' />
                 </span>
@@ -34,13 +34,13 @@ export function DesktopNav(props: DesktopNavProps) {
         <Stack direction='row' gap={4}>
             {navItems.map((navItem) => (
                 <Box key={navItem.label}>
-                    <Popover trigger='hover' placement='bottom-start' closeOnBlur>
-                        <PopoverTrigger>
+                    <Popover.Root>
+                        <Popover.Trigger asChild>
                             <ChakraLink
                                 p={2}
                                 as={ReactRouterLink}
                                 aria-label={navItem.ariaLabel}
-                                to={navItem.href ?? '#'}
+                                href={navItem.href ?? '#'}
                                 fontSize='sm'
                                 fontWeight={500}
                                 color={linkColor}
@@ -53,10 +53,10 @@ export function DesktopNav(props: DesktopNavProps) {
                             >
                                 {navItem.label}
                             </ChakraLink>
-                        </PopoverTrigger>
+                        </Popover.Trigger>
 
                         {navItem.children && (
-                            <PopoverContent
+                            <Popover.Content
                                 border={0}
                                 boxShadow='xl'
                                 bg={popoverContentBgColor}
@@ -69,9 +69,9 @@ export function DesktopNav(props: DesktopNavProps) {
                                         <DesktopSubNav key={child.label} {...child} />
                                     ))}
                                 </Stack>
-                            </PopoverContent>
+                            </Popover.Content>
                         )}
-                    </Popover>
+                    </Popover.Root>
                 </Box>
             ))}
         </Stack>
@@ -84,13 +84,13 @@ function DesktopSubNav({ label, ariaLabel, href, subLabel }: NavItem) {
     return (
         <ChakraLink
             as={ReactRouterLink}
-            to={href}
+            href={href}
             aria-label={ariaLabel}
             role='group'
             display='block'
             p={2}
             rounded='md'
-            _hover={{ bg: useColorModeValue('white', 'gray.900') }}
+            _hover={{ bg: 'white' }}
             ref={ref}
             onClick={() => ref.current?.blur()}
         >
@@ -114,7 +114,7 @@ function DesktopSubNav({ label, ariaLabel, href, subLabel }: NavItem) {
                     align='center'
                     flex={1}
                 >
-                    <Icon color='teal.400' w={5} h={5} as={ChevronRightIcon} />
+                    <Icon color='teal.400' w={5} h={5} as={FiChevronRight} />
                 </Flex>
             </Stack>
         </ChakraLink>

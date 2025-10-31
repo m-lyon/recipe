@@ -1,7 +1,8 @@
-import { Modal, ModalBody, ModalContent, ModalHeader, ModalOverlay } from '@chakra-ui/react';
-import { Box, Grid, GridItem, Skeleton, SkeletonCircle, SkeletonText } from '@chakra-ui/react';
-import { Badge, Divider, ModalCloseButton, VStack, useBreakpointValue } from '@chakra-ui/react';
+import { SkeletonText } from '@chakra-ui/react';
+import { Badge, VStack, useBreakpointValue } from '@chakra-ui/react';
+import { Box, Grid, GridItem, Separator, Skeleton, SkeletonCircle } from '@chakra-ui/react';
 
+import { Dialog } from '@recipe/components/ui/dialog';
 import { IngredientList, InstructionList } from '@recipe/features/viewing';
 
 import { Notes } from './Notes';
@@ -15,10 +16,9 @@ export function RecipeModal(props: Props) {
     const { recipe, isOpen, onClose } = props;
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} size='xl'>
-            <ModalOverlay />
-            <ModalContent>
-                <ModalHeader pb='8px'>
+        <Dialog.Root open={isOpen} onOpenChange={(e) => !e.open && onClose()} size='xl'>
+            <Dialog.Content>
+                <Dialog.Header pb='8px'>
                     <Box>
                         {recipe ? recipe.title : <Skeleton height='30px' mb='8px' width='80%' />}
                     </Box>
@@ -30,10 +30,12 @@ export function RecipeModal(props: Props) {
                     ) : (
                         <Skeleton height='15px' width='80px' />
                     )}
-                    <Divider orientation='horizontal' pt='12px' />
-                </ModalHeader>
-                <ModalCloseButton aria-label={`Close ${recipe ? `${recipe.title} ` : ''}modal`} />
-                <ModalBody>
+                    <Separator orientation='horizontal' pt='12px' />
+                </Dialog.Header>
+                <Dialog.CloseTrigger
+                    aria-label={`Close ${recipe ? `${recipe.title} ` : ''}modal`}
+                />
+                <Dialog.Body>
                     <Grid templateColumns='repeat(20, 1fr)' pb='12px'>
                         <GridItem colSpan={{ base: 20, md: 8 }}>
                             {recipe ? (
@@ -57,7 +59,7 @@ export function RecipeModal(props: Props) {
                             colSpan={{ base: 20, md: 1 }}
                             py={{ base: '12px', md: undefined }}
                         >
-                            <Divider
+                            <Separator
                                 orientation={useBreakpointValue({
                                     base: 'horizontal',
                                     md: 'vertical',
@@ -78,8 +80,8 @@ export function RecipeModal(props: Props) {
                             )}
                         </GridItem>
                     </Grid>
-                </ModalBody>
-            </ModalContent>
-        </Modal>
+                </Dialog.Body>
+            </Dialog.Content>
+        </Dialog.Root>
     );
 }

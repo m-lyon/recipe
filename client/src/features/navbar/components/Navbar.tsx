@@ -1,7 +1,7 @@
-
+import { FiMenu, FiX } from 'react-icons/fi';
+import { useDisclosure } from '@chakra-ui/react';
+import { Box, Flex, IconButton } from '@chakra-ui/react';
 import { Link as ChakraLink, VStack } from '@chakra-ui/react';
-import { Box, Flex, IconButton, Slide } from '@chakra-ui/react';
-import { useColorModeValue, useDisclosure } from '@chakra-ui/react';
 import { Outlet, Link as ReactRouterLink, useLocation } from 'react-router-dom';
 
 import { PATH } from '@recipe/constants';
@@ -17,7 +17,7 @@ import { SelectedFilters } from './SelectedFilters';
 
 export function Navbar() {
     const location = useLocation();
-    const { isOpen, onToggle, onClose } = useDisclosure();
+    const { open: isOpen, onToggle, onClose } = useDisclosure();
     const { setTitle, reset, addFilter, removeFilter } = useSearch();
     const setShowSearch = useSearchStore((state) => state.setShowSearch);
     const { isLoggedIn, isVerified } = useUser();
@@ -39,12 +39,11 @@ export function Navbar() {
                                 onToggle();
                             }}
                             disabled={!isLoggedIn || !isVerified}
-                            icon={
-                                isOpen ? <CloseIcon w={3} h={3} /> : <HamburgerIcon w={5} h={5} />
-                            }
                             variant='ghost'
                             aria-label='Toggle Navigation'
-                        />
+                        >
+                            {isOpen ? <FiX size={12} /> : <FiMenu size={20} />}
+                        </IconButton>
                     </Flex>
                     <Flex
                         flex={{ base: 1 }}
@@ -54,9 +53,9 @@ export function Navbar() {
                         <ChakraLink
                             textAlign={{ base: 'center', md: 'left' }}
                             fontFamily='heading'
-                            color={useColorModeValue('gray.800', 'white')}
+                            color='gray.800'
                             _hover={{ textDecoration: 'none' }}
-                            to={PATH.ROOT}
+                            href={PATH.ROOT}
                             as={ReactRouterLink}
                             aria-label='Navigate to home page'
                             onClick={() => {
@@ -92,14 +91,11 @@ export function Navbar() {
                 </FlexNav>
                 {isHomePage ? <SelectedFilters removeFilter={removeFilter} /> : undefined}
                 {isHomePage ? <SearchFilter addFilter={addFilter} /> : undefined}
-                <Slide
-                    in={isOpen}
-                    direction='top'
-                    style={{ zIndex: 11, marginTop: '60px' }}
-                    transition={{ enter: { duration: 0.3 } }}
-                >
-                    <MobileNav isVerified={isVerified} parentOnToggle={onToggle} />
-                </Slide>
+                {isOpen && (
+                    <Box position='relative' zIndex={11} mt='60px'>
+                        <MobileNav isVerified={isVerified} parentOnToggle={onToggle} />
+                    </Box>
+                )}
             </VStack>
             <Outlet />
         </>

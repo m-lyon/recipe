@@ -1,5 +1,5 @@
-
-import { CloseButton, Input, InputGroup, InputLeftElement } from '@chakra-ui/react';
+import { FaSearch } from 'react-icons/fa';
+import { CloseButton, Input, InputElement, InputGroup } from '@chakra-ui/react';
 
 import { useSearchStore } from '@recipe/stores';
 
@@ -16,13 +16,13 @@ export function SearchBar(props: Props) {
 
     return (
         <InputGroup>
-            <InputLeftElement pointerEvents={show ? 'auto' : 'none'}>
+            <InputElement placement='start' pointerEvents={show ? 'auto' : 'none'}>
                 {show ? (
                     <CloseButton onClick={resetSearch} aria-label='Reset search' />
                 ) : (
-                    <SearchIcon color='gray.300' />
+                    <FaSearch color='gray.300' />
                 )}
-            </InputLeftElement>
+            </InputElement>
             <Input
                 placeholder='Find a recipe...'
                 value={titleFilter}

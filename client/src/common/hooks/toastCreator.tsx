@@ -1,19 +1,14 @@
-import { useState } from 'react';
-import { useToast } from '@chakra-ui/react';
-import { ToastPosition } from '@chakra-ui/react';
-
+import { toaster } from '@recipe/components/ui/toaster';
 import { DELAY_LONG, DELAY_SHORT } from '@recipe/constants';
 
 type ToastType = 'error' | 'success' | 'warning' | 'info';
 interface UseToastOptions {
     title: string;
     description?: string;
-    position?: ToastPosition;
+    position?: 'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end';
 }
 export function createToastHook(toastType: ToastType) {
     return () => {
-        const toast = useToast();
-        const [id] = useState(`${toastType}-${Math.random().toString()}`);
         const delayMap = {
             error: DELAY_LONG,
             success: DELAY_SHORT,
@@ -21,15 +16,12 @@ export function createToastHook(toastType: ToastType) {
             info: DELAY_SHORT,
         };
         return (opts: UseToastOptions) => {
-            if (!toast.isActive(id)) {
-                toast({
-                    id,
-                    status: toastType,
-                    duration: delayMap[toastType],
-                    isClosable: true,
-                    ...opts,
-                });
-            }
+            toaster.create({
+                type: toastType,
+                duration: delayMap[toastType],
+                closable: true,
+                ...opts,
+            });
         };
     };
 }

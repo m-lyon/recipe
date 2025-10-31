@@ -1,5 +1,5 @@
+import { Box, Input, InputProps } from '@chakra-ui/react';
 import { ChangeEventHandler, MutableRefObject } from 'react';
-import { FormControl, FormLabel, Input, InputProps } from '@chakra-ui/react';
 
 interface Props extends InputProps {
     id: string;
@@ -14,10 +14,11 @@ interface Props extends InputProps {
 export function FloatingLabelInput(props: Props) {
     const { inputRef, id, label, isInvalid, isRequired, isDisabled, fontWeight, ...rest } = props;
     return (
-        <FormControl
-            invalid={isInvalid}
-            disabled={isDisabled}
-            sx={{
+        <Box
+            position='relative'
+            data-invalid={isInvalid ? '' : undefined}
+            data-disabled={isDisabled ? '' : undefined}
+            css={{
                 '&:focus-within label': {
                     transform: 'scale(0.85) translateY(-24px)',
                 },
@@ -41,16 +42,24 @@ export function FloatingLabelInput(props: Props) {
         >
             <Input
                 placeholder=''
-                fontWeight={fontWeight ?? 600}
+                fontWeight={fontWeight ?? 'semibold'}
                 ref={inputRef}
                 id={id}
+                invalid={isInvalid}
+                disabled={isDisabled}
                 {...rest}
                 aria-label={label}
             />
-            <FormLabel htmlFor={id} color='gray.400' fontWeight={fontWeight ?? 600}>
+            <label
+                htmlFor={id}
+                style={{
+                    color: 'gray',
+                    fontWeight: 'semibold',
+                }}
+            >
                 {label}
                 {isRequired ? <span style={{ marginLeft: '0.1em' }}>*</span> : null}
-            </FormLabel>
-        </FormControl>
+            </label>
+        </Box>
     );
 }

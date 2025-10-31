@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Input, InputProps, useMergeRefs } from '@chakra-ui/react';
+import { Input, InputProps, mergeRefs } from '@chakra-ui/react';
 
 interface Props extends InputProps {
     onSubmit: () => void;
@@ -9,11 +9,10 @@ interface Props extends InputProps {
 export function EditableText(props: Props) {
     const { optionalRef, onSubmit, placeholderColor, ...rest } = props;
     const ref = useRef<HTMLInputElement>(null);
-    const refs = useMergeRefs(ref, optionalRef);
 
     return (
         <Input
-            ref={refs}
+            ref={mergeRefs(ref, optionalRef)}
             onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -26,7 +25,7 @@ export function EditableText(props: Props) {
             px={0}
             pt={0}
             _focusVisible={{ outline: 'none' }}
-            sx={placeholderColor ? { '&::placeholder': { color: placeholderColor } } : undefined}
+            css={placeholderColor ? { '& ::placeholder': { color: placeholderColor } } : undefined}
             {...rest}
         />
     );

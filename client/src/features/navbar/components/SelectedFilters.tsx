@@ -1,4 +1,4 @@
-import { HStack, Tag, TagCloseButton, TagLabel } from '@chakra-ui/react';
+import { HStack, Tag } from '@chakra-ui/react';
 
 import { useSelectedFilters } from '@recipe/features/search';
 
@@ -25,13 +25,13 @@ export function SelectedFilters(props: Props) {
         >
             <HStack gap={4}>
                 {selectedFilters.map((item) => (
-                    <Tag key={item.value}>
-                        <TagLabel>{item.value}</TagLabel>
-                        <TagCloseButton
+                    <Tag.Root key={item.value}>
+                        <Tag.Label>{item.value}</Tag.Label>
+                        <Tag.CloseTrigger
                             onClick={() => removeFilter(item)}
                             aria-label={`Remove ${item.value} filter`}
                         />
-                    </Tag>
+                    </Tag.Root>
                 ))}
             </HStack>
         </FlexNav>

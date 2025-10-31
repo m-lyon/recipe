@@ -1,6 +1,7 @@
 import { useRef } from 'react';
+import { useClickAway } from 'react-use';
 import { useShallow } from 'zustand/shallow';
-import { Box, Editable, EditableInput, EditablePreview, useOutsideClick } from '@chakra-ui/react';
+import { Box, Editable } from '@chakra-ui/react';
 
 import { useRecipeStore } from '@recipe/stores';
 import { useWarningToast } from '@recipe/common/hooks';
@@ -24,23 +25,20 @@ export function EditableTag() {
             isOpen: state.tagsDropdownIsOpen,
         }))
     );
-    useOutsideClick({
-        ref: containerRef,
-        handler: () => {
-            if (tag || dropdownIsOpen) {
-                reset();
-            }
-        },
+    useClickAway(containerRef, () => {
+        if (tag || dropdownIsOpen) {
+            reset();
+        }
     });
     const { onKeyDown, ...dropdownProps } = useTagDropdown(listRef, inputRef);
 
     return (
         <Box ref={containerRef} position='relative'>
-            <Editable
+            <Editable.Root
                 value={tag}
-                selectAllOnFocus={false}
-                onEdit={() => !dropdownIsOpen && showDropdown()}
-                onChange={(value: string) => {
+                placeholder='Add a tag...'
+                onValueChange={(details) => {
+                    const value = details.value;
                     if (
                         Object.values(IngredientTags).includes(
                             value.toLowerCase() as IngredientTags
@@ -61,20 +59,18 @@ export function EditableTag() {
                     }
                     setTag(value);
                 }}
-                onCancel={reset}
+                selectOnFocus={false}
                 textAlign='left'
                 color={tag ? '' : 'gray.400'}
                 paddingLeft='6px'
-                placeholder='Add a tag...'
             >
-                <EditablePreview aria-label='Add a tag' />
-                <EditableInput
+                <Editable.Preview aria-label='Add a tag' />
+                <Editable.Input
                     ref={inputRef}
-                    value={tag}
                     _focusVisible={{ outline: 'none' }}
                     onKeyDown={onKeyDown}
                 />
-            </Editable>
+            </Editable.Root>
             <TagDropdown isOpen={isOpen} {...dropdownProps} listRef={listRef} />
         </Box>
     );

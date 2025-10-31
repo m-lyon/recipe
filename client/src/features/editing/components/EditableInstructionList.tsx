@@ -1,7 +1,6 @@
 import { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useShallow } from 'zustand/shallow';
-import { ListItem, OrderedList } from '@chakra-ui/react';
 
 import { useRecipeStore } from '@recipe/stores';
 import { EditableItemArea } from '@recipe/common/components';
@@ -58,7 +57,7 @@ export function EditableInstructionList(props: Props) {
                 key={instr.key}
                 layout='position'
             >
-                <ListItem color={instr.value ? '' : 'gray.400'}>
+                <li style={{ color: instr.value ? '' : 'gray' }}>
                     <EditableItemArea
                         placeholder='Enter instructions...'
                         placeholderColor='gray.400'
@@ -71,10 +70,10 @@ export function EditableInstructionList(props: Props) {
                         fontWeight='600'
                         aria-label={`Enter instruction #${index + 1} for subsection ${section + 1}`}
                     />
-                </ListItem>
+                </li>
             </motion.div>
         );
     });
 
-    return <OrderedList pb='14px'>{instructionsList}</OrderedList>;
+    return <ol style={{ paddingBottom: '14px' }}>{instructionsList}</ol>;
 }

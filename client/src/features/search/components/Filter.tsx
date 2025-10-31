@@ -1,5 +1,6 @@
+import { useClickAway } from 'react-use';
 import { KeyboardEvent, useRef } from 'react';
-import { Box, Input, useOutsideClick } from '@chakra-ui/react';
+import { Box, Input } from '@chakra-ui/react';
 
 import { useDropdown } from '@recipe/common/hooks';
 import { TagDropdown } from '@recipe/features/tags';
@@ -30,13 +31,10 @@ export function Filter(props: Props) {
             }
         });
 
-    useOutsideClick({
-        ref: containerRef,
-        handler: () => {
-            if (isOpen) {
-                setIsOpen(false);
-            }
-        },
+    useClickAway(containerRef, () => {
+        if (isOpen) {
+            setIsOpen(false);
+        }
     });
 
     return (

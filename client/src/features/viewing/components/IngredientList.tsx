@@ -1,8 +1,9 @@
+import { BoxProps, VStack } from '@chakra-ui/react';
 import { TbLock, TbLockOpen2 } from 'react-icons/tb';
-import { BoxProps, Tooltip, UnorderedList, VStack } from '@chakra-ui/react';
-import { Box, Flex, IconButton, ListItem, Spacer, Text } from '@chakra-ui/react';
+import { Box, Flex, IconButton, Spacer, Text } from '@chakra-ui/react';
 
 import { useWakeLock } from '@recipe/common/hooks';
+import { Tooltip } from '@recipe/components/ui/tooltip';
 import { changeQuantity } from '@recipe/utils/quantity';
 import { useUnitConversion } from '@recipe/features/servings';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
@@ -31,12 +32,12 @@ export function IngredientList(props: IngredientListProps) {
         const finishedIngredients = collection.ingredients.map((item, i) => {
             if (item.ingredient.__typename === 'Ingredient') {
                 return (
-                    <ListItem
+                    <li
                         key={item._id}
                         aria-label={`Ingredient #${i + 1} in subsection ${index + 1}`}
                     >
                         {getFinishedRecipeIngredientStr(item)}
-                    </ListItem>
+                    </li>
                 );
             }
             return (
@@ -50,7 +51,9 @@ export function IngredientList(props: IngredientListProps) {
         if (index === 0) {
             return (
                 <Box key={collection.name ?? 'main-ingredients'}>
-                    <UnorderedList>{finishedIngredients}</UnorderedList>
+                    <ul style={{ listStyleType: 'disc', paddingLeft: '1rem' }}>
+                        {finishedIngredients}
+                    </ul>
                 </Box>
             );
         } else {
@@ -59,7 +62,9 @@ export function IngredientList(props: IngredientListProps) {
                     <Text fontSize='2xl' pb='10px'>
                         {collection.name}
                     </Text>
-                    <UnorderedList>{finishedIngredients}</UnorderedList>
+                    <ul style={{ listStyleType: 'disc', paddingLeft: '1rem' }}>
+                        {finishedIngredients}
+                    </ul>
                 </Box>
             );
         }
@@ -72,14 +77,15 @@ export function IngredientList(props: IngredientListProps) {
                 <Spacer />
                 {showWakeLockBtn ? (
                     <Tooltip
-                        label={isAwake ? 'Allow screen to sleep' : 'Keep screen awake'}
+                        content={isAwake ? 'Allow screen to sleep' : 'Keep screen awake'}
                         openDelay={500}
                     >
                         <IconButton
                             aria-label={isAwake ? 'Allow screen to sleep' : 'Keep screen awake'}
-                            icon={isAwake ? <TbLockOpen2 /> : <TbLock />}
                             onClick={toggleWakeLock}
-                        />
+                        >
+                            {isAwake ? <TbLockOpen2 /> : <TbLock />}
+                        </IconButton>
                     </Tooltip>
                 ) : undefined}
             </Flex>

@@ -1,7 +1,7 @@
 import { useShallow } from 'zustand/shallow';
 import { useMutation, useQuery } from '@apollo/client';
+import { Tag, VStack, Wrap, WrapItem } from '@chakra-ui/react';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
-import { Tag, TagCloseButton, TagLabel, VStack, Wrap, WrapItem } from '@chakra-ui/react';
 
 import { useRecipeStore } from '@recipe/stores';
 import { GET_TAGS } from '@recipe/graphql/queries/tag';
@@ -51,9 +51,9 @@ export function EditableTagList() {
                 layout='position'
             >
                 <WrapItem>
-                    <Tag colorPalette={tag.isNew ? 'green' : undefined}>
-                        <TagLabel>{tag.value}</TagLabel>
-                        <TagCloseButton
+                    <Tag.Root colorPalette={tag.isNew ? 'green' : undefined}>
+                        <Tag.Label>{tag.value}</Tag.Label>
+                        <Tag.CloseTrigger
                             onClick={() => {
                                 removeTag(index);
                                 if (tag.isNew) {
@@ -62,7 +62,7 @@ export function EditableTagList() {
                             }}
                             aria-label={`Remove ${tag.value} tag`}
                         />
-                    </Tag>
+                    </Tag.Root>
                 </WrapItem>
             </motion.div>
         );
