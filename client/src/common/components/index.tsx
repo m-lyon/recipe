@@ -1,3 +1,4 @@
+export { AnimatedLink } from './AnimatedLink';
 export { DropdownItem } from './DropdownItem';
 export { EditableText } from './EditableText';
 export { DropdownList } from './DropdownList';

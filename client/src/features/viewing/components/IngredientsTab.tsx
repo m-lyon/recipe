@@ -9,6 +9,7 @@ import { useAddRating } from '@recipe/features/rating';
 import { StarRating, getAverageRating } from '@recipe/features/rating';
 
 import { Notes } from './Notes';
+import { UsedIn } from './UsedIn';
 import { IngredientList } from './IngredientList';
 
 interface Props {
@@ -51,6 +52,7 @@ export function IngredientsTab(props: Props) {
                     display={{ base: 'block', md: 'none' }}
                 />
             }
+            UsedIn={recipe.isIngredient ? <UsedIn recipeId={recipe._id} /> : undefined}
         />
     );
 }

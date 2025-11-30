@@ -7,9 +7,10 @@ interface Props {
     IngredientList: ReactNode;
     Notes: ReactNode;
     Tags?: ReactNode;
+    UsedIn?: ReactNode;
 }
 export function IngredientsTabLayout(props: Props) {
-    const { Servings, StarRating, IngredientList, Notes, Tags } = props;
+    const { Servings, StarRating, IngredientList, Notes, Tags, UsedIn } = props;
 
     return (
         <Flex direction='column' justifyContent='space-between' height='100%'>
@@ -21,6 +22,7 @@ export function IngredientsTabLayout(props: Props) {
                     {StarRating}
                 </Flex>
                 {IngredientList}
+                {UsedIn}
             </VStack>
             <Spacer />
             {Notes}

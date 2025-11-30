@@ -113,3 +113,13 @@ export const GET_RECIPES = gql(`
         recipeCount(filter: $countFilter)
     }
 `);
+
+export const GET_RECIPES_USING_INGREDIENT = gql(`
+    query GetRecipesUsingIngredient($ingredientId: MongoID!) {
+        recipeMany(filter: { ingredientSubsections: { ingredients: { ingredient: $ingredientId } } }) {
+            _id
+            title
+            titleIdentifier
+        }
+    }
+`);

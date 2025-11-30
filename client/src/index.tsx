@@ -1,4 +1,6 @@
+import '@mantine/core/styles.css';
 import { createRoot } from 'react-dom/client';
+import { MantineProvider } from '@mantine/core';
 import { ChakraProvider } from '@chakra-ui/react';
 import { ApolloClient, ApolloProvider } from '@apollo/client';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
@@ -19,8 +21,10 @@ const client = new ApolloClient({
 
 root.render(
     <ApolloProvider client={client}>
-        <ChakraProvider>
-            <RouterProvider router={createBrowserRouter(routes)} />
-        </ChakraProvider>
+        <MantineProvider>
+            <ChakraProvider>
+                <RouterProvider router={createBrowserRouter(routes)} />
+            </ChakraProvider>
+        </MantineProvider>
     </ApolloProvider>
 );
