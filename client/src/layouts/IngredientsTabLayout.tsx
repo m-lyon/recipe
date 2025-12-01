@@ -22,10 +22,12 @@ export function IngredientsTabLayout(props: Props) {
                     {StarRating}
                 </Flex>
                 {IngredientList}
-                {UsedIn}
             </VStack>
             <Spacer />
-            {Notes}
+            <VStack spacing='24px' align='left'>
+                {UsedIn}
+                {Notes}
+            </VStack>
         </Flex>
     );
 }

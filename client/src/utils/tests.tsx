@@ -1,4 +1,5 @@
 import { expect } from 'vitest';
+import { MantineProvider } from '@mantine/core';
 import { ChakraProvider } from '@chakra-ui/react';
 import { userEvent } from '@testing-library/user-event';
 import { Screen, render } from '@testing-library/react';
@@ -105,13 +106,15 @@ export function renderPage(
 ) {
     return render(
         <MockedProvider mocks={mockedResponses} cache={getCache()}>
-            <ChakraProvider>
-                <RouterProvider
-                    router={createMemoryRouter(route, {
-                        initialEntries,
-                    })}
-                />
-            </ChakraProvider>
+            <MantineProvider>
+                <ChakraProvider>
+                    <RouterProvider
+                        router={createMemoryRouter(route, {
+                            initialEntries,
+                        })}
+                    />
+                </ChakraProvider>
+            </MantineProvider>
         </MockedProvider>
     );
 }

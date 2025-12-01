@@ -4,8 +4,9 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { cleanup, screen, waitForElementToBeRemoved } from '@testing-library/react';
 
 import { nullByLabelText } from '@recipe/utils/tests';
-import { mockGetRecipesFilteredTwo } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockZeroLinkedRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipesFilteredTag } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockGetRecipesFilteredTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipesFilteredIngr } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipesFilteredTagIngr } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipeOne, mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -149,7 +150,7 @@ describe('Search Functionality', () => {
 
     it('should reset search form when navigating back to home', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockGetRecipesFilteredTwo, mockGetRecipes]);
+        renderComponent([mockGetRecipesFilteredTwo, mockGetRecipes, mockZeroLinkedRecipeTwo]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------

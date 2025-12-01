@@ -4,6 +4,7 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
+import { mockZeroLinkedRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockUpdateRecipeNewTitle } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeNewTitleAsIngredient } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { enterEditRecipePage, enterViewRecipePage, getMockedImageBlob } from '@recipe/utils/tests';
@@ -48,7 +49,7 @@ describe('Update Recipe Workflow: Title', () => {
     it('should update the title when recipe is an ingredient', async () => {
         // Render -----------------------------------------------
         fetchMock.mockResponseOnce(getMockedImageBlob());
-        renderComponent([mockUpdateRecipeNewTitleAsIngredient]);
+        renderComponent([mockUpdateRecipeNewTitleAsIngredient, mockZeroLinkedRecipeTwo]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------

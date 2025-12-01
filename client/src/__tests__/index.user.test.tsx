@@ -1,10 +1,12 @@
 import { userEvent } from '@testing-library/user-event';
 import { cleanup, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
+import createFetchMock from 'vitest-fetch-mock';
 
 import { PATH } from '@recipe/constants';
 import { renderPage } from '@recipe/utils/tests';
+import { getMockedImageBlob } from '@recipe/utils/tests';
 import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
 import { mockGetRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCurrentUserNull } from '@recipe/graphql/queries/__mocks__/user';
@@ -27,12 +29,16 @@ const renderComponent = (mockedResponses: MockedResponses = []) => {
     );
 };
 
+const fetchMocker = createFetchMock(vi);
+fetchMocker.enableMocks();
+
 loadErrorMessages();
 loadDevMessages();
 
 describe('Auth Workflow', () => {
     afterEach(() => {
         cleanup();
+        vi.clearAllMocks();
     });
 
     it('should log in', async () => {
@@ -84,6 +90,7 @@ describe('Edit & Delete Permissions', () => {
 
     it('should allow non-admin owner to edit recipe', async () => {
         // Render -----------------------------------------------
+        fetchMock.mockResponseOnce(getMockedImageBlob());
         renderComponent([
             mockCurrentUser,
             mockGetRecipeTwo,
@@ -97,6 +104,7 @@ describe('Edit & Delete Permissions', () => {
 
         // Expect ------------------------------------------------
         await enterEditRecipePage(screen, user, 'Mock Recipe Two', 'Instruction one.');
+        expect(await screen.findByLabelText('Enter recipe title')).not.toBeNull();
     });
 
     it('should NOT allow non-admin non-owner to edit recipe', async () => {

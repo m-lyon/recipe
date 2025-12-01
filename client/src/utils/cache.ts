@@ -8,7 +8,12 @@ export const getCache = () =>
                     recipeMany: {
                         keyArgs: (args) => {
                             if (args?.filter) {
+                                // Recipe ingredients query - cache separately
                                 if (args.filter.isIngredient && !args.filter._operators) {
+                                    return ['filter'];
+                                }
+                                // Linked recipes query
+                                if (args.filter.ingredientSubsections) {
                                     return ['filter'];
                                 }
                             }

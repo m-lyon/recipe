@@ -114,8 +114,8 @@ export const GET_RECIPES = gql(`
     }
 `);
 
-export const GET_RECIPES_USING_INGREDIENT = gql(`
-    query GetRecipesUsingIngredient($ingredientId: MongoID!) {
+export const GET_LINKED_RECIPES = gql(`
+    query GetLinkedRecipes($ingredientId: MongoID!) {
         recipeMany(filter: { ingredientSubsections: { ingredients: { ingredient: $ingredientId } } }) {
             _id
             title

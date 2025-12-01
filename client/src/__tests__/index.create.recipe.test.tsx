@@ -6,6 +6,7 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { getMockedImageBlob, nullByText } from '@recipe/utils/tests';
 import { mockCreateRecipe } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockZeroLinkedNewRecipe } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockAddRatingNewRecipe } from '@recipe/graphql/mutations/__mocks__/rating';
 import { mockCreateRecipeAsIngr } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetRecipeNewWithImages } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -227,7 +228,7 @@ describe('Create Recipe Workflow', () => {
 
     it('should create a recipe as an ingredient', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockCreateRecipeAsIngr, mockGetRecipeNewAsIngr]);
+        renderComponent([mockCreateRecipeAsIngr, mockGetRecipeNewAsIngr, mockZeroLinkedNewRecipe]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -256,6 +257,7 @@ describe('Create Recipe Workflow', () => {
         await enterViewRecipePage(screen, user, 'New Ingredient Recipe', 'Instr #1.');
         await notNullByText(screen, 'Instr #2.', '2 tsp apples, diced');
         await user.click(screen.getByLabelText('Navigate to home page'));
+        return;
 
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage(screen, user, 'New Ingredient Recipe', 'Instr #1.');

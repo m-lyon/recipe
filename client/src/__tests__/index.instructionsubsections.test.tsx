@@ -5,6 +5,7 @@ import { cleanup, screen, waitFor } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { mockGetRecipeFour } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockZeroLinkedRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { enterCreateNewRecipePage, enterViewRecipePage } from '@recipe/utils/tests';
 import { haveTextContentByLabelText, notNullByText, nullByText } from '@recipe/utils/tests';
 import { mockUpdateAddInstructionSubsection } from '@recipe/graphql/mutations/__mocks__/recipe';
@@ -40,7 +41,7 @@ describe('Instruction Subsections', () => {
     it('should add a new instruction subsection', async () => {
         // Render -----------------------------------------------
         fetchMock.mockResponseOnce(getMockedImageBlob());
-        renderComponent([mockUpdateAddInstructionSubsection]);
+        renderComponent([mockUpdateAddInstructionSubsection, mockZeroLinkedRecipeTwo]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -69,7 +70,7 @@ describe('Instruction Subsections', () => {
 
     it('should edit an instruction subsection name', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockUpdateEditInstructionSubsection]);
+        renderComponent([mockUpdateEditInstructionSubsection, mockZeroLinkedRecipeTwo]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------

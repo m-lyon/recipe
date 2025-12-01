@@ -3,7 +3,7 @@ import { Stack, Text } from '@mantine/core';
 
 import { PATH } from '@recipe/constants';
 import { AnimatedLink } from '@recipe/common/components';
-import { GET_RECIPES_USING_INGREDIENT } from '@recipe/graphql/queries/recipe';
+import { GET_LINKED_RECIPES } from '@recipe/graphql/queries/recipe';
 
 interface Props {
     recipeId: string;
@@ -11,7 +11,7 @@ interface Props {
 
 export function UsedIn(props: Props) {
     const { recipeId } = props;
-    const { data, loading } = useQuery(GET_RECIPES_USING_INGREDIENT, {
+    const { data, loading } = useQuery(GET_LINKED_RECIPES, {
         variables: { ingredientId: recipeId },
     });
 
@@ -21,8 +21,8 @@ export function UsedIn(props: Props) {
 
     return (
         <Stack gap='xs'>
-            <Text size='xl' fw={700}>
-                Used in...
+            <Text size='24px' fw={700}>
+                Used in
             </Text>
             <Stack gap={3}>
                 {data.recipeMany.map((recipe) => (
@@ -31,7 +31,7 @@ export function UsedIn(props: Props) {
                         to={`${PATH.ROOT}/view/recipe/${recipe.titleIdentifier}`}
                         size='md'
                         fw={700}
-                        c={'rgba(0, 0, 0, 0.64)'}
+                        c='rgba(0, 0, 0, 0.64)'
                     >
                         {recipe.title}
                     </AnimatedLink>

@@ -1,8 +1,6 @@
 import { ReservedTags } from '@recipe/graphql/enums';
-import { GetRecipeQuery } from '@recipe/graphql/generated';
 import { GetRecipeQueryVariables } from '@recipe/graphql/generated';
 import { GetIngredientComponentsQuery } from '@recipe/graphql/generated';
-import { GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { mockRecipeIngredientIdFive } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdNine } from '@recipe/graphql/__mocks__/ids';
 import { GET_INGREDIENT_COMPONENTS } from '@recipe/graphql/queries/recipe';
@@ -13,6 +11,7 @@ import { mockRecipeIngredientIdTwelve } from '@recipe/graphql/__mocks__/ids';
 import { mockTitleOne, mockTitleTwo } from '@recipe/graphql/__mocks__/common';
 import { mockRecipeIngredientIdThirteen } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIdNew, mockRecipeIdOne } from '@recipe/graphql/__mocks__/ids';
+import { GetLinkedRecipesQuery, GetRecipeQuery } from '@recipe/graphql/generated';
 import { mockRecipeIdThree, mockRecipeIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { GetIngredientAndRecipeIngredientsQuery } from '@recipe/graphql/generated';
 import { GetRecipesQuery, GetRecipesQueryVariables } from '@recipe/graphql/generated';
@@ -21,6 +20,7 @@ import { GET_INGREDIENT_AND_RECIPE_INGREDIENTS } from '@recipe/graphql/queries/r
 import { mockCarrotId, mockRecipeIngredientIdFour } from '@recipe/graphql/__mocks__/ids';
 import { mockDinnerTagId, mockRecipeIngredientIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIdFour, mockRecipeIngredientIdOne } from '@recipe/graphql/__mocks__/ids';
+import { GET_LINKED_RECIPES, GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { mockRecipeIdNewAsIngr, mockRecipeIngredientIdSix } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIdFive, mockRecipeIngredientIdFourteen } from '@recipe/graphql/__mocks__/ids';
 import { mockAdminId, mockRecipeIngredientIdTen, mockUserId } from '@recipe/graphql/__mocks__/ids';
@@ -389,7 +389,7 @@ export const mockGetRecipe = {
         query: GET_RECIPE,
         variables: { filter: { titleIdentifier: undefined } } satisfies GetRecipeQueryVariables,
     },
-    result: { data: { __typename: 'Query', recipeOne: mockRecipeOne } satisfies GetRecipeQuery },
+    result: { data: { __typename: 'Query', recipeOne: mockRecipeTwo } satisfies GetRecipeQuery },
 };
 export const mockGetRecipeOne = {
     request: {
@@ -763,4 +763,66 @@ export const mockGetRecipesLargerFilteredTwo = {
         } satisfies GetRecipesQuery,
     },
 };
-// -------------------------------------------------------------------
+// -- GetRecipes with linked recipes mocks ------------------------------
+export const mockLinkedRecipesForRecipeTwo = {
+    request: {
+        query: GET_LINKED_RECIPES,
+        variables: { ingredientId: mockRecipeIdTwo },
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeMany: [
+                {
+                    _id: 'recipe-using-mock-two-1',
+                    __typename: 'Recipe',
+                    title: 'Recipe Using Mock Recipe Two',
+                    titleIdentifier: 'recipe-using-mock-recipe-two',
+                },
+                {
+                    _id: 'recipe-using-mock-two-2',
+                    __typename: 'Recipe',
+                    title: 'Another Recipe Using Mock Two',
+                    titleIdentifier: 'another-recipe-using-mock-two',
+                },
+            ],
+        } satisfies GetLinkedRecipesQuery,
+    },
+};
+export const mockZeroLinkedRecipeTwo = {
+    request: {
+        query: GET_LINKED_RECIPES,
+        variables: { ingredientId: mockRecipeIdTwo },
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeMany: [],
+        } satisfies GetLinkedRecipesQuery,
+    },
+};
+export const mockZeroLinkedNewRecipe = {
+    request: {
+        query: GET_LINKED_RECIPES,
+        variables: { ingredientId: mockRecipeIdNewAsIngr },
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeMany: [],
+        } satisfies GetLinkedRecipesQuery,
+    },
+};
+export const mockZeroLinkedRecipeOne = {
+    request: {
+        query: GET_LINKED_RECIPES,
+        variables: { ingredientId: mockRecipeIdOne },
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeMany: [],
+        } satisfies GetLinkedRecipesQuery,
+    },
+};
+// ----------------------------------------------------------------

@@ -6,6 +6,7 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { getMockedImageBlob, haveValueByLabelText } from '@recipe/utils/tests';
 import { enterEditRecipePage, enterViewRecipePage } from '@recipe/utils/tests';
+import { mockZeroLinkedRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockUpdateRecipeAddIsIngredient } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeRemoveAsIngredient } from '@recipe/graphql/mutations/__mocks__/recipe';
 
@@ -24,7 +25,7 @@ describe('Update Recipe Workflow: Is Ingredient', () => {
 
     it('should update recipe to be an ingredient', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockUpdateRecipeAddIsIngredient]);
+        renderComponent([mockUpdateRecipeAddIsIngredient, mockZeroLinkedRecipeOne]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------

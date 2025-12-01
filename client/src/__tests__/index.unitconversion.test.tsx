@@ -3,6 +3,7 @@ import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
+import { mockZeroLinkedRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { enterCreateNewRecipePage, enterViewRecipePage } from '@recipe/utils/tests';
 import { haveTextContentByLabelText, haveValueByLabelText, nullByText } from '@recipe/utils/tests';
 
@@ -49,7 +50,7 @@ describe('Update Recipe Workflow: Servings', () => {
 
     it('should resolve irrational numbers when decimal is preferred', async () => {
         // Render ------------------------------------------------
-        renderComponent();
+        renderComponent([mockZeroLinkedRecipeTwo]);
         const user = userEvent.setup();
 
         // Act ---------------------------------------------------

@@ -6,6 +6,7 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { mockImageFileOne } from '@recipe/graphql/mutations/__mocks__/image';
 import { mockUpdateRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockZeroLinkedRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockUpdateRecipeOneNoChange } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockDeleteImages, mockUploadImages } from '@recipe/graphql/mutations/__mocks__/image';
 import { enterEditRecipePage, enterViewRecipePage, getMockedImageBlob } from '@recipe/utils/tests';
@@ -51,7 +52,7 @@ describe('Update Image Workflow', () => {
     it('should remove an image', async () => {
         // Render -----------------------------------------------
         fetchMock.mockResponseOnce(getMockedImageBlob());
-        renderComponent([mockUpdateRecipeTwo, mockDeleteImages]);
+        renderComponent([mockUpdateRecipeTwo, mockDeleteImages, mockZeroLinkedRecipeTwo]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
