@@ -1,5 +1,5 @@
 import { useQuery } from '@apollo/client';
-import { Stack, Text } from '@mantine/core';
+import { Skeleton, Stack, Text } from '@mantine/core';
 
 import { PATH } from '@recipe/constants';
 import { AnimatedLink } from '@recipe/common/components';
@@ -15,7 +15,23 @@ export function UsedIn(props: Props) {
         variables: { ingredientId: recipeId },
     });
 
-    if (loading || !data?.recipeMany || data.recipeMany.length === 0) {
+    if (loading) {
+        return (
+            <Stack gap='xs'>
+                <Skeleton height={40} circle />
+                <Stack gap={8}>
+                    <Skeleton height={10} width='80%' mt={6} />
+                    <Skeleton height={10} width='80%' mt={6} />
+                    <Skeleton height={10} width='80%' mt={6} />
+                    <Skeleton height={10} width='80%' mt={6} />
+                    <Skeleton height={10} width='80%' mt={6} />
+                    <Skeleton height={10} width='50%' mt={6} />
+                </Stack>
+            </Stack>
+        );
+    }
+
+    if (!data?.recipeMany || data.recipeMany.length === 0) {
         return null;
     }
 

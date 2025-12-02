@@ -139,3 +139,6 @@ api/seed_data/
 
 # vitest
 .vitest-preview/
+
+# LLM docs
+*llm.txt
