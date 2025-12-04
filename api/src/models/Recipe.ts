@@ -31,7 +31,7 @@ export function generateRecipeIdentifier(title: string, existingSuffix?: string)
     sanitizedTitle = sanitizedTitle.trim();
     // Replace spaces with dashes and convert to lowercase
     sanitizedTitle = sanitizedTitle.replace(/\s+/g, '-').toLowerCase();
-    const suffix = existingSuffix || generateRandomString(4);
+    const suffix = existingSuffix || generateRandomString(5);
     return `${sanitizedTitle}-${suffix}`;
 }
 
