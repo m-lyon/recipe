@@ -557,8 +557,8 @@ describe('recipeCreateOne', () => {
         const suffix2 = recipe2.titleIdentifier.split('-').pop();
 
         assert.notEqual(suffix1, suffix2, 'Different recipes should have different suffixes');
-        assert.equal(suffix1.length, 4, 'First recipe suffix should be 4 characters long');
-        assert.equal(suffix2.length, 4, 'Second recipe suffix should be 4 characters long');
+        assert.equal(suffix1.length, 5, 'First recipe suffix should be 5 characters long');
+        assert.equal(suffix2.length, 5, 'Second recipe suffix should be 5 characters long');
         assert.isTrue(
             recipe1.titleIdentifier.endsWith(`-${suffix1}`),
             'First recipe should end with its suffix'
