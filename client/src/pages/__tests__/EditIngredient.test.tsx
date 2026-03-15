@@ -1,10 +1,9 @@
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, screen, waitFor } from '@testing-library/react';
+import { cleanup, screen } from '@testing-library/react';
 import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { mockCarrotId, mockChickenId } from '@recipe/graphql/__mocks__/ids';
 import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockUpdateIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
@@ -89,5 +88,6 @@ describe('Edit Ingredient', () => {
         await user.click(screen.getByLabelText('Select ingredient'));
         expect(await screen.findByRole('option', { name: 'apple' })).not.toBeNull();
         expect(screen.queryByRole('option', { name: 'carrot' })).toBeNull();
+        await user.click(screen.getByLabelText('Select ingredient'));
     });
 });

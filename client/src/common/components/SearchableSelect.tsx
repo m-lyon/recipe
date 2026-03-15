@@ -3,6 +3,8 @@ import { matchSorter } from 'match-sorter';
 import { useEffect, useState } from 'react';
 import { Combobox, Group, Text, TextInput, useCombobox } from '@mantine/core';
 
+import classes from './SearchableSelect.module.css';
+
 export interface SearchableSelectOption {
     value: string;
     label: string;
@@ -24,6 +26,7 @@ export function SearchableSelect({
     options,
     value,
     onChange,
+    placeholder,
     label,
     disabled,
     'aria-label': ariaLabel,
@@ -32,15 +35,13 @@ export function SearchableSelect({
         onDropdownClose: () => combobox.resetSelectedOption(),
     });
 
-    const selectedOption = options.find((opt) => opt.value === value) ?? null;
-    const [search, setSearch] = useState(selectedOption?.label ?? '');
+    const [search, setSearch] = useState(options.find((opt) => opt.value === value)?.label ?? '');
 
-    // Sync the search text when the external value changes (e.g. after delete resets to undefined)
+    // Sync the search text when the external value or options change
     useEffect(() => {
         const selected = options.find((opt) => opt.value === value) ?? null;
         setSearch(selected?.label ?? '');
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [value]);
+    }, [value, options]);
 
     const filteredOptions = matchSorter(options, search, { keys: ['label'] });
 
@@ -73,8 +74,10 @@ export function SearchableSelect({
                     label={label}
                     labelProps={{ style: { fontSize: '16px', marginBottom: '8px' } }}
                     styles={{ input: { fontSize: '16px' } }}
+                    classNames={{ input: classes.input }}
                     rightSection={<Combobox.Chevron />}
                     rightSectionPointerEvents='none'
+                    placeholder={placeholder}
                     value={search}
                     onChange={(event) => {
                         combobox.openDropdown();
@@ -91,7 +94,7 @@ export function SearchableSelect({
                     }}
                     onBlur={() => {
                         combobox.closeDropdown();
-                        setSearch(selectedOption?.label ?? '');
+                        setSearch(options.find((opt) => opt.value === value)?.label ?? '');
                     }}
                     disabled={disabled}
                     aria-label={ariaLabel}

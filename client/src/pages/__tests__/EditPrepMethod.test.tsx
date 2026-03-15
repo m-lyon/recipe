@@ -1,11 +1,10 @@
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, screen, waitFor } from '@testing-library/react';
+import { cleanup, screen } from '@testing-library/react';
 import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { MockedResponses, renderPage } from '@recipe/utils/tests';
-import { mockDicedId, mockSlicedId } from '@recipe/graphql/__mocks__/ids';
 import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetPrepMethods } from '@recipe/graphql/queries/__mocks__/prepMethod';
 import { mockUpdatePrepMethod } from '@recipe/graphql/mutations/__mocks__/prepMethod';
@@ -86,6 +85,7 @@ describe('Edit Prep Method', () => {
         // Expect
         await user.click(screen.getByLabelText('Select prep method'));
         expect(await screen.findByRole('option', { name: 'whole' })).not.toBeNull();
-        expect(screen.queryByRole('option', { name: 'teaspoon' })).toBeNull();
+        expect(screen.queryByRole('option', { name: 'diced' })).toBeNull();
+        await user.click(screen.getByLabelText('Select prep method'));
     });
 });
