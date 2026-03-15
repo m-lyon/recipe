@@ -5,5 +5,7 @@ export { DropdownList } from './DropdownList';
 export { ImageCarousel } from './ImageCarousel';
 export { CentredTextArea } from './CentredTextArea';
 export { EditableItemArea } from './EditableItemArea';
+export { SearchableSelect } from './SearchableSelect';
 export { FloatingLabelInput } from './FloatingLabelInput';
 export { ConfirmDeleteAlert } from './ConfirmDeleteAlert';
+export type { SearchableSelectOption } from './SearchableSelect';

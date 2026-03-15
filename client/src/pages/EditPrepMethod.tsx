@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { FormLabel, Select } from '@chakra-ui/react';
-import { Box, FormControl, Heading, VStack } from '@chakra-ui/react';
+import { Box, Heading, VStack } from '@chakra-ui/react';
 
 import { useSuccessToast } from '@recipe/common/hooks';
+import { SearchableSelect } from '@recipe/common/components';
 import { ModifyPrepMethodForm } from '@recipe/features/forms';
 import { GET_PREP_METHODS } from '@recipe/graphql/queries/prepMethod';
 import { useEditPermissionRecipeIngredients } from '@recipe/features/recipeIngredient';
@@ -18,27 +18,20 @@ export function EditPrepMethod() {
                 <Heading pb={6}>Edit Prep Method</Heading>
                 <form>
                     <VStack mt={0} spacing={8}>
-                        <FormControl>
-                            <FormLabel>Select prep method</FormLabel>
-                            <Select
-                                placeholder='-'
-                                aria-label='Select prep method'
-                                value={currentPrepMethod?._id}
-                                onChange={(e) => {
-                                    setCurrentPrepMethod(
-                                        data?.prepMethodMany.find(
-                                            (prep) => prep._id === e.target.value
-                                        )
-                                    );
-                                }}
-                            >
-                                {data?.prepMethodMany.map((prep) => (
-                                    <option key={prep._id} value={prep._id} aria-label={prep.value}>
-                                        {prep.value}
-                                    </option>
-                                ))}
-                            </Select>
-                        </FormControl>
+                        <SearchableSelect
+                            label='Select prep method'
+                            aria-label='Select prep method'
+                            options={(data?.prepMethodMany ?? []).map((prep) => ({
+                                value: prep._id,
+                                label: prep.value,
+                            }))}
+                            value={currentPrepMethod?._id ?? null}
+                            onChange={(id) => {
+                                setCurrentPrepMethod(
+                                    data?.prepMethodMany.find((prep) => prep._id === id)
+                                );
+                            }}
+                        />
                         <ModifyPrepMethodForm
                             prepMethodId={currentPrepMethod?._id}
                             initData={currentPrepMethod}

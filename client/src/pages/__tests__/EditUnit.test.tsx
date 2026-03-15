@@ -32,14 +32,16 @@ describe('Edit Unit', () => {
 
         // Act
         expect(await screen.findByText('Edit Unit')).not.toBeNull();
-        await waitFor(() => expect(screen.getByLabelText('teaspoon')).not.toBeNull());
-        await user.selectOptions(screen.getByLabelText('Select unit'), mockTeaspoonId);
+        await user.click(screen.getByLabelText('Select unit'));
+        await user.click(await screen.findByRole('option', { name: 'teaspoon' }));
         expect(screen.getByLabelText('Short singular name')).toHaveProperty('value', 'tsp');
         await user.click(screen.getByLabelText('Long plural name'));
         await user.keyboard('{Backspace}z');
         await user.click(screen.getByLabelText('Save unit'));
-        await user.selectOptions(screen.getByLabelText('Select unit'), mockGramId);
-        await user.selectOptions(screen.getByLabelText('Select unit'), mockTeaspoonId);
+        await user.click(screen.getByLabelText('Select unit'));
+        await user.click(await screen.findByRole('option', { name: 'gram' }));
+        await user.click(screen.getByLabelText('Select unit'));
+        await user.click(await screen.findByRole('option', { name: 'teaspoon' }));
 
         // Expect
         haveValueByLabelText(screen, 'Short singular name', 'tsp');
@@ -53,13 +55,15 @@ describe('Edit Unit', () => {
 
         // Act
         expect(await screen.findByText('Edit Unit')).not.toBeNull();
-        await waitFor(() => expect(screen.getByLabelText('teaspoon')).not.toBeNull());
-        await user.selectOptions(screen.getByLabelText('Select unit'), mockTeaspoonId);
+        await user.click(screen.getByLabelText('Select unit'));
+        await user.click(await screen.findByRole('option', { name: 'teaspoon' }));
         expect(screen.getByLabelText('Short singular name')).toHaveProperty('value', 'tsp');
         await user.click(screen.getByLabelText('Long plural name'));
         await user.keyboard('{Backspace}z');
-        await user.selectOptions(screen.getByLabelText('Select unit'), mockGramId);
-        await user.selectOptions(screen.getByLabelText('Select unit'), mockTeaspoonId);
+        await user.click(screen.getByLabelText('Select unit'));
+        await user.click(await screen.findByRole('option', { name: 'gram' }));
+        await user.click(screen.getByLabelText('Select unit'));
+        await user.click(await screen.findByRole('option', { name: 'teaspoon' }));
 
         // Expect
         haveValueByLabelText(screen, 'Short singular name', 'tsp');
@@ -73,14 +77,16 @@ describe('Edit Unit', () => {
 
         // Act
         expect(await screen.findByText('Edit Unit')).not.toBeNull();
-        await waitFor(() => expect(screen.getByLabelText('teaspoon')).not.toBeNull());
-        await user.selectOptions(screen.getByLabelText('Select unit'), mockTeaspoonId);
+        await user.click(screen.getByLabelText('Select unit'));
+        await user.click(await screen.findByRole('option', { name: 'teaspoon' }));
         expect(screen.getByLabelText('Short singular name')).toHaveProperty('value', 'tsp');
         await user.click(screen.getByLabelText('Delete unit'));
-        await user.selectOptions(screen.getByLabelText('Select unit'), mockGramId);
+        await user.click(screen.getByLabelText('Select unit'));
+        await user.click(await screen.findByRole('option', { name: 'gram' }));
 
         // Expect
-        expect(screen.queryByLabelText('kilogram')).not.toBeNull();
-        expect(screen.queryByLabelText('teaspoon')).toBeNull();
+        await user.click(screen.getByLabelText('Select unit'));
+        expect(await screen.findByRole('option', { name: 'kilogram' })).not.toBeNull();
+        expect(screen.queryByRole('option', { name: 'teaspoon' })).toBeNull();
     });
 });

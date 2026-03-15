@@ -130,8 +130,8 @@ describe('Delete Validation Toast Notifications', () => {
 
         // Wait for the page to load and select the unit
         expect(await screen.findByText('Edit Unit')).not.toBeNull();
-        await waitFor(() => expect(screen.getByLabelText('teaspoon')).not.toBeNull());
-        await user.selectOptions(screen.getByLabelText('Select unit'), mockTeaspoonId);
+        await user.click(screen.getByLabelText('Select unit'));
+        await user.click(await screen.findByRole('option', { name: 'teaspoon' }));
 
         // Try to delete the unit
         await user.click(screen.getByLabelText('Delete unit'));
@@ -151,8 +151,8 @@ describe('Delete Validation Toast Notifications', () => {
 
         // Wait for the page to load and select the size
         expect(await screen.findByText('Edit Size')).not.toBeNull();
-        await waitFor(() => expect(screen.getByLabelText('small')).not.toBeNull());
-        await user.selectOptions(screen.getByLabelText('Select prep method'), mockSmallId);
+        await user.click(screen.getByLabelText('Select size'));
+        await user.click(await screen.findByRole('option', { name: 'small' }));
 
         // Try to delete the size
         await user.click(screen.getByLabelText('Delete size'));
@@ -172,8 +172,8 @@ describe('Delete Validation Toast Notifications', () => {
 
         // Wait for the page to load and select the ingredient
         expect(await screen.findByText('Edit Ingredient')).not.toBeNull();
-        await waitFor(() => expect(screen.getByLabelText('carrot')).not.toBeNull());
-        await user.selectOptions(screen.getByLabelText('Select ingredient'), mockCarrotId);
+        await user.click(screen.getByLabelText('Select ingredient'));
+        await user.click(await screen.findByRole('option', { name: 'carrot' }));
 
         // Try to delete the ingredient
         await user.click(screen.getByLabelText('Delete ingredient'));
@@ -193,8 +193,8 @@ describe('Delete Validation Toast Notifications', () => {
 
         // Wait for the page to load and select the prep method
         expect(await screen.findByText('Edit Prep Method')).not.toBeNull();
-        await waitFor(() => expect(screen.getByLabelText('diced')).not.toBeNull());
-        await user.selectOptions(screen.getByLabelText('Select prep method'), mockDicedId);
+        await user.click(screen.getByLabelText('Select prep method'));
+        await user.click(await screen.findByRole('option', { name: 'diced' }));
 
         // Try to delete the prep method
         await user.click(screen.getByLabelText('Delete prep method'));

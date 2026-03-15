@@ -33,14 +33,16 @@ describe('Edit Ingredient', () => {
 
         // Act
         expect(await screen.findByText('Edit Ingredient')).not.toBeNull();
-        await waitFor(() => expect(screen.getByLabelText('carrot')).not.toBeNull());
-        await user.selectOptions(screen.getByLabelText('Select ingredient'), mockCarrotId);
+        await user.click(screen.getByLabelText('Select ingredient'));
+        await user.click(await screen.findByRole('option', { name: 'carrot' }));
         expect(screen.getByLabelText('Plural name')).toHaveProperty('value', 'carrots');
         await user.click(screen.getByLabelText('Plural name'));
         await user.keyboard('{Backspace}z');
         await user.click(screen.getByLabelText('Save ingredient'));
-        await user.selectOptions(screen.getByLabelText('Select ingredient'), mockChickenId);
-        await user.selectOptions(screen.getByLabelText('Select ingredient'), mockCarrotId);
+        await user.click(screen.getByLabelText('Select ingredient'));
+        await user.click(await screen.findByRole('option', { name: 'chicken' }));
+        await user.click(screen.getByLabelText('Select ingredient'));
+        await user.click(await screen.findByRole('option', { name: 'carrot' }));
 
         // Expect
         haveValueByLabelText(screen, 'Name', 'carrot');
@@ -54,13 +56,15 @@ describe('Edit Ingredient', () => {
 
         // Act
         expect(await screen.findByText('Edit Ingredient')).not.toBeNull();
-        await waitFor(() => expect(screen.getByLabelText('carrot')).not.toBeNull());
-        await user.selectOptions(screen.getByLabelText('Select ingredient'), mockCarrotId);
+        await user.click(screen.getByLabelText('Select ingredient'));
+        await user.click(await screen.findByRole('option', { name: 'carrot' }));
         expect(screen.getByLabelText('Plural name')).toHaveProperty('value', 'carrots');
         await user.click(screen.getByLabelText('Plural name'));
         await user.keyboard('{Backspace}z');
-        await user.selectOptions(screen.getByLabelText('Select ingredient'), mockChickenId);
-        await user.selectOptions(screen.getByLabelText('Select ingredient'), mockCarrotId);
+        await user.click(screen.getByLabelText('Select ingredient'));
+        await user.click(await screen.findByRole('option', { name: 'chicken' }));
+        await user.click(screen.getByLabelText('Select ingredient'));
+        await user.click(await screen.findByRole('option', { name: 'carrot' }));
 
         // Expect
         haveValueByLabelText(screen, 'Name', 'carrot');
@@ -74,14 +78,16 @@ describe('Edit Ingredient', () => {
 
         // Act
         expect(await screen.findByText('Edit Ingredient')).not.toBeNull();
-        await waitFor(() => expect(screen.getByLabelText('carrot')).not.toBeNull());
-        await user.selectOptions(screen.getByLabelText('Select ingredient'), mockCarrotId);
+        await user.click(screen.getByLabelText('Select ingredient'));
+        await user.click(await screen.findByRole('option', { name: 'carrot' }));
         expect(screen.getByLabelText('Plural name')).toHaveProperty('value', 'carrots');
         await user.click(screen.getByLabelText('Delete ingredient'));
-        await user.selectOptions(screen.getByLabelText('Select ingredient'), mockChickenId);
+        await user.click(screen.getByLabelText('Select ingredient'));
+        await user.click(await screen.findByRole('option', { name: 'chicken' }));
 
         // Expect
-        expect(screen.queryByLabelText('apple')).not.toBeNull();
-        expect(screen.queryByLabelText('carrot')).toBeNull();
+        await user.click(screen.getByLabelText('Select ingredient'));
+        expect(await screen.findByRole('option', { name: 'apple' })).not.toBeNull();
+        expect(screen.queryByRole('option', { name: 'carrot' })).toBeNull();
     });
 });

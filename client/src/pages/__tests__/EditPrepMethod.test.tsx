@@ -33,14 +33,16 @@ describe('Edit Prep Method', () => {
 
         // Act
         expect(await screen.findByText('Edit Prep Method')).not.toBeNull();
-        await waitFor(() => expect(screen.getByLabelText('diced')).not.toBeNull());
-        await user.selectOptions(screen.getByLabelText('Select prep method'), mockDicedId);
+        await user.click(screen.getByLabelText('Select prep method'));
+        await user.click(await screen.findByRole('option', { name: 'diced' }));
         expect(screen.getByLabelText('Name')).toHaveProperty('value', 'diced');
         await user.click(screen.getByLabelText('Name'));
         await user.keyboard('{Backspace}y');
         await user.click(screen.getByLabelText('Save prep method'));
-        await user.selectOptions(screen.getByLabelText('Select prep method'), mockSlicedId);
-        await user.selectOptions(screen.getByLabelText('Select prep method'), mockDicedId);
+        await user.click(screen.getByLabelText('Select prep method'));
+        await user.click(await screen.findByRole('option', { name: 'sliced' }));
+        await user.click(screen.getByLabelText('Select prep method'));
+        await user.click(await screen.findByRole('option', { name: 'dicey' }));
 
         // Expect
         expect(screen.getByLabelText('Name')).toHaveProperty('value', 'dicey');
@@ -53,13 +55,15 @@ describe('Edit Prep Method', () => {
 
         // Act
         expect(await screen.findByText('Edit Prep Method')).not.toBeNull();
-        await waitFor(() => expect(screen.getByLabelText('diced')).not.toBeNull());
-        await user.selectOptions(screen.getByLabelText('Select prep method'), mockDicedId);
+        await user.click(screen.getByLabelText('Select prep method'));
+        await user.click(await screen.findByRole('option', { name: 'diced' }));
         expect(screen.getByLabelText('Name')).toHaveProperty('value', 'diced');
         await user.click(screen.getByLabelText('Name'));
         await user.keyboard('{Backspace}y');
-        await user.selectOptions(screen.getByLabelText('Select prep method'), mockSlicedId);
-        await user.selectOptions(screen.getByLabelText('Select prep method'), mockDicedId);
+        await user.click(screen.getByLabelText('Select prep method'));
+        await user.click(await screen.findByRole('option', { name: 'sliced' }));
+        await user.click(screen.getByLabelText('Select prep method'));
+        await user.click(await screen.findByRole('option', { name: 'diced' }));
 
         // Expect
         expect(screen.getByLabelText('Name')).toHaveProperty('value', 'diced');
@@ -72,14 +76,16 @@ describe('Edit Prep Method', () => {
 
         // Act
         expect(await screen.findByText('Edit Prep Method')).not.toBeNull();
-        await waitFor(() => expect(screen.getByLabelText('diced')).not.toBeNull());
-        await user.selectOptions(screen.getByLabelText('Select prep method'), mockDicedId);
+        await user.click(screen.getByLabelText('Select prep method'));
+        await user.click(await screen.findByRole('option', { name: 'diced' }));
         expect(screen.getByLabelText('Name')).toHaveProperty('value', 'diced');
         await user.click(screen.getByLabelText('Delete prep method'));
-        await user.selectOptions(screen.getByLabelText('Select prep method'), mockSlicedId);
+        await user.click(screen.getByLabelText('Select prep method'));
+        await user.click(await screen.findByRole('option', { name: 'sliced' }));
 
         // Expect
-        expect(screen.queryByLabelText('whole')).not.toBeNull();
-        expect(screen.queryByLabelText('teaspoon')).toBeNull();
+        await user.click(screen.getByLabelText('Select prep method'));
+        expect(await screen.findByRole('option', { name: 'whole' })).not.toBeNull();
+        expect(screen.queryByRole('option', { name: 'teaspoon' })).toBeNull();
     });
 });

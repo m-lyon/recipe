@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { FormLabel, Select } from '@chakra-ui/react';
-import { Box, FormControl, Heading, VStack } from '@chakra-ui/react';
+import { Box, Heading, VStack } from '@chakra-ui/react';
 
 import { useSuccessToast } from '@recipe/common/hooks';
+import { SearchableSelect } from '@recipe/common/components';
 import { ModifyIngredientForm } from '@recipe/features/forms';
 import { GET_INGREDIENTS } from '@recipe/graphql/queries/ingredient';
 import { useEditPermissionRecipeIngredients } from '@recipe/features/recipeIngredient';
@@ -18,27 +18,20 @@ export function EditIngredient() {
                 <Heading pb={6}>Edit Ingredient</Heading>
                 <form>
                     <VStack mt={0} spacing={8}>
-                        <FormControl>
-                            <FormLabel>Select ingredient</FormLabel>
-                            <Select
-                                placeholder='-'
-                                aria-label='Select ingredient'
-                                value={currentIngredient?._id}
-                                onChange={(e) => {
-                                    setCurrentIngredient(
-                                        data?.ingredientMany.find(
-                                            (ingr) => ingr._id === e.target.value
-                                        )
-                                    );
-                                }}
-                            >
-                                {data?.ingredientMany.map((ingr) => (
-                                    <option key={ingr._id} value={ingr._id} aria-label={ingr.name}>
-                                        {ingr.name}
-                                    </option>
-                                ))}
-                            </Select>
-                        </FormControl>
+                        <SearchableSelect
+                            label='Select ingredient'
+                            aria-label='Select ingredient'
+                            options={(data?.ingredientMany ?? []).map((ingr) => ({
+                                value: ingr._id,
+                                label: ingr.name,
+                            }))}
+                            value={currentIngredient?._id ?? null}
+                            onChange={(id) => {
+                                setCurrentIngredient(
+                                    data?.ingredientMany.find((ingr) => ingr._id === id)
+                                );
+                            }}
+                        />
                         <ModifyIngredientForm
                             ingredientId={currentIngredient?._id}
                             initData={currentIngredient}

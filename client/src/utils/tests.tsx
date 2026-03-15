@@ -106,7 +106,7 @@ export function renderPage(
 ) {
     return render(
         <MockedProvider mocks={mockedResponses} cache={getCache()}>
-            <MantineProvider>
+            <MantineProvider env='test'>
                 <ChakraProvider>
                     <RouterProvider
                         router={createMemoryRouter(route, {
