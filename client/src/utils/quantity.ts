@@ -54,6 +54,6 @@ export function scaleQuantity(
     origServings: number,
     unit: FinishedUnit
 ): string {
-    if (newServings === origServings) return quantity;
+    if (newServings === origServings || origServings === 0) return quantity;
     return calculateQuantity(quantity, newServings, origServings, unit);
 }
