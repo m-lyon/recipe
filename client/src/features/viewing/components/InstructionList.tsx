@@ -21,13 +21,13 @@ export function InstructionList(props: Props) {
             }
             return (
                 <ListItem fontWeight={fontWeight} fontSize={fontSize} key={index}>
-                    <Text>
-                        {keyPhrases?.length ? (
+                    {keyPhrases?.length ? (
+                        <Box as='span'>
                             <HighlightedInstruction text={instr} keyPhrases={keyPhrases} />
-                        ) : (
-                            instr
-                        )}
-                    </Text>
+                        </Box>
+                    ) : (
+                        <Text>{instr}</Text>
+                    )}
                 </ListItem>
             );
         });
