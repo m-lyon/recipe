@@ -286,12 +286,14 @@ recipeSchema.pre('save', async function () {
 
 recipeSchema.post('save', async function () {
     try {
-        // Populate what we need for notification checking
-        await this.populate([
-            'ingredientSubsections.ingredients.ingredient',
-            'ingredientSubsections.ingredients.unit',
+        // Clone the doc before populating to avoid mutating the in-memory document
+        // (which could corrupt ObjectId refs if .save() is called again)
+        const doc = this.toObject();
+        await (this.constructor as typeof Recipe).populate(doc, [
+            { path: 'ingredientSubsections.ingredients.ingredient' },
+            { path: 'ingredientSubsections.ingredients.unit' },
         ]);
-        await sendNutritionalNotifications(this as any);
+        await sendNutritionalNotifications(doc as any);
     } catch (err) {
         // Do not throw: notification failures must not fail the save response
         console.error('Failed to send nutritional notifications:', err);

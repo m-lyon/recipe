@@ -1,7 +1,6 @@
 import { EMAIL_FROM } from '../constants.js';
 import { sendEmail } from './email.js';
 import { User } from '../models/User.js';
-import { Unit } from '../models/Unit.js';
 import { NutritionalInfo } from '../models/NutritionalInfo.js';
 
 interface MissingConversion {
@@ -29,7 +28,7 @@ type PopulatedUnit = {
 type PopulatedRecipeIngredient = {
     type: string;
     quantity?: string;
-    ingredient: PopulatedIngredient;
+    ingredient: PopulatedIngredient | unknown;
     unit?: PopulatedUnit;
 };
 
@@ -37,23 +36,53 @@ type PopulatedSubsection = {
     ingredients: PopulatedRecipeIngredient[];
 };
 
-type PopulatedRecipe = {
+export type PopulatedRecipe = {
     title: string;
     ingredientSubsections: PopulatedSubsection[];
 };
 
+function isPopulatedIngredient(value: unknown): value is PopulatedIngredient {
+    return typeof value === 'object' && value !== null && 'name' in value && 'owner' in value;
+}
+
 export async function sendNutritionalNotifications(recipe: PopulatedRecipe): Promise<void> {
+    if (!EMAIL_FROM) {
+        console.error('EMAIL_FROM not configured; skipping nutritional notifications.');
+        return;
+    }
+
+    // Collect all ingredient IDs for a single batch DB fetch (avoid N+1)
+    const ingredientIds: unknown[] = [];
+    for (const subsection of recipe.ingredientSubsections) {
+        for (const recipeIngr of subsection.ingredients) {
+            if (recipeIngr.type !== 'ingredient') continue;
+            if (!recipeIngr.quantity) continue;
+            if (!isPopulatedIngredient(recipeIngr.ingredient)) continue;
+            ingredientIds.push(recipeIngr.ingredient._id);
+        }
+    }
+
+    if (ingredientIds.length === 0) return;
+
+    const nutritionalInfoDocs = await NutritionalInfo.find({
+        ingredient: { $in: ingredientIds },
+    });
+    const nutritionalInfoMap = new Map(
+        nutritionalInfoDocs.map((doc) => [String(doc.ingredient), doc])
+    );
+
     const missing: MissingConversion[] = [];
 
     for (const subsection of recipe.ingredientSubsections) {
         for (const recipeIngr of subsection.ingredients) {
-            if (recipeIngr.type !== 'ingredient') continue; // skip nested recipes
-            const ingredient = recipeIngr.ingredient;
-
-            // No quantity — frontend highlights; no email needed
+            if (recipeIngr.type !== 'ingredient') continue;
             if (!recipeIngr.quantity) continue;
 
-            const nutritionalInfo = await NutritionalInfo.findOne({ ingredient: ingredient._id });
+            // Guard against dangling/unpopulated refs
+            if (!isPopulatedIngredient(recipeIngr.ingredient)) continue;
+            const ingredient = recipeIngr.ingredient;
+
+            const nutritionalInfo = nutritionalInfoMap.get(String(ingredient._id)) ?? null;
 
             if (!nutritionalInfo) {
                 missing.push({
@@ -79,7 +108,7 @@ export async function sendNutritionalNotifications(recipe: PopulatedRecipe): Pro
                 continue;
             }
 
-            // Has unit: needs perGram + correct measureType
+            // Has unit: measureType must be set (unit owner's responsibility)
             if (!unit.measureType) {
                 missing.push({
                     ingredientName: ingredient.name,
@@ -91,24 +120,24 @@ export async function sendNutritionalNotifications(recipe: PopulatedRecipe): Pro
                 continue;
             }
 
+            // Missing perGram is always ingredient owner's responsibility
             if (!nutritionalInfo.perGram) {
                 missing.push({
                     ingredientName: ingredient.name,
                     unitName: unit.shortSingular,
                     reason: 'Ingredient has no per-gram nutritional data.',
                     ingredientOwnerId: String(ingredient.owner),
-                    unitOwnerId: unit.measureType === 'volume' ? String(unit.owner) : undefined,
                 });
                 continue;
             }
 
+            // For volume units, ingredient must have density set (ingredient owner's responsibility)
             if (unit.measureType === 'volume' && !ingredient.density) {
                 missing.push({
                     ingredientName: ingredient.name,
                     unitName: unit.shortSingular,
                     reason: `Ingredient "${ingredient.name}" is measured by volume but has no density set.`,
                     ingredientOwnerId: String(ingredient.owner),
-                    unitOwnerId: String(unit.owner),
                 });
             }
         }
@@ -130,23 +159,25 @@ export async function sendNutritionalNotifications(recipe: PopulatedRecipe): Pro
         }
     }
 
-    for (const [ownerId, items] of emailMap.entries()) {
-        const owner = await User.findById(ownerId);
-        // passport-local-mongoose stores the email as `username`
-        const ownerEmail = (owner as unknown as { username?: string })?.username;
-        if (!ownerEmail) continue;
+    // Fan out owner lookups and email sends concurrently
+    await Promise.all(
+        [...emailMap.entries()].map(async ([ownerId, items]) => {
+            const owner = await User.findById(ownerId);
+            const ownerEmail = (owner as unknown as { username?: string })?.username;
+            if (!ownerEmail) return;
 
-        const lines = items.map(
-            (m) => `- ${m.ingredientName}${m.unitName ? ` (${m.unitName})` : ''}: ${m.reason}`
-        );
-        const body = [
-            `The recipe "${recipe.title}" was saved but the following ingredients are missing nutritional data:`,
-            '',
-            ...lines,
-            '',
-            'Please update the affected ingredient(s) and unit(s) so that calorie information can be calculated correctly.',
-        ].join('\n');
+            const lines = items.map(
+                (m) => `- ${m.ingredientName}${m.unitName ? ` (${m.unitName})` : ''}: ${m.reason}`
+            );
+            const body = [
+                `The recipe "${recipe.title}" was saved but the following ingredients are missing nutritional data:`,
+                '',
+                ...lines,
+                '',
+                'Please update the affected ingredient(s) and unit(s) so that calorie information can be calculated correctly.',
+            ].join('\n');
 
-        await sendEmail(EMAIL_FROM, ownerEmail, 'Missing nutritional info in recipe', body);
-    }
+            await sendEmail(EMAIL_FROM, ownerEmail, 'Missing nutritional info in recipe', body);
+        })
+    );
 }
