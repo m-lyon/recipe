@@ -1,6 +1,8 @@
 import { Document, Schema, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 
+import { unique } from './validation.js';
+
 export interface KeyPhrase extends Document {
     value: string;
     description: string;
@@ -12,6 +14,7 @@ const keyPhraseSchema = new Schema<KeyPhrase>(
             type: String,
             required: true,
             unique: true,
+            validate: [unique('KeyPhrase', 'value')],
             set: (v: string) => v.toLowerCase(),
         },
         description: {
