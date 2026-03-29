@@ -100,10 +100,10 @@ export function calculateIngredientNutrition(
     unitConversions: UnitConversion[]
 ): CalculatedIngredientNutrition {
     if (!recipeIngredient.quantity) {
-        return { calculable: false, macros: ZERO_MACROS, reason: 'No quantity' };
+        return { calculable: false, macros: { ...ZERO_MACROS }, reason: 'No quantity' };
     }
     if (!nutritionalInfo) {
-        return { calculable: false, macros: ZERO_MACROS, reason: 'No nutritional data' };
+        return { calculable: false, macros: { ...ZERO_MACROS }, reason: 'No nutritional data' };
     }
 
     const qty = quantityToFloat(recipeIngredient.quantity);
@@ -112,20 +112,20 @@ export function calculateIngredientNutrition(
     // Case 1: No unit → countable ingredient
     if (!unit) {
         if (!nutritionalInfo.perUnit) {
-            return { calculable: false, macros: ZERO_MACROS, reason: 'No per-unit nutritional data' };
+            return { calculable: false, macros: { ...ZERO_MACROS }, reason: 'No per-unit nutritional data' };
         }
         return { calculable: true, macros: scaleMacros(nutritionalInfo.perUnit, qty) };
     }
 
     if (!nutritionalInfo.perGram) {
-        return { calculable: false, macros: ZERO_MACROS, reason: 'No per-gram nutritional data' };
+        return { calculable: false, macros: { ...ZERO_MACROS }, reason: 'No per-gram nutritional data' };
     }
 
     // Case 2: Mass unit
     if (unit.measureType === 'mass') {
         const grams = convertToGrams(qty, unit, unitConversions);
         if (grams === null) {
-            return { calculable: false, macros: ZERO_MACROS, reason: 'Cannot convert unit to grams' };
+            return { calculable: false, macros: { ...ZERO_MACROS }, reason: 'Cannot convert unit to grams' };
         }
         return { calculable: true, macros: scaleMacros(nutritionalInfo.perGram, grams) };
     }
@@ -134,13 +134,13 @@ export function calculateIngredientNutrition(
     if (unit.measureType === 'volume') {
         const ml = convertToMl(qty, unit, unitConversions);
         if (ml === null) {
-            return { calculable: false, macros: ZERO_MACROS, reason: 'Cannot convert unit to ml' };
+            return { calculable: false, macros: { ...ZERO_MACROS }, reason: 'Cannot convert unit to ml' };
         }
         const ingredient = recipeIngredient.ingredient;
         if (ingredient.__typename !== 'Ingredient' || !ingredient.density) {
             return {
                 calculable: false,
-                macros: ZERO_MACROS,
+                macros: { ...ZERO_MACROS },
                 reason: 'No density set for volume-measured ingredient',
             };
         }
@@ -150,7 +150,7 @@ export function calculateIngredientNutrition(
 
     return {
         calculable: false,
-        macros: ZERO_MACROS,
+        macros: { ...ZERO_MACROS },
         reason: `Unit "${unit.shortSingular}" has no measure type set`,
     };
 }
