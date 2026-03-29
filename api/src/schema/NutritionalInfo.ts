@@ -1,6 +1,5 @@
 import { GraphQLError } from 'graphql';
 import { schemaComposer } from 'graphql-compose';
-import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 import { Ingredient } from '../models/Ingredient.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
@@ -18,7 +17,7 @@ async function assertIngredientOwnerOrAdmin(
     // Explicit auth check before ownership check
     if (!userId) {
         throw new GraphQLError('Not authenticated', {
-            extensions: { code: ApolloServerErrorCode.FORBIDDEN },
+            extensions: { code: 'FORBIDDEN' },
         });
     }
     if (isUserAdmin) return;
@@ -30,7 +29,7 @@ async function assertIngredientOwnerOrAdmin(
     }
     if (String(ingr.owner) !== String(userId)) {
         throw new GraphQLError('Not authorized', {
-            extensions: { code: ApolloServerErrorCode.FORBIDDEN },
+            extensions: { code: 'FORBIDDEN' },
         });
     }
 }
@@ -55,7 +54,7 @@ export const NutritionalInfoQuery = {
         .wrapResolve((next) => async (rp) => {
             if (!rp.context.getUser()) {
                 throw new GraphQLError('Not authenticated', {
-                    extensions: { code: ApolloServerErrorCode.FORBIDDEN },
+                    extensions: { code: 'FORBIDDEN' },
                 });
             }
             return next(rp);
@@ -67,7 +66,7 @@ export const NutritionalInfoQuery = {
         resolve: async ({ args, context }) => {
             if (!context.getUser()) {
                 throw new GraphQLError('Not authenticated', {
-                    extensions: { code: ApolloServerErrorCode.FORBIDDEN },
+                    extensions: { code: 'FORBIDDEN' },
                 });
             }
             return NutritionalInfo.find({ ingredient: { $in: args.ingredientIds } });
