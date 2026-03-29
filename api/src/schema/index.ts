@@ -20,6 +20,7 @@ import { ConversionRuleMutation, ConversionRuleQuery } from './UnitConversion.js
 import { isDocumentOwnerOrAdmin, isVerified } from '../middleware/authorisation.js';
 import { PrepMethodMutation, PrepMethodQuery, PrepMethodQueryAdmin } from './PrepMethod.js';
 import { NutritionalInfoMutation, NutritionalInfoQuery } from './NutritionalInfo.js';
+import { UsdaQuery } from './Usda.js';
 
 const isAdminMutations = composeResolvers(
     {
@@ -127,6 +128,7 @@ schemaComposer.Query.addFields({
     ...UnitConversionQuery,
     ...ConversionRuleQuery,
     ...NutritionalInfoQuery,
+    ...UsdaQuery,
     ...isAdminQueries.Query,
 });
 schemaComposer.Mutation.addFields({
