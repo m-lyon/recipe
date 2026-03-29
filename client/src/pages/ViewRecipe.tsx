@@ -4,6 +4,7 @@ import { Box, Container, Grid, GridItem } from '@chakra-ui/react';
 
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { ImageViewerRecipe } from '@recipe/features/images';
+import { BraisingLoader } from '@recipe/common/components';
 import { IngredientsTab, InstructionsTab, Title } from '@recipe/features/viewing';
 
 export function ViewRecipe() {
@@ -13,7 +14,7 @@ export function ViewRecipe() {
     });
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <BraisingLoader h='100vh' />;
     }
 
     if (error || !data || !data.recipeOne) {
