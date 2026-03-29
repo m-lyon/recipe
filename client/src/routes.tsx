@@ -20,6 +20,8 @@ import { EditPrepMethod } from './pages/EditPrepMethod';
 import { CreateIngredient } from './pages/CreateIngredient';
 import { CreatePrepMethod } from './pages/CreatePrepMethod';
 import { CreateUnitConversion } from './pages/CreateUnitConversion';
+import { CreateKeyPhrase } from './pages/CreateKeyPhrase';
+import { EditKeyPhrase } from './pages/EditKeyPhrase';
 
 export const routes = createRoutesFromElements(
     <Route path={PATH.ROOT} errorElement={<ErrorBoundary />}>
@@ -35,12 +37,14 @@ export const routes = createRoutesFromElements(
                 <Route path='size' element={<CreateSize />} />
                 <Route path='ingredient' element={<CreateIngredient />} />
                 <Route path='prep-method' element={<CreatePrepMethod />} />
+                <Route path='key-phrase' element={<CreateKeyPhrase />} />
             </Route>
             <Route path='edit' element={<RequireAuth />}>
                 <Route path='unit' element={<EditUnit />} />
                 <Route path='size' element={<EditSize />} />
                 <Route path='ingredient' element={<EditIngredient />} />
                 <Route path='prep-method' element={<EditPrepMethod />} />
+                <Route path='key-phrase' element={<EditKeyPhrase />} />
                 <Route path='recipe/:titleIdentifier' element={<EditRecipe />} />
             </Route>
             <Route path='login' element={<Login />} />
