@@ -47,3 +47,13 @@ export function returnQuantityFromFloat(num: number, unit: FinishedUnit): string
     }
     return num.toString();
 }
+
+export function scaleQuantity(
+    quantity: string,
+    newServings: number,
+    origServings: number,
+    unit: FinishedUnit
+): string {
+    if (newServings === origServings) return quantity;
+    return calculateQuantity(quantity, newServings, origServings, unit);
+}
