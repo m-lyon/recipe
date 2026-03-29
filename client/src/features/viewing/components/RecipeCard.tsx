@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { TbClock } from 'react-icons/tb';
 import { Link } from 'react-router-dom';
+import { Tooltip } from '@mantine/core';
 import { LinkOverlay, VStack } from '@chakra-ui/react';
 import { Card, CardBody, CardHeader, Heading, LinkBox } from '@chakra-ui/react';
 
@@ -51,6 +53,21 @@ export function RecipeCard(props: Props) {
                     >
                         <Heading size='md' color='blackAlpha.700'>
                             {getCardTitle(recipe)}
+                            {recipe.isIngredient && recipe.prepAhead && (
+                                <Tooltip
+                                    label={recipe.prepAheadLabel ?? 'ahead of time'}
+                                >
+                                    <span
+                                        style={{
+                                            marginLeft: 6,
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <TbClock />
+                                    </span>
+                                </Tooltip>
+                            )}
                         </Heading>
                     </LinkOverlay>
                 </CardHeader>
