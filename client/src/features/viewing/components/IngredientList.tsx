@@ -1,6 +1,7 @@
-import { TbLock, TbLockOpen2 } from 'react-icons/tb';
+import { TbLock, TbLockOpen2, TbQuestionMark } from 'react-icons/tb';
 import { BoxProps, Tooltip, UnorderedList, VStack } from '@chakra-ui/react';
 import { Box, Flex, IconButton, ListItem, Spacer, Text } from '@chakra-ui/react';
+import { ActionIcon, Tooltip as MantineTooltip } from '@mantine/core';
 
 import { useWakeLock } from '@recipe/common/hooks';
 import { changeQuantity } from '@recipe/utils/quantity';
@@ -14,9 +15,10 @@ export interface IngredientListProps extends BoxProps {
     currentServings: number;
     origServings: number;
     showWakeLockBtn?: boolean;
+    uncountedIngredientIds?: Set<string>;
 }
 export function IngredientList(props: IngredientListProps) {
-    const { subsections, currentServings, origServings, showWakeLockBtn, ...rest } = props;
+    const { subsections, currentServings, origServings, showWakeLockBtn, uncountedIngredientIds, ...rest } = props;
     const { apply } = useUnitConversion();
     const { isAwake, toggleWakeLock } = useWakeLock();
 
@@ -30,15 +32,32 @@ export function IngredientList(props: IngredientListProps) {
     const subsectionsList = modifiedSubsections.map((collection, index) => {
         const finishedIngredients = collection.ingredients.map((item, i) => {
             if (item.ingredient.__typename === 'Ingredient') {
-                return (
-                    <ListItem
-                        key={item._id}
-                        aria-label={`Ingredient #${i + 1} in subsection ${index + 1}`}
-                    >
-                        {getFinishedRecipeIngredientStr(item)}
-                    </ListItem>
-                );
-            }
+                    return (
+                        <ListItem
+                            key={item._id}
+                            aria-label={`Ingredient #${i + 1} in subsection ${index + 1}`}
+                        >
+                            {getFinishedRecipeIngredientStr(item)}
+                            {uncountedIngredientIds?.has(item._id) && (
+                                <MantineTooltip
+                                    label='Not included in nutritional calculation'
+                                    withArrow
+                                >
+                                    <ActionIcon
+                                        variant='transparent'
+                                        size='xs'
+                                        ml={4}
+                                        aria-label='Not counted in nutrition'
+                                        component='span'
+                                        display='inline-flex'
+                                    >
+                                        <TbQuestionMark />
+                                    </ActionIcon>
+                                </MantineTooltip>
+                            )}
+                        </ListItem>
+                    );
+                }
             return (
                 <RecipeIngredient
                     key={item._id}

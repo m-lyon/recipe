@@ -11,6 +11,8 @@ import { StarRating, getAverageRating } from '@recipe/features/rating';
 import { Notes } from './Notes';
 import { UsedIn } from './UsedIn';
 import { IngredientList } from './IngredientList';
+import { NutritionalInfoPanel } from './NutritionalInfoPanel';
+import { useNutritionalInfo } from '../hooks/useNutritionalInfo';
 
 interface Props {
     recipe: CompletedRecipeView;
@@ -21,6 +23,7 @@ export function IngredientsTab(props: Props) {
     const currentServings = useRecipeStore((state) => state.numServings);
     const { isVerified } = useUser();
     const { addRatingWithToast } = useAddRating();
+    const { uncountedIds } = useNutritionalInfo(recipe.ingredientSubsections, currentServings);
     useEffect(() => {
         setNumServings(recipe.numServings);
     }, [recipe.numServings, setNumServings]);
@@ -37,12 +40,19 @@ export function IngredientsTab(props: Props) {
                 />
             }
             IngredientList={
-                <IngredientList
-                    subsections={recipe.ingredientSubsections}
-                    origServings={recipe.numServings}
-                    currentServings={currentServings}
-                    showWakeLockBtn
-                />
+                <>
+                    <IngredientList
+                        subsections={recipe.ingredientSubsections}
+                        origServings={recipe.numServings}
+                        currentServings={currentServings}
+                        showWakeLockBtn
+                        uncountedIngredientIds={uncountedIds}
+                    />
+                    <NutritionalInfoPanel
+                        subsections={recipe.ingredientSubsections}
+                        numServings={currentServings}
+                    />
+                </>
             }
             Notes={<Notes notes={recipe.notes} />}
             Tags={
