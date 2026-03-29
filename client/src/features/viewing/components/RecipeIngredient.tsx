@@ -1,5 +1,7 @@
+import { TbClock } from 'react-icons/tb';
 import { useLazyQuery } from '@apollo/client';
 import { ChevronRightIcon } from '@chakra-ui/icons';
+import { Tooltip } from '@mantine/core';
 import { Box, Flex, ListItem, Spacer, useDisclosure } from '@chakra-ui/react';
 
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
@@ -44,6 +46,21 @@ export function RecipeIngredient({ ingredient }: Props) {
                     aria-label={`View ${ingredient.ingredient.title}`}
                 >
                     {getFinishedRecipeIngredientStr(ingredient)}
+                    {ingredient.ingredient.prepAhead && (
+                        <Tooltip
+                            label={ingredient.ingredient.prepAheadLabel ?? 'ahead of time'}
+                        >
+                            <span
+                                style={{
+                                    marginLeft: 4,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <TbClock />
+                            </span>
+                        </Tooltip>
+                    )}
                     <ChevronRightIcon style={{ marginLeft: 5 }} />
                 </Box>
                 <Spacer />
