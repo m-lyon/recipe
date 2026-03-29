@@ -146,6 +146,7 @@ export const mockRecipeOne: CompletedRecipeView = {
     images: [],
     ratings: [mockRatingOne],
     source: null,
+    yield: null,
     owner: mockAdminId,
 };
 export const mockRecipeTwo: CompletedRecipeView = {
@@ -368,6 +369,7 @@ export const mockRecipeNew: CompletedRecipeView = {
     source: 'Recipe Source',
     images: [],
     ratings: [],
+    yield: null,
     owner: mockAdminId,
 };
 export const mockRecipeNewAsIngr: CompletedRecipeView = {

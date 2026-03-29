@@ -154,3 +154,128 @@ describe('Quantity Validation', function () {
         await assertValidQuantity(null);
     });
 });
+
+describe('Yield Quantity Validation', function () {
+    before(startServer);
+    after(stopServer);
+
+    beforeEach(function (done) {
+        const user = new User({
+            username: 'testuser1',
+            firstName: 'Tester1',
+            lastName: 'McTestFace',
+            role: 'user',
+        });
+        const ingredient = new Ingredient({
+            name: 'test ingredient',
+            pluralName: 'test ingredients',
+            isCountable: true,
+            owner: user._id,
+            tags: [],
+        });
+        user.save()
+            .then(() =>
+                ingredient
+                    .save()
+                    .then(() => done())
+                    .catch((error) => {
+                        console.log(error);
+                        assert.fail('Ingredients not saved');
+                    })
+            )
+            .catch((error) => {
+                console.log(error);
+                assert.fail('Users not saved');
+            });
+    });
+
+    afterEach(function (done) {
+        mongoose.connection.collections.users
+            .drop()
+            .then(() => mongoose.connection.collections.ingredients.drop())
+            .then(() => {
+                if (mongoose.connection.collections.recipes) {
+                    mongoose.connection.collections.recipes.drop();
+                }
+            })
+            .then(() => done())
+            .catch((error) => {
+                console.log(error);
+                assert.fail('Data not deleted');
+            });
+    });
+
+    const getMockRecipeWithYield = async (yieldQuantity: string | null) => {
+        const user = await User.findOne({ firstName: 'Tester1' });
+        const ingredient = await Ingredient.findOne({ name: 'test ingredient' });
+        const recipeData = {
+            title: 'Yield Test Recipe',
+            titleIdentifier: 'yield-test-recipe',
+            ingredientSubsections: [
+                { ingredients: [{ quantity: '1', unit: null, size: null, ingredient: ingredient._id, prepMethod: null }] },
+            ],
+            instructionSubsections: [{ instructions: ['Test instruction'] }],
+            owner: user._id,
+            numServings: 2,
+            isIngredient: false,
+            createdAt: new Date(),
+            lastModified: new Date(),
+            yield: yieldQuantity !== null ? { quantity: yieldQuantity } : null,
+        };
+        return new Recipe(recipeData);
+    };
+
+    const assertValidYieldQuantity = async (quantity: string) => {
+        const recipe = await getMockRecipeWithYield(quantity);
+        try {
+            await recipe.save();
+            assert.isFalse(recipe.isNew);
+        } catch (error) {
+            assert.fail(`Yield quantity '${quantity}' should be valid but got: ${error.message}`);
+        }
+    };
+
+    const assertInvalidYieldQuantity = async (quantity: string) => {
+        const recipe = await getMockRecipeWithYield(quantity);
+        try {
+            await recipe.save();
+            assert.fail(`Invalid yield quantity '${quantity}' was saved`);
+        } catch (error) {
+            assert.include(error.message, 'Invalid quantity format');
+        }
+    };
+
+    it('Should allow whole number yield: 4', async function () {
+        await assertValidYieldQuantity('4');
+    });
+
+    it('Should allow fraction yield: 1/2', async function () {
+        await assertValidYieldQuantity('1/2');
+    });
+
+    it('Should allow decimal yield: 1.5', async function () {
+        await assertValidYieldQuantity('1.5');
+    });
+
+    it('Should allow range yield: 1-2', async function () {
+        await assertValidYieldQuantity('1-2');
+    });
+
+    it('Should allow null yield (no yield field)', async function () {
+        const recipe = await getMockRecipeWithYield(null);
+        try {
+            await recipe.save();
+            assert.isFalse(recipe.isNew);
+        } catch (error) {
+            assert.fail(`Recipe without yield should be valid: ${error.message}`);
+        }
+    });
+
+    it('Should NOT allow invalid yield quantity: abc', async function () {
+        await assertInvalidYieldQuantity('abc');
+    });
+
+    it('Should NOT allow invalid yield quantity: 1/0', async function () {
+        await assertInvalidYieldQuantity('1/0');
+    });
+});
