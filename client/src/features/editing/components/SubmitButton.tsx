@@ -3,6 +3,7 @@ import { Box, Button, Center } from '@chakra-ui/react';
 
 import { useRecipeStore } from '@recipe/stores';
 import { useErrorToast } from '@recipe/common/hooks';
+import { VALID_NUMBER_REGEX } from '@recipe/utils/number';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
 
 interface Props {
@@ -107,6 +108,10 @@ export function SubmitButton(props: Props) {
                 title: 'Please enter at least one instruction for each subsection',
                 position: 'top',
             });
+            return false;
+        }
+        if (yieldQuantity && !VALID_NUMBER_REGEX.test(yieldQuantity)) {
+            toast({ title: 'Invalid yield quantity', position: 'top' });
             return false;
         }
         return true;

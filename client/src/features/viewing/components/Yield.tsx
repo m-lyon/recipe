@@ -13,12 +13,18 @@ interface Props {
 export function Yield(props: Props) {
     const { origQuantity, unit, currentServings, origServings } = props;
     const scaledQty = scaleQuantity(origQuantity, currentServings, origServings, unit);
-    const displayQty = isRange(scaledQty)
-        ? scaledQty
-              .split('-')
-              .map((part) => formatFraction(part))
-              .join('-')
-        : formatFraction(scaledQty);
+
+    let displayQty: string;
+    try {
+        displayQty = isRange(scaledQty)
+            ? scaledQty
+                  .split('-')
+                  .map((part) => formatFraction(part))
+                  .join('-')
+            : formatFraction(scaledQty);
+    } catch {
+        displayQty = scaledQty;
+    }
 
     const displayUnit = (() => {
         if (!unit) return '';
@@ -26,8 +32,12 @@ export function Yield(props: Props) {
         if (isRange(scaledQty)) {
             numeric = 2; // ranges are always plural
         } else {
-            const fract = fraction(scaledQty);
-            numeric = fract.n / fract.d;
+            try {
+                const fract = fraction(scaledQty);
+                numeric = fract.s * fract.n / fract.d;
+            } catch {
+                numeric = 2; // default to plural on parse failure
+            }
         }
         const name = numeric === 1 ? unit.shortSingular : unit.shortPlural;
         return unit.hasSpace ? ` ${name}` : name;
