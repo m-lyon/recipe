@@ -15,9 +15,20 @@ async function assertIngredientOwnerOrAdmin(
     userId: unknown,
     isUserAdmin: boolean
 ) {
+    // Explicit auth check before ownership check
+    if (!userId) {
+        throw new GraphQLError('Not authenticated', {
+            extensions: { code: ApolloServerErrorCode.FORBIDDEN },
+        });
+    }
     if (isUserAdmin) return;
     const ingr = await Ingredient.findById(ingredientId);
-    if (!ingr || String(ingr.owner) !== String(userId)) {
+    if (!ingr) {
+        throw new GraphQLError('Ingredient not found', {
+            extensions: { code: 'NOT_FOUND' },
+        });
+    }
+    if (String(ingr.owner) !== String(userId)) {
         throw new GraphQLError('Not authorized', {
             extensions: { code: ApolloServerErrorCode.FORBIDDEN },
         });
@@ -39,13 +50,26 @@ NutritionalInfoTC.addResolver({
 });
 
 export const NutritionalInfoQuery = {
-    nutritionalInfoByIngredient: NutritionalInfoTC.mongooseResolvers.findOne(),
+    nutritionalInfoByIngredient: NutritionalInfoTC.mongooseResolvers
+        .findOne()
+        .wrapResolve((next) => async (rp) => {
+            if (!rp.context.getUser()) {
+                throw new GraphQLError('Not authenticated', {
+                    extensions: { code: ApolloServerErrorCode.FORBIDDEN },
+                });
+            }
+            return next(rp);
+        }),
     nutritionalInfosByIngredientIds: schemaComposer.createResolver({
         name: 'nutritionalInfosByIngredientIds',
         type: [NutritionalInfoTC],
         args: { ingredientIds: '[MongoID!]!' },
         resolve: async ({ args, context }) => {
-            if (!context.getUser()) throw new GraphQLError('Not authenticated');
+            if (!context.getUser()) {
+                throw new GraphQLError('Not authenticated', {
+                    extensions: { code: ApolloServerErrorCode.FORBIDDEN },
+                });
+            }
             return NutritionalInfo.find({ ingredient: { $in: args.ingredientIds } });
         },
     }),
@@ -63,9 +87,14 @@ export const NutritionalInfoMutation = {
     nutritionalInfoUpdateById: NutritionalInfoTC.getResolver('updateById').wrapResolve(
         (next) => async (rp) => {
             const existing = await NutritionalInfo.findById(rp.args._id);
+            if (!existing) {
+                throw new GraphQLError('NutritionalInfo not found', {
+                    extensions: { code: 'NOT_FOUND' },
+                });
+            }
             const user = rp.context.getUser();
             const isUserAdmin = user?.role === 'admin';
-            await assertIngredientOwnerOrAdmin(existing?.ingredient, user?._id, isUserAdmin);
+            await assertIngredientOwnerOrAdmin(existing.ingredient, user?._id, isUserAdmin);
             return next(rp);
         }
     ),
@@ -73,9 +102,14 @@ export const NutritionalInfoMutation = {
         .removeById()
         .wrapResolve((next) => async (rp) => {
             const existing = await NutritionalInfo.findById(rp.args._id);
+            if (!existing) {
+                throw new GraphQLError('NutritionalInfo not found', {
+                    extensions: { code: 'NOT_FOUND' },
+                });
+            }
             const user = rp.context.getUser();
             const isUserAdmin = user?.role === 'admin';
-            await assertIngredientOwnerOrAdmin(existing?.ingredient, user?._id, isUserAdmin);
+            await assertIngredientOwnerOrAdmin(existing.ingredient, user?._id, isUserAdmin);
             return next(rp);
         }),
 };

@@ -47,6 +47,5 @@ nutritionalInfoSchema.pre('validate', function () {
 export const NutritionalInfo = model<NutritionalInfo>('NutritionalInfo', nutritionalInfoSchema);
 export const NutritionalInfoTC = composeMongoose(NutritionalInfo);
 export const NutritionalInfoCreateTC = composeMongoose(NutritionalInfo, {
-    removeFields: [],
     name: 'NutritionalInfoCreate',
 });
