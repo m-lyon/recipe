@@ -11,6 +11,7 @@ import { PrepMethod } from '../models/PrepMethod.js';
 import { ImageMutation, ImageQuery } from './Image.js';
 import { RecipeMutation, RecipeQuery } from './Recipe.js';
 import { RatingMutation, RatingQuery } from './Rating.js';
+import { KeyPhraseMutation, KeyPhraseQuery, KeyPhraseQueryExtra } from './KeyPhrase.js';
 import { SizeMutation, SizeQuery, SizeQueryAdmin } from './Size.js';
 import { UnitMutation, UnitQuery, UnitQueryAdmin } from './Unit.js';
 import { IngredientMutation, IngredientQuery } from './Ingredient.js';
@@ -26,6 +27,7 @@ const isAdminMutations = composeResolvers(
             ...TagMutation,
             ...UnitConversionMutation,
             ...ConversionRuleMutation,
+            ...KeyPhraseMutation,
         },
     },
     { 'Mutation.*': [isAdmin()] }
@@ -122,6 +124,8 @@ schemaComposer.Query.addFields({
     ...ImageQuery,
     ...UnitConversionQuery,
     ...ConversionRuleQuery,
+    ...KeyPhraseQuery,
+    ...KeyPhraseQueryExtra,
     ...isAdminQueries.Query,
 });
 schemaComposer.Mutation.addFields({
