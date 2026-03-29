@@ -9,6 +9,7 @@ import { generateRandomString } from '../utils/random.js';
 import type { Ingredient as IngredientType } from './Ingredient.js';
 import { Ingredient, ReservedIngredientTags } from './Ingredient.js';
 import { ownerExists, tagsExist, unique, uniqueInAdminsAndUser } from './validation.js';
+import { sendNutritionalNotifications } from '../utils/nutritionalNotifications.js';
 
 const quantityRegex = /^((\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*)(-(\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*))?)$/;
 const ReservedRecipeTags = { Ingredient: 'ingredient' } as const;
@@ -281,6 +282,20 @@ recipeSchema.pre('save', async function () {
         }
     }
     this.calculatedTags = calculatedTags;
+});
+
+recipeSchema.post('save', async function () {
+    try {
+        // Populate what we need for notification checking
+        await this.populate([
+            'ingredientSubsections.ingredients.ingredient',
+            'ingredientSubsections.ingredients.unit',
+        ]);
+        await sendNutritionalNotifications(this as any);
+    } catch (err) {
+        // Do not throw: notification failures must not fail the save response
+        console.error('Failed to send nutritional notifications:', err);
+    }
 });
 
 export const RecipeIngredient = model<RecipeIngredientType>(
