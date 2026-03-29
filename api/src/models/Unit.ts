@@ -12,6 +12,7 @@ export interface Unit extends Document {
     owner: Types.ObjectId;
     hasSpace: boolean;
     unique: boolean;
+    measureType?: 'mass' | 'volume';
 }
 
 const unitSchema = new Schema<Unit>({
@@ -59,6 +60,11 @@ const unitSchema = new Schema<Unit>({
     owner: { type: Schema.Types.ObjectId, required: true, ref: 'User', validate: ownerExists() },
     hasSpace: { type: Boolean, required: true },
     unique: { type: Boolean, required: true },
+    measureType: {
+        type: String,
+        enum: ['mass', 'volume'],
+        required: false,
+    },
 });
 
 export const Unit = model<Unit>('Unit', unitSchema);

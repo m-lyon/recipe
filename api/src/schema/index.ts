@@ -19,6 +19,7 @@ import { UnitConversionMutation, UnitConversionQuery } from './UnitConversion.js
 import { ConversionRuleMutation, ConversionRuleQuery } from './UnitConversion.js';
 import { isDocumentOwnerOrAdmin, isVerified } from '../middleware/authorisation.js';
 import { PrepMethodMutation, PrepMethodQuery, PrepMethodQueryAdmin } from './PrepMethod.js';
+import { NutritionalInfoMutation, NutritionalInfoQuery } from './NutritionalInfo.js';
 
 const isAdminMutations = composeResolvers(
     {
@@ -49,6 +50,9 @@ const isAuthenticatedMutations = composeResolvers(
             unitCreateOne: UnitMutation.unitCreateOne,
             prepMethodCreateOne: PrepMethodMutation.prepMethodCreateOne,
             ingredientCreateOne: IngredientMutation.ingredientCreateOne,
+            nutritionalInfoCreateOne: NutritionalInfoMutation.nutritionalInfoCreateOne,
+            nutritionalInfoUpdateById: NutritionalInfoMutation.nutritionalInfoUpdateById,
+            nutritionalInfoRemoveById: NutritionalInfoMutation.nutritionalInfoRemoveById,
         },
     },
     { 'Mutation.*': [isVerified()] }
@@ -122,6 +126,7 @@ schemaComposer.Query.addFields({
     ...ImageQuery,
     ...UnitConversionQuery,
     ...ConversionRuleQuery,
+    ...NutritionalInfoQuery,
     ...isAdminQueries.Query,
 });
 schemaComposer.Mutation.addFields({

@@ -15,6 +15,8 @@ declare global {
             SMTP_FROM_DOMAIN?: string;
             SMTP_ADMIN_EMAIL?: string;
             SENDGRID_API_KEY?: string;
+            USDA_API_KEY?: string;
+            EMAIL_FROM?: string;
         }
     }
 }

@@ -19,6 +19,8 @@ export const IMAGE_DIR = process.env.IMAGE_DIR ? process.env.IMAGE_DIR : '/data/
 export const SMTP_FROM_DOMAIN = process.env.SMTP_FROM_DOMAIN;
 export const SMTP_ADMIN_EMAIL = process.env.SMTP_ADMIN_EMAIL;
 export const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+export const USDA_API_KEY = process.env.USDA_API_KEY ?? '';
+export const EMAIL_FROM = process.env.EMAIL_FROM ?? '';
 
 if (!TEST) {
     const requiredEnvVars = {
