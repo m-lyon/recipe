@@ -88,6 +88,10 @@ export const mockBreakfastTagId = '60f4d2e5c3d5a0a4f1b9c0f8';
 export const mockBrunchTagId = '60f4d2e5c3d5a0a4f1b9c0f9';
 export const mockTagId = '60f4d2e5cgd5a0a4f1b9c0f0';
 
+// Key Phrases
+export const mockKeyPhraseId = '60f4d2e5c3d5a0a4f1b9c0ff';
+export const mockKeyPhraseTwoId = '60f4d2e5c3d5a0a4f1b9c0fe';
+
 // Unit Conversion
 export const mockConversionRuleIdOne = '60f4d2e5c4d5a0a4f1b9c0f0';
 export const mockUnitConversionIdOne = '60f4d2e5c3d5a0a4f1b9c0q1';
