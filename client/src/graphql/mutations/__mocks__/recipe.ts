@@ -12,6 +12,7 @@ import { mockRecipeOne, mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/
 import { mockRecipeNew, mockRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
 import { CREATE_RECIPE, DELETE_RECIPE, UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { mockRecipeFour, mockRecipeNewAsIngr } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockRecipePrepAhead } from '@recipe/graphql/queries/__mocks__/recipe';
 import { DeleteRecipeMutation, DeleteRecipeMutationVariables } from '@recipe/graphql/generated';
 import { CreateRecipeMutation, CreateRecipeMutationVariables } from '@recipe/graphql/generated';
 
@@ -617,16 +618,17 @@ export const mockUpdateRecipeAddPrepAhead = {
         } satisfies UpdateRecipeMutation,
     },
 };
+const recipePrepAheadVars = getMockRecipeVariables(mockRecipePrepAhead);
+const recipePrepAheadData = getMockRecipeReturn(mockRecipePrepAhead);
 export const mockUpdateRecipeRemovePrepAhead = {
     request: {
         query: UPDATE_RECIPE,
         variables: {
-            id: recipeOneVars.id,
+            id: recipePrepAheadVars.id,
             recipe: {
-                ...recipeOneVars.recipe,
-                isIngredient: true,
-                pluralTitle: 'Mock Recipes',
+                ...recipePrepAheadVars.recipe,
                 prepAhead: false,
+                prepAheadLabel: undefined,
             },
         } satisfies UpdateRecipeMutationVariables,
     },
@@ -636,9 +638,7 @@ export const mockUpdateRecipeRemovePrepAhead = {
             recipeUpdateById: {
                 __typename: 'UpdateByIdRecipePayload',
                 record: {
-                    ...recipeOneData.record,
-                    isIngredient: true,
-                    pluralTitle: 'Mock Recipes',
+                    ...recipePrepAheadData.record,
                     prepAhead: false,
                     prepAheadLabel: null,
                     calculatedTags: ['ingredient'],

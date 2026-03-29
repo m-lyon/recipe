@@ -542,8 +542,8 @@ export const mockGetRecipes = {
     result: {
         data: {
             __typename: 'Query',
-            recipeMany: [mockRecipeOne, mockRecipeTwo, mockRecipeThree, mockRecipeFour],
-            recipeCount: 4,
+            recipeMany: [mockRecipeOne, mockRecipeTwo, mockRecipeThree, mockRecipeFour, mockRecipePrepAhead],
+            recipeCount: 5,
         } satisfies GetRecipesQuery,
     },
 };
