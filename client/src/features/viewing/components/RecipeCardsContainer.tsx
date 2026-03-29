@@ -8,6 +8,7 @@ import { useUser } from '@recipe/features/user';
 import { useSearch } from '@recipe/features/search';
 import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { ConfirmDeleteModal } from '@recipe/features/editing';
+import { BraisingLoader } from '@recipe/common/components';
 import { FETCH_MORE_NUM, INIT_LOAD_NUM } from '@recipe/constants';
 
 import { RecipeCard } from './RecipeCard';
@@ -50,7 +51,7 @@ export function RecipeCardsContainer() {
     };
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <BraisingLoader h='100%' />;
     }
 
     if (error || !data) {
@@ -92,7 +93,7 @@ export function RecipeCardsContainer() {
                 });
             }}
             hasMore={data.recipeCount ? data.recipeCount > recipes.length : false}
-            loader={<h4 style={{ textAlign: 'center' }}>Loading...</h4>}
+            loader={<BraisingLoader />}
         >
             <ResponsiveMasonry
                 columnsCountBreakPoints={breakPoints}
