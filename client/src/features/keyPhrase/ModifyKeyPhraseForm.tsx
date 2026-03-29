@@ -73,9 +73,17 @@ export function ModifyKeyPhraseForm(props: Props) {
 
     const handleDeleteClick = async () => {
         if (keyPhraseId && rest.initData?.value) {
-            const { data } = await checkUsedInRecipes({
+            const { data, error } = await checkUsedInRecipes({
                 variables: { value: rest.initData.value },
             });
+            if (error) {
+                toast({
+                    title: 'Error checking usage',
+                    description: error.message,
+                    position: 'top',
+                });
+                return;
+            }
             setUsedInRecipes(data?.keyPhraseUsedInRecipes ?? false);
             setDeleteModalOpened(true);
         }
