@@ -17,6 +17,7 @@ export const GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS = gql(`
         nutritionalInfosByIngredientIds(ingredientIds: $ingredientIds) {
             _id
             ingredient
+            usdaFdcId
             perGram { calories protein carbs fat }
             perUnit { calories protein carbs fat }
         }

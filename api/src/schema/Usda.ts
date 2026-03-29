@@ -59,8 +59,11 @@ export const UsdaQuery = {
         args: { query: 'String!', pageSize: { type: 'Int', defaultValue: 20 } },
         resolve: async ({ args, context }) => {
             if (!context.getUser()) throw new GraphQLError('Not authenticated');
+            if (typeof args.query !== 'string' || !args.query) {
+                throw new GraphQLError('Invalid query argument', { extensions: { code: 'BAD_USER_INPUT' } });
+            }
             const safePageSize = Math.min((args.pageSize as number) ?? 20, USDA_MAX_PAGE_SIZE);
-            const url = `${USDA_BASE}/foods/search?query=${encodeURIComponent(args.query as string)}&pageSize=${safePageSize}`;
+            const url = `${USDA_BASE}/foods/search?query=${encodeURIComponent(args.query)}&pageSize=${safePageSize}`;
             const res = await usdaFetch(url);
             if (!res.ok) {
                 throw new GraphQLError(`USDA API error: ${res.status} ${res.statusText}`);

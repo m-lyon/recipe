@@ -17,7 +17,7 @@ async function assertIngredientOwnerOrAdmin(
     // Explicit auth check before ownership check
     if (!userId) {
         throw new GraphQLError('Not authenticated', {
-            extensions: { code: 'FORBIDDEN' },
+            extensions: { code: 'UNAUTHENTICATED' },
         });
     }
     if (isUserAdmin) return;
@@ -54,7 +54,7 @@ export const NutritionalInfoQuery = {
         .wrapResolve((next) => async (rp) => {
             if (!rp.context.getUser()) {
                 throw new GraphQLError('Not authenticated', {
-                    extensions: { code: 'FORBIDDEN' },
+                    extensions: { code: 'UNAUTHENTICATED' },
                 });
             }
             return next(rp);
@@ -66,7 +66,7 @@ export const NutritionalInfoQuery = {
         resolve: async ({ args, context }) => {
             if (!context.getUser()) {
                 throw new GraphQLError('Not authenticated', {
-                    extensions: { code: 'FORBIDDEN' },
+                    extensions: { code: 'UNAUTHENTICATED' },
                 });
             }
             return NutritionalInfo.find({ ingredient: { $in: args.ingredientIds } });
