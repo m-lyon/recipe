@@ -15,6 +15,7 @@ export const mockTeaspoon: Unit = {
     owner: mockAdminId,
     unique: true,
     hasSpace: true,
+    measureType: null,
 };
 export const mockTablespoon: Unit = {
     __typename: 'Unit',
@@ -27,6 +28,7 @@ export const mockTablespoon: Unit = {
     owner: mockAdminId,
     unique: true,
     hasSpace: true,
+    measureType: null,
 };
 export const mockGram: Unit = {
     __typename: 'Unit',
@@ -39,6 +41,7 @@ export const mockGram: Unit = {
     owner: mockAdminId,
     unique: true,
     hasSpace: false,
+    measureType: 'mass',
 };
 export const mockKilogram: Unit = {
     __typename: 'Unit',
@@ -51,6 +54,7 @@ export const mockKilogram: Unit = {
     owner: mockAdminId,
     unique: true,
     hasSpace: false,
+    measureType: 'mass',
 };
 export const mockOunce: Unit = {
     __typename: 'Unit',
@@ -63,6 +67,7 @@ export const mockOunce: Unit = {
     owner: mockAdminId,
     unique: true,
     hasSpace: true,
+    measureType: 'mass',
 };
 export const mockCup: Unit = {
     __typename: 'Unit',
@@ -75,6 +80,7 @@ export const mockCup: Unit = {
     owner: mockAdminId,
     unique: true,
     hasSpace: true,
+    measureType: 'volume',
 };
 export const mockUnits = [mockTeaspoon, mockTablespoon, mockGram, mockKilogram, mockOunce, mockCup];
 export const mockGetUnits = {

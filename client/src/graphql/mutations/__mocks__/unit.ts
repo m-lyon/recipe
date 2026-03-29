@@ -17,6 +17,7 @@ export const mockUnit: Unit = {
     hasSpace: true,
     unique: true,
     owner: mockAdminId,
+    measureType: null,
 };
 
 export const mockCreateUnit = {
@@ -74,6 +75,7 @@ export const mockCreateBespokeUnit = {
                     preferredNumberFormat: 'decimal',
                     hasSpace: true,
                     unique: false,
+                    measureType: null,
                 },
             },
         } satisfies CreateUnitMutation,
