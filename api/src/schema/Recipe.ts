@@ -168,6 +168,23 @@ RecipeTC.addFields({
         },
     },
 });
+RecipeTC.extendField('yield', {
+    type: new GraphQLObjectType({
+        name: 'RecipeYield',
+        fields: {
+            quantity: { type: GraphQLString },
+            unit: {
+                type: UnitTC.getType(),
+                resolve: async (source) => {
+                    if (!source.unit) return null;
+                    return UnitTC.mongooseResolvers
+                        .findById()
+                        .resolve({ args: { _id: source.unit } });
+                },
+            },
+        },
+    }),
+});
 
 export const RecipeQuery = {
     recipeById: RecipeTC.mongooseResolvers
