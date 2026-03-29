@@ -9,6 +9,7 @@ import { useAddRating } from '@recipe/features/rating';
 import { StarRating, getAverageRating } from '@recipe/features/rating';
 
 import { Notes } from './Notes';
+import { Yield } from './Yield';
 import { UsedIn } from './UsedIn';
 import { IngredientList } from './IngredientList';
 
@@ -35,6 +36,16 @@ export function IngredientsTab(props: Props) {
                     readonly={!isVerified}
                     colour='rgba(0, 0, 0, 0.64)'
                 />
+            }
+            Yield={
+                recipe.yield?.quantity ? (
+                    <Yield
+                        origQuantity={recipe.yield.quantity}
+                        unit={recipe.yield.unit ?? null}
+                        currentServings={currentServings}
+                        origServings={recipe.numServings}
+                    />
+                ) : undefined
             }
             IngredientList={
                 <IngredientList

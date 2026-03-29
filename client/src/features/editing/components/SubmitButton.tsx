@@ -16,20 +16,33 @@ interface Props {
 export function SubmitButton(props: Props) {
     const { submitText, loadingText, disabled, loading, handleSubmit, isLoggedIn } = props;
     const toast = useErrorToast();
-    const { isIngredient, pluralTitle, source, title, notes, servings, tags, instr, ingr } =
-        useRecipeStore(
-            useShallow((state) => ({
-                source: state.source,
-                title: state.title,
-                notes: state.notes,
-                isIngredient: state.isIngredient,
-                pluralTitle: state.pluralTitle,
-                servings: state.numServings,
-                tags: state.finishedTags,
-                instr: state.instructionSections,
-                ingr: state.ingredientSections,
-            }))
-        );
+    const {
+        isIngredient,
+        pluralTitle,
+        source,
+        title,
+        notes,
+        servings,
+        tags,
+        instr,
+        ingr,
+        yieldQuantity,
+        yieldUnit,
+    } = useRecipeStore(
+        useShallow((state) => ({
+            source: state.source,
+            title: state.title,
+            notes: state.notes,
+            isIngredient: state.isIngredient,
+            pluralTitle: state.pluralTitle,
+            servings: state.numServings,
+            tags: state.finishedTags,
+            instr: state.instructionSections,
+            ingr: state.ingredientSections,
+            yieldQuantity: state.yieldQuantity,
+            yieldUnit: state.yieldUnit,
+        }))
+    );
 
     const validate = () => {
         if (title.trim() == '') {
@@ -152,6 +165,9 @@ export function SubmitButton(props: Props) {
                 : undefined,
             source: source ? source : undefined,
             isIngredient,
+            yield: yieldQuantity
+                ? { quantity: yieldQuantity, unit: yieldUnit ? yieldUnit._id : undefined }
+                : undefined,
         };
         handleSubmit(recipe);
     };

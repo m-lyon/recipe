@@ -319,6 +319,11 @@ declare global {
      */
     type ServingNumberView = CompletedRecipeView['numServings'];
     /**
+     * Represents the yield object for use in the view recipe page.
+     * Can be null if the recipe has no yield.
+     */
+    type YieldView = CompletedRecipeView['yield'];
+    /**
      * Represents an instruction subsection object for use in the view recipe page.
      */
     type InstructionSubsectionView = CompletedRecipeView['instructionSubsections'][number];
