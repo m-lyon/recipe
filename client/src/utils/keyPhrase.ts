@@ -14,8 +14,11 @@ export function splitByKeyPhrases(
 ): KeyPhraseMatch[] {
     if (!keyPhrases.length) return [{ text: instruction }];
 
-    // Sort descending by value length so longest match wins
-    const sorted = [...keyPhrases].sort((a, b) => b.value.length - a.value.length);
+    // Filter out empty values and sort descending by value length so longest match wins
+    const sorted = [...keyPhrases]
+        .filter((kp) => kp.value.trim().length > 0)
+        .sort((a, b) => b.value.length - a.value.length);
+    if (!sorted.length) return [{ text: instruction }];
 
     // Build a combined regex with alternation for each phrase
     // Use word boundary anchors
