@@ -12,7 +12,8 @@ import { mockTitleOne, mockTitleTwo } from '@recipe/graphql/__mocks__/common';
 import { mockRecipeIngredientIdThirteen } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIdNew, mockRecipeIdOne } from '@recipe/graphql/__mocks__/ids';
 import { GetLinkedRecipesQuery, GetRecipeQuery } from '@recipe/graphql/generated';
-import { mockRecipeIdThree, mockRecipeIdTwo } from '@recipe/graphql/__mocks__/ids';
+import { mockRecipeIdSix, mockRecipeIdThree } from '@recipe/graphql/__mocks__/ids';
+import { mockRecipeIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { GetIngredientAndRecipeIngredientsQuery } from '@recipe/graphql/generated';
 import { GetRecipesQuery, GetRecipesQueryVariables } from '@recipe/graphql/generated';
 import { mockImageNew, mockImageTwo } from '@recipe/graphql/mutations/__mocks__/image';
@@ -142,6 +143,8 @@ export const mockRecipeOne: CompletedRecipeView = {
     calculatedTags: ['vegan', 'vegetarian'],
     numServings: 4,
     isIngredient: false,
+    prepAhead: false,
+    prepAheadLabel: null,
     notes: null,
     images: [],
     ratings: [mockRatingOne],
@@ -330,6 +333,17 @@ export const mockRecipeFive: CompletedRecipeView = {
         },
     ],
 };
+export const mockRecipePrepAhead: CompletedRecipeView = {
+    ...mockRecipeOne,
+    _id: mockRecipeIdSix,
+    title: 'Mock Recipe Prep Ahead',
+    titleIdentifier: 'mock-recipe-prep-ahead',
+    isIngredient: true,
+    prepAhead: true,
+    prepAheadLabel: '1 day',
+    pluralTitle: 'Mock Recipes Prep Ahead',
+    calculatedTags: ['ingredient', 'prep_ahead'],
+};
 export const mockRecipeNew: CompletedRecipeView = {
     _id: mockRecipeIdNew,
     __typename: 'Recipe',
@@ -364,6 +378,8 @@ export const mockRecipeNew: CompletedRecipeView = {
     calculatedTags: [],
     numServings: 2,
     isIngredient: false,
+    prepAhead: false,
+    prepAheadLabel: null,
     notes: 'Recipe Notes.',
     source: 'Recipe Source',
     images: [],
@@ -453,6 +469,34 @@ export const mockGetRecipeFive = {
         } satisfies GetRecipeQueryVariables,
     },
     result: { data: { __typename: 'Query', recipeOne: mockRecipeFive } satisfies GetRecipeQuery },
+};
+export const mockGetRecipePrepAhead = {
+    request: {
+        query: GET_RECIPE,
+        variables: {
+            filter: { titleIdentifier: 'mock-recipe-prep-ahead' },
+        } satisfies GetRecipeQueryVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeOne: mockRecipePrepAhead,
+        } satisfies GetRecipeQuery,
+    },
+};
+export const mockGetRecipePrepAheadById = {
+    request: {
+        query: GET_RECIPE,
+        variables: {
+            filter: { _id: mockRecipeIdSix },
+        } satisfies GetRecipeQueryVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeOne: mockRecipePrepAhead,
+        } satisfies GetRecipeQuery,
+    },
 };
 export const mockGetRecipeNew = {
     request: {

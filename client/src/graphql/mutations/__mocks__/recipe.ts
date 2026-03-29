@@ -42,6 +42,8 @@ const getMockRecipeVariables = (mockRecipe: CompletedRecipeView = mockRecipeOne)
             source: mockRecipe.source ?? undefined,
             numServings: mockRecipe.numServings,
             isIngredient: mockRecipe.isIngredient,
+            prepAhead: mockRecipe.prepAhead,
+            prepAheadLabel: mockRecipe.prepAheadLabel ?? undefined,
         },
     };
 };
@@ -579,6 +581,67 @@ export const mockUpdateRecipeAddIsIngredient = {
                     ...recipeOneData.record,
                     isIngredient: true,
                     pluralTitle: 'Mock Recipes',
+                },
+            },
+        } satisfies UpdateRecipeMutation,
+    },
+};
+export const mockUpdateRecipeAddPrepAhead = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: {
+                ...recipeOneVars.recipe,
+                isIngredient: true,
+                pluralTitle: 'Mock Recipes',
+                prepAhead: true,
+                prepAheadLabel: '1 day',
+            },
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: {
+                    ...recipeOneData.record,
+                    isIngredient: true,
+                    pluralTitle: 'Mock Recipes',
+                    prepAhead: true,
+                    prepAheadLabel: '1 day',
+                    calculatedTags: ['ingredient', 'prep_ahead'],
+                },
+            },
+        } satisfies UpdateRecipeMutation,
+    },
+};
+export const mockUpdateRecipeRemovePrepAhead = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: {
+                ...recipeOneVars.recipe,
+                isIngredient: true,
+                pluralTitle: 'Mock Recipes',
+                prepAhead: false,
+            },
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: {
+                    ...recipeOneData.record,
+                    isIngredient: true,
+                    pluralTitle: 'Mock Recipes',
+                    prepAhead: false,
+                    prepAheadLabel: null,
+                    calculatedTags: ['ingredient'],
                 },
             },
         } satisfies UpdateRecipeMutation,
