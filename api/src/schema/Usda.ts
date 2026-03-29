@@ -4,6 +4,8 @@ import { schemaComposer } from 'graphql-compose';
 import { USDA_API_KEY } from '../constants.js';
 
 const USDA_BASE = 'https://api.nal.usda.gov/fdc/v1';
+const USDA_REQUEST_TIMEOUT_MS = 10_000;
+const USDA_MAX_PAGE_SIZE = 200;
 
 const UsdaFoodItemTC = schemaComposer.createObjectTC({
     name: 'UsdaFoodItem',
@@ -41,6 +43,15 @@ function mapFoodItem(item: Record<string, unknown>) {
     };
 }
 
+function usdaFetch(url: string): Promise<Response> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), USDA_REQUEST_TIMEOUT_MS);
+    return fetch(url, {
+        headers: { 'X-Api-Key': USDA_API_KEY },
+        signal: controller.signal,
+    }).finally(() => clearTimeout(timer));
+}
+
 export const UsdaQuery = {
     usdaSearch: schemaComposer.createResolver({
         name: 'usdaSearch',
@@ -48,8 +59,9 @@ export const UsdaQuery = {
         args: { query: 'String!', pageSize: { type: 'Int', defaultValue: 20 } },
         resolve: async ({ args, context }) => {
             if (!context.getUser()) throw new GraphQLError('Not authenticated');
-            const url = `${USDA_BASE}/foods/search?query=${encodeURIComponent(args.query)}&pageSize=${args.pageSize}&api_key=${USDA_API_KEY}`;
-            const res = await fetch(url);
+            const safePageSize = Math.min(args.pageSize ?? 20, USDA_MAX_PAGE_SIZE);
+            const url = `${USDA_BASE}/foods/search?query=${encodeURIComponent(args.query)}&pageSize=${safePageSize}`;
+            const res = await usdaFetch(url);
             if (!res.ok) {
                 throw new GraphQLError(`USDA API error: ${res.status} ${res.statusText}`);
             }
@@ -63,12 +75,15 @@ export const UsdaQuery = {
         args: { fdcId: 'Int!' },
         resolve: async ({ args, context }) => {
             if (!context.getUser()) throw new GraphQLError('Not authenticated');
-            const url = `${USDA_BASE}/food/${args.fdcId}?format=abridged&api_key=${USDA_API_KEY}`;
-            const res = await fetch(url);
+            const url = `${USDA_BASE}/food/${args.fdcId}?format=abridged`;
+            const res = await usdaFetch(url);
             if (!res.ok) {
                 throw new GraphQLError(`USDA API error: ${res.status} ${res.statusText}`);
             }
             const json = (await res.json()) as Record<string, unknown>;
+            if (!json['fdcId']) {
+                throw new GraphQLError('Food item not found', { extensions: { code: 'NOT_FOUND' } });
+            }
             return mapFoodItem(json);
         },
     }),
