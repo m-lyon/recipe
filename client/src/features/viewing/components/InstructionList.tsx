@@ -1,12 +1,15 @@
 import { Box, ListItem, OrderedList, Text } from '@chakra-ui/react';
 
+import { HighlightedInstruction } from './HighlightedInstruction';
+
 interface Props {
     instructions: InstructionSubsectionView[];
     fontWeight?: string;
     fontSize?: string;
+    keyPhrases?: Array<{ value: string; description: string }>;
 }
 export function InstructionList(props: Props) {
-    const { instructions, fontWeight = 'medium', fontSize = 'lg' } = props;
+    const { instructions, fontWeight = 'medium', fontSize = 'lg', keyPhrases } = props;
 
     const subsectionsList = instructions.map((section, index) => {
         if (section === null) {
@@ -18,7 +21,13 @@ export function InstructionList(props: Props) {
             }
             return (
                 <ListItem fontWeight={fontWeight} fontSize={fontSize} key={index}>
-                    <Text>{instr}</Text>
+                    <Text>
+                        {keyPhrases?.length ? (
+                            <HighlightedInstruction text={instr} keyPhrases={keyPhrases} />
+                        ) : (
+                            instr
+                        )}
+                    </Text>
                 </ListItem>
             );
         });
