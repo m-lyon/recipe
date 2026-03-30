@@ -4,6 +4,11 @@ import { ReadStream, createReadStream } from 'fs';
 
 import sharp from 'sharp';
 import { Sharp } from 'sharp';
+import { nanoid } from 'nanoid';
+import { Types } from 'mongoose';
+
+import { IMAGE_DIR } from '../constants.js';
+import { Image, Image as ImageType } from '../models/Image.js';
 
 interface ImageLoader {
     stream: Sharp | ReadStream;
@@ -90,4 +95,27 @@ function getContentType(fileName: string): string {
         default:
             return 'application/octet-stream';
     }
+}
+
+/**
+ * Copies an image file on disk and creates a new Image document for newRecipeId.
+ * Returns the saved Image document.
+ */
+export async function copyImageForRecipe(
+    sourceImage: ImageType,
+    newRecipeId: Types.ObjectId
+): Promise<ImageType> {
+    const srcFile = path.join(IMAGE_DIR, path.basename(sourceImage.origUrl));
+    const ext = path.extname(srcFile);
+    const newFilename = `${nanoid()}${ext}`;
+    const destFile = path.join(IMAGE_DIR, newFilename);
+
+    fs.copyFileSync(srcFile, destFile);
+
+    const newImage = new Image({
+        origUrl: path.join('uploads/images', newFilename),
+        recipe: newRecipeId,
+        note: sourceImage.note,
+    });
+    return newImage.save();
 }

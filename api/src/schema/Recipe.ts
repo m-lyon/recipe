@@ -12,6 +12,7 @@ import { PrepMethodTC } from '../models/PrepMethod.js';
 import { Ingredient, IngredientTC } from '../models/Ingredient.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
 import { validateItemNotInRecipe } from '../middleware/validation.js';
+import { copyImageForRecipe } from '../utils/image.js';
 import { RecipeModifyTC, generateRecipeIdentifier } from '../models/Recipe.js';
 import { Recipe, RecipeCreateTC, RecipeIngredientTC, RecipeTC } from '../models/Recipe.js';
 
@@ -169,6 +170,18 @@ RecipeTC.addFields({
     },
 });
 
+RecipeTC.addRelation('veganVersion', {
+    resolver: () => RecipeTC.mongooseResolvers.findById(),
+    prepareArgs: { _id: (source: Recipe) => source.veganVersion },
+    projection: { veganVersion: true },
+});
+
+RecipeTC.addRelation('originalRecipe', {
+    resolver: () => RecipeTC.mongooseResolvers.findById(),
+    prepareArgs: { _id: (source: Recipe) => source.originalRecipe },
+    projection: { originalRecipe: true },
+});
+
 export const RecipeQuery = {
     recipeById: RecipeTC.mongooseResolvers
         .findById()
@@ -241,10 +254,92 @@ export const RecipeMutation = {
             await RatingTC.mongooseResolvers.removeMany().resolve({
                 args: { filter: { recipe: rp.args._id } },
             });
-            return next(rp);
+            const result = await next(rp);
+            // Clean up vegan version back-references
+            const record = result?.record;
+            if (record?.originalRecipe) {
+                // This was a vegan copy — unset veganVersion on the original
+                await Recipe.findByIdAndUpdate(record.originalRecipe, {
+                    $unset: { veganVersion: 1 },
+                });
+                // Trigger save on original so calculatedTags lose 'vegan option available'
+                const original = await Recipe.findById(record.originalRecipe);
+                if (original) await original.save();
+            }
+            if (record?.veganVersion) {
+                // The original is being deleted — orphan the vegan copy
+                await Recipe.findByIdAndUpdate(record.veganVersion, {
+                    $unset: { originalRecipe: 1 },
+                });
+            }
+            return result;
         })
         .wrapResolve((next) => async (rp) => {
             await validateItemNotInRecipe(rp.args._id, 'recipe');
+            return next(rp);
+        }),
+    recipeMakeVegan: schemaComposer
+        .createResolver({
+            name: 'recipeMakeVegan',
+            type: RecipeTC.mongooseResolvers.createOne().getType(),
+            args: { originalId: 'MongoID!' },
+            resolve: async ({ args, context }) => {
+                const { originalId } = args;
+                const original = await Recipe.findById(originalId);
+                if (!original) throw new Error('Original recipe not found');
+
+                // Build the new recipe document (clone all fields)
+                const veganRecipe = new Recipe({
+                    title: original.title,
+                    pluralTitle: original.pluralTitle,
+                    subTitle: original.subTitle,
+                    ingredientSubsections: original.ingredientSubsections,
+                    instructionSubsections: original.instructionSubsections,
+                    tags: original.tags,
+                    notes: original.notes,
+                    source: original.source,
+                    numServings: original.numServings,
+                    isIngredient: original.isIngredient,
+                    owner: context.getUser(),
+                    originalRecipe: original._id,
+                    titleIdentifier: generateRecipeIdentifier(original.title),
+                    createdAt: new Date(),
+                    lastModified: new Date(),
+                });
+                await veganRecipe.save();
+
+                // Copy images
+                const images = await ImageTC.mongooseResolvers.findMany().resolve({
+                    args: { filter: { recipe: original._id } },
+                });
+                if (images && images.length > 0) {
+                    await Promise.all(
+                        images.map((img) => copyImageForRecipe(img, veganRecipe._id))
+                    );
+                }
+
+                // Link original → vegan
+                await Recipe.findByIdAndUpdate(originalId, {
+                    veganVersion: veganRecipe._id,
+                });
+
+                // Trigger pre-save on original to recompute calculatedTags
+                const updatedOriginal = await Recipe.findById(originalId);
+                if (updatedOriginal) await updatedOriginal.save();
+
+                return { record: veganRecipe, recordId: veganRecipe._id };
+            },
+        })
+        .wrapResolve((next) => async (rp) => {
+            // Validate the original recipe exists and belongs to the user
+            const original = await Recipe.findById(rp.args.originalId);
+            if (!original) throw new Error('Original recipe not found');
+            if (original.veganVersion) {
+                throw new Error('This recipe already has a vegan version');
+            }
+            if (original.originalRecipe) {
+                throw new Error('Cannot create a vegan version of a vegan copy');
+            }
             return next(rp);
         }),
 };

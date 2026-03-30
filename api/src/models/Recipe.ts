@@ -11,7 +11,10 @@ import { Ingredient, ReservedIngredientTags } from './Ingredient.js';
 import { ownerExists, tagsExist, unique, uniqueInAdminsAndUser } from './validation.js';
 
 const quantityRegex = /^((\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*)(-(\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*))?)$/;
-const ReservedRecipeTags = { Ingredient: 'ingredient' } as const;
+const ReservedRecipeTags = {
+    Ingredient: 'ingredient',
+    VeganOptionAvailable: 'vegan option available',
+} as const;
 export const ReservedTags = { ...ReservedRecipeTags, ...ReservedIngredientTags } as const;
 type ReservedTags = (typeof ReservedTags)[keyof typeof ReservedTags];
 
@@ -164,6 +167,8 @@ export interface Recipe extends Document {
     isIngredient: boolean;
     createdAt: Date;
     lastModified: Date;
+    veganVersion?: Types.ObjectId;
+    originalRecipe?: Types.ObjectId;
 }
 const recipeSchema = new Schema<Recipe>({
     title: {
@@ -252,6 +257,16 @@ const recipeSchema = new Schema<Recipe>({
     isIngredient: { type: Boolean, required: true },
     createdAt: { type: Date, required: true },
     lastModified: { type: Date, required: true },
+    veganVersion: {
+        type: Schema.Types.ObjectId,
+        ref: 'Recipe',
+        default: null,
+    },
+    originalRecipe: {
+        type: Schema.Types.ObjectId,
+        ref: 'Recipe',
+        default: null,
+    },
 });
 
 recipeSchema.index({ 'ingredientSubsections.ingredients.ingredient': 1 });
@@ -279,6 +294,9 @@ recipeSchema.pre('save', async function () {
         if (allMembers) {
             calculatedTags.push(ReservedIngredientTags[tag]);
         }
+    }
+    if (this.veganVersion != null) {
+        calculatedTags.push(ReservedRecipeTags.VeganOptionAvailable);
     }
     this.calculatedTags = calculatedTags;
 });
