@@ -13,8 +13,14 @@ import { Ingredient, IngredientTC } from '../models/Ingredient.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
 import { validateItemNotInRecipe } from '../middleware/validation.js';
 import { copyImageForRecipe } from '../utils/image.js';
-import { RecipeModifyTC, generateRecipeIdentifier } from '../models/Recipe.js';
-import { Recipe, RecipeCreateTC, RecipeIngredientTC, RecipeTC } from '../models/Recipe.js';
+import {
+    Recipe,
+    RecipeCreateTC,
+    RecipeIngredientTC,
+    RecipeModifyTC,
+    RecipeTC,
+    generateRecipeIdentifier,
+} from '../models/Recipe.js';
 
 const IngredientOrRecipeTC = schemaComposer.createUnionTC({
     name: 'IngredientOrRecipe',
@@ -334,6 +340,9 @@ export const RecipeMutation = {
             // Validate the original recipe exists and belongs to the user
             const original = await Recipe.findById(rp.args.originalId);
             if (!original) throw new Error('Original recipe not found');
+            if (String(original.owner) !== String(rp.context.getUser())) {
+                throw new Error('Not authorized to create a vegan version of this recipe');
+            }
             if (original.veganVersion) {
                 throw new Error('This recipe already has a vegan version');
             }

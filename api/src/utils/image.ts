@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { promises as fsp } from 'fs';
 import { ReadStream, createReadStream } from 'fs';
 
 import sharp from 'sharp';
@@ -110,7 +111,7 @@ export async function copyImageForRecipe(
     const newFilename = `${nanoid()}${ext}`;
     const destFile = path.join(IMAGE_DIR, newFilename);
 
-    fs.copyFileSync(srcFile, destFile);
+    await fsp.copyFile(srcFile, destFile);
 
     const newImage = new Image({
         origUrl: path.join('uploads/images', newFilename),
