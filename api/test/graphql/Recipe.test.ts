@@ -1,6 +1,3 @@
-import fs from 'fs';
-
-import { stub } from 'sinon';
 import { assert } from 'chai';
 import mongoose from 'mongoose';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
@@ -9,7 +6,6 @@ import { Tag } from '../../src/models/Tag.js';
 import { Size } from '../../src/models/Size.js';
 import { User } from '../../src/models/User.js';
 import { Unit } from '../../src/models/Unit.js';
-import { Image } from '../../src/models/Image.js';
 import { Recipe } from '../../src/models/Recipe.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
@@ -1198,17 +1194,22 @@ describe('recipeUpdateById', () => {
     });
 });
 
-describe('recipeRemoveById', () => {
+describe('recipeArchiveById', () => {
     before(startServer);
     after(stopServer);
     beforeEach(createRecipeIngredientData);
     afterEach(removeRecipeIngredientData);
 
-    async function removeRecipe(context, user, id) {
+    async function archiveRecipe(context, user, id) {
         const query = `
-        mutation RecipeRemoveById($id: MongoID!) {
-            recipeRemoveById(_id: $id) {
+        mutation RecipeArchiveById($id: MongoID!) {
+            recipeArchiveById(_id: $id) {
               recordId
+              record {
+                _id
+                title
+                archived
+              }
             }
           }`;
         const response = await context.apolloServer.executeOperation(
@@ -1223,42 +1224,56 @@ describe('recipeRemoveById', () => {
         return response;
     }
 
-    it('should remove a recipe that is not an ingredient in another recipe', async function () {
-        // Mock fs.unlinkSync to prevent actual file deletion
-        const unlinkSyncStub = stub(fs, 'unlinkSync');
+    async function unarchiveRecipe(context, user, id) {
+        const query = `
+        mutation RecipeUnarchiveById($id: MongoID!) {
+            recipeUnarchiveById(_id: $id) {
+              recordId
+              record {
+                _id
+                title
+                archived
+              }
+            }
+          }`;
+        const response = await context.apolloServer.executeOperation(
+            { query: query, variables: { id } },
+            {
+                contextValue: {
+                    isAuthenticated: () => true,
+                    getUser: () => user,
+                },
+            }
+        );
+        return response;
+    }
 
-        try {
-            const user = await User.findOne({ username: 'testuser1' });
-            const recipe = await Recipe.findOne({ title: 'Bimibap' });
-            const response = await removeRecipe(this, user, recipe._id);
-            assert.equal(response.body.kind, 'single');
-            assert.isUndefined(
-                response.body.singleResult.errors,
-                response.body.singleResult.errors
-                    ? response.body.singleResult.errors[0].message
-                    : ''
-            );
-            const recordId = (
-                response.body.singleResult.data as {
-                    recipeRemoveById: { recordId: string };
-                }
-            ).recipeRemoveById.recordId;
-            assert.equal(recordId, recipe._id.toString());
-            const deletedRecipe = await Recipe.findById(recipe._id);
-            assert.isNull(deletedRecipe);
+    it('should archive a recipe', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const recipe = await Recipe.findOne({ title: 'Bimibap' });
+        assert.isFalse(recipe.archived, 'Recipe should not be archived initially');
 
-            // Check the image is also deleted
-            const images = await Image.find({ recipe: recipe._id });
-            assert.isEmpty(images);
-            assert.equal(unlinkSyncStub.callCount, 1);
-            assert.isTrue(unlinkSyncStub.calledWith('/data/recipe/images/image1.jpg'));
-        } finally {
-            // Restore the original function
-            unlinkSyncStub.restore();
-        }
+        const response = await archiveRecipe(this, user, recipe._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(
+            response.body.singleResult.errors,
+            response.body.singleResult.errors
+                ? response.body.singleResult.errors[0].message
+                : ''
+        );
+        const data = response.body.singleResult.data as {
+            recipeArchiveById: { recordId: string; record: { _id: string; title: string; archived: boolean } };
+        };
+        assert.equal(data.recipeArchiveById.recordId, recipe._id.toString());
+        assert.isTrue(data.recipeArchiveById.record.archived, 'Record should be archived');
+
+        // Verify in DB
+        const archivedRecipe = await Recipe.findById(recipe._id);
+        assert.isTrue(archivedRecipe.archived, 'Recipe should be archived in the database');
+        assert.isNotNull(archivedRecipe, 'Recipe should still exist (not deleted)');
     });
 
-    it('should NOT remove a recipe that is an ingredient in another recipe', async function () {
+    it('should NOT archive a recipe that is used as an ingredient in another recipe', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         const recipeIngredient = await Recipe.findOne({ title: 'Bimibap' });
         const ingredient = await Ingredient.findOne({ name: 'chicken' });
@@ -1284,17 +1299,178 @@ describe('recipeRemoveById', () => {
             ],
         });
         await newRecipe.save();
-        const response = await removeRecipe(this, user, recipeIngredient._id);
+
+        const response = await archiveRecipe(this, user, recipeIngredient._id);
         assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors, 'Error should be returned');
         assert.equal(
             response.body.singleResult.errors[0].message,
             'Cannot delete recipe as it is currently being used in other existing recipes.'
         );
+
+        // Verify recipe is NOT archived
         const existingRecipe = await Recipe.findById(recipeIngredient._id);
-        assert.isNotNull(existingRecipe, 'Recipe should not be deleted');
-        // Check the image is not deleted
-        const images = await Image.find({ recipe: recipeIngredient._id });
-        assert.isNotEmpty(images, 'Images should not be deleted');
+        assert.isNotNull(existingRecipe, 'Recipe should still exist');
+        assert.isFalse(existingRecipe.archived, 'Recipe should not be archived');
+    });
+
+    it('should unarchive a recipe', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const recipe = await Recipe.findOne({ title: 'Bimibap' });
+
+        // First archive the recipe directly in the DB
+        await Recipe.findByIdAndUpdate(recipe._id, { archived: true });
+        const archivedRecipe = await Recipe.findById(recipe._id);
+        assert.isTrue(archivedRecipe.archived, 'Recipe should be archived before unarchiving');
+
+        const response = await unarchiveRecipe(this, user, recipe._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(
+            response.body.singleResult.errors,
+            response.body.singleResult.errors
+                ? response.body.singleResult.errors[0].message
+                : ''
+        );
+        const data = response.body.singleResult.data as {
+            recipeUnarchiveById: { recordId: string; record: { _id: string; title: string; archived: boolean } };
+        };
+        assert.equal(data.recipeUnarchiveById.recordId, recipe._id.toString());
+        assert.isFalse(data.recipeUnarchiveById.record.archived, 'Record should not be archived');
+
+        // Verify in DB
+        const unarchivedRecipe = await Recipe.findById(recipe._id);
+        assert.isFalse(unarchivedRecipe.archived, 'Recipe should be unarchived in the database');
+    });
+
+    it('should filter archived recipes from recipeMany by default', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const recipe = await Recipe.findOne({ title: 'Bimibap' });
+
+        // Archive the recipe
+        await Recipe.findByIdAndUpdate(recipe._id, { archived: true });
+
+        // Query with archived: false filter
+        const queryNotArchived = `
+        query RecipeMany($filter: FilterFindManyRecipeInput) {
+            recipeMany(filter: $filter) {
+                _id
+                title
+                archived
+            }
+        }`;
+        const responseNotArchived = await this.apolloServer.executeOperation(
+            { query: queryNotArchived, variables: { filter: { archived: false } } },
+            {
+                contextValue: {
+                    isAuthenticated: () => true,
+                    getUser: () => user,
+                },
+            }
+        );
+        assert.equal(responseNotArchived.body.kind, 'single');
+        assert.isUndefined(responseNotArchived.body.singleResult.errors);
+        const recipes = (responseNotArchived.body.singleResult.data as {
+            recipeMany: Array<{ _id: string; title: string; archived: boolean }>;
+        }).recipeMany;
+        const archivedInList = recipes.find((r) => r._id === recipe._id.toString());
+        assert.isUndefined(archivedInList, 'Archived recipe should not appear in non-archived results');
+
+        // Query with archived: true filter
+        const queryArchived = `
+        query RecipeMany($filter: FilterFindManyRecipeInput) {
+            recipeMany(filter: $filter) {
+                _id
+                title
+                archived
+            }
+        }`;
+        const responseArchived = await this.apolloServer.executeOperation(
+            { query: queryArchived, variables: { filter: { archived: true } } },
+            {
+                contextValue: {
+                    isAuthenticated: () => true,
+                    getUser: () => user,
+                },
+            }
+        );
+        assert.equal(responseArchived.body.kind, 'single');
+        assert.isUndefined(responseArchived.body.singleResult.errors);
+        const archivedRecipes = (responseArchived.body.singleResult.data as {
+            recipeMany: Array<{ _id: string; title: string; archived: boolean }>;
+        }).recipeMany;
+        const foundArchived = archivedRecipes.find((r) => r._id === recipe._id.toString());
+        assert.isDefined(foundArchived, 'Archived recipe should appear in archived results');
+        assert.isTrue(foundArchived.archived);
+    });
+
+    it('should filter archived recipes from recipeCount', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const recipe = await Recipe.findOne({ title: 'Bimibap' });
+
+        // Get initial count of non-archived recipes
+        const countQuery = `
+        query RecipeCount($filter: FilterCountRecipeInput) {
+            recipeCount(filter: $filter)
+        }`;
+        const initialResponse = await this.apolloServer.executeOperation(
+            { query: countQuery, variables: { filter: { archived: false } } },
+            {
+                contextValue: {
+                    isAuthenticated: () => true,
+                    getUser: () => user,
+                },
+            }
+        );
+        assert.equal(initialResponse.body.kind, 'single');
+        const initialCount = (initialResponse.body.singleResult.data as {
+            recipeCount: number;
+        }).recipeCount;
+
+        // Archive the recipe
+        await Recipe.findByIdAndUpdate(recipe._id, { archived: true });
+
+        // Get count again
+        const afterResponse = await this.apolloServer.executeOperation(
+            { query: countQuery, variables: { filter: { archived: false } } },
+            {
+                contextValue: {
+                    isAuthenticated: () => true,
+                    getUser: () => user,
+                },
+            }
+        );
+        assert.equal(afterResponse.body.kind, 'single');
+        const afterCount = (afterResponse.body.singleResult.data as {
+            recipeCount: number;
+        }).recipeCount;
+
+        assert.equal(afterCount, initialCount - 1, 'Count should decrease by 1 after archiving');
+    });
+
+    it('should not expose recipeRemoveById mutation', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const recipe = await Recipe.findOne({ title: 'Bimibap' });
+        const query = `
+        mutation RecipeRemoveById($id: MongoID!) {
+            recipeRemoveById(_id: $id) {
+              recordId
+            }
+          }`;
+        const response = await this.apolloServer.executeOperation(
+            { query: query, variables: { id: recipe._id } },
+            {
+                contextValue: {
+                    isAuthenticated: () => true,
+                    getUser: () => user,
+                },
+            }
+        );
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Should have errors');
+        assert.include(
+            response.body.singleResult.errors[0].message,
+            'Cannot query field "recipeRemoveById"',
+            'recipeRemoveById should not be in schema'
+        );
     });
 });
