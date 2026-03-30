@@ -146,6 +146,8 @@ export const mockRecipeOne: CompletedRecipeView = {
     images: [],
     ratings: [mockRatingOne],
     source: null,
+    veganVersion: null,
+    originalRecipe: null,
     owner: mockAdminId,
 };
 export const mockRecipeTwo: CompletedRecipeView = {
@@ -368,6 +370,8 @@ export const mockRecipeNew: CompletedRecipeView = {
     source: 'Recipe Source',
     images: [],
     ratings: [],
+    veganVersion: null,
+    originalRecipe: null,
     owner: mockAdminId,
 };
 export const mockRecipeNewAsIngr: CompletedRecipeView = {

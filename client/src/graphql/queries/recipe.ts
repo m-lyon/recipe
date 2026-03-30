@@ -56,6 +56,16 @@ export const RECIPE_FIELDS_SUBSET = gql(`
         }
         calculatedTags
         owner
+        veganVersion {
+            _id
+            title
+            titleIdentifier
+        }
+        originalRecipe {
+            _id
+            title
+            titleIdentifier
+        }
     }
 `);
 

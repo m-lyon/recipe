@@ -1,7 +1,9 @@
+import { Anchor } from '@mantine/core';
 import { useQuery } from '@apollo/client';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Box, Container, Grid, GridItem } from '@chakra-ui/react';
 
+import { PATH } from '@recipe/constants';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { ImageViewerRecipe } from '@recipe/features/images';
 import { IngredientsTab, InstructionsTab, Title } from '@recipe/features/viewing';
@@ -22,6 +24,8 @@ export function ViewRecipe() {
     const { title, numServings, isIngredient, pluralTitle } = data.recipeOne;
     const titleNormed =
         isIngredient && pluralTitle ? (numServings > 1 ? pluralTitle : title) : title;
+    const isVeganCopy = !!data.recipeOne.originalRecipe;
+    const displayTitle = isVeganCopy ? `${titleNormed} (Vegan)` : titleNormed;
     return (
         <Container maxW='container.xl' pt='60px'>
             <Grid
@@ -43,7 +47,27 @@ export function ViewRecipe() {
                 fontWeight='bold'
             >
                 <GridItem boxShadow='lg' p='6' area='title'>
-                    <Title title={titleNormed} />
+                    <Title title={displayTitle} />
+                    {data.recipeOne.originalRecipe && (
+                        <Anchor
+                            component={Link}
+                            to={`${PATH.ROOT}/view/recipe/${data.recipeOne.originalRecipe.titleIdentifier}`}
+                            aria-label='View original recipe'
+                            style={{ display: 'block', textAlign: 'center', marginTop: '8px' }}
+                        >
+                            View Original Recipe
+                        </Anchor>
+                    )}
+                    {data.recipeOne.veganVersion && (
+                        <Anchor
+                            component={Link}
+                            to={`${PATH.ROOT}/view/recipe/${data.recipeOne.veganVersion.titleIdentifier}`}
+                            aria-label='View vegan version'
+                            style={{ display: 'block', textAlign: 'center', marginTop: '8px' }}
+                        >
+                            View Vegan Version
+                        </Anchor>
+                    )}
                 </GridItem>
                 <GridItem
                     boxShadow='lg'
