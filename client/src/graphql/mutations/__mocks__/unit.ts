@@ -58,6 +58,7 @@ export const mockCreateBespokeUnit = {
                 preferredNumberFormat: 'decimal',
                 unique: false,
                 hasSpace: true,
+                measureType: null,
             },
         } satisfies CreateUnitMutationVariables,
     },

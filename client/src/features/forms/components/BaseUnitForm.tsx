@@ -8,6 +8,7 @@ import { Select } from '@mantine/core';
 
 import { NumberFormat } from '@recipe/graphql/enums';
 import { FloatingLabelInput } from '@recipe/common/components';
+import { EnumUnitCreateMeasureType } from '@recipe/graphql/generated';
 
 import { useFormLogic } from '../hooks/useFormLogic';
 import { useKeyboardSubmit } from '../hooks/useKeyboardSubmit';
@@ -35,7 +36,10 @@ export const unitFormSchema = object({
         .oneOf(Object.values(NumberFormat), 'You must select a number format'),
     hasSpace: boolean().required(),
     unique: boolean().required(),
-    measureType: string().nullable().optional(),
+    measureType: mixed<EnumUnitCreateMeasureType>()
+        .nullable()
+        .optional()
+        .transform((v) => v || null),
 });
 export interface BaseUnitFormProps extends StackProps {
     fieldRef?: MutableRefObject<HTMLInputElement | null>;

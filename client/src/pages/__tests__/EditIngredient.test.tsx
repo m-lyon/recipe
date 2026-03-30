@@ -24,7 +24,9 @@ const renderComponent = (mocks: MockedResponses = []) => {
     return renderPage(routes, [
         mockGetIngredients,
         mockCurrentUserAdmin,
-        // UsdaLinkSection fires GET_NUTRITIONAL_INFO_BY_INGREDIENT whenever an ingredient is selected
+        // UsdaLinkSection fires GET_NUTRITIONAL_INFO_BY_INGREDIENT whenever an ingredient is selected.
+        // Carrot is selected twice in the test suite (once in test 1 and once in test 2/3),
+        // so we need two carrot mocks. Apollo MockedProvider consumes one mock per matching request.
         mockGetNutritionalInfoByIngredientCarrot,
         mockGetNutritionalInfoByIngredientCarrot,
         mockGetNutritionalInfoByIngredientChicken,

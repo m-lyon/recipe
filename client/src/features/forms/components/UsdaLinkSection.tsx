@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
 import { useDebouncedValue } from '@mantine/hooks';
 import {
+    Alert,
     Button,
     Divider,
     Group,
@@ -50,37 +51,41 @@ export function UsdaLinkSection(props: UsdaLinkSectionProps) {
     const [perUnitNutrition, setPerUnitNutrition] = useState<MacroNutrients>(ZERO_MACROS);
     const [existingNutritionalInfoId, setExistingNutritionalInfoId] = useState<string | null>(null);
     const [linked, setLinked] = useState(false);
+    const [mutationError, setMutationError] = useState<string | null>(null);
 
     // Load existing nutritional info (edit flow)
-    useQuery(GET_NUTRITIONAL_INFO_BY_INGREDIENT, {
-        variables: { ingredientId: ingredientId! },
-        skip: !ingredientId,
-        onCompleted: (data) => {
-            const info = data.nutritionalInfoByIngredient;
-            if (!info) return;
-            setExistingNutritionalInfoId(info._id);
-            setLinked(true);
-            if (info.perGram) {
-                setPendingNutrition({
-                    fdcId: info.usdaFdcId ?? 0,
-                    perGram: {
-                        calories: info.perGram.calories,
-                        protein: info.perGram.protein,
-                        carbs: info.perGram.carbs,
-                        fat: info.perGram.fat,
-                    },
-                });
-            }
-            if (info.perUnit) {
-                setPerUnitNutrition({
-                    calories: info.perUnit.calories,
-                    protein: info.perUnit.protein,
-                    carbs: info.perUnit.carbs,
-                    fat: info.perUnit.fat,
-                });
-            }
-        },
-    });
+    const { loading: existingLoading, error: existingError } = useQuery(
+        GET_NUTRITIONAL_INFO_BY_INGREDIENT,
+        {
+            variables: { ingredientId: ingredientId! },
+            skip: !ingredientId,
+            onCompleted: (data) => {
+                const info = data.nutritionalInfoByIngredient;
+                if (!info) return;
+                setExistingNutritionalInfoId(info._id);
+                setLinked(true);
+                if (info.perGram) {
+                    setPendingNutrition({
+                        fdcId: info.usdaFdcId ?? 0,
+                        perGram: {
+                            calories: info.perGram.calories,
+                            protein: info.perGram.protein,
+                            carbs: info.perGram.carbs,
+                            fat: info.perGram.fat,
+                        },
+                    });
+                }
+                if (info.perUnit) {
+                    setPerUnitNutrition({
+                        calories: info.perUnit.calories,
+                        protein: info.perUnit.protein,
+                        carbs: info.perUnit.carbs,
+                        fat: info.perUnit.fat,
+                    });
+                }
+            },
+        }
+    );
 
     const [runSearch, { data: searchData, loading: searchLoading }] = useLazyQuery(USDA_SEARCH);
 
@@ -88,10 +93,25 @@ export function UsdaLinkSection(props: UsdaLinkSectionProps) {
         onCompleted: (data) => {
             const id = data.nutritionalInfoCreateOne?.record?._id;
             if (id) setExistingNutritionalInfoId(id);
+            setLinked(true);
+            setMutationError(null);
+        },
+        onError: (err) => {
+            setLinked(false);
+            setMutationError(err.message);
         },
     });
 
-    const [updateNutritionalInfo] = useMutation(UPDATE_NUTRITIONAL_INFO);
+    const [updateNutritionalInfo] = useMutation(UPDATE_NUTRITIONAL_INFO, {
+        onCompleted: () => {
+            setLinked(true);
+            setMutationError(null);
+        },
+        onError: (err) => {
+            setLinked(false);
+            setMutationError(err.message);
+        },
+    });
 
     const [deleteNutritionalInfo] = useMutation(DELETE_NUTRITIONAL_INFO, {
         onCompleted: () => {
@@ -101,6 +121,10 @@ export function UsdaLinkSection(props: UsdaLinkSectionProps) {
             setSelectedFdcId(null);
             setLinked(false);
             setSearchInput('');
+            setMutationError(null);
+        },
+        onError: (err) => {
+            setMutationError(err.message);
         },
     });
 
@@ -127,6 +151,8 @@ export function UsdaLinkSection(props: UsdaLinkSectionProps) {
 
     const handleLink = () => {
         if (!pendingNutrition || !ingredientId) return;
+
+        setMutationError(null);
 
         const record: {
             ingredient: string;
@@ -157,10 +183,12 @@ export function UsdaLinkSection(props: UsdaLinkSectionProps) {
         } else {
             createNutritionalInfo({ variables: { record } });
         }
-        setLinked(true);
+        // Note: setLinked(true) is called inside the onCompleted callbacks,
+        // not here, so the linked state only changes on confirmed success.
     };
 
     const handleClear = () => {
+        setMutationError(null);
         if (existingNutritionalInfoId) {
             deleteNutritionalInfo({ variables: { _id: existingNutritionalInfoId } });
         } else {
@@ -178,7 +206,21 @@ export function UsdaLinkSection(props: UsdaLinkSectionProps) {
         <Stack gap='sm'>
             <Divider label='Nutritional Data' labelPosition='left' />
 
-            {linked && pendingNutrition ? (
+            {mutationError && (
+                <Alert color='red' title='Error saving nutritional data'>
+                    {mutationError}
+                </Alert>
+            )}
+
+            {existingError && (
+                <Alert color='orange' title='Could not load nutritional data'>
+                    {existingError.message}
+                </Alert>
+            )}
+
+            {existingLoading ? (
+                <Skeleton height={40} />
+            ) : linked && pendingNutrition ? (
                 <Stack gap='xs'>
                     <Text size='sm' fw={500}>
                         Linked: FDC ID {pendingNutrition.fdcId || '(manual)'}
