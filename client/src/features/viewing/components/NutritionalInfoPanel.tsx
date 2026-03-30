@@ -5,9 +5,10 @@ import { Box, Collapse, Group, SimpleGrid, Skeleton, Text, UnstyledButton } from
 import { MacroNutrients } from '@recipe/utils/nutrition';
 
 interface NutritionalInfoPanelProps {
-    subsections: IngredientSubsectionView[];
     perServing: MacroNutrients;
     uncountedIds: Set<string>;
+    /** True when every Ingredient-type item in the recipe is uncounted. */
+    allUncounted: boolean;
     loading: boolean;
 }
 
@@ -16,16 +17,8 @@ function round1(n: number): string {
 }
 
 export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
-    const { subsections, perServing, uncountedIds, loading } = props;
+    const { perServing, uncountedIds, allUncounted, loading } = props;
     const [open, setOpen] = useState(true);
-
-    // `loading` is checked first in the ternary below, so allUncounted is only
-    // evaluated once data is available — guarded by the loading branch.
-    const allUncounted =
-        uncountedIds.size > 0 &&
-        subsections
-            .flatMap((s) => s.ingredients)
-            .filter((i) => i.ingredient.__typename === 'Ingredient').length === uncountedIds.size;
 
     return (
         <Box mt='sm'>

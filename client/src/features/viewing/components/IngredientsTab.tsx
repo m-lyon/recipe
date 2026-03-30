@@ -29,6 +29,12 @@ export function IngredientsTab(props: Props) {
         recipe.ingredientSubsections,
         currentServings
     );
+    // Compute allUncounted here so NutritionalInfoPanel doesn't need the full subsections array.
+    // `loading` guards the display branch in the panel, so this is only acted on once data arrives.
+    const totalIngredients = recipe.ingredientSubsections
+        .flatMap((s) => s.ingredients)
+        .filter((i) => i.ingredient.__typename === 'Ingredient').length;
+    const allUncounted = uncountedIds.size > 0 && totalIngredients === uncountedIds.size;
     useEffect(() => {
         setNumServings(recipe.numServings);
     }, [recipe.numServings, setNumServings]);
@@ -54,9 +60,9 @@ export function IngredientsTab(props: Props) {
                         uncountedIngredientIds={uncountedIds}
                     />
                     <NutritionalInfoPanel
-                        subsections={recipe.ingredientSubsections}
                         perServing={perServing}
                         uncountedIds={uncountedIds}
+                        allUncounted={allUncounted}
                         loading={loading}
                     />
                 </>

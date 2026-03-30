@@ -11,67 +11,6 @@ import { NutritionalInfoPanel } from '../NutritionalInfoPanel';
 loadErrorMessages();
 loadDevMessages();
 
-// Subsections: minimal fixture used for the allUncounted calculation
-const singleIngredientSubsection: IngredientSubsectionView[] = [
-    {
-        __typename: 'IngredientSubsection',
-        _id: 'ss-1',
-        name: null,
-        ingredients: [
-            {
-                __typename: 'RecipeIngredient',
-                _id: 'ri-1',
-                quantity: '1',
-                unit: null,
-                ingredient: {
-                    __typename: 'Ingredient',
-                    _id: 'ing-1',
-                    name: 'Apple',
-                    density: null,
-                },
-                prepMethod: null,
-            } as unknown as IngredientSubsectionView['ingredients'][number],
-        ],
-    } as unknown as IngredientSubsectionView,
-];
-
-// Subsections: two ingredients — used for partial uncounting tests
-const twoIngredientSubsection: IngredientSubsectionView[] = [
-    {
-        __typename: 'IngredientSubsection',
-        _id: 'ss-2',
-        name: null,
-        ingredients: [
-            {
-                __typename: 'RecipeIngredient',
-                _id: 'ri-1',
-                quantity: '1',
-                unit: null,
-                ingredient: {
-                    __typename: 'Ingredient',
-                    _id: 'ing-1',
-                    name: 'Apple',
-                    density: null,
-                },
-                prepMethod: null,
-            } as unknown as IngredientSubsectionView['ingredients'][number],
-            {
-                __typename: 'RecipeIngredient',
-                _id: 'ri-2',
-                quantity: '2',
-                unit: null,
-                ingredient: {
-                    __typename: 'Ingredient',
-                    _id: 'ing-2',
-                    name: 'Chicken',
-                    density: null,
-                },
-                prepMethod: null,
-            } as unknown as IngredientSubsectionView['ingredients'][number],
-        ],
-    } as unknown as IngredientSubsectionView,
-];
-
 const emptyMacros: MacroNutrients = { calories: 0, protein: 0, carbs: 0, fat: 0 };
 
 describe('NutritionalInfoPanel', () => {
@@ -85,9 +24,9 @@ describe('NutritionalInfoPanel', () => {
                 path='/'
                 element={
                     <NutritionalInfoPanel
-                        subsections={singleIngredientSubsection}
                         perServing={{ calories: 825, protein: 31, carbs: 0, fat: 3.6 }}
                         uncountedIds={new Set()}
+                        allUncounted={false}
                         loading={false}
                     />
                 }
@@ -104,9 +43,9 @@ describe('NutritionalInfoPanel', () => {
                 path='/'
                 element={
                     <NutritionalInfoPanel
-                        subsections={singleIngredientSubsection}
                         perServing={{ calories: 825, protein: 31, carbs: 0, fat: 3.6 }}
                         uncountedIds={new Set()}
+                        allUncounted={false}
                         loading={false}
                     />
                 }
@@ -122,9 +61,9 @@ describe('NutritionalInfoPanel', () => {
                 path='/'
                 element={
                     <NutritionalInfoPanel
-                        subsections={singleIngredientSubsection}
                         perServing={emptyMacros}
                         uncountedIds={new Set()}
+                        allUncounted={false}
                         loading={true}
                     />
                 }
@@ -136,16 +75,15 @@ describe('NutritionalInfoPanel', () => {
     });
 
     it('shows uncounted notice when some ingredients have no nutritional data', () => {
-        // Two ingredients; only ri-1 is uncounted → partial uncounting (not allUncounted)
+        // Partial uncounting: some ingredients counted, some not → allUncounted=false
         const routes = createRoutesFromElements(
             <Route
                 path='/'
                 element={
                     <NutritionalInfoPanel
-                        subsections={twoIngredientSubsection}
                         perServing={{ calories: 190, protein: 0.5, carbs: 25, fat: 0.3 }}
-                        // Only ri-1 is uncounted; ri-2 is counted, so allUncounted = false
                         uncountedIds={new Set(['ri-1'])}
+                        allUncounted={false}
                         loading={false}
                     />
                 }
@@ -156,15 +94,14 @@ describe('NutritionalInfoPanel', () => {
     });
 
     it('shows empty state when all ingredients are uncounted', () => {
-        // ri-1 is the only Ingredient-type item; it's in uncountedIds → allUncounted = true
         const routes = createRoutesFromElements(
             <Route
                 path='/'
                 element={
                     <NutritionalInfoPanel
-                        subsections={singleIngredientSubsection}
                         perServing={emptyMacros}
                         uncountedIds={new Set(['ri-1'])}
+                        allUncounted={true}
                         loading={false}
                     />
                 }
