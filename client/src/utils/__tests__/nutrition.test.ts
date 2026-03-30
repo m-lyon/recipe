@@ -1,12 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { mockCup, mockGram, mockKilogram, mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
+import { mockCup, mockKilogram, mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 import {
-    mockConversionRuleOne,
-    mockConversionRuleThree,
-    mockConversionRuleTwo,
     mockUnitConversionOne,
     mockUnitConversionTwo,
+    mockUnitConversionVolume,
 } from '@recipe/graphql/queries/__mocks__/unitConversion';
 
 import {
@@ -46,7 +44,7 @@ describe('quantityToFloat', () => {
         expect(quantityToFloat('1 1/2')).toBeCloseTo(1.5);
     });
 
-    it('returns NaN for a non-numeric string', () => {
+    it('returns NaN for a non-numeric string (raw parse behaviour)', () => {
         const result = quantityToFloat('abc');
         expect(isNaN(result)).toBe(true);
     });
@@ -100,6 +98,13 @@ describe('calculateIngredientNutrition', () => {
         const ri = makeIngredient({ quantity: null });
         const result = calculateIngredientNutrition(ri, nutritionPerUnit, unitConversions);
         expect(result.calculable).toBe(false);
+    });
+
+    it('returns not-calculable when quantity cannot be parsed (NaN guard)', () => {
+        const ri = makeIngredient({ quantity: 'abc' });
+        const result = calculateIngredientNutrition(ri, nutritionPerUnit, unitConversions);
+        expect(result.calculable).toBe(false);
+        expect(result.reason).toContain('parse');
     });
 
     it('returns not-calculable when nutritional info is null', () => {
@@ -162,6 +167,27 @@ describe('calculateIngredientNutrition', () => {
         // so this is not calculable
         expect(result.calculable).toBe(false);
         expect(result.reason).toContain('Cannot convert');
+    });
+
+    it('calculates via density for a volume unit when a proper volume base unit is present', () => {
+        // mockUnitConversionVolume: baseUnit=mockMilliliter (measureType: 'volume')
+        // mockConversionRuleFour: cup → 240 ml (baseToUnitConversion=240)
+        // 2 cups × 240 ml/cup = 480 ml; density = 0.5 g/ml → 240 g
+        const ri = makeIngredient({
+            quantity: '2',
+            unit: mockCup as unknown as UnitView,
+            ingredient: {
+                __typename: 'Ingredient',
+                _id: 'ing-1',
+                name: 'Honey',
+                density: 0.5,
+            } as unknown as RecipeIngredientView['ingredient'],
+        });
+        const volumeConversions: UnitConversion[] = [mockUnitConversionOne, mockUnitConversionVolume];
+        const result = calculateIngredientNutrition(ri, nutritionPerGram, volumeConversions);
+        expect(result.calculable).toBe(true);
+        // 2 cups × 240 ml/cup × 0.5 g/ml = 240 g
+        expect(result.macros.calories).toBeCloseTo(perGramMacros.calories * 240);
     });
 
     it('returns not-calculable for volume unit without density', () => {
@@ -233,9 +259,17 @@ describe('sumRecipeNutrition', () => {
     });
 
     it('adds uncountable ingredient ids to uncountedIds', () => {
-        const riNoInfo = makeIngredient({ _id: 'ri-3', quantity: '1', unit: null });
-        // Override ingredient id so it maps to null
-        (riNoInfo as any).ingredient._id = 'ing-no-info';
+        const riNoInfo = makeIngredient({
+            _id: 'ri-3',
+            quantity: '1',
+            unit: null,
+            ingredient: {
+                __typename: 'Ingredient',
+                _id: 'ing-no-info',
+                name: 'Unknown ingredient',
+                density: null,
+            } as unknown as RecipeIngredientView['ingredient'],
+        });
         const subsections = [makeSubsection([ri1, riNoInfo])];
         const result = sumRecipeNutrition(subsections, infoMap, [], 1);
         expect(result.uncountedIds.has('ri-3')).toBe(true);

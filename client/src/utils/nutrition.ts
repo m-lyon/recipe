@@ -107,6 +107,9 @@ export function calculateIngredientNutrition(
     }
 
     const qty = quantityToFloat(recipeIngredient.quantity);
+    if (isNaN(qty)) {
+        return { calculable: false, macros: { ...ZERO_MACROS }, reason: 'Could not parse quantity' };
+    }
     const unit = recipeIngredient.unit;
 
     // Case 1: No unit → countable ingredient
