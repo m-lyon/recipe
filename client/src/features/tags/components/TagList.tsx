@@ -15,7 +15,7 @@ export function TagList(props: Props) {
         return (
             <WrapItem key={tag}>
                 <Tag size='lg'>
-                    <TagLabel>{tag}</TagLabel>
+                    <TagLabel>{tag.replace(/_/g, ' ')}</TagLabel>
                 </Tag>
             </WrapItem>
         );

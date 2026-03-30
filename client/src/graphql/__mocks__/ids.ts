@@ -4,6 +4,7 @@ export const mockRecipeIdTwo = '60f4d2e5c3d5a0a4f1b9c0ec';
 export const mockRecipeIdThree = '60f4d3e5c3d5a0a4f1b9c0ec';
 export const mockRecipeIdFour = '60f4d4e5c3d5a0a4r1b9c0ec';
 export const mockRecipeIdFive = '30f4d5e5c3d5a0a4f1b9c0ec';
+export const mockRecipeIdSix = '30f4d6e5c3d5a0a4f1b9c0ec';
 export const mockRecipeIdNew = '60f4d4e5c3d5a0a4f1b9c0ec';
 export const mockRecipeIdNewAsIngr = '60f4d5e9c3d5a0a4f1b9c0ec';
 

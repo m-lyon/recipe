@@ -8,6 +8,7 @@ import { mockRecipeIngredientIdThree } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdSeven } from '@recipe/graphql/__mocks__/ids';
 import { mockRatingNewTwo } from '@recipe/graphql/queries/__mocks__/rating';
 import { GetRecipeQuery, RecipeIngredient } from '@recipe/graphql/generated';
+import { mockRecipePrepAhead } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockRecipeOne, mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockRecipeNew, mockRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
 import { CREATE_RECIPE, DELETE_RECIPE, UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
@@ -42,6 +43,8 @@ const getMockRecipeVariables = (mockRecipe: CompletedRecipeView = mockRecipeOne)
             source: mockRecipe.source ?? undefined,
             numServings: mockRecipe.numServings,
             isIngredient: mockRecipe.isIngredient,
+            prepAhead: mockRecipe.prepAhead,
+            prepAheadLabel: mockRecipe.prepAheadLabel ?? undefined,
         },
     };
 };
@@ -579,6 +582,66 @@ export const mockUpdateRecipeAddIsIngredient = {
                     ...recipeOneData.record,
                     isIngredient: true,
                     pluralTitle: 'Mock Recipes',
+                },
+            },
+        } satisfies UpdateRecipeMutation,
+    },
+};
+export const mockUpdateRecipeAddPrepAhead = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: {
+                ...recipeOneVars.recipe,
+                isIngredient: true,
+                pluralTitle: 'Mock Recipes',
+                prepAhead: true,
+                prepAheadLabel: '1 day',
+            },
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: {
+                    ...recipeOneData.record,
+                    isIngredient: true,
+                    pluralTitle: 'Mock Recipes',
+                    prepAhead: true,
+                    prepAheadLabel: '1 day',
+                    calculatedTags: ['ingredient', 'prep_ahead'],
+                },
+            },
+        } satisfies UpdateRecipeMutation,
+    },
+};
+const recipePrepAheadVars = getMockRecipeVariables(mockRecipePrepAhead);
+const recipePrepAheadData = getMockRecipeReturn(mockRecipePrepAhead);
+export const mockUpdateRecipeRemovePrepAhead = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipePrepAheadVars.id,
+            recipe: {
+                ...recipePrepAheadVars.recipe,
+                prepAhead: false,
+                prepAheadLabel: undefined,
+            },
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: {
+                    ...recipePrepAheadData.record,
+                    prepAhead: false,
+                    prepAheadLabel: null,
+                    calculatedTags: ['ingredient'],
                 },
             },
         } satisfies UpdateRecipeMutation,

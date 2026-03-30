@@ -11,7 +11,10 @@ import { Ingredient, ReservedIngredientTags } from './Ingredient.js';
 import { ownerExists, tagsExist, unique, uniqueInAdminsAndUser } from './validation.js';
 
 const quantityRegex = /^((\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*)(-(\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*))?)$/;
-const ReservedRecipeTags = { Ingredient: 'ingredient' } as const;
+const ReservedRecipeTags = {
+    Ingredient: 'ingredient',
+    PrepAhead: 'prep_ahead',
+} as const;
 export const ReservedTags = { ...ReservedRecipeTags, ...ReservedIngredientTags } as const;
 type ReservedTags = (typeof ReservedTags)[keyof typeof ReservedTags];
 
@@ -162,6 +165,8 @@ export interface Recipe extends Document {
     source?: string;
     numServings: number;
     isIngredient: boolean;
+    prepAhead: boolean;
+    prepAheadLabel?: string;
     createdAt: Date;
     lastModified: Date;
 }
@@ -250,6 +255,8 @@ const recipeSchema = new Schema<Recipe>({
     source: { type: String },
     numServings: { type: Number, required: true },
     isIngredient: { type: Boolean, required: true },
+    prepAhead: { type: Boolean, required: true, default: false },
+    prepAheadLabel: { type: String },
     createdAt: { type: Date, required: true },
     lastModified: { type: Date, required: true },
 });
@@ -261,6 +268,9 @@ recipeSchema.pre('save', async function () {
     await this.populate('ingredientSubsections.ingredients.ingredient');
     if (this.isIngredient) {
         calculatedTags.push(ReservedRecipeTags.Ingredient);
+    }
+    if (this.prepAhead) {
+        calculatedTags.push(ReservedRecipeTags.PrepAhead);
     }
     for (const tag in ReservedIngredientTags) {
         const allMembers = this.ingredientSubsections.every((collection: IngredientSubsection) => {
@@ -280,7 +290,21 @@ recipeSchema.pre('save', async function () {
             calculatedTags.push(ReservedIngredientTags[tag]);
         }
     }
-    this.calculatedTags = calculatedTags;
+    // Add prep_ahead if any ingredient recipe is prepAhead
+    const hasPrepAheadIngredient = this.ingredientSubsections.some(
+        (subsection: IngredientSubsection) =>
+            subsection.ingredients.some((recipeIngr: RecipeIngredientType) => {
+                if (recipeIngr.type === 'recipe') {
+                    const recipe: Recipe = recipeIngr.ingredient as unknown as Recipe;
+                    return recipe.prepAhead;
+                }
+                return false;
+            })
+    );
+    if (hasPrepAheadIngredient) {
+        calculatedTags.push(ReservedRecipeTags.PrepAhead);
+    }
+    this.calculatedTags = [...new Set(calculatedTags)];
 });
 
 export const RecipeIngredient = model<RecipeIngredientType>(

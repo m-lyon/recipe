@@ -80,6 +80,7 @@ const getDefaultRecipeRecord = (ingredient, unit, prepMethod, tag?, size?) => {
         numServings: 4,
         tags: [],
         isIngredient: false,
+        prepAhead: false,
     };
     if (tag) {
         record.tags = [tag._id];
@@ -174,6 +175,7 @@ describe('recipeCreateOne', () => {
             numServings: 4,
             tags: [tag._id],
             isIngredient: false,
+            prepAhead: false,
         };
         const response = await createRecipe(this, user, newRecord);
         const record = parseCreatedRecipe(response);
@@ -218,6 +220,7 @@ describe('recipeCreateOne', () => {
             numServings: 4,
             tags: [tag._id],
             isIngredient: false,
+            prepAhead: false,
         };
         const response = await createRecipe(this, user, newRecord);
         const record = parseCreatedRecipe(response);
@@ -425,6 +428,7 @@ describe('recipeCreateOne', () => {
             numServings: 4,
             tags: [tag._id],
             isIngredient: false,
+            prepAhead: false,
         };
         await createRecipe(this, user, newRecord);
         const response = await createRecipe(this, user, newRecord);
@@ -528,6 +532,117 @@ describe('recipeCreateOne', () => {
         assert.equal(
             response.body.singleResult.errors[0].message,
             'Recipe validation failed: instructionSubsections: At least one instruction subsection is required.'
+        );
+    });
+
+    it('should create a recipe with prepAhead producing prep_ahead calculatedTag', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const newRecord = {
+            ...getDefaultRecipeRecord(ingredient, unit, prepMethod),
+            title: 'Prep Ahead Soup',
+            isIngredient: true,
+            prepAhead: true,
+            prepAheadLabel: '1 day',
+        };
+        const response = await createRecipe(this, user, newRecord);
+        const record = parseCreatedRecipe(response);
+        const doc = await Recipe.findById(record._id);
+        assert.isTrue(
+            doc.calculatedTags.includes('prep_ahead'),
+            'Recipe should have prep_ahead tag'
+        );
+    });
+
+    it('should create a recipe with prepAhead false NOT producing prep_ahead calculatedTag', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const newRecord = {
+            ...getDefaultRecipeRecord(ingredient, unit, prepMethod),
+            title: 'No Prep Ahead Soup',
+            prepAhead: false,
+        };
+        const response = await createRecipe(this, user, newRecord);
+        const record = parseCreatedRecipe(response);
+        const doc = await Recipe.findById(record._id);
+        assert.isFalse(
+            doc.calculatedTags.includes('prep_ahead'),
+            'Recipe should not have prep_ahead tag'
+        );
+    });
+
+    it('should propagate prep_ahead tag from a prepAhead recipe ingredient', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        // First, update the Bimibap recipe to be prepAhead
+        const recipeIngredient = await Recipe.findOne({ title: 'Bimibap' });
+        recipeIngredient.prepAhead = true;
+        recipeIngredient.prepAheadLabel = '1 day';
+        await recipeIngredient.save();
+
+        // Create a parent recipe using the prepAhead recipe as an ingredient
+        const newRecord = {
+            ...getDefaultRecipeRecord(ingredient, unit, prepMethod),
+            title: 'Parent Prep Ahead Soup',
+        };
+        newRecord.ingredientSubsections[0].ingredients = [
+            {
+                ingredient: recipeIngredient._id,
+                quantity: '5',
+                unit: unit._id,
+                size: undefined,
+                prepMethod: undefined,
+            },
+        ];
+        const response = await createRecipe(this, user, newRecord);
+        const record = parseCreatedRecipe(response);
+        const doc = await Recipe.findById(record._id);
+        assert.isTrue(
+            doc.calculatedTags.includes('prep_ahead'),
+            'Parent recipe should have prep_ahead tag from ingredient'
+        );
+    });
+
+    it('should NOT propagate prep_ahead tag from a non-prepAhead recipe ingredient', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        // Bimibap has prepAhead: false by default (or undefined, which is falsy)
+        const recipeIngredient = await Recipe.findOne({ title: 'Bimibap' });
+        assert.isNotTrue(
+            recipeIngredient.prepAhead,
+            'Precondition: Bimibap should not be prepAhead'
+        );
+
+        // Create a parent recipe using the non-prepAhead recipe as an ingredient
+        const newRecord = {
+            ...getDefaultRecipeRecord(ingredient, unit, prepMethod),
+            title: 'Parent No Prep Ahead Soup',
+        };
+        newRecord.ingredientSubsections[0].ingredients = [
+            {
+                ingredient: recipeIngredient._id,
+                quantity: '5',
+                unit: unit._id,
+                size: undefined,
+                prepMethod: undefined,
+            },
+        ];
+        const response = await createRecipe(this, user, newRecord);
+        const record = parseCreatedRecipe(response);
+        const doc = await Recipe.findById(record._id);
+        assert.isFalse(
+            doc.calculatedTags.includes('prep_ahead'),
+            'Parent recipe should not have prep_ahead tag'
         );
     });
 
@@ -1296,5 +1411,21 @@ describe('recipeRemoveById', () => {
         // Check the image is not deleted
         const images = await Image.find({ recipe: recipeIngredient._id });
         assert.isNotEmpty(images, 'Images should not be deleted');
+    });
+});
+
+describe('reservedTags', () => {
+    before(startServer);
+    after(stopServer);
+    beforeEach(createRecipeIngredientData);
+    afterEach(removeRecipeIngredientData);
+
+    it('should NOT create a Tag with reserved value prep_ahead', async function () {
+        try {
+            await new Tag({ value: 'prep_ahead' }).save();
+            assert.fail('Tag creation should have failed with Reserved tag error');
+        } catch (error) {
+            assert.include(error.message, 'Reserved tag.');
+        }
     });
 });

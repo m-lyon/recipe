@@ -36,6 +36,8 @@ export const RECIPE_INGR_FIELDS = gql(`
         _id
         title
         pluralTitle
+        prepAhead
+        prepAheadLabel
     }
 `);
 
@@ -82,6 +84,8 @@ export const RECIPE_FIELDS_FULL = gql(`
                         _id
                         title
                         pluralTitle
+                        prepAhead
+                        prepAheadLabel
                     }
                     ... on Ingredient {
                         ...IngredientFields
