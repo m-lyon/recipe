@@ -2,16 +2,16 @@ import { useMutation } from '@apollo/client';
 import { Button, ModalFooter } from '@chakra-ui/react';
 import { Modal, ModalBody, ModalContent, ModalHeader, ModalOverlay } from '@chakra-ui/react';
 
-import { DELETE_RECIPE } from '@recipe/graphql/mutations/recipe';
+import { ARCHIVE_RECIPE } from '@recipe/graphql/mutations/recipe';
 
 interface Props {
     show: boolean;
     setShow: (show: boolean) => void;
     recipeId: string;
 }
-export function ConfirmDeleteModal(props: Props) {
+export function ConfirmArchiveModal(props: Props) {
     const { show, setShow, recipeId } = props;
-    const [deleteRecipe] = useMutation(DELETE_RECIPE, {
+    const [archiveRecipe] = useMutation(ARCHIVE_RECIPE, {
         variables: { id: recipeId },
         update(cache) {
             cache.evict({ id: `Recipe:${recipeId}` });
@@ -26,24 +26,26 @@ export function ConfirmDeleteModal(props: Props) {
         <Modal isOpen={show} onClose={() => setShow(false)}>
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>Delete Recipe</ModalHeader>
-                <ModalBody>Are you sure you want to delete this recipe?</ModalBody>
+                <ModalHeader>Archive Recipe</ModalHeader>
+                <ModalBody>
+                    Are you sure you want to archive this recipe? You can restore it later.
+                </ModalBody>
                 <ModalFooter>
                     <Button
                         variant='outline'
                         mr={3}
                         onClick={() => setShow(false)}
-                        aria-label='Cancel delete action'
+                        aria-label='Cancel archive action'
                     >
                         Cancel
                     </Button>
                     <Button
-                        colorScheme='red'
+                        colorScheme='orange'
                         onClick={() => {
-                            deleteRecipe();
+                            archiveRecipe();
                             setShow(false);
                         }}
-                        aria-label='Confirm delete action'
+                        aria-label='Confirm archive action'
                     >
                         Confirm
                     </Button>

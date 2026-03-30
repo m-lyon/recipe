@@ -1,7 +1,7 @@
-import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useLazyQuery } from '@apollo/client';
 import { useDebouncedCallback } from 'use-debounce';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { useSearchStore } from '@recipe/stores';
 import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
@@ -11,6 +11,8 @@ import { Query, getSearchFilter } from '../utils/filter';
 
 interface SearchHook {
     filter: ReturnType<typeof getSearchFilter>;
+    showArchived: boolean;
+    setShowArchived: (v: boolean) => void;
     setTitle: (value: string) => void;
     reset: () => void;
     addFilter: (item: FilterChoice, type: FilterChoiceType) => void;
@@ -25,13 +27,15 @@ export function useSearch(): SearchHook {
     const ingredients = useSearchStore(
         useShallow((state) => state.selectedIngredients.map((ingredient) => ingredient._id))
     );
+    const showArchived = useSearchStore((state) => state.showArchived);
+    const setShowArchived = useSearchStore((state) => state.setShowArchived);
     const setTitleStore = useSearchStore((state) => state.setTitle);
     const resetSearch = useSearchStore((state) => state.resetSearch);
     const addItem = useSearchStore((state) => state.addItem);
     const removeItem = useSearchStore((state) => state.removeItem);
     const [searchRecipes] = useLazyQuery(GET_RECIPES, { fetchPolicy: 'network-only' });
     const debouncedSearch = useDebouncedCallback((newQuery: Query) => {
-        const newFilter = getSearchFilter(newQuery);
+        const newFilter = getSearchFilter(newQuery, showArchived);
         searchRecipes({
             variables: {
                 offset: 0,
@@ -42,15 +46,38 @@ export function useSearch(): SearchHook {
         });
     }, DEBOUNCE_TIME);
     const filter = useMemo(
-        () => getSearchFilter({ title, tags, calculatedTags, ingredients }),
-        [title, tags, calculatedTags, ingredients]
+        () => getSearchFilter({ title, tags, calculatedTags, ingredients }, showArchived),
+        [title, tags, calculatedTags, ingredients, showArchived]
     );
-    const reset = useCallback(() => {
-        if (filter) {
-            searchRecipes({ variables: { offset: 0, limit: INIT_LOAD_NUM } });
+
+    const isInitialRender = useRef(true);
+    useEffect(() => {
+        if (isInitialRender.current) {
+            isInitialRender.current = false;
+            return;
         }
+        searchRecipes({
+            variables: {
+                offset: 0,
+                limit: INIT_LOAD_NUM,
+                filter,
+                countFilter: filter,
+            },
+        });
+    }, [showArchived]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const reset = useCallback(() => {
+        const defaultFilter = { archived: false };
+        searchRecipes({
+            variables: {
+                offset: 0,
+                limit: INIT_LOAD_NUM,
+                filter: defaultFilter,
+                countFilter: defaultFilter,
+            },
+        });
         resetSearch();
-    }, [filter, resetSearch, searchRecipes]);
+    }, [resetSearch, searchRecipes]);
 
     const setTitle = useCallback(
         (value: string) => {
@@ -76,5 +103,5 @@ export function useSearch(): SearchHook {
         [removeItem, debouncedSearch]
     );
 
-    return { filter, setTitle, reset, addFilter, removeFilter };
+    return { filter, showArchived, setShowArchived, setTitle, reset, addFilter, removeFilter };
 }

@@ -4,45 +4,45 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { enterViewRecipePage } from '@recipe/utils/tests';
-import { mockDeleteRecipeOne } from '@recipe/graphql/mutations/__mocks__/recipe';
-import { mockDeleteRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockArchiveRecipeOne } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockArchiveRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
 
 import { renderComponent } from './utils';
 
 loadErrorMessages();
 loadDevMessages();
 
-describe('Delete Recipe Workflow', () => {
+describe('Archive Recipe Workflow', () => {
     afterEach(() => {
         cleanup();
     });
 
-    it('should delete a recipe only', async () => {
+    it('should archive a recipe only', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockDeleteRecipeOne]);
+        renderComponent([mockArchiveRecipeOne]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
         expect(await screen.findByText('Recipes'));
         await user.hover(await screen.findByLabelText('View Mock Recipe'));
-        await user.click(screen.getByLabelText('Delete Mock Recipe'));
-        await user.click(screen.getByLabelText('Confirm delete action'));
+        await user.click(screen.getByLabelText('Archive Mock Recipe'));
+        await user.click(screen.getByLabelText('Confirm archive action'));
 
         // Expect ------------------------------------------------
         expect(await screen.findByText('Recipes')).not.toBeNull();
         expect(screen.queryByText('Mock Recipe')).toBeNull();
     });
 
-    it('should delete a recipe that is an ingredient', async () => {
+    it('should archive a recipe that is an ingredient', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockDeleteRecipeTwo]);
+        renderComponent([mockArchiveRecipeTwo]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
         expect(await screen.findByText('Recipes'));
         await user.hover(await screen.findByLabelText('View Mock Recipe Two'));
-        await user.click(screen.getByLabelText('Delete Mock Recipe Two'));
-        await user.click(screen.getByLabelText('Confirm delete action'));
+        await user.click(screen.getByLabelText('Archive Mock Recipe Two'));
+        await user.click(screen.getByLabelText('Confirm archive action'));
 
         // Expect ------------------------------------------------
         // ------ Home Page --------------------------------------
@@ -58,17 +58,17 @@ describe('Delete Recipe Workflow', () => {
         expect(screen.queryByText('mock recipes two')).toBeNull();
     });
 
-    it('should delete a recipe after viewing', async () => {
+    it('should archive a recipe after viewing', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockDeleteRecipeOne]);
+        renderComponent([mockArchiveRecipeOne]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
         await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
         await user.click(screen.getByLabelText('Navigate to home page'));
         await user.hover(await screen.findByLabelText('View Mock Recipe'));
-        await user.click(screen.getByLabelText('Delete Mock Recipe'));
-        await user.click(screen.getByLabelText('Confirm delete action'));
+        await user.click(screen.getByLabelText('Archive Mock Recipe'));
+        await user.click(screen.getByLabelText('Confirm archive action'));
 
         // Expect ------------------------------------------------
         expect(await screen.findByText('Recipes')).not.toBeNull();

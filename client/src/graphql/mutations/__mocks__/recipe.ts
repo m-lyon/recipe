@@ -1,4 +1,5 @@
 import { UpdateRecipeMutation } from '@recipe/graphql/generated';
+import { UnarchiveRecipeMutation } from '@recipe/graphql/generated';
 import { mockSpicyTag } from '@recipe/graphql/queries/__mocks__/tag';
 import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockApple } from '@recipe/graphql/queries/__mocks__/ingredient';
@@ -8,12 +9,14 @@ import { mockRecipeIngredientIdThree } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdSeven } from '@recipe/graphql/__mocks__/ids';
 import { mockRatingNewTwo } from '@recipe/graphql/queries/__mocks__/rating';
 import { GetRecipeQuery, RecipeIngredient } from '@recipe/graphql/generated';
+import { UnarchiveRecipeMutationVariables } from '@recipe/graphql/generated';
+import { CREATE_RECIPE, UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
+import { ARCHIVE_RECIPE, UNARCHIVE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { mockRecipeOne, mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockRecipeNew, mockRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
-import { CREATE_RECIPE, DELETE_RECIPE, UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { mockRecipeFour, mockRecipeNewAsIngr } from '@recipe/graphql/queries/__mocks__/recipe';
-import { DeleteRecipeMutation, DeleteRecipeMutationVariables } from '@recipe/graphql/generated';
 import { CreateRecipeMutation, CreateRecipeMutationVariables } from '@recipe/graphql/generated';
+import { ArchiveRecipeMutation, ArchiveRecipeMutationVariables } from '@recipe/graphql/generated';
 
 import { mockCreateTag } from './tag';
 
@@ -1009,33 +1012,63 @@ export const mockCreateRecipeAsIngr = {
         } satisfies CreateRecipeMutation,
     },
 };
-export const mockDeleteRecipeOne = {
+export const mockArchiveRecipeOne = {
     request: {
-        query: DELETE_RECIPE,
-        variables: { id: recipeOneVars.id } satisfies DeleteRecipeMutationVariables,
+        query: ARCHIVE_RECIPE,
+        variables: { id: recipeOneVars.id } satisfies ArchiveRecipeMutationVariables,
     },
     result: {
         data: {
             __typename: 'Mutation',
-            recipeRemoveById: {
+            recipeArchiveById: {
                 __typename: 'RemoveByIdRecipePayload',
                 recordId: recipeOneVars.id,
             },
-        } satisfies DeleteRecipeMutation,
+        } satisfies ArchiveRecipeMutation,
     },
 };
-export const mockDeleteRecipeTwo = {
+export const mockArchiveRecipeTwo = {
     request: {
-        query: DELETE_RECIPE,
-        variables: { id: recipeTwoVars.id } satisfies DeleteRecipeMutationVariables,
+        query: ARCHIVE_RECIPE,
+        variables: { id: recipeTwoVars.id } satisfies ArchiveRecipeMutationVariables,
     },
     result: {
         data: {
             __typename: 'Mutation',
-            recipeRemoveById: {
+            recipeArchiveById: {
                 __typename: 'RemoveByIdRecipePayload',
                 recordId: recipeTwoVars.id,
             },
-        } satisfies DeleteRecipeMutation,
+        } satisfies ArchiveRecipeMutation,
+    },
+};
+export const mockUnarchiveRecipeOne = {
+    request: {
+        query: UNARCHIVE_RECIPE,
+        variables: { id: recipeOneVars.id } satisfies UnarchiveRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUnarchiveById: {
+                __typename: 'RemoveByIdRecipePayload',
+                recordId: recipeOneVars.id,
+            },
+        } satisfies UnarchiveRecipeMutation,
+    },
+};
+export const mockUnarchiveRecipeTwo = {
+    request: {
+        query: UNARCHIVE_RECIPE,
+        variables: { id: recipeTwoVars.id } satisfies UnarchiveRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUnarchiveById: {
+                __typename: 'RemoveByIdRecipePayload',
+                recordId: recipeTwoVars.id,
+            },
+        } satisfies UnarchiveRecipeMutation,
     },
 };

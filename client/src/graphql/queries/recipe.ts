@@ -5,7 +5,7 @@ export const GET_INGREDIENT_AND_RECIPE_INGREDIENTS = gql(`
         ingredients: ingredientMany(limit: 5000) {
             ...IngredientFields
         }
-        recipes: recipeMany(limit: 5000, filter: {isIngredient: true}) {
+        recipes: recipeMany(limit: 5000, filter: {isIngredient: true, archived: false}) {
             ...RecipeIngrFields
         }
     }
@@ -22,7 +22,7 @@ export const GET_INGREDIENT_COMPONENTS = gql(`
         ingredients: ingredientMany(limit: 5000) {
             ...IngredientFields
         }
-        recipes: recipeMany(limit: 5000, filter: {isIngredient: true}) {
+        recipes: recipeMany(limit: 5000, filter: {isIngredient: true, archived: false}) {
             ...RecipeIngrFields
         }
         prepMethods: prepMethodMany(limit: 5000) {
@@ -43,6 +43,7 @@ export const RECIPE_FIELDS_SUBSET = gql(`
     fragment RecipeFieldsSubset on Recipe {
         ...RecipeIngrFields
         titleIdentifier
+        archived
         tags {
             ...TagFields
         }

@@ -11,6 +11,8 @@ import { IngredientFilterSlice, createIngredientFilterSlice } from './createIngr
 interface SharedSlice {
     showSearch: boolean;
     setShowSearch: (showSearch: boolean) => void;
+    showArchived: boolean;
+    setShowArchived: (showArchived: boolean) => void;
     resetSearch: () => void;
     setTitle: (value: string) => Query;
     addItem: (item: FilterChoice, type: FilterChoiceType) => Query;
@@ -21,6 +23,15 @@ export type SearchState = SharedSlice & TitleFilterSlice & TagFilterSlice & Ingr
 const createSharedSlice: StateCreator<SearchState, [], [], SharedSlice> = (set, get) => ({
     showSearch: false,
     setShowSearch: (showSearch) => set(() => ({ showSearch })),
+    showArchived: false,
+    setShowArchived: (showArchived) => {
+        set(() => ({ showArchived }));
+        if (showArchived) {
+            get().resetTitleFilter();
+            get().resetTagFilter();
+            get().resetIngrFilter();
+        }
+    },
     resetSearch: () => {
         get().resetTitleFilter();
         get().resetTagFilter();
