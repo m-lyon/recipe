@@ -9,7 +9,7 @@ import { mockKilogram } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockChicken } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
-import { mockChickenId } from '@recipe/graphql/__mocks__/ids';
+import { mockChickenId, mockRecipeIngredientIdOne } from '@recipe/graphql/__mocks__/ids';
 import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
 import { GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS } from '@recipe/graphql/queries/nutritionalInfo';
@@ -31,7 +31,7 @@ const renderComponent = () => {
                         name: 'Section One',
                         ingredients: [
                             {
-                                _id: '60f4d2e5c3d5a0a4f1b9c0ec',
+                                _id: mockRecipeIngredientIdOne,
                                 __typename: 'RecipeIngredient',
                                 quantity: '1',
                                 unit: mockKilogram,
