@@ -619,10 +619,7 @@ describe('recipeCreateOne', () => {
         const response = await createRecipe(this, user, newRecord);
         assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
-        assert.include(
-            response.body.singleResult.errors[0].message,
-            'Invalid quantity format'
-        );
+        assert.include(response.body.singleResult.errors[0].message, 'Invalid quantity format');
     });
 
     it('should NOT create a recipe with non-existent yield unit', async function () {

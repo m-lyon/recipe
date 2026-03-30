@@ -1,7 +1,7 @@
 import { UpdateRecipeMutation } from '@recipe/graphql/generated';
+import { mockCup } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockSpicyTag } from '@recipe/graphql/queries/__mocks__/tag';
 import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
-import { mockCup } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockApple } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockDiced } from '@recipe/graphql/queries/__mocks__/prepMethod';
 import { UpdateRecipeMutationVariables } from '@recipe/graphql/generated';

@@ -1,8 +1,8 @@
 import { fraction } from 'mathjs';
 import { Text } from '@mantine/core';
 
-import { formatFraction, isRange } from '@recipe/utils/number';
 import { scaleQuantity } from '@recipe/utils/quantity';
+import { formatFraction, isRange } from '@recipe/utils/number';
 
 interface Props {
     origQuantity: string;
@@ -18,9 +18,9 @@ export function Yield(props: Props) {
     try {
         displayQty = isRange(scaledQty)
             ? scaledQty
-                  .split('-')
-                  .map((part) => formatFraction(part))
-                  .join('-')
+                .split('-')
+                .map((part) => formatFraction(part))
+                .join('-')
             : formatFraction(scaledQty);
     } catch {
         displayQty = scaledQty;
@@ -34,7 +34,7 @@ export function Yield(props: Props) {
         } else {
             try {
                 const fract = fraction(scaledQty);
-                numeric = fract.s * fract.n / fract.d;
+                numeric = (fract.s * fract.n) / fract.d;
             } catch {
                 numeric = 2; // default to plural on parse failure
             }
