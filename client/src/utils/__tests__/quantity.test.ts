@@ -125,12 +125,20 @@ describe('scaleQuantity', () => {
         expect(scaleQuantity('2', 4, 0, fractionUnit)).toBe('2');
     });
 
+    it('should return range quantity unchanged when origServings is zero', () => {
+        expect(scaleQuantity('1-2', 4, 0, fractionUnit)).toBe('1-2');
+    });
+
     it('should scale a whole number up', () => {
         expect(scaleQuantity('2', 8, 4, fractionUnit)).toBe('4');
     });
 
-    it('should scale a whole number down to a fraction', () => {
+    it('should scale a whole number down', () => {
         expect(scaleQuantity('2', 2, 4, fractionUnit)).toBe('1');
+    });
+
+    it('should scale a whole number down to a fraction', () => {
+        expect(scaleQuantity('2', 3, 4, fractionUnit)).toBe('3/2');
     });
 
     it('should scale a fraction to a whole number', () => {

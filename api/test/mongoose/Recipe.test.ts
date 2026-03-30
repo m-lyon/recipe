@@ -195,7 +195,7 @@ describe('Yield Quantity Validation', function () {
             .then(() => mongoose.connection.collections.ingredients.drop())
             .then(() => {
                 if (mongoose.connection.collections.recipes) {
-                    mongoose.connection.collections.recipes.drop();
+                    return mongoose.connection.collections.recipes.drop();
                 }
             })
             .then(() => done())

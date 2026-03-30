@@ -6,6 +6,7 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { enterEditRecipePage, enterViewRecipePage } from '@recipe/utils/tests';
 import { mockUpdateRecipeAddYield } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeRemoveYield } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockUpdateRecipeOneNoChange } from '@recipe/graphql/mutations/__mocks__/recipe';
 
 import { renderComponent } from './utils';
 
@@ -97,6 +98,24 @@ describe('Update Recipe Workflow: Yield', () => {
         // Expect ------------------------------------------------
         expect(await screen.findByText('Invalid yield quantity')).not.toBeNull();
         expect(screen.getByLabelText('Edit yield quantity')).toHaveProperty('value', '');
+    });
+
+    it('should save without error when unit is selected but quantity is empty', async () => {
+        // Render -----------------------------------------------
+        // Selecting a unit with no quantity is valid — yield is omitted from submission
+        renderComponent([mockUpdateRecipeOneNoChange]);
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+        await user.click(screen.getAllByLabelText('Edit yield unit')[0]);
+        await user.click(await screen.findByText('cup (cup)'));
+        await user.click(screen.getByLabelText('Save recipe'));
+
+        // Expect ------------------------------------------------
+        // No error toast, recipe saved normally (navigates to home page)
+        expect(await screen.findByText('Recipes')).not.toBeNull();
+        expect(screen.queryByText('Invalid yield quantity')).toBeNull();
     });
 
     it('should scale yield quantity when servings change', async () => {
