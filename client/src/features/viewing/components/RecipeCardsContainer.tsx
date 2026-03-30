@@ -6,9 +6,9 @@ import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
 import { useUser } from '@recipe/features/user';
 import { useSearch } from '@recipe/features/search';
+import { BraisingLoader } from '@recipe/common/components';
 import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { ConfirmDeleteModal } from '@recipe/features/editing';
-import { BraisingLoader } from '@recipe/common/components';
 import { FETCH_MORE_NUM, INIT_LOAD_NUM } from '@recipe/constants';
 
 import { RecipeCard } from './RecipeCard';

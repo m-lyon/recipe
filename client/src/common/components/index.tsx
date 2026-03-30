@@ -1,9 +1,9 @@
 export { AnimatedLink } from './AnimatedLink';
-export { BraisingLoader } from './BraisingLoader';
 export { DropdownItem } from './DropdownItem';
 export { EditableText } from './EditableText';
 export { DropdownList } from './DropdownList';
 export { ImageCarousel } from './ImageCarousel';
+export { BraisingLoader } from './BraisingLoader';
 export { CentredTextArea } from './CentredTextArea';
 export { EditableItemArea } from './EditableItemArea';
 export { SearchableSelect } from './SearchableSelect';

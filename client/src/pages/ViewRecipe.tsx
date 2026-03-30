@@ -2,9 +2,9 @@ import { useQuery } from '@apollo/client';
 import { useParams } from 'react-router-dom';
 import { Box, Container, Grid, GridItem } from '@chakra-ui/react';
 
+import { BraisingLoader } from '@recipe/common/components';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { ImageViewerRecipe } from '@recipe/features/images';
-import { BraisingLoader } from '@recipe/common/components';
 import { IngredientsTab, InstructionsTab, Title } from '@recipe/features/viewing';
 
 export function ViewRecipe() {
