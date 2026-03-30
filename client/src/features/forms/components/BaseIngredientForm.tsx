@@ -8,6 +8,7 @@ import { FloatingLabelInput } from '@recipe/common/components';
 
 import { useFormLogic } from '../hooks/useFormLogic';
 import { useKeyboardSubmit } from '../hooks/useKeyboardSubmit';
+import { UsdaLinkSection } from './UsdaLinkSection';
 
 export function formatIngredientError(error: ApolloError) {
     if (error.message.startsWith('E11000')) {
@@ -29,12 +30,13 @@ const formSchema = object({
 export interface BaseIngredientFormProps extends StackProps {
     fieldRef?: MutableRefObject<HTMLInputElement | null>;
     initData?: Partial<ModifyableIngredient>;
+    ingredientId?: string;
     disabled?: boolean;
     submitForm: (data: ModifyableIngredient) => void;
     onDelete?: () => void;
 }
 export function BaseIngredientForm(props: BaseIngredientFormProps) {
-    const { fieldRef, initData, disabled, submitForm, onDelete, ...rest } = props;
+    const { fieldRef, initData, ingredientId, disabled, submitForm, onDelete, ...rest } = props;
     const xfm = useCallback(
         (data: Partial<ModifyableIngredient>) => ({
             name: data.name,
@@ -127,6 +129,11 @@ export function BaseIngredientForm(props: BaseIngredientFormProps) {
                     Vegetarian
                 </Checkbox>
             </HStack>
+            <UsdaLinkSection
+                ingredientId={ingredientId}
+                isCountable={formData.isCountable}
+                disabled={disabled}
+            />
             <ButtonGroup display='flex' justifyContent='flex-end' isDisabled={disabled}>
                 {onDelete && (
                     <Button colorScheme='red' onClick={onDelete} aria-label='Delete ingredient'>

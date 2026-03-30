@@ -4,6 +4,7 @@ import { boolean, mixed, object, string } from 'yup';
 import { MutableRefObject, useCallback, useEffect } from 'react';
 import { Button, ButtonGroup, Checkbox } from '@chakra-ui/react';
 import { FormControl, FormHelperText, HStack, Radio, RadioGroup, Stack } from '@chakra-ui/react';
+import { Select } from '@mantine/core';
 
 import { NumberFormat } from '@recipe/graphql/enums';
 import { FloatingLabelInput } from '@recipe/common/components';
@@ -18,6 +19,12 @@ export function formatUnitError(error: ApolloError) {
     return error.message;
 }
 
+const MEASURE_TYPE_OPTIONS = [
+    { value: 'mass', label: 'Mass (e.g. kg, oz)' },
+    { value: 'volume', label: 'Volume (e.g. ml, cup)' },
+    { value: '', label: 'None / custom' },
+];
+
 export const unitFormSchema = object({
     shortSingular: string().required('Short singular name is required'),
     shortPlural: string().required('Short plural name is required'),
@@ -28,6 +35,7 @@ export const unitFormSchema = object({
         .oneOf(Object.values(NumberFormat), 'You must select a number format'),
     hasSpace: boolean().required(),
     unique: boolean().required(),
+    measureType: string().nullable().optional(),
 });
 export interface BaseUnitFormProps extends StackProps {
     fieldRef?: MutableRefObject<HTMLInputElement | null>;
@@ -47,6 +55,7 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
             preferredNumberFormat: data.preferredNumberFormat,
             hasSpace: data.hasSpace,
             unique: true,
+            measureType: data.measureType ?? null,
         }),
         []
     );
@@ -129,6 +138,19 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
             >
                 Space after quantity
             </Checkbox>
+            {/* Mantine Select — new field, mixed Mantine/Chakra intentional (see NutritionalInfoPanel note) */}
+            <Select
+                label='Measure type'
+                description='Set to Mass or Volume to enable nutritional calculations'
+                data={MEASURE_TYPE_OPTIONS}
+                value={formData.measureType ?? ''}
+                onChange={(val) =>
+                    handleChange('measureType', (val || null) as 'mass' | 'volume' | null)
+                }
+                disabled={disabled}
+                clearable={false}
+                aria-label='Measure type'
+            />
             <ButtonGroup
                 display='flex'
                 justifyContent='flex-end'

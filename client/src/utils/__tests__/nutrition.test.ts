@@ -86,7 +86,6 @@ const perGramMacros: MacroNutrients = { calories: 4, protein: 0.1, carbs: 0.8, f
 
 const nutritionPerUnit: NutritionalInfoData = { perUnit: perUnitMacros };
 const nutritionPerGram: NutritionalInfoData = { perGram: perGramMacros };
-const nutritionBoth: NutritionalInfoData = { perUnit: perUnitMacros, perGram: perGramMacros };
 
 // ---------------------------------------------------------------------------
 // calculateIngredientNutrition

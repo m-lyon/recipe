@@ -49,7 +49,7 @@ export function CreateBespokeUnitForm(props: Props) {
                 hasSpace,
                 unique: false,
             });
-            saveUnit({ variables: { record: validated } });
+            saveUnit({ variables: { record: validated as any } });
         } catch (e: unknown) {
             setHasError(true);
             if (e instanceof ValidationError) {
