@@ -148,6 +148,38 @@ const instructionSubsection = new Schema({
     },
 });
 
+interface RecipeYield {
+    quantity?: string;
+    unit?: Types.ObjectId;
+}
+const recipeYieldSchema = new Schema<RecipeYield>({
+    quantity: {
+        type: String,
+        validate: {
+            validator: function (quantity: string) {
+                if (quantity != null && !quantityRegex.test(quantity)) {
+                    return false;
+                }
+                return true;
+            },
+            message: 'Invalid yield quantity format',
+        },
+    },
+    unit: {
+        type: Schema.Types.ObjectId,
+        ref: 'Unit',
+        validate: {
+            validator: function (unit: Types.ObjectId) {
+                if (unit != null) {
+                    return Unit.exists({ _id: unit });
+                }
+                return true;
+            },
+            message: 'Yield unit does not exist.',
+        },
+    },
+});
+
 export interface Recipe extends Document {
     title: string;
     titleIdentifier: string;
@@ -161,6 +193,7 @@ export interface Recipe extends Document {
     owner: Types.ObjectId;
     source?: string;
     numServings: number;
+    yield?: RecipeYield;
     isIngredient: boolean;
     createdAt: Date;
     lastModified: Date;
@@ -249,6 +282,7 @@ const recipeSchema = new Schema<Recipe>({
     owner: { type: Schema.Types.ObjectId, required: true, ref: 'User', validate: ownerExists() },
     source: { type: String },
     numServings: { type: Number, required: true },
+    yield: { type: recipeYieldSchema },
     isIngredient: { type: Boolean, required: true },
     createdAt: { type: Date, required: true },
     lastModified: { type: Date, required: true },

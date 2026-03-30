@@ -46,6 +46,8 @@ export function EditRecipe() {
             setPluralTitle: state.setPluralTitle,
             resetAsIngredient: state.resetAsIngredient,
             setNumServings: state.setNumServings,
+            setYieldQuantity: state.setYieldQuantity,
+            setYieldUnit: state.setYieldUnit,
             setInstructionSection: state.setInstructionSection,
             addInstructionSection: state.addInstructionSection,
             resetInstructions: state.resetInstructions,
@@ -152,6 +154,13 @@ export function EditRecipe() {
                 recipeState.setPluralTitle(recipe.pluralTitle);
             } else {
                 recipeState.resetAsIngredient();
+            }
+            if (recipe.yield?.quantity) {
+                recipeState.setYieldQuantity(recipe.yield.quantity);
+                recipeState.setYieldUnit(recipe.yield.unit ?? null);
+            } else {
+                recipeState.setYieldQuantity(null);
+                recipeState.setYieldUnit(null);
             }
             if (recipe.images) {
                 try {

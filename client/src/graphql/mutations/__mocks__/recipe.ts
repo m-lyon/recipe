@@ -1,4 +1,5 @@
 import { UpdateRecipeMutation } from '@recipe/graphql/generated';
+import { mockCup } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockSpicyTag } from '@recipe/graphql/queries/__mocks__/tag';
 import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockApple } from '@recipe/graphql/queries/__mocks__/ingredient';
@@ -42,6 +43,12 @@ const getMockRecipeVariables = (mockRecipe: CompletedRecipeView = mockRecipeOne)
             source: mockRecipe.source ?? undefined,
             numServings: mockRecipe.numServings,
             isIngredient: mockRecipe.isIngredient,
+            yield: mockRecipe.yield
+                ? {
+                      quantity: mockRecipe.yield.quantity ?? undefined,
+                      unit: mockRecipe.yield.unit?._id ?? undefined,
+                  }
+                : undefined,
         },
     };
 };
@@ -1037,5 +1044,44 @@ export const mockDeleteRecipeTwo = {
                 recordId: recipeTwoVars.id,
             },
         } satisfies DeleteRecipeMutation,
+    },
+};
+export const mockUpdateRecipeAddYield = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: { ...recipeOneVars.recipe, yield: { quantity: '2', unit: mockCup._id } },
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: {
+                    ...recipeOneData.record,
+                    yield: { __typename: 'RecipeYield', quantity: '2', unit: mockCup },
+                },
+            },
+        } satisfies UpdateRecipeMutation,
+    },
+};
+export const mockUpdateRecipeRemoveYield = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: { ...recipeOneVars.recipe, yield: undefined },
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: { ...recipeOneData.record, yield: null },
+            },
+        } satisfies UpdateRecipeMutation,
     },
 };

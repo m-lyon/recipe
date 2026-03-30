@@ -3,6 +3,7 @@ import { Box, Button, Center } from '@chakra-ui/react';
 
 import { useRecipeStore } from '@recipe/stores';
 import { useErrorToast } from '@recipe/common/hooks';
+import { VALID_NUMBER_REGEX } from '@recipe/utils/number';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
 
 interface Props {
@@ -16,20 +17,33 @@ interface Props {
 export function SubmitButton(props: Props) {
     const { submitText, loadingText, disabled, loading, handleSubmit, isLoggedIn } = props;
     const toast = useErrorToast();
-    const { isIngredient, pluralTitle, source, title, notes, servings, tags, instr, ingr } =
-        useRecipeStore(
-            useShallow((state) => ({
-                source: state.source,
-                title: state.title,
-                notes: state.notes,
-                isIngredient: state.isIngredient,
-                pluralTitle: state.pluralTitle,
-                servings: state.numServings,
-                tags: state.finishedTags,
-                instr: state.instructionSections,
-                ingr: state.ingredientSections,
-            }))
-        );
+    const {
+        isIngredient,
+        pluralTitle,
+        source,
+        title,
+        notes,
+        servings,
+        tags,
+        instr,
+        ingr,
+        yieldQuantity,
+        yieldUnit,
+    } = useRecipeStore(
+        useShallow((state) => ({
+            source: state.source,
+            title: state.title,
+            notes: state.notes,
+            isIngredient: state.isIngredient,
+            pluralTitle: state.pluralTitle,
+            servings: state.numServings,
+            tags: state.finishedTags,
+            instr: state.instructionSections,
+            ingr: state.ingredientSections,
+            yieldQuantity: state.yieldQuantity,
+            yieldUnit: state.yieldUnit,
+        }))
+    );
 
     const validate = () => {
         if (title.trim() == '') {
@@ -96,6 +110,10 @@ export function SubmitButton(props: Props) {
             });
             return false;
         }
+        if (yieldQuantity && !VALID_NUMBER_REGEX.test(yieldQuantity)) {
+            toast({ title: 'Invalid yield quantity', position: 'top' });
+            return false;
+        }
         return true;
     };
 
@@ -152,6 +170,9 @@ export function SubmitButton(props: Props) {
                 : undefined,
             source: source ? source : undefined,
             isIngredient,
+            yield: yieldQuantity
+                ? { quantity: yieldQuantity, unit: yieldUnit ? yieldUnit._id : undefined }
+                : undefined,
         };
         handleSubmit(recipe);
     };

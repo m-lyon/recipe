@@ -531,6 +531,115 @@ describe('recipeCreateOne', () => {
         );
     });
 
+    it('should create a recipe with yield quantity and unit', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const yieldUnit = await Unit.findOne({ shortSingular: 'cup' });
+        const newRecord = {
+            ...getDefaultRecipeRecord(ingredient, unit, prepMethod),
+            yield: { quantity: '2', unit: yieldUnit._id },
+        };
+        const query = `
+        mutation RecipeCreateOne($record: CreateOneRecipeCreateInput!) {
+            recipeCreateOne(record: $record) {
+              record {
+                _id
+                title
+                yield {
+                  quantity
+                  unit {
+                    shortSingular
+                  }
+                }
+              }
+            }
+          }`;
+        const response = await this.apolloServer.executeOperation(
+            { query, variables: { record: newRecord } },
+            { contextValue: { isAuthenticated: () => true, getUser: () => user } }
+        );
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(
+            response.body.singleResult.errors,
+            response.body.singleResult.errors ? response.body.singleResult.errors[0].message : ''
+        );
+        const record = (response.body.singleResult.data as any).recipeCreateOne.record;
+        assert.equal(record.yield.quantity, '2');
+        assert.equal(record.yield.unit.shortSingular, 'cup');
+    });
+
+    it('should create a recipe with yield quantity only (no unit)', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const newRecord = {
+            ...getDefaultRecipeRecord(ingredient, unit, prepMethod),
+            yield: { quantity: '12' },
+        };
+        const query = `
+        mutation RecipeCreateOne($record: CreateOneRecipeCreateInput!) {
+            recipeCreateOne(record: $record) {
+              record {
+                _id
+                yield {
+                  quantity
+                  unit {
+                    shortSingular
+                  }
+                }
+              }
+            }
+          }`;
+        const response = await this.apolloServer.executeOperation(
+            { query, variables: { record: newRecord } },
+            { contextValue: { isAuthenticated: () => true, getUser: () => user } }
+        );
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(
+            response.body.singleResult.errors,
+            response.body.singleResult.errors ? response.body.singleResult.errors[0].message : ''
+        );
+        const record = (response.body.singleResult.data as any).recipeCreateOne.record;
+        assert.equal(record.yield.quantity, '12');
+        assert.isNull(record.yield.unit);
+    });
+
+    it('should NOT create a recipe with invalid yield quantity', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const newRecord = {
+            ...getDefaultRecipeRecord(ingredient, unit, prepMethod),
+            yield: { quantity: 'abc' },
+        };
+        const response = await createRecipe(this, user, newRecord);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
+        assert.include(response.body.singleResult.errors[0].message, 'Invalid quantity format');
+    });
+
+    it('should NOT create a recipe with non-existent yield unit', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const newRecord = {
+            ...getDefaultRecipeRecord(ingredient, unit, prepMethod),
+            yield: { quantity: '2', unit: 'nonexistent-unit-id' },
+        };
+        const response = await createRecipe(this, user, newRecord);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Recipe validation failed: yield: Yield unit does not exist.'
+        );
+    });
+
     it('should generate different suffixes for different recipes with same title', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         const ingredient = await Ingredient.findOne({ name: 'chicken' });
@@ -1195,6 +1304,70 @@ describe('recipeUpdateById', () => {
         );
         assert.equal(updatedRecipe.numServings, 6);
         assert.equal(updatedRecipe.notes, 'Updated notes');
+    });
+
+    it('should update recipe yield quantity and unit', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const yieldUnit = await Unit.findOne({ shortSingular: 'cup' });
+        const newRecipe = new Recipe(getDefaultRecipe(user, ingredient, unit, prepMethod));
+        const recipe = await newRecipe.save();
+
+        const updateQuery = `
+        mutation RecipeUpdateById($id: MongoID!, $record: UpdateByIdRecipeModifyInput!) {
+            recipeUpdateById(_id: $id, record: $record) {
+              record {
+                _id
+                yield {
+                  quantity
+                  unit {
+                    shortSingular
+                  }
+                }
+              }
+            }
+          }`;
+        const response = await this.apolloServer.executeOperation(
+            {
+                query: updateQuery,
+                variables: {
+                    id: recipe._id,
+                    record: { yield: { quantity: '3/2', unit: yieldUnit._id } },
+                },
+            },
+            { contextValue: { isAuthenticated: () => true, getUser: () => user } }
+        );
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(
+            response.body.singleResult.errors,
+            response.body.singleResult.errors ? response.body.singleResult.errors[0].message : ''
+        );
+        const record = (response.body.singleResult.data as any).recipeUpdateById.record;
+        assert.equal(record.yield.quantity, '3/2');
+        assert.equal(record.yield.unit.shortSingular, 'cup');
+    });
+
+    it('should clear recipe yield by setting it to null', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const yieldUnit = await Unit.findOne({ shortSingular: 'cup' });
+        const recipeData = {
+            ...getDefaultRecipe(user, ingredient, unit, prepMethod),
+            yield: { quantity: '4', unit: yieldUnit._id },
+        };
+        const newRecipe = new Recipe(recipeData);
+        const recipe = await newRecipe.save();
+        assert.isNotNull(recipe.yield);
+
+        const response = await updateRecipe(this, user, recipe._id, { yield: null });
+        const record = parseUpdatedRecipe(response);
+        assert.equal(record.title, 'Chicken Soup');
+        const updatedDoc = await Recipe.findById(recipe._id);
+        assert.isNull(updatedDoc.yield);
     });
 });
 

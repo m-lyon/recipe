@@ -11,6 +11,7 @@ import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
 import { SubmitButton } from './SubmitButton';
 import { EditableNotes } from './EditableNotes';
 import { EditableTitle } from './EditableTitle';
+import { EditableYield } from './EditableYield';
 import { EditableInstructionsTab } from './EditableInstructionsTab';
 import { EditableIngredientSubsections } from './EditableIngredientSubsections';
 
@@ -97,6 +98,7 @@ export function EditableRecipe(props: Props) {
                                 colour='rgba(0, 0, 0, 0.64)'
                             />
                         }
+                        Yield={<EditableYield />}
                         IngredientList={<EditableIngredientSubsections />}
                         Notes={<EditableNotes />}
                     />

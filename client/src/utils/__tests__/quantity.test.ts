@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { changeQuantity } from '../quantity';
+import { changeQuantity, scaleQuantity } from '../quantity';
 
 interface IngredientInput {
     quantity?: string | null;
@@ -97,5 +97,63 @@ describe('changeQuantity', () => {
         const oldServings = 4;
         const result = changeQuantity(ingr, newServings, oldServings, (ingr) => ingr);
         expect(result.quantity).toBe('1.5');
+    });
+});
+
+describe('scaleQuantity', () => {
+    const fractionUnit: UnitView = {
+        __typename: 'Unit',
+        _id: 'unit-1',
+        hasSpace: false,
+        longPlural: 'cups',
+        longSingular: 'cup',
+        shortPlural: 'cups',
+        shortSingular: 'cup',
+        preferredNumberFormat: 'fraction',
+        unique: true,
+    };
+    const decimalUnit: UnitView = {
+        ...fractionUnit,
+        preferredNumberFormat: 'decimal',
+    };
+
+    it('should return quantity unchanged when servings are equal', () => {
+        expect(scaleQuantity('2', 4, 4, fractionUnit)).toBe('2');
+    });
+
+    it('should return quantity unchanged when origServings is zero', () => {
+        expect(scaleQuantity('2', 4, 0, fractionUnit)).toBe('2');
+    });
+
+    it('should return range quantity unchanged when origServings is zero', () => {
+        expect(scaleQuantity('1-2', 4, 0, fractionUnit)).toBe('1-2');
+    });
+
+    it('should scale a whole number up', () => {
+        expect(scaleQuantity('2', 8, 4, fractionUnit)).toBe('4');
+    });
+
+    it('should scale a whole number down', () => {
+        expect(scaleQuantity('2', 2, 4, fractionUnit)).toBe('1');
+    });
+
+    it('should scale a whole number down to a fraction', () => {
+        expect(scaleQuantity('2', 3, 4, fractionUnit)).toBe('3/2');
+    });
+
+    it('should scale a fraction to a whole number', () => {
+        expect(scaleQuantity('1/2', 8, 4, fractionUnit)).toBe('1');
+    });
+
+    it('should scale a decimal quantity with decimal unit', () => {
+        expect(scaleQuantity('1', 6, 4, decimalUnit)).toBe('1.5');
+    });
+
+    it('should scale a range quantity', () => {
+        expect(scaleQuantity('1-2', 8, 4, fractionUnit)).toBe('2-4');
+    });
+
+    it('should scale with null unit (defaults to fraction format)', () => {
+        expect(scaleQuantity('1', 6, 4, null)).toBe('3/2');
     });
 });
