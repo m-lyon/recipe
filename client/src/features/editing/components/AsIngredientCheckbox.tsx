@@ -27,12 +27,7 @@ export function AsIngredientCheckbox() {
     );
 
     return (
-        <Group
-            grow
-            align='flex-start'
-            gap='md'
-            style={{ width: '100%' }}
-        >
+        <Group grow align='flex-start' gap='md' style={{ width: '100%' }}>
             <Stack gap='xs'>
                 <Checkbox
                     checked={isIngredient}
@@ -50,14 +45,8 @@ export function AsIngredientCheckbox() {
                     />
                 </Collapse>
             </Stack>
-            <Divider
-                orientation='vertical'
-                visibleFrom='md'
-            />
-            <Divider
-                orientation='horizontal'
-                hiddenFrom='md'
-            />
+            <Divider orientation='vertical' visibleFrom='md' />
+            <Divider orientation='horizontal' hiddenFrom='md' />
             <Stack gap='xs'>
                 <Checkbox
                     checked={prepAhead}

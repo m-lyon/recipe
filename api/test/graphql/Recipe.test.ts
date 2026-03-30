@@ -618,7 +618,10 @@ describe('recipeCreateOne', () => {
 
         // Bimibap has prepAhead: false by default (or undefined, which is falsy)
         const recipeIngredient = await Recipe.findOne({ title: 'Bimibap' });
-        assert.isNotTrue(recipeIngredient.prepAhead, 'Precondition: Bimibap should not be prepAhead');
+        assert.isNotTrue(
+            recipeIngredient.prepAhead,
+            'Precondition: Bimibap should not be prepAhead'
+        );
 
         // Create a parent recipe using the non-prepAhead recipe as an ingredient
         const newRecord = {

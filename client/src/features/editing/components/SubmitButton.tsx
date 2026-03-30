@@ -16,22 +16,33 @@ interface Props {
 export function SubmitButton(props: Props) {
     const { submitText, loadingText, disabled, loading, handleSubmit, isLoggedIn } = props;
     const toast = useErrorToast();
-    const { isIngredient, pluralTitle, prepAhead, prepAheadLabel, source, title, notes, servings, tags, instr, ingr } =
-        useRecipeStore(
-            useShallow((state) => ({
-                source: state.source,
-                title: state.title,
-                notes: state.notes,
-                isIngredient: state.isIngredient,
-                pluralTitle: state.pluralTitle,
-                prepAhead: state.prepAhead,
-                prepAheadLabel: state.prepAheadLabel,
-                servings: state.numServings,
-                tags: state.finishedTags,
-                instr: state.instructionSections,
-                ingr: state.ingredientSections,
-            }))
-        );
+    const {
+        isIngredient,
+        pluralTitle,
+        prepAhead,
+        prepAheadLabel,
+        source,
+        title,
+        notes,
+        servings,
+        tags,
+        instr,
+        ingr,
+    } = useRecipeStore(
+        useShallow((state) => ({
+            source: state.source,
+            title: state.title,
+            notes: state.notes,
+            isIngredient: state.isIngredient,
+            pluralTitle: state.pluralTitle,
+            prepAhead: state.prepAhead,
+            prepAheadLabel: state.prepAheadLabel,
+            servings: state.numServings,
+            tags: state.finishedTags,
+            instr: state.instructionSections,
+            ingr: state.ingredientSections,
+        }))
+    );
 
     const validate = () => {
         if (title.trim() == '') {
@@ -155,7 +166,7 @@ export function SubmitButton(props: Props) {
             source: source ? source : undefined,
             isIngredient,
             prepAhead,
-            prepAheadLabel: prepAhead ? prepAheadLabel ?? undefined : undefined,
+            prepAheadLabel: prepAhead ? (prepAheadLabel ?? undefined) : undefined,
         };
         handleSubmit(recipe);
     };

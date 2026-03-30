@@ -5,11 +5,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { enterEditRecipePage } from '@recipe/utils/tests';
-import { mockZeroLinkedRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipePrepAhead } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockZeroLinkedRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockUpdateRecipeOneNoChange } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeAddPrepAhead } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeRemovePrepAhead } from '@recipe/graphql/mutations/__mocks__/recipe';
-import { mockUpdateRecipeOneNoChange } from '@recipe/graphql/mutations/__mocks__/recipe';
 
 import { renderComponent } from './utils';
 
@@ -52,12 +52,7 @@ describe('Update Recipe Workflow: Prep Ahead', () => {
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
-        await enterEditRecipePage(
-            screen,
-            user,
-            'Mock Recipe Prep Ahead',
-            'Instruction one.'
-        );
+        await enterEditRecipePage(screen, user, 'Mock Recipe Prep Ahead', 'Instruction one.');
         await user.click(screen.getByLabelText('Toggle prep ahead'));
         await user.click(screen.getByLabelText('Save recipe'));
 

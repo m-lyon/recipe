@@ -1,4 +1,5 @@
 import { ReservedTags } from '@recipe/graphql/enums';
+import { mockRecipeIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { GetRecipeQueryVariables } from '@recipe/graphql/generated';
 import { GetIngredientComponentsQuery } from '@recipe/graphql/generated';
 import { mockRecipeIngredientIdFive } from '@recipe/graphql/__mocks__/ids';
@@ -13,7 +14,6 @@ import { mockRecipeIngredientIdThirteen } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIdNew, mockRecipeIdOne } from '@recipe/graphql/__mocks__/ids';
 import { GetLinkedRecipesQuery, GetRecipeQuery } from '@recipe/graphql/generated';
 import { mockRecipeIdSix, mockRecipeIdThree } from '@recipe/graphql/__mocks__/ids';
-import { mockRecipeIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { GetIngredientAndRecipeIngredientsQuery } from '@recipe/graphql/generated';
 import { GetRecipesQuery, GetRecipesQueryVariables } from '@recipe/graphql/generated';
 import { mockImageNew, mockImageTwo } from '@recipe/graphql/mutations/__mocks__/image';
@@ -542,7 +542,13 @@ export const mockGetRecipes = {
     result: {
         data: {
             __typename: 'Query',
-            recipeMany: [mockRecipeOne, mockRecipeTwo, mockRecipeThree, mockRecipeFour, mockRecipePrepAhead],
+            recipeMany: [
+                mockRecipeOne,
+                mockRecipeTwo,
+                mockRecipeThree,
+                mockRecipeFour,
+                mockRecipePrepAhead,
+            ],
             recipeCount: 5,
         } satisfies GetRecipesQuery,
     },

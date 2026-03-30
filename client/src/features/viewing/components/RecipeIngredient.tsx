@@ -1,7 +1,7 @@
+import { Tooltip } from '@mantine/core';
 import { TbClock } from 'react-icons/tb';
 import { useLazyQuery } from '@apollo/client';
 import { ChevronRightIcon } from '@chakra-ui/icons';
-import { Tooltip } from '@mantine/core';
 import { Box, Flex, ListItem, Spacer, useDisclosure } from '@chakra-ui/react';
 
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
@@ -47,9 +47,7 @@ export function RecipeIngredient({ ingredient }: Props) {
                 >
                     {getFinishedRecipeIngredientStr(ingredient)}
                     {ingredient.ingredient.prepAhead && (
-                        <Tooltip
-                            label={ingredient.ingredient.prepAheadLabel ?? 'ahead of time'}
-                        >
+                        <Tooltip label={ingredient.ingredient.prepAheadLabel ?? 'ahead of time'}>
                             <span
                                 style={{
                                     marginLeft: 4,

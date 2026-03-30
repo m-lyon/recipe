@@ -6,15 +6,10 @@ if (!collectionName) {
 }
 const db = db.getSiblingDB(collectionName);
 
-db.recipes
-    .find({ prepAhead: { $exists: false } })
-    .forEach((doc) => {
-        db.recipes.updateOne(
-            { _id: doc._id },
-            { $set: { prepAhead: false } }
-        );
-        print(`Updated document with _id: ${doc._id}`);
-    });
+db.recipes.find({ prepAhead: { $exists: false } }).forEach((doc) => {
+    db.recipes.updateOne({ _id: doc._id }, { $set: { prepAhead: false } });
+    print(`Updated document with _id: ${doc._id}`);
+});
 
 print('prepAhead field update complete.');
 
