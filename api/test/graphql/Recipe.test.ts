@@ -1269,8 +1269,8 @@ describe('recipeArchiveById', () => {
 
         // Verify in DB
         const archivedRecipe = await Recipe.findById(recipe._id);
-        assert.isTrue(archivedRecipe.archived, 'Recipe should be archived in the database');
         assert.isNotNull(archivedRecipe, 'Recipe should still exist (not deleted)');
+        assert.isTrue(archivedRecipe.archived, 'Recipe should be archived in the database');
     });
 
     it('should NOT archive a recipe that is used as an ingredient in another recipe', async function () {
