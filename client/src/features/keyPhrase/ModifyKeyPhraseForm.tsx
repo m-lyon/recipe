@@ -6,7 +6,7 @@ import { useErrorToast } from '@recipe/common/hooks';
 import { UpdateKeyPhraseMutation } from '@recipe/graphql/generated';
 import { KEY_PHRASE_FIELDS } from '@recipe/graphql/queries/keyPhrase';
 import { KEY_PHRASE_USED_IN_RECIPES } from '@recipe/graphql/queries/keyPhrase';
-import { UPDATE_KEY_PHRASE, REMOVE_KEY_PHRASE } from '@recipe/graphql/mutations/keyPhrase';
+import { REMOVE_KEY_PHRASE, UPDATE_KEY_PHRASE } from '@recipe/graphql/mutations/keyPhrase';
 
 import { formatKeyPhraseError } from './BaseKeyPhraseForm';
 import { BaseKeyPhraseForm, BaseKeyPhraseFormProps } from './BaseKeyPhraseForm';

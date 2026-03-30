@@ -1,5 +1,5 @@
-import { GetKeyPhrasesQuery, KeyPhraseFieldsFragment } from '@recipe/graphql/generated';
 import { mockKeyPhraseId, mockKeyPhraseTwoId } from '@recipe/graphql/__mocks__/ids';
+import { GetKeyPhrasesQuery, KeyPhraseFieldsFragment } from '@recipe/graphql/generated';
 
 import { GET_KEY_PHRASES } from '../keyPhrase';
 

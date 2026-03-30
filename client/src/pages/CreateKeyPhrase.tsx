@@ -20,7 +20,13 @@ export function CreateKeyPhrase() {
 
     return (
         <Stack>
-            <Box maw='32em' mx='auto' mt={32} p={8} style={{ border: '1px solid', borderRadius: 8 }}>
+            <Box
+                maw='32em'
+                mx='auto'
+                mt={32}
+                p={8}
+                style={{ border: '1px solid', borderRadius: 8 }}
+            >
                 <Title pb={6}>Create Key Phrase</Title>
                 <CreateKeyPhraseForm handleComplete={handleComplete} />
             </Box>

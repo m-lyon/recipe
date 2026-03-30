@@ -9,13 +9,20 @@ import { GET_KEY_PHRASES } from '@recipe/graphql/queries/keyPhrase';
 
 export function EditKeyPhrase() {
     const toast = useSuccessToast();
-    const [currentKeyPhrase, setCurrentKeyPhrase] =
-        useState<ModifyableKeyPhrase & { _id: string }>();
+    const [currentKeyPhrase, setCurrentKeyPhrase] = useState<
+        ModifyableKeyPhrase & { _id: string }
+    >();
     const { data } = useQuery(GET_KEY_PHRASES);
 
     return (
         <Stack>
-            <Box maw='32em' mx='auto' mt={32} p={8} style={{ border: '1px solid', borderRadius: 8 }}>
+            <Box
+                maw='32em'
+                mx='auto'
+                mt={32}
+                p={8}
+                style={{ border: '1px solid', borderRadius: 8 }}
+            >
                 <Title pb={6}>Edit Key Phrase</Title>
                 <SearchableSelect
                     label='Select key phrase'
@@ -26,9 +33,7 @@ export function EditKeyPhrase() {
                     }))}
                     value={currentKeyPhrase?._id ?? null}
                     onChange={(id) =>
-                        setCurrentKeyPhrase(
-                            data?.keyPhraseMany.find((kp) => kp._id === id)
-                        )
+                        setCurrentKeyPhrase(data?.keyPhraseMany.find((kp) => kp._id === id))
                     }
                 />
                 <ModifyKeyPhraseForm

@@ -1,7 +1,7 @@
-import { ApolloError } from '@apollo/client';
 import { object, string } from 'yup';
+import { ApolloError } from '@apollo/client';
 import { MutableRefObject, useCallback, useEffect } from 'react';
-import { Button, Group, Stack, Textarea, TextInput } from '@mantine/core';
+import { Button, Group, Stack, TextInput, Textarea } from '@mantine/core';
 
 import { useFormLogic } from '@recipe/features/forms/hooks/useFormLogic';
 import { useKeyboardSubmit } from '@recipe/features/forms/hooks/useKeyboardSubmit';
@@ -77,7 +77,12 @@ export function BaseKeyPhraseForm(props: BaseKeyPhraseFormProps) {
             />
             <Group justify='flex-end' pt='xs'>
                 {onDelete && (
-                    <Button color='red' onClick={onDelete} aria-label='Delete key phrase' disabled={disabled}>
+                    <Button
+                        color='red'
+                        onClick={onDelete}
+                        aria-label='Delete key phrase'
+                        disabled={disabled}
+                    >
                         Delete
                     </Button>
                 )}

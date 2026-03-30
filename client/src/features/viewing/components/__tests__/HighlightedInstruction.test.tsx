@@ -1,7 +1,7 @@
+import { MantineProvider } from '@mantine/core';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
-import { MantineProvider } from '@mantine/core';
 
 import { HighlightedInstruction } from '../HighlightedInstruction';
 
@@ -64,16 +64,16 @@ describe('HighlightedInstruction', () => {
         await user.click(screen.getByText('Sear'));
 
         expect(await screen.findByText('sear')).not.toBeNull();
-        expect(
-            await screen.findByText('To cook at high heat until a crust forms.')
-        ).not.toBeNull();
+        expect(await screen.findByText('To cook at high heat until a crust forms.')).not.toBeNull();
     });
 
     it('should apply custom highlightStyle when provided', () => {
         const customStyle = { fontWeight: 'normal' as const, color: 'red', cursor: 'default' };
-        renderComponent('Blanch the vegetables.', [
-            { value: 'blanch', description: 'Briefly boil then plunge into ice water.' },
-        ], customStyle);
+        renderComponent(
+            'Blanch the vegetables.',
+            [{ value: 'blanch', description: 'Briefly boil then plunge into ice water.' }],
+            customStyle
+        );
 
         const highlighted = screen.getByText('Blanch');
         expect(highlighted.style.color).toBe('red');

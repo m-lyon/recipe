@@ -1,14 +1,15 @@
-import { mockSearKeyPhrase } from '@recipe/graphql/queries/__mocks__/keyPhrase';
 import { CreateKeyPhraseMutation } from '@recipe/graphql/generated';
-import { CreateKeyPhraseMutationVariables } from '@recipe/graphql/generated';
 import { UpdateKeyPhraseMutation } from '@recipe/graphql/generated';
-import { UpdateKeyPhraseMutationVariables } from '@recipe/graphql/generated';
 import { RemoveKeyPhraseMutation } from '@recipe/graphql/generated';
-import { RemoveKeyPhraseMutationVariables } from '@recipe/graphql/generated';
 import { KeyPhraseUsedInRecipesQuery } from '@recipe/graphql/generated';
-import { KeyPhraseUsedInRecipesQueryVariables } from '@recipe/graphql/generated';
-import { CREATE_KEY_PHRASE, UPDATE_KEY_PHRASE, REMOVE_KEY_PHRASE } from '@recipe/graphql/mutations/keyPhrase';
+import { REMOVE_KEY_PHRASE } from '@recipe/graphql/mutations/keyPhrase';
+import { CreateKeyPhraseMutationVariables } from '@recipe/graphql/generated';
+import { UpdateKeyPhraseMutationVariables } from '@recipe/graphql/generated';
+import { RemoveKeyPhraseMutationVariables } from '@recipe/graphql/generated';
 import { KEY_PHRASE_USED_IN_RECIPES } from '@recipe/graphql/queries/keyPhrase';
+import { mockSearKeyPhrase } from '@recipe/graphql/queries/__mocks__/keyPhrase';
+import { KeyPhraseUsedInRecipesQueryVariables } from '@recipe/graphql/generated';
+import { CREATE_KEY_PHRASE, UPDATE_KEY_PHRASE } from '@recipe/graphql/mutations/keyPhrase';
 
 export const mockCreateKeyPhrase = {
     request: {

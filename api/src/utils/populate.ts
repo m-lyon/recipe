@@ -37,9 +37,20 @@ export async function populateKeyPhrases() {
         const dummyKeyPhrases = [
             { value: 'sear', description: 'To cook at high heat until a crust forms.' },
             { value: 'blanch', description: 'Briefly boil then plunge into ice water.' },
-            { value: 'fold in', description: 'Gently combine a lighter mixture into a heavier one without deflating.' },
-            { value: 'season to taste', description: 'Add salt, pepper, or other seasonings according to personal preference.' },
-            { value: 'bring to a boil', description: 'Heat liquid until it reaches 100°C (212°F) and bubbles vigorously.' },
+            {
+                value: 'fold in',
+                description:
+                    'Gently combine a lighter mixture into a heavier one without deflating.',
+            },
+            {
+                value: 'season to taste',
+                description:
+                    'Add salt, pepper, or other seasonings according to personal preference.',
+            },
+            {
+                value: 'bring to a boil',
+                description: 'Heat liquid until it reaches 100°C (212°F) and bubbles vigorously.',
+            },
         ];
         const createdKeyPhrases = await KeyPhrase.create(dummyKeyPhrases);
 

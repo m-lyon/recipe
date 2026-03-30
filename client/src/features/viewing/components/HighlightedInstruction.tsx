@@ -1,15 +1,16 @@
-import React from 'react';
 import { Popover, Text } from '@mantine/core';
+import { CSSProperties, Fragment } from 'react';
+
 import { splitByKeyPhrases } from '@recipe/utils/keyPhrase';
 
 interface HighlightedInstructionProps {
     text: string;
     keyPhrases: Array<{ value: string; description: string }>;
     /** Override default highlight style. Default: bold + teal colour. */
-    highlightStyle?: React.CSSProperties;
+    highlightStyle?: CSSProperties;
 }
 
-const DEFAULT_HIGHLIGHT_STYLE: React.CSSProperties = {
+const DEFAULT_HIGHLIGHT_STYLE: CSSProperties = {
     fontWeight: 'bold',
     color: 'teal',
     cursor: 'pointer',
@@ -23,7 +24,7 @@ export function HighlightedInstruction(props: HighlightedInstructionProps) {
         <>
             {segments.map((segment, i) => {
                 if (!segment.keyPhrase) {
-                    return <React.Fragment key={i}>{segment.text}</React.Fragment>;
+                    return <Fragment key={i}>{segment.text}</Fragment>;
                 }
                 return (
                     <Popover key={i} width={240} position='top' withArrow shadow='md'>

@@ -76,7 +76,10 @@ describe('keyPhraseCreateOne', function () {
 
     it('should create a key phrase', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const newRecord = { value: 'Sear', description: 'To cook at high heat until a crust forms.' };
+        const newRecord = {
+            value: 'Sear',
+            description: 'To cook at high heat until a crust forms.',
+        };
         const response = await createKeyPhrase(this, user, newRecord);
         const record = parseCreatedKeyPhrase(response);
         assert.equal(record.value, 'sear');
@@ -311,10 +314,7 @@ describe('keyPhraseMany', function () {
                   isAuthenticated: () => false,
                   getUser: () => null,
               };
-        const response = await context.apolloServer.executeOperation(
-            { query },
-            { contextValue }
-        );
+        const response = await context.apolloServer.executeOperation({ query }, { contextValue });
         return response;
     }
 
@@ -424,9 +424,8 @@ describe('keyPhraseUsedInRecipes', function () {
         const response = await queryKeyPhraseUsedInRecipes(this, admin, 'sear');
         assert.equal(response.body.kind, 'single');
         assert.isUndefined(response.body.singleResult.errors);
-        const result = (
-            response.body.singleResult.data as { keyPhraseUsedInRecipes: boolean }
-        ).keyPhraseUsedInRecipes;
+        const result = (response.body.singleResult.data as { keyPhraseUsedInRecipes: boolean })
+            .keyPhraseUsedInRecipes;
         assert.isTrue(result);
     });
 
@@ -455,9 +454,8 @@ describe('keyPhraseUsedInRecipes', function () {
         const response = await queryKeyPhraseUsedInRecipes(this, admin, 'blanch');
         assert.equal(response.body.kind, 'single');
         assert.isUndefined(response.body.singleResult.errors);
-        const result = (
-            response.body.singleResult.data as { keyPhraseUsedInRecipes: boolean }
-        ).keyPhraseUsedInRecipes;
+        const result = (response.body.singleResult.data as { keyPhraseUsedInRecipes: boolean })
+            .keyPhraseUsedInRecipes;
         assert.isFalse(result);
     });
 });

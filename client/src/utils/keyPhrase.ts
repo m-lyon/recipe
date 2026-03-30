@@ -37,9 +37,7 @@ export function splitByKeyPhrases(
             segments.push({ text: instruction.slice(lastIndex, match.index) });
         }
         const matchedText = match[0];
-        const keyPhrase = sorted.find(
-            (kp) => kp.value.toLowerCase() === matchedText.toLowerCase()
-        );
+        const keyPhrase = sorted.find((kp) => kp.value.toLowerCase() === matchedText.toLowerCase());
         segments.push({ text: matchedText, keyPhrase });
         lastIndex = match.index + matchedText.length;
     }

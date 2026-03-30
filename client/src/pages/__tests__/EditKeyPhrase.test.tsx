@@ -7,12 +7,10 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { MockedResponses, renderPage } from '@recipe/utils/tests';
 import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetKeyPhrases } from '@recipe/graphql/queries/__mocks__/keyPhrase';
-import {
-    mockUpdateKeyPhrase,
-    mockDeleteKeyPhrase,
-    mockKeyPhraseUsedInRecipes,
-    mockKeyPhraseNotUsedInRecipes,
-} from '@recipe/graphql/mutations/__mocks__/keyPhrase';
+import { mockUpdateKeyPhrase } from '@recipe/graphql/mutations/__mocks__/keyPhrase';
+import { mockDeleteKeyPhrase } from '@recipe/graphql/mutations/__mocks__/keyPhrase';
+import { mockKeyPhraseUsedInRecipes } from '@recipe/graphql/mutations/__mocks__/keyPhrase';
+import { mockKeyPhraseNotUsedInRecipes } from '@recipe/graphql/mutations/__mocks__/keyPhrase';
 
 import { EditKeyPhrase } from '../EditKeyPhrase';
 
@@ -118,7 +116,8 @@ describe('Edit Key Phrase', () => {
         // Click the Delete button in the modal
         const modalDeleteButtons = screen.getAllByRole('button', { name: /delete/i });
         const confirmButton = modalDeleteButtons.find(
-            (btn) => btn.textContent === 'Delete' && btn !== screen.getByLabelText('Delete key phrase')
+            (btn) =>
+                btn.textContent === 'Delete' && btn !== screen.getByLabelText('Delete key phrase')
         );
         expect(confirmButton).toBeDefined();
         await user.click(confirmButton!);

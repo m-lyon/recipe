@@ -15,13 +15,13 @@ import { ViewRecipe } from './pages/ViewRecipe';
 import { EditRecipe } from './pages/EditRecipe';
 import { CreateUnit } from './pages/CreateUnit';
 import { CreateRecipe } from './pages/CreateRecipe';
+import { EditKeyPhrase } from './pages/EditKeyPhrase';
 import { EditIngredient } from './pages/EditIngredient';
 import { EditPrepMethod } from './pages/EditPrepMethod';
+import { CreateKeyPhrase } from './pages/CreateKeyPhrase';
 import { CreateIngredient } from './pages/CreateIngredient';
 import { CreatePrepMethod } from './pages/CreatePrepMethod';
 import { CreateUnitConversion } from './pages/CreateUnitConversion';
-import { CreateKeyPhrase } from './pages/CreateKeyPhrase';
-import { EditKeyPhrase } from './pages/EditKeyPhrase';
 
 export const routes = createRoutesFromElements(
     <Route path={PATH.ROOT} errorElement={<ErrorBoundary />}>
