@@ -846,4 +846,31 @@ export const mockZeroLinkedRecipeOne = {
         } satisfies GetLinkedRecipesQuery,
     },
 };
+// -- Archived recipes mocks -------------------------------------------
+export const mockArchivedRecipeOne: CompletedRecipeView = {
+    ...mockRecipeOne,
+    archived: true,
+};
+export const mockArchivedRecipeTwo: CompletedRecipeView = {
+    ...mockRecipeTwo,
+    archived: true,
+};
+export const mockGetArchivedRecipes = {
+    request: {
+        query: GET_RECIPES,
+        variables: {
+            offset: 0,
+            limit: 5,
+            filter: { archived: true },
+            countFilter: { archived: true },
+        } satisfies GetRecipesQueryVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeMany: [mockArchivedRecipeOne, mockArchivedRecipeTwo],
+            recipeCount: 2,
+        } satisfies GetRecipesQuery,
+    },
+};
 // ----------------------------------------------------------------
