@@ -6,9 +6,9 @@ import { Button, ButtonGroup, Checkbox, HStack, Stack, StackProps } from '@chakr
 import { IngredientTags } from '@recipe/graphql/enums';
 import { FloatingLabelInput } from '@recipe/common/components';
 
+import { UsdaLinkSection } from './UsdaLinkSection';
 import { useFormLogic } from '../hooks/useFormLogic';
 import { useKeyboardSubmit } from '../hooks/useKeyboardSubmit';
-import { UsdaLinkSection } from './UsdaLinkSection';
 
 export function formatIngredientError(error: ApolloError) {
     if (error.message.startsWith('E11000')) {

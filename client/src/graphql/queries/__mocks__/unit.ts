@@ -1,6 +1,7 @@
+import { mockMilliliterId, mockOunceId } from '@recipe/graphql/__mocks__/ids';
+import { mockCupId, mockGramId, mockKilogramId } from '@recipe/graphql/__mocks__/ids';
 import { GetUnitsQuery, GetUnitsQueryVariables, Unit } from '@recipe/graphql/generated';
 import { mockAdminId, mockTablespoonId, mockTeaspoonId } from '@recipe/graphql/__mocks__/ids';
-import { mockCupId, mockGramId, mockKilogramId, mockMilliliterId, mockOunceId } from '@recipe/graphql/__mocks__/ids';
 
 import { GET_UNITS } from '../unit';
 
@@ -95,7 +96,15 @@ export const mockMilliliter: Unit = {
     hasSpace: false,
     measureType: 'volume',
 };
-export const mockUnits = [mockTeaspoon, mockTablespoon, mockGram, mockKilogram, mockOunce, mockCup, mockMilliliter];
+export const mockUnits = [
+    mockTeaspoon,
+    mockTablespoon,
+    mockGram,
+    mockKilogram,
+    mockOunce,
+    mockCup,
+    mockMilliliter,
+];
 export const mockGetUnits = {
     request: { query: GET_UNITS, variables: { filter: {} } satisfies GetUnitsQueryVariables },
     result: { data: { __typename: 'Query', unitMany: mockUnits } satisfies GetUnitsQuery },

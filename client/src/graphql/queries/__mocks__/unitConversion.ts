@@ -5,7 +5,8 @@ import { mockConversionRuleIdOne, mockUnitConversionIdOne } from '@recipe/graphq
 import { mockConversionRuleIdTwo, mockUnitConversionIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { mockConversionRuleIdFour, mockUnitConversionIdThree } from '@recipe/graphql/__mocks__/ids';
 
-import { mockCup, mockGram, mockKilogram, mockMilliliter, mockTablespoon, mockTeaspoon } from './unit';
+import { mockTeaspoon } from './unit';
+import { mockCup, mockGram, mockKilogram, mockMilliliter, mockTablespoon } from './unit';
 
 export const mockConversionRuleOne: ConversionRule = {
     __typename: 'ConversionRule',
@@ -70,7 +71,11 @@ export const mockGetUnitConversions = {
     result: {
         data: {
             __typename: 'Query',
-            unitConversionMany: [mockUnitConversionOne, mockUnitConversionTwo, mockUnitConversionVolume],
+            unitConversionMany: [
+                mockUnitConversionOne,
+                mockUnitConversionTwo,
+                mockUnitConversionVolume,
+            ],
         } satisfies GetUnitConversionsQuery,
     },
 };

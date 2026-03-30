@@ -1,7 +1,7 @@
 import { TbLock, TbLockOpen2, TbQuestionMark } from 'react-icons/tb';
+import { ActionIcon, Tooltip as MantineTooltip } from '@mantine/core';
 import { BoxProps, Tooltip, UnorderedList, VStack } from '@chakra-ui/react';
 import { Box, Flex, IconButton, ListItem, Spacer, Text } from '@chakra-ui/react';
-import { ActionIcon, Tooltip as MantineTooltip } from '@mantine/core';
 
 import { useWakeLock } from '@recipe/common/hooks';
 import { changeQuantity } from '@recipe/utils/quantity';
@@ -18,7 +18,14 @@ export interface IngredientListProps extends BoxProps {
     uncountedIngredientIds?: Set<string>;
 }
 export function IngredientList(props: IngredientListProps) {
-    const { subsections, currentServings, origServings, showWakeLockBtn, uncountedIngredientIds, ...rest } = props;
+    const {
+        subsections,
+        currentServings,
+        origServings,
+        showWakeLockBtn,
+        uncountedIngredientIds,
+        ...rest
+    } = props;
     const { apply } = useUnitConversion();
     const { isAwake, toggleWakeLock } = useWakeLock();
 

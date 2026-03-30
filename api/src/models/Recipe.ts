@@ -8,8 +8,8 @@ import { capitalise } from '../utils/string.js';
 import { generateRandomString } from '../utils/random.js';
 import type { Ingredient as IngredientType } from './Ingredient.js';
 import { Ingredient, ReservedIngredientTags } from './Ingredient.js';
-import { ownerExists, tagsExist, unique, uniqueInAdminsAndUser } from './validation.js';
 import { sendNutritionalNotifications } from '../utils/nutritionalNotifications.js';
+import { ownerExists, tagsExist, unique, uniqueInAdminsAndUser } from './validation.js';
 
 const quantityRegex = /^((\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*)(-(\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*))?)$/;
 const ReservedRecipeTags = { Ingredient: 'ingredient' } as const;

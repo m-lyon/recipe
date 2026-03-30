@@ -35,7 +35,8 @@ export function IngredientsTab(props: Props) {
     const totalIngredients = recipe.ingredientSubsections
         .flatMap((s) => s.ingredients)
         .filter((i) => i.ingredient.__typename === 'Ingredient').length;
-    const allUncounted = !loading && uncountedIds.size > 0 && totalIngredients === uncountedIds.size;
+    const allUncounted =
+        !loading && uncountedIds.size > 0 && totalIngredients === uncountedIds.size;
     useEffect(() => {
         setNumServings(recipe.numServings);
     }, [recipe.numServings, setNumServings]);

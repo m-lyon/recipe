@@ -1,7 +1,7 @@
 import { useQuery } from '@apollo/client';
 
-import { NutritionalInfoData, sumRecipeNutrition } from '@recipe/utils/nutrition';
 import { useUnitConversion } from '@recipe/features/servings';
+import { NutritionalInfoData, sumRecipeNutrition } from '@recipe/utils/nutrition';
 import { GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS } from '@recipe/graphql/queries/nutritionalInfo';
 
 export function useNutritionalInfo(subsections: IngredientSubsectionView[], numServings: number) {
@@ -31,7 +31,12 @@ export function useNutritionalInfo(subsections: IngredientSubsectionView[], numS
         nutritionalInfoMap.set(id, info ?? null);
     }
 
-    const result = sumRecipeNutrition(subsections, nutritionalInfoMap, unitConversions, numServings);
+    const result = sumRecipeNutrition(
+        subsections,
+        nutritionalInfoMap,
+        unitConversions,
+        numServings
+    );
 
     return { ...result, loading };
 }

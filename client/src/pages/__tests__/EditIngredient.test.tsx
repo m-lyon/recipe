@@ -4,15 +4,14 @@ import { cleanup, screen, waitFor } from '@testing-library/react';
 import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
+import { } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockUpdateIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
 import { mockDeleteIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
 import { MockedResponses, haveValueByLabelText, renderPage } from '@recipe/utils/tests';
-import {
-    mockGetNutritionalInfoByIngredientCarrot,
-    mockGetNutritionalInfoByIngredientChicken,
-} from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
+import { mockGetNutritionalInfoByIngredientCarrot } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
+import { mockGetNutritionalInfoByIngredientChicken } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 
 import { EditIngredient } from '../EditIngredient';
 

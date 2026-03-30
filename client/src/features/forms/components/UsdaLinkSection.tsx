@@ -1,28 +1,15 @@
 import { useState } from 'react';
-import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
 import { useDebouncedValue } from '@mantine/hooks';
-import {
-    Alert,
-    Button,
-    Divider,
-    Group,
-    NumberInput,
-    Radio,
-    ScrollArea,
-    SimpleGrid,
-    Skeleton,
-    Stack,
-    Text,
-    TextInput,
-    UnstyledButton,
-} from '@mantine/core';
+import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
+import { SimpleGrid, Skeleton, Stack, Text, TextInput, UnstyledButton } from '@mantine/core';
+import { Alert, Button, Divider, Group, NumberInput, Radio, ScrollArea } from '@mantine/core';
 
 import { MacroNutrients } from '@recipe/utils/nutrition';
 import { USDA_SEARCH } from '@recipe/graphql/queries/nutritionalInfo';
-import { GET_NUTRITIONAL_INFO_BY_INGREDIENT } from '@recipe/graphql/queries/nutritionalInfo';
 import { CREATE_NUTRITIONAL_INFO } from '@recipe/graphql/mutations/nutritionalInfo';
 import { UPDATE_NUTRITIONAL_INFO } from '@recipe/graphql/mutations/nutritionalInfo';
 import { DELETE_NUTRITIONAL_INFO } from '@recipe/graphql/mutations/nutritionalInfo';
+import { GET_NUTRITIONAL_INFO_BY_INGREDIENT } from '@recipe/graphql/queries/nutritionalInfo';
 
 export interface UsdaLinkSectionProps {
     ingredientId?: string;
@@ -235,8 +222,8 @@ export function UsdaLinkSection(props: UsdaLinkSectionProps) {
                         <Text size='xs' c='dimmed'>
                             Per unit: {round1(perUnitNutrition.calories)} kcal ·{' '}
                             {round1(perUnitNutrition.protein)}g protein ·{' '}
-                            {round1(perUnitNutrition.carbs)}g carbs ·{' '}
-                            {round1(perUnitNutrition.fat)}g fat
+                            {round1(perUnitNutrition.carbs)}g carbs · {round1(perUnitNutrition.fat)}
+                            g fat
                         </Text>
                     )}
                     <Button

@@ -20,9 +20,14 @@ const UsdaFoodItemTC = schemaComposer.createObjectTC({
     },
 });
 
-function extractNutrient(foodNutrients: Array<Record<string, unknown>>, nutrientId: number): number | null {
+function extractNutrient(
+    foodNutrients: Array<Record<string, unknown>>,
+    nutrientId: number
+): number | null {
     const entry = foodNutrients?.find(
-        (n) => n['nutrientId'] === nutrientId || (n['nutrient'] as Record<string, unknown>)?.['id'] === nutrientId
+        (n) =>
+            n['nutrientId'] === nutrientId ||
+            (n['nutrient'] as Record<string, unknown>)?.['id'] === nutrientId
     );
     if (!entry) return null;
     const value = entry['value'] ?? entry['amount'];
@@ -60,7 +65,9 @@ export const UsdaQuery = {
         resolve: async ({ args, context }) => {
             if (!context.getUser()) throw new GraphQLError('Not authenticated');
             if (typeof args.query !== 'string' || !args.query) {
-                throw new GraphQLError('Invalid query argument', { extensions: { code: 'BAD_USER_INPUT' } });
+                throw new GraphQLError('Invalid query argument', {
+                    extensions: { code: 'BAD_USER_INPUT' },
+                });
             }
             const safePageSize = Math.min((args.pageSize as number) ?? 20, USDA_MAX_PAGE_SIZE);
             const url = `${USDA_BASE}/foods/search?query=${encodeURIComponent(args.query)}&pageSize=${safePageSize}`;
@@ -85,7 +92,9 @@ export const UsdaQuery = {
             }
             const json = (await res.json()) as Record<string, unknown>;
             if (!json['fdcId']) {
-                throw new GraphQLError('Food item not found', { extensions: { code: 'NOT_FOUND' } });
+                throw new GraphQLError('Food item not found', {
+                    extensions: { code: 'NOT_FOUND' },
+                });
             }
             return mapFoodItem(json);
         },

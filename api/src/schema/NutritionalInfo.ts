@@ -2,12 +2,9 @@ import { GraphQLError } from 'graphql';
 import { schemaComposer } from 'graphql-compose';
 
 import { Ingredient } from '../models/Ingredient.js';
+import { NutritionalInfoTC } from '../models/NutritionalInfo.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
-import {
-    NutritionalInfo,
-    NutritionalInfoCreateTC,
-    NutritionalInfoTC,
-} from '../models/NutritionalInfo.js';
+import { NutritionalInfo, NutritionalInfoCreateTC } from '../models/NutritionalInfo.js';
 
 async function assertIngredientOwnerOrAdmin(
     ingredientId: unknown,

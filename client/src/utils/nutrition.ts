@@ -64,8 +64,14 @@ export function quantityToFloat(quantity: string): number {
  * Convert a quantity in a given unit to grams using the UnitConversion data.
  * Returns null if the unit is not part of a mass UnitConversion group.
  */
-function convertToGrams(quantity: number, unit: NonNullable<UnitView>, unitConversions: UnitConversion[]): number | null {
-    const uc = unitConversions.find((conv) => conv.rules.some((rule) => rule.unit._id === unit._id));
+function convertToGrams(
+    quantity: number,
+    unit: NonNullable<UnitView>,
+    unitConversions: UnitConversion[]
+): number | null {
+    const uc = unitConversions.find((conv) =>
+        conv.rules.some((rule) => rule.unit._id === unit._id)
+    );
     if (!uc) return null;
     if (uc.baseUnit.measureType !== 'mass') return null;
     const rule = uc.rules.find((r) => r.unit._id === unit._id);
@@ -77,8 +83,14 @@ function convertToGrams(quantity: number, unit: NonNullable<UnitView>, unitConve
  * Convert a quantity in a given unit to millilitres using the UnitConversion data.
  * Returns null if the unit is not part of a volume UnitConversion group.
  */
-function convertToMl(quantity: number, unit: NonNullable<UnitView>, unitConversions: UnitConversion[]): number | null {
-    const uc = unitConversions.find((conv) => conv.rules.some((rule) => rule.unit._id === unit._id));
+function convertToMl(
+    quantity: number,
+    unit: NonNullable<UnitView>,
+    unitConversions: UnitConversion[]
+): number | null {
+    const uc = unitConversions.find((conv) =>
+        conv.rules.some((rule) => rule.unit._id === unit._id)
+    );
     if (!uc) return null;
     if (uc.baseUnit.measureType !== 'volume') return null;
     const rule = uc.rules.find((r) => r.unit._id === unit._id);
@@ -111,27 +123,43 @@ export function calculateIngredientNutrition(
 
     const qty = quantityToFloat(recipeIngredient.quantity);
     if (isNaN(qty)) {
-        return { calculable: false, macros: { ...ZERO_MACROS }, reason: 'Could not parse quantity' };
+        return {
+            calculable: false,
+            macros: { ...ZERO_MACROS },
+            reason: 'Could not parse quantity',
+        };
     }
     const unit = recipeIngredient.unit;
 
     // Case 1: No unit → countable ingredient
     if (!unit) {
         if (!nutritionalInfo.perUnit) {
-            return { calculable: false, macros: { ...ZERO_MACROS }, reason: 'No per-unit nutritional data' };
+            return {
+                calculable: false,
+                macros: { ...ZERO_MACROS },
+                reason: 'No per-unit nutritional data',
+            };
         }
         return { calculable: true, macros: scaleMacros(nutritionalInfo.perUnit, qty) };
     }
 
     if (!nutritionalInfo.perGram) {
-        return { calculable: false, macros: { ...ZERO_MACROS }, reason: 'No per-gram nutritional data' };
+        return {
+            calculable: false,
+            macros: { ...ZERO_MACROS },
+            reason: 'No per-gram nutritional data',
+        };
     }
 
     // Case 2: Mass unit
     if (unit.measureType === 'mass') {
         const grams = convertToGrams(qty, unit, unitConversions);
         if (grams === null) {
-            return { calculable: false, macros: { ...ZERO_MACROS }, reason: 'Cannot convert unit to grams' };
+            return {
+                calculable: false,
+                macros: { ...ZERO_MACROS },
+                reason: 'Cannot convert unit to grams',
+            };
         }
         return { calculable: true, macros: scaleMacros(nutritionalInfo.perGram, grams) };
     }
@@ -140,7 +168,11 @@ export function calculateIngredientNutrition(
     if (unit.measureType === 'volume') {
         const ml = convertToMl(qty, unit, unitConversions);
         if (ml === null) {
-            return { calculable: false, macros: { ...ZERO_MACROS }, reason: 'Cannot convert unit to ml' };
+            return {
+                calculable: false,
+                macros: { ...ZERO_MACROS },
+                reason: 'Cannot convert unit to ml',
+            };
         }
         const ingredient = recipeIngredient.ingredient;
         if (ingredient.__typename !== 'Ingredient' || !ingredient.density) {

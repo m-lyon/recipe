@@ -1,20 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
+import { mockUnitConversionOne } from '@recipe/graphql/queries/__mocks__/unitConversion';
+import { mockUnitConversionTwo } from '@recipe/graphql/queries/__mocks__/unitConversion';
+import { mockUnitConversionVolume } from '@recipe/graphql/queries/__mocks__/unitConversion';
 import { mockCup, mockKilogram, mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
-import {
-    mockUnitConversionOne,
-    mockUnitConversionTwo,
-    mockUnitConversionVolume,
-} from '@recipe/graphql/queries/__mocks__/unitConversion';
 
-import {
-    MacroNutrients,
-    NutritionalInfoData,
-    addMacros,
-    calculateIngredientNutrition,
-    quantityToFloat,
-    sumRecipeNutrition,
-} from '../nutrition';
+import { MacroNutrients, NutritionalInfoData, addMacros } from '../nutrition';
+import { calculateIngredientNutrition, quantityToFloat, sumRecipeNutrition } from '../nutrition';
 
 // ---------------------------------------------------------------------------
 // quantityToFloat
@@ -182,7 +174,10 @@ describe('calculateIngredientNutrition', () => {
                 density: 0.5,
             } as unknown as RecipeIngredientView['ingredient'],
         });
-        const volumeConversions: UnitConversion[] = [mockUnitConversionOne, mockUnitConversionVolume];
+        const volumeConversions: UnitConversion[] = [
+            mockUnitConversionOne,
+            mockUnitConversionVolume,
+        ];
         const result = calculateIngredientNutrition(ri, nutritionPerGram, volumeConversions);
         expect(result.calculable).toBe(true);
         // 2 cups × 240 ml/cup × 0.5 g/ml = 240 g
@@ -243,9 +238,7 @@ describe('sumRecipeNutrition', () => {
 
     const ri1 = makeIngredient({ _id: 'ri-1', quantity: '2', unit: null });
     const ri2 = makeIngredient({ _id: 'ri-2', quantity: '3', unit: null });
-    const infoMap = new Map<string, NutritionalInfoData | null>([
-        ['ing-1', nutritionPerUnit],
-    ]);
+    const infoMap = new Map<string, NutritionalInfoData | null>([['ing-1', nutritionPerUnit]]);
 
     it('sums calculable ingredients and excludes uncountable ones', () => {
         // ri1 has ingredientId ing-1 (has info), ri2 also has ing-1 (has info)

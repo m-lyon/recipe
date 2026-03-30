@@ -1,7 +1,7 @@
-import { GetNutritionalInfoByIngredientQuery } from '@recipe/graphql/generated';
 import { mockCarrotId, mockChickenId } from '@recipe/graphql/__mocks__/ids';
-import { GET_NUTRITIONAL_INFO_BY_INGREDIENT } from '@recipe/graphql/queries/nutritionalInfo';
+import { GetNutritionalInfoByIngredientQuery } from '@recipe/graphql/generated';
 import { GetNutritionalInfoByIngredientQueryVariables } from '@recipe/graphql/generated';
+import { GET_NUTRITIONAL_INFO_BY_INGREDIENT } from '@recipe/graphql/queries/nutritionalInfo';
 
 /** Returns null nutritional info (ingredient has no linked data) */
 const nullResult: GetNutritionalInfoByIngredientQuery = {

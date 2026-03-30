@@ -1,6 +1,6 @@
-import { EMAIL_FROM } from '../constants.js';
 import { sendEmail } from './email.js';
 import { User } from '../models/User.js';
+import { EMAIL_FROM } from '../constants.js';
 import { NutritionalInfo } from '../models/NutritionalInfo.js';
 
 interface MissingConversion {
