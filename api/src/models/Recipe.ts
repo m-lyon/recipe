@@ -162,6 +162,7 @@ export interface Recipe extends Document {
     source?: string;
     numServings: number;
     isIngredient: boolean;
+    archived: boolean;
     createdAt: Date;
     lastModified: Date;
 }
@@ -250,6 +251,7 @@ const recipeSchema = new Schema<Recipe>({
     source: { type: String },
     numServings: { type: Number, required: true },
     isIngredient: { type: Boolean, required: true },
+    archived: { type: Boolean, default: false },
     createdAt: { type: Date, required: true },
     lastModified: { type: Date, required: true },
 });
@@ -291,10 +293,17 @@ export const RecipeIngredientTC = composeMongoose(RecipeIngredient, { removeFiel
 export const Recipe = model<Recipe>('Recipe', recipeSchema);
 export const RecipeTC = composeMongoose(Recipe);
 export const RecipeModifyTC = composeMongoose(Recipe, {
-    removeFields: ['titleIdentifier', 'calculatedTags', 'createdAt', 'lastModified'],
+    removeFields: ['titleIdentifier', 'calculatedTags', 'archived', 'createdAt', 'lastModified'],
     name: 'RecipeModify',
 });
 export const RecipeCreateTC = composeMongoose(Recipe, {
-    removeFields: ['owner', 'titleIdentifier', 'calculatedTags', 'createdAt', 'lastModified'],
+    removeFields: [
+        'owner',
+        'titleIdentifier',
+        'calculatedTags',
+        'archived',
+        'createdAt',
+        'lastModified',
+    ],
     name: 'RecipeCreate',
 });

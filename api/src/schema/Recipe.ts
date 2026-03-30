@@ -169,6 +169,32 @@ RecipeTC.addFields({
     },
 });
 
+RecipeModifyTC.addResolver({
+    name: 'archiveById',
+    description: 'Archive a recipe by its ID',
+    type: RecipeTC.mongooseResolvers.removeById().getType(),
+    args: { _id: 'MongoID!' },
+    resolve: async ({ args }) => {
+        const record = await Recipe.findByIdAndUpdate(args._id, { archived: true }, { new: true });
+        return { recordId: record?._id, record };
+    },
+});
+
+RecipeModifyTC.addResolver({
+    name: 'unarchiveById',
+    description: 'Unarchive a recipe by its ID',
+    type: RecipeTC.mongooseResolvers.removeById().getType(),
+    args: { _id: 'MongoID!' },
+    resolve: async ({ args }) => {
+        const record = await Recipe.findByIdAndUpdate(
+            args._id,
+            { archived: false },
+            { new: true }
+        );
+        return { recordId: record?._id, record };
+    },
+});
+
 export const RecipeQuery = {
     recipeById: RecipeTC.mongooseResolvers
         .findById()
@@ -227,24 +253,11 @@ export const RecipeMutation = {
         rp.args.record.lastModified = new Date();
         return next(rp);
     }),
-    recipeRemoveById: RecipeModifyTC.getResolver('removeById')
-        .wrapResolve((next) => async (rp) => {
-            // delete all images associated with the recipe
-            const images = await ImageTC.mongooseResolvers.findMany().resolve({
-                args: { filter: { recipe: rp.args._id } },
-            });
-            await ImageTC.getResolver('imageRemoveMany').resolve({
-                args: { ids: images.map((o) => o._id) },
-                context: rp.context,
-            });
-            // delete all rating associated with the recipe
-            await RatingTC.mongooseResolvers.removeMany().resolve({
-                args: { filter: { recipe: rp.args._id } },
-            });
-            return next(rp);
-        })
-        .wrapResolve((next) => async (rp) => {
+    recipeArchiveById: RecipeModifyTC.getResolver('archiveById').wrapResolve(
+        (next) => async (rp) => {
             await validateItemNotInRecipe(rp.args._id, 'recipe');
             return next(rp);
-        }),
+        }
+    ),
+    recipeUnarchiveById: RecipeModifyTC.getResolver('unarchiveById'),
 };
