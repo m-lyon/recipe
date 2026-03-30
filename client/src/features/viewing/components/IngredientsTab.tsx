@@ -23,7 +23,12 @@ export function IngredientsTab(props: Props) {
     const currentServings = useRecipeStore((state) => state.numServings);
     const { isVerified } = useUser();
     const { addRatingWithToast } = useAddRating();
-    const { uncountedIds } = useNutritionalInfo(recipe.ingredientSubsections, currentServings);
+    // Call the hook once; pass the results to both IngredientList and NutritionalInfoPanel
+    // to avoid calling the hook twice (which would double the GraphQL requests).
+    const { perServing, uncountedIds, loading } = useNutritionalInfo(
+        recipe.ingredientSubsections,
+        currentServings
+    );
     useEffect(() => {
         setNumServings(recipe.numServings);
     }, [recipe.numServings, setNumServings]);
@@ -50,7 +55,9 @@ export function IngredientsTab(props: Props) {
                     />
                     <NutritionalInfoPanel
                         subsections={recipe.ingredientSubsections}
-                        numServings={currentServings}
+                        perServing={perServing}
+                        uncountedIds={uncountedIds}
+                        loading={loading}
                     />
                 </>
             }

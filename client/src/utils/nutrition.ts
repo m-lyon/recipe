@@ -48,6 +48,9 @@ export function addMacros(a: MacroNutrients, b: MacroNutrients): MacroNutrients 
 export function quantityToFloat(quantity: string): number {
     if (isRange(quantity)) {
         const parts = quantity.split('-').map((s) => quantityToFloat(s.trim()));
+        if (parts.length !== 2 || !isFinite(parts[0]) || !isFinite(parts[1])) {
+            return NaN;
+        }
         return (parts[0] + parts[1]) / 2;
     }
     if (isFraction(quantity)) {

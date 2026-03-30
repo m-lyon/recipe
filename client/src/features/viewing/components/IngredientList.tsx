@@ -32,32 +32,37 @@ export function IngredientList(props: IngredientListProps) {
     const subsectionsList = modifiedSubsections.map((collection, index) => {
         const finishedIngredients = collection.ingredients.map((item, i) => {
             if (item.ingredient.__typename === 'Ingredient') {
-                    return (
-                        <ListItem
-                            key={item._id}
-                            aria-label={`Ingredient #${i + 1} in subsection ${index + 1}`}
-                        >
-                            {getFinishedRecipeIngredientStr(item)}
-                            {uncountedIngredientIds?.has(item._id) && (
-                                <MantineTooltip
-                                    label='Not included in nutritional calculation'
-                                    withArrow
+                return (
+                    <ListItem
+                        key={item._id}
+                        aria-label={`Ingredient #${i + 1} in subsection ${index + 1}`}
+                    >
+                        {getFinishedRecipeIngredientStr(item)}
+                        {uncountedIngredientIds?.has(item._id) && (
+                            // MantineTooltip is used here (not Chakra Tooltip) because this
+                            // tooltip is new code added for the nutritional info feature.
+                            // Per spec, new UI code must use Mantine only. The Chakra Tooltip
+                            // used for the wake-lock button below is pre-existing and not
+                            // converted per spec.
+                            <MantineTooltip
+                                label='Not included in nutritional calculation'
+                                withArrow
+                            >
+                                <ActionIcon
+                                    variant='transparent'
+                                    size='xs'
+                                    ml={4}
+                                    aria-label='Not counted in nutrition'
+                                    component='span'
+                                    display='inline-flex'
                                 >
-                                    <ActionIcon
-                                        variant='transparent'
-                                        size='xs'
-                                        ml={4}
-                                        aria-label='Not counted in nutrition'
-                                        component='span'
-                                        display='inline-flex'
-                                    >
-                                        <TbQuestionMark />
-                                    </ActionIcon>
-                                </MantineTooltip>
-                            )}
-                        </ListItem>
-                    );
-                }
+                                    <TbQuestionMark />
+                                </ActionIcon>
+                            </MantineTooltip>
+                        )}
+                    </ListItem>
+                );
+            }
             return (
                 <RecipeIngredient
                     key={item._id}

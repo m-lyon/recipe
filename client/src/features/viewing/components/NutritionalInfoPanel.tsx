@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { TbAlertTriangle, TbChevronDown, TbChevronUp } from 'react-icons/tb';
 import { Box, Collapse, Group, SimpleGrid, Skeleton, Text, UnstyledButton } from '@mantine/core';
 
-import { useNutritionalInfo } from '../hooks/useNutritionalInfo';
+import { MacroNutrients } from '@recipe/utils/nutrition';
 
 interface NutritionalInfoPanelProps {
     subsections: IngredientSubsectionView[];
-    numServings: number;
+    perServing: MacroNutrients;
+    uncountedIds: Set<string>;
+    loading: boolean;
 }
 
 function round1(n: number): string {
@@ -14,10 +16,11 @@ function round1(n: number): string {
 }
 
 export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
-    const { subsections, numServings } = props;
+    const { subsections, perServing, uncountedIds, loading } = props;
     const [open, setOpen] = useState(true);
-    const { perServing, uncountedIds, loading } = useNutritionalInfo(subsections, numServings);
 
+    // `loading` is checked first in the ternary below, so allUncounted is only
+    // evaluated once data is available — guarded by the loading branch.
     const allUncounted =
         uncountedIds.size > 0 &&
         subsections
