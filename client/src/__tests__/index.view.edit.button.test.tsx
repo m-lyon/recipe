@@ -4,15 +4,15 @@ import { cleanup, screen } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { PATH } from '@recipe/constants';
-import { MockedResponses, enterViewRecipePage, renderPage } from '@recipe/utils/tests';
 import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
-import { mockGetRecipeOne, mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockGetIngredientAndRecipeIngredients } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
-import { mockCurrentUser, mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { mockCurrentUserNull } from '@recipe/graphql/queries/__mocks__/user';
+import { MockedResponses, enterViewRecipePage, renderPage } from '@recipe/utils/tests';
+import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
+import { mockGetRecipeOne, mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockCurrentUser, mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
+import { mockGetIngredientAndRecipeIngredients } from '@recipe/graphql/queries/__mocks__/recipe';
 
 import { routes } from '../routes';
 
