@@ -34,8 +34,10 @@ export function useSearch(): SearchHook {
     const addItem = useSearchStore((state) => state.addItem);
     const removeItem = useSearchStore((state) => state.removeItem);
     const [searchRecipes] = useLazyQuery(GET_RECIPES, { fetchPolicy: 'network-only' });
+    const showArchivedRef = useRef(showArchived);
+    showArchivedRef.current = showArchived;
     const debouncedSearch = useDebouncedCallback((newQuery: Query) => {
-        const newFilter = getSearchFilter(newQuery, showArchived);
+        const newFilter = getSearchFilter(newQuery, showArchivedRef.current);
         searchRecipes({
             variables: {
                 offset: 0,
@@ -56,12 +58,16 @@ export function useSearch(): SearchHook {
             isInitialRender.current = false;
             return;
         }
+        const newFilter = getSearchFilter(
+            { title, tags, calculatedTags, ingredients },
+            showArchived
+        );
         searchRecipes({
             variables: {
                 offset: 0,
                 limit: INIT_LOAD_NUM,
-                filter,
-                countFilter: filter,
+                filter: newFilter,
+                countFilter: newFilter,
             },
         });
     }, [showArchived]); // eslint-disable-line react-hooks/exhaustive-deps
