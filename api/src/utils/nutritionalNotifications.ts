@@ -45,6 +45,7 @@ function isPopulatedIngredient(value: unknown): value is PopulatedIngredient {
 }
 
 export async function sendNutritionalNotifications(recipe: PopulatedRecipe): Promise<void> {
+    // Read at call time (not module load) so the value is always current and testable.
     const emailFrom = process.env.EMAIL_FROM ?? '';
     if (!emailFrom) {
         console.error('EMAIL_FROM not configured; skipping nutritional notifications.');

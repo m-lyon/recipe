@@ -102,13 +102,25 @@ const USDA_FOOD_ITEM = `
         }
     }`;
 
-function makeContext(user) {
+function makeContext(user: unknown) {
     return {
         contextValue: {
             isAuthenticated: () => !!user,
             getUser: () => user,
         },
     };
+}
+
+async function createOtherUser() {
+    return User.register(
+        new User({
+            username: 'other@test.com',
+            firstName: 'Other',
+            lastName: 'User',
+            role: 'user',
+        }),
+        'password'
+    );
 }
 
 function dropCollections(done) {
@@ -189,15 +201,7 @@ describe('nutritionalInfoCreateOne', function () {
         assert.equal(String(ingredient.owner), String(owner._id));
 
         // Create a second (non-owner) user
-        const otherUser = await User.register(
-            new User({
-                username: 'otheruser@test.com',
-                firstName: 'Other',
-                lastName: 'User',
-                role: 'user',
-            }),
-            'password'
-        );
+        const otherUser = await createOtherUser();
 
         const response = await this.apolloServer.executeOperation(
             {
@@ -304,15 +308,7 @@ describe('nutritionalInfoUpdateById', function () {
             perGram: VALID_PER_GRAM,
         }).save();
 
-        const otherUser = await User.register(
-            new User({
-                username: 'other@test.com',
-                firstName: 'Other',
-                lastName: 'User',
-                role: 'user',
-            }),
-            'password'
-        );
+        const otherUser = await createOtherUser();
 
         const response = await this.apolloServer.executeOperation(
             {
@@ -369,15 +365,7 @@ describe('nutritionalInfoRemoveById', function () {
             perGram: VALID_PER_GRAM,
         }).save();
 
-        const otherUser = await User.register(
-            new User({
-                username: 'other@test.com',
-                firstName: 'Other',
-                lastName: 'User',
-                role: 'user',
-            }),
-            'password'
-        );
+        const otherUser = await createOtherUser();
 
         const response = await this.apolloServer.executeOperation(
             {
@@ -517,57 +505,45 @@ describe('usdaSearch', function () {
             ],
         };
 
-        const fetchStub = stub(global, 'fetch').resolves({
+        stub(global, 'fetch').resolves({
             ok: true,
             json: async () => mockResponse,
         } as Response);
 
-        try {
-            const response = await this.apolloServer.executeOperation(
-                {
-                    query: USDA_SEARCH,
-                    variables: { query: 'chicken', pageSize: 5 },
-                },
-                makeContext(user)
-            );
-            assert.equal(response.body.kind, 'single');
-            assert.isUndefined(response.body.singleResult.errors);
-            const results = (response.body.singleResult.data as any).usdaSearch;
-            assert.equal(results.length, 1);
-            assert.equal(results[0].fdcId, 171077);
-            assert.equal(results[0].description, 'Chicken, broilers or fryers');
-            assert.equal(results[0].caloriesPer100g, 165);
-            assert.equal(results[0].proteinPer100g, 31);
-            assert.equal(results[0].carbsPer100g, 0);
-            assert.equal(results[0].fatPer100g, 3.6);
-
-            assert.isTrue(fetchStub.calledOnce);
-            const fetchedUrl = fetchStub.firstCall.args[0] as string;
-            assert.include(fetchedUrl, 'query=chicken');
-            assert.include(fetchedUrl, 'pageSize=5');
-        } finally {
-            fetchStub.restore();
-        }
+        const response = await this.apolloServer.executeOperation(
+            {
+                query: USDA_SEARCH,
+                variables: { query: 'chicken', pageSize: 5 },
+            },
+            makeContext(user)
+        );
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(response.body.singleResult.errors);
+        const results = (response.body.singleResult.data as any).usdaSearch;
+        assert.equal(results.length, 1);
+        assert.equal(results[0].fdcId, 171077);
+        assert.equal(results[0].description, 'Chicken, broilers or fryers');
+        assert.equal(results[0].caloriesPer100g, 165);
+        assert.equal(results[0].proteinPer100g, 31);
+        assert.equal(results[0].carbsPer100g, 0);
+        assert.equal(results[0].fatPer100g, 3.6);
     });
 
     it('should fail for unauthenticated user', async function () {
         const fetchStub = stub(global, 'fetch');
-        try {
-            const response = await this.apolloServer.executeOperation(
-                {
-                    query: USDA_SEARCH,
-                    variables: { query: 'chicken' },
-                },
-                makeContext(null)
-            );
-            assert.equal(response.body.kind, 'single');
-            assert.isDefined(response.body.singleResult.errors, 'Should fail unauthenticated');
-            assert.include(response.body.singleResult.errors[0].message, 'Not authenticated');
-            // fetch should never have been called
-            assert.isFalse(fetchStub.called);
-        } finally {
-            fetchStub.restore();
-        }
+
+        const response = await this.apolloServer.executeOperation(
+            {
+                query: USDA_SEARCH,
+                variables: { query: 'chicken' },
+            },
+            makeContext(null)
+        );
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Should fail unauthenticated');
+        assert.include(response.body.singleResult.errors[0].message, 'Not authenticated');
+        // fetch should never have been called
+        assert.isFalse(fetchStub.called);
     });
 });
 
@@ -594,27 +570,23 @@ describe('usdaFoodItem', function () {
             ],
         };
 
-        const fetchStub = stub(global, 'fetch').resolves({
+        stub(global, 'fetch').resolves({
             ok: true,
             json: async () => mockItem,
         } as Response);
 
-        try {
-            const response = await this.apolloServer.executeOperation(
-                {
-                    query: USDA_FOOD_ITEM,
-                    variables: { fdcId: 171077 },
-                },
-                makeContext(user)
-            );
-            assert.equal(response.body.kind, 'single');
-            assert.isUndefined(response.body.singleResult.errors);
-            const result = (response.body.singleResult.data as any).usdaFoodItem;
-            assert.equal(result.fdcId, 171077);
-            assert.equal(result.caloriesPer100g, 165);
-        } finally {
-            fetchStub.restore();
-        }
+        const response = await this.apolloServer.executeOperation(
+            {
+                query: USDA_FOOD_ITEM,
+                variables: { fdcId: 171077 },
+            },
+            makeContext(user)
+        );
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(response.body.singleResult.errors);
+        const result = (response.body.singleResult.data as any).usdaFoodItem;
+        assert.equal(result.fdcId, 171077);
+        assert.equal(result.caloriesPer100g, 165);
     });
 });
 
@@ -635,7 +607,9 @@ describe('sendNutritionalNotifications', function () {
         dropCollections(done);
     });
 
-    // Dynamic import to get the function after compilation
+    // Dynamic import to get the function after compilation.
+    // Works because the production code reads process.env.EMAIL_FROM at call time,
+    // allowing tests to set it in beforeEach without cache issues.
     async function getSendNotifications() {
         const mod = await import('../../src/utils/nutritionalNotifications.js');
         return mod.sendNutritionalNotifications;
@@ -653,37 +627,33 @@ describe('sendNutritionalNotifications', function () {
 
         const sgStub = stub(sgMail, 'send').resolves();
 
-        try {
-            const sendNutritionalNotifications = await getSendNotifications();
-            const recipe: PopulatedRecipe = {
-                title: 'Test Recipe',
-                ingredientSubsections: [
-                    {
-                        ingredients: [
-                            {
-                                type: 'ingredient',
-                                quantity: '100',
-                                ingredient: {
-                                    _id: ingredient._id,
-                                    name: 'chicken',
-                                    owner: user._id,
-                                },
-                                unit: {
-                                    _id: new mongoose.Types.ObjectId(),
-                                    shortSingular: 'g',
-                                    measureType: 'mass' as const,
-                                    owner: user._id,
-                                },
+        const sendNutritionalNotifications = await getSendNotifications();
+        const recipe: PopulatedRecipe = {
+            title: 'Test Recipe',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            type: 'ingredient',
+                            quantity: '100',
+                            ingredient: {
+                                _id: ingredient._id,
+                                name: 'chicken',
+                                owner: user._id,
                             },
-                        ],
-                    },
-                ],
-            };
-            await sendNutritionalNotifications(recipe);
-            assert.equal(sgStub.callCount, 0, 'No emails should be sent');
-        } finally {
-            sgStub.restore();
-        }
+                            unit: {
+                                _id: new mongoose.Types.ObjectId(),
+                                shortSingular: 'g',
+                                measureType: 'mass' as const,
+                                owner: user._id,
+                            },
+                        },
+                    ],
+                },
+            ],
+        };
+        await sendNutritionalNotifications(recipe);
+        assert.equal(sgStub.callCount, 0, 'No emails should be sent');
     });
 
     it('should send email when ingredient has no nutritional info', async function () {
@@ -693,40 +663,39 @@ describe('sendNutritionalNotifications', function () {
         // Do NOT create NutritionalInfo — trigger "no nutritional info" path
         const sgStub = stub(sgMail, 'send').resolves();
 
-        try {
-            const sendNutritionalNotifications = await getSendNotifications();
-            const recipe: PopulatedRecipe = {
-                title: 'Test Recipe',
-                ingredientSubsections: [
-                    {
-                        ingredients: [
-                            {
-                                type: 'ingredient',
-                                quantity: '2',
-                                ingredient: {
-                                    _id: ingredient._id,
-                                    name: 'chicken',
-                                    owner: user._id,
-                                },
-                                unit: {
-                                    _id: new mongoose.Types.ObjectId(),
-                                    shortSingular: 'cup',
-                                    measureType: 'volume' as const,
-                                    owner: user._id,
-                                },
+        const sendNutritionalNotifications = await getSendNotifications();
+        const recipe: PopulatedRecipe = {
+            title: 'Test Recipe',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            type: 'ingredient',
+                            quantity: '2',
+                            ingredient: {
+                                _id: ingredient._id,
+                                name: 'chicken',
+                                owner: user._id,
                             },
-                        ],
-                    },
-                ],
-            };
-            await sendNutritionalNotifications(recipe);
-            assert.equal(sgStub.callCount, 1, 'One email to ingredient owner');
-            const msg = sgStub.firstCall.args[0] as { text: string };
-            assert.include(msg.text, 'chicken');
-            assert.include(msg.text, 'No nutritional information');
-        } finally {
-            sgStub.restore();
-        }
+                            unit: {
+                                _id: new mongoose.Types.ObjectId(),
+                                shortSingular: 'cup',
+                                measureType: 'volume' as const,
+                                owner: user._id,
+                            },
+                        },
+                    ],
+                },
+            ],
+        };
+        await sendNutritionalNotifications(recipe);
+        assert.equal(sgStub.callCount, 1, 'One email to ingredient owner');
+        const msg = sgStub.firstCall.args[0] as unknown as { text: string; to: string; from: string };
+        assert.isString(msg.text, 'Email should have a text body');
+        assert.isString(msg.to, 'Email should have a recipient');
+        assert.isString(msg.from, 'Email should have a sender');
+        assert.include(msg.text, 'chicken');
+        assert.include(msg.text, 'No nutritional information');
     });
 
     it('should send email when unit has no measureType', async function () {
@@ -740,39 +709,36 @@ describe('sendNutritionalNotifications', function () {
 
         const sgStub = stub(sgMail, 'send').resolves();
 
-        try {
-            const sendNutritionalNotifications = await getSendNotifications();
-            const recipe: PopulatedRecipe = {
-                title: 'Test Recipe',
-                ingredientSubsections: [
-                    {
-                        ingredients: [
-                            {
-                                type: 'ingredient',
-                                quantity: '1',
-                                ingredient: {
-                                    _id: ingredient._id,
-                                    name: 'chicken',
-                                    owner: user._id,
-                                },
-                                unit: {
-                                    _id: new mongoose.Types.ObjectId(),
-                                    shortSingular: 'bunch',
-                                    measureType: undefined,
-                                    owner: user._id,
-                                },
+        const sendNutritionalNotifications = await getSendNotifications();
+        const recipe: PopulatedRecipe = {
+            title: 'Test Recipe',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            type: 'ingredient',
+                            quantity: '1',
+                            ingredient: {
+                                _id: ingredient._id,
+                                name: 'chicken',
+                                owner: user._id,
                             },
-                        ],
-                    },
-                ],
-            };
-            await sendNutritionalNotifications(recipe);
-            assert.equal(sgStub.callCount, 1);
-            const msg = sgStub.firstCall.args[0] as { text: string };
-            assert.include(msg.text, 'no measure type');
-        } finally {
-            sgStub.restore();
-        }
+                            unit: {
+                                _id: new mongoose.Types.ObjectId(),
+                                shortSingular: 'bunch',
+                                measureType: undefined,
+                                owner: user._id,
+                            },
+                        },
+                    ],
+                },
+            ],
+        };
+        await sendNutritionalNotifications(recipe);
+        assert.equal(sgStub.callCount, 1);
+        const msg = sgStub.firstCall.args[0] as unknown as { text: string };
+        assert.isString(msg.text, 'Email should have a text body');
+        assert.include(msg.text, 'no measure type');
     });
 
     it('should send email when volume unit is used but ingredient has no density', async function () {
@@ -786,40 +752,37 @@ describe('sendNutritionalNotifications', function () {
 
         const sgStub = stub(sgMail, 'send').resolves();
 
-        try {
-            const sendNutritionalNotifications = await getSendNotifications();
-            const recipe: PopulatedRecipe = {
-                title: 'Test Recipe',
-                ingredientSubsections: [
-                    {
-                        ingredients: [
-                            {
-                                type: 'ingredient',
-                                quantity: '2',
-                                ingredient: {
-                                    _id: ingredient._id,
-                                    name: 'chicken',
-                                    density: undefined, // no density
-                                    owner: user._id,
-                                },
-                                unit: {
-                                    _id: new mongoose.Types.ObjectId(),
-                                    shortSingular: 'cup',
-                                    measureType: 'volume' as const,
-                                    owner: user._id,
-                                },
+        const sendNutritionalNotifications = await getSendNotifications();
+        const recipe: PopulatedRecipe = {
+            title: 'Test Recipe',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            type: 'ingredient',
+                            quantity: '2',
+                            ingredient: {
+                                _id: ingredient._id,
+                                name: 'chicken',
+                                density: undefined, // no density
+                                owner: user._id,
                             },
-                        ],
-                    },
-                ],
-            };
-            await sendNutritionalNotifications(recipe);
-            assert.equal(sgStub.callCount, 1);
-            const msg = sgStub.firstCall.args[0] as { text: string };
-            assert.include(msg.text, 'no density');
-        } finally {
-            sgStub.restore();
-        }
+                            unit: {
+                                _id: new mongoose.Types.ObjectId(),
+                                shortSingular: 'cup',
+                                measureType: 'volume' as const,
+                                owner: user._id,
+                            },
+                        },
+                    ],
+                },
+            ],
+        };
+        await sendNutritionalNotifications(recipe);
+        assert.equal(sgStub.callCount, 1);
+        const msg = sgStub.firstCall.args[0] as unknown as { text: string };
+        assert.isString(msg.text, 'Email should have a text body');
+        assert.include(msg.text, 'no density');
     });
 
     it('should notify unit owner separately when different from ingredient owner', async function () {
@@ -844,60 +807,52 @@ describe('sendNutritionalNotifications', function () {
 
         const sgStub = stub(sgMail, 'send').resolves();
 
-        try {
-            const sendNutritionalNotifications = await getSendNotifications();
-            const recipe: PopulatedRecipe = {
-                title: 'Test Recipe',
-                ingredientSubsections: [
-                    {
-                        ingredients: [
-                            {
-                                type: 'ingredient',
-                                quantity: '1',
-                                ingredient: {
-                                    _id: ingredient._id,
-                                    name: 'chicken',
-                                    owner: user._id,
-                                },
-                                unit: {
-                                    _id: new mongoose.Types.ObjectId(),
-                                    shortSingular: 'bunch',
-                                    measureType: undefined, // no measureType
-                                    owner: unitOwner._id,
-                                },
+        const sendNutritionalNotifications = await getSendNotifications();
+        const recipe: PopulatedRecipe = {
+            title: 'Test Recipe',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            type: 'ingredient',
+                            quantity: '1',
+                            ingredient: {
+                                _id: ingredient._id,
+                                name: 'chicken',
+                                owner: user._id,
                             },
-                        ],
-                    },
-                ],
-            };
-            await sendNutritionalNotifications(recipe);
-            // Two emails: one to ingredient owner, one to unit owner
-            assert.equal(sgStub.callCount, 2, 'Both owners should be notified');
-            const recipients = [
-                (sgStub.firstCall.args[0] as { to: string }).to,
-                (sgStub.secondCall.args[0] as { to: string }).to,
-            ];
-            assert.include(recipients, 'testuser1');
-            assert.include(recipients, 'unitowner@test.com');
-        } finally {
-            sgStub.restore();
-        }
+                            unit: {
+                                _id: new mongoose.Types.ObjectId(),
+                                shortSingular: 'bunch',
+                                measureType: undefined, // no measureType
+                                owner: unitOwner._id,
+                            },
+                        },
+                    ],
+                },
+            ],
+        };
+        await sendNutritionalNotifications(recipe);
+        // Two emails: one to ingredient owner, one to unit owner
+        assert.equal(sgStub.callCount, 2, 'Both owners should be notified');
+        const recipients = [
+            (sgStub.firstCall.args[0] as { to: string }).to,
+            (sgStub.secondCall.args[0] as { to: string }).to,
+        ];
+        assert.include(recipients, (user as unknown as { username: string }).username);
+        assert.include(recipients, (unitOwner as unknown as { username: string }).username);
     });
 
     it('should send no emails when recipe has no ingredients', async function () {
         const sgStub = stub(sgMail, 'send').resolves();
 
-        try {
-            const sendNutritionalNotifications = await getSendNotifications();
-            const recipe: PopulatedRecipe = {
-                title: 'Empty Recipe',
-                ingredientSubsections: [{ ingredients: [] }],
-            };
-            await sendNutritionalNotifications(recipe);
-            assert.equal(sgStub.callCount, 0);
-        } finally {
-            sgStub.restore();
-        }
+        const sendNutritionalNotifications = await getSendNotifications();
+        const recipe: PopulatedRecipe = {
+            title: 'Empty Recipe',
+            ingredientSubsections: [{ ingredients: [] }],
+        };
+        await sendNutritionalNotifications(recipe);
+        assert.equal(sgStub.callCount, 0);
     });
 
     it('should send email when ingredient uses no unit but lacks perUnit data', async function () {
@@ -912,33 +867,30 @@ describe('sendNutritionalNotifications', function () {
 
         const sgStub = stub(sgMail, 'send').resolves();
 
-        try {
-            const sendNutritionalNotifications = await getSendNotifications();
-            const recipe: PopulatedRecipe = {
-                title: 'Countable Recipe',
-                ingredientSubsections: [
-                    {
-                        ingredients: [
-                            {
-                                type: 'ingredient',
-                                quantity: '3',
-                                ingredient: {
-                                    _id: ingredient._id,
-                                    name: 'chicken',
-                                    owner: user._id,
-                                },
-                                unit: undefined, // no unit — countable path
+        const sendNutritionalNotifications = await getSendNotifications();
+        const recipe: PopulatedRecipe = {
+            title: 'Countable Recipe',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            type: 'ingredient',
+                            quantity: '3',
+                            ingredient: {
+                                _id: ingredient._id,
+                                name: 'chicken',
+                                owner: user._id,
                             },
-                        ],
-                    },
-                ],
-            };
-            await sendNutritionalNotifications(recipe);
-            assert.equal(sgStub.callCount, 1);
-            const msg = sgStub.firstCall.args[0] as { text: string };
-            assert.include(msg.text, 'no per-unit nutritional data');
-        } finally {
-            sgStub.restore();
-        }
+                            unit: undefined, // no unit — countable path
+                        },
+                    ],
+                },
+            ],
+        };
+        await sendNutritionalNotifications(recipe);
+        assert.equal(sgStub.callCount, 1);
+        const msg = sgStub.firstCall.args[0] as unknown as { text: string };
+        assert.isString(msg.text, 'Email should have a text body');
+        assert.include(msg.text, 'no per-unit nutritional data');
     });
 });
