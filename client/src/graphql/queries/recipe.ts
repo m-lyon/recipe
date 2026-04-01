@@ -94,6 +94,8 @@ export const RECIPE_FIELDS_FULL = gql(`
         }
         source
         notes
+        activeTime
+        passiveTime
     }
 `);
 
