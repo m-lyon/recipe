@@ -16,20 +16,33 @@ interface Props {
 export function SubmitButton(props: Props) {
     const { submitText, loadingText, disabled, loading, handleSubmit, isLoggedIn } = props;
     const toast = useErrorToast();
-    const { isIngredient, pluralTitle, source, title, notes, servings, tags, instr, ingr } =
-        useRecipeStore(
-            useShallow((state) => ({
-                source: state.source,
-                title: state.title,
-                notes: state.notes,
-                isIngredient: state.isIngredient,
-                pluralTitle: state.pluralTitle,
-                servings: state.numServings,
-                tags: state.finishedTags,
-                instr: state.instructionSections,
-                ingr: state.ingredientSections,
-            }))
-        );
+    const {
+        isIngredient,
+        pluralTitle,
+        source,
+        title,
+        notes,
+        servings,
+        tags,
+        instr,
+        ingr,
+        activeTime,
+        passiveTime,
+    } = useRecipeStore(
+        useShallow((state) => ({
+            source: state.source,
+            title: state.title,
+            notes: state.notes,
+            isIngredient: state.isIngredient,
+            pluralTitle: state.pluralTitle,
+            servings: state.numServings,
+            tags: state.finishedTags,
+            instr: state.instructionSections,
+            ingr: state.ingredientSections,
+            activeTime: state.activeTime,
+            passiveTime: state.passiveTime,
+        }))
+    );
 
     const validate = () => {
         if (title.trim() == '') {
@@ -152,6 +165,8 @@ export function SubmitButton(props: Props) {
                 : undefined,
             source: source ? source : undefined,
             isIngredient,
+            ...(activeTime != null && { activeTime }),
+            ...(passiveTime != null && { passiveTime }),
         };
         handleSubmit(recipe);
     };
