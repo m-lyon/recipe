@@ -186,11 +186,7 @@ RecipeModifyTC.addResolver({
     type: RecipeTC.mongooseResolvers.removeById().getType(),
     args: { _id: 'MongoID!' },
     resolve: async ({ args }) => {
-        const record = await Recipe.findByIdAndUpdate(
-            args._id,
-            { archived: false },
-            { new: true }
-        );
+        const record = await Recipe.findByIdAndUpdate(args._id, { archived: false }, { new: true });
         return { recordId: record?._id, record };
     },
 });

@@ -1257,12 +1257,13 @@ describe('recipeArchiveById', () => {
         assert.equal(response.body.kind, 'single');
         assert.isUndefined(
             response.body.singleResult.errors,
-            response.body.singleResult.errors
-                ? response.body.singleResult.errors[0].message
-                : ''
+            response.body.singleResult.errors ? response.body.singleResult.errors[0].message : ''
         );
         const data = response.body.singleResult.data as {
-            recipeArchiveById: { recordId: string; record: { _id: string; title: string; archived: boolean } };
+            recipeArchiveById: {
+                recordId: string;
+                record: { _id: string; title: string; archived: boolean };
+            };
         };
         assert.equal(data.recipeArchiveById.recordId, recipe._id.toString());
         assert.isTrue(data.recipeArchiveById.record.archived, 'Record should be archived');
@@ -1327,12 +1328,13 @@ describe('recipeArchiveById', () => {
         assert.equal(response.body.kind, 'single');
         assert.isUndefined(
             response.body.singleResult.errors,
-            response.body.singleResult.errors
-                ? response.body.singleResult.errors[0].message
-                : ''
+            response.body.singleResult.errors ? response.body.singleResult.errors[0].message : ''
         );
         const data = response.body.singleResult.data as {
-            recipeUnarchiveById: { recordId: string; record: { _id: string; title: string; archived: boolean } };
+            recipeUnarchiveById: {
+                recordId: string;
+                record: { _id: string; title: string; archived: boolean };
+            };
         };
         assert.equal(data.recipeUnarchiveById.recordId, recipe._id.toString());
         assert.isFalse(data.recipeUnarchiveById.record.archived, 'Record should not be archived');
@@ -1369,11 +1371,16 @@ describe('recipeArchiveById', () => {
         );
         assert.equal(responseNotArchived.body.kind, 'single');
         assert.isUndefined(responseNotArchived.body.singleResult.errors);
-        const recipes = (responseNotArchived.body.singleResult.data as {
-            recipeMany: Array<{ _id: string; title: string; archived: boolean }>;
-        }).recipeMany;
+        const recipes = (
+            responseNotArchived.body.singleResult.data as {
+                recipeMany: Array<{ _id: string; title: string; archived: boolean }>;
+            }
+        ).recipeMany;
         const archivedInList = recipes.find((r) => r._id === recipe._id.toString());
-        assert.isUndefined(archivedInList, 'Archived recipe should not appear in non-archived results');
+        assert.isUndefined(
+            archivedInList,
+            'Archived recipe should not appear in non-archived results'
+        );
 
         // Query with archived: true filter
         const queryArchived = `
@@ -1395,9 +1402,11 @@ describe('recipeArchiveById', () => {
         );
         assert.equal(responseArchived.body.kind, 'single');
         assert.isUndefined(responseArchived.body.singleResult.errors);
-        const archivedRecipes = (responseArchived.body.singleResult.data as {
-            recipeMany: Array<{ _id: string; title: string; archived: boolean }>;
-        }).recipeMany;
+        const archivedRecipes = (
+            responseArchived.body.singleResult.data as {
+                recipeMany: Array<{ _id: string; title: string; archived: boolean }>;
+            }
+        ).recipeMany;
         const foundArchived = archivedRecipes.find((r) => r._id === recipe._id.toString());
         assert.isDefined(foundArchived, 'Archived recipe should appear in archived results');
         assert.isTrue(foundArchived.archived);
@@ -1422,9 +1431,11 @@ describe('recipeArchiveById', () => {
             }
         );
         assert.equal(initialResponse.body.kind, 'single');
-        const initialCount = (initialResponse.body.singleResult.data as {
-            recipeCount: number;
-        }).recipeCount;
+        const initialCount = (
+            initialResponse.body.singleResult.data as {
+                recipeCount: number;
+            }
+        ).recipeCount;
 
         // Archive the recipe
         await Recipe.findByIdAndUpdate(recipe._id, { archived: true });
@@ -1440,9 +1451,11 @@ describe('recipeArchiveById', () => {
             }
         );
         assert.equal(afterResponse.body.kind, 'single');
-        const afterCount = (afterResponse.body.singleResult.data as {
-            recipeCount: number;
-        }).recipeCount;
+        const afterCount = (
+            afterResponse.body.singleResult.data as {
+                recipeCount: number;
+            }
+        ).recipeCount;
 
         assert.equal(afterCount, initialCount - 1, 'Count should decrease by 1 after archiving');
     });

@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
+import { GoArchive } from 'react-icons/go';
 import { EditIcon } from '@chakra-ui/icons';
 import { useMutation } from '@apollo/client';
+import { RiInboxUnarchiveLine } from 'react-icons/ri';
 import { Box, Flex, IconButton, Spacer, Tooltip } from '@chakra-ui/react';
 
 import { PATH } from '@recipe/constants';
-import { ArchiveIcon, UnarchiveIcon } from '@recipe/common/icons';
 import { UNARCHIVE_RECIPE } from '@recipe/graphql/mutations/recipe';
 
 interface Props {
@@ -38,7 +39,7 @@ export function ModifyButtons(props: Props) {
                                 variant='solid'
                                 colorScheme='gray'
                                 aria-label={`Unarchive ${recipe.title}`}
-                                icon={<UnarchiveIcon />}
+                                icon={<RiInboxUnarchiveLine size='18px' />}
                                 isRound={true}
                                 shadow='base'
                                 opacity={{ base: 1, md: isHovering ? 1 : 0 }}
@@ -88,7 +89,7 @@ export function ModifyButtons(props: Props) {
                             variant='solid'
                             colorScheme='gray'
                             aria-label={`Archive ${recipe.title}`}
-                            icon={<ArchiveIcon />}
+                            icon={<GoArchive />}
                             isRound={true}
                             shadow='base'
                             opacity={{ base: 1, md: isHovering ? 1 : 0 }}
