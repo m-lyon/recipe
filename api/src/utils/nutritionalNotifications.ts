@@ -1,6 +1,5 @@
 import { sendEmail } from './email.js';
 import { User } from '../models/User.js';
-import { EMAIL_FROM } from '../constants.js';
 import { NutritionalInfo } from '../models/NutritionalInfo.js';
 
 interface MissingConversion {
@@ -46,7 +45,8 @@ function isPopulatedIngredient(value: unknown): value is PopulatedIngredient {
 }
 
 export async function sendNutritionalNotifications(recipe: PopulatedRecipe): Promise<void> {
-    if (!EMAIL_FROM) {
+    const emailFrom = process.env.EMAIL_FROM ?? '';
+    if (!emailFrom) {
         console.error('EMAIL_FROM not configured; skipping nutritional notifications.');
         return;
     }
@@ -177,7 +177,7 @@ export async function sendNutritionalNotifications(recipe: PopulatedRecipe): Pro
                 'Please update the affected ingredient(s) and unit(s) so that calorie information can be calculated correctly.',
             ].join('\n');
 
-            await sendEmail(EMAIL_FROM, ownerEmail, 'Missing nutritional info in recipe', body);
+            await sendEmail(emailFrom, ownerEmail, 'Missing nutritional info in recipe', body);
         })
     );
 }
