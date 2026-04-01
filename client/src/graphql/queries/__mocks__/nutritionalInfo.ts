@@ -1,10 +1,19 @@
-import { mockAppleId, mockCarrotId, mockChickenId } from '@recipe/graphql/__mocks__/ids';
-import { mockNutritionalInfoIdApple, mockNutritionalInfoIdCarrot } from '@recipe/graphql/__mocks__/ids';
-import { GetNutritionalInfoByIngredientQuery } from '@recipe/graphql/generated';
-import { GetNutritionalInfosByIngredientIdsQuery } from '@recipe/graphql/generated';
-import { GetNutritionalInfoByIngredientQueryVariables } from '@recipe/graphql/generated';
-import { GET_NUTRITIONAL_INFO_BY_INGREDIENT } from '@recipe/graphql/queries/nutritionalInfo';
-import { GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS } from '@recipe/graphql/queries/nutritionalInfo';
+import {
+    mockAppleId,
+    mockCarrotId,
+    mockChickenId,
+    mockNutritionalInfoIdApple,
+    mockNutritionalInfoIdCarrot,
+} from '@recipe/graphql/__mocks__/ids';
+import {
+    GetNutritionalInfoByIngredientQuery,
+    GetNutritionalInfoByIngredientQueryVariables,
+    GetNutritionalInfosByIngredientIdsQuery,
+} from '@recipe/graphql/generated';
+import {
+    GET_NUTRITIONAL_INFO_BY_INGREDIENT,
+    GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS,
+} from '@recipe/graphql/queries/nutritionalInfo';
 
 /** Returns null nutritional info (ingredient has no linked data) */
 const nullResult: GetNutritionalInfoByIngredientQuery = {
@@ -83,7 +92,11 @@ const recipeBothNutritionResult: GetNutritionalInfosByIngredientIdsQuery = {
     ],
 };
 
-/** Mock for recipe view: both ingredients have nutritional data */
+/** Mock for recipe view: both ingredients have nutritional data.
+ *  NOTE: ingredientIds order must match the Set iteration order produced by
+ *  useNutritionalInfo — currently [apple, carrot] based on Recipe One's
+ *  ingredient list. If the hook's deduplication strategy changes, update here.
+ */
 export const mockGetNutritionalInfosForRecipeOne = {
     request: {
         query: GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS,
