@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 
-import { TagList } from '@recipe/features/tags';
 import { useUser } from '@recipe/features/user';
 import { useRecipeStore } from '@recipe/stores';
 import { Servings } from '@recipe/features/servings';
@@ -45,13 +44,6 @@ export function IngredientsTab(props: Props) {
                 />
             }
             Notes={<Notes notes={recipe.notes} />}
-            Tags={
-                <TagList
-                    tags={recipe.tags.map((tag) => tag.value).concat(recipe.calculatedTags)}
-                    pb='24px'
-                    display={{ base: 'block', md: 'none' }}
-                />
-            }
             UsedIn={recipe.isIngredient ? <UsedIn recipeId={recipe._id} /> : undefined}
         />
     );

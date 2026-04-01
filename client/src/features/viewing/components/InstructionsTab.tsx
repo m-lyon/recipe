@@ -1,8 +1,6 @@
 import { useMeasure } from 'react-use';
 import { Box, Flex, Spacer, VStack } from '@chakra-ui/react';
 
-import { TagList } from '@recipe/features/tags';
-import { tagsHeight } from '@recipe/features/tags';
 import { imageCardWidth } from '@recipe/features/images';
 import { ImageViewerRecipe } from '@recipe/features/images';
 
@@ -16,8 +14,7 @@ interface Props {
 export function InstructionsTab(props: Props) {
     const { recipe } = props;
     const [ref, { height }] = useMeasure();
-    const actualTagsHeight = recipe.tags.length > 0 ? tagsHeight : 0;
-    const boxHeight = (height ? height : 0) - actualTagsHeight - instrSpacing;
+    const boxHeight = (height ? height : 0) - instrSpacing;
 
     return (
         <Flex direction='column' justifyContent='space-between' height='100%'>
@@ -29,11 +26,6 @@ export function InstructionsTab(props: Props) {
                         display={{ base: 'none', md: 'block' }}
                     />
                     <VStack spacing={{ base: undefined, md: `${instrSpacing}px` }} align='left'>
-                        <TagList
-                            tags={recipe.tags.map((tag) => tag.value).concat(recipe.calculatedTags)}
-                            displayBoxMargin={recipe.images.length !== 0}
-                            display={{ base: 'none', md: 'block' }}
-                        />
                         <Box pr='24px'>
                             <Box
                                 h={boxHeight}
