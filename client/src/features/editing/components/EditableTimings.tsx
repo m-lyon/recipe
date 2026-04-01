@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/shallow';
 import { Group, Select, Stack, Text } from '@mantine/core';
 
 import { useRecipeStore } from '@recipe/stores';
@@ -60,12 +61,12 @@ function TimingPicker({ label, value, onChange, ariaLabel }: TimingPickerProps) 
 
 export function EditableTimings() {
     const { activeTime, setActiveTime, passiveTime, setPassiveTime } = useRecipeStore(
-        (state) => ({
+        useShallow((state) => ({
             activeTime: state.activeTime,
             setActiveTime: state.setActiveTime,
             passiveTime: state.passiveTime,
             setPassiveTime: state.setPassiveTime,
-        })
+        }))
     );
 
     return (
