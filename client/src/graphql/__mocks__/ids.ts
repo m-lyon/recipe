@@ -97,3 +97,7 @@ export const mockConversionRuleIdThree = '60f4d2e5c3d5a0a4l1b9c0f2';
 export const mockConversionRuleIdFour = '60f4d2e5c3d5a0a4l1b9c0f3';
 export const mockUnitConversionIdTwo = '60f4d2e5c3d5a0a4f1b9c0q2';
 export const mockUnitConversionIdThree = '60f4d2e5c3d5a0a4f1b9c0q3';
+
+// NutritionalInfo
+export const mockNutritionalInfoIdApple = '60f4d2e5c3d5a0a4f1b9d0a1';
+export const mockNutritionalInfoIdCarrot = '60f4d2e5c3d5a0a4f1b9d0a2';
