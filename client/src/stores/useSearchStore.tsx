@@ -26,9 +26,7 @@ const createSharedSlice: StateCreator<SearchState, [], [], SharedSlice> = (set, 
     showArchived: false,
     setShowArchived: (showArchived) => {
         set(() => ({ showArchived }));
-        get().resetTitleFilter();
-        get().resetTagFilter();
-        get().resetIngrFilter();
+        get().resetSearch();
     },
     resetSearch: () => {
         get().resetTitleFilter();

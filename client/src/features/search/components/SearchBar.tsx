@@ -47,7 +47,7 @@ export function SearchBar(props: Props) {
                 <Switch
                     id='archive-toggle'
                     size='lg'
-                    color='#319795'
+                    color='teal'
                     checked={showArchived}
                     onChange={(e) => setShowArchived(e.target.checked)}
                     aria-label='Toggle archived recipes view'

@@ -58,9 +58,6 @@
       "@recipe/common/hooks": [
         "common/hooks"
       ],
-      "@recipe/common/icons": [
-        "common/icons"
-      ],
     }
   },
   "include": [

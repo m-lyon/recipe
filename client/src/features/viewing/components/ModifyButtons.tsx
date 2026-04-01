@@ -89,7 +89,7 @@ export function ModifyButtons(props: Props) {
                             variant='solid'
                             colorScheme='gray'
                             aria-label={`Archive ${recipe.title}`}
-                            icon={<GoArchive />}
+                            icon={<GoArchive size='18px' />}
                             isRound={true}
                             shadow='base'
                             opacity={{ base: 1, md: isHovering ? 1 : 0 }}
