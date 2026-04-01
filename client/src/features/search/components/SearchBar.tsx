@@ -1,6 +1,7 @@
 import { SearchIcon } from '@chakra-ui/icons';
-import { InputLeftElement, Switch } from '@chakra-ui/react';
-import { CloseButton, FormControl, FormLabel, HStack, Input, InputGroup } from '@chakra-ui/react';
+import { Switch, Tooltip } from '@mantine/core';
+import { InputLeftElement } from '@chakra-ui/react';
+import { CloseButton, HStack, Input, InputGroup } from '@chakra-ui/react';
 
 import { useSearchStore } from '@recipe/stores';
 
@@ -19,38 +20,40 @@ export function SearchBar(props: Props) {
 
     return (
         <HStack spacing={3} w='100%'>
-            {!showArchived && (
-                <InputGroup>
-                    <InputLeftElement pointerEvents={show ? 'auto' : 'none'}>
-                        {show ? (
-                            <CloseButton onClick={resetSearch} aria-label='Reset search' />
-                        ) : (
-                            <SearchIcon color='gray.300' />
-                        )}
-                    </InputLeftElement>
-                    <Input
-                        placeholder='Find a recipe...'
-                        value={titleFilter}
-                        onChange={(e) => setTitleFilter(e.currentTarget.value)}
-                        onFocus={() => {
-                            setShow(true);
-                            closeNavDropdown();
-                        }}
-                        aria-label='Search for recipes'
-                    />
-                </InputGroup>
-            )}
-            <FormControl display='flex' alignItems='center' w='auto' flexShrink={0}>
-                <FormLabel htmlFor='archive-toggle' mb='0' fontSize='sm' whiteSpace='nowrap'>
-                    Show archived
-                </FormLabel>
+            <InputGroup>
+                <InputLeftElement pointerEvents={show ? 'auto' : 'none'}>
+                    {show ? (
+                        <CloseButton onClick={resetSearch} aria-label='Reset search' />
+                    ) : (
+                        <SearchIcon color='gray.300' />
+                    )}
+                </InputLeftElement>
+                <Input
+                    placeholder='Find a recipe...'
+                    value={titleFilter}
+                    onChange={(e) => setTitleFilter(e.currentTarget.value)}
+                    onFocus={() => {
+                        setShow(true);
+                        closeNavDropdown();
+                    }}
+                    aria-label='Search for recipes'
+                />
+            </InputGroup>
+            <Tooltip
+                label={showArchived ? 'Hide archived recipes' : 'Show archived recipes'}
+                openDelay={500}
+                refProp='rootRef'
+            >
                 <Switch
                     id='archive-toggle'
-                    isChecked={showArchived}
+                    size='lg'
+                    color='#319795'
+                    checked={showArchived}
                     onChange={(e) => setShowArchived(e.target.checked)}
                     aria-label='Toggle archived recipes view'
+                    withThumbIndicator={false}
                 />
-            </FormControl>
+            </Tooltip>
         </HStack>
     );
 }
