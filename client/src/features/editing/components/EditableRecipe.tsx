@@ -1,4 +1,4 @@
-import { Container, Grid, GridItem, useBreakpointValue } from '@chakra-ui/react';
+import { Box, Container, Flex, Grid, GridItem, useBreakpointValue } from '@chakra-ui/react';
 
 import { useUser } from '@recipe/features/user';
 import { Servings } from '@recipe/features/servings';
@@ -11,6 +11,7 @@ import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
 import { SubmitButton } from './SubmitButton';
 import { EditableNotes } from './EditableNotes';
 import { EditableTitle } from './EditableTitle';
+import { EditableTimings } from './EditableTimings';
 import { EditableInstructionsTab } from './EditableInstructionsTab';
 import { EditableIngredientSubsections } from './EditableIngredientSubsections';
 
@@ -77,9 +78,22 @@ export function EditableRecipe(props: Props) {
                     pt='6'
                     pr='6'
                     pb='2'
-                    minH={{ base: '134px', md: '140px' }}
+                    minH={{ base: 'auto', md: '140px' }}
                 >
-                    <EditableTagList />
+                    <Flex
+                        direction={{ base: 'column', md: 'row' }}
+                        gap={4}
+                        width='100%'
+                        height='100%'
+                        align={{ base: 'stretch', md: 'flex-start' }}
+                    >
+                        <Box flex='1'>
+                            <EditableTagList />
+                        </Box>
+                        <Box flexShrink={0}>
+                            <EditableTimings />
+                        </Box>
+                    </Flex>
                 </GridItem>
                 <GridItem
                     area='ingredients'
