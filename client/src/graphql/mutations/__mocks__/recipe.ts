@@ -8,6 +8,7 @@ import { mockRecipeIngredientIdThree } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdSeven } from '@recipe/graphql/__mocks__/ids';
 import { mockRatingNewTwo } from '@recipe/graphql/queries/__mocks__/rating';
 import { GetRecipeQuery, RecipeIngredient } from '@recipe/graphql/generated';
+import { mockRecipeOneWithTimings } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockRecipeOne, mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockRecipeNew, mockRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
 import { CREATE_RECIPE, DELETE_RECIPE, UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
@@ -42,6 +43,8 @@ const getMockRecipeVariables = (mockRecipe: CompletedRecipeView = mockRecipeOne)
             source: mockRecipe.source ?? undefined,
             numServings: mockRecipe.numServings,
             isIngredient: mockRecipe.isIngredient,
+            activeTime: mockRecipe.activeTime ?? undefined,
+            passiveTime: mockRecipe.passiveTime ?? undefined,
         },
     };
 };
@@ -1037,5 +1040,98 @@ export const mockDeleteRecipeTwo = {
                 recordId: recipeTwoVars.id,
             },
         } satisfies DeleteRecipeMutation,
+    },
+};
+// -- Timing mutation mocks ----------------------------------------
+export const mockUpdateRecipeAddActiveTime = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: { ...recipeOneVars.recipe, activeTime: 90 },
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: { ...recipeOneData.record, activeTime: 90 },
+            },
+        } satisfies UpdateRecipeMutation,
+    },
+};
+export const mockUpdateRecipeAddPassiveTime = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: { ...recipeOneVars.recipe, passiveTime: 120 },
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: { ...recipeOneData.record, passiveTime: 120 },
+            },
+        } satisfies UpdateRecipeMutation,
+    },
+};
+export const mockUpdateRecipeAddBothTimings = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: { ...recipeOneVars.recipe, activeTime: 90, passiveTime: 120 },
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: { ...recipeOneData.record, activeTime: 90, passiveTime: 120 },
+            },
+        } satisfies UpdateRecipeMutation,
+    },
+};
+const recipeOneWithTimingsVars = getMockRecipeVariables(mockRecipeOneWithTimings);
+const recipeOneWithTimingsData = getMockRecipeReturn(mockRecipeOneWithTimings);
+export const mockUpdateRecipeRemoveActiveTime = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneWithTimingsVars.id,
+            recipe: { ...recipeOneWithTimingsVars.recipe, activeTime: undefined },
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: { ...recipeOneWithTimingsData.record, activeTime: null },
+            },
+        } satisfies UpdateRecipeMutation,
+    },
+};
+export const mockUpdateRecipeUpdateActiveTime = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneWithTimingsVars.id,
+            recipe: { ...recipeOneWithTimingsVars.recipe, activeTime: 45 },
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: { ...recipeOneWithTimingsData.record, activeTime: 45 },
+            },
+        } satisfies UpdateRecipeMutation,
     },
 };

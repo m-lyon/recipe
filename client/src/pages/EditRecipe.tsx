@@ -52,6 +52,8 @@ export function EditRecipe() {
             setIngredientSection: state.setIngredientSection,
             addIngredientSection: state.addIngredientSection,
             resetIngredients: state.resetIngredients,
+            setActiveTime: state.setActiveTime,
+            setPassiveTime: state.setPassiveTime,
         }))
     );
     // ---------------------------------------------------------------------
@@ -153,6 +155,8 @@ export function EditRecipe() {
             } else {
                 recipeState.resetAsIngredient();
             }
+            recipeState.setActiveTime(recipe.activeTime ?? null);
+            recipeState.setPassiveTime(recipe.passiveTime ?? null);
             if (recipe.images) {
                 try {
                     const images = await Promise.all(

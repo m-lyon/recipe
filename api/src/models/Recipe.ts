@@ -160,6 +160,8 @@ export interface Recipe extends Document {
     notes?: string;
     owner: Types.ObjectId;
     source?: string;
+    activeTime?: number;
+    passiveTime?: number;
     numServings: number;
     isIngredient: boolean;
     createdAt: Date;
@@ -248,6 +250,8 @@ const recipeSchema = new Schema<Recipe>({
     notes: { type: String },
     owner: { type: Schema.Types.ObjectId, required: true, ref: 'User', validate: ownerExists() },
     source: { type: String },
+    activeTime: { type: Number },
+    passiveTime: { type: Number },
     numServings: { type: Number, required: true },
     isIngredient: { type: Boolean, required: true },
     createdAt: { type: Date, required: true },

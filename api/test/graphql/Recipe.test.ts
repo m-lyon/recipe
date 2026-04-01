@@ -531,6 +531,39 @@ describe('recipeCreateOne', () => {
         );
     });
 
+    it('should create a recipe with active time', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const newRecord = { ...getDefaultRecipeRecord(ingredient, unit, prepMethod), activeTime: 45 };
+        const response = await createRecipe(this, user, newRecord);
+        const record = parseCreatedRecipe(response);
+        assert.equal(record.title, 'Chicken Soup');
+        const doc = await Recipe.findById(record._id);
+        assert.equal(doc.activeTime, 45);
+        assert.isUndefined(doc.passiveTime);
+    });
+
+    it('should create a recipe with both timings', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const newRecord = {
+            ...getDefaultRecipeRecord(ingredient, unit, prepMethod),
+            title: 'Chicken Broth',
+            activeTime: 30,
+            passiveTime: 120,
+        };
+        const response = await createRecipe(this, user, newRecord);
+        const record = parseCreatedRecipe(response);
+        assert.equal(record.title, 'Chicken Broth');
+        const doc = await Recipe.findById(record._id);
+        assert.equal(doc.activeTime, 30);
+        assert.equal(doc.passiveTime, 120);
+    });
+
     it('should generate different suffixes for different recipes with same title', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         const ingredient = await Ingredient.findOne({ name: 'chicken' });
@@ -1089,6 +1122,36 @@ describe('recipeUpdateById', () => {
             response.body.singleResult.errors[0].message,
             'Recipe validation failed: instructions: At least one instruction is required.'
         );
+    });
+
+    it('should update active time on a recipe', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const newRecipe = new Recipe(getDefaultRecipe(user, ingredient, unit, prepMethod));
+        const recipe = await newRecipe.save();
+        const response = await updateRecipe(this, user, recipe._id, { activeTime: 90 });
+        const record = parseUpdatedRecipe(response);
+        const doc = await Recipe.findById(record._id);
+        assert.equal(doc.activeTime, 90);
+    });
+
+    it('should update both timings on a recipe', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const newRecipe = new Recipe(getDefaultRecipe(user, ingredient, unit, prepMethod));
+        const recipe = await newRecipe.save();
+        const response = await updateRecipe(this, user, recipe._id, {
+            activeTime: 45,
+            passiveTime: 60,
+        });
+        const record = parseUpdatedRecipe(response);
+        const doc = await Recipe.findById(record._id);
+        assert.equal(doc.activeTime, 45);
+        assert.equal(doc.passiveTime, 60);
     });
 
     // URL Suffix preservation tests

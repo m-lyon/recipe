@@ -146,6 +146,8 @@ export const mockRecipeOne: CompletedRecipeView = {
     images: [],
     ratings: [mockRatingOne],
     source: null,
+    activeTime: null,
+    passiveTime: null,
     owner: mockAdminId,
 };
 export const mockRecipeTwo: CompletedRecipeView = {
@@ -366,6 +368,8 @@ export const mockRecipeNew: CompletedRecipeView = {
     isIngredient: false,
     notes: 'Recipe Notes.',
     source: 'Recipe Source',
+    activeTime: null,
+    passiveTime: null,
     images: [],
     ratings: [],
     owner: mockAdminId,
@@ -823,6 +827,25 @@ export const mockZeroLinkedRecipeOne = {
             __typename: 'Query',
             recipeMany: [],
         } satisfies GetLinkedRecipesQuery,
+    },
+};
+export const mockRecipeOneWithTimings: CompletedRecipeView = {
+    ...mockRecipeOne,
+    activeTime: 90,
+    passiveTime: 120,
+};
+export const mockGetRecipeOneWithTimings = {
+    request: {
+        query: GET_RECIPE,
+        variables: {
+            filter: { titleIdentifier: 'mock-recipe-one' },
+        } satisfies GetRecipeQueryVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeOne: mockRecipeOneWithTimings,
+        } satisfies GetRecipeQuery,
     },
 };
 // ----------------------------------------------------------------
