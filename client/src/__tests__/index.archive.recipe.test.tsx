@@ -8,6 +8,7 @@ import { mockArchiveRecipeOne } from '@recipe/graphql/mutations/__mocks__/recipe
 import { mockArchiveRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetArchivedRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockUnarchiveRecipeOne } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockArchiveRecipeOneInUseError } from '@recipe/graphql/mutations/__mocks__/recipe';
 
 import { renderComponent } from './utils';
 
@@ -105,5 +106,25 @@ describe('Archive Recipe Workflow', () => {
             expect(screen.queryByLabelText('View Mock Recipe')).toBeNull();
         });
         expect(screen.getByLabelText('View Mock Recipe Two')).not.toBeNull();
+    });
+
+    it('should show notification when archive fails because recipe is used as ingredient', async () => {
+        // Render -----------------------------------------------
+        renderComponent([mockArchiveRecipeOneInUseError]);
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        expect(await screen.findByText('Recipes'));
+        await user.hover(await screen.findByLabelText('View Mock Recipe'));
+        await user.click(screen.getByLabelText('Archive Mock Recipe'));
+        await user.click(screen.getByLabelText('Confirm archive action'));
+
+        // Expect ------------------------------------------------
+        expect(await screen.findByText('Archive failed')).not.toBeNull();
+        expect(
+            await screen.findByText(
+                'Cannot delete recipe as it is currently being used in other existing recipes.'
+            )
+        ).not.toBeNull();
     });
 });

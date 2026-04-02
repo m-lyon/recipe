@@ -1,6 +1,7 @@
 import { expect } from 'vitest';
 import { MantineProvider } from '@mantine/core';
 import { ChakraProvider } from '@chakra-ui/react';
+import { Notifications } from '@mantine/notifications';
 import { userEvent } from '@testing-library/user-event';
 import { Screen, render } from '@testing-library/react';
 import { MockedProvider, MockedResponse } from '@apollo/client/testing';
@@ -107,6 +108,7 @@ export function renderPage(
     return render(
         <MockedProvider mocks={mockedResponses} cache={getCache()}>
             <MantineProvider env='test'>
+                <Notifications />
                 <ChakraProvider>
                     <RouterProvider
                         router={createMemoryRouter(route, {

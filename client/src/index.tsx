@@ -1,7 +1,9 @@
 import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
 import { createRoot } from 'react-dom/client';
 import { MantineProvider } from '@mantine/core';
 import { ChakraProvider } from '@chakra-ui/react';
+import { Notifications } from '@mantine/notifications';
 import { ApolloClient, ApolloProvider } from '@apollo/client';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import createUploadLink from 'apollo-upload-client/createUploadLink.mjs';
@@ -22,6 +24,7 @@ const client = new ApolloClient({
 root.render(
     <ApolloProvider client={client}>
         <MantineProvider>
+            <Notifications />
             <ChakraProvider>
                 <RouterProvider router={createBrowserRouter(routes)} />
             </ChakraProvider>

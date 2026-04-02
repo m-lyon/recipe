@@ -1,3 +1,5 @@
+import { GraphQLError } from 'graphql';
+
 import { UpdateRecipeMutation } from '@recipe/graphql/generated';
 import { UnarchiveRecipeMutation } from '@recipe/graphql/generated';
 import { mockSpicyTag } from '@recipe/graphql/queries/__mocks__/tag';
@@ -1070,5 +1072,19 @@ export const mockUnarchiveRecipeTwo = {
                 recordId: recipeTwoVars.id,
             },
         } satisfies UnarchiveRecipeMutation,
+    },
+};
+export const mockArchiveRecipeOneInUseError = {
+    request: {
+        query: ARCHIVE_RECIPE,
+        variables: { id: recipeOneVars.id } satisfies ArchiveRecipeMutationVariables,
+    },
+    result: {
+        errors: [
+            new GraphQLError(
+                'Cannot delete recipe as it is currently being used in other existing recipes.',
+                { extensions: { code: 'ITEM_IN_USE' } }
+            ),
+        ],
     },
 };
