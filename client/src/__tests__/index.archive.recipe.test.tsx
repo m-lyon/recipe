@@ -126,5 +126,7 @@ describe('Archive Recipe Workflow', () => {
                 'Cannot delete recipe as it is currently being used in other existing recipes.'
             )
         ).not.toBeNull();
+        // Recipe card should still be visible (cache not corrupted)
+        expect(screen.getByLabelText('View Mock Recipe')).not.toBeNull();
     });
 });
