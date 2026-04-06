@@ -15,6 +15,7 @@ interface SearchHook {
     setShowArchived: (v: boolean) => void;
     setTitle: (value: string) => void;
     reset: () => void;
+    resetToHome: () => void;
     addFilter: (item: FilterChoice, type: FilterChoiceType) => void;
     removeFilter: (item: FilterChoice) => void;
 }
@@ -85,6 +86,32 @@ export function useSearch(): SearchHook {
         resetSearch();
     }, [resetSearch, searchRecipes]);
 
+    const resetToHome = useCallback(() => {
+        resetSearch();
+        if (showArchived) {
+            setShowArchived(false); // triggers useEffect → fires searchRecipes with { archived: false }
+        } else if (title || tags.length || calculatedTags.length || ingredients.length) {
+            const defaultFilter = { archived: false };
+            searchRecipes({
+                variables: {
+                    offset: 0,
+                    limit: INIT_LOAD_NUM,
+                    filter: defaultFilter,
+                    countFilter: defaultFilter,
+                },
+            });
+        }
+    }, [
+        title,
+        tags,
+        calculatedTags,
+        ingredients,
+        showArchived,
+        setShowArchived,
+        resetSearch,
+        searchRecipes,
+    ]);
+
     const setTitle = useCallback(
         (value: string) => {
             const query = setTitleStore(value);
@@ -109,5 +136,14 @@ export function useSearch(): SearchHook {
         [removeItem, debouncedSearch]
     );
 
-    return { filter, showArchived, setShowArchived, setTitle, reset, addFilter, removeFilter };
+    return {
+        filter,
+        showArchived,
+        setShowArchived,
+        setTitle,
+        reset,
+        resetToHome,
+        addFilter,
+        removeFilter,
+    };
 }
