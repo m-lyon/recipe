@@ -36,24 +36,16 @@ export function ConfirmArchiveModal(props: Props) {
             </Text>
             <Group justify='flex-end'>
                 <Button
-                    variant='outline'
                     size='sm'
+                    variant='cancel'
                     onClick={() => setShow(false)}
                     aria-label='Cancel archive action'
-                    styles={{
-                        root: {
-                            '--button-bd': '1px solid #E2E8F0',
-                            '--button-color': '#1A202C',
-                            '--button-hover': '#E2E8F0',
-                            '--button-radius': '0.375rem',
-                            transition: 'background-color 150ms ease',
-                        },
-                    }}
                 >
                     Cancel
                 </Button>
                 <Button
                     size='sm'
+                    variant='danger'
                     onClick={async () => {
                         try {
                             await archiveRecipe();
@@ -63,15 +55,6 @@ export function ConfirmArchiveModal(props: Props) {
                         }
                     }}
                     aria-label='Confirm archive action'
-                    styles={{
-                        root: {
-                            '--button-bg': '#E53E3E',
-                            '--button-hover': '#C53030',
-                            '--button-color': '#FFFFFF',
-                            '--button-radius': '0.375rem',
-                            transition: 'background-color 150ms ease',
-                        },
-                    }}
                 >
                     Confirm
                 </Button>
