@@ -8,6 +8,7 @@ import { ApolloClient, ApolloProvider } from '@apollo/client';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import createUploadLink from 'apollo-upload-client/createUploadLink.mjs';
 
+import { theme } from '@recipe/utils/theme';
 import { getCache } from '@recipe/utils/cache';
 import { GRAPHQL_URL } from '@recipe/constants';
 
@@ -23,7 +24,7 @@ const client = new ApolloClient({
 
 root.render(
     <ApolloProvider client={client}>
-        <MantineProvider>
+        <MantineProvider theme={theme}>
             <Notifications />
             <ChakraProvider>
                 <RouterProvider router={createBrowserRouter(routes)} />

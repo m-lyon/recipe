@@ -36,14 +36,14 @@ export function ConfirmArchiveModal(props: Props) {
             </Text>
             <Group justify='flex-end'>
                 <Button
-                    variant='outline'
+                    color='gray'
                     onClick={() => setShow(false)}
                     aria-label='Cancel archive action'
                 >
                     Cancel
                 </Button>
                 <Button
-                    color='orange'
+                    color='red'
                     onClick={async () => {
                         try {
                             await archiveRecipe();
