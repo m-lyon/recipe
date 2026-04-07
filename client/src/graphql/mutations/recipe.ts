@@ -20,9 +20,17 @@ export const CREATE_RECIPE = gql(`
     }
 `);
 
-export const DELETE_RECIPE = gql(`
-    mutation DeleteRecipe($id: MongoID!) {
-        recipeRemoveById(_id: $id) {
+export const ARCHIVE_RECIPE = gql(`
+    mutation ArchiveRecipe($id: MongoID!) {
+        recipeArchiveById(_id: $id) {
+            recordId
+        }
+    }
+`);
+
+export const UNARCHIVE_RECIPE = gql(`
+    mutation UnarchiveRecipe($id: MongoID!) {
+        recipeUnarchiveById(_id: $id) {
             recordId
         }
     }

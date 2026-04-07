@@ -11,7 +11,7 @@ import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
 import { mockGetRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCurrentUserNull } from '@recipe/graphql/queries/__mocks__/user';
 import { mockLogin, mockLogout } from '@recipe/graphql/mutations/__mocks__/user';
-import { mockDeleteRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockArchiveRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
 import { mockGetRecipeTwo, mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -83,7 +83,7 @@ describe('Auth Workflow', () => {
     });
 });
 
-describe('Edit & Delete Permissions', () => {
+describe('Edit & Archive Permissions', () => {
     afterEach(() => {
         cleanup();
     });
@@ -120,23 +120,23 @@ describe('Edit & Delete Permissions', () => {
         expect(screen.queryByLabelText('Edit Mock Recipe')).toBeNull();
     });
 
-    it('should allow non-admin owner to delete recipe', async () => {
+    it('should allow non-admin owner to archive recipe', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockCurrentUser, mockDeleteRecipeTwo]);
+        renderComponent([mockCurrentUser, mockArchiveRecipeTwo]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
         expect(await screen.findByText('Recipes'));
         await user.hover(await screen.findByLabelText('View Mock Recipe'));
-        await user.click(screen.getByLabelText('Delete Mock Recipe Two'));
-        await user.click(screen.getByLabelText('Confirm delete action'));
+        await user.click(screen.getByLabelText('Archive Mock Recipe Two'));
+        await user.click(screen.getByLabelText('Confirm archive action'));
 
         // Expect ------------------------------------------------
         expect(await screen.findByText('Recipes')).not.toBeNull();
         expect(screen.queryByText('Mock Recipe Two')).toBeNull();
     });
 
-    it('should NOT allow non-admin non-owner to delete recipe', async () => {
+    it('should NOT allow non-admin non-owner to archive recipe', async () => {
         // Render -----------------------------------------------
         renderComponent([mockCurrentUser, mockGetRecipeTwo]);
         const user = userEvent.setup();
@@ -146,6 +146,6 @@ describe('Edit & Delete Permissions', () => {
         await user.hover(await screen.findByLabelText('View Mock Recipe'));
 
         // Expect ------------------------------------------------
-        expect(screen.queryByLabelText('Delete Mock Recipe')).toBeNull();
+        expect(screen.queryByLabelText('Archive Mock Recipe')).toBeNull();
     });
 });
