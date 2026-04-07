@@ -74,7 +74,7 @@ export function useSearch(): SearchHook {
     }, [showArchived]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const reset = useCallback(() => {
-        const defaultFilter = { archived: false };
+        const defaultFilter = { archived: showArchivedRef.current };
         searchRecipes({
             variables: {
                 offset: 0,

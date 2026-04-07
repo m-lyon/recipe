@@ -3,7 +3,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen, waitFor } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { enterViewRecipePage } from '@recipe/utils/tests';
+import { mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
+import { enterViewRecipePage, haveValueByLabelText } from '@recipe/utils/tests';
 import { mockArchiveRecipeOne } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockArchiveRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetArchivedRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -128,5 +129,46 @@ describe('Archive Recipe Workflow', () => {
         ).not.toBeNull();
         // Recipe card should still be visible (cache not corrupted)
         expect(screen.getByLabelText('View Mock Recipe')).not.toBeNull();
+    });
+
+    it('should keep archived view after resetting search', async () => {
+        // Render -----------------------------------------------
+        // mockGetArchivedRecipes x2 for toggling archived (dual useSearch),
+        // x1 for the reset which should re-query archived recipes.
+        // mockGetRecipes is provided to catch the buggy scenario where reset
+        // queries with { archived: false } — if consumed, non-archived
+        // recipes would replace the archived view.
+        renderComponent([
+            mockGetArchivedRecipes,
+            mockGetArchivedRecipes,
+            mockGetArchivedRecipes,
+            mockGetRecipes,
+        ]);
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        expect(await screen.findByText('Recipes'));
+        await screen.findAllByLabelText('View Mock Recipe');
+
+        // Toggle to archived view
+        await user.click(screen.getByLabelText('Toggle archived recipes view'));
+        expect(await screen.findByLabelText('View Mock Recipe Two')).not.toBeNull();
+
+        // Focus search input to reveal the X (Reset search) button
+        await user.click(screen.getByLabelText('Search for recipes'));
+        await user.click(screen.getByLabelText('Reset search'));
+
+        // Expect ------------------------------------------------
+        // Search field should be cleared
+        haveValueByLabelText(screen, 'Search for recipes', '');
+        // Archived recipes should still be displayed, not the non-archived ones.
+        // If the bug is present, reset() queries { archived: false } which
+        // returns 4 non-archived recipes (mockRecipeOne..Four), replacing
+        // the 2 archived recipes.
+        expect(await screen.findByLabelText('View Mock Recipe Two')).not.toBeNull();
+        await waitFor(() => {
+            expect(screen.queryByLabelText('View Mock Recipe Three')).toBeNull();
+        });
+        expect(screen.queryByLabelText('View Mock Recipe Four')).toBeNull();
     });
 });
