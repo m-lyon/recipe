@@ -46,13 +46,9 @@ export function ConfirmArchiveModal(props: Props) {
                 <Button
                     size='sm'
                     variant='danger'
-                    onClick={async () => {
-                        try {
-                            await archiveRecipe();
-                            setShow(false);
-                        } catch {
-                            // onError handler shows the notification
-                        }
+                    onClick={() => {
+                        setShow(false);
+                        archiveRecipe();
                     }}
                     aria-label='Confirm archive action'
                 >
