@@ -1,12 +1,19 @@
 {
     "compilerOptions": {
-        "rootDirs": ["src", "test"],
+        "rootDirs": [
+            "src",
+            "test"
+        ],
         "outDir": "dist",
-        "lib": ["es2020"],
+        "lib": [
+            "es2020"
+        ],
         "target": "es2020",
         "module": "esnext",
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "esModuleInterop": true,
-        "types": ["node"]
+        "types": [
+            "node"
+        ]
     }
 }
