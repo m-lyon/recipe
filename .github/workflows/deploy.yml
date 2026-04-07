@@ -118,7 +118,7 @@ jobs:
 
       - name: Install API dependencies
         working-directory: ./api
-        run: npm install --production
+        run: npm install
 
       - name: Install client dependencies
         working-directory: ./client
