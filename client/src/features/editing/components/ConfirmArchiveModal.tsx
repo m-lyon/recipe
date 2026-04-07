@@ -37,7 +37,7 @@ export function ConfirmArchiveModal(props: Props) {
             <Group justify='flex-end'>
                 <Button
                     size='sm'
-                    variant='cancel'
+                    variant='outline'
                     onClick={() => setShow(false)}
                     aria-label='Cancel archive action'
                 >

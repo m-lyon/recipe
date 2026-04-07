@@ -15,7 +15,7 @@ export const theme = createTheme({
                 size: 'md',
             },
             vars: (_theme: MantineTheme, props) => {
-                if (props.variant === 'cancel') {
+                if (props.variant === 'outline') {
                     return {
                         root: {
                             '--button-bg': '#ffffff',
@@ -39,9 +39,9 @@ export const theme = createTheme({
                 return { root: {} };
             },
             styles: (_theme, props) => {
-                if (props.variant === 'cancel' || props.variant === 'danger') {
+                if (props.variant === 'outline' || props.variant === 'danger') {
                     return {
-                        root: { transition: 'background-color 150ms ease' },
+                        root: { transition: 'background-color 400ms ease' },
                     };
                 }
                 return {};
