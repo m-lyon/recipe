@@ -8,6 +8,7 @@ import { MockedProvider, MockedResponse } from '@apollo/client/testing';
 import { RouteObject, RouterProvider, createMemoryRouter } from 'react-router-dom';
 
 import { theme } from '@recipe/utils/theme';
+import { DELAY_LONG } from '@recipe/constants';
 import { getCache } from '@recipe/utils/cache';
 
 export async function enterCreateNewRecipePage(
@@ -109,7 +110,7 @@ export function renderPage(
     return render(
         <MockedProvider mocks={mockedResponses} cache={getCache()}>
             <MantineProvider theme={theme} env='test'>
-                <Notifications />
+                <Notifications autoClose={DELAY_LONG} />
                 <ChakraProvider>
                     <RouterProvider
                         router={createMemoryRouter(route, {

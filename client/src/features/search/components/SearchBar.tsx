@@ -1,6 +1,7 @@
 import { SearchIcon } from '@chakra-ui/icons';
 import { Switch, Tooltip } from '@mantine/core';
 import { InputLeftElement } from '@chakra-ui/react';
+import { useBreakpointValue } from '@chakra-ui/react';
 import { CloseButton, HStack, Input, InputGroup } from '@chakra-ui/react';
 
 import { useSearchStore } from '@recipe/stores';
@@ -17,6 +18,7 @@ export function SearchBar(props: Props) {
     const titleFilter = useSearchStore((state) => state.titleFilter);
     const show = useSearchStore((state) => state.showSearch);
     const setShow = useSearchStore((state) => state.setShowSearch);
+    const isMobile = useBreakpointValue({ base: true, md: false });
 
     return (
         <HStack spacing={3} w='100%'>
@@ -29,7 +31,7 @@ export function SearchBar(props: Props) {
                     )}
                 </InputLeftElement>
                 <Input
-                    placeholder='Find a recipe...'
+                    placeholder={isMobile ? 'Search...' : 'Find a recipe...'}
                     value={titleFilter}
                     onChange={(e) => setTitleFilter(e.currentTarget.value)}
                     onFocus={() => {

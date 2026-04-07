@@ -10,7 +10,7 @@ import createUploadLink from 'apollo-upload-client/createUploadLink.mjs';
 
 import { theme } from '@recipe/utils/theme';
 import { getCache } from '@recipe/utils/cache';
-import { GRAPHQL_URL } from '@recipe/constants';
+import { DELAY_LONG, GRAPHQL_URL } from '@recipe/constants';
 
 import { routes } from './routes';
 
@@ -25,7 +25,7 @@ const client = new ApolloClient({
 root.render(
     <ApolloProvider client={client}>
         <MantineProvider theme={theme}>
-            <Notifications />
+            <Notifications autoClose={DELAY_LONG} />
             <ChakraProvider>
                 <RouterProvider router={createBrowserRouter(routes)} />
             </ChakraProvider>

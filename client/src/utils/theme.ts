@@ -1,4 +1,4 @@
-import { Button, MantineTheme, Modal, createTheme } from '@mantine/core';
+import { Button, MantineTheme, Modal, Notification, createTheme } from '@mantine/core';
 
 export const theme = createTheme({
     components: {
@@ -7,6 +7,16 @@ export const theme = createTheme({
                 title: {
                     fontSize: 'var(--mantine-font-size-xl)',
                     fontWeight: 600,
+                },
+            },
+        }),
+        Notification: Notification.extend({
+            styles: {
+                title: {
+                    fontWeight: 700,
+                },
+                description: {
+                    fontWeight: 400,
                 },
             },
         }),
