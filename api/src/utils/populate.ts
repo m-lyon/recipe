@@ -1,8 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 
-import fetch from 'node-fetch';
-
 import { Tag } from '../models/Tag.js';
 import { Unit } from '../models/Unit.js';
 import { User } from '../models/User.js';
@@ -433,19 +431,9 @@ export async function populateImages() {
         // Download random images to the uploads folder
         for (const image of createdImages) {
             const destPath = path.join(IMAGE_DIR, path.basename(image.origUrl));
-            await fetch(`https://picsum.photos/600/400`, { method: 'GET' }).then((res) => {
-                const dest = fs.createWriteStream(destPath);
-                res.body.pipe(dest);
-                dest.on('finish', () => dest.close());
-                dest.on('error', (err) => {
-                    console.log('Error downloading image:', err);
-                    fs.unlink(destPath, (err) => {
-                        if (err) {
-                            console.error('Error deleting image:', err);
-                        }
-                    });
-                });
-            });
+            const res = await fetch(`https://picsum.photos/600/400`);
+            const buffer = await res.arrayBuffer();
+            fs.writeFileSync(destPath, Buffer.from(buffer));
         }
         console.log('Dummy images added:', createdImages);
     } catch (error) {
