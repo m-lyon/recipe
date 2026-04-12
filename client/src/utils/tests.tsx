@@ -7,7 +7,7 @@ import { Screen, render } from '@testing-library/react';
 import { MockedProvider, MockedResponse } from '@apollo/client/testing';
 import { RouteObject, RouterProvider, createMemoryRouter } from 'react-router-dom';
 
-import { theme } from '@recipe/utils/theme';
+import { theme } from '@recipe/theme';
 import { DELAY_LONG } from '@recipe/constants';
 import { getCache } from '@recipe/utils/cache';
 

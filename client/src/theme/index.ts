@@ -1,4 +1,6 @@
-import { Button, MantineTheme, Modal, Notification, createTheme } from '@mantine/core';
+import { Button, Checkbox, MantineTheme, Modal, Notification, createTheme } from '@mantine/core';
+
+import checkboxClasses from './checkbox.module.css';
 
 export const theme = createTheme({
     components: {
@@ -18,6 +20,31 @@ export const theme = createTheme({
                 description: {
                     fontWeight: 400,
                 },
+            },
+        }),
+        Checkbox: Checkbox.extend({
+            classNames: (_theme, props) => {
+                if (props.variant === 'chakra-style') {
+                    return {
+                        root: checkboxClasses.root,
+                        inner: checkboxClasses.inner,
+                        input: checkboxClasses.input,
+                        label: checkboxClasses.label,
+                    };
+                }
+                return {};
+            },
+            vars: (_theme, props) => {
+                if (props.variant === 'chakra-style') {
+                    return {
+                        root: {
+                            '--checkbox-color': '#319795',
+                            '--checkbox-icon-color': '#ffffff',
+                            '--checkbox-size': '16px',
+                        },
+                    };
+                }
+                return { root: {} };
             },
         }),
         Button: Button.extend({

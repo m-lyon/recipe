@@ -1,5 +1,5 @@
+import { Checkbox } from '@mantine/core';
 import { useShallow } from 'zustand/shallow';
-import { Checkbox, Group, Text } from '@mantine/core';
 
 import { useRecipeStore } from '@recipe/stores';
 
@@ -12,15 +12,12 @@ export function CreateVeganVersionCheckbox() {
     );
 
     return (
-        <Group>
-            <Checkbox
-                checked={createVeganVersion}
-                onChange={(e) => setCreateVeganVersion(e.currentTarget.checked)}
-                aria-label='Create vegan version of this recipe'
-            />
-            <Text fw={500} c={createVeganVersion ? undefined : 'dimmed'}>
-                Create vegan version
-            </Text>
-        </Group>
+        <Checkbox
+            variant='chakra-style'
+            checked={createVeganVersion}
+            onChange={(e) => setCreateVeganVersion(e.currentTarget.checked)}
+            aria-label='Create vegan version of this recipe'
+            label='Create vegan version'
+        />
     );
 }

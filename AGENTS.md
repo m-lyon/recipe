@@ -136,6 +136,7 @@ All aliases resolve from `client/src/`:
 | `@recipe/graphql/generated` | `__generated__/graphql` |
 | `@recipe/features/*` | `features/*` |
 | `@recipe/utils/*` | `utils/*` |
+| `@recipe/theme` | `theme` |
 | `@recipe/layouts` | `layouts` |
 | `@recipe/stores` | `stores` |
 | `@recipe/constants` | `constants.ts` |
@@ -177,7 +178,71 @@ When adding a new field to a query/mutation, update the corresponding `__mocks__
 
 `client/src/types/recipe.d.ts` declares global TypeScript types derived from generated GraphQL types. These are available without imports (e.g., `RecipePreview`, `RecipeView`, `EditableRecipeIngredient`).
 
-## CI/CD
+## Chakra UI → Mantine Migration
+
+The codebase is gradually moving from Chakra UI v2 to Mantine 8. Both libraries are active simultaneously. When writing new UI code, prefer Mantine. When styling Mantine components to match existing Chakra components, follow the guidance below.
+
+### Discovering Chakra's rendered values
+
+Chakra tokens are **not** the same as their rendered CSS. Always resolve them before using in Mantine:
+
+| Chakra token | Rendered CSS | Notes |
+| --- | --- | --- |
+| `gray.400` | `#A0AEC0` | Default "dimmed" / placeholder text colour |
+| `gray.800` | `#1A202C` | — |
+| `chakra-body-text` (light mode) | `rgba(0, 0, 0, 0.64)` | Default `<Text>` colour; resolves via `gray.800` semantic token but the actual CSS variable is `rgba(0,0,0,0.64)` |
+| `fontWeight='medium'` | `500` | Chakra `fontWeights.medium` |
+| `fontSize` default / `md` | `1rem` | Chakra `fontSizes.md` |
+| `colorScheme='teal'` (Checkbox) | fill `#319795` | Chakra `teal.500` |
+| Checkbox tick colour | `#ffffff` | Chakra always renders a white tick on a coloured fill; use Mantine's `--checkbox-icon-color` |
+
+To discover additional values, inspect the compiled Chakra theme files in `node_modules/@chakra-ui/theme/dist/foundations/`:
+
+- `colors.js` — all palette hex values
+- `typography.js` — `fontSizes`, `fontWeights`
+- `index.js` — semantic tokens (e.g. `chakra-body-text`, `chakra-placeholder-color`)
+
+### Applying Chakra-equivalent styles to Mantine components via a variant
+
+Rather than repeating inline styles, centralise them as a named variant in `client/src/theme/index.ts`. Use **CSS Modules** (not inline `styles`) so you can leverage selector context like `[data-checked]`:
+
+1. Create a CSS module (e.g. `client/src/utils/checkboxTheme.module.css`) that targets Mantine's Styles API selectors and data attributes.
+2. Register the variant in `theme/index.ts` using `classNames` (function form) and `vars` for CSS custom-property overrides.
+3. Apply only `variant='...'` at the call site — no inline `styles`, no conditional logic.
+
+**Example — matching Chakra's `colorScheme='teal'` + `fontWeight='medium'` Checkbox:**
+
+```css
+/* checkboxTheme.module.css */
+.label {
+    color: #a0aec0;          /* gray.400 – unchecked */
+    font-size: 1rem;          /* md */
+    font-weight: 500;         /* medium */
+}
+.root[data-checked] .label {
+    color: rgba(0, 0, 0, 0.64); /* chakra-body-text light mode */
+}
+```
+
+```ts
+// theme/index.ts
+Checkbox: Checkbox.extend({
+    classNames: (_theme, props) => {
+        if (props.variant === 'chakra-style') {
+            return { root: checkboxClasses.root, label: checkboxClasses.label };
+        }
+        return {};
+    },
+    vars: (_theme, props) => {
+        if (props.variant === 'chakra-style') {
+            return { root: { '--checkbox-color': '#319795', '--checkbox-icon-color': '#ffffff' } }; // teal.500, white tick
+        }
+        return { root: {} };
+    },
+}),
+```
+
+Mantine's `[data-checked]` attribute is set on the root element when the checkbox is checked, so CSS-only state-dependent label colours work without any JS conditionals.
 
 GitHub Actions workflow (`.github/workflows/deploy.yml`) on push to `main`:
 

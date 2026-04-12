@@ -27,7 +27,7 @@ export function EditableSource() {
                 <Input
                     fontStyle='italic'
                     fontWeight='medium'
-                    width='40%'
+                    width='60%'
                     _focusVisible={{ outline: 'none' }}
                     border='inherit'
                     paddingLeft={2}

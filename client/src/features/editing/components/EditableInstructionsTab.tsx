@@ -1,4 +1,4 @@
-import { Flex, Spacer } from '@chakra-ui/react';
+import { Box, Flex, Spacer } from '@chakra-ui/react';
 
 import { EditableSource } from './EditableSource';
 import { AsIngredientCheckbox } from './AsIngredientCheckbox';
@@ -15,7 +15,11 @@ export function EditableInstructionsTab({ isVeganCopy }: Props) {
             <Spacer />
             <Flex direction={{ base: 'column', md: 'row' }} justifyContent='space-between'>
                 <AsIngredientCheckbox />
-                {!isVeganCopy && <CreateVeganVersionCheckbox />}
+                {!isVeganCopy && (
+                    <Box width='100%' display='flex' justifyContent='center' alignItems='flex-end'>
+                        <CreateVeganVersionCheckbox />
+                    </Box>
+                )}
                 <EditableSource />
             </Flex>
         </Flex>
