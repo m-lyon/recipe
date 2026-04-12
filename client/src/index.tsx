@@ -1,13 +1,16 @@
 import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
 import { createRoot } from 'react-dom/client';
 import { MantineProvider } from '@mantine/core';
 import { ChakraProvider } from '@chakra-ui/react';
+import { Notifications } from '@mantine/notifications';
 import { ApolloClient, ApolloProvider } from '@apollo/client';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import createUploadLink from 'apollo-upload-client/createUploadLink.mjs';
 
+import { theme } from '@recipe/utils/theme';
 import { getCache } from '@recipe/utils/cache';
-import { GRAPHQL_URL } from '@recipe/constants';
+import { DELAY_LONG, GRAPHQL_URL } from '@recipe/constants';
 
 import { routes } from './routes';
 
@@ -21,7 +24,8 @@ const client = new ApolloClient({
 
 root.render(
     <ApolloProvider client={client}>
-        <MantineProvider>
+        <MantineProvider theme={theme}>
+            <Notifications autoClose={DELAY_LONG} />
             <ChakraProvider>
                 <RouterProvider router={createBrowserRouter(routes)} />
             </ChakraProvider>

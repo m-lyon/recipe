@@ -7,7 +7,7 @@ import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { useUser } from '@recipe/features/user';
 import { useSearch } from '@recipe/features/search';
 import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
-import { ConfirmDeleteModal } from '@recipe/features/editing';
+import { ConfirmArchiveModal } from '@recipe/features/editing';
 import { FETCH_MORE_NUM, INIT_LOAD_NUM } from '@recipe/constants';
 
 import { RecipeCard } from './RecipeCard';
@@ -35,16 +35,23 @@ const generateBreakPoints = (maxColumns: number): { [key: number]: number } => {
 };
 const breakPoints: { [key: number]: number } = generateBreakPoints(4);
 
+const defaultFilter = { archived: false };
+
 export function RecipeCardsContainer() {
     const { data, loading, error, fetchMore } = useQuery(GET_RECIPES, {
-        variables: { offset: 0, limit: INIT_LOAD_NUM },
+        variables: {
+            offset: 0,
+            limit: INIT_LOAD_NUM,
+            filter: defaultFilter,
+            countFilter: defaultFilter,
+        },
     });
     const [show, setShow] = useState(false);
     const [recipeId, setRecipeId] = useState('');
     const { user } = useUser();
     const { filter } = useSearch();
 
-    const handleDelete = (id: string) => {
+    const handleArchive = (id: string) => {
         setRecipeId(id);
         setShow(true);
     };
@@ -65,7 +72,7 @@ export function RecipeCardsContainer() {
                 <ImageRecipeCard
                     recipe={recipe}
                     hasEditPermission={hasPermission(user, recipe)}
-                    handleDelete={handleDelete}
+                    handleArchive={handleArchive}
                 />
             );
         }
@@ -73,7 +80,7 @@ export function RecipeCardsContainer() {
             <RecipeCard
                 recipe={recipe}
                 hasEditPermission={hasPermission(user, recipe)}
-                handleDelete={handleDelete}
+                handleArchive={handleArchive}
             />
         );
     });
@@ -104,7 +111,7 @@ export function RecipeCardsContainer() {
                     ))}
                 </Masonry>
             </ResponsiveMasonry>
-            <ConfirmDeleteModal show={show} setShow={setShow} recipeId={recipeId} />
+            <ConfirmArchiveModal show={show} setShow={setShow} recipeId={recipeId} />
         </InfiniteScroll>
     );
 }

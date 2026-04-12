@@ -1,4 +1,4 @@
 export { updateRecipeCache } from './utils/update';
 export { EditableRecipe } from './components/EditableRecipe';
-export { ConfirmDeleteModal } from './components/ConfirmDeleteModal';
+export { ConfirmArchiveModal } from './components/ConfirmArchiveModal';
 export { CreateVeganVersionCheckbox } from './components/CreateVeganVersionCheckbox';

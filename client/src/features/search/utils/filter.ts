@@ -7,9 +7,9 @@ export interface Query {
     ingredients?: string[];
 }
 
-export function getSearchFilter(query: Query): FilterFindManyRecipeInput | undefined {
+export function getSearchFilter(query: Query, showArchived: boolean): FilterFindManyRecipeInput {
     const { title, tags, calculatedTags, ingredients } = query;
-    const filters = [];
+    const filters: FilterFindManyRecipeInput[] = [{ archived: showArchived }];
     if (title) {
         filters.push({ _operators: { title: { regex: `/${title}/i` } } });
     }
@@ -32,5 +32,5 @@ export function getSearchFilter(query: Query): FilterFindManyRecipeInput | undef
             });
         }
     }
-    return filters.length ? { AND: filters } : undefined;
+    return filters.length === 1 ? filters[0] : { AND: filters };
 }

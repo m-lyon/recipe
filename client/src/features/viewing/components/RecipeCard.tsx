@@ -24,10 +24,10 @@ export function getCardTitle(recipe: RecipePreview): string {
 interface Props {
     recipe: RecipePreview;
     hasEditPermission: boolean;
-    handleDelete: (id: string) => void;
+    handleArchive: (id: string) => void;
 }
 export function RecipeCard(props: Props) {
-    const { recipe, hasEditPermission, handleDelete } = props;
+    const { recipe, hasEditPermission, handleArchive } = props;
     const [isHovered, setIsHovered] = useState(false);
 
     return (
@@ -42,7 +42,7 @@ export function RecipeCard(props: Props) {
                     recipe={recipe}
                     isHovering={isHovered}
                     hasEditPermission={hasEditPermission}
-                    handleDelete={handleDelete}
+                    handleArchive={handleArchive}
                 />
                 <CardHeader>
                     <LinkOverlay

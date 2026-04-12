@@ -15,10 +15,10 @@ import { ModifyButtons } from './ModifyButtons';
 interface Props {
     recipe: RecipePreview;
     hasEditPermission: boolean;
-    handleDelete: (id: string) => void;
+    handleArchive: (id: string) => void;
 }
 export function ImageRecipeCard(props: Props) {
-    const { recipe, hasEditPermission, handleDelete } = props;
+    const { recipe, hasEditPermission, handleArchive } = props;
     const [isHovered, setIsHovered] = useState(false);
 
     return (
@@ -32,7 +32,7 @@ export function ImageRecipeCard(props: Props) {
                     recipe={recipe}
                     isHovering={isHovered}
                     hasEditPermission={hasEditPermission}
-                    handleDelete={handleDelete}
+                    handleArchive={handleArchive}
                 />
                 <CardHeader>
                     <LinkOverlay
