@@ -86,6 +86,7 @@ export const RECIPE_FIELDS_FULL = gql(`
                     }
                     ... on Ingredient {
                         ...IngredientFields
+                        density
                     }
                 }
                 prepMethod {

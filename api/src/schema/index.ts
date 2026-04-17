@@ -1,6 +1,7 @@
 import { SchemaComposer } from 'graphql-compose';
 import { composeResolvers } from '@graphql-tools/resolvers-composition';
 
+import { UsdaQuery } from './Usda.js';
 import { Unit } from '../models/Unit.js';
 import { Size } from '../models/Size.js';
 import { Recipe } from '../models/Recipe.js';
@@ -18,6 +19,7 @@ import { isAdmin, isImageOwnerOrAdmin } from '../middleware/authorisation.js';
 import { UnitConversionMutation, UnitConversionQuery } from './UnitConversion.js';
 import { ConversionRuleMutation, ConversionRuleQuery } from './UnitConversion.js';
 import { isDocumentOwnerOrAdmin, isVerified } from '../middleware/authorisation.js';
+import { NutritionalInfoMutation, NutritionalInfoQuery } from './NutritionalInfo.js';
 import { PrepMethodMutation, PrepMethodQuery, PrepMethodQueryAdmin } from './PrepMethod.js';
 
 const isAdminMutations = composeResolvers(
@@ -49,6 +51,9 @@ const isAuthenticatedMutations = composeResolvers(
             unitCreateOne: UnitMutation.unitCreateOne,
             prepMethodCreateOne: PrepMethodMutation.prepMethodCreateOne,
             ingredientCreateOne: IngredientMutation.ingredientCreateOne,
+            nutritionalInfoCreateOne: NutritionalInfoMutation.nutritionalInfoCreateOne,
+            nutritionalInfoUpdateById: NutritionalInfoMutation.nutritionalInfoUpdateById,
+            nutritionalInfoRemoveById: NutritionalInfoMutation.nutritionalInfoRemoveById,
         },
     },
     { 'Mutation.*': [isVerified()] }
@@ -123,6 +128,8 @@ schemaComposer.Query.addFields({
     ...ImageQuery,
     ...UnitConversionQuery,
     ...ConversionRuleQuery,
+    ...NutritionalInfoQuery,
+    ...UsdaQuery,
     ...isAdminQueries.Query,
 });
 schemaComposer.Mutation.addFields({

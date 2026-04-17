@@ -1,3 +1,4 @@
+import { Select } from '@mantine/core';
 import { ApolloError } from '@apollo/client';
 import { StackProps } from '@chakra-ui/react';
 import { boolean, mixed, object, string } from 'yup';
@@ -7,6 +8,7 @@ import { FormControl, FormHelperText, HStack, Radio, RadioGroup, Stack } from '@
 
 import { NumberFormat } from '@recipe/graphql/enums';
 import { FloatingLabelInput } from '@recipe/common/components';
+import { EnumUnitCreateMeasureType } from '@recipe/graphql/generated';
 
 import { useFormLogic } from '../hooks/useFormLogic';
 import { useKeyboardSubmit } from '../hooks/useKeyboardSubmit';
@@ -18,6 +20,12 @@ export function formatUnitError(error: ApolloError) {
     return error.message;
 }
 
+const MEASURE_TYPE_OPTIONS = [
+    { value: 'mass', label: 'Mass (e.g. kg, oz)' },
+    { value: 'volume', label: 'Volume (e.g. ml, cup)' },
+    { value: '', label: 'None / custom' },
+];
+
 export const unitFormSchema = object({
     shortSingular: string().required('Short singular name is required'),
     shortPlural: string().required('Short plural name is required'),
@@ -28,6 +36,10 @@ export const unitFormSchema = object({
         .oneOf(Object.values(NumberFormat), 'You must select a number format'),
     hasSpace: boolean().required(),
     unique: boolean().required(),
+    measureType: mixed<EnumUnitCreateMeasureType>()
+        .nullable()
+        .optional()
+        .transform((v) => v || null),
 });
 export interface BaseUnitFormProps extends StackProps {
     fieldRef?: MutableRefObject<HTMLInputElement | null>;
@@ -47,6 +59,7 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
             preferredNumberFormat: data.preferredNumberFormat,
             hasSpace: data.hasSpace,
             unique: true,
+            measureType: data.measureType ?? null,
         }),
         []
     );
@@ -129,6 +142,19 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
             >
                 Space after quantity
             </Checkbox>
+            {/* Mantine Select — new field, mixed Mantine/Chakra intentional (see NutritionalInfoPanel note) */}
+            <Select
+                label='Measure type'
+                description='Set to Mass or Volume to enable nutritional calculations'
+                data={MEASURE_TYPE_OPTIONS}
+                value={formData.measureType ?? ''}
+                onChange={(val) =>
+                    handleChange('measureType', (val || null) as 'mass' | 'volume' | null)
+                }
+                disabled={disabled}
+                clearable={false}
+                aria-label='Measure type'
+            />
             <ButtonGroup
                 display='flex'
                 justifyContent='flex-end'

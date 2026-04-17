@@ -11,6 +11,8 @@ import { StarRating, getAverageRating } from '@recipe/features/rating';
 import { Notes } from './Notes';
 import { UsedIn } from './UsedIn';
 import { IngredientList } from './IngredientList';
+import { NutritionalInfoPanel } from './NutritionalInfoPanel';
+import { useNutritionalInfo } from '../hooks/useNutritionalInfo';
 
 interface Props {
     recipe: CompletedRecipeView;
@@ -21,6 +23,20 @@ export function IngredientsTab(props: Props) {
     const currentServings = useRecipeStore((state) => state.numServings);
     const { isVerified } = useUser();
     const { addRatingWithToast } = useAddRating();
+    // Call the hook once; pass the results to both IngredientList and NutritionalInfoPanel
+    // to avoid calling the hook twice (which would double the GraphQL requests).
+    const { perServing, uncountedIds, loading } = useNutritionalInfo(
+        recipe.ingredientSubsections,
+        currentServings
+    );
+    // Compute allUncounted here so NutritionalInfoPanel doesn't need the full subsections array.
+    // Guard with !loading so we don't evaluate before data is available — if loading is true,
+    // the panel renders skeletons regardless of allUncounted.
+    const totalIngredients = recipe.ingredientSubsections
+        .flatMap((s) => s.ingredients)
+        .filter((i) => i.ingredient.__typename === 'Ingredient').length;
+    const allUncounted =
+        !loading && uncountedIds.size > 0 && totalIngredients === uncountedIds.size;
     useEffect(() => {
         setNumServings(recipe.numServings);
     }, [recipe.numServings, setNumServings]);
@@ -37,12 +53,21 @@ export function IngredientsTab(props: Props) {
                 />
             }
             IngredientList={
-                <IngredientList
-                    subsections={recipe.ingredientSubsections}
-                    origServings={recipe.numServings}
-                    currentServings={currentServings}
-                    showWakeLockBtn
-                />
+                <>
+                    <IngredientList
+                        subsections={recipe.ingredientSubsections}
+                        origServings={recipe.numServings}
+                        currentServings={currentServings}
+                        showWakeLockBtn
+                        uncountedIngredientIds={uncountedIds}
+                    />
+                    <NutritionalInfoPanel
+                        perServing={perServing}
+                        uncountedIds={uncountedIds}
+                        allUncounted={allUncounted}
+                        loading={loading}
+                    />
+                </>
             }
             Notes={<Notes notes={recipe.notes} />}
             Tags={

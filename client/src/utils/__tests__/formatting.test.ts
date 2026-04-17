@@ -19,6 +19,7 @@ describe('getEditableRecipeIngredientStr', () => {
                     preferredNumberFormat: 'fraction',
                     hasSpace: true,
                     unique: true,
+                    measureType: null,
                 },
             },
             size: { value: null, data: null },
@@ -80,6 +81,7 @@ describe('getFinishedRecipeIngredientStr', () => {
                 preferredNumberFormat: 'fraction',
                 hasSpace: true,
                 unique: true,
+                measureType: null,
             },
             size: null,
             ingredient: {
