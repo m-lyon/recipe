@@ -1,16 +1,18 @@
 import { useQuery } from '@apollo/client';
 import { useParams } from 'react-router-dom';
-import { Box, Container, Grid, GridItem } from '@chakra-ui/react';
+import { Box, Container, Flex, Grid, GridItem } from '@chakra-ui/react';
 
+import { useUser } from '@recipe/features/user';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { ImageViewerRecipe } from '@recipe/features/images';
-import { IngredientsTab, InstructionsTab, Title } from '@recipe/features/viewing';
+import { EditRecipeButton, IngredientsTab, InstructionsTab, Title } from '@recipe/features/viewing';
 
 export function ViewRecipe() {
     const { titleIdentifier } = useParams();
     const { data, loading, error } = useQuery(GET_RECIPE, {
         variables: { filter: { titleIdentifier } },
     });
+    const { user } = useUser();
 
     if (loading) {
         return <div>Loading...</div>;
@@ -22,6 +24,8 @@ export function ViewRecipe() {
     const { title, numServings, isIngredient, pluralTitle } = data.recipeOne;
     const titleNormed =
         isIngredient && pluralTitle ? (numServings > 1 ? pluralTitle : title) : title;
+    const hasEditPermission =
+        user !== null && (user._id === data.recipeOne.owner || user.role === 'admin');
     return (
         <Container maxW='container.xl' pt='60px'>
             <Grid
@@ -43,7 +47,15 @@ export function ViewRecipe() {
                 fontWeight='bold'
             >
                 <GridItem boxShadow='lg' p='6' area='title'>
-                    <Title title={titleNormed} />
+                    <Flex align='center' justify='space-between'>
+                        <Title title={titleNormed} />
+                        {hasEditPermission && (
+                            <EditRecipeButton
+                                titleIdentifier={data.recipeOne.titleIdentifier}
+                                recipeTitle={titleNormed}
+                            />
+                        )}
+                    </Flex>
                 </GridItem>
                 <GridItem
                     boxShadow='lg'
