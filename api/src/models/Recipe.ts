@@ -301,6 +301,9 @@ recipeSchema.pre('save', async function () {
         calculatedTags.push(ReservedRecipeTags.VeganOptionAvailable);
     }
     this.calculatedTags = calculatedTags;
+    if (this.originalRecipe != null && !calculatedTags.includes(ReservedIngredientTags.Vegan)) {
+        throw new Error('Vegan recipe must have all vegan ingredients');
+    }
 });
 
 export const RecipeIngredient = model<RecipeIngredientType>(

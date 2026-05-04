@@ -44,7 +44,7 @@ const isAuthenticatedMutations = composeResolvers(
     {
         Mutation: {
             recipeCreateOne: RecipeMutation.recipeCreateOne,
-            recipeMakeVegan: RecipeMutation.recipeMakeVegan,
+            recipeLinkVeganVersion: RecipeMutation.recipeLinkVeganVersion,
             ratingCreateOne: RatingMutation.ratingCreateOne,
             sizeCreateOne: SizeMutation.sizeCreateOne,
             unitCreateOne: UnitMutation.unitCreateOne,

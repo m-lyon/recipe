@@ -300,71 +300,38 @@ export const RecipeMutation = {
             await validateItemNotInRecipe(rp.args._id, 'recipe');
             return next(rp);
         }),
-    recipeMakeVegan: schemaComposer
+    recipeLinkVeganVersion: schemaComposer
         .createResolver({
-            name: 'recipeMakeVegan',
-            type: RecipeTC.mongooseResolvers.createOne().getType(),
-            args: { originalId: 'MongoID!' },
-            resolve: async ({ args, context }) => {
-                const { originalId } = args;
-                const original = await Recipe.findById(originalId);
-                if (!original) throw new Error('Original recipe not found');
-
-                // Build the new recipe document (clone all fields)
-                const veganRecipe = new Recipe({
-                    title: original.title,
-                    pluralTitle: original.pluralTitle,
-                    subTitle: original.subTitle,
-                    ingredientSubsections: original.ingredientSubsections,
-                    instructionSubsections: original.instructionSubsections,
-                    tags: original.tags,
-                    notes: original.notes,
-                    source: original.source,
-                    numServings: original.numServings,
-                    isIngredient: original.isIngredient,
-                    owner: context.getUser(),
-                    originalRecipe: original._id,
-                    titleIdentifier: generateRecipeIdentifier(original.title),
-                    createdAt: new Date(),
-                    lastModified: new Date(),
-                });
-                await veganRecipe.save();
-
-                // Copy images
-                const images = await ImageTC.mongooseResolvers.findMany().resolve({
-                    args: { filter: { recipe: original._id } },
-                });
-                if (images && images.length > 0) {
-                    await Promise.all(
-                        images.map((img) => copyImageForRecipe(img, veganRecipe._id))
-                    );
-                }
-
-                // Link original → vegan
-                await Recipe.findByIdAndUpdate(originalId, {
-                    veganVersion: veganRecipe._id,
-                });
-
-                // Trigger pre-save on original to recompute calculatedTags
+            name: 'recipeLinkVeganVersion',
+            type: 'Boolean',
+            args: { originalId: 'MongoID!', veganId: 'MongoID!' },
+            resolve: async ({ args }) => {
+                const { originalId, veganId } = args;
+                await Recipe.findByIdAndUpdate(originalId, { veganVersion: veganId });
+                await Recipe.findByIdAndUpdate(veganId, { originalRecipe: originalId });
+                // Recompute calculatedTags on original (adds VeganOptionAvailable)
                 const updatedOriginal = await Recipe.findById(originalId);
                 if (updatedOriginal) await updatedOriginal.save();
-
-                return { record: veganRecipe, recordId: veganRecipe._id };
+                return true;
             },
         })
         .wrapResolve((next) => async (rp) => {
-            // Validate the original recipe exists and belongs to the user
-            const original = await Recipe.findById(rp.args.originalId);
+            const { originalId, veganId } = rp.args;
+            const [original, vegan] = await Promise.all([
+                Recipe.findById(originalId),
+                Recipe.findById(veganId),
+            ]);
             if (!original) throw new Error('Original recipe not found');
-            if (String(original.owner) !== String(rp.context.getUser())) {
-                throw new Error('Not authorized to create a vegan version of this recipe');
-            }
-            if (original.veganVersion) {
-                throw new Error('This recipe already has a vegan version');
-            }
-            if (original.originalRecipe) {
-                throw new Error('Cannot create a vegan version of a vegan copy');
-            }
+            if (!vegan) throw new Error('Vegan recipe not found');
+            const userId = String(rp.context.getUser()._id);
+            if (String(original.owner) !== userId)
+                throw new Error('Not authorized to modify original recipe');
+            if (String(vegan.owner) !== userId)
+                throw new Error('Not authorized to modify vegan recipe');
+            if (original.veganVersion)
+                throw new Error('Original recipe already has a vegan version');
+            if (vegan.originalRecipe)
+                throw new Error('Vegan recipe already has an original recipe');
             return next(rp);
         }),
     recipeArchiveById: RecipeModifyTC.getResolver('archiveById').wrapResolve(
