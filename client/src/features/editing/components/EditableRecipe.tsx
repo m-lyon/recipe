@@ -25,10 +25,18 @@ interface Props {
     addRating: (rating: number) => void;
     handleSubmitMutation: (recipe: CreateOneRecipeCreateInput) => void;
     submitButtonProps: SubmitButtonProps;
-    isVeganCopy?: boolean;
+    veganVersion?: { _id: string; title: string; titleIdentifier: string };
+    originalRecipe?: { _id: string; title: string; titleIdentifier: string };
 }
 export function EditableRecipe(props: Props) {
-    const { rating, addRating, handleSubmitMutation, submitButtonProps, isVeganCopy } = props;
+    const {
+        rating,
+        addRating,
+        handleSubmitMutation,
+        submitButtonProps,
+        veganVersion,
+        originalRecipe,
+    } = props;
     const { isVerified } = useUser();
 
     const isMobile = useBreakpointValue({ base: true, md: false });
@@ -69,7 +77,7 @@ export function EditableRecipe(props: Props) {
                     alignItems='center'
                     display='flex'
                 >
-                    <EditableTitle isReadOnly={isVeganCopy} />
+                    <EditableTitle isReadOnly={!!originalRecipe} />
                 </GridItem>
                 <GridItem
                     area='tags'
@@ -103,7 +111,7 @@ export function EditableRecipe(props: Props) {
                     />
                 </GridItem>
                 <GridItem boxShadow='lg' padding='6' area='instructions' minH='420px'>
-                    <EditableInstructionsTab isVeganCopy={isVeganCopy} />
+                    <EditableInstructionsTab showVeganCheckbox={!originalRecipe && !veganVersion} />
                 </GridItem>
                 <GridItem
                     boxShadow='lg'

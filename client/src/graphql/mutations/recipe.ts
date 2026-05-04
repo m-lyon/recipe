@@ -36,19 +36,8 @@ export const UNARCHIVE_RECIPE = gql(`
     }
 `);
 
-export const MAKE_VEGAN_RECIPE = gql(`
-    mutation MakeVeganRecipe($originalId: MongoID!) {
-        recipeMakeVegan(originalId: $originalId) {
-            record {
-                _id
-                title
-                titleIdentifier
-                originalRecipe {
-                    _id
-                    title
-                    titleIdentifier
-                }
-            }
-        }
+export const LINK_VEGAN_RECIPE = gql(`
+    mutation LinkVeganRecipe($originalId: MongoID!, $veganId: MongoID!) {
+        recipeLinkVeganVersion(originalId: $originalId, veganId: $veganId)
     }
 `);

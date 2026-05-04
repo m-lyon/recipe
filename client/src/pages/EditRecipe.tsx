@@ -7,27 +7,14 @@ import { useUploadImages } from '@recipe/features/images';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { useImagesStore, useRecipeStore } from '@recipe/stores';
 import { DELETE_IMAGES } from '@recipe/graphql/mutations/image';
+import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 import { UpdateByIdRecipeModifyInput } from '@recipe/graphql/generated';
 import { getAverageRating, useAddRating } from '@recipe/features/rating';
 import { EditableRecipe, updateRecipeCache } from '@recipe/features/editing';
 import { DELAY_LONG, DELAY_SHORT, GRAPHQL_URL, PATH } from '@recipe/constants';
-import { MAKE_VEGAN_RECIPE, UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 
-function queryIngredientToFinished(ingr: RecipeIngredientView): FinishedRecipeIngredient {
-    const { quantity, unit, size, ingredient, prepMethod } = ingr;
-    const key = crypto.randomUUID();
-    if (
-        quantity === undefined ||
-        unit === undefined ||
-        size === undefined ||
-        ingredient == undefined ||
-        prepMethod === undefined
-    ) {
-        throw new Error('One or more property is undefined');
-    }
-    return { key, quantity, unit, size, ingredient, prepMethod };
-}
+import { queryIngredientToFinished } from './utils';
 
 export function EditRecipe() {
     const errorToast = useErrorToast();
@@ -91,7 +78,6 @@ export function EditRecipe() {
         },
     });
     const { uploadImages, loading: uploadLoading } = useUploadImages();
-    const [makeVeganRecipe] = useMutation(MAKE_VEGAN_RECIPE);
     const { data, loading, error } = useQuery(GET_RECIPE, {
         variables: { filter: titleIdentifier ? { titleIdentifier } : {} },
         onCompleted: async (data) => {
@@ -226,31 +212,24 @@ export function EditRecipe() {
             return setTimeout(() => navigate(PATH.ROOT), DELAY_LONG);
         }
         if (recipeState.createVeganVersion) {
-            try {
-                const { data: veganData } = await makeVeganRecipe({
-                    variables: { originalId: recipe!._id },
-                });
-                const veganTitleIdentifier = veganData?.recipeMakeVegan?.record?.titleIdentifier;
-                if (!veganTitleIdentifier) throw new Error('No titleIdentifier returned');
-                recipeState.resetCreateVeganVersion();
+            recipeState.resetCreateVeganVersion();
+            if (data.recipeOne!.veganVersion) {
+                const veganTitleIdentifier = data.recipeOne!.veganVersion.titleIdentifier;
                 successToast({
-                    title: 'Vegan version created',
-                    description: 'Redirecting you to edit the vegan version',
+                    title: 'Redirecting to existing vegan version',
+                    description: 'This recipe already has a vegan version',
                     position: 'top',
                 });
                 return setTimeout(
                     () => navigate(`${PATH.ROOT}/edit/recipe/${veganTitleIdentifier}`),
                     DELAY_SHORT
                 );
-            } catch (e: unknown) {
-                let description = 'An error occurred while creating the vegan version';
-                if (e instanceof Error) description = e.message;
-                return errorToast({
-                    title: 'Error creating vegan version',
-                    description,
-                    position: 'top',
-                });
             }
+            return setTimeout(
+                () =>
+                    navigate(`${PATH.ROOT}/create/recipe/vegan/${data.recipeOne!.titleIdentifier}`),
+                0
+            );
         }
         successToast({
             title: 'Recipe saved',
@@ -265,7 +244,8 @@ export function EditRecipe() {
             rating={getAverageRating(data.recipeOne.ratings)}
             addRating={(rating: number) => addRatingWithToast(rating, data.recipeOne)}
             handleSubmitMutation={handleSubmitMutation}
-            isVeganCopy={!!data.recipeOne.originalRecipe}
+            veganVersion={data.recipeOne.veganVersion ?? undefined}
+            originalRecipe={data.recipeOne.originalRecipe ?? undefined}
             submitButtonProps={{
                 submitText: 'Save',
                 loadingText: 'Saving Recipe...',

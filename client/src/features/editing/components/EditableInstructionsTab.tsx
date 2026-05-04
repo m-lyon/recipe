@@ -6,16 +6,16 @@ import { CreateVeganVersionCheckbox } from './CreateVeganVersionCheckbox';
 import { EditableInstructionSubsections } from './EditableInstructionSubsections';
 
 interface Props {
-    isVeganCopy?: boolean;
+    showVeganCheckbox?: boolean;
 }
-export function EditableInstructionsTab({ isVeganCopy }: Props) {
+export function EditableInstructionsTab({ showVeganCheckbox }: Props) {
     return (
         <Flex direction='column' justifyContent='space-between' height='100%'>
             <EditableInstructionSubsections />
             <Spacer />
             <Flex direction={{ base: 'column', md: 'row' }} justifyContent='space-between'>
                 <AsIngredientCheckbox />
-                {!isVeganCopy && (
+                {showVeganCheckbox && (
                     <Box width='100%' display='flex' justifyContent='center' alignItems='flex-end'>
                         <CreateVeganVersionCheckbox />
                     </Box>

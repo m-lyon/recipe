@@ -3,6 +3,7 @@ import { GraphQLError } from 'graphql';
 import { UpdateRecipeMutation } from '@recipe/graphql/generated';
 import { UnarchiveRecipeMutation } from '@recipe/graphql/generated';
 import { mockSpicyTag } from '@recipe/graphql/queries/__mocks__/tag';
+import { LINK_VEGAN_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockApple } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockDiced } from '@recipe/graphql/queries/__mocks__/prepMethod';
@@ -1086,5 +1087,16 @@ export const mockArchiveRecipeOneInUseError = {
                 { extensions: { code: 'ITEM_IN_USE' } }
             ),
         ],
+    },
+};
+export const mockLinkVeganRecipe = {
+    request: {
+        query: LINK_VEGAN_RECIPE,
+        variables: { originalId: recipeOneVars.id, veganId: recipeTwoVars.id },
+    },
+    result: {
+        data: {
+            recipeLinkVeganVersion: true,
+        },
     },
 };
