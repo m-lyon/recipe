@@ -309,6 +309,9 @@ export const RecipeMutation = {
                 const { originalId, veganId } = args;
                 await Recipe.findByIdAndUpdate(originalId, { veganVersion: veganId });
                 await Recipe.findByIdAndUpdate(veganId, { originalRecipe: originalId });
+                // Save vegan doc to trigger pre-save hook validation (vegan ingredient check)
+                const updatedVegan = await Recipe.findById(veganId);
+                if (updatedVegan) await updatedVegan.save();
                 // Recompute calculatedTags on original (adds VeganOptionAvailable)
                 const updatedOriginal = await Recipe.findById(originalId);
                 if (updatedOriginal) await updatedOriginal.save();

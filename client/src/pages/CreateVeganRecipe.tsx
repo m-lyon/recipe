@@ -73,13 +73,10 @@ export function CreateVeganRecipe() {
                     sub.ingredients.map((i) => queryIngredientToFinished(i)),
                     sub.name || undefined
                 );
-                if (
-                    recipe.ingredientSubsections.length > 1 ||
-                    recipe.ingredientSubsections[0].name
-                ) {
-                    recipeState.addIngredientSection();
-                }
             });
+            if (recipe.ingredientSubsections.length > 1 || recipe.ingredientSubsections[0].name) {
+                recipeState.addIngredientSection();
+            }
             recipeState.resetInstructions();
             recipe.instructionSubsections.forEach((sub, index) => {
                 recipeState.setInstructionSection(
@@ -87,13 +84,10 @@ export function CreateVeganRecipe() {
                     [...sub.instructions, ''],
                     sub.name || undefined
                 );
-                if (
-                    recipe.instructionSubsections.length > 1 ||
-                    recipe.instructionSubsections[0].name
-                ) {
-                    recipeState.addInstructionSection();
-                }
             });
+            if (recipe.instructionSubsections.length > 1 || recipe.instructionSubsections[0].name) {
+                recipeState.addInstructionSection();
+            }
             recipeState.setNotes(recipe.notes ?? '');
             recipeState.setTags(
                 recipe.tags.map((tag) => ({
@@ -151,7 +145,7 @@ export function CreateVeganRecipe() {
         let recipeResult: CompletedRecipeView;
         try {
             const result = await createRecipe({
-                variables: { recipe: { ...recipe, originalRecipe: originalId } },
+                variables: { recipe },
             });
             if (!result.data?.recipeCreateOne?.record) {
                 return errorToast({
