@@ -15,9 +15,10 @@ interface Props {
     section: number;
     optionalRef: RefObject<HTMLInputElement> | null;
     handleOpen: (index: number) => void;
+    suppressItemInUseError?: boolean;
 }
 export function EditableIngredientSubsection(props: Props) {
-    const { section, optionalRef, handleOpen } = props;
+    const { section, optionalRef, handleOpen, suppressItemInUseError } = props;
     const { removeFinished, setFinished, setTitle, finished, title, remove, add } = useRecipeStore(
         useShallow((state) => ({
             removeFinished: state.removeFinishedIngredient,
@@ -50,6 +51,10 @@ export function EditableIngredientSubsection(props: Props) {
             }
         },
         onError: (error) => {
+            const code = error.graphQLErrors[0]?.extensions?.code;
+            if (suppressItemInUseError && code === 'ITEM_IN_USE') {
+                return;
+            }
             errorToast({
                 title: 'Error deleting unit',
                 description: error.message,
@@ -69,6 +74,10 @@ export function EditableIngredientSubsection(props: Props) {
             }
         },
         onError: (error) => {
+            const code = error.graphQLErrors[0]?.extensions?.code;
+            if (suppressItemInUseError && code === 'ITEM_IN_USE') {
+                return;
+            }
             errorToast({
                 title: 'Error deleting prep method',
                 description: error.message,

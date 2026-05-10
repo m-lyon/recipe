@@ -27,6 +27,7 @@ interface Props {
     submitButtonProps: SubmitButtonProps;
     veganVersion?: { _id: string; title: string; titleIdentifier: string };
     originalRecipe?: { _id: string; title: string; titleIdentifier: string };
+    suppressItemInUseError?: boolean;
 }
 export function EditableRecipe(props: Props) {
     const {
@@ -36,6 +37,7 @@ export function EditableRecipe(props: Props) {
         submitButtonProps,
         veganVersion,
         originalRecipe,
+        suppressItemInUseError,
     } = props;
     const { isVerified } = useUser();
 
@@ -106,7 +108,7 @@ export function EditableRecipe(props: Props) {
                                 colour='rgba(0, 0, 0, 0.64)'
                             />
                         }
-                        IngredientList={<EditableIngredientSubsections />}
+                        IngredientList={<EditableIngredientSubsections suppressItemInUseError={suppressItemInUseError} />}
                         Notes={<EditableNotes />}
                     />
                 </GridItem>

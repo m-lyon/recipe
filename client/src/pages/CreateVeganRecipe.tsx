@@ -225,6 +225,7 @@ export function CreateVeganRecipe() {
             addRating={setRating}
             handleSubmitMutation={handleSubmitMutation}
             originalRecipe={data.recipeOne}
+            suppressItemInUseError
             submitButtonProps={{
                 submitText: 'Submit Vegan Version',
                 loadingText: recipeLoading
