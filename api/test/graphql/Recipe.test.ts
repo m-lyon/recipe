@@ -1775,4 +1775,111 @@ describe('recipeCreateOne vegan validation', () => {
         const count = await Recipe.countDocuments({ title: 'Vegan Chicken Soup' });
         assert.equal(count, 0, 'No vegan chicken soup recipe should be created');
     });
+
+    it('should allow a vegan copy to have the same title as the original recipe', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        // Create the original recipe
+        const originalResponse = await createRecipe(this, user, {
+            title: 'Tomato Soup',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+        const originalId = (
+            originalResponse.body.singleResult.data as {
+                recipeCreateOne: { record: { _id: string } };
+            }
+        ).recipeCreateOne.record._id;
+
+        // Create a vegan copy with the same title — should succeed
+        const veganResponse = await createRecipe(this, user, {
+            title: 'Tomato Soup',
+            originalRecipe: originalId,
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+        assert.equal(veganResponse.body.kind, 'single');
+        assert.isUndefined(
+            veganResponse.body.singleResult.errors,
+            veganResponse.body.singleResult.errors
+                ? veganResponse.body.singleResult.errors[0].message
+                : ''
+        );
+        const veganRecord = (
+            veganResponse.body.singleResult.data as {
+                recipeCreateOne: { record: { _id: string; title: string } };
+            }
+        ).recipeCreateOne.record;
+        assert.equal(veganRecord.title, 'Tomato Soup');
+    });
+
+    it('should NOT allow a non-vegan-copy recipe to have a duplicate title', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        const record = {
+            title: 'Tomato Soup',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        };
+
+        // Create first recipe
+        await createRecipe(this, user, record);
+
+        // Attempt to create a second recipe with the same title (no originalRecipe)
+        const response = await createRecipe(this, user, record);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors);
+        assert.match(
+            response.body.singleResult.errors[0].message,
+            /Recipe title must be unique/i
+        );
+    });
 });

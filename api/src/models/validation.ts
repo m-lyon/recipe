@@ -10,6 +10,10 @@ export function uniqueInAdminsAndUser(model: string, attribute: string, message?
         if (this.unique !== undefined && !this.unique) {
             return true;
         }
+        // Vegan copies are allowed to share their original recipe's title
+        if (this.originalRecipe != null) {
+            return true;
+        }
         const admins = await User.find({ role: 'admin' });
         const count = await this.model(model).countDocuments({
             $and: [
