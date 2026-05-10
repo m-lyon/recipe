@@ -8,7 +8,7 @@ import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { useImagesStore, useRecipeStore } from '@recipe/stores';
 import { DELETE_IMAGES } from '@recipe/graphql/mutations/image';
 import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
-import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
+import { useErrorToast, useSuccessToast, useWarningToast } from '@recipe/common/hooks';
 import { UpdateByIdRecipeModifyInput } from '@recipe/graphql/generated';
 import { getAverageRating, useAddRating } from '@recipe/features/rating';
 import { EditableRecipe, updateRecipeCache } from '@recipe/features/editing';
@@ -19,6 +19,7 @@ import { queryIngredientToFinished } from './utils';
 export function EditRecipe() {
     const errorToast = useErrorToast();
     const successToast = useSuccessToast();
+    const warningToast = useWarningToast();
     // -- Stores ----------------------------------------------------------
     const { images, setImages } = useImagesStore(
         useShallow((state) => ({ images: state.images, setImages: state.setImages }))
@@ -213,7 +214,14 @@ export function EditRecipe() {
         }
         if (recipeState.createVeganVersion) {
             recipeState.resetCreateVeganVersion();
-            if (data.recipeOne!.veganVersion) {
+            if (data.recipeOne!.calculatedTags.includes('vegan')) {
+                warningToast({
+                    title: 'Recipe is already vegan',
+                    description: 'This recipe does not need a vegan version',
+                    position: 'top',
+                });
+                // fall through to normal save redirect
+            } else if (data.recipeOne!.veganVersion) {
                 const veganTitleIdentifier = data.recipeOne!.veganVersion.titleIdentifier;
                 successToast({
                     title: 'Redirecting to existing vegan version',
@@ -224,12 +232,15 @@ export function EditRecipe() {
                     () => navigate(`${PATH.ROOT}/edit/recipe/${veganTitleIdentifier}`),
                     DELAY_SHORT
                 );
+            } else {
+                return setTimeout(
+                    () =>
+                        navigate(
+                            `${PATH.ROOT}/create/recipe/vegan/${data.recipeOne!.titleIdentifier}`
+                        ),
+                    DELAY_SHORT
+                );
             }
-            return setTimeout(
-                () =>
-                    navigate(`${PATH.ROOT}/create/recipe/vegan/${data.recipeOne!.titleIdentifier}`),
-                DELAY_SHORT
-            );
         }
         successToast({
             title: 'Recipe saved',
