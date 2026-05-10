@@ -228,7 +228,7 @@ export function EditRecipe() {
             return setTimeout(
                 () =>
                     navigate(`${PATH.ROOT}/create/recipe/vegan/${data.recipeOne!.titleIdentifier}`),
-                0
+                DELAY_SHORT
             );
         }
         successToast({

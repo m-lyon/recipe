@@ -307,14 +307,20 @@ export const RecipeMutation = {
             args: { originalId: 'MongoID!', veganId: 'MongoID!' },
             resolve: async ({ args }) => {
                 const { originalId, veganId } = args;
-                await Recipe.findByIdAndUpdate(originalId, { veganVersion: veganId });
-                await Recipe.findByIdAndUpdate(veganId, { originalRecipe: originalId });
-                // Save vegan doc to trigger pre-save hook validation (vegan ingredient check)
-                const updatedVegan = await Recipe.findById(veganId);
-                if (updatedVegan) await updatedVegan.save();
-                // Recompute calculatedTags on original (adds VeganOptionAvailable)
-                const updatedOriginal = await Recipe.findById(originalId);
-                if (updatedOriginal) await updatedOriginal.save();
+                // Load both docs and set fields in-memory so pre-save validation
+                // fires before any writes reach the database.
+                const [originalDoc, veganDoc] = await Promise.all([
+                    Recipe.findById(originalId),
+                    Recipe.findById(veganId),
+                ]);
+                if (!originalDoc) throw new Error('Original recipe not found');
+                if (!veganDoc) throw new Error('Vegan recipe not found');
+                veganDoc.originalRecipe = originalDoc._id;
+                // Validate vegan doc (checks all ingredients are vegan) before writing.
+                await veganDoc.validate();
+                // Validation passed — persist both documents.
+                originalDoc.veganVersion = veganDoc._id;
+                await Promise.all([originalDoc.save(), veganDoc.save()]);
                 return true;
             },
         })
