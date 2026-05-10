@@ -259,16 +259,8 @@ const recipeSchema = new Schema<Recipe>({
     archived: { type: Boolean, default: false },
     createdAt: { type: Date, required: true },
     lastModified: { type: Date, required: true },
-    veganVersion: {
-        type: Schema.Types.ObjectId,
-        ref: 'Recipe',
-        default: null,
-    },
-    originalRecipe: {
-        type: Schema.Types.ObjectId,
-        ref: 'Recipe',
-        default: null,
-    },
+    veganVersion: { type: Schema.Types.ObjectId, ref: 'Recipe' },
+    originalRecipe: { type: Schema.Types.ObjectId, ref: 'Recipe' },
 });
 
 recipeSchema.index({ 'ingredientSubsections.ingredients.ingredient': 1 });

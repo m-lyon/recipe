@@ -7,12 +7,13 @@ import { Size } from '../../src/models/Size.js';
 import { User } from '../../src/models/User.js';
 import { Unit } from '../../src/models/Unit.js';
 import { Recipe } from '../../src/models/Recipe.js';
+import { createUnits, createUser } from '../utils/data.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { createRecipeTags, createUnitConversions } from '../utils/data.js';
 import { createImages, createIngredients, createPrepMethods } from '../utils/data.js';
-import { createAdmin, createRecipesAsIngredients, createSizes, createUnits, createUser } from '../utils/data.js';
+import { createAdmin, createRecipesAsIngredients, createSizes } from '../utils/data.js';
 
 export async function createRecipeIngredientData() {
     const user = await createUser();
@@ -1540,7 +1541,12 @@ describe('recipeLinkVeganVersion', () => {
         const ingredientSubsections = [
             {
                 ingredients: [
-                    { ingredient: tomato._id, quantity: '300', unit: unit._id, prepMethod: prepMethod._id },
+                    {
+                        ingredient: tomato._id,
+                        quantity: '300',
+                        unit: unit._id,
+                        prepMethod: prepMethod._id,
+                    },
                 ],
             },
         ];
@@ -1590,7 +1596,12 @@ describe('recipeLinkVeganVersion', () => {
         const ingredientSubsections = [
             {
                 ingredients: [
-                    { ingredient: tomato._id, quantity: '300', unit: unit._id, prepMethod: prepMethod._id },
+                    {
+                        ingredient: tomato._id,
+                        quantity: '300',
+                        unit: unit._id,
+                        prepMethod: prepMethod._id,
+                    },
                 ],
             },
         ];
@@ -1628,10 +1639,7 @@ describe('recipeLinkVeganVersion', () => {
         const response = await linkVegan(this, user, original._id, vegan2._id);
         assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors, 'Should have errors');
-        assert.include(
-            response.body.singleResult.errors[0].message,
-            'already has a vegan version'
-        );
+        assert.include(response.body.singleResult.errors[0].message, 'already has a vegan version');
     });
 
     it('should NOT link if caller does not own both recipes', async function () {
@@ -1645,7 +1653,12 @@ describe('recipeLinkVeganVersion', () => {
         const ingredientSubsections = [
             {
                 ingredients: [
-                    { ingredient: tomato._id, quantity: '300', unit: unit._id, prepMethod: prepMethod._id },
+                    {
+                        ingredient: tomato._id,
+                        quantity: '300',
+                        unit: unit._id,
+                        prepMethod: prepMethod._id,
+                    },
                 ],
             },
         ];
@@ -1710,7 +1723,12 @@ describe('recipeCreateOne vegan validation', () => {
             ingredientSubsections: [
                 {
                     ingredients: [
-                        { ingredient: chicken._id, quantity: '500', unit: unit._id, prepMethod: prepMethod._id },
+                        {
+                            ingredient: chicken._id,
+                            quantity: '500',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
                     ],
                 },
             ],
@@ -1731,7 +1749,12 @@ describe('recipeCreateOne vegan validation', () => {
             ingredientSubsections: [
                 {
                     ingredients: [
-                        { ingredient: chicken._id, quantity: '500', unit: unit._id, prepMethod: prepMethod._id },
+                        {
+                            ingredient: chicken._id,
+                            quantity: '500',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
                     ],
                 },
             ],
