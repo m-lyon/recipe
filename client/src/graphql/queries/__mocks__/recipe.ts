@@ -151,6 +151,32 @@ export const mockRecipeOne: CompletedRecipeView = {
     originalRecipe: null,
     owner: mockAdminId,
 };
+// A recipe that already has a vegan version linked
+export const mockRecipeWithVeganVersion: CompletedRecipeView = {
+    ...mockRecipeOne,
+    calculatedTags: ['vegetarian'], // not vegan itself
+    veganVersion: {
+        __typename: 'Recipe',
+        _id: mockRecipeIdTwo,
+        title: mockTitleOne,
+        titleIdentifier: 'mock-recipe-one-vegan',
+    },
+    originalRecipe: null,
+};
+// A recipe that is itself a vegan copy (has originalRecipe set)
+export const mockRecipeVeganCopy: CompletedRecipeView = {
+    ...mockRecipeOne,
+    _id: mockRecipeIdTwo,
+    titleIdentifier: 'mock-recipe-one-vegan',
+    calculatedTags: ['vegan', 'vegetarian'],
+    veganVersion: null,
+    originalRecipe: {
+        __typename: 'Recipe',
+        _id: mockRecipeIdOne,
+        title: mockTitleOne,
+        titleIdentifier: 'mock-recipe-one',
+    },
+};
 export const mockRecipeTwo: CompletedRecipeView = {
     ...mockRecipeOne,
     _id: mockRecipeIdTwo,
@@ -405,6 +431,34 @@ export const mockGetRecipeOne = {
         } satisfies GetRecipeQueryVariables,
     },
     result: { data: { __typename: 'Query', recipeOne: mockRecipeOne } satisfies GetRecipeQuery },
+};
+export const mockGetRecipeWithVeganVersion = {
+    request: {
+        query: GET_RECIPE,
+        variables: {
+            filter: { titleIdentifier: 'mock-recipe-one' },
+        } satisfies GetRecipeQueryVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeOne: mockRecipeWithVeganVersion,
+        } satisfies GetRecipeQuery,
+    },
+};
+export const mockGetRecipeVeganCopy = {
+    request: {
+        query: GET_RECIPE,
+        variables: {
+            filter: { titleIdentifier: 'mock-recipe-one-vegan' },
+        } satisfies GetRecipeQueryVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeOne: mockRecipeVeganCopy,
+        } satisfies GetRecipeQuery,
+    },
 };
 export const mockGetRecipeTwo = {
     request: {
