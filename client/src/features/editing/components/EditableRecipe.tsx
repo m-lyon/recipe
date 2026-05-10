@@ -108,7 +108,11 @@ export function EditableRecipe(props: Props) {
                                 colour='rgba(0, 0, 0, 0.64)'
                             />
                         }
-                        IngredientList={<EditableIngredientSubsections suppressItemInUseError={suppressItemInUseError} />}
+                        IngredientList={
+                            <EditableIngredientSubsections
+                                suppressItemInUseError={suppressItemInUseError}
+                            />
+                        }
                         Notes={<EditableNotes />}
                     />
                 </GridItem>
