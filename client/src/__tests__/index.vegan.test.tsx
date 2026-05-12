@@ -310,13 +310,12 @@ describe('CreateVeganRecipe — cache: originalRecipe on vegan copy', () => {
         const user = userEvent.setup();
         await user.click(await screen.findByText('Submit Vegan Version'));
         // After navigation, we're on the home page.
-        // This confirms the flow completed without error and the vegan copy did not
-        // cause a crash or unexpected redirect.
         await screen.findByText('Recipes');
-        // The vegan copy title should not appear as a separate standalone card.
-        // (The vegan copy shares a title with the original; the home page query filters
-        // by originalRecipe: null so the copy should be excluded.)
-        expect(screen.queryByText('Vegan version created')).not.toBeNull();
+        // The home page GET_RECIPES mock returns exactly 4 recipes (no vegan copy).
+        // Assert that exactly those 4 recipe cards are rendered — if the vegan copy
+        // were incorrectly shown, there would be an extra card.
+        const cards = screen.queryAllByLabelText(/^View /);
+        expect(cards).toHaveLength(mockGetRecipes.result.data.recipeMany.length);
     });
 });
 
