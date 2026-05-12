@@ -150,4 +150,16 @@ describe('ingredientDisplayValue — (ve) suffix', () => {
         };
         expect(ingredientDisplayValue('2', null, recipe)).toBe('chicken stocks (ve)');
     });
+
+    it('does not append (ve) to plural title when no veganVersion', () => {
+        const recipe = {
+            __typename: 'Recipe' as const,
+            _id: 'r1',
+            title: 'Chicken Stock',
+            pluralTitle: 'Chicken Stocks',
+            veganVersion: null,
+        };
+        // quantity='2', unit=null → plural
+        expect(ingredientDisplayValue('2', null, recipe)).toBe('chicken stocks');
+    });
 });
