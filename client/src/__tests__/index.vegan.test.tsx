@@ -9,7 +9,7 @@ import { MockedResponses, renderPage } from '@recipe/utils/tests';
 import { mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockUpdateRecipeOneNoChange } from '@recipe/graphql/mutations/__mocks__/recipe';
-import { mockGetRecipeWithVeganVersion } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockGetRecipeVeganCopy, mockGetRecipeWithVeganVersion } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipeThree, mockGetRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 
 import { routes } from '../routes';
@@ -165,6 +165,22 @@ describe('Home page — hide vegan copies', () => {
         expect(await screen.findByText('Mock Recipe')).not.toBeNull();
         // Verify no Apollo error toast appeared
         expect(screen.queryByText('No results')).toBeNull();
+    });
+});
+
+describe('ViewRecipe — vegan copy title', () => {
+    afterEach(() => {
+        cleanup();
+    });
+
+    it('should not append (Vegan) to the title of a vegan copy', async () => {
+        renderPage(
+            routes,
+            [...mocks, mockGetRecipeVeganCopy],
+            [`${PATH.ROOT}/view/recipe/mock-recipe-one-vegan`]
+        );
+        expect(await screen.findByText('Mock Recipe')).not.toBeNull();
+        expect(screen.queryByText('Mock Recipe (Vegan)')).toBeNull();
     });
 });
 

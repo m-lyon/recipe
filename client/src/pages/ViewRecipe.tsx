@@ -24,8 +24,6 @@ export function ViewRecipe() {
     const { title, numServings, isIngredient, pluralTitle } = data.recipeOne;
     const titleNormed =
         isIngredient && pluralTitle ? (numServings > 1 ? pluralTitle : title) : title;
-    const isVeganCopy = !!data.recipeOne.originalRecipe;
-    const displayTitle = isVeganCopy ? `${titleNormed} (Vegan)` : titleNormed;
     return (
         <Container maxW='container.xl' pt='60px'>
             <Grid
@@ -47,7 +45,7 @@ export function ViewRecipe() {
                 fontWeight='bold'
             >
                 <GridItem boxShadow='lg' p='6' area='title'>
-                    <Title title={displayTitle} />
+                    <Title title={titleNormed} />
                     {data.recipeOne.originalRecipe && (
                         <Anchor
                             component={Link}
