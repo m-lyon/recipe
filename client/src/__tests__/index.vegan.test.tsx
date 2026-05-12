@@ -1,6 +1,6 @@
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, screen } from '@testing-library/react';
+import { cleanup, screen, waitFor } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { PATH } from '@recipe/constants';
@@ -42,7 +42,29 @@ describe('EditRecipe — Vegan Version Checkbox Visibility', () => {
         expect(await screen.findByLabelText('Create vegan version of this recipe')).not.toBeNull();
     });
 
-    it('should hide the vegan version checkbox when the recipe already has a vegan version', async () => {
+    it('should show a pre-checked "Edit vegan version" checkbox when recipe has a vegan version', async () => {
+        renderWithRecipeMock(mockGetRecipeWithVeganVersion);
+        const user = userEvent.setup();
+
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+
+        const checkbox = await screen.findByLabelText('Edit vegan version of this recipe');
+        expect(checkbox).not.toBeNull();
+        await waitFor(() => expect((checkbox as HTMLInputElement).checked).toBe(true));
+    });
+
+    it('should allow unchecking the "Edit vegan version" checkbox', async () => {
+        renderWithRecipeMock(mockGetRecipeWithVeganVersion);
+        const user = userEvent.setup();
+
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+
+        const checkbox = await screen.findByLabelText('Edit vegan version of this recipe');
+        await user.click(checkbox);
+        await waitFor(() => expect((checkbox as HTMLInputElement).checked).toBe(false));
+    });
+
+    it('should not show the "Create vegan version" label when the recipe already has a vegan version', async () => {
         renderWithRecipeMock(mockGetRecipeWithVeganVersion);
         const user = userEvent.setup();
 

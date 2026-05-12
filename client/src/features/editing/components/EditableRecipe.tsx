@@ -117,7 +117,10 @@ export function EditableRecipe(props: Props) {
                     />
                 </GridItem>
                 <GridItem boxShadow='lg' padding='6' area='instructions' minH='420px'>
-                    <EditableInstructionsTab showVeganCheckbox={!originalRecipe && !veganVersion} />
+                    <EditableInstructionsTab
+                        showVeganCheckbox={!originalRecipe}
+                        veganVersion={veganVersion}
+                    />
                 </GridItem>
                 <GridItem
                     boxShadow='lg'

@@ -7,8 +7,9 @@ import { EditableInstructionSubsections } from './EditableInstructionSubsections
 
 interface Props {
     showVeganCheckbox?: boolean;
+    veganVersion?: { _id: string; title: string; titleIdentifier: string } | null;
 }
-export function EditableInstructionsTab({ showVeganCheckbox }: Props) {
+export function EditableInstructionsTab({ showVeganCheckbox, veganVersion }: Props) {
     return (
         <Flex direction='column' justifyContent='space-between' height='100%'>
             <EditableInstructionSubsections />
@@ -17,7 +18,7 @@ export function EditableInstructionsTab({ showVeganCheckbox }: Props) {
                 <AsIngredientCheckbox />
                 {showVeganCheckbox && (
                     <Box width='100%' display='flex' justifyContent='center' alignItems='flex-end'>
-                        <CreateVeganVersionCheckbox />
+                        <CreateVeganVersionCheckbox veganVersion={veganVersion} />
                     </Box>
                 )}
                 <EditableSource />

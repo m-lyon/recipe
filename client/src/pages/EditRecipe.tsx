@@ -41,6 +41,7 @@ export function EditRecipe() {
             addIngredientSection: state.addIngredientSection,
             resetIngredients: state.resetIngredients,
             createVeganVersion: state.createVeganVersion,
+            setCreateVeganVersion: state.setCreateVeganVersion,
             resetCreateVeganVersion: state.resetCreateVeganVersion,
         }))
     );
@@ -143,7 +144,7 @@ export function EditRecipe() {
             } else {
                 recipeState.resetAsIngredient();
             }
-            recipeState.resetCreateVeganVersion();
+            recipeState.setCreateVeganVersion(!!recipe.veganVersion);
             if (recipe.images) {
                 try {
                     const images = await Promise.all(
