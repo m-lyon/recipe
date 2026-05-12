@@ -9,7 +9,7 @@ export interface Query {
 
 export function getSearchFilter(query: Query, showArchived: boolean): FilterFindManyRecipeInput {
     const { title, tags, calculatedTags, ingredients } = query;
-    const filters: FilterFindManyRecipeInput[] = [{ archived: showArchived }];
+    const filters: FilterFindManyRecipeInput[] = [{ archived: showArchived, originalRecipe: null }];
     if (title) {
         filters.push({ _operators: { title: { regex: `/${title}/i` } } });
     }

@@ -35,7 +35,7 @@ const generateBreakPoints = (maxColumns: number): { [key: number]: number } => {
 };
 const breakPoints: { [key: number]: number } = generateBreakPoints(4);
 
-const defaultFilter = { archived: false };
+const defaultFilter = { archived: false, originalRecipe: null };
 
 export function RecipeCardsContainer() {
     const { data, loading, error, fetchMore } = useQuery(GET_RECIPES, {

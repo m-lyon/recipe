@@ -556,8 +556,8 @@ export const mockGetRecipes = {
         variables: {
             offset: 0,
             limit: 5,
-            filter: { archived: false },
-            countFilter: { archived: false },
+            filter: { archived: false, originalRecipe: null },
+            countFilter: { archived: false, originalRecipe: null },
         } satisfies GetRecipesQueryVariables,
     },
     result: {
@@ -584,8 +584,8 @@ export const mockGetRecipesLarger = {
         variables: {
             offset: 0,
             limit: 5,
-            filter: { archived: false },
-            countFilter: { archived: false },
+            filter: { archived: false, originalRecipe: null },
+            countFilter: { archived: false, originalRecipe: null },
         } satisfies GetRecipesQueryVariables,
     },
     result: {
@@ -604,7 +604,10 @@ export const mockGetRecipesLarger = {
 };
 // GetRecipes filtered ----------------------------------------------
 const mockFilterOne = {
-    AND: [{ archived: false }, { _operators: { title: { regex: '/one/i' } } }],
+    AND: [
+        { archived: false, originalRecipe: null },
+        { _operators: { title: { regex: '/one/i' } } },
+    ],
 };
 export const mockGetRecipesLargerFilteredOnePageOne = {
     request: {
@@ -654,7 +657,10 @@ export const mockGetRecipesLargerFilteredOnePageTwo = {
     },
 };
 const mockFilterTag = {
-    AND: [{ archived: false }, { _operators: { tags: { in: [mockDinnerTagId] } } }],
+    AND: [
+        { archived: false, originalRecipe: null },
+        { _operators: { tags: { in: [mockDinnerTagId] } } },
+    ],
 };
 export const mockGetRecipesFilteredTag = {
     request: {
@@ -675,7 +681,10 @@ export const mockGetRecipesFilteredTag = {
     },
 };
 const mockFilterCalculatedTag = {
-    AND: [{ archived: false }, { _operators: { calculatedTags: { in: [ReservedTags.Vegan] } } }],
+    AND: [
+        { archived: false, originalRecipe: null },
+        { _operators: { calculatedTags: { in: [ReservedTags.Vegan] } } },
+    ],
 };
 export const mockGetRecipesFilteredCalculatedTag = {
     request: {
@@ -697,7 +706,7 @@ export const mockGetRecipesFilteredCalculatedTag = {
 };
 const mockFilterIngr = {
     AND: [
-        { archived: false },
+        { archived: false, originalRecipe: null },
         {
             _operators: {
                 ingredientSubsections: {
@@ -727,7 +736,7 @@ export const mockGetRecipesFilteredIngr = {
 };
 const mockFilterTagIngr = {
     AND: [
-        { archived: false },
+        { archived: false, originalRecipe: null },
         {
             _operators: {
                 tags: { in: [mockDinnerTagId] },
@@ -761,7 +770,10 @@ export const mockGetRecipesFilteredTagIngr = {
     },
 };
 const mockFilterTwo = {
-    AND: [{ archived: false }, { _operators: { title: { regex: '/two/i' } } }],
+    AND: [
+        { archived: false, originalRecipe: null },
+        { _operators: { title: { regex: '/two/i' } } },
+    ],
 };
 export const mockGetRecipesFilteredTwo = {
     request: {
@@ -783,7 +795,7 @@ export const mockGetRecipesFilteredTwo = {
 };
 const mockFilterTwoTagIngr = {
     AND: [
-        { archived: false },
+        { archived: false, originalRecipe: null },
         {
             _operators: {
                 title: { regex: '/two/i' },
@@ -919,8 +931,8 @@ export const mockGetArchivedRecipes = {
         variables: {
             offset: 0,
             limit: 5,
-            filter: { archived: true },
-            countFilter: { archived: true },
+            filter: { archived: true, originalRecipe: null },
+            countFilter: { archived: true, originalRecipe: null },
         } satisfies GetRecipesQueryVariables,
     },
     result: {

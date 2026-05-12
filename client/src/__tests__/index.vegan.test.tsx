@@ -101,6 +101,51 @@ describe('EditRecipe — Already Vegan Guard', () => {
     });
 });
 
+describe('Home page — hide vegan copies', () => {
+    afterEach(() => {
+        cleanup();
+    });
+
+    it('should not show vegan copies on the home page', async () => {
+        // mockRecipeOne has calculatedTags: ['vegan', 'vegetarian']
+        const { GET_RECIPES } = await import('@recipe/graphql/queries/recipe');
+        const { mockRecipeOne, mockRecipeTwo, mockRecipeThree, mockRecipeFour } = await import(
+            '@recipe/graphql/queries/__mocks__/recipe'
+        );
+        // A mock that only matches when originalRecipe: null is in the filter — i.e. the
+        // filter we expect the UI to send after the fix.
+        const mockGetRecipesNoVeganCopies = {
+            request: {
+                query: GET_RECIPES,
+                variables: {
+                    offset: 0,
+                    limit: 5,
+                    filter: { archived: false, originalRecipe: null },
+                    countFilter: { archived: false, originalRecipe: null },
+                },
+            },
+            result: {
+                data: {
+                    __typename: 'Query',
+                    recipeMany: [mockRecipeOne, mockRecipeTwo, mockRecipeThree, mockRecipeFour],
+                    recipeCount: 4,
+                },
+            },
+        };
+        renderPage(
+            routes,
+            [...mocksMinimal, mockGetRecipesNoVeganCopies, mockGetRecipeTwo, mockGetRecipeThree],
+            [PATH.ROOT]
+        );
+
+        // The recipe list should render. If the mock didn't match (no originalRecipe: null in
+        // filter), Apollo would find no mock and the list would be empty/errored.
+        expect(await screen.findByText('Mock Recipe')).not.toBeNull();
+        // Verify no Apollo error toast appeared
+        expect(screen.queryByText('No results')).toBeNull();
+    });
+});
+
 describe('CreateVeganRecipe — Page', () => {
     afterEach(() => {
         cleanup();
