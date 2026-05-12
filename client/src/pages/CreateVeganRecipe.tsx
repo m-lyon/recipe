@@ -232,13 +232,10 @@ export function CreateVeganRecipe() {
 
         successToast({
             title: 'Vegan version created',
-            description: 'Redirecting you to edit the vegan version',
+            description: 'Redirecting you to the home page',
             position: 'top',
         });
-        setTimeout(
-            () => navigate(`${PATH.ROOT}/edit/recipe/${recipeResult.titleIdentifier}`),
-            DELAY_SHORT
-        );
+        setTimeout(() => navigate(PATH.ROOT), DELAY_SHORT);
     };
 
     if (loading) return <div>Loading...</div>;

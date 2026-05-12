@@ -237,6 +237,40 @@ describe('CreateVeganRecipe — Page', () => {
         // The title input should be pre-filled with the original recipe title
         expect(await screen.findByDisplayValue('Mock Recipe')).not.toBeNull();
     });
+
+    it('should navigate to home page after successfully submitting a vegan version', async () => {
+        const { CREATE_RECIPE } = await import('@recipe/graphql/mutations/recipe');
+        const { LINK_VEGAN_RECIPE } = await import('@recipe/graphql/mutations/recipe');
+        const { mockRecipeVeganCopy } = await import('@recipe/graphql/queries/__mocks__/recipe');
+        const { mockRecipeIdOne, mockRecipeIdTwo } = await import('@recipe/graphql/__mocks__/ids');
+
+        const createVeganMock = {
+            request: { query: CREATE_RECIPE },
+            variableMatcher: () => true,
+            result: {
+                data: {
+                    recipeCreateOne: {
+                        __typename: 'CreateOneRecipePayload',
+                        record: mockRecipeVeganCopy,
+                    },
+                },
+            },
+        };
+        const linkMock = {
+            request: {
+                query: LINK_VEGAN_RECIPE,
+                variables: { originalId: mockRecipeIdOne, veganId: mockRecipeIdTwo },
+            },
+            result: { data: { recipeLinkVeganVersion: true } },
+        };
+
+        renderPage(routes, [...mocks, createVeganMock, linkMock], [
+            `${PATH.ROOT}/create/recipe/vegan/mock-recipe-one`,
+        ]);
+        const user = userEvent.setup();
+        await user.click(await screen.findByText('Submit Vegan Version'));
+        expect(await screen.findByText('Recipes')).not.toBeNull();
+    });
 });
 
 describe('CreateVeganRecipe — cache update after link', () => {
