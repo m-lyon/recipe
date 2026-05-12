@@ -8,8 +8,9 @@ import { enterEditRecipePage } from '@recipe/utils/tests';
 import { MockedResponses, renderPage } from '@recipe/utils/tests';
 import { mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockGetRecipeVeganCopy } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockUpdateRecipeOneNoChange } from '@recipe/graphql/mutations/__mocks__/recipe';
-import { mockGetRecipeVeganCopy, mockGetRecipeWithVeganVersion } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockGetRecipeWithVeganVersion } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipeThree, mockGetRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 
 import { routes } from '../routes';
@@ -181,6 +182,41 @@ describe('ViewRecipe — vegan copy title', () => {
         );
         expect(await screen.findByText('Mock Recipe')).not.toBeNull();
         expect(screen.queryByText('Mock Recipe (Vegan)')).toBeNull();
+    });
+});
+
+describe('RecipeCard — no vegan version button', () => {
+    afterEach(() => {
+        cleanup();
+    });
+
+    it('should not show the "View vegan version" button on a recipe card', async () => {
+        const { GET_RECIPES } = await import('@recipe/graphql/queries/recipe');
+        const { mockRecipeWithVeganVersion } = await import(
+            '@recipe/graphql/queries/__mocks__/recipe'
+        );
+        const mockGetRecipesWithVeganVersion = {
+            request: {
+                query: GET_RECIPES,
+                variables: {
+                    offset: 0,
+                    limit: 5,
+                    filter: { archived: false, originalRecipe: null },
+                    countFilter: { archived: false, originalRecipe: null },
+                },
+            },
+            result: {
+                data: {
+                    __typename: 'Query',
+                    recipeMany: [mockRecipeWithVeganVersion],
+                    recipeCount: 1,
+                },
+            },
+        };
+        renderPage(routes, [...mocksMinimal, mockGetRecipesWithVeganVersion], [PATH.ROOT]);
+
+        expect(await screen.findByText('Mock Recipe')).not.toBeNull();
+        expect(screen.queryByLabelText('View vegan version of Mock Recipe')).toBeNull();
     });
 });
 
