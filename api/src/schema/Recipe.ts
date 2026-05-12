@@ -215,7 +215,7 @@ export const RecipeQuery = {
         .findMany({
             filter: {
                 operators: {
-                    veganVersion: ['exists', 'gt', 'gte', 'lt', 'lte', 'ne', 'in', 'nin'],
+                    veganVersion: ['exists'],
                 },
             },
         })
@@ -244,7 +244,7 @@ export const RecipeQuery = {
         .count({
             filter: {
                 operators: {
-                    veganVersion: ['exists', 'gt', 'gte', 'lt', 'lte', 'ne', 'in', 'nin'],
+                    veganVersion: ['exists'],
                 },
             },
         })

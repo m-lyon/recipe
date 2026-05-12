@@ -417,9 +417,10 @@ describe('Home page — vegan tag filter includes recipes with vegan version', (
         await user.click(screen.getByLabelText('Filter by tags'));
         await user.click(await screen.findByLabelText('vegan'));
 
-        // Both recipes should appear (both have title 'Mock Recipe')
+        // Both recipes should appear
         await waitFor(() => {
-            expect(screen.getAllByLabelText(/View Mock Recipe/).length).toBeGreaterThanOrEqual(1);
+            const cards = screen.queryAllByLabelText(/^View /);
+            expect(cards).toHaveLength(2);
         });
     });
 });
