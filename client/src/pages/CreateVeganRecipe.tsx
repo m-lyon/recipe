@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useMutation, useQuery } from '@apollo/client';
 import { useNavigate, useParams } from 'react-router-dom';
+import { gql, useMutation, useQuery } from '@apollo/client';
 
 import { useAddRating } from '@recipe/features/rating';
 import { useUploadImages } from '@recipe/features/images';
@@ -14,6 +14,16 @@ import { DELAY_LONG, DELAY_SHORT, GRAPHQL_URL, PATH } from '@recipe/constants';
 import { CREATE_RECIPE, LINK_VEGAN_RECIPE } from '@recipe/graphql/mutations/recipe';
 
 import { queryIngredientToFinished } from './utils';
+
+const VEGAN_VERSION_LINK_FRAGMENT = gql`
+    fragment VeganVersionLink on Recipe {
+        veganVersion {
+            _id
+            title
+            titleIdentifier
+        }
+    }
+`;
 
 export function CreateVeganRecipe() {
     const { originalTitleIdentifier } = useParams<{ originalTitleIdentifier: string }>();
@@ -145,7 +155,7 @@ export function CreateVeganRecipe() {
         let recipeResult: CompletedRecipeView;
         try {
             const result = await createRecipe({
-                variables: { recipe },
+                variables: { recipe: { ...recipe, originalRecipe: originalId } },
             });
             if (!result.data?.recipeCreateOne?.record) {
                 return errorToast({
@@ -194,6 +204,21 @@ export function CreateVeganRecipe() {
         try {
             await linkVeganRecipe({
                 variables: { originalId, veganId: recipeResult._id },
+                update(cache) {
+                    cache.writeFragment({
+                        id: `Recipe:${originalId}`,
+                        fragment: VEGAN_VERSION_LINK_FRAGMENT,
+                        fragmentName: 'VeganVersionLink',
+                        data: {
+                            veganVersion: {
+                                __typename: 'Recipe' as const,
+                                _id: recipeResult._id,
+                                title: recipeResult.title,
+                                titleIdentifier: recipeResult.titleIdentifier,
+                            },
+                        },
+                    });
+                },
             });
         } catch (e: unknown) {
             let description = 'An error occurred while linking the vegan version';
