@@ -212,7 +212,13 @@ export const RecipeQuery = {
         .setDescription('Get multiple recipes by their IDs'),
     recipeOne: RecipeTC.mongooseResolvers.findOne().setDescription('Get a single recipe'),
     recipeMany: RecipeTC.mongooseResolvers
-        .findMany()
+        .findMany({
+            filter: {
+                operators: {
+                    veganVersion: ['exists', 'gt', 'gte', 'lt', 'lte', 'ne', 'in', 'nin'],
+                },
+            },
+        })
         .setDescription('Get multiple recipes')
         .addSortArg({
             name: 'CREATED_DESC',
@@ -234,7 +240,15 @@ export const RecipeQuery = {
             value: { lastModified: 1 },
             description: 'Sort by last modified date in ascending order',
         }),
-    recipeCount: RecipeTC.mongooseResolvers.count().setDescription('Count the number of recipes'),
+    recipeCount: RecipeTC.mongooseResolvers
+        .count({
+            filter: {
+                operators: {
+                    veganVersion: ['exists', 'gt', 'gte', 'lt', 'lte', 'ne', 'in', 'nin'],
+                },
+            },
+        })
+        .setDescription('Count the number of recipes'),
 };
 
 export const RecipeMutation = {

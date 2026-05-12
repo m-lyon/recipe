@@ -12,6 +12,7 @@ import { mockGetRecipeVeganCopy } from '@recipe/graphql/queries/__mocks__/recipe
 import { mockUpdateRecipeOneNoChange } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetRecipeWithVeganVersion } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipeThree, mockGetRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
+import { ReservedTags } from '@recipe/graphql/enums';
 
 import { routes } from '../routes';
 import { mocks, mocksMinimal } from '../__mocks__/graphql';
@@ -364,5 +365,61 @@ describe('CreateVeganRecipe — cache update after link', () => {
 
         // After successful link, the success toast should appear
         expect(await screen.findByText('Vegan version created')).not.toBeNull();
+    });
+});
+
+describe('Home page — vegan tag filter includes recipes with vegan version', () => {
+    afterEach(() => {
+        cleanup();
+    });
+
+    it('should include recipes that have a vegan version when filtering by vegan tag', async () => {
+        const { GET_RECIPES } = await import('@recipe/graphql/queries/recipe');
+        const { mockRecipeOne, mockRecipeWithVeganVersion } = await import(
+            '@recipe/graphql/queries/__mocks__/recipe'
+        );
+
+        // Build the mock for the new OR-based vegan filter
+        const mockFilterVeganInclVeganVersion = {
+            AND: [
+                { archived: false, originalRecipe: null },
+                {
+                    OR: [
+                        { _operators: { calculatedTags: { in: [ReservedTags.Vegan] } } },
+                        { _operators: { veganVersion: { exists: true } } },
+                    ],
+                },
+            ],
+        };
+        const mockGetRecipesVegan = {
+            request: {
+                query: GET_RECIPES,
+                variables: {
+                    offset: 0,
+                    limit: 5,
+                    filter: mockFilterVeganInclVeganVersion,
+                    countFilter: mockFilterVeganInclVeganVersion,
+                },
+            },
+            result: {
+                data: {
+                    __typename: 'Query',
+                    recipeMany: [mockRecipeOne, mockRecipeWithVeganVersion],
+                    recipeCount: 2,
+                },
+            },
+        };
+
+        const user = userEvent.setup();
+        renderPage(routes, [...mocksMinimal, mockGetRecipesVegan], [PATH.ROOT]);
+        // Click the Filter by tags button, then the vegan chip
+        await screen.findByText('Recipes');
+        await user.click(screen.getByLabelText('Filter by tags'));
+        await user.click(await screen.findByLabelText('vegan'));
+
+        // Both recipes should appear (both have title 'Mock Recipe')
+        await waitFor(() => {
+            expect(screen.getAllByLabelText(/View Mock Recipe/).length).toBeGreaterThanOrEqual(1);
+        });
     });
 });

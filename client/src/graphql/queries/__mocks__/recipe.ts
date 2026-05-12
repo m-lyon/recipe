@@ -683,7 +683,12 @@ export const mockGetRecipesFilteredTag = {
 const mockFilterCalculatedTag = {
     AND: [
         { archived: false, originalRecipe: null },
-        { _operators: { calculatedTags: { in: [ReservedTags.Vegan] } } },
+        {
+            OR: [
+                { _operators: { calculatedTags: { in: [ReservedTags.Vegan] } } },
+                { _operators: { veganVersion: { exists: true } } },
+            ],
+        },
     ],
 };
 export const mockGetRecipesFilteredCalculatedTag = {

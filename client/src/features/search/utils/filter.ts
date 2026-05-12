@@ -1,4 +1,5 @@
 import { FilterFindManyRecipeInput } from '@recipe/graphql/generated';
+import { ReservedTags } from '@recipe/graphql/enums';
 
 export interface Query {
     title?: string;
@@ -20,7 +21,17 @@ export function getSearchFilter(query: Query, showArchived: boolean): FilterFind
     }
     if (calculatedTags?.length) {
         for (const cTag of calculatedTags) {
-            filters.push({ _operators: { calculatedTags: { in: [cTag] } } });
+            if (cTag === ReservedTags.Vegan) {
+                // Include recipes that are vegan OR have a vegan version available
+                filters.push({
+                    OR: [
+                        { _operators: { calculatedTags: { in: [cTag] } } },
+                        { _operators: { veganVersion: { exists: true } } },
+                    ],
+                });
+            } else {
+                filters.push({ _operators: { calculatedTags: { in: [cTag] } } });
+            }
         }
     }
     if (ingredients?.length) {
