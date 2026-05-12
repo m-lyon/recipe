@@ -218,6 +218,13 @@ export function CreateVeganRecipe() {
                             },
                         },
                     });
+                    // Ensure the new vegan copy has originalRecipe set in the cache,
+                    // so the home-page query (filter: { originalRecipe: null }) excludes it.
+                    cache.writeFragment({
+                        id: `Recipe:${recipeResult._id}`,
+                        fragment: gql(`fragment VeganOriginalLink on Recipe { originalRecipe { _id } }`),
+                        data: { originalRecipe: { __typename: 'Recipe' as const, _id: originalId } },
+                    });
                 },
             });
         } catch (e: unknown) {

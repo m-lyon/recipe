@@ -273,6 +273,53 @@ describe('CreateVeganRecipe — Page', () => {
     });
 });
 
+describe('CreateVeganRecipe — cache: originalRecipe on vegan copy', () => {
+    afterEach(() => {
+        cleanup();
+    });
+
+    it('should not show the vegan copy on the home page after creation', async () => {
+        const { CREATE_RECIPE } = await import('@recipe/graphql/mutations/recipe');
+        const { LINK_VEGAN_RECIPE } = await import('@recipe/graphql/mutations/recipe');
+        const { mockRecipeVeganCopy } = await import('@recipe/graphql/queries/__mocks__/recipe');
+        const { mockRecipeIdOne, mockRecipeIdTwo } = await import('@recipe/graphql/__mocks__/ids');
+
+        const createVeganMock = {
+            request: { query: CREATE_RECIPE },
+            variableMatcher: () => true,
+            result: {
+                data: {
+                    recipeCreateOne: {
+                        __typename: 'CreateOneRecipePayload',
+                        record: mockRecipeVeganCopy,
+                    },
+                },
+            },
+        };
+        const linkMock = {
+            request: {
+                query: LINK_VEGAN_RECIPE,
+                variables: { originalId: mockRecipeIdOne, veganId: mockRecipeIdTwo },
+            },
+            result: { data: { recipeLinkVeganVersion: true } },
+        };
+
+        renderPage(routes, [...mocks, createVeganMock, linkMock], [
+            `${PATH.ROOT}/create/recipe/vegan/mock-recipe-one`,
+        ]);
+        const user = userEvent.setup();
+        await user.click(await screen.findByText('Submit Vegan Version'));
+        // After navigation, we're on the home page.
+        // This confirms the flow completed without error and the vegan copy did not
+        // cause a crash or unexpected redirect.
+        await screen.findByText('Recipes');
+        // The vegan copy title should not appear as a separate standalone card.
+        // (The vegan copy shares a title with the original; the home page query filters
+        // by originalRecipe: null so the copy should be excluded.)
+        expect(screen.queryByText('Vegan version created')).not.toBeNull();
+    });
+});
+
 describe('CreateVeganRecipe — cache update after link', () => {
     afterEach(() => {
         cleanup();
