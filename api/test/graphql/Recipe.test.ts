@@ -266,7 +266,7 @@ describe('recipeCreateOne', () => {
         assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
         assert.equal(
             response.body.singleResult.errors[0].message,
-            'Recipe validation failed: title: The Recipe title must be unique.'
+            'Recipe validation failed: title: The recipe title must be unique.'
         );
     });
 
@@ -774,7 +774,7 @@ describe('recipeUpdateById', () => {
         assert.isDefined(response.body.singleResult.errors);
         assert.equal(
             response.body.singleResult.errors[0].message,
-            'Recipe validation failed: title: The Recipe title must be unique.'
+            'Recipe validation failed: title: The recipe title must be unique.'
         );
     });
 
@@ -1584,7 +1584,7 @@ describe('recipeLinkVeganVersion', () => {
         const veganDoc = await Recipe.findById(vegan._id);
         assert.equal(String(originalDoc.veganVersion), String(vegan._id));
         assert.equal(String(veganDoc.originalRecipe), String(original._id));
-        assert.include(originalDoc.calculatedTags, 'vegan option available');
+        assert.include(originalDoc.calculatedTags, 'vegan version available');
     });
 
     it('should NOT link if original already has a veganVersion', async function () {
@@ -1707,6 +1707,17 @@ describe('recipeCreateOne vegan validation', () => {
           }`;
         return context.apolloServer.executeOperation(
             { query, variables: { record } },
+            { contextValue: { isAuthenticated: () => true, getUser: () => user } }
+        );
+    }
+
+    async function linkVegan(context, user, originalId: string, veganId: string) {
+        const query = `
+        mutation LinkVegan($originalId: MongoID!, $veganId: MongoID!) {
+            recipeLinkVeganVersion(originalId: $originalId, veganId: $veganId)
+        }`;
+        return context.apolloServer.executeOperation(
+            { query, variables: { originalId, veganId } },
             { contextValue: { isAuthenticated: () => true, getUser: () => user } }
         );
     }
@@ -1844,6 +1855,86 @@ describe('recipeCreateOne vegan validation', () => {
         assert.equal(veganRecord.title, 'Tomato Soup');
     });
 
+    it('should allow creating a vegan copy with originalRecipe set then linking it (real UI flow)', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        const ingredientSubsections = [
+            {
+                ingredients: [
+                    {
+                        ingredient: tomato._id,
+                        quantity: '300',
+                        unit: unit._id,
+                        prepMethod: prepMethod._id,
+                    },
+                ],
+            },
+        ];
+        const instructionSubsections = [{ name: 'Main', instructions: ['Cook.'] }];
+
+        // Step 1: Create original recipe
+        const originalResponse = await createRecipe(this, user, {
+            title: 'Tomato Soup',
+            ingredientSubsections,
+            instructionSubsections,
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+        assert.isUndefined(
+            originalResponse.body.singleResult.errors,
+            originalResponse.body.singleResult.errors
+                ? `Step 1 failed: ${originalResponse.body.singleResult.errors[0].message}`
+                : ''
+        );
+        const originalId = (
+            originalResponse.body.singleResult.data as {
+                recipeCreateOne: { record: { _id: string } };
+            }
+        ).recipeCreateOne.record._id;
+
+        // Step 2: Create vegan copy with SAME title AND originalRecipe set
+        // (client sends originalRecipe at creation time to bypass title uniqueness check)
+        const veganResponse = await createRecipe(this, user, {
+            title: 'Tomato Soup',
+            originalRecipe: originalId,
+            ingredientSubsections,
+            instructionSubsections,
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+        assert.equal(veganResponse.body.kind, 'single');
+        assert.isUndefined(
+            veganResponse.body.singleResult.errors,
+            veganResponse.body.singleResult.errors
+                ? veganResponse.body.singleResult.errors[0].message
+                : ''
+        );
+        const veganId = (
+            veganResponse.body.singleResult.data as {
+                recipeCreateOne: { record: { _id: string } };
+            }
+        ).recipeCreateOne.record._id;
+
+        // Step 3: Link them — should succeed
+        const linkResponse = await linkVegan(this, user, originalId, veganId);
+        assert.equal(linkResponse.body.kind, 'single');
+        assert.isUndefined(
+            linkResponse.body.singleResult.errors,
+            linkResponse.body.singleResult.errors
+                ? linkResponse.body.singleResult.errors[0].message
+                : ''
+        );
+        assert.isTrue(
+            (linkResponse.body.singleResult.data as { recipeLinkVeganVersion: boolean })
+                .recipeLinkVeganVersion
+        );
+    });
+
     it('should NOT allow a non-vegan-copy recipe to have a duplicate title', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         const tomato = await Ingredient.findOne({ name: 'tomato' });
@@ -1877,9 +1968,6 @@ describe('recipeCreateOne vegan validation', () => {
         const response = await createRecipe(this, user, record);
         assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors);
-        assert.match(
-            response.body.singleResult.errors[0].message,
-            /Recipe title must be unique/i
-        );
+        assert.match(response.body.singleResult.errors[0].message, /Recipe title must be unique/i);
     });
 });

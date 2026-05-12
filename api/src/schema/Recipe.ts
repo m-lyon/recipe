@@ -283,7 +283,7 @@ export const RecipeMutation = {
                 await Recipe.findByIdAndUpdate(record.originalRecipe, {
                     $unset: { veganVersion: 1 },
                 });
-                // Trigger save on original so calculatedTags lose 'vegan option available'
+                // Trigger save on original so calculatedTags lose 'vegan version available'
                 const original = await Recipe.findById(record.originalRecipe);
                 if (original) await original.save();
             }
@@ -338,7 +338,7 @@ export const RecipeMutation = {
                 throw new Error('Not authorized to modify vegan recipe');
             if (original.veganVersion)
                 throw new Error('Original recipe already has a vegan version');
-            if (vegan.originalRecipe)
+            if (vegan.originalRecipe && String(vegan.originalRecipe) !== originalId)
                 throw new Error('Vegan recipe already has an original recipe');
             return next(rp);
         }),

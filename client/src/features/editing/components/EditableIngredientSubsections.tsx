@@ -8,7 +8,11 @@ import { ConfirmDeleteAlert } from '@recipe/common/components';
 import { useSubsectionDelete } from '../hooks/useSubsectionDelete';
 import { EditableIngredientSubsection } from './EditableIngredientSubsection';
 
-export function EditableIngredientSubsections({ suppressItemInUseError }: { suppressItemInUseError?: boolean }) {
+export function EditableIngredientSubsections({
+    suppressItemInUseError,
+}: {
+    suppressItemInUseError?: boolean;
+}) {
     const ref = useRef<HTMLInputElement>(null);
     const { numSections, remove } = useRecipeStore(
         useShallow((state) => ({

@@ -21,11 +21,16 @@ export function uniqueInAdminsAndUser(model: string, attribute: string, message?
                 { _id: { $ne: this._id } }, // Exclude the current document
                 { $or: [{ unique: true }, { unique: { $exists: false } }] },
                 { [attribute]: value },
+                // Exclude vegan copies — they are allowed to share their original's title
+                { originalRecipe: { $exists: false } },
             ],
         });
         return count === 0;
     }
-    return { validator, message: message ? message : `The ${model} ${attribute} must be unique.` };
+    return {
+        validator,
+        message: message ? message : `The ${model.toLowerCase()} ${attribute} must be unique.`,
+    };
 }
 
 export function unique(model: string, attribute: string) {

@@ -13,7 +13,7 @@ import { ownerExists, tagsExist, unique, uniqueInAdminsAndUser } from './validat
 const quantityRegex = /^((\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*)(-(\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*))?)$/;
 const ReservedRecipeTags = {
     Ingredient: 'ingredient',
-    VeganOptionAvailable: 'vegan option available',
+    VeganVersionAvailable: 'vegan version available',
 } as const;
 export const ReservedTags = { ...ReservedRecipeTags, ...ReservedIngredientTags } as const;
 type ReservedTags = (typeof ReservedTags)[keyof typeof ReservedTags];
@@ -290,7 +290,7 @@ recipeSchema.pre('save', async function () {
         }
     }
     if (this.veganVersion != null) {
-        calculatedTags.push(ReservedRecipeTags.VeganOptionAvailable);
+        calculatedTags.push(ReservedRecipeTags.VeganVersionAvailable);
     }
     this.calculatedTags = calculatedTags;
     if (this.originalRecipe != null && !calculatedTags.includes(ReservedIngredientTags.Vegan)) {
