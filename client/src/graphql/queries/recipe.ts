@@ -36,6 +36,9 @@ export const RECIPE_INGR_FIELDS = gql(`
         _id
         title
         pluralTitle
+        veganVersion {
+            _id
+        }
     }
 `);
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { getEditableRecipeIngredientStr } from '@recipe/utils/formatting';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
+import { ingredientDisplayValue } from '@recipe/utils/formatting';
 
 describe('getEditableRecipeIngredientStr', () => {
     it('should display plural unit when a fraction greater than 1', () => {
@@ -113,5 +114,40 @@ describe('getFinishedRecipeIngredientStr', () => {
         };
         const result = getFinishedRecipeIngredientStr(item);
         expect(result).toBe('1½ onions');
+    });
+});
+
+describe('ingredientDisplayValue — (ve) suffix', () => {
+    it('appends (ve) when recipe ingredient has a veganVersion', () => {
+        const recipe = {
+            __typename: 'Recipe' as const,
+            _id: 'r1',
+            title: 'Chicken Stock',
+            pluralTitle: null,
+            veganVersion: { __typename: 'Recipe' as const, _id: 'r2' },
+        };
+        expect(ingredientDisplayValue(null, null, recipe)).toBe('chicken stock (ve)');
+    });
+
+    it('does not append (ve) when recipe ingredient has no veganVersion', () => {
+        const recipe = {
+            __typename: 'Recipe' as const,
+            _id: 'r1',
+            title: 'Chicken Stock',
+            pluralTitle: null,
+            veganVersion: null,
+        };
+        expect(ingredientDisplayValue(null, null, recipe)).toBe('chicken stock');
+    });
+
+    it('appends (ve) to plural title when plural and has veganVersion', () => {
+        const recipe = {
+            __typename: 'Recipe' as const,
+            _id: 'r1',
+            title: 'Chicken Stock',
+            pluralTitle: 'Chicken Stocks',
+            veganVersion: { __typename: 'Recipe' as const, _id: 'r2' },
+        };
+        expect(ingredientDisplayValue('2', null, recipe)).toBe('chicken stocks (ve)');
     });
 });

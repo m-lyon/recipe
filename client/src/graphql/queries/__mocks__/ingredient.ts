@@ -52,6 +52,7 @@ export const mockRhurbarbPie: RecipeChoice = {
     __typename: 'Recipe',
     title: 'rhubarb pie',
     pluralTitle: 'rhubarb pies',
+    veganVersion: null,
 };
 export const mockIngredients = [mockApple, mockChicken, mockCarrot, mockLettuce];
 export const mockRecipeFromIngredients = [mockRhurbarbPie];
