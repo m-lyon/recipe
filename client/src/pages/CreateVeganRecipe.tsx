@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { useNavigate, useParams } from 'react-router-dom';
 import { gql, useMutation, useQuery } from '@apollo/client';
 
+import { ReservedTags } from '@recipe/graphql/enums';
 import { useAddRating } from '@recipe/features/rating';
 import { useUploadImages } from '@recipe/features/images';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
@@ -232,7 +233,23 @@ export function CreateVeganRecipe() {
                         id: `Recipe:${recipeResult._id}`,
                         fragment: VEGAN_ORIGINAL_LINK_FRAGMENT,
                         fragmentName: 'VeganOriginalLink',
-                        data: { originalRecipe: { __typename: 'Recipe' as const, _id: originalId } },
+                        data: {
+                            originalRecipe: { __typename: 'Recipe' as const, _id: originalId },
+                        },
+                    });
+                    // Update the original recipe's calculatedTags in the cache to include
+                    // 'vegan version available'. The server computes this via the pre-save
+                    // hook, but the home-page recipeMany is already cached and won't refetch.
+                    cache.modify({
+                        id: `Recipe:${originalId}`,
+                        fields: {
+                            calculatedTags(existing: string[] = []) {
+                                if (existing.includes(ReservedTags.VeganVersionAvailable)) {
+                                    return existing;
+                                }
+                                return [...existing, ReservedTags.VeganVersionAvailable];
+                            },
+                        },
                     });
                 },
             });

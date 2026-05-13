@@ -4,6 +4,7 @@ import { cleanup, screen, waitFor } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { PATH } from '@recipe/constants';
+import { ReservedTags } from '@recipe/graphql/enums';
 import { enterEditRecipePage } from '@recipe/utils/tests';
 import { MockedResponses, renderPage } from '@recipe/utils/tests';
 import { mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -12,7 +13,6 @@ import { mockGetRecipeVeganCopy } from '@recipe/graphql/queries/__mocks__/recipe
 import { mockUpdateRecipeOneNoChange } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetRecipeWithVeganVersion } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipeThree, mockGetRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
-import { ReservedTags } from '@recipe/graphql/enums';
 
 import { routes } from '../routes';
 import { mocks, mocksMinimal } from '../__mocks__/graphql';
@@ -265,9 +265,11 @@ describe('CreateVeganRecipe — Page', () => {
             result: { data: { recipeLinkVeganVersion: true } },
         };
 
-        renderPage(routes, [...mocks, createVeganMock, linkMock], [
-            `${PATH.ROOT}/create/recipe/vegan/mock-recipe-one`,
-        ]);
+        renderPage(
+            routes,
+            [...mocks, createVeganMock, linkMock],
+            [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-one`]
+        );
         const user = userEvent.setup();
         await user.click(await screen.findByText('Submit Vegan Version'));
         expect(await screen.findByText('Recipes')).not.toBeNull();
@@ -305,9 +307,11 @@ describe('CreateVeganRecipe — cache: originalRecipe on vegan copy', () => {
             result: { data: { recipeLinkVeganVersion: true } },
         };
 
-        renderPage(routes, [...mocks, createVeganMock, linkMock], [
-            `${PATH.ROOT}/create/recipe/vegan/mock-recipe-one`,
-        ]);
+        renderPage(
+            routes,
+            [...mocks, createVeganMock, linkMock],
+            [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-one`]
+        );
         const user = userEvent.setup();
         await user.click(await screen.findByText('Submit Vegan Version'));
         // After navigation, we're on the home page.
@@ -422,5 +426,151 @@ describe('Home page — vegan tag filter includes recipes with vegan version', (
             const cards = screen.queryAllByLabelText(/^View /);
             expect(cards).toHaveLength(2);
         });
+    });
+});
+
+describe('CreateVeganRecipe — cache: home page after vegan creation', () => {
+    afterEach(() => {
+        cleanup();
+    });
+
+    it('should show only the original recipe on the home page with the vegan version available tag after creating a vegan version', async () => {
+        const { CREATE_RECIPE } = await import('@recipe/graphql/mutations/recipe');
+        const { LINK_VEGAN_RECIPE } = await import('@recipe/graphql/mutations/recipe');
+        const { mockRecipeVeganCopy } = await import('@recipe/graphql/queries/__mocks__/recipe');
+        const { mockRecipeIdOne, mockRecipeIdTwo } = await import('@recipe/graphql/__mocks__/ids');
+
+        const createVeganMock = {
+            request: { query: CREATE_RECIPE },
+            variableMatcher: () => true,
+            result: {
+                data: {
+                    recipeCreateOne: {
+                        __typename: 'CreateOneRecipePayload',
+                        record: mockRecipeVeganCopy,
+                    },
+                },
+            },
+        };
+        const linkMock = {
+            request: {
+                query: LINK_VEGAN_RECIPE,
+                variables: { originalId: mockRecipeIdOne, veganId: mockRecipeIdTwo },
+            },
+            result: { data: { recipeLinkVeganVersion: true } },
+        };
+
+        // Build a custom GET_RECIPES mock that returns mockRecipeOne with the
+        // 'vegan version available' calculatedTag already present. This simulates what
+        // the server would return after the link operation. When the user navigates
+        // back to the home page after creating the vegan version, Apollo fires a fresh
+        // GET_RECIPES (not yet cached since we started on the create-vegan page). The
+        // cache.modify in the linkVeganRecipe update adds the tag to the normalized
+        // Recipe node, and this fresh query response confirms it.
+        const { GET_RECIPES } = await import('@recipe/graphql/queries/recipe');
+        const { mockRecipeOne, mockRecipeTwo, mockRecipeThree, mockRecipeFour } = await import(
+            '@recipe/graphql/queries/__mocks__/recipe'
+        );
+        const mockGetRecipesAfterLink = {
+            request: {
+                query: GET_RECIPES,
+                variables: {
+                    offset: 0,
+                    limit: 5,
+                    filter: { archived: false, originalRecipe: null },
+                    countFilter: { archived: false, originalRecipe: null },
+                },
+            },
+            result: {
+                data: {
+                    __typename: 'Query',
+                    recipeMany: [
+                        {
+                            ...mockRecipeOne,
+                            calculatedTags: ['vegan', 'vegetarian', 'vegan version available'],
+                        },
+                        mockRecipeTwo,
+                        mockRecipeThree,
+                        mockRecipeFour,
+                    ],
+                    recipeCount: 4,
+                },
+            },
+        };
+
+        // Start directly on the CreateVeganRecipe page. We replace the shared mockGetRecipes
+        // with mockGetRecipesAfterLink so the home page shows the updated calculatedTags.
+        renderPage(
+            routes,
+            [
+                ...mocksMinimal,
+                mockGetRecipeOne,
+                mockGetRecipeTwo,
+                mockGetRecipeThree,
+                mockGetRecipesAfterLink,
+                createVeganMock,
+                linkMock,
+            ],
+            [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-one`]
+        );
+        const user = userEvent.setup();
+        await user.click(await screen.findByText('Submit Vegan Version'));
+
+        // After navigation, we should be on the home page.
+        await screen.findByText('Recipes');
+
+        // Only the original 4 recipes should be shown — the vegan copy must NOT appear.
+        const cards = screen.queryAllByLabelText(/^View /);
+        expect(cards).toHaveLength(mockGetRecipes.result.data.recipeMany.length);
+
+        // The original recipe card must be present.
+        expect(screen.queryAllByLabelText('View Mock Recipe')).toHaveLength(1);
+
+        // The original recipe card must display the 'vegan version available' calculated tag,
+        // updated via cache.modify in the linkVeganRecipe update callback.
+        expect(screen.getByText('vegan version available')).not.toBeNull();
+    });
+});
+
+describe('EditRecipe — toast when navigating to CreateVeganRecipe', () => {
+    afterEach(() => {
+        cleanup();
+    });
+
+    it('should show a toast when saving a recipe with the create vegan version checkbox checked', async () => {
+        const { GET_RECIPE } = await import('@recipe/graphql/queries/recipe');
+        const { mockRecipeOne } = await import('@recipe/graphql/queries/__mocks__/recipe');
+        const { mockUpdateRecipeOneNoChange } = await import(
+            '@recipe/graphql/mutations/__mocks__/recipe'
+        );
+
+        // A non-vegan recipe with no existing vegan version so saving with the checkbox checked
+        // triggers navigation to CreateVeganRecipe (not the warning toast).
+        const mockRecipeOneNonVegan = { ...mockRecipeOne, calculatedTags: [], veganVersion: null };
+        const mockGetRecipeOneNonVegan = {
+            request: {
+                query: GET_RECIPE,
+                variables: { filter: { titleIdentifier: 'mock-recipe-one' } },
+            },
+            result: { data: { __typename: 'Query', recipeOne: mockRecipeOneNonVegan } },
+        };
+
+        renderPage(
+            routes,
+            [
+                ...mocksMinimal,
+                mockGetRecipeOneNonVegan,
+                mockGetRecipeTwo,
+                mockGetRecipeThree,
+                mockGetRecipes,
+                mockUpdateRecipeOneNoChange,
+            ],
+            [PATH.ROOT]
+        );
+        const user = userEvent.setup();
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+        await user.click(screen.getByLabelText('Create vegan version of this recipe'));
+        await user.click(screen.getByLabelText('Save recipe'));
+        expect(await screen.findByText('Creating vegan version')).not.toBeNull();
     });
 });

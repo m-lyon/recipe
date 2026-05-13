@@ -1,5 +1,5 @@
-import { FilterFindManyRecipeInput } from '@recipe/graphql/generated';
 import { ReservedTags } from '@recipe/graphql/enums';
+import { FilterFindManyRecipeInput } from '@recipe/graphql/generated';
 
 export interface Query {
     title?: string;

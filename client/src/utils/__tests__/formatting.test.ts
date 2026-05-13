@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
+import { ingredientDisplayValue } from '@recipe/utils/formatting';
 import { getEditableRecipeIngredientStr } from '@recipe/utils/formatting';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
-import { ingredientDisplayValue } from '@recipe/utils/formatting';
 
 describe('getEditableRecipeIngredientStr', () => {
     it('should display plural unit when a fraction greater than 1', () => {

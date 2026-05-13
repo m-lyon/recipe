@@ -21,6 +21,11 @@ export function updateRecipeCache(
                         fragmentName: 'RecipeIngrFields',
                     });
                 } else {
+                    // Don't add vegan copies (recipes with originalRecipe set) to the
+                    // home-page recipeMany array — they should be hidden from the home page.
+                    if (record.originalRecipe) {
+                        return existing;
+                    }
                     newRef = cache.writeFragment({
                         data: record,
                         fragment: RECIPE_FIELDS_SUBSET,

@@ -234,6 +234,11 @@ export function EditRecipe() {
                     DELAY_SHORT
                 );
             } else {
+                successToast({
+                    title: 'Creating vegan version',
+                    description: 'Redirecting you to the vegan recipe page',
+                    position: 'top',
+                });
                 return setTimeout(
                     () =>
                         navigate(

@@ -257,3 +257,27 @@ GitHub Actions workflow (`.github/workflows/deploy.yml`) on push to `main`:
 - **Dual `useSearch` hook instances**: Both `Navbar` and `RecipeCardsContainer` call `useSearch()`, creating separate `useLazyQuery` instances. Apollo mocks for search queries may need to be provided twice.
 - **Apollo cache `keyArgs: []`**: `recipeMany` and `recipeCount` have `keyArgs: []` in the cache config (`client/src/utils/cache.ts`), meaning all queries of each type share a single cache entry regardless of filter/pagination args.
 - **Mock recipe display names**: `mockRecipeTwo` has `isIngredient: true`, so `getCardTitle()` returns `pluralTitle` not `title`. Use `aria-label` to find card elements in tests.
+- **`mockRecipeTwo` and `mockRecipeVeganCopy` share the same `_id` (`mockRecipeIdTwo`)**: Any `cache.writeFragment` that writes vegan-copy data will overwrite the `Recipe:mockRecipeIdTwo` cache node, corrupting `mockRecipeTwo`'s title from 'Mock Recipe Two' to 'Mock Recipe'. If a test starts from the home page and then triggers vegan-copy creation, this causes two cards to show 'View Mock Recipe'. Avoid starting such tests from the home page, or give the vegan copy a distinct ID.
+- **`cache.modify` is overwritten by a subsequent network response**: `cache.modify` updates a normalized cache node directly, but if a query that includes the same fields fires *after* the modification (e.g. a fresh `GET_RECIPES` on home page navigation), Apollo normalizes the incoming response and overwrites the modified fields. In production this is not an issue because the user visits the home page before editing (so `GET_RECIPES` is already cached and not re-fetched). In tests that start mid-flow (e.g. directly on a create/edit page), the home page `GET_RECIPES` fires fresh on navigation and reverts `cache.modify` changes. Fix by providing a mock `GET_RECIPES` response that already contains the post-modification data.
+- **`updateRecipeCache` increments `recipeCount` unconditionally**: The `increment` flag in `updateRecipeCache` (`client/src/features/editing/utils/update.ts`) increments `recipeCount` even when the new record is a vegan copy (and is therefore excluded from `recipeMany`). If the cache already has a `recipeCount`, this makes `hasMore = true` on the home page, triggering an unnecessary `fetchMore` request. Guard the increment the same way the `recipeMany` append is guarded (skip increment when `record.originalRecipe` is set).
+- **Pre-existing unhandled rejections in `index.vegan.test.tsx`**: Several tests in this file produce `TypeError: Cannot set properties of undefined` unhandled rejections after test cleanup, originating from async Zustand store updates in `CreateVeganRecipe`'s `onCompleted` callback firing after the component unmounts. These are not test failures and are pre-existing; do not treat them as regressions.
+- **`MockedProvider` consumes each mock once**: Apollo's `MockedProvider` uses each entry in the mocks array exactly once (unless `newData` is used). If a component fires the same query multiple times (e.g. on mount and after navigation), provide the mock twice in the array.
+
+## Apollo Cache Patterns
+
+### Updating cached data after a mutation
+
+When a mutation changes server-side data that is already reflected in a cached query result, choose the right update strategy based on when the home page was last visited:
+
+- **`cache.modify`**: Updates a specific normalized node in place. Correct when the node is already cached (user visited the relevant page before the mutation). Does **not** survive a subsequent network response for the same fields — if a query re-fires after the mutation, the incoming data overwrites the modification.
+- **Refetch the query**: Simplest and most reliable. Use `refetchQueries` on the mutation or `cache.evict` to force a re-fetch. Preferred when the UI navigates away and re-fetches anyway.
+- **Test mock alignment**: When testing `cache.modify` behaviour, ensure the test's `GET_RECIPES` (or equivalent) mock returns data that is consistent with the expected post-mutation state, because navigation to the home page fires a fresh query that normalizes over any prior `cache.modify`.
+
+### `updateRecipeCache` and vegan copies
+
+`updateRecipeCache` in `client/src/features/editing/utils/update.ts` is called from the `CREATE_RECIPE` mutation's `update` callback. It has two branches:
+
+- **`isIngredient` path** (`storeFieldName === 'recipeMany:{"filter":{"isIngredient":true}}'`): adds the record to the ingredient dropdown cache.
+- **Home-page path** (all other `storeFieldName` values): skips records where `record.originalRecipe` is set (vegan copies) to prevent them appearing on the home page.
+
+The `recipeCount` increment at the bottom is currently unconditional — it should also be skipped for vegan copies.
