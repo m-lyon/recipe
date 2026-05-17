@@ -20,6 +20,16 @@ export const CREATE_RECIPE = gql(`
     }
 `);
 
+export const CREATE_VEGAN_RECIPE = gql(`
+    mutation CreateVeganRecipe($originalId: MongoID!, $recipe: CreateOneRecipeCreateInput!) {
+        recipeCreateVeganVersion(originalId: $originalId, recipe: $recipe) {
+            record {
+                ...RecipeFieldsFull
+            }
+        }
+    }
+`);
+
 export const ARCHIVE_RECIPE = gql(`
     mutation ArchiveRecipe($id: MongoID!) {
         recipeArchiveById(_id: $id) {
@@ -41,11 +51,5 @@ export const DELETE_RECIPE = gql(`
         recipeRemoveById(_id: $id) {
             recordId
         }
-    }
-`);
-
-export const LINK_VEGAN_RECIPE = gql(`
-    mutation LinkVeganRecipe($originalId: MongoID!, $veganId: MongoID!) {
-        recipeLinkVeganVersion(originalId: $originalId, veganId: $veganId)
     }
 `);

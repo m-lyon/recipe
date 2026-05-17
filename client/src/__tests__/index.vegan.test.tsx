@@ -7,6 +7,7 @@ import { PATH } from '@recipe/constants';
 import { ReservedTags } from '@recipe/graphql/enums';
 import { enterEditRecipePage } from '@recipe/utils/tests';
 import { MockedResponses, renderPage } from '@recipe/utils/tests';
+import { mockRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRenamedRecipe } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -17,7 +18,9 @@ import { mockDeleteRecipeVeganCopy } from '@recipe/graphql/mutations/__mocks__/r
 import { mockGetOldRecipeSlugNotFound } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipeWithVeganVersion } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockUpdateRecipeOneNoChange } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockUpdateRecipeOneNowVegan } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeOneWithRename } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockCreateVeganRecipeViaMutation } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetRecipesAfterArchiveRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipeThree, mockGetRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipesAfterDeleteVeganVersion } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -294,34 +297,9 @@ describe('CreateVeganRecipe — Page', () => {
     });
 
     it('should navigate to home page after successfully submitting a vegan version', async () => {
-        const { CREATE_RECIPE } = await import('@recipe/graphql/mutations/recipe');
-        const { LINK_VEGAN_RECIPE } = await import('@recipe/graphql/mutations/recipe');
-        const { mockRecipeVeganCopy } = await import('@recipe/graphql/queries/__mocks__/recipe');
-        const { mockRecipeIdOne, mockRecipeIdTwo } = await import('@recipe/graphql/__mocks__/ids');
-
-        const createVeganMock = {
-            request: { query: CREATE_RECIPE },
-            variableMatcher: () => true,
-            result: {
-                data: {
-                    recipeCreateOne: {
-                        __typename: 'CreateOneRecipePayload',
-                        record: mockRecipeVeganCopy,
-                    },
-                },
-            },
-        };
-        const linkMock = {
-            request: {
-                query: LINK_VEGAN_RECIPE,
-                variables: { originalId: mockRecipeIdOne, veganId: mockRecipeIdTwo },
-            },
-            result: { data: { recipeLinkVeganVersion: true } },
-        };
-
         renderPage(
             routes,
-            [...mocks, createVeganMock, linkMock],
+            [...mocksMinimal, mockGetRecipeOne, mockCreateVeganRecipeViaMutation, mockGetRecipes],
             [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-one`]
         );
         const user = userEvent.setup();
@@ -336,34 +314,9 @@ describe('CreateVeganRecipe — cache: originalRecipe on vegan copy', () => {
     });
 
     it('should not show the vegan copy on the home page after creation', async () => {
-        const { CREATE_RECIPE } = await import('@recipe/graphql/mutations/recipe');
-        const { LINK_VEGAN_RECIPE } = await import('@recipe/graphql/mutations/recipe');
-        const { mockRecipeVeganCopy } = await import('@recipe/graphql/queries/__mocks__/recipe');
-        const { mockRecipeIdOne, mockRecipeIdTwo } = await import('@recipe/graphql/__mocks__/ids');
-
-        const createVeganMock = {
-            request: { query: CREATE_RECIPE },
-            variableMatcher: () => true,
-            result: {
-                data: {
-                    recipeCreateOne: {
-                        __typename: 'CreateOneRecipePayload',
-                        record: mockRecipeVeganCopy,
-                    },
-                },
-            },
-        };
-        const linkMock = {
-            request: {
-                query: LINK_VEGAN_RECIPE,
-                variables: { originalId: mockRecipeIdOne, veganId: mockRecipeIdTwo },
-            },
-            result: { data: { recipeLinkVeganVersion: true } },
-        };
-
         renderPage(
             routes,
-            [...mocks, createVeganMock, linkMock],
+            [...mocksMinimal, mockGetRecipeOne, mockCreateVeganRecipeViaMutation, mockGetRecipes],
             [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-one`]
         );
         const user = userEvent.setup();
@@ -378,51 +331,30 @@ describe('CreateVeganRecipe — cache: originalRecipe on vegan copy', () => {
     });
 });
 
-describe('CreateVeganRecipe — cache update after link', () => {
+describe('CreateVeganRecipe — cache update after atomic create', () => {
     afterEach(() => {
         cleanup();
     });
 
-    it('should show success toast after creating and linking vegan recipe', async () => {
-        const { CREATE_RECIPE } = await import('@recipe/graphql/mutations/recipe');
-        const { LINK_VEGAN_RECIPE } = await import('@recipe/graphql/mutations/recipe');
-        const { mockRecipeVeganCopy } = await import('@recipe/graphql/queries/__mocks__/recipe');
-        const { mockRecipeIdOne, mockRecipeIdTwo } = await import('@recipe/graphql/__mocks__/ids');
-
-        const createVeganMock = {
-            request: {
-                query: CREATE_RECIPE,
-            },
-            variableMatcher: () => true,
-            result: {
-                data: {
-                    recipeCreateOne: {
-                        __typename: 'CreateOneRecipePayload',
-                        record: mockRecipeVeganCopy,
-                    },
-                },
-            },
-        };
-
-        const linkMock = {
-            request: {
-                query: LINK_VEGAN_RECIPE,
-                variables: { originalId: mockRecipeIdOne, veganId: mockRecipeIdTwo },
-            },
-            result: { data: { recipeLinkVeganVersion: true } },
-        };
-
-        renderPage(
+    it('creates and links the vegan copy with one mutation', async () => {
+        const { router } = renderPage(
             routes,
-            [...mocks, createVeganMock, linkMock],
+            [...mocksMinimal, mockGetRecipeOne, mockCreateVeganRecipeViaMutation, mockGetRecipes],
             [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-one`]
         );
 
         const user = userEvent.setup();
         await user.click(await screen.findByLabelText('Save recipe'));
 
-        // After successful link, the success toast should appear
         expect(await screen.findByText('Vegan version created')).not.toBeNull();
+        await waitFor(() => {
+            expect(router.state.location.pathname).toBe(PATH.ROOT);
+        });
+        await waitFor(() => {
+            expect(screen.queryAllByLabelText(/^View /)).toHaveLength(
+                mockGetRecipes.result.data.recipeMany.length
+            );
+        });
     });
 });
 
@@ -489,43 +421,18 @@ describe('CreateVeganRecipe — cache: home page after vegan creation', () => {
     });
 
     it('should show only the original recipe on the home page with the vegan version available tag after creating a vegan version', async () => {
-        const { CREATE_RECIPE } = await import('@recipe/graphql/mutations/recipe');
-        const { LINK_VEGAN_RECIPE } = await import('@recipe/graphql/mutations/recipe');
-        const { mockRecipeVeganCopy } = await import('@recipe/graphql/queries/__mocks__/recipe');
-        const { mockRecipeIdOne, mockRecipeIdTwo } = await import('@recipe/graphql/__mocks__/ids');
-
-        const createVeganMock = {
-            request: { query: CREATE_RECIPE },
-            variableMatcher: () => true,
-            result: {
-                data: {
-                    recipeCreateOne: {
-                        __typename: 'CreateOneRecipePayload',
-                        record: mockRecipeVeganCopy,
-                    },
-                },
-            },
-        };
-        const linkMock = {
-            request: {
-                query: LINK_VEGAN_RECIPE,
-                variables: { originalId: mockRecipeIdOne, veganId: mockRecipeIdTwo },
-            },
-            result: { data: { recipeLinkVeganVersion: true } },
-        };
-
         // Build a custom GET_RECIPES mock that returns mockRecipeOne with the
         // 'vegan version available' calculatedTag already present. This simulates what
-        // the server would return after the link operation. When the user navigates
+        // the server would return after the atomic create operation. When the user navigates
         // back to the home page after creating the vegan version, Apollo fires a fresh
         // GET_RECIPES (not yet cached since we started on the create-vegan page). The
-        // cache.modify in the linkVeganRecipe update adds the tag to the normalized
+        // cache.modify in the createVeganRecipe update adds the tag to the normalized
         // Recipe node, and this fresh query response confirms it.
         const { GET_RECIPES } = await import('@recipe/graphql/queries/recipe');
         const { mockRecipeOne, mockRecipeTwo, mockRecipeThree, mockRecipeFour } = await import(
             '@recipe/graphql/queries/__mocks__/recipe'
         );
-        const mockGetRecipesAfterLink = {
+        const mockGetRecipesAfterCreateVegan = {
             request: {
                 query: GET_RECIPES,
                 variables: {
@@ -561,9 +468,8 @@ describe('CreateVeganRecipe — cache: home page after vegan creation', () => {
                 mockGetRecipeOne,
                 mockGetRecipeTwo,
                 mockGetRecipeThree,
-                mockGetRecipesAfterLink,
-                createVeganMock,
-                linkMock,
+                mockGetRecipesAfterCreateVegan,
+                mockCreateVeganRecipeViaMutation,
             ],
             [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-one`]
         );
@@ -581,7 +487,7 @@ describe('CreateVeganRecipe — cache: home page after vegan creation', () => {
         expect(screen.queryAllByLabelText('View Mock Recipe')).toHaveLength(1);
 
         // The original recipe card must display the 'vegan version available' calculated tag,
-        // updated via cache.modify in the linkVeganRecipe update callback.
+        // updated via cache.modify in the createVeganRecipe update callback.
         expect(screen.getByText('vegan version available')).not.toBeNull();
     });
 });
@@ -594,7 +500,6 @@ describe('EditRecipe — toast when navigating to CreateVeganRecipe', () => {
     it('keeps Save enabled when the saved recipe is missing a title identifier', async () => {
         const { GET_RECIPE } = await import('@recipe/graphql/queries/recipe');
         const { UPDATE_RECIPE } = await import('@recipe/graphql/mutations/recipe');
-        const { mockRecipeOne } = await import('@recipe/graphql/queries/__mocks__/recipe');
         const mockGetRecipeOneNonVegan = {
             request: {
                 query: GET_RECIPE,
@@ -615,7 +520,10 @@ describe('EditRecipe — toast when navigating to CreateVeganRecipe', () => {
                     __typename: 'Mutation',
                     recipeUpdateById: {
                         __typename: 'UpdateByIdRecipePayload',
-                        record: { ...mockRecipeOne, titleIdentifier: null },
+                        record: {
+                            ...mockGetRecipeOneNonVegan.result.data.recipeOne,
+                            titleIdentifier: null,
+                        },
                     },
                 },
             },
@@ -649,10 +557,7 @@ describe('EditRecipe — toast when navigating to CreateVeganRecipe', () => {
 
     it('should show a toast when saving a recipe with the create vegan version checkbox checked', async () => {
         const { GET_RECIPE } = await import('@recipe/graphql/queries/recipe');
-        const { mockRecipeOne } = await import('@recipe/graphql/queries/__mocks__/recipe');
-        const { mockUpdateRecipeOneNoChange } = await import(
-            '@recipe/graphql/mutations/__mocks__/recipe'
-        );
+        const { UPDATE_RECIPE } = await import('@recipe/graphql/mutations/recipe');
 
         // A non-vegan recipe with no existing vegan version so saving with the checkbox checked
         // triggers navigation to CreateVeganRecipe (not the warning toast).
@@ -664,6 +569,19 @@ describe('EditRecipe — toast when navigating to CreateVeganRecipe', () => {
             },
             result: { data: { __typename: 'Query', recipeOne: mockRecipeOneNonVegan } },
         };
+        const mockUpdateRecipeOneNonVegan = {
+            request: { query: UPDATE_RECIPE },
+            variableMatcher: () => true,
+            result: {
+                data: {
+                    __typename: 'Mutation',
+                    recipeUpdateById: {
+                        __typename: 'UpdateByIdRecipePayload',
+                        record: mockRecipeOneNonVegan,
+                    },
+                },
+            },
+        };
 
         renderPage(
             routes,
@@ -673,7 +591,7 @@ describe('EditRecipe — toast when navigating to CreateVeganRecipe', () => {
                 mockGetRecipeTwo,
                 mockGetRecipeThree,
                 mockGetRecipes,
-                mockUpdateRecipeOneNoChange,
+                mockUpdateRecipeOneNonVegan,
             ],
             [PATH.ROOT]
         );
@@ -727,6 +645,48 @@ describe('EditRecipe — toast when navigating to CreateVeganRecipe', () => {
         });
         expect(await screen.findByDisplayValue('Mock Recipe Renamed')).not.toBeNull();
         expect(screen.getByText('Submit Vegan Version')).not.toBeNull();
+    });
+
+    it('does not redirect to vegan-copy creation when the saved recipe becomes vegan', async () => {
+        const { GET_RECIPE } = await import('@recipe/graphql/queries/recipe');
+        const { mockRecipeOne } = await import('@recipe/graphql/queries/__mocks__/recipe');
+        const mockGetRecipeOneNonVegan = {
+            request: {
+                query: GET_RECIPE,
+                variables: { filter: { titleIdentifier: 'mock-recipe-one' } },
+            },
+            result: {
+                data: {
+                    __typename: 'Query',
+                    recipeOne: { ...mockRecipeOne, calculatedTags: [], veganVersion: null },
+                },
+            },
+        };
+
+        const { router } = renderPage(
+            routes,
+            [
+                ...mocksMinimal,
+                mockGetRecipeOneNonVegan,
+                mockGetRecipeTwo,
+                mockGetRecipeThree,
+                mockGetRecipes,
+                mockUpdateRecipeOneNowVegan,
+            ],
+            [PATH.ROOT]
+        );
+        const user = userEvent.setup();
+
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+        await user.click(screen.getByLabelText('Create vegan version of this recipe'));
+        await user.click(screen.getByLabelText('Save recipe'));
+
+        expect(await screen.findByText('Recipe is already vegan')).not.toBeNull();
+        expect(screen.queryByText('Create Vegan Recipe')).toBeNull();
+        await waitFor(() => {
+            expect(router.state.location.pathname).toBe(PATH.ROOT);
+        });
+        expect(await screen.findByText('Recipes')).not.toBeNull();
     });
 });
 

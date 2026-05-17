@@ -10,9 +10,9 @@ import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { useImagesStore, useRecipeStore } from '@recipe/stores';
 import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
+import { CREATE_VEGAN_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { EditableRecipe, updateRecipeCache } from '@recipe/features/editing';
 import { DELAY_LONG, DELAY_SHORT, GRAPHQL_URL, PATH } from '@recipe/constants';
-import { CREATE_RECIPE, LINK_VEGAN_RECIPE } from '@recipe/graphql/mutations/recipe';
 
 import { queryIngredientToFinished } from './utils';
 
@@ -144,16 +144,50 @@ export function CreateVeganRecipe() {
     });
 
     const [createRecipe, { loading: recipeLoading, data: createResponse }] = useMutation(
-        CREATE_RECIPE,
+        CREATE_VEGAN_RECIPE,
         {
             update(cache, { data }) {
-                const { record } = data?.recipeCreateOne || {};
+                const { record } = data?.recipeCreateVeganVersion || {};
                 if (!record) return;
                 updateRecipeCache(cache, record, true);
+                const originalId = record.originalRecipe?._id;
+                if (!originalId) return;
+
+                cache.writeFragment({
+                    id: `Recipe:${originalId}`,
+                    fragment: VEGAN_VERSION_LINK_FRAGMENT,
+                    fragmentName: 'VeganVersionLink',
+                    data: {
+                        veganVersion: {
+                            __typename: 'Recipe' as const,
+                            _id: record._id,
+                            title: record.title,
+                            titleIdentifier: record.titleIdentifier,
+                        },
+                    },
+                });
+                cache.writeFragment({
+                    id: `Recipe:${record._id}`,
+                    fragment: VEGAN_ORIGINAL_LINK_FRAGMENT,
+                    fragmentName: 'VeganOriginalLink',
+                    data: {
+                        originalRecipe: { __typename: 'Recipe' as const, _id: originalId },
+                    },
+                });
+                cache.modify({
+                    id: `Recipe:${originalId}`,
+                    fields: {
+                        calculatedTags(existing: string[] = []) {
+                            if (existing.includes(ReservedTags.VeganVersionAvailable)) {
+                                return existing;
+                            }
+                            return [...existing, ReservedTags.VeganVersionAvailable];
+                        },
+                    },
+                });
             },
         }
     );
-    const [linkVeganRecipe] = useMutation(LINK_VEGAN_RECIPE);
     const { addRating } = useAddRating();
     const { uploadImages, loading: uploadLoading } = useUploadImages();
 
@@ -164,16 +198,16 @@ export function CreateVeganRecipe() {
         let recipeResult: CompletedRecipeView;
         try {
             const result = await createRecipe({
-                variables: { recipe: { ...recipe, originalRecipe: originalId } },
+                variables: { originalId, recipe },
             });
-            if (!result.data?.recipeCreateOne?.record) {
+            if (!result.data?.recipeCreateVeganVersion?.record) {
                 return errorToast({
                     title: 'Error creating vegan recipe',
                     description: 'No record returned from server',
                     position: 'top',
                 });
             }
-            recipeResult = result.data.recipeCreateOne.record;
+            recipeResult = result.data.recipeCreateVeganVersion.record;
         } catch (e) {
             let description = 'An error occurred while creating the vegan recipe';
             if (e instanceof Error) description = e.message;
@@ -208,59 +242,6 @@ export function CreateVeganRecipe() {
                 position: 'top',
             });
             return setTimeout(() => navigate(PATH.ROOT), DELAY_LONG);
-        }
-
-        try {
-            await linkVeganRecipe({
-                variables: { originalId, veganId: recipeResult._id },
-                update(cache) {
-                    cache.writeFragment({
-                        id: `Recipe:${originalId}`,
-                        fragment: VEGAN_VERSION_LINK_FRAGMENT,
-                        fragmentName: 'VeganVersionLink',
-                        data: {
-                            veganVersion: {
-                                __typename: 'Recipe' as const,
-                                _id: recipeResult._id,
-                                title: recipeResult.title,
-                                titleIdentifier: recipeResult.titleIdentifier,
-                            },
-                        },
-                    });
-                    // Ensure the new vegan copy has originalRecipe set in the cache,
-                    // so the home-page query (filter: { originalRecipe: null }) excludes it.
-                    cache.writeFragment({
-                        id: `Recipe:${recipeResult._id}`,
-                        fragment: VEGAN_ORIGINAL_LINK_FRAGMENT,
-                        fragmentName: 'VeganOriginalLink',
-                        data: {
-                            originalRecipe: { __typename: 'Recipe' as const, _id: originalId },
-                        },
-                    });
-                    // Update the original recipe's calculatedTags in the cache to include
-                    // 'vegan version available'. The server computes this via the pre-save
-                    // hook, but the home-page recipeMany is already cached and won't refetch.
-                    cache.modify({
-                        id: `Recipe:${originalId}`,
-                        fields: {
-                            calculatedTags(existing: string[] = []) {
-                                if (existing.includes(ReservedTags.VeganVersionAvailable)) {
-                                    return existing;
-                                }
-                                return [...existing, ReservedTags.VeganVersionAvailable];
-                            },
-                        },
-                    });
-                },
-            });
-        } catch (e: unknown) {
-            let description = 'An error occurred while linking the vegan version';
-            if (e instanceof Error) description = e.message;
-            errorToast({ title: 'Error linking vegan recipe', description, position: 'top' });
-            return setTimeout(
-                () => navigate(`${PATH.ROOT}/edit/recipe/${recipeResult.titleIdentifier}`),
-                DELAY_LONG
-            );
         }
 
         successToast({

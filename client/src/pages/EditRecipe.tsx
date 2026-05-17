@@ -235,8 +235,10 @@ export function EditRecipe() {
             });
             return setTimeout(() => navigate(PATH.ROOT), DELAY_LONG);
         }
+        const currentRecipe = savedRecipe ?? data.recipeOne;
+
         if (recipeState.createVeganVersion) {
-            if (data.recipeOne!.calculatedTags.includes('vegan')) {
+            if (currentRecipe?.calculatedTags.includes('vegan')) {
                 recipeState.resetCreateVeganVersion();
                 warningToast({
                     title: 'Recipe is already vegan',
@@ -244,8 +246,8 @@ export function EditRecipe() {
                     position: 'top',
                 });
                 // fall through to normal save redirect
-            } else if (data.recipeOne!.veganVersion) {
-                const veganTitleIdentifier = data.recipeOne!.veganVersion.titleIdentifier;
+            } else if (currentRecipe?.veganVersion) {
+                const veganTitleIdentifier = currentRecipe.veganVersion.titleIdentifier;
                 successToast({
                     title: 'Redirecting to existing vegan version',
                     description: 'This recipe already has a vegan version',
