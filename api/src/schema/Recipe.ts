@@ -382,7 +382,20 @@ export const RecipeMutation = {
                     throw new Error('Original recipe already has a vegan version');
                 }
 
-                await veganDoc.save();
+                try {
+                    await veganDoc.save();
+                } catch (error) {
+                    await Recipe.findOneAndUpdate(
+                        {
+                            _id: original._id,
+                            veganVersion: veganDoc._id,
+                        },
+                        {
+                            $unset: { veganVersion: 1 },
+                        }
+                    );
+                    throw error;
+                }
 
                 return { recordId: veganDoc._id, record: veganDoc };
             },

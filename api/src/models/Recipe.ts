@@ -306,7 +306,15 @@ export const RecipeIngredientTC = composeMongoose(RecipeIngredient, { removeFiel
 export const Recipe = model<Recipe>('Recipe', recipeSchema);
 export const RecipeTC = composeMongoose(Recipe);
 export const RecipeModifyTC = composeMongoose(Recipe, {
-    removeFields: ['titleIdentifier', 'calculatedTags', 'archived', 'createdAt', 'lastModified'],
+    removeFields: [
+        'titleIdentifier',
+        'calculatedTags',
+        'archived',
+        'createdAt',
+        'lastModified',
+        'veganVersion',
+        'originalRecipe',
+    ],
     name: 'RecipeModify',
 });
 export const RecipeCreateTC = composeMongoose(Recipe, {
@@ -317,6 +325,8 @@ export const RecipeCreateTC = composeMongoose(Recipe, {
         'archived',
         'createdAt',
         'lastModified',
+        'veganVersion',
+        'originalRecipe',
     ],
     name: 'RecipeCreate',
 });
