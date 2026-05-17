@@ -11,6 +11,7 @@ import { createUnits, createUser } from '../utils/data.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
+import { RecipeMutation } from '../../src/schema/Recipe.js';
 import { createRecipeTags, createUnitConversions } from '../utils/data.js';
 import { createImages, createIngredients, createPrepMethods } from '../utils/data.js';
 import { createAdmin, createRecipesAsIngredients, createSizes } from '../utils/data.js';
@@ -595,6 +596,16 @@ describe('recipeUpdateById', () => {
         return response;
     }
 
+    async function updateRecipeResolverDirectly(user, id, record) {
+        return RecipeMutation.recipeUpdateById.resolve({
+            args: { _id: id, record },
+            context: {
+                isAuthenticated: () => true,
+                getUser: () => user,
+            },
+        });
+    }
+
     const getDefaultRecipe = (owner, ingredient, unit, prepMethod, tag?, size?) => {
         const record = getDefaultRecipeRecord(ingredient, unit, prepMethod, tag, size);
         return {
@@ -778,6 +789,36 @@ describe('recipeUpdateById', () => {
             response.body.singleResult.errors[0].message,
             'Field "veganVersion" is not defined by type "UpdateByIdRecipeModifyInput"'
         );
+
+        const unchangedOriginal = await Recipe.findById(original._id);
+        assert.isUndefined(unchangedOriginal.veganVersion);
+    });
+
+    it('should reject direct resolver writes to vegan relationship fields outside the dedicated flow', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        const original = await new Recipe(getDefaultRecipe(user, ingredient, unit, prepMethod)).save();
+        const vegan = await new Recipe({
+            ...getDefaultRecipe(user, ingredient, unit, prepMethod),
+            title: 'Tomato Soup Vegan',
+            titleIdentifier: 'tomato-soup-vegan-direct',
+        }).save();
+
+        try {
+            await updateRecipeResolverDirectly(user, original._id, {
+                veganVersion: vegan._id,
+            });
+            assert.fail('Expected direct resolver write to be rejected');
+        } catch (error) {
+            assert.instanceOf(error, Error);
+            assert.include(
+                (error as Error).message,
+                'Linked vegan relationship fields can only be changed through the dedicated vegan flow'
+            );
+        }
 
         const unchangedOriginal = await Recipe.findById(original._id);
         assert.isUndefined(unchangedOriginal.veganVersion);

@@ -92,10 +92,14 @@ export function CreateVeganRecipe() {
                     sub.ingredients.map((i) => queryIngredientToFinished(i)),
                     sub.name || undefined
                 );
+                if (
+                    index < recipe.ingredientSubsections.length - 1 ||
+                    recipe.ingredientSubsections.length > 1 ||
+                    recipe.ingredientSubsections[0].name
+                ) {
+                    recipeState.addIngredientSection();
+                }
             });
-            if (recipe.ingredientSubsections.length > 1 || recipe.ingredientSubsections[0].name) {
-                recipeState.addIngredientSection();
-            }
             recipeState.resetInstructions();
             recipe.instructionSubsections.forEach((sub, index) => {
                 recipeState.setInstructionSection(
@@ -103,10 +107,14 @@ export function CreateVeganRecipe() {
                     [...sub.instructions, ''],
                     sub.name || undefined
                 );
+                if (
+                    index < recipe.instructionSubsections.length - 1 ||
+                    recipe.instructionSubsections.length > 1 ||
+                    recipe.instructionSubsections[0].name
+                ) {
+                    recipeState.addInstructionSection();
+                }
             });
-            if (recipe.instructionSubsections.length > 1 || recipe.instructionSubsections[0].name) {
-                recipeState.addInstructionSection();
-            }
             recipeState.setNotes(recipe.notes ?? '');
             recipeState.setTags(
                 recipe.tags.map((tag) => ({

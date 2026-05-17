@@ -272,6 +272,12 @@ export const RecipeMutation = {
         return next(rp);
     }),
     recipeUpdateById: RecipeModifyTC.getResolver('updateById').wrapResolve((next) => async (rp) => {
+        if (rp.args.record.originalRecipe || rp.args.record.veganVersion) {
+            throw new Error(
+                'Linked vegan relationship fields can only be changed through the dedicated vegan flow'
+            );
+        }
+
         if (rp.args.record.title) {
             // Fetch existing recipe to get the current suffix
             const existingRecipe = await Recipe.findById(rp.args._id);

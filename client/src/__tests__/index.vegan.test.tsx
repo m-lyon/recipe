@@ -296,6 +296,60 @@ describe('CreateVeganRecipe — Page', () => {
         expect(await screen.findByDisplayValue('Mock Recipe')).not.toBeNull();
     });
 
+    it('pre-populates all ingredient and instruction subsections from the original recipe', async () => {
+        const { GET_RECIPE } = await import('@recipe/graphql/queries/recipe');
+        const recipeWithMultipleSubsections = {
+            ...mockRecipeOne,
+            ingredientSubsections: [
+                {
+                    __typename: 'IngredientSubsection' as const,
+                    name: 'Sauce',
+                    ingredients: [mockRecipeOne.ingredientSubsections[0].ingredients[0]],
+                },
+                {
+                    __typename: 'IngredientSubsection' as const,
+                    name: 'Topping',
+                    ingredients: [mockRecipeOne.ingredientSubsections[0].ingredients[1]],
+                },
+            ],
+            instructionSubsections: [
+                {
+                    __typename: 'InstructionSubsection' as const,
+                    name: 'Prep',
+                    instructions: ['Chop vegetables'],
+                },
+                {
+                    __typename: 'InstructionSubsection' as const,
+                    name: 'Cook',
+                    instructions: ['Cook vegetables'],
+                },
+            ],
+        };
+        const mockGetRecipeWithSubsections = {
+            request: {
+                query: GET_RECIPE,
+                variables: { filter: { titleIdentifier: 'mock-recipe-one' } },
+            },
+            result: {
+                data: {
+                    __typename: 'Query',
+                    recipeOne: recipeWithMultipleSubsections,
+                },
+            },
+        };
+
+        renderPage(
+            routes,
+            [...mocksMinimal, mockGetRecipeWithSubsections],
+            [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-one`]
+        );
+
+        expect(await screen.findByDisplayValue('Sauce')).not.toBeNull();
+        expect(screen.getByDisplayValue('Topping')).not.toBeNull();
+        expect(screen.getByDisplayValue('Prep')).not.toBeNull();
+        expect(screen.getByDisplayValue('Cook')).not.toBeNull();
+    });
+
     it('should navigate to home page after successfully submitting a vegan version', async () => {
         renderPage(
             routes,
