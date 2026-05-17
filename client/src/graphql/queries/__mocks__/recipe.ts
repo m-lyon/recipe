@@ -177,6 +177,13 @@ export const mockRecipeVeganCopy: CompletedRecipeView = {
         titleIdentifier: 'mock-recipe-one',
     },
 };
+export const mockRecipeOneRenamed: CompletedRecipeView = {
+    ...mockRecipeOne,
+    title: 'Mock Recipe Renamed',
+    titleIdentifier: 'mock-recipe-renamed',
+    calculatedTags: [],
+    veganVersion: null,
+};
 export const mockRecipeTwo: CompletedRecipeView = {
     ...mockRecipeOne,
     _id: mockRecipeIdTwo,
@@ -432,6 +439,26 @@ export const mockGetRecipeOne = {
     },
     result: { data: { __typename: 'Query', recipeOne: mockRecipeOne } satisfies GetRecipeQuery },
 };
+export const mockGetOldRecipeSlugNotFound = {
+    request: {
+        query: GET_RECIPE,
+        variables: {
+            filter: { titleIdentifier: 'mock-recipe-one' },
+        } satisfies GetRecipeQueryVariables,
+    },
+    result: { data: { __typename: 'Query', recipeOne: null } satisfies GetRecipeQuery },
+};
+export const mockGetRenamedRecipe = {
+    request: {
+        query: GET_RECIPE,
+        variables: {
+            filter: { titleIdentifier: 'mock-recipe-renamed' },
+        } satisfies GetRecipeQueryVariables,
+    },
+    result: {
+        data: { __typename: 'Query', recipeOne: mockRecipeOneRenamed } satisfies GetRecipeQuery,
+    },
+};
 export const mockGetRecipeWithVeganVersion = {
     request: {
         query: GET_RECIPE,
@@ -564,6 +591,35 @@ export const mockGetRecipes = {
         data: {
             __typename: 'Query',
             recipeMany: [mockRecipeOne, mockRecipeTwo, mockRecipeThree, mockRecipeFour],
+            recipeCount: 4,
+        } satisfies GetRecipesQuery,
+    },
+};
+export const mockGetRecipesAfterArchiveRecipeOne = {
+    request: mockGetRecipes.request,
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeMany: [mockRecipeTwo, mockRecipeThree, mockRecipeFour],
+            recipeCount: 3,
+        } satisfies GetRecipesQuery,
+    },
+};
+export const mockGetRecipesAfterDeleteVeganVersion = {
+    request: mockGetRecipes.request,
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeMany: [
+                {
+                    ...mockRecipeOne,
+                    calculatedTags: ['vegan', 'vegetarian'],
+                    veganVersion: null,
+                },
+                mockRecipeTwo,
+                mockRecipeThree,
+                mockRecipeFour,
+            ],
             recipeCount: 4,
         } satisfies GetRecipesQuery,
     },

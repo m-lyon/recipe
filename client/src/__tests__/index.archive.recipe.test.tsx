@@ -1,5 +1,5 @@
 import { userEvent } from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, screen, waitFor } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
@@ -12,6 +12,25 @@ import { mockUnarchiveRecipeOne } from '@recipe/graphql/mutations/__mocks__/reci
 import { mockArchiveRecipeOneInUseError } from '@recipe/graphql/mutations/__mocks__/recipe';
 
 import { renderComponent } from './utils';
+
+vi.mock('@recipe/features/editing', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@recipe/features/editing')>();
+
+    return {
+        ...actual,
+        ConfirmArchiveModal: ({ show, onConfirm }: { show: boolean; onConfirm: () => void }) => {
+            if (!show) {
+                return null;
+            }
+
+            return (
+                <button type='button' aria-label='Confirm archive action' onClick={onConfirm}>
+                    Confirm archive action
+                </button>
+            );
+        },
+    };
+});
 
 loadErrorMessages();
 loadDevMessages();

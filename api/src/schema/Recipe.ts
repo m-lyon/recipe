@@ -188,6 +188,9 @@ RecipeModifyTC.addResolver({
     args: { _id: 'MongoID!' },
     resolve: async ({ args }) => {
         const record = await Recipe.findByIdAndUpdate(args._id, { archived: true }, { new: true });
+        if (record?.veganVersion) {
+            await Recipe.findByIdAndUpdate(record.veganVersion, { archived: true });
+        }
         return { recordId: record?._id, record };
     },
 });
@@ -199,6 +202,9 @@ RecipeModifyTC.addResolver({
     args: { _id: 'MongoID!' },
     resolve: async ({ args }) => {
         const record = await Recipe.findByIdAndUpdate(args._id, { archived: false }, { new: true });
+        if (record?.veganVersion) {
+            await Recipe.findByIdAndUpdate(record.veganVersion, { archived: false });
+        }
         return { recordId: record?._id, record };
     },
 });
@@ -252,8 +258,23 @@ export const RecipeQuery = {
 };
 
 export const RecipeMutation = {
-    recipeCreateOne: RecipeCreateTC.getResolver('createOne').wrapResolve((next) => (rp) => {
-        rp.args.record.owner = rp.context.getUser();
+    recipeCreateOne: RecipeCreateTC.getResolver('createOne').wrapResolve((next) => async (rp) => {
+        const user = rp.context.getUser();
+
+        if (rp.args.record.originalRecipe) {
+            const original = await Recipe.findById(rp.args.record.originalRecipe);
+
+            if (!original) {
+                throw new Error('Original recipe not found');
+            }
+
+            const isAdmin = user.role === 'admin';
+            if (!isAdmin && String(original.owner) !== String(user._id)) {
+                throw new Error('Not authorized to create a vegan copy for this recipe');
+            }
+        }
+
+        rp.args.record.owner = user;
         rp.args.record.titleIdentifier = generateRecipeIdentifier(rp.args.record.title);
         rp.args.record.createdAt = new Date();
         rp.args.record.lastModified = new Date();
@@ -343,13 +364,24 @@ export const RecipeMutation = {
                 Recipe.findById(originalId),
                 Recipe.findById(veganId),
             ]);
+            if (originalId === veganId) {
+                throw new Error('You cannot link a recipe to itself');
+            }
             if (!original) throw new Error('Original recipe not found');
             if (!vegan) throw new Error('Vegan recipe not found');
-            const userId = String(rp.context.getUser()._id);
-            if (String(original.owner) !== userId)
+            const user = rp.context.getUser();
+            const isAdmin = user.role === 'admin';
+            const userId = String(user._id);
+            if (!isAdmin && String(original.owner) !== userId)
                 throw new Error('Not authorized to modify original recipe');
-            if (String(vegan.owner) !== userId)
+            if (!isAdmin && String(vegan.owner) !== userId)
                 throw new Error('Not authorized to modify vegan recipe');
+            if (original.originalRecipe) {
+                throw new Error('The original recipe cannot already be a vegan copy');
+            }
+            if (vegan.veganVersion) {
+                throw new Error('The vegan recipe cannot already have a vegan version');
+            }
             if (original.veganVersion)
                 throw new Error('Original recipe already has a vegan version');
             if (vegan.originalRecipe && String(vegan.originalRecipe) !== originalId)
@@ -358,7 +390,11 @@ export const RecipeMutation = {
         }),
     recipeArchiveById: RecipeModifyTC.getResolver('archiveById').wrapResolve(
         (next) => async (rp) => {
+            const recipe = await Recipe.findById(rp.args._id);
             await validateItemNotInRecipe(rp.args._id, 'recipe');
+            if (recipe?.veganVersion) {
+                await validateItemNotInRecipe(recipe.veganVersion, 'recipe');
+            }
             return next(rp);
         }
     ),

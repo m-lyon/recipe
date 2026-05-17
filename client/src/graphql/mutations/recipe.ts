@@ -36,6 +36,14 @@ export const UNARCHIVE_RECIPE = gql(`
     }
 `);
 
+export const DELETE_RECIPE = gql(`
+    mutation DeleteRecipe($id: MongoID!) {
+        recipeRemoveById(_id: $id) {
+            recordId
+        }
+    }
+`);
+
 export const LINK_VEGAN_RECIPE = gql(`
     mutation LinkVeganRecipe($originalId: MongoID!, $veganId: MongoID!) {
         recipeLinkVeganVersion(originalId: $originalId, veganId: $veganId)

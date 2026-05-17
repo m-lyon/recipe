@@ -1,18 +1,22 @@
-import { useState } from 'react';
+import { Button } from '@chakra-ui/react';
+import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Reference, useMutation, useQuery } from '@apollo/client';
 
 import { useUploadImages } from '@recipe/features/images';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
+import { updateRecipeCache } from '@recipe/features/editing';
 import { useImagesStore, useRecipeStore } from '@recipe/stores';
 import { DELETE_IMAGES } from '@recipe/graphql/mutations/image';
-import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { UpdateByIdRecipeModifyInput } from '@recipe/graphql/generated';
 import { getAverageRating, useAddRating } from '@recipe/features/rating';
-import { EditableRecipe, updateRecipeCache } from '@recipe/features/editing';
 import { DELAY_LONG, DELAY_SHORT, GRAPHQL_URL, PATH } from '@recipe/constants';
+import { ConfirmModal, deleteVeganRecipeCache } from '@recipe/features/editing';
 import { useErrorToast, useSuccessToast, useWarningToast } from '@recipe/common/hooks';
+import { archiveRecipeCache, archiveRecipeConfirmConfig } from '@recipe/features/editing';
+import { EditableRecipe, deleteVeganVersionConfirmConfig } from '@recipe/features/editing';
+import { ARCHIVE_RECIPE, DELETE_RECIPE, UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 
 import { queryIngredientToFinished } from './utils';
 
@@ -47,17 +51,21 @@ export function EditRecipe() {
     );
     // ---------------------------------------------------------------------
     const [recipe, setRecipe] = useState<RecipeView>(null);
+    const [showConfirmAction, setShowConfirmAction] = useState(false);
+    const [isRedirectingAfterDestructiveAction, setIsRedirectingAfterDestructiveAction] =
+        useState(false);
     const navigate = useNavigate();
     const { titleIdentifier } = useParams();
-    const [saveRecipe, { data: response, loading: recipeLoading }] = useMutation(UPDATE_RECIPE, {
-        update(cache, { data }) {
-            const { record } = data?.recipeUpdateById || {};
-            if (!record) {
-                return;
-            }
-            updateRecipeCache(cache, record);
-        },
-    });
+    const [saveRecipe, { data: response, loading: recipeLoading, reset: resetSaveRecipe }] =
+        useMutation(UPDATE_RECIPE, {
+            update(cache, { data }) {
+                const { record } = data?.recipeUpdateById || {};
+                if (!record) {
+                    return;
+                }
+                updateRecipeCache(cache, record);
+            },
+        });
     const [deleteImages] = useMutation(DELETE_IMAGES, {
         update(cache, { data }) {
             if (!data?.imageRemoveMany?.records || !recipe) {
@@ -79,7 +87,12 @@ export function EditRecipe() {
             });
         },
     });
+    const [archiveRecipe] = useMutation(ARCHIVE_RECIPE);
+    const [deleteRecipe] = useMutation(DELETE_RECIPE);
     const { uploadImages, loading: uploadLoading } = useUploadImages();
+    useEffect(() => {
+        resetSaveRecipe();
+    }, [resetSaveRecipe, titleIdentifier]);
     const { data, loading, error } = useQuery(GET_RECIPE, {
         variables: { filter: titleIdentifier ? { titleIdentifier } : {} },
         onCompleted: async (data) => {
@@ -171,14 +184,23 @@ export function EditRecipe() {
         return <div>Loading...</div>;
     }
 
+    if (isRedirectingAfterDestructiveAction) {
+        return <div>Loading...</div>;
+    }
+
     if (error || !data || !data.recipeOne) {
         return <div>Error: {error?.message}</div>;
     }
 
     const handleSubmitMutation = async (modifiedRecipe: UpdateByIdRecipeModifyInput) => {
+        let savedRecipe: RecipeView | null = null;
+
         try {
             // recipe is guaranteed to be defined here because of the error check above
-            await saveRecipe({ variables: { id: recipe!._id, recipe: modifiedRecipe } });
+            const saveResult = await saveRecipe({
+                variables: { id: recipe!._id, recipe: modifiedRecipe },
+            });
+            savedRecipe = saveResult.data?.recipeUpdateById?.record ?? null;
         } catch (e: unknown) {
             let description = 'An error occurred while saving the recipe';
             if (e instanceof Error) {
@@ -214,8 +236,8 @@ export function EditRecipe() {
             return setTimeout(() => navigate(PATH.ROOT), DELAY_LONG);
         }
         if (recipeState.createVeganVersion) {
-            recipeState.resetCreateVeganVersion();
             if (data.recipeOne!.calculatedTags.includes('vegan')) {
+                recipeState.resetCreateVeganVersion();
                 warningToast({
                     title: 'Recipe is already vegan',
                     description: 'This recipe does not need a vegan version',
@@ -229,23 +251,29 @@ export function EditRecipe() {
                     description: 'This recipe already has a vegan version',
                     position: 'top',
                 });
-                return setTimeout(
-                    () => navigate(`${PATH.ROOT}/edit/recipe/${veganTitleIdentifier}`),
-                    DELAY_SHORT
-                );
+                return setTimeout(() => {
+                    recipeState.resetCreateVeganVersion();
+                    navigate(`${PATH.ROOT}/edit/recipe/${veganTitleIdentifier}`);
+                }, DELAY_SHORT);
             } else {
+                if (!savedRecipe?.titleIdentifier) {
+                    resetSaveRecipe();
+                    return errorToast({
+                        title: 'Error saving recipe',
+                        description: 'No saved recipe was returned from the server',
+                        position: 'top',
+                    });
+                }
+
                 successToast({
                     title: 'Creating vegan version',
                     description: 'Redirecting you to the vegan recipe page',
                     position: 'top',
                 });
-                return setTimeout(
-                    () =>
-                        navigate(
-                            `${PATH.ROOT}/create/recipe/vegan/${data.recipeOne!.titleIdentifier}`
-                        ),
-                    DELAY_SHORT
-                );
+                return setTimeout(() => {
+                    recipeState.resetCreateVeganVersion();
+                    navigate(`${PATH.ROOT}/create/recipe/vegan/${savedRecipe.titleIdentifier}`);
+                }, DELAY_SHORT);
             }
         }
         successToast({
@@ -256,19 +284,103 @@ export function EditRecipe() {
         setTimeout(() => navigate(PATH.ROOT), DELAY_SHORT);
     };
 
+    const destructiveAction = data.recipeOne.originalRecipe
+        ? deleteVeganVersionConfirmConfig
+        : archiveRecipeConfirmConfig;
+
+    const handleDestructiveAction = async () => {
+        if (!recipe) {
+            return;
+        }
+
+        try {
+            if (recipe.originalRecipe) {
+                await deleteRecipe({
+                    variables: { id: recipe._id },
+                    update(cache, { data: deleteData }) {
+                        if (!deleteData?.recipeRemoveById?.recordId) {
+                            return;
+                        }
+                        deleteVeganRecipeCache(cache, recipe);
+                    },
+                });
+                successToast({
+                    title: 'Vegan version deleted',
+                    description: 'Redirecting you to the home page',
+                    position: 'top',
+                });
+                setIsRedirectingAfterDestructiveAction(true);
+            } else {
+                await archiveRecipe({
+                    variables: { id: recipe._id },
+                    update(cache, { data: archiveData }) {
+                        if (!archiveData?.recipeArchiveById?.recordId) {
+                            return;
+                        }
+                        archiveRecipeCache(cache, recipe);
+                    },
+                });
+                successToast({
+                    title: 'Recipe archived',
+                    description: 'Redirecting you to the home page',
+                    position: 'top',
+                });
+                setIsRedirectingAfterDestructiveAction(true);
+            }
+        } catch (e: unknown) {
+            let description = 'An error occurred while updating the recipe';
+            if (e instanceof Error) {
+                description = e.message;
+            }
+
+            return errorToast({
+                title: recipe.originalRecipe
+                    ? 'Error deleting vegan version'
+                    : 'Error archiving recipe',
+                description,
+                position: 'top',
+            });
+        }
+
+        setTimeout(() => navigate(PATH.ROOT), DELAY_SHORT);
+    };
+
     return (
-        <EditableRecipe
-            rating={getAverageRating(data.recipeOne.ratings)}
-            addRating={(rating: number) => addRatingWithToast(rating, data.recipeOne)}
-            handleSubmitMutation={handleSubmitMutation}
-            veganVersion={data.recipeOne.veganVersion ?? undefined}
-            originalRecipe={data.recipeOne.originalRecipe ?? undefined}
-            submitButtonProps={{
-                submitText: 'Save',
-                loadingText: 'Saving Recipe...',
-                disabled: !!response,
-                loading: recipeLoading || uploadLoading,
-            }}
-        />
+        <>
+            <EditableRecipe
+                rating={getAverageRating(data.recipeOne.ratings)}
+                addRating={(rating: number) => addRatingWithToast(rating, data.recipeOne)}
+                handleSubmitMutation={handleSubmitMutation}
+                veganVersion={data.recipeOne.veganVersion ?? undefined}
+                originalRecipe={data.recipeOne.originalRecipe ?? undefined}
+                secondaryActionButton={
+                    <Button
+                        size='lg'
+                        borderRadius='full'
+                        colorScheme='red'
+                        variant='outline'
+                        aria-label={destructiveAction.buttonLabel}
+                        onClick={() => setShowConfirmAction(true)}
+                    >
+                        {destructiveAction.buttonLabel}
+                    </Button>
+                }
+                submitButtonProps={{
+                    submitText: 'Save',
+                    loadingText: 'Saving Recipe...',
+                    disabled: !!response,
+                    loading: recipeLoading || uploadLoading,
+                }}
+            />
+            <ConfirmModal
+                show={showConfirmAction}
+                setShow={setShowConfirmAction}
+                title={destructiveAction.title}
+                body={destructiveAction.body}
+                cancelAriaLabel={destructiveAction.cancelAriaLabel}
+                confirmAriaLabel={destructiveAction.confirmAriaLabel}
+                onConfirm={handleDestructiveAction}
+            />
+        </>
     );
 }

@@ -14,9 +14,10 @@ import { IngredientList } from './IngredientList';
 
 interface Props {
     recipe: CompletedRecipeView;
+    headerAction?: React.ReactNode;
 }
 export function IngredientsTab(props: Props) {
-    const { recipe } = props;
+    const { recipe, headerAction } = props;
     const setNumServings = useRecipeStore((state) => state.setNumServings);
     const currentServings = useRecipeStore((state) => state.numServings);
     const { isVerified } = useUser();
@@ -41,6 +42,7 @@ export function IngredientsTab(props: Props) {
                     subsections={recipe.ingredientSubsections}
                     origServings={recipe.numServings}
                     currentServings={currentServings}
+                    headerAction={headerAction}
                     showWakeLockBtn
                 />
             }

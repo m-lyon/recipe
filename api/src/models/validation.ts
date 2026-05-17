@@ -10,22 +10,47 @@ export function uniqueInAdminsAndUser(model: string, attribute: string, message?
         if (this.unique !== undefined && !this.unique) {
             return true;
         }
-        // Vegan copies are allowed to share their original recipe's title
-        if (this.originalRecipe != null) {
-            return true;
-        }
         const admins = await User.find({ role: 'admin' });
-        const count = await this.model(model).countDocuments({
+        const duplicates = await this.model(model).find({
             $and: [
                 { $or: [{ owner: this.owner }, { owner: { $in: admins } }] },
-                { _id: { $ne: this._id } }, // Exclude the current document
+                { _id: { $ne: this._id } },
                 { $or: [{ unique: true }, { unique: { $exists: false } }] },
                 { [attribute]: value },
-                // Exclude vegan copies — they are allowed to share their original's title
-                { originalRecipe: { $exists: false } },
             ],
         });
-        return count === 0;
+
+        // Vegan copies are allowed to share their original recipe's title
+        if (this.originalRecipe != null) {
+            const original = await this.model(model)
+                .findOne({
+                    _id: this.originalRecipe,
+                    $or: [{ owner: this.owner }, { owner: { $in: admins } }],
+                })
+                .select(attribute);
+
+            if (
+                original?.get(attribute) === value &&
+                duplicates.length === 1 &&
+                String(duplicates[0]._id) === String(this.originalRecipe)
+            ) {
+                return true;
+            }
+        }
+
+        if (this.veganVersion != null) {
+            const existingDoc = this.isNew ? null : await this.model(model).findById(this._id);
+
+            if (
+                existingDoc?.get(attribute) === value &&
+                duplicates.length === 1 &&
+                String(duplicates[0]._id) === String(this.veganVersion)
+            ) {
+                return true;
+            }
+        }
+
+        return duplicates.length === 0;
     }
     return {
         validator,

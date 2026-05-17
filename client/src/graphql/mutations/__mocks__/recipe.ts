@@ -1,23 +1,26 @@
 import { GraphQLError } from 'graphql';
 
 import { UpdateRecipeMutation } from '@recipe/graphql/generated';
+import { DeleteRecipeMutation } from '@recipe/graphql/generated';
 import { UnarchiveRecipeMutation } from '@recipe/graphql/generated';
 import { mockSpicyTag } from '@recipe/graphql/queries/__mocks__/tag';
 import { LINK_VEGAN_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockApple } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockDiced } from '@recipe/graphql/queries/__mocks__/prepMethod';
+import { mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { UpdateRecipeMutationVariables } from '@recipe/graphql/generated';
+import { DeleteRecipeMutationVariables } from '@recipe/graphql/generated';
 import { mockRecipeIngredientIdThree } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdSeven } from '@recipe/graphql/__mocks__/ids';
 import { mockRatingNewTwo } from '@recipe/graphql/queries/__mocks__/rating';
 import { GetRecipeQuery, RecipeIngredient } from '@recipe/graphql/generated';
 import { UnarchiveRecipeMutationVariables } from '@recipe/graphql/generated';
-import { CREATE_RECIPE, UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { ARCHIVE_RECIPE, UNARCHIVE_RECIPE } from '@recipe/graphql/mutations/recipe';
-import { mockRecipeOne, mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockRecipeNew, mockRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
+import { CREATE_RECIPE, DELETE_RECIPE, UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { mockRecipeFour, mockRecipeNewAsIngr } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockRecipeOne, mockRecipeOneRenamed } from '@recipe/graphql/queries/__mocks__/recipe';
 import { CreateRecipeMutation, CreateRecipeMutationVariables } from '@recipe/graphql/generated';
 import { ArchiveRecipeMutation, ArchiveRecipeMutationVariables } from '@recipe/graphql/generated';
 
@@ -131,6 +134,24 @@ export const mockUpdateRecipeNewTitle = {
             recipeUpdateById: {
                 __typename: 'UpdateByIdRecipePayload',
                 record: { ...recipeOneData.record, title: 'New Title' },
+            },
+        } satisfies UpdateRecipeMutation,
+    },
+};
+export const mockUpdateRecipeOneWithRename = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: { ...recipeOneVars.recipe, title: mockRecipeOneRenamed.title },
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: mockRecipeOneRenamed,
             },
         } satisfies UpdateRecipeMutation,
     },
@@ -1087,6 +1108,21 @@ export const mockArchiveRecipeOneInUseError = {
                 { extensions: { code: 'ITEM_IN_USE' } }
             ),
         ],
+    },
+};
+export const mockDeleteRecipeVeganCopy = {
+    request: {
+        query: DELETE_RECIPE,
+        variables: { id: recipeTwoVars.id } satisfies DeleteRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeRemoveById: {
+                __typename: 'RemoveByIdRecipePayload',
+                recordId: recipeTwoVars.id,
+            },
+        } satisfies DeleteRecipeMutation,
     },
 };
 export const mockLinkVeganRecipe = {

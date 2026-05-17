@@ -1249,6 +1249,61 @@ describe('recipeArchiveById', () => {
         return response;
     }
 
+    async function createLinkedOriginalAndVegan(
+        user,
+        options: { archived: boolean }
+    ): Promise<{ original: typeof Recipe.prototype; vegan: typeof Recipe.prototype }> {
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        const ingredientSubsections = [
+            {
+                ingredients: [
+                    {
+                        ingredient: tomato._id,
+                        quantity: '300',
+                        unit: unit._id,
+                        prepMethod: prepMethod._id,
+                    },
+                ],
+            },
+        ];
+        const instructionSubsections = [{ name: 'Main', instructions: ['Cook.'] }];
+
+        const original = await Recipe.create({
+            title: 'Tomato Soup',
+            titleIdentifier: 'tomato-soup',
+            ingredientSubsections,
+            instructionSubsections,
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+            owner: user._id,
+            createdAt: new Date(),
+            lastModified: new Date(),
+            archived: options.archived,
+        });
+        const vegan = await Recipe.create({
+            title: 'Vegan Tomato Soup',
+            titleIdentifier: 'vegan-tomato-soup',
+            ingredientSubsections,
+            instructionSubsections,
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+            owner: user._id,
+            createdAt: new Date(),
+            lastModified: new Date(),
+            archived: options.archived,
+            originalRecipe: original._id,
+        });
+        original.veganVersion = vegan._id;
+        await original.save();
+
+        return { original, vegan };
+    }
+
     it('should archive a recipe', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         const recipe = await Recipe.findOne({ title: 'Bimibap' });
@@ -1273,6 +1328,33 @@ describe('recipeArchiveById', () => {
         const archivedRecipe = await Recipe.findById(recipe._id);
         assert.isNotNull(archivedRecipe, 'Recipe should still exist (not deleted)');
         assert.isTrue(archivedRecipe.archived, 'Recipe should be archived in the database');
+    });
+
+    it('should archive an original recipe and its vegan version', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const { original, vegan } = await createLinkedOriginalAndVegan(user, { archived: false });
+
+        const response = await archiveRecipe(this, user, original._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(
+            response.body.singleResult.errors,
+            response.body.singleResult.errors ? response.body.singleResult.errors[0].message : ''
+        );
+        const data = response.body.singleResult.data as {
+            recipeArchiveById: {
+                recordId: string;
+                record: { _id: string; title: string; archived: boolean };
+            };
+        };
+        assert.equal(data.recipeArchiveById.recordId, original._id.toString());
+        assert.isTrue(data.recipeArchiveById.record.archived, 'Returned record should be archived');
+
+        const [archivedOriginal, archivedVegan] = await Promise.all([
+            Recipe.findById(original._id),
+            Recipe.findById(vegan._id),
+        ]);
+        assert.isTrue(archivedOriginal.archived, 'Original recipe should be archived');
+        assert.isTrue(archivedVegan.archived, 'Linked vegan version should be archived');
     });
 
     it('should NOT archive a recipe that is used as an ingredient in another recipe', async function () {
@@ -1316,6 +1398,49 @@ describe('recipeArchiveById', () => {
         assert.isFalse(existingRecipe.archived, 'Recipe should not be archived');
     });
 
+    it('should NOT archive an original recipe if its linked vegan version is used as an ingredient', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const { original, vegan } = await createLinkedOriginalAndVegan(user, { archived: false });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const recipeUsingVegan = new Recipe({
+            ...getDefaultRecipeRecord(ingredient, unit, prepMethod),
+            owner: user._id,
+            titleIdentifier: 'chicken-soup-using-vegan',
+            createdAt: new Date(),
+            lastModified: new Date(),
+            ingredientSubsections: [
+                {
+                    name: 'Main',
+                    ingredients: [
+                        {
+                            ingredient: vegan._id,
+                            quantity: '300',
+                            unit: unit._id,
+                        },
+                    ],
+                },
+            ],
+        });
+        await recipeUsingVegan.save();
+
+        const response = await archiveRecipe(this, user, original._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Error should be returned');
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'Cannot delete recipe as it is currently being used in other existing recipes.'
+        );
+
+        const [existingOriginal, existingVegan] = await Promise.all([
+            Recipe.findById(original._id),
+            Recipe.findById(vegan._id),
+        ]);
+        assert.isFalse(existingOriginal.archived, 'Original recipe should not be archived');
+        assert.isFalse(existingVegan.archived, 'Linked vegan version should not be archived');
+    });
+
     it('should unarchive a recipe', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         const recipe = await Recipe.findOne({ title: 'Bimibap' });
@@ -1343,6 +1468,36 @@ describe('recipeArchiveById', () => {
         // Verify in DB
         const unarchivedRecipe = await Recipe.findById(recipe._id);
         assert.isFalse(unarchivedRecipe.archived, 'Recipe should be unarchived in the database');
+    });
+
+    it('should unarchive an original recipe and its vegan version', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const { original, vegan } = await createLinkedOriginalAndVegan(user, { archived: true });
+
+        const response = await unarchiveRecipe(this, user, original._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(
+            response.body.singleResult.errors,
+            response.body.singleResult.errors ? response.body.singleResult.errors[0].message : ''
+        );
+        const data = response.body.singleResult.data as {
+            recipeUnarchiveById: {
+                recordId: string;
+                record: { _id: string; title: string; archived: boolean };
+            };
+        };
+        assert.equal(data.recipeUnarchiveById.recordId, original._id.toString());
+        assert.isFalse(
+            data.recipeUnarchiveById.record.archived,
+            'Returned record should not be archived'
+        );
+
+        const [unarchivedOriginal, unarchivedVegan] = await Promise.all([
+            Recipe.findById(original._id),
+            Recipe.findById(vegan._id),
+        ]);
+        assert.isFalse(unarchivedOriginal.archived, 'Original recipe should be unarchived');
+        assert.isFalse(unarchivedVegan.archived, 'Linked vegan version should be unarchived');
     });
 
     it('should filter archived recipes from recipeMany by default', async function () {
@@ -1461,9 +1616,18 @@ describe('recipeArchiveById', () => {
         assert.equal(afterCount, initialCount - 1, 'Count should decrease by 1 after archiving');
     });
 
-    it('should not expose recipeRemoveById mutation', async function () {
+    it('should expose recipeRemoveById mutation for recipe owners', async function () {
         const user = await User.findOne({ username: 'testuser1' });
-        const recipe = await Recipe.findOne({ title: 'Bimibap' });
+        const ingredient = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+        const recipe = await Recipe.create({
+            ...getDefaultRecipeRecord(ingredient, unit, prepMethod),
+            owner: user._id,
+            titleIdentifier: 'temporary-recipe',
+            createdAt: new Date(),
+            lastModified: new Date(),
+        });
         const query = `
         mutation RecipeRemoveById($id: MongoID!) {
             recipeRemoveById(_id: $id) {
@@ -1480,12 +1644,14 @@ describe('recipeArchiveById', () => {
             }
         );
         assert.equal(response.body.kind, 'single');
-        assert.isDefined(response.body.singleResult.errors, 'Should have errors');
-        assert.include(
-            response.body.singleResult.errors[0].message,
-            'Cannot query field "recipeRemoveById"',
-            'recipeRemoveById should not be in schema'
+        assert.isUndefined(
+            response.body.singleResult.errors,
+            response.body.singleResult.errors ? response.body.singleResult.errors[0].message : ''
         );
+        const data = response.body.singleResult.data as {
+            recipeRemoveById: { recordId: string };
+        };
+        assert.equal(data.recipeRemoveById.recordId, recipe._id.toString());
     });
 });
 
@@ -1687,6 +1853,365 @@ describe('recipeLinkVeganVersion', () => {
         assert.isDefined(response.body.singleResult.errors, 'Should have errors');
         assert.include(response.body.singleResult.errors[0].message, 'Not authorized');
     });
+
+    it('should allow an admin to link a vegan version for another users recipe', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const admin = await createAdmin();
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        const ingredientSubsections = [
+            {
+                ingredients: [
+                    {
+                        ingredient: tomato._id,
+                        quantity: '300',
+                        unit: unit._id,
+                        prepMethod: prepMethod._id,
+                    },
+                ],
+            },
+        ];
+        const instructionSubsections = [{ name: 'Main', instructions: ['Cook.'] }];
+
+        const original = await createRecipe(this, user, {
+            title: 'Tomato Soup',
+            ingredientSubsections,
+            instructionSubsections,
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+
+        const vegan = await Recipe.create({
+            title: 'Vegan Tomato Soup',
+            titleIdentifier: 'vegan-tomato-soup',
+            ingredientSubsections,
+            instructionSubsections,
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+            owner: admin._id,
+            createdAt: new Date(),
+            lastModified: new Date(),
+        });
+
+        const response = await linkVegan(this, admin, original._id, vegan._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(
+            response.body.singleResult.errors,
+            response.body.singleResult.errors ? response.body.singleResult.errors[0].message : ''
+        );
+    });
+
+    it('should NOT allow linking a recipe to itself as its vegan version', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        const original = await createRecipe(this, user, {
+            title: 'Self Link Soup',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+
+        const response = await linkVegan(this, user, original._id, original._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Should have errors');
+        assert.include(response.body.singleResult.errors[0].message, 'cannot link a recipe to itself');
+    });
+
+    it('should NOT allow linking a vegan copy as the original recipe', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        const ingredientSubsections = [
+            {
+                ingredients: [
+                    {
+                        ingredient: tomato._id,
+                        quantity: '300',
+                        unit: unit._id,
+                        prepMethod: prepMethod._id,
+                    },
+                ],
+            },
+        ];
+        const instructionSubsections = [{ name: 'Main', instructions: ['Cook.'] }];
+
+        const original = await createRecipe(this, user, {
+            title: 'Original Link Soup',
+            ingredientSubsections,
+            instructionSubsections,
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+
+        const vegan = await createRecipe(this, user, {
+            title: 'Original Link Soup',
+            originalRecipe: original._id,
+            ingredientSubsections,
+            instructionSubsections,
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+
+        await linkVegan(this, user, original._id, vegan._id);
+
+        const secondVegan = await createRecipe(this, user, {
+            title: 'Second Vegan Link Soup',
+            ingredientSubsections,
+            instructionSubsections,
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+
+        const response = await linkVegan(this, user, vegan._id, secondVegan._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Should have errors');
+        assert.include(
+            response.body.singleResult.errors[0].message,
+            'original recipe cannot already be a vegan copy'
+        );
+    });
+
+    it('should NOT allow linking a recipe that already has a vegan version as the vegan recipe', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        const ingredientSubsections = [
+            {
+                ingredients: [
+                    {
+                        ingredient: tomato._id,
+                        quantity: '300',
+                        unit: unit._id,
+                        prepMethod: prepMethod._id,
+                    },
+                ],
+            },
+        ];
+        const instructionSubsections = [{ name: 'Main', instructions: ['Cook.'] }];
+
+        const original = await createRecipe(this, user, {
+            title: 'Primary Link Soup',
+            ingredientSubsections,
+            instructionSubsections,
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+
+        const vegan = await createRecipe(this, user, {
+            title: 'Primary Link Soup',
+            originalRecipe: original._id,
+            ingredientSubsections,
+            instructionSubsections,
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+
+        await linkVegan(this, user, original._id, vegan._id);
+
+        const secondOriginal = await createRecipe(this, user, {
+            title: 'Secondary Link Soup',
+            ingredientSubsections,
+            instructionSubsections,
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+
+        const response = await linkVegan(this, user, secondOriginal._id, original._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Should have errors');
+        assert.include(
+            response.body.singleResult.errors[0].message,
+            'vegan recipe cannot already have a vegan version'
+        );
+    });
+});
+
+describe('recipeRemoveById', () => {
+    before(startServer);
+    after(stopServer);
+    beforeEach(createRecipeIngredientData);
+    afterEach(removeRecipeIngredientData);
+
+    async function removeRecipe(context, user, id) {
+        const query = `
+        mutation RecipeRemoveById($id: MongoID!) {
+            recipeRemoveById(_id: $id) {
+                recordId
+            }
+        }`;
+        return context.apolloServer.executeOperation(
+            { query, variables: { id } },
+            { contextValue: { isAuthenticated: () => true, getUser: () => user } }
+        );
+    }
+
+    async function createLinkedOriginalAndVegan(user) {
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        const ingredientSubsections = [
+            {
+                ingredients: [
+                    {
+                        ingredient: tomato._id,
+                        quantity: '300',
+                        unit: unit._id,
+                        prepMethod: prepMethod._id,
+                    },
+                ],
+            },
+        ];
+        const instructionSubsections = [{ name: 'Main', instructions: ['Cook.'] }];
+
+        const original = await Recipe.create({
+            title: 'Tomato Soup',
+            titleIdentifier: 'tomato-soup',
+            ingredientSubsections,
+            instructionSubsections,
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+            owner: user._id,
+            createdAt: new Date(),
+            lastModified: new Date(),
+            archived: false,
+        });
+        const vegan = await Recipe.create({
+            title: 'Vegan Tomato Soup',
+            titleIdentifier: 'vegan-tomato-soup',
+            ingredientSubsections,
+            instructionSubsections,
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+            owner: user._id,
+            createdAt: new Date(),
+            lastModified: new Date(),
+            archived: false,
+            originalRecipe: original._id,
+        });
+        original.veganVersion = vegan._id;
+        await original.save();
+
+        return { original, vegan };
+    }
+
+    it('should delete a vegan version and clear veganVersion on the original recipe', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const { original, vegan } = await createLinkedOriginalAndVegan(user);
+
+        const linkedOriginal = await Recipe.findById(original._id);
+        assert.include(
+            linkedOriginal.calculatedTags,
+            'vegan version available',
+            'Original recipe should gain vegan version available calculated tag when linked'
+        );
+
+        const response = await removeRecipe(this, user, vegan._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(
+            response.body.singleResult.errors,
+            response.body.singleResult.errors ? response.body.singleResult.errors[0].message : ''
+        );
+        const data = response.body.singleResult.data as {
+            recipeRemoveById: { recordId: string };
+        };
+        assert.equal(data.recipeRemoveById.recordId, vegan._id.toString());
+
+        const [deletedVegan, updatedOriginal] = await Promise.all([
+            Recipe.findById(vegan._id),
+            Recipe.findById(original._id),
+        ]);
+        assert.isNull(deletedVegan, 'Vegan version should be deleted');
+        assert.isUndefined(
+            updatedOriginal.veganVersion,
+            'Original recipe should lose the deleted veganVersion reference'
+        );
+        assert.notInclude(
+            updatedOriginal.calculatedTags,
+            'vegan version available',
+            'Original recipe should lose vegan version available calculated tag'
+        );
+    });
+
+    it('should NOT allow a non-owner to remove a recipe', async function () {
+        const owner = await User.findOne({ username: 'testuser1' });
+        const nonOwner = await User.register(
+            new User({
+                username: 'testuser3',
+                firstName: 'Tester3',
+                lastName: 'McTestFace',
+                role: 'user',
+            }),
+            'password'
+        );
+        const recipe = await Recipe.findOne({ title: 'Bimibap' });
+
+        const response = await removeRecipe(this, nonOwner, recipe._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Should have errors');
+        assert.include(response.body.singleResult.errors[0].message, 'You are not authorised!');
+
+        const existingRecipe = await Recipe.findById(recipe._id);
+        assert.isNotNull(existingRecipe, 'Recipe should not be deleted by a non-owner');
+    });
+
+    it('should delete an original recipe and clear originalRecipe on its vegan version', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const { original, vegan } = await createLinkedOriginalAndVegan(user);
+
+        const response = await removeRecipe(this, user, original._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(
+            response.body.singleResult.errors,
+            response.body.singleResult.errors ? response.body.singleResult.errors[0].message : ''
+        );
+        const data = response.body.singleResult.data as {
+            recipeRemoveById: { recordId: string };
+        };
+        assert.equal(data.recipeRemoveById.recordId, original._id.toString());
+
+        const [deletedOriginal, updatedVegan] = await Promise.all([
+            Recipe.findById(original._id),
+            Recipe.findById(vegan._id),
+        ]);
+        assert.isNull(deletedOriginal, 'Original recipe should be deleted');
+        assert.isUndefined(
+            updatedVegan.originalRecipe,
+            'Vegan version should lose the deleted originalRecipe reference'
+        );
+    });
 });
 
 describe('recipeCreateOne vegan validation', () => {
@@ -1855,6 +2380,444 @@ describe('recipeCreateOne vegan validation', () => {
         assert.equal(veganRecord.title, 'Tomato Soup');
     });
 
+    it('should allow re-saving an original recipe after linking a same-title vegan copy', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        const ingredientSubsections = [
+            {
+                ingredients: [
+                    {
+                        ingredient: tomato._id,
+                        quantity: '300',
+                        unit: unit._id,
+                        prepMethod: prepMethod._id,
+                    },
+                ],
+            },
+        ];
+        const instructionSubsections = [{ name: 'Main', instructions: ['Cook.'] }];
+
+        const originalResponse = await createRecipe(this, user, {
+            title: 'Resave Tomato Soup',
+            ingredientSubsections,
+            instructionSubsections,
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+        assert.isUndefined(
+            originalResponse.body.singleResult.errors,
+            originalResponse.body.singleResult.errors
+                ? originalResponse.body.singleResult.errors[0].message
+                : ''
+        );
+        const originalId = (
+            originalResponse.body.singleResult.data as {
+                recipeCreateOne: { record: { _id: string } };
+            }
+        ).recipeCreateOne.record._id;
+
+        const veganResponse = await createRecipe(this, user, {
+            title: 'Resave Tomato Soup',
+            originalRecipe: originalId,
+            ingredientSubsections,
+            instructionSubsections,
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+        assert.isUndefined(
+            veganResponse.body.singleResult.errors,
+            veganResponse.body.singleResult.errors
+                ? veganResponse.body.singleResult.errors[0].message
+                : ''
+        );
+        const veganId = (
+            veganResponse.body.singleResult.data as {
+                recipeCreateOne: { record: { _id: string } };
+            }
+        ).recipeCreateOne.record._id;
+
+        const linkResponse = await linkVegan(this, user, originalId, veganId);
+        assert.isUndefined(
+            linkResponse.body.singleResult.errors,
+            linkResponse.body.singleResult.errors
+                ? linkResponse.body.singleResult.errors[0].message
+                : ''
+        );
+
+        const originalDoc = await Recipe.findById(originalId);
+        originalDoc.notes = 'Updated after linking vegan copy';
+        await originalDoc.save();
+
+        const updatedOriginal = await Recipe.findById(originalId);
+        assert.equal(updatedOriginal.notes, 'Updated after linking vegan copy');
+    });
+
+    it('should NOT allow an original recipe to be renamed to its linked vegan copy title when they differ', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        const ingredientSubsections = [
+            {
+                ingredients: [
+                    {
+                        ingredient: tomato._id,
+                        quantity: '300',
+                        unit: unit._id,
+                        prepMethod: prepMethod._id,
+                    },
+                ],
+            },
+        ];
+        const instructionSubsections = [{ name: 'Main', instructions: ['Cook.'] }];
+
+        const originalResponse = await createRecipe(this, user, {
+            title: 'Original Rename Soup',
+            ingredientSubsections,
+            instructionSubsections,
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+        assert.isUndefined(
+            originalResponse.body.singleResult.errors,
+            originalResponse.body.singleResult.errors
+                ? originalResponse.body.singleResult.errors[0].message
+                : ''
+        );
+        const originalId = (
+            originalResponse.body.singleResult.data as {
+                recipeCreateOne: { record: { _id: string } };
+            }
+        ).recipeCreateOne.record._id;
+
+        const veganResponse = await createRecipe(this, user, {
+            title: 'Vegan Rename Soup',
+            originalRecipe: originalId,
+            ingredientSubsections,
+            instructionSubsections,
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+        assert.isUndefined(
+            veganResponse.body.singleResult.errors,
+            veganResponse.body.singleResult.errors
+                ? veganResponse.body.singleResult.errors[0].message
+                : ''
+        );
+        const veganId = (
+            veganResponse.body.singleResult.data as {
+                recipeCreateOne: { record: { _id: string } };
+            }
+        ).recipeCreateOne.record._id;
+
+        const linkResponse = await linkVegan(this, user, originalId, veganId);
+        assert.isUndefined(
+            linkResponse.body.singleResult.errors,
+            linkResponse.body.singleResult.errors
+                ? linkResponse.body.singleResult.errors[0].message
+                : ''
+        );
+
+        const originalDoc = await Recipe.findById(originalId);
+        originalDoc.title = 'Vegan Rename Soup';
+
+        try {
+            await originalDoc.save();
+            assert.fail('Expected title uniqueness validation to reject renaming to linked vegan title');
+        } catch (error) {
+            assert.match(error.message, /title must be unique/i);
+        }
+    });
+
+    it('should NOT allow a vegan copy to duplicate an unrelated recipe title', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        const originalResponse = await createRecipe(this, user, {
+            title: 'Original Tomato Soup',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+        const originalId = (
+            originalResponse.body.singleResult.data as {
+                recipeCreateOne: { record: { _id: string } };
+            }
+        ).recipeCreateOne.record._id;
+
+        await createRecipe(this, user, {
+            title: 'Existing Tomato Soup',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+
+        const veganResponse = await createRecipe(this, user, {
+            title: 'Existing Tomato Soup',
+            originalRecipe: originalId,
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+
+        assert.equal(veganResponse.body.kind, 'single');
+        assert.isDefined(veganResponse.body.singleResult.errors);
+        assert.match(
+            veganResponse.body.singleResult.errors[0].message,
+            /Recipe title must be unique/i
+        );
+    });
+
+    it('should NOT allow a vegan copy to duplicate the title of an unrelated existing vegan copy', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        const firstOriginalResponse = await createRecipe(this, user, {
+            title: 'First Tomato Soup',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+        const firstOriginalId = (
+            firstOriginalResponse.body.singleResult.data as {
+                recipeCreateOne: { record: { _id: string } };
+            }
+        ).recipeCreateOne.record._id;
+
+        const existingVeganResponse = await createRecipe(this, user, {
+            title: 'Shared Vegan Soup',
+            originalRecipe: firstOriginalId,
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+        assert.isUndefined(
+            existingVeganResponse.body.singleResult.errors,
+            existingVeganResponse.body.singleResult.errors
+                ? existingVeganResponse.body.singleResult.errors[0].message
+                : ''
+        );
+
+        const secondOriginalResponse = await createRecipe(this, user, {
+            title: 'Second Tomato Soup',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+        const secondOriginalId = (
+            secondOriginalResponse.body.singleResult.data as {
+                recipeCreateOne: { record: { _id: string } };
+            }
+        ).recipeCreateOne.record._id;
+
+        const duplicateVeganResponse = await createRecipe(this, user, {
+            title: 'Shared Vegan Soup',
+            originalRecipe: secondOriginalId,
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+
+        assert.equal(duplicateVeganResponse.body.kind, 'single');
+        assert.isDefined(duplicateVeganResponse.body.singleResult.errors);
+        assert.match(
+            duplicateVeganResponse.body.singleResult.errors[0].message,
+            /Recipe title must be unique/i
+        );
+    });
+
+    it('should NOT allow a vegan copy to use an out-of-scope original to bypass title uniqueness', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const otherUser = await User.register(
+            new User({
+                username: 'testuser3',
+                firstName: 'Tester3',
+                lastName: 'McTestFace',
+                role: 'user',
+            }),
+            'password'
+        );
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        await createRecipe(this, user, {
+            title: 'Scoped Tomato Soup',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+
+        const outOfScopeOriginalResponse = await createRecipe(this, otherUser, {
+            title: 'Scoped Tomato Soup',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+        const outOfScopeOriginalId = (
+            outOfScopeOriginalResponse.body.singleResult.data as {
+                recipeCreateOne: { record: { _id: string } };
+            }
+        ).recipeCreateOne.record._id;
+
+        const veganResponse = await createRecipe(this, user, {
+            title: 'Scoped Tomato Soup',
+            originalRecipe: outOfScopeOriginalId,
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+
+        assert.equal(veganResponse.body.kind, 'single');
+        assert.isDefined(veganResponse.body.singleResult.errors);
+        assert.match(
+            veganResponse.body.singleResult.errors[0].message,
+            /Not authorized to create a vegan copy for this recipe/i
+        );
+    });
+
     it('should allow creating a vegan copy with originalRecipe set then linking it (real UI flow)', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         const tomato = await Ingredient.findOne({ name: 'tomato' });
@@ -1933,6 +2896,107 @@ describe('recipeCreateOne vegan validation', () => {
             (linkResponse.body.singleResult.data as { recipeLinkVeganVersion: boolean })
                 .recipeLinkVeganVersion
         );
+    });
+
+    it('should NOT allow creating a vegan copy with an originalRecipe owned by another user', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const otherUser = await User.register(
+            new User({
+                username: 'testuser4',
+                firstName: 'Tester4',
+                lastName: 'McTestFace',
+                role: 'user',
+            }),
+            'password'
+        );
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        const otherOriginalResponse = await createRecipe(this, otherUser, {
+            title: 'Other User Tomato Soup',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+        const otherOriginalId = (
+            otherOriginalResponse.body.singleResult.data as {
+                recipeCreateOne: { record: { _id: string } };
+            }
+        ).recipeCreateOne.record._id;
+
+        const response = await createRecipe(this, user, {
+            title: 'Other User Tomato Soup',
+            originalRecipe: otherOriginalId,
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Should have errors');
+        assert.include(
+            response.body.singleResult.errors[0].message,
+            'Not authorized to create a vegan copy for this recipe'
+        );
+    });
+
+    it('should NOT allow creating a vegan copy with a missing originalRecipe', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        const response = await createRecipe(this, user, {
+            title: 'Missing Original Soup',
+            originalRecipe: '507f1f77bcf86cd799439011',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Should have errors');
+        assert.include(response.body.singleResult.errors[0].message, 'Original recipe not found');
     });
 
     it('should NOT allow a non-vegan-copy recipe to have a duplicate title', async function () {

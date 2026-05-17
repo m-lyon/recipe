@@ -1,5 +1,5 @@
+import { Button } from '@chakra-ui/react';
 import { useShallow } from 'zustand/shallow';
-import { Box, Button, Center } from '@chakra-ui/react';
 
 import { useRecipeStore } from '@recipe/stores';
 import { useErrorToast } from '@recipe/common/hooks';
@@ -156,22 +156,18 @@ export function SubmitButton(props: Props) {
         handleSubmit(recipe);
     };
     return (
-        <Center>
-            <Box position='fixed' bottom='4' pb='3'>
-                <Button
-                    size='lg'
-                    borderRadius='full'
-                    aria-label='Save recipe'
-                    border='1px'
-                    borderColor='gray.200'
-                    onClick={onSubmit}
-                    loadingText={loadingText}
-                    isDisabled={disabled}
-                    isLoading={loading}
-                >
-                    {submitText}
-                </Button>
-            </Box>
-        </Center>
+        <Button
+            size='lg'
+            borderRadius='full'
+            aria-label='Save recipe'
+            border='1px'
+            borderColor='gray.200'
+            onClick={onSubmit}
+            loadingText={loadingText}
+            isDisabled={disabled}
+            isLoading={loading}
+        >
+            {submitText}
+        </Button>
     );
 }

@@ -1,6 +1,8 @@
-import { Anchor } from '@mantine/core';
+import { TbMeat } from 'react-icons/tb';
+import { PiPlant } from 'react-icons/pi';
 import { useQuery } from '@apollo/client';
 import { Link, useParams } from 'react-router-dom';
+import { IconButton, Tooltip } from '@chakra-ui/react';
 import { Box, Container, Grid, GridItem } from '@chakra-ui/react';
 
 import { PATH } from '@recipe/constants';
@@ -24,6 +26,28 @@ export function ViewRecipe() {
     const { title, numServings, isIngredient, pluralTitle } = data.recipeOne;
     const titleNormed =
         isIngredient && pluralTitle ? (numServings > 1 ? pluralTitle : title) : title;
+    const headerAction = data.recipeOne.originalRecipe ? (
+        <Tooltip label='View original recipe' openDelay={500}>
+            <IconButton
+                as={Link}
+                to={`${PATH.ROOT}/view/recipe/${data.recipeOne.originalRecipe.titleIdentifier}`}
+                aria-label='View original recipe'
+                icon={<TbMeat />}
+                mr='2'
+            />
+        </Tooltip>
+    ) : data.recipeOne.veganVersion ? (
+        <Tooltip label='View vegan version' openDelay={500}>
+            <IconButton
+                as={Link}
+                to={`${PATH.ROOT}/view/recipe/${data.recipeOne.veganVersion.titleIdentifier}`}
+                aria-label='View vegan version'
+                icon={<PiPlant />}
+                mr='2'
+            />
+        </Tooltip>
+    ) : undefined;
+
     return (
         <Container maxW='container.xl' pt='60px'>
             <Grid
@@ -46,26 +70,6 @@ export function ViewRecipe() {
             >
                 <GridItem boxShadow='lg' p='6' area='title'>
                     <Title title={titleNormed} />
-                    {data.recipeOne.originalRecipe && (
-                        <Anchor
-                            component={Link}
-                            to={`${PATH.ROOT}/view/recipe/${data.recipeOne.originalRecipe.titleIdentifier}`}
-                            aria-label='View original recipe'
-                            style={{ display: 'block', textAlign: 'center', marginTop: '8px' }}
-                        >
-                            View Original Recipe
-                        </Anchor>
-                    )}
-                    {data.recipeOne.veganVersion && (
-                        <Anchor
-                            component={Link}
-                            to={`${PATH.ROOT}/view/recipe/${data.recipeOne.veganVersion.titleIdentifier}`}
-                            aria-label='View vegan version'
-                            style={{ display: 'block', textAlign: 'center', marginTop: '8px' }}
-                        >
-                            View Vegan Version
-                        </Anchor>
-                    )}
                 </GridItem>
                 <GridItem
                     boxShadow='lg'
@@ -78,7 +82,7 @@ export function ViewRecipe() {
                     </Box>
                 </GridItem>
                 <GridItem area='ingredients' boxShadow='lg' p='6'>
-                    <IngredientsTab recipe={data.recipeOne} />
+                    <IngredientsTab recipe={data.recipeOne} headerAction={headerAction} />
                 </GridItem>
                 <GridItem boxShadow='lg' py='6' pl='6' area='instructions' minH='600px'>
                     <InstructionsTab recipe={data.recipeOne} />

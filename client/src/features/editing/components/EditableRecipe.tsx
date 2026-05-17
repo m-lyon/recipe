@@ -11,6 +11,7 @@ import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
 import { SubmitButton } from './SubmitButton';
 import { EditableNotes } from './EditableNotes';
 import { EditableTitle } from './EditableTitle';
+import { RecipeActionButtons } from './RecipeActionButtons';
 import { EditableInstructionsTab } from './EditableInstructionsTab';
 import { EditableIngredientSubsections } from './EditableIngredientSubsections';
 
@@ -28,6 +29,7 @@ interface Props {
     veganVersion?: { _id: string; title: string; titleIdentifier: string };
     originalRecipe?: { _id: string; title: string; titleIdentifier: string };
     suppressItemInUseError?: boolean;
+    secondaryActionButton?: React.ReactNode;
 }
 export function EditableRecipe(props: Props) {
     const {
@@ -38,6 +40,7 @@ export function EditableRecipe(props: Props) {
         veganVersion,
         originalRecipe,
         suppressItemInUseError,
+        secondaryActionButton,
     } = props;
     const { isVerified } = useUser();
 
@@ -135,11 +138,14 @@ export function EditableRecipe(props: Props) {
                     <ImageUpload />
                 </GridItem>
                 <GridItem padding='6' area='button'>
-                    <SubmitButton
-                        {...submitButtonProps}
-                        handleSubmit={handleSubmitMutation}
-                        isLoggedIn={isVerified}
-                    />
+                    <RecipeActionButtons>
+                        {secondaryActionButton}
+                        <SubmitButton
+                            {...submitButtonProps}
+                            handleSubmit={handleSubmitMutation}
+                            isLoggedIn={isVerified}
+                        />
+                    </RecipeActionButtons>
                 </GridItem>
             </Grid>
         </Container>
