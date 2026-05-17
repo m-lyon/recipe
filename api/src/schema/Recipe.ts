@@ -384,6 +384,12 @@ export const RecipeMutation = {
 
                 try {
                     await veganDoc.save();
+
+                    const originalWithLink = await Recipe.findById(original._id);
+                    if (!originalWithLink) {
+                        throw new Error('Original recipe not found after linking vegan version');
+                    }
+                    await originalWithLink.save();
                 } catch (error) {
                     await Recipe.findOneAndUpdate(
                         {
@@ -394,6 +400,7 @@ export const RecipeMutation = {
                             $unset: { veganVersion: 1 },
                         }
                     );
+                    await Recipe.deleteOne({ _id: veganDoc._id, originalRecipe: original._id });
                     throw error;
                 }
 
@@ -425,6 +432,9 @@ export const RecipeMutation = {
     recipeArchiveById: RecipeModifyTC.getResolver('archiveById').wrapResolve(
         (next) => async (rp) => {
             const recipe = await Recipe.findById(rp.args._id);
+            if (recipe?.originalRecipe) {
+                throw new Error('Vegan copies cannot be archived directly');
+            }
             await validateItemNotInRecipe(rp.args._id, 'recipe');
             if (recipe?.veganVersion) {
                 await validateItemNotInRecipe(recipe.veganVersion, 'recipe');
@@ -432,5 +442,13 @@ export const RecipeMutation = {
             return next(rp);
         }
     ),
-    recipeUnarchiveById: RecipeModifyTC.getResolver('unarchiveById'),
+    recipeUnarchiveById: RecipeModifyTC.getResolver('unarchiveById').wrapResolve(
+        (next) => async (rp) => {
+            const recipe = await Recipe.findById(rp.args._id);
+            if (recipe?.originalRecipe) {
+                throw new Error('Vegan copies cannot be unarchived directly');
+            }
+            return next(rp);
+        }
+    ),
 };

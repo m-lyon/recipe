@@ -1385,6 +1385,19 @@ describe('recipeArchiveById', () => {
         assert.isTrue(archivedVegan.archived, 'Linked vegan version should be archived');
     });
 
+    it('should NOT allow archiving a vegan copy directly', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const { vegan } = await createLinkedOriginalAndVegan(user, { archived: false });
+
+        const response = await archiveRecipe(this, user, vegan._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Should have errors');
+        assert.include(
+            response.body.singleResult.errors[0].message,
+            'Vegan copies cannot be archived directly'
+        );
+    });
+
     it('should NOT archive a recipe that is used as an ingredient in another recipe', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         const recipeIngredient = await Recipe.findOne({ title: 'Bimibap' });
@@ -1526,6 +1539,20 @@ describe('recipeArchiveById', () => {
         ]);
         assert.isFalse(unarchivedOriginal.archived, 'Original recipe should be unarchived');
         assert.isFalse(unarchivedVegan.archived, 'Linked vegan version should be unarchived');
+    });
+
+    it('should NOT allow unarchiving a vegan copy directly', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const { vegan } = await createLinkedOriginalAndVegan(user, { archived: false });
+        await Recipe.findByIdAndUpdate(vegan._id, { archived: true });
+
+        const response = await unarchiveRecipe(this, user, vegan._id);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Should have errors');
+        assert.include(
+            response.body.singleResult.errors[0].message,
+            'Vegan copies cannot be unarchived directly'
+        );
     });
 
     it('should filter archived recipes from recipeMany by default', async function () {
@@ -2644,6 +2671,18 @@ describe('recipeCreateOne vegan validation', () => {
         ]);
         assert.equal(String(originalDoc.veganVersion), String(veganId));
         assert.equal(String(veganDoc.originalRecipe), String(originalId));
+
+        const updatedOriginal = await Recipe.findById(originalId);
+        assert.include(
+            updatedOriginal.calculatedTags,
+            'vegan version available',
+            'Original recipe should persist the vegan version available calculated tag'
+        );
+        assert.notInclude(
+            updatedOriginal.calculatedTags,
+            'vegan_version_available',
+            'Original recipe should not use an underscored vegan version tag'
+        );
     });
 
     it('should NOT leave an orphaned vegan copy behind when atomic create fails linkability checks', async function () {
@@ -2716,6 +2755,82 @@ describe('recipeCreateOne vegan validation', () => {
             originalRecipe: { $exists: true },
         });
         assert.lengthOf(copies, 1, 'Only the original atomic vegan copy should exist');
+    });
+
+    it('should roll back the vegan copy when the original re-save fails after vegan save succeeds', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        const ingredientSubsections = [
+            {
+                ingredients: [
+                    {
+                        ingredient: tomato._id,
+                        quantity: '300',
+                        unit: unit._id,
+                        prepMethod: prepMethod._id,
+                    },
+                ],
+            },
+        ];
+        const instructionSubsections = [{ name: 'Main', instructions: ['Cook.'] }];
+
+        const originalResponse = await createRecipe(this, user, {
+            title: 'Rollback Original Save Soup',
+            ingredientSubsections,
+            instructionSubsections,
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+        const originalId = (
+            originalResponse.body.singleResult.data as {
+                recipeCreateOne: { record: { _id: string } };
+            }
+        ).recipeCreateOne.record._id;
+
+        const savedSave = Recipe.prototype.save;
+        Recipe.prototype.save = async function (...args) {
+            const isOriginalResave =
+                this._id.toString() === originalId && this.veganVersion !== undefined;
+
+            if (isOriginalResave) {
+                throw new Error('Simulated original re-save failure');
+            }
+
+            return savedSave.apply(this, args);
+        };
+
+        try {
+            const response = await createVeganCopy(this, user, originalId, {
+                title: 'Rollback Original Save Soup',
+                ingredientSubsections,
+                instructionSubsections,
+                numServings: 2,
+                tags: [],
+                isIngredient: false,
+            });
+
+            assert.equal(response.body.kind, 'single');
+            assert.isDefined(response.body.singleResult.errors, 'Should have errors');
+            assert.include(
+                response.body.singleResult.errors[0].message,
+                'Simulated original re-save failure'
+            );
+        } finally {
+            Recipe.prototype.save = savedSave;
+        }
+
+        const reloadedOriginal = await Recipe.findById(originalId);
+        assert.isUndefined(reloadedOriginal.veganVersion, 'Original recipe should roll back veganVersion');
+
+        const copies = await Recipe.find({
+            title: 'Rollback Original Save Soup',
+            originalRecipe: originalId,
+        });
+        assert.lengthOf(copies, 0, 'Failed atomic create should not leave an orphaned vegan copy');
     });
 
     it('should NOT allow recipeCreateOne to create a linked vegan copy for another user original', async function () {
