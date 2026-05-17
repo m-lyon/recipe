@@ -91,7 +91,8 @@ describe('Archive Recipe Workflow', () => {
         expect(await screen.findByText('Recipes'));
         expect(screen.getByText('Mock Recipe')).not.toBeNull();
 
-        // Toggle archived view
+        // Expand search filters, then toggle archived view
+        await user.click(screen.getByLabelText('Search for recipes'));
         await user.click(screen.getByLabelText('Show archived recipes'));
 
         // Wait for archived recipes to load (mockArchivedRecipeTwo is
@@ -150,7 +151,8 @@ describe('Archive Recipe Workflow', () => {
         expect(await screen.findByText('Recipes'));
         await screen.findAllByLabelText('View Mock Recipe');
 
-        // Toggle to archived view
+        // Expand search filters, then toggle to archived view
+        await user.click(screen.getByLabelText('Search for recipes'));
         await user.click(screen.getByLabelText('Show archived recipes'));
         expect(await screen.findByLabelText('View Mock Recipe Two')).not.toBeNull();
 

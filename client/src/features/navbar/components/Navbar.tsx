@@ -85,8 +85,6 @@ export function Navbar() {
                                     setTitleFilter={setTitle}
                                     resetSearch={reset}
                                     closeNavDropdown={onClose}
-                                    showArchived={showArchived}
-                                    setShowArchived={setShowArchived}
                                 />
                             </Box>
                         </Flex>
@@ -94,7 +92,13 @@ export function Navbar() {
                     </Flex>
                 </FlexNav>
                 {isHomePage ? <SelectedFilters removeFilter={removeFilter} /> : undefined}
-                {isHomePage ? <SearchFilter addFilter={addFilter} /> : undefined}
+                {isHomePage ? (
+                    <SearchFilter
+                        addFilter={addFilter}
+                        showArchived={showArchived}
+                        setShowArchived={setShowArchived}
+                    />
+                ) : undefined}
                 <Slide
                     in={isOpen}
                     direction='top'
