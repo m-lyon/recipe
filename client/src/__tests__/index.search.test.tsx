@@ -92,6 +92,18 @@ describe('Search Functionality', () => {
         nullByLabelText(screen, 'View Mock Recipe Four');
     });
 
+    it('should only show archived filter when search is expanded', async () => {
+        renderComponent();
+        const user = userEvent.setup();
+
+        expect(await screen.findByText('Recipes'));
+        expect(screen.queryByLabelText('Show archived recipes')).toBeNull();
+
+        await user.click(screen.getByLabelText('Search for recipes'));
+
+        expect(await screen.findByLabelText('Show archived recipes')).not.toBeNull();
+    });
+
     it('should reset search form when clicking on home button', async () => {
         // Render -----------------------------------------------
         renderComponent([

@@ -92,7 +92,7 @@ describe('Archive Recipe Workflow', () => {
         expect(screen.getByText('Mock Recipe')).not.toBeNull();
 
         // Toggle archived view
-        await user.click(screen.getByLabelText('Toggle archived recipes view'));
+        await user.click(screen.getByLabelText('Show archived recipes'));
 
         // Wait for archived recipes to load (mockArchivedRecipeTwo is
         // isIngredient with numServings > 1, so card title is pluralTitle)
@@ -151,7 +151,7 @@ describe('Archive Recipe Workflow', () => {
         await screen.findAllByLabelText('View Mock Recipe');
 
         // Toggle to archived view
-        await user.click(screen.getByLabelText('Toggle archived recipes view'));
+        await user.click(screen.getByLabelText('Show archived recipes'));
         expect(await screen.findByLabelText('View Mock Recipe Two')).not.toBeNull();
 
         // Focus search input to reveal the X (Reset search) button
