@@ -262,16 +262,7 @@ export const RecipeMutation = {
         const user = rp.context.getUser();
 
         if (rp.args.record.originalRecipe) {
-            const original = await Recipe.findById(rp.args.record.originalRecipe);
-
-            if (!original) {
-                throw new Error('Original recipe not found');
-            }
-
-            const isAdmin = user.role === 'admin';
-            if (!isAdmin && String(original.owner) !== String(user._id)) {
-                throw new Error('Not authorized to create a vegan copy for this recipe');
-            }
+            throw new Error('Use recipeCreateVeganVersion to create linked vegan copies');
         }
 
         rp.args.record.owner = user;
@@ -373,8 +364,25 @@ export const RecipeMutation = {
 
                 await veganDoc.validate();
 
-                original.veganVersion = veganDoc._id;
-                await Promise.all([original.save(), veganDoc.save()]);
+                const updatedOriginal = await Recipe.findOneAndUpdate(
+                    {
+                        _id: original._id,
+                        veganVersion: { $exists: false },
+                    },
+                    {
+                        $set: {
+                            veganVersion: veganDoc._id,
+                            lastModified: new Date(),
+                        },
+                    },
+                    { new: true }
+                );
+
+                if (!updatedOriginal) {
+                    throw new Error('Original recipe already has a vegan version');
+                }
+
+                await veganDoc.save();
 
                 return { recordId: veganDoc._id, record: veganDoc };
             },
