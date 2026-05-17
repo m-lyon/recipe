@@ -15,6 +15,7 @@ import { mockGetRecipesFilteredCalculatedTag } from '@recipe/graphql/queries/__m
 import { enterViewRecipePage, haveValueByLabelText, notNullByLabelText } from '@recipe/utils/tests';
 
 import { renderComponent } from './utils';
+import { SEARCH_FILTER_MOBILE_HEIGHT } from '../features/navbar/constants';
 
 loadErrorMessages();
 loadDevMessages();
@@ -102,6 +103,23 @@ describe('Search Functionality', () => {
         await user.click(screen.getByLabelText('Search for recipes'));
 
         expect(await screen.findByLabelText('Show archived recipes')).not.toBeNull();
+    });
+
+    it('should reserve enough mobile height for the archived filter row', () => {
+        expect(SEARCH_FILTER_MOBILE_HEIGHT).toBeGreaterThan(110);
+    });
+
+    it('should not render a nested label inside the archived checkbox', async () => {
+        renderComponent();
+        const user = userEvent.setup();
+
+        expect(await screen.findByText('Recipes'));
+
+        await user.click(screen.getByLabelText('Search for recipes'));
+
+        const archivedCheckbox = await screen.findByLabelText('Show archived recipes');
+
+        expect(archivedCheckbox.closest('label')?.querySelector('label')).toBeNull();
     });
 
     it('should reset search form when clicking on home button', async () => {

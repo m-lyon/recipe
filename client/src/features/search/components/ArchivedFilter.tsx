@@ -1,4 +1,4 @@
-import { Checkbox, FormControl, FormLabel, Tooltip, useBreakpointValue } from '@chakra-ui/react';
+import { Checkbox, FormControl, Tooltip, useBreakpointValue } from '@chakra-ui/react';
 
 interface Props {
     showArchived: boolean;
@@ -27,9 +27,7 @@ export function ArchivedFilter(props: Props) {
                     colorScheme='teal'
                     aria-label='Show archived recipes'
                 >
-                    <FormLabel m={0} ml={2} cursor='pointer'>
-                        Show archived recipes
-                    </FormLabel>
+                    Show archived recipes
                 </Checkbox>
             </FormControl>
         </Tooltip>
