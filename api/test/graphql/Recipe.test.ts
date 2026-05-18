@@ -1431,6 +1431,50 @@ describe('recipeArchiveById', () => {
         assert.isTrue(archivedVegan.archived, 'Linked vegan version should be archived');
     });
 
+    it('should keep linked archive state together if the vegan update fails', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const { original, vegan } = await createLinkedOriginalAndVegan(user, { archived: false });
+
+        const originalUpdateMany = Recipe.updateMany;
+        Recipe.updateMany = async function (filter, update, options) {
+            const ids = filter?._id?.$in?.map((id) => String(id)) ?? [];
+            if (
+                ids.includes(String(original._id)) &&
+                ids.includes(String(vegan._id)) &&
+                update?.archived === true
+            ) {
+                throw new Error('Simulated linked archive failure');
+            }
+
+            return originalUpdateMany.call(this, filter, update, options);
+        } as typeof Recipe.updateMany;
+
+        try {
+            const response = await archiveRecipe(this, user, original._id);
+            assert.equal(response.body.kind, 'single');
+            assert.isDefined(response.body.singleResult.errors, 'Should have errors');
+            assert.include(
+                response.body.singleResult.errors[0].message,
+                'Simulated linked archive failure'
+            );
+        } finally {
+            Recipe.updateMany = originalUpdateMany;
+        }
+
+        const [reloadedOriginal, reloadedVegan] = await Promise.all([
+            Recipe.findById(original._id),
+            Recipe.findById(vegan._id),
+        ]);
+        assert.isFalse(
+            reloadedOriginal.archived,
+            'Original recipe should not remain archived when the linked archive fails'
+        );
+        assert.isFalse(
+            reloadedVegan.archived,
+            'Linked vegan version should remain unarchived when the linked archive fails'
+        );
+    });
+
     it('should NOT allow archiving a vegan copy directly', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         const { vegan } = await createLinkedOriginalAndVegan(user, { archived: false });
@@ -1585,6 +1629,50 @@ describe('recipeArchiveById', () => {
         ]);
         assert.isFalse(unarchivedOriginal.archived, 'Original recipe should be unarchived');
         assert.isFalse(unarchivedVegan.archived, 'Linked vegan version should be unarchived');
+    });
+
+    it('should keep linked unarchive state together if the vegan update fails', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const { original, vegan } = await createLinkedOriginalAndVegan(user, { archived: true });
+
+        const originalUpdateMany = Recipe.updateMany;
+        Recipe.updateMany = async function (filter, update, options) {
+            const ids = filter?._id?.$in?.map((id) => String(id)) ?? [];
+            if (
+                ids.includes(String(original._id)) &&
+                ids.includes(String(vegan._id)) &&
+                update?.archived === false
+            ) {
+                throw new Error('Simulated linked unarchive failure');
+            }
+
+            return originalUpdateMany.call(this, filter, update, options);
+        } as typeof Recipe.updateMany;
+
+        try {
+            const response = await unarchiveRecipe(this, user, original._id);
+            assert.equal(response.body.kind, 'single');
+            assert.isDefined(response.body.singleResult.errors, 'Should have errors');
+            assert.include(
+                response.body.singleResult.errors[0].message,
+                'Simulated linked unarchive failure'
+            );
+        } finally {
+            Recipe.updateMany = originalUpdateMany;
+        }
+
+        const [reloadedOriginal, reloadedVegan] = await Promise.all([
+            Recipe.findById(original._id),
+            Recipe.findById(vegan._id),
+        ]);
+        assert.isTrue(
+            reloadedOriginal.archived,
+            'Original recipe should remain archived when the linked unarchive fails'
+        );
+        assert.isTrue(
+            reloadedVegan.archived,
+            'Linked vegan version should remain archived when the linked unarchive fails'
+        );
     });
 
     it('should NOT allow unarchiving a vegan copy directly', async function () {
@@ -2032,6 +2120,66 @@ describe('recipeRemoveById', () => {
 
             assert.isNull(deletedRecipe, 'Recipe should be deleted');
             assert.isNull(deletedImage, 'Image should be deleted');
+        } finally {
+            fs.unlinkSync = originalUnlinkSync;
+        }
+    });
+
+    it('should still succeed when image unlink fails after recipe delete', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        const recipe = await Recipe.create({
+            title: 'Delete Image Unlink Failure Tomato Soup',
+            titleIdentifier: 'delete-image-unlink-failure-tomato-soup',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+            owner: user._id,
+            createdAt: new Date(),
+            lastModified: new Date(),
+            archived: false,
+        });
+
+        const image = await new Image({
+            recipe: recipe._id,
+            origUrl: 'uploads/images/recipe1_image2.jpeg',
+        }).save();
+        const originalUnlinkSync = fs.unlinkSync;
+        fs.unlinkSync = () => {
+            throw new Error('Simulated unlink failure');
+        };
+
+        try {
+            const response = await removeRecipe(this, user, recipe._id);
+            assert.equal(response.body.kind, 'single');
+            assert.isUndefined(
+                response.body.singleResult.errors,
+                response.body.singleResult.errors ? response.body.singleResult.errors[0].message : ''
+            );
+
+            const [deletedRecipe, deletedImage] = await Promise.all([
+                Recipe.findById(recipe._id),
+                Image.findById(image._id),
+            ]);
+
+            assert.isNull(deletedRecipe, 'Recipe should be deleted');
+            assert.isNull(deletedImage, 'Image should be deleted even if unlink fails');
         } finally {
             fs.unlinkSync = originalUnlinkSync;
         }

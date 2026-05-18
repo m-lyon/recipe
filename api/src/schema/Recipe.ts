@@ -191,10 +191,17 @@ RecipeModifyTC.addResolver({
     type: RecipeTC.mongooseResolvers.removeById().getType(),
     args: { _id: 'MongoID!' },
     resolve: async ({ args }) => {
-        const record = await Recipe.findByIdAndUpdate(args._id, { archived: true }, { new: true });
-        if (record?.veganVersion) {
-            await Recipe.findByIdAndUpdate(record.veganVersion, { archived: true });
+        const existingRecord = await Recipe.findById(args._id);
+        if (!existingRecord) {
+            return { recordId: existingRecord?._id, record: existingRecord };
         }
+
+        const ids = existingRecord.veganVersion
+            ? [existingRecord._id, existingRecord.veganVersion]
+            : [existingRecord._id];
+        await Recipe.updateMany({ _id: { $in: ids } }, { archived: true });
+
+        const record = await Recipe.findById(args._id);
         return { recordId: record?._id, record };
     },
 });
@@ -205,10 +212,17 @@ RecipeModifyTC.addResolver({
     type: RecipeTC.mongooseResolvers.removeById().getType(),
     args: { _id: 'MongoID!' },
     resolve: async ({ args }) => {
-        const record = await Recipe.findByIdAndUpdate(args._id, { archived: false }, { new: true });
-        if (record?.veganVersion) {
-            await Recipe.findByIdAndUpdate(record.veganVersion, { archived: false });
+        const existingRecord = await Recipe.findById(args._id);
+        if (!existingRecord) {
+            return { recordId: existingRecord?._id, record: existingRecord };
         }
+
+        const ids = existingRecord.veganVersion
+            ? [existingRecord._id, existingRecord.veganVersion]
+            : [existingRecord._id];
+        await Recipe.updateMany({ _id: { $in: ids } }, { archived: false });
+
+        const record = await Recipe.findById(args._id);
         return { recordId: record?._id, record };
     },
 });
@@ -319,7 +333,7 @@ export const RecipeMutation = {
                 }
 
                 if (errs.length > 0) {
-                    throw new GraphQLError(`Error deleting images from disk: ${errs.join(', ')}`);
+                    console.error(`Error deleting images from disk: ${errs.join(', ')}`);
                 }
             }
             // delete all rating associated with the recipe after the recipe delete succeeds
