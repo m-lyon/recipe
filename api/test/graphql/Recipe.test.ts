@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { assert } from 'chai';
 import mongoose from 'mongoose';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
@@ -9,6 +11,7 @@ import { Unit } from '../../src/models/Unit.js';
 import { Image } from '../../src/models/Image.js';
 import { Recipe } from '../../src/models/Recipe.js';
 import { Rating } from '../../src/models/Rating.js';
+import { IMAGE_DIR } from '../../src/constants.js';
 import { createUnits, createUser } from '../utils/data.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
@@ -1974,6 +1977,64 @@ describe('recipeRemoveById', () => {
 
         assert.isNotNull(remainingRecipe, 'Recipe should remain when deletion fails');
         assert.isNotNull(remainingRating, 'Ratings should remain when deletion fails');
+    });
+
+    it('should delete a recipe with attached images', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        const recipe = await Recipe.create({
+            title: 'Delete Image Tomato Soup',
+            titleIdentifier: 'delete-image-tomato-soup',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+            owner: user._id,
+            createdAt: new Date(),
+            lastModified: new Date(),
+            archived: false,
+        });
+
+        const image = await new Image({
+            recipe: recipe._id,
+            origUrl: 'uploads/images/recipe1_image1.jpeg',
+        }).save();
+        const originalUnlinkSync = fs.unlinkSync;
+        fs.unlinkSync = () => undefined as never;
+
+        try {
+            const response = await removeRecipe(this, user, recipe._id);
+            assert.equal(response.body.kind, 'single');
+            assert.isUndefined(
+                response.body.singleResult.errors,
+                response.body.singleResult.errors ? response.body.singleResult.errors[0].message : ''
+            );
+
+            const [deletedRecipe, deletedImage] = await Promise.all([
+                Recipe.findById(recipe._id),
+                Image.findById(image._id),
+            ]);
+
+            assert.isNull(deletedRecipe, 'Recipe should be deleted');
+            assert.isNull(deletedImage, 'Image should be deleted');
+        } finally {
+            fs.unlinkSync = originalUnlinkSync;
+        }
     });
 });
 

@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+
 import { Model } from 'mongoose';
 import { schemaComposer } from 'graphql-compose';
 import { GraphQLNonNull, GraphQLString } from 'graphql';
@@ -10,6 +13,7 @@ import { ImageTC } from '../models/Image.js';
 import { RatingTC } from '../models/Rating.js';
 import { PrepMethodTC } from '../models/PrepMethod.js';
 import { Ingredient, IngredientTC } from '../models/Ingredient.js';
+import { IMAGE_DIR } from '../constants.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
 import { validateItemNotInRecipe } from '../middleware/validation.js';
 import { RecipeTC, generateRecipeIdentifier } from '../models/Recipe.js';
@@ -296,14 +300,28 @@ export const RecipeMutation = {
     recipeRemoveById: RecipeModifyTC.getResolver('removeById')
         .wrapResolve((next) => async (rp) => {
             const result = await next(rp);
-            // delete all images associated with the recipe after the recipe delete succeeds
             const images = await ImageTC.mongooseResolvers.findMany().resolve({
                 args: { filter: { recipe: rp.args._id } },
             });
-            await ImageTC.getResolver('imageRemoveMany').resolve({
-                args: { ids: images.map((o) => o._id) },
-                context: rp.context,
-            });
+            if (images.length > 0) {
+                await ImageTC.mongooseResolvers.removeMany().resolve({
+                    args: { filter: { recipe: rp.args._id } },
+                });
+
+                const errs: string[] = [];
+                for (const image of images) {
+                    const filepath = path.join(IMAGE_DIR, path.basename(image.origUrl));
+                    try {
+                        fs.unlinkSync(filepath);
+                    } catch {
+                        errs.push(image.origUrl);
+                    }
+                }
+
+                if (errs.length > 0) {
+                    throw new GraphQLError(`Error deleting images from disk: ${errs.join(', ')}`);
+                }
+            }
             // delete all rating associated with the recipe after the recipe delete succeeds
             await RatingTC.mongooseResolvers.removeMany().resolve({
                 args: { filter: { recipe: rp.args._id } },
