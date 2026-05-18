@@ -96,6 +96,9 @@ export const RECIPE_FIELDS_FULL = gql(`
                         _id
                         title
                         pluralTitle
+                        veganVersion {
+                            _id
+                        }
                     }
                     ... on Ingredient {
                         ...IngredientFields

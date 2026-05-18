@@ -6,6 +6,7 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { PATH } from '@recipe/constants';
 import { ReservedTags } from '@recipe/graphql/enums';
 import { enterEditRecipePage } from '@recipe/utils/tests';
+import { enterViewRecipePage } from '@recipe/utils/tests';
 import { MockedResponses, renderPage } from '@recipe/utils/tests';
 import { mockRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -275,6 +276,72 @@ describe('RecipeCard — no vegan version button', () => {
 
         expect(await screen.findByText('Mock Recipe')).not.toBeNull();
         expect(screen.queryByLabelText('View vegan version of Mock Recipe')).toBeNull();
+    });
+});
+
+describe('ViewRecipe — recipe ingredient vegan suffix', () => {
+    afterEach(() => {
+        cleanup();
+    });
+
+    it('renders (ve) for recipe ingredients whose nested recipe has a vegan version', async () => {
+        const { GET_RECIPE } = await import('@recipe/graphql/queries/recipe');
+        const recipeWithRecipeIngredient = {
+            ...mockRecipeOne,
+            ingredientSubsections: [
+                {
+                    __typename: 'IngredientSubsection' as const,
+                    name: 'Section One',
+                    ingredients: [
+                        {
+                            ...mockRecipeOne.ingredientSubsections[0].ingredients[0],
+                            __typename: 'RecipeIngredient' as const,
+                            ingredient: {
+                                __typename: 'Recipe' as const,
+                                _id: 'mock-recipe-ingredient-with-vegan-version',
+                                title: 'Mock Stock',
+                                pluralTitle: null,
+                                veganVersion: {
+                                    __typename: 'Recipe' as const,
+                                    _id: 'mock-recipe-ingredient-vegan-copy',
+                                },
+                            },
+                        },
+                    ],
+                },
+            ],
+        };
+        const mockGetRecipeWithRecipeIngredient = {
+            request: {
+                query: GET_RECIPE,
+                variables: { filter: { titleIdentifier: 'mock-recipe-one' } },
+            },
+            result: {
+                data: {
+                    __typename: 'Query',
+                    recipeOne: recipeWithRecipeIngredient,
+                },
+            },
+        };
+
+        renderPage(
+            routes,
+            [
+                ...mocksMinimal,
+                mockGetRecipeWithRecipeIngredient,
+                mockGetRecipeTwo,
+                mockGetRecipeThree,
+                mockGetRecipes,
+            ],
+            [PATH.ROOT]
+        );
+        const user = userEvent.setup();
+
+        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+
+        expect((await screen.findByLabelText('View Mock Stock')).textContent).toContain(
+            'mock stock (ve)'
+        );
     });
 });
 
