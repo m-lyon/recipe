@@ -295,7 +295,8 @@ export const RecipeMutation = {
     }),
     recipeRemoveById: RecipeModifyTC.getResolver('removeById')
         .wrapResolve((next) => async (rp) => {
-            // delete all images associated with the recipe
+            const result = await next(rp);
+            // delete all images associated with the recipe after the recipe delete succeeds
             const images = await ImageTC.mongooseResolvers.findMany().resolve({
                 args: { filter: { recipe: rp.args._id } },
             });
@@ -303,11 +304,10 @@ export const RecipeMutation = {
                 args: { ids: images.map((o) => o._id) },
                 context: rp.context,
             });
-            // delete all rating associated with the recipe
+            // delete all rating associated with the recipe after the recipe delete succeeds
             await RatingTC.mongooseResolvers.removeMany().resolve({
                 args: { filter: { recipe: rp.args._id } },
             });
-            const result = await next(rp);
             // Clean up vegan version back-references
             const record = result?.record;
             if (record?.originalRecipe) {
@@ -361,7 +361,7 @@ export const RecipeMutation = {
 
                 const veganDoc = new Recipe({
                     ...veganRecipe,
-                    owner: user,
+                    owner: original.owner,
                     originalRecipe: original._id,
                     titleIdentifier: generateRecipeIdentifier(veganRecipe.title),
                     createdAt: new Date(),

@@ -6,7 +6,9 @@ import { Tag } from '../../src/models/Tag.js';
 import { Size } from '../../src/models/Size.js';
 import { User } from '../../src/models/User.js';
 import { Unit } from '../../src/models/Unit.js';
+import { Image } from '../../src/models/Image.js';
 import { Recipe } from '../../src/models/Recipe.js';
+import { Rating } from '../../src/models/Rating.js';
 import { createUnits, createUser } from '../utils/data.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
@@ -1907,6 +1909,72 @@ describe('recipeRemoveById', () => {
             'Vegan version should lose the deleted originalRecipe reference'
         );
     });
+
+    it('should NOT remove linked data before recipe deletion succeeds', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        const recipe = await Recipe.create({
+            title: 'Delete Ordering Tomato Soup',
+            titleIdentifier: 'delete-ordering-tomato-soup',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+            owner: user._id,
+            createdAt: new Date(),
+            lastModified: new Date(),
+            archived: false,
+        });
+
+        const rating = await new Rating({
+            recipe: recipe._id,
+            owner: user._id,
+            value: 4,
+        }).save();
+
+        const originalDeleteOne = Recipe.prototype.deleteOne;
+        Recipe.prototype.deleteOne = async function (...args) {
+            if (this._id.toString() === recipe._id.toString()) {
+                throw new Error('Simulated recipe delete failure');
+            }
+            return originalDeleteOne.apply(this, args);
+        };
+
+        try {
+            const response = await removeRecipe(this, user, recipe._id);
+            assert.equal(response.body.kind, 'single');
+            assert.isDefined(response.body.singleResult.errors, 'Should have errors');
+            assert.include(
+                response.body.singleResult.errors[0].message,
+                'Simulated recipe delete failure'
+            );
+        } finally {
+            Recipe.prototype.deleteOne = originalDeleteOne;
+        }
+
+        const [remainingRecipe, remainingRating] = await Promise.all([
+            Recipe.findById(recipe._id),
+            Rating.findById(rating._id),
+        ]);
+
+        assert.isNotNull(remainingRecipe, 'Recipe should remain when deletion fails');
+        assert.isNotNull(remainingRating, 'Ratings should remain when deletion fails');
+    });
 });
 
 describe('recipeCreateOne vegan validation', () => {
@@ -2941,6 +3009,75 @@ describe('recipeCreateOne vegan validation', () => {
             response.body.singleResult.errors[0].message,
             'Field "originalRecipe" is not defined by type "CreateOneRecipeCreateInput"'
         );
+    });
+
+    it('should assign admin-created vegan copies to the original recipe owner', async function () {
+        const owner = await User.findOne({ username: 'testuser1' });
+        await createAdmin();
+        const admin = await User.findOne({ username: 'testuser2' });
+        const tomato = await Ingredient.findOne({ name: 'tomato' });
+        const unit = await Unit.findOne({ shortSingular: 'g' });
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+
+        const originalResponse = await createRecipe(this, owner, {
+            title: 'Admin Ownership Tomato Soup',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+        const originalId = (
+            originalResponse.body.singleResult.data as {
+                recipeCreateOne: { record: { _id: string } };
+            }
+        ).recipeCreateOne.record._id;
+
+        const response = await createVeganCopy(this, admin, originalId, {
+            title: 'Admin Ownership Tomato Soup',
+            ingredientSubsections: [
+                {
+                    ingredients: [
+                        {
+                            ingredient: tomato._id,
+                            quantity: '300',
+                            unit: unit._id,
+                            prepMethod: prepMethod._id,
+                        },
+                    ],
+                },
+            ],
+            instructionSubsections: [{ name: 'Main', instructions: ['Cook.'] }],
+            numServings: 2,
+            tags: [],
+            isIngredient: false,
+        });
+
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(
+            response.body.singleResult.errors,
+            response.body.singleResult.errors ? response.body.singleResult.errors[0].message : ''
+        );
+
+        const veganId = (
+            response.body.singleResult.data as {
+                recipeCreateVeganVersion: { record: { _id: string } };
+            }
+        ).recipeCreateVeganVersion.record._id;
+
+        const veganCopy = await Recipe.findById(veganId);
+        assert.equal(String(veganCopy.owner), String(owner._id));
     });
 
     it('should NOT allow recipeCreateOne to create a linked vegan copy with a missing originalRecipe', async function () {
