@@ -242,7 +242,6 @@ export function EditRecipe() {
                 recipeState.resetCreateVeganVersion();
                 warningToast({
                     title: 'Recipe is already vegan',
-                    description: 'This recipe does not need a vegan version',
                     position: 'top',
                 });
                 // fall through to normal save redirect
@@ -250,7 +249,6 @@ export function EditRecipe() {
                 const veganTitleIdentifier = currentRecipe.veganVersion.titleIdentifier;
                 successToast({
                     title: 'Redirecting to existing vegan version',
-                    description: 'This recipe already has a vegan version',
                     position: 'top',
                 });
                 return setTimeout(() => {

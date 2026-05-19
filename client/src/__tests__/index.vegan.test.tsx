@@ -133,7 +133,6 @@ describe('EditRecipe — Already Vegan Guard', () => {
 
         // Warning toast should appear
         expect(await screen.findByText('Recipe is already vegan')).not.toBeNull();
-        expect(await screen.findByText('This recipe does not need a vegan version')).not.toBeNull();
 
         // Should navigate to home page
         expect(await screen.findByText('Recipes')).not.toBeNull();
