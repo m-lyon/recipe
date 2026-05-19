@@ -139,12 +139,12 @@ export function EditableRecipe(props: Props) {
                 </GridItem>
                 <GridItem padding='6' area='button'>
                     <RecipeActionButtons>
-                        {secondaryActionButton}
                         <SubmitButton
                             {...submitButtonProps}
                             handleSubmit={handleSubmitMutation}
                             isLoggedIn={isVerified}
                         />
+                        {secondaryActionButton}
                     </RecipeActionButtons>
                 </GridItem>
             </Grid>

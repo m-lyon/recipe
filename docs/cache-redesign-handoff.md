@@ -208,8 +208,6 @@ The answers to those questions determine whether Option B or Option C is the bet
 
 ## Current Safe State
 
-The partial `recipeCount`-by-filter change has been reverted from the worktree. The remaining valid fix in progress is only:
-
-- `CreateVeganRecipe` subsection seeding regression
+The partial `recipeCount`-by-filter change has been reverted from the worktree.
 
 The cache redesign remains intentionally unimplemented.

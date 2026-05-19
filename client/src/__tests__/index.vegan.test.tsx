@@ -1040,7 +1040,7 @@ describe('EditRecipe — destructive action button', () => {
                     recipeMany: [
                         {
                             ...mockRecipeWithVeganVersion,
-                            calculatedTags: ['vegetarian', 'vegan version available'],
+                            calculatedTags: ['vegetarian', ReservedTags.VeganVersionAvailable],
                         },
                         mockRecipeFive,
                         mockRecipeThree,
