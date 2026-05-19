@@ -1,6 +1,7 @@
 import { ApolloCache, InMemoryCache, Reference } from '@apollo/client';
 
 import { ReservedTags } from '@recipe/graphql/enums';
+import { displayCalculatedTag } from '@recipe/features/tags';
 import { RECIPE_INGR_FIELDS } from '@recipe/graphql/queries/recipe';
 import { GET_RECIPE, RECIPE_FIELDS_SUBSET } from '@recipe/graphql/queries/recipe';
 import { GetRecipeQuery, GetRecipeQueryVariables } from '@recipe/graphql/generated';
@@ -122,7 +123,9 @@ export function deleteVeganRecipeCache(
                 return null;
             },
             calculatedTags(existing: string[] = []) {
-                return existing.filter((tag) => tag !== ReservedTags.VeganVersionAvailable);
+                return existing.filter(
+                    (tag) => tag !== displayCalculatedTag(ReservedTags.VeganVersionAvailable)
+                );
             },
         },
     });
