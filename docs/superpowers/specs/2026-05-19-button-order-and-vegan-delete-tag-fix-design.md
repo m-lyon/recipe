@@ -106,7 +106,7 @@ With the current code, step 4's `cache.modify` is a no-op (string mismatch), the
 
 | Mock | Source |
 |---|---|
-| Initial `GET_RECIPES` (includes original with vegan tag) | existing `mockGetRecipes` |
+| Initial `GET_RECIPES` (includes original with vegan tag) | `mockGetRecipes` if it already includes the `'vegan version available'` tag on the original; otherwise a new variant with that tag added |
 | `GET_RECIPE` for the vegan copy edit page | existing `mockGetRecipeVeganCopy` |
 | `DELETE_RECIPE` for the vegan copy | existing `mockDeleteRecipeVeganCopy` |
 | Second `GET_RECIPES` | **not provided** — this is what makes the test sensitive to the `cache.modify` correctness |
