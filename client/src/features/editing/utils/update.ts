@@ -107,25 +107,26 @@ export function deleteVeganRecipeCache(
         },
     });
 
-    cache.evict({ id: cache.identify({ __typename: 'Recipe', _id: recipe._id }) });
-    cache.gc();
-
+    // Clear the vegan link on the original recipe BEFORE evicting the vegan copy.
+    // This ensures the original's veganVersion field is already null when cache.evict
+    // runs, so no dangling reference ever exists in the cache — even transiently.
     const originalId = recipe.originalRecipe?._id;
-    if (!originalId) {
-        return;
+    if (originalId) {
+        cache.modify({
+            id: cache.identify({ __typename: 'Recipe', _id: originalId }),
+            fields: {
+                veganVersion() {
+                    return null;
+                },
+                calculatedTags(existing: string[] = []) {
+                    return existing.filter(
+                        (tag) => tag !== ReservedTags.VeganVersionAvailable
+                    );
+                },
+            },
+        });
     }
 
-    cache.modify({
-        id: cache.identify({ __typename: 'Recipe', _id: originalId }),
-        fields: {
-            veganVersion() {
-                return null;
-            },
-            calculatedTags(existing: string[] = []) {
-                return existing.filter(
-                    (tag) => tag !== ReservedTags.VeganVersionAvailable
-                );
-            },
-        },
-    });
+    cache.evict({ id: cache.identify({ __typename: 'Recipe', _id: recipe._id }) });
+    cache.gc();
 }

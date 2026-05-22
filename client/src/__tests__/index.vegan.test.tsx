@@ -1092,4 +1092,82 @@ describe('EditRecipe — destructive action button', () => {
         // The original recipe card should still be present (vegan copy never appeared on home).
         expect(screen.queryAllByLabelText(/^View /)).toHaveLength(4);
     });
+
+    it('should clear the vegan version tag even when the server returns stale data on the subsequent GET_RECIPES re-fetch', async () => {
+        // Regression guard for the cache.modify-before-evict ordering in
+        // deleteVeganRecipeCache.  A second GET_RECIPES mock is provided with stale
+        // data (still containing vegan_version_available).  In normal operation the
+        // RecipeCardsContainer is unmounted during deletion, so no active watcher
+        // triggers a re-fetch and the stale mock is never consumed.  But if Apollo ever
+        // does re-fetch GET_RECIPES (e.g. because of a dangling veganVersion reference),
+        // the stale response would land AFTER cache.modify and overwrite the cleared tag,
+        // causing the test to fail.  The fix is to run cache.modify BEFORE cache.evict so
+        // the original recipe's veganVersion is null before the eviction, preventing any
+        // dangling reference from appearing even transiently.
+        const mockGetRecipesWithVeganTag = {
+            request: mockGetRecipes.request,
+            result: {
+                data: {
+                    __typename: 'Query' as const,
+                    recipeMany: [
+                        {
+                            ...mockRecipeWithVeganVersion,
+                            calculatedTags: ['vegetarian', ReservedTags.VeganVersionAvailable],
+                        },
+                        mockRecipeFive,
+                        mockRecipeThree,
+                        mockRecipeFour,
+                    ],
+                    recipeCount: 4,
+                },
+            },
+        };
+
+        // Stale server response — still has vegan_version_available.
+        // This mock will be consumed by Apollo's cache-miss re-fetch if the bug is present.
+        const mockGetRecipesStaleVeganTag = {
+            request: mockGetRecipes.request,
+            result: mockGetRecipesWithVeganTag.result,
+        };
+
+        const { router } = renderPage(
+            routes,
+            [
+                ...mocksMinimal,
+                mockGetRecipesWithVeganTag,
+                mockGetRecipeVeganCopy,
+                mockGetRecipeTwo,
+                mockGetRecipeThree,
+                mockDeleteRecipeVeganCopy,
+                // Second GET_RECIPES mock simulates a successful server re-fetch that returns
+                // the original recipe still tagged with vegan_version_available.
+                mockGetRecipesStaleVeganTag,
+            ],
+            [PATH.ROOT]
+        );
+        const user = userEvent.setup();
+
+        // Confirm home loaded and the vegan tag is visible on the original recipe card.
+        expect(await screen.findByText('vegan version available')).not.toBeNull();
+
+        // Navigate programmatically to the vegan copy edit page.
+        await act(async () => {
+            await router.navigate(`${PATH.ROOT}/edit/recipe/mock-recipe-one-vegan`);
+        });
+
+        // Delete the vegan copy.
+        const deleteBtn = await screen.findByRole('button', { name: 'Delete vegan version' });
+        await user.click(deleteBtn);
+        await user.click(
+            await screen.findByRole('button', { name: 'Confirm delete vegan version action' })
+        );
+
+        // Wait for redirect to home.
+        expect(await screen.findByText('Vegan version deleted')).not.toBeNull();
+        expect(await screen.findByText('Recipes')).not.toBeNull();
+
+        // The "vegan version available" tag must be gone even if the server re-fetches
+        // GET_RECIPES and returns stale data.
+        expect(screen.queryByText('vegan version available')).toBeNull();
+    });
 });
