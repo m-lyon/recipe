@@ -7,6 +7,7 @@ import { ReservedTags } from '@recipe/graphql/enums';
 import { useAddRating } from '@recipe/features/rating';
 import { useUploadImages } from '@recipe/features/images';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
+import { formatCalculatedTag } from '@recipe/features/tags';
 import { useImagesStore, useRecipeStore } from '@recipe/stores';
 import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
@@ -186,10 +187,17 @@ export function CreateVeganRecipe() {
                     id: `Recipe:${originalId}`,
                     fields: {
                         calculatedTags(existing: string[] = []) {
-                            if (existing.includes(ReservedTags.VeganVersionAvailable)) {
+                            if (
+                                existing.includes(
+                                    formatCalculatedTag(ReservedTags.VeganVersionAvailable)
+                                )
+                            ) {
                                 return existing;
                             }
-                            return [...existing, ReservedTags.VeganVersionAvailable];
+                            return [
+                                ...existing,
+                                formatCalculatedTag(ReservedTags.VeganVersionAvailable),
+                            ];
                         },
                     },
                 });

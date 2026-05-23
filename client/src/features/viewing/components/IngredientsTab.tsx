@@ -2,10 +2,10 @@ import { useEffect } from 'react';
 
 import { useUser } from '@recipe/features/user';
 import { useRecipeStore } from '@recipe/stores';
+import { TagList } from '@recipe/features/tags';
 import { Servings } from '@recipe/features/servings';
 import { IngredientsTabLayout } from '@recipe/layouts';
 import { useAddRating } from '@recipe/features/rating';
-import { TagList, displayCalculatedTag } from '@recipe/features/tags';
 import { StarRating, getAverageRating } from '@recipe/features/rating';
 
 import { Notes } from './Notes';
@@ -49,9 +49,7 @@ export function IngredientsTab(props: Props) {
             Notes={<Notes notes={recipe.notes} />}
             Tags={
                 <TagList
-                    tags={recipe.tags
-                        .map((tag) => tag.value)
-                        .concat(recipe.calculatedTags.map(displayCalculatedTag))}
+                    tags={recipe.tags.map((tag) => tag.value).concat(recipe.calculatedTags)}
                     pb='24px'
                     display={{ base: 'block', md: 'none' }}
                 />

@@ -8,7 +8,7 @@ import { IngredientTags, ReservedTags } from '@recipe/graphql/enums';
 import { useDropdown, useSuccessToast, useWarningToast } from '@recipe/common/hooks';
 
 import { useTagSuggestions } from './useTagSuggestions';
-import { displayCalculatedTag } from '../utils/displayCalculatedTag';
+import { formatCalculatedTag } from '../utils/formatCalculatedTag';
 
 export function useTagDropdown(
     listRef: RefObject<HTMLUListElement>,
@@ -58,7 +58,7 @@ export function useTagDropdown(
         if (item === undefined) {
             const normalizedEditable = editable.toLowerCase();
             const normalizedReservedRecipeTags = Object.values(ReservedTags).map((tag) =>
-                displayCalculatedTag(tag).toLowerCase()
+                formatCalculatedTag(tag).toLowerCase()
             );
 
             if (Object.values(IngredientTags).includes(normalizedEditable as IngredientTags)) {

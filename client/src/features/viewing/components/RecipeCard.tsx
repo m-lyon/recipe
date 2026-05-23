@@ -4,9 +4,9 @@ import { LinkOverlay, VStack } from '@chakra-ui/react';
 import { Card, CardBody, CardHeader, Heading, LinkBox } from '@chakra-ui/react';
 
 import { PATH } from '@recipe/constants';
+import { TagList } from '@recipe/features/tags';
 import { StarRating } from '@recipe/features/rating';
 import { getAverageRating } from '@recipe/features/rating';
-import { TagList, displayCalculatedTag } from '@recipe/features/tags';
 
 import { ModifyButtons } from './ModifyButtons';
 
@@ -72,7 +72,7 @@ export function RecipeCard(props: Props) {
                             <TagList
                                 tags={recipe.tags
                                     .map((tag) => tag.value)
-                                    .concat(recipe.calculatedTags.map(displayCalculatedTag))}
+                                    .concat(recipe.calculatedTags)}
                             />
                         </VStack>
                     </LinkOverlay>

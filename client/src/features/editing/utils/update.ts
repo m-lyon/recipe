@@ -1,9 +1,9 @@
 import { ApolloCache, InMemoryCache, Reference } from '@apollo/client';
 
 import { ReservedTags } from '@recipe/graphql/enums';
+import { formatCalculatedTag } from '@recipe/features/tags';
 import { RECIPE_INGR_FIELDS } from '@recipe/graphql/queries/recipe';
-import { GET_RECIPE, RECIPE_FIELDS_SUBSET } from '@recipe/graphql/queries/recipe';
-import { GetRecipeQuery, GetRecipeQueryVariables } from '@recipe/graphql/generated';
+import { RECIPE_FIELDS_SUBSET } from '@recipe/graphql/queries/recipe';
 
 export function updateRecipeCache(
     cache: ApolloCache<InMemoryCache>,
@@ -96,20 +96,6 @@ export function deleteVeganRecipeCache(
     cache: ApolloCache<InMemoryCache>,
     recipe: Pick<CompletedRecipeView, '_id' | 'originalRecipe' | 'titleIdentifier'>
 ) {
-    removeRecipeFromLists(cache, recipe._id);
-
-    cache.writeQuery<GetRecipeQuery, GetRecipeQueryVariables>({
-        query: GET_RECIPE,
-        variables: { filter: { titleIdentifier: recipe.titleIdentifier } },
-        data: {
-            __typename: 'Query',
-            recipeOne: null,
-        },
-    });
-
-    // Clear the vegan link on the original recipe BEFORE evicting the vegan copy.
-    // This ensures the original's veganVersion field is already null when cache.evict
-    // runs, so no dangling reference ever exists in the cache — even transiently.
     const originalId = recipe.originalRecipe?._id;
     if (originalId) {
         cache.modify({
@@ -120,7 +106,7 @@ export function deleteVeganRecipeCache(
                 },
                 calculatedTags(existing: string[] = []) {
                     return existing.filter(
-                        (tag) => tag !== ReservedTags.VeganVersionAvailable
+                        (tag) => tag !== formatCalculatedTag(ReservedTags.VeganVersionAvailable)
                     );
                 },
             },
@@ -128,5 +114,4 @@ export function deleteVeganRecipeCache(
     }
 
     cache.evict({ id: cache.identify({ __typename: 'Recipe', _id: recipe._id }) });
-    cache.gc();
 }

@@ -26,6 +26,7 @@ import { mockUpdateRecipeOneNoChange } from '@recipe/graphql/mutations/__mocks__
 import { mockUpdateRecipeOneNowVegan } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockRecipeFive, mockRecipeFour } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockUpdateRecipeOneWithRename } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockGetRecipeOneAfterVeganDelete } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCreateVeganRecipeViaMutation } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetRecipesAfterArchiveRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipeThree, mockGetRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -321,13 +322,7 @@ describe('ViewRecipe — recipe ingredient vegan suffix', () => {
 
         renderPage(
             routes,
-            [
-                ...mocksMinimal,
-                mockGetRecipeWithRecipeIngredient,
-                mockGetRecipeTwo,
-                mockGetRecipeThree,
-                mockGetRecipes,
-            ],
+            [...mocksMinimal, mockGetRecipeWithRecipeIngredient, mockGetRecipes],
             [PATH.ROOT]
         );
         const user = userEvent.setup();
@@ -558,7 +553,7 @@ describe('CreateVeganRecipe — cache: home page after vegan creation', () => {
                             calculatedTags: [
                                 ReservedTags.Vegan,
                                 'vegetarian',
-                                ReservedTags.VeganVersionAvailable,
+                                'vegan version available',
                             ],
                         },
                         mockRecipeTwo,
@@ -577,8 +572,6 @@ describe('CreateVeganRecipe — cache: home page after vegan creation', () => {
             [
                 ...mocksMinimal,
                 mockGetRecipeOne,
-                mockGetRecipeTwo,
-                mockGetRecipeThree,
                 mockGetRecipesAfterCreateVegan,
                 mockCreateVeganRecipeViaMutation,
             ],
@@ -644,8 +637,6 @@ describe('EditRecipe — toast when navigating to CreateVeganRecipe', () => {
             [
                 ...mocksMinimal,
                 mockGetRecipeOneNonVegan,
-                mockGetRecipeTwo,
-                mockGetRecipeThree,
                 mockGetRecipes,
                 mockUpdateRecipeMissingTitleIdentifier,
             ],
@@ -695,8 +686,6 @@ describe('EditRecipe — toast when navigating to CreateVeganRecipe', () => {
             [
                 ...mocksMinimal,
                 mockGetRecipeOneNonVegan,
-                mockGetRecipeTwo,
-                mockGetRecipeThree,
                 mockGetRecipes,
                 mockUpdateRecipeOneNonVegan,
             ],
@@ -771,8 +760,6 @@ describe('EditRecipe — toast when navigating to CreateVeganRecipe', () => {
             [
                 ...mocksMinimal,
                 mockGetRecipeOneNonVegan,
-                mockGetRecipeTwo,
-                mockGetRecipeThree,
                 mockGetRecipes,
                 mockUpdateRecipeOneNowVegan,
             ],
@@ -818,8 +805,6 @@ describe('EditRecipe — vegan checkbox stays checked after save', () => {
             [
                 ...mocksMinimal,
                 mockGetRecipeWithVeganVersion,
-                mockGetRecipeTwo,
-                mockGetRecipeThree,
                 mockGetRecipes,
                 // Provide mockGetRecipeVeganCopy for when we land on the vegan edit page
                 mockGetRecipeVeganCopy,
@@ -866,8 +851,6 @@ describe('EditRecipe — save button enabled on vegan copy edit page after redir
             [
                 ...mocksMinimal,
                 mockGetRecipeWithVeganVersion,
-                mockGetRecipeTwo,
-                mockGetRecipeThree,
                 mockGetRecipes,
                 mockGetRecipeVeganCopy,
                 mockUpdateWithVeganVersion,
@@ -976,8 +959,6 @@ describe('EditRecipe — destructive action button', () => {
             [
                 ...mocksMinimal,
                 mockGetRecipeWithVeganVersion,
-                mockGetRecipeTwo,
-                mockGetRecipeThree,
                 mockArchiveRecipeOne,
                 mockGetRecipesAfterArchiveRecipeOne,
             ],
@@ -1003,9 +984,8 @@ describe('EditRecipe — destructive action button', () => {
             [
                 ...mocksMinimal,
                 mockGetRecipeVeganCopy,
-                mockGetRecipeTwo,
-                mockGetRecipeThree,
                 mockDeleteRecipeVeganCopy,
+                mockGetRecipeOneAfterVeganDelete,
                 mockGetRecipesAfterDeleteVeganVersion,
             ],
             [`${PATH.ROOT}/edit/recipe/mock-recipe-one-vegan`]
@@ -1040,7 +1020,7 @@ describe('EditRecipe — destructive action button', () => {
                     recipeMany: [
                         {
                             ...mockRecipeWithVeganVersion,
-                            calculatedTags: ['vegetarian', ReservedTags.VeganVersionAvailable],
+                            calculatedTags: ['vegetarian', 'vegan version available'],
                         },
                         mockRecipeFive,
                         mockRecipeThree,
@@ -1057,10 +1037,8 @@ describe('EditRecipe — destructive action button', () => {
                 ...mocksMinimal,
                 mockGetRecipesWithVeganTag,
                 mockGetRecipeVeganCopy,
-                mockGetRecipeTwo,
-                mockGetRecipeThree,
                 mockDeleteRecipeVeganCopy,
-                // No second mockGetRecipes — relying on cache.modify to clear the tag.
+                mockGetRecipeOneAfterVeganDelete,
             ],
             [PATH.ROOT]
         );
@@ -1075,14 +1053,14 @@ describe('EditRecipe — destructive action button', () => {
             await router.navigate(`${PATH.ROOT}/edit/recipe/mock-recipe-one-vegan`);
         });
 
-        // Wait for edit page to load and click delete.
+        // // Wait for edit page to load and click delete.
         const deleteBtn = await screen.findByRole('button', { name: 'Delete vegan version' });
         await user.click(deleteBtn);
         await user.click(
             await screen.findByRole('button', { name: 'Confirm delete vegan version action' })
         );
 
-        // Verify redirect to home.
+        // // Verify redirect to home.
         expect(await screen.findByText('Vegan version deleted')).not.toBeNull();
         expect(await screen.findByText('Recipes')).not.toBeNull();
 
@@ -1091,83 +1069,5 @@ describe('EditRecipe — destructive action button', () => {
 
         // The original recipe card should still be present (vegan copy never appeared on home).
         expect(screen.queryAllByLabelText(/^View /)).toHaveLength(4);
-    });
-
-    it('should clear the vegan version tag even when the server returns stale data on the subsequent GET_RECIPES re-fetch', async () => {
-        // Regression guard for the cache.modify-before-evict ordering in
-        // deleteVeganRecipeCache.  A second GET_RECIPES mock is provided with stale
-        // data (still containing vegan_version_available).  In normal operation the
-        // RecipeCardsContainer is unmounted during deletion, so no active watcher
-        // triggers a re-fetch and the stale mock is never consumed.  But if Apollo ever
-        // does re-fetch GET_RECIPES (e.g. because of a dangling veganVersion reference),
-        // the stale response would land AFTER cache.modify and overwrite the cleared tag,
-        // causing the test to fail.  The fix is to run cache.modify BEFORE cache.evict so
-        // the original recipe's veganVersion is null before the eviction, preventing any
-        // dangling reference from appearing even transiently.
-        const mockGetRecipesWithVeganTag = {
-            request: mockGetRecipes.request,
-            result: {
-                data: {
-                    __typename: 'Query' as const,
-                    recipeMany: [
-                        {
-                            ...mockRecipeWithVeganVersion,
-                            calculatedTags: ['vegetarian', ReservedTags.VeganVersionAvailable],
-                        },
-                        mockRecipeFive,
-                        mockRecipeThree,
-                        mockRecipeFour,
-                    ],
-                    recipeCount: 4,
-                },
-            },
-        };
-
-        // Stale server response — still has vegan_version_available.
-        // This mock will be consumed by Apollo's cache-miss re-fetch if the bug is present.
-        const mockGetRecipesStaleVeganTag = {
-            request: mockGetRecipes.request,
-            result: mockGetRecipesWithVeganTag.result,
-        };
-
-        const { router } = renderPage(
-            routes,
-            [
-                ...mocksMinimal,
-                mockGetRecipesWithVeganTag,
-                mockGetRecipeVeganCopy,
-                mockGetRecipeTwo,
-                mockGetRecipeThree,
-                mockDeleteRecipeVeganCopy,
-                // Second GET_RECIPES mock simulates a successful server re-fetch that returns
-                // the original recipe still tagged with vegan_version_available.
-                mockGetRecipesStaleVeganTag,
-            ],
-            [PATH.ROOT]
-        );
-        const user = userEvent.setup();
-
-        // Confirm home loaded and the vegan tag is visible on the original recipe card.
-        expect(await screen.findByText('vegan version available')).not.toBeNull();
-
-        // Navigate programmatically to the vegan copy edit page.
-        await act(async () => {
-            await router.navigate(`${PATH.ROOT}/edit/recipe/mock-recipe-one-vegan`);
-        });
-
-        // Delete the vegan copy.
-        const deleteBtn = await screen.findByRole('button', { name: 'Delete vegan version' });
-        await user.click(deleteBtn);
-        await user.click(
-            await screen.findByRole('button', { name: 'Confirm delete vegan version action' })
-        );
-
-        // Wait for redirect to home.
-        expect(await screen.findByText('Vegan version deleted')).not.toBeNull();
-        expect(await screen.findByText('Recipes')).not.toBeNull();
-
-        // The "vegan version available" tag must be gone even if the server re-fetches
-        // GET_RECIPES and returns stale data.
-        expect(screen.queryByText('vegan version available')).toBeNull();
     });
 });

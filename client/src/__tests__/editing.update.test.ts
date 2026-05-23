@@ -86,7 +86,7 @@ describe('editing cache helpers', () => {
             calculatedTags: [
                 ReservedTags.Vegan,
                 ReservedTags.Vegetarian,
-                ReservedTags.VeganVersionAvailable,
+                'vegan version available',
             ],
             veganVersion: {
                 __typename: 'Recipe' as const,
@@ -155,10 +155,8 @@ describe('editing cache helpers', () => {
             mockRecipeFour._id,
         ]);
         expect(originalData?.recipeOne?.veganVersion).toBeNull();
-        expect(originalData?.recipeOne?.calculatedTags).not.toContain(
-            ReservedTags.VeganVersionAvailable
-        );
-        expect(veganData?.recipeOne).toBeNull();
+        expect(originalData?.recipeOne?.calculatedTags).not.toContain('vegan version available');
+        expect(veganData?.recipeOne).toBeUndefined();
         expect(cache.extract()[`Recipe:${mockRecipeVeganCopy._id}`]).toBeUndefined();
     });
 

@@ -605,6 +605,22 @@ export const mockGetRecipesAfterArchiveRecipeOne = {
         } satisfies GetRecipesQuery,
     },
 };
+export const mockGetRecipeOneAfterVeganDelete = {
+    request: {
+        query: GET_RECIPE,
+        variables: { filter: { titleIdentifier: 'mock-recipe-one-vegan' } },
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeOne: {
+                ...mockRecipeOne,
+                calculatedTags: ['vegetarian'],
+                veganVersion: null,
+            },
+        },
+    },
+};
 export const mockGetRecipesAfterDeleteVeganVersion = {
     request: mockGetRecipes.request,
     result: {

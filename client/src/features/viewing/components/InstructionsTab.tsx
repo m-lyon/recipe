@@ -1,10 +1,10 @@
 import { useMeasure } from 'react-use';
 import { Box, Flex, Spacer, VStack } from '@chakra-ui/react';
 
+import { TagList } from '@recipe/features/tags';
 import { tagsHeight } from '@recipe/features/tags';
 import { imageCardWidth } from '@recipe/features/images';
 import { ImageViewerRecipe } from '@recipe/features/images';
-import { TagList, displayCalculatedTag } from '@recipe/features/tags';
 
 import { Source } from './Source';
 import { InstructionList } from './InstructionList';
@@ -30,9 +30,7 @@ export function InstructionsTab(props: Props) {
                     />
                     <VStack spacing={{ base: undefined, md: `${instrSpacing}px` }} align='left'>
                         <TagList
-                            tags={recipe.tags
-                                .map((tag) => tag.value)
-                                .concat(recipe.calculatedTags.map(displayCalculatedTag))}
+                            tags={recipe.tags.map((tag) => tag.value).concat(recipe.calculatedTags)}
                             displayBoxMargin={recipe.images.length !== 0}
                             display={{ base: 'none', md: 'block' }}
                         />
