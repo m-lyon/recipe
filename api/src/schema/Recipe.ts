@@ -191,6 +191,14 @@ RecipeModifyTC.addResolver({
     type: RecipeTC.mongooseResolvers.removeById().getType(),
     args: { _id: 'MongoID!' },
     resolve: async ({ args }) => {
+        const recipe = await Recipe.findById(args._id);
+        if (recipe?.originalRecipe) {
+            throw new Error('Vegan copies cannot be archived directly');
+        }
+        await validateItemNotInRecipe(args._id, 'recipe');
+        if (recipe?.veganVersion) {
+            await validateItemNotInRecipe(recipe.veganVersion, 'recipe');
+        }
         const existingRecord = await Recipe.findById(args._id);
         if (!existingRecord) {
             return { recordId: existingRecord?._id, record: existingRecord };
@@ -212,6 +220,10 @@ RecipeModifyTC.addResolver({
     type: RecipeTC.mongooseResolvers.removeById().getType(),
     args: { _id: 'MongoID!' },
     resolve: async ({ args }) => {
+        const recipe = await Recipe.findById(args._id);
+        if (recipe?.originalRecipe) {
+            throw new Error('Vegan copies cannot be unarchived directly');
+        }
         const existingRecord = await Recipe.findById(args._id);
         if (!existingRecord) {
             return { recordId: existingRecord?._id, record: existingRecord };
@@ -224,6 +236,91 @@ RecipeModifyTC.addResolver({
 
         const record = await Recipe.findById(args._id);
         return { recordId: record?._id, record };
+    },
+});
+
+RecipeModifyTC.addResolver({
+    name: 'recipeCreateVeganVersion',
+    type: RecipeCreateTC.getResolver('createOne').getType(),
+    args: { originalId: 'MongoID!', recipe: 'CreateOneRecipeCreateInput!' },
+    resolve: async ({ args, context }) => {
+        const { originalId, recipe } = args as {
+            originalId: string;
+            recipe: Record<string, unknown>;
+        };
+        const veganRecipe = recipe as Record<string, unknown> & { title: string };
+        const user = context.getUser();
+        const original = await Recipe.findById(originalId);
+
+        if (!original) {
+            throw new Error('Original recipe not found');
+        }
+
+        const isAdmin = user.role === 'admin';
+        if (!isAdmin && String(original.owner) !== String(user._id)) {
+            throw new Error('Not authorized to create a vegan copy for this recipe');
+        }
+
+        if (original.originalRecipe) {
+            throw new Error('The original recipe cannot already be a vegan copy');
+        }
+
+        if (original.veganVersion) {
+            throw new Error('Original recipe already has a vegan version');
+        }
+
+        const veganDoc = new Recipe({
+            ...veganRecipe,
+            owner: original.owner,
+            originalRecipe: original._id,
+            titleIdentifier: generateRecipeIdentifier(veganRecipe.title),
+            createdAt: new Date(),
+            lastModified: new Date(),
+        });
+
+        await veganDoc.validate();
+
+        const updatedOriginal = await Recipe.findOneAndUpdate(
+            {
+                _id: original._id,
+                veganVersion: { $exists: false },
+            },
+            {
+                $set: {
+                    veganVersion: veganDoc._id,
+                    lastModified: new Date(),
+                },
+            },
+            { new: true }
+        );
+
+        if (!updatedOriginal) {
+            throw new Error('Original recipe already has a vegan version');
+        }
+
+        try {
+            await veganDoc.save();
+
+            const originalWithLink = await Recipe.findById(original._id);
+            if (!originalWithLink) {
+                throw new Error('Original recipe not found after linking vegan version');
+            }
+            await originalWithLink.save();
+        } catch (error) {
+            await Recipe.findOneAndUpdate(
+                {
+                    _id: original._id,
+                    veganVersion: veganDoc._id,
+                },
+                {
+                    $unset: { veganVersion: 1 },
+                }
+            );
+            await Recipe.deleteOne({ _id: veganDoc._id, originalRecipe: original._id });
+            throw error;
+        }
+
+        return { recordId: veganDoc._id, record: veganDoc };
     },
 });
 
@@ -363,110 +460,7 @@ export const RecipeMutation = {
             await validateItemNotInRecipe(rp.args._id, 'recipe');
             return next(rp);
         }),
-    recipeCreateVeganVersion: schemaComposer.createResolver({
-        name: 'recipeCreateVeganVersion',
-        type: RecipeCreateTC.getResolver('createOne').getType(),
-        args: { originalId: 'MongoID!', recipe: 'CreateOneRecipeCreateInput!' },
-        resolve: async ({ args, context }) => {
-            const { originalId, recipe } = args as {
-                originalId: string;
-                recipe: Record<string, unknown>;
-            };
-            const veganRecipe = recipe as Record<string, unknown> & { title: string };
-            const user = context.getUser();
-            const original = await Recipe.findById(originalId);
-
-            if (!original) {
-                throw new Error('Original recipe not found');
-            }
-
-            const isAdmin = user.role === 'admin';
-            if (!isAdmin && String(original.owner) !== String(user._id)) {
-                throw new Error('Not authorized to create a vegan copy for this recipe');
-            }
-
-            if (original.originalRecipe) {
-                throw new Error('The original recipe cannot already be a vegan copy');
-            }
-
-            if (original.veganVersion) {
-                throw new Error('Original recipe already has a vegan version');
-            }
-
-            const veganDoc = new Recipe({
-                ...veganRecipe,
-                owner: original.owner,
-                originalRecipe: original._id,
-                titleIdentifier: generateRecipeIdentifier(veganRecipe.title),
-                createdAt: new Date(),
-                lastModified: new Date(),
-            });
-
-            await veganDoc.validate();
-
-            const updatedOriginal = await Recipe.findOneAndUpdate(
-                {
-                    _id: original._id,
-                    veganVersion: { $exists: false },
-                },
-                {
-                    $set: {
-                        veganVersion: veganDoc._id,
-                        lastModified: new Date(),
-                    },
-                },
-                { new: true }
-            );
-
-            if (!updatedOriginal) {
-                throw new Error('Original recipe already has a vegan version');
-            }
-
-            try {
-                await veganDoc.save();
-
-                const originalWithLink = await Recipe.findById(original._id);
-                if (!originalWithLink) {
-                    throw new Error('Original recipe not found after linking vegan version');
-                }
-                await originalWithLink.save();
-            } catch (error) {
-                await Recipe.findOneAndUpdate(
-                    {
-                        _id: original._id,
-                        veganVersion: veganDoc._id,
-                    },
-                    {
-                        $unset: { veganVersion: 1 },
-                    }
-                );
-                await Recipe.deleteOne({ _id: veganDoc._id, originalRecipe: original._id });
-                throw error;
-            }
-
-            return { recordId: veganDoc._id, record: veganDoc };
-        },
-    }),
-    recipeArchiveById: RecipeModifyTC.getResolver('archiveById').wrapResolve(
-        (next) => async (rp) => {
-            const recipe = await Recipe.findById(rp.args._id);
-            if (recipe?.originalRecipe) {
-                throw new Error('Vegan copies cannot be archived directly');
-            }
-            await validateItemNotInRecipe(rp.args._id, 'recipe');
-            if (recipe?.veganVersion) {
-                await validateItemNotInRecipe(recipe.veganVersion, 'recipe');
-            }
-            return next(rp);
-        }
-    ),
-    recipeUnarchiveById: RecipeModifyTC.getResolver('unarchiveById').wrapResolve(
-        (next) => async (rp) => {
-            const recipe = await Recipe.findById(rp.args._id);
-            if (recipe?.originalRecipe) {
-                throw new Error('Vegan copies cannot be unarchived directly');
-            }
-            return next(rp);
-        }
-    ),
+    recipeCreateVeganVersion: RecipeModifyTC.getResolver('recipeCreateVeganVersion'),
+    recipeArchiveById: RecipeModifyTC.getResolver('archiveById'),
+    recipeUnarchiveById: RecipeModifyTC.getResolver('unarchiveById'),
 };
