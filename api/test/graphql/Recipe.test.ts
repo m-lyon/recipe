@@ -1,5 +1,5 @@
 import fs from 'fs';
-import path from 'path';
+
 import { assert } from 'chai';
 import mongoose from 'mongoose';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
@@ -11,12 +11,11 @@ import { Unit } from '../../src/models/Unit.js';
 import { Image } from '../../src/models/Image.js';
 import { Recipe } from '../../src/models/Recipe.js';
 import { Rating } from '../../src/models/Rating.js';
-import { IMAGE_DIR } from '../../src/constants.js';
 import { createUnits, createUser } from '../utils/data.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
-import { startServer, stopServer } from '../utils/mongodb.js';
 import { RecipeMutation } from '../../src/schema/Recipe.js';
+import { startServer, stopServer } from '../utils/mongodb.js';
 import { createRecipeTags, createUnitConversions } from '../utils/data.js';
 import { createImages, createIngredients, createPrepMethods } from '../utils/data.js';
 import { createAdmin, createRecipesAsIngredients, createSizes } from '../utils/data.js';
@@ -777,7 +776,9 @@ describe('recipeUpdateById', () => {
         const unit = await Unit.findOne({ shortSingular: 'g' });
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
 
-        const original = await new Recipe(getDefaultRecipe(user, ingredient, unit, prepMethod)).save();
+        const original = await new Recipe(
+            getDefaultRecipe(user, ingredient, unit, prepMethod)
+        ).save();
         const vegan = await new Recipe({
             ...getDefaultRecipe(user, ingredient, unit, prepMethod),
             title: 'Tomato Soup Vegan',
@@ -805,7 +806,9 @@ describe('recipeUpdateById', () => {
         const unit = await Unit.findOne({ shortSingular: 'g' });
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
 
-        const original = await new Recipe(getDefaultRecipe(user, ingredient, unit, prepMethod)).save();
+        const original = await new Recipe(
+            getDefaultRecipe(user, ingredient, unit, prepMethod)
+        ).save();
         const vegan = await new Recipe({
             ...getDefaultRecipe(user, ingredient, unit, prepMethod),
             title: 'Tomato Soup Vegan',
@@ -2110,7 +2113,9 @@ describe('recipeRemoveById', () => {
             assert.equal(response.body.kind, 'single');
             assert.isUndefined(
                 response.body.singleResult.errors,
-                response.body.singleResult.errors ? response.body.singleResult.errors[0].message : ''
+                response.body.singleResult.errors
+                    ? response.body.singleResult.errors[0].message
+                    : ''
             );
 
             const [deletedRecipe, deletedImage] = await Promise.all([
@@ -2170,7 +2175,9 @@ describe('recipeRemoveById', () => {
             assert.equal(response.body.kind, 'single');
             assert.isUndefined(
                 response.body.singleResult.errors,
-                response.body.singleResult.errors ? response.body.singleResult.errors[0].message : ''
+                response.body.singleResult.errors
+                    ? response.body.singleResult.errors[0].message
+                    : ''
             );
 
             const [deletedRecipe, deletedImage] = await Promise.all([
@@ -2552,7 +2559,9 @@ describe('recipeCreateOne vegan validation', () => {
 
         try {
             await originalDoc.save();
-            assert.fail('Expected title uniqueness validation to reject renaming to linked vegan title');
+            assert.fail(
+                'Expected title uniqueness validation to reject renaming to linked vegan title'
+            );
         } catch (error) {
             assert.match(error.message, /title must be unique/i);
         }
@@ -3142,7 +3151,10 @@ describe('recipeCreateOne vegan validation', () => {
         }
 
         const reloadedOriginal = await Recipe.findById(originalId);
-        assert.isUndefined(reloadedOriginal.veganVersion, 'Original recipe should roll back veganVersion');
+        assert.isUndefined(
+            reloadedOriginal.veganVersion,
+            'Original recipe should roll back veganVersion'
+        );
 
         const copies = await Recipe.find({
             title: 'Rollback Original Save Soup',
@@ -3450,13 +3462,19 @@ describe('recipeCreateOne vegan validation', () => {
 
             assert.equal(response.body.kind, 'single');
             assert.isDefined(response.body.singleResult.errors, 'Should have errors');
-            assert.include(response.body.singleResult.errors[0].message, 'Simulated vegan save failure');
+            assert.include(
+                response.body.singleResult.errors[0].message,
+                'Simulated vegan save failure'
+            );
         } finally {
             Recipe.prototype.save = savedSave;
         }
 
         const reloadedOriginal = await Recipe.findById(originalId);
-        assert.isUndefined(reloadedOriginal.veganVersion, 'Original recipe should not keep a stale vegan link');
+        assert.isUndefined(
+            reloadedOriginal.veganVersion,
+            'Original recipe should not keep a stale vegan link'
+        );
         const copies = await Recipe.find({
             title: 'Rollback Tomato Soup',
             originalRecipe: { $exists: true },

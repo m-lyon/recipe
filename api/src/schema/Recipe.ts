@@ -192,21 +192,18 @@ RecipeModifyTC.addResolver({
     args: { _id: 'MongoID!' },
     resolve: async ({ args }) => {
         const recipe = await Recipe.findById(args._id);
-        if (recipe?.originalRecipe) {
+        if (!recipe) {
+            return { recordId: recipe?._id, record: recipe };
+        }
+        if (recipe.originalRecipe) {
             throw new Error('Vegan copies cannot be archived directly');
         }
         await validateItemNotInRecipe(args._id, 'recipe');
-        if (recipe?.veganVersion) {
+        if (recipe.veganVersion) {
             await validateItemNotInRecipe(recipe.veganVersion, 'recipe');
         }
-        const existingRecord = await Recipe.findById(args._id);
-        if (!existingRecord) {
-            return { recordId: existingRecord?._id, record: existingRecord };
-        }
 
-        const ids = existingRecord.veganVersion
-            ? [existingRecord._id, existingRecord.veganVersion]
-            : [existingRecord._id];
+        const ids = recipe.veganVersion ? [recipe._id, recipe.veganVersion] : [recipe._id];
         await Recipe.updateMany({ _id: { $in: ids } }, { archived: true });
 
         const record = await Recipe.findById(args._id);
@@ -221,17 +218,14 @@ RecipeModifyTC.addResolver({
     args: { _id: 'MongoID!' },
     resolve: async ({ args }) => {
         const recipe = await Recipe.findById(args._id);
-        if (recipe?.originalRecipe) {
+        if (!recipe) {
+            return { recordId: recipe?._id, record: recipe };
+        }
+        if (recipe.originalRecipe) {
             throw new Error('Vegan copies cannot be unarchived directly');
         }
-        const existingRecord = await Recipe.findById(args._id);
-        if (!existingRecord) {
-            return { recordId: existingRecord?._id, record: existingRecord };
-        }
 
-        const ids = existingRecord.veganVersion
-            ? [existingRecord._id, existingRecord.veganVersion]
-            : [existingRecord._id];
+        const ids = recipe.veganVersion ? [recipe._id, recipe.veganVersion] : [recipe._id];
         await Recipe.updateMany({ _id: { $in: ids } }, { archived: false });
 
         const record = await Recipe.findById(args._id);
@@ -244,11 +238,7 @@ RecipeModifyTC.addResolver({
     type: RecipeCreateTC.getResolver('createOne').getType(),
     args: { originalId: 'MongoID!', recipe: 'CreateOneRecipeCreateInput!' },
     resolve: async ({ args, context }) => {
-        const { originalId, recipe } = args as {
-            originalId: string;
-            recipe: Record<string, unknown>;
-        };
-        const veganRecipe = recipe as Record<string, unknown> & { title: string };
+        const { originalId, recipe } = args;
         const user = context.getUser();
         const original = await Recipe.findById(originalId);
 
@@ -270,10 +260,10 @@ RecipeModifyTC.addResolver({
         }
 
         const veganDoc = new Recipe({
-            ...veganRecipe,
+            ...recipe,
             owner: original.owner,
             originalRecipe: original._id,
-            titleIdentifier: generateRecipeIdentifier(veganRecipe.title),
+            titleIdentifier: generateRecipeIdentifier(recipe.title),
             createdAt: new Date(),
             lastModified: new Date(),
         });
@@ -374,13 +364,11 @@ export const RecipeQuery = {
 
 export const RecipeMutation = {
     recipeCreateOne: RecipeCreateTC.getResolver('createOne').wrapResolve((next) => async (rp) => {
-        const user = rp.context.getUser();
-
         if (rp.args.record.originalRecipe) {
             throw new Error('Use recipeCreateVeganVersion to create linked vegan copies');
         }
 
-        rp.args.record.owner = user;
+        rp.args.record.owner = rp.context.getUser();
         rp.args.record.titleIdentifier = generateRecipeIdentifier(rp.args.record.title);
         rp.args.record.createdAt = new Date();
         rp.args.record.lastModified = new Date();
