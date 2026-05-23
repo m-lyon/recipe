@@ -5,32 +5,68 @@ import { User } from './User.js';
 import { Unit } from './Unit.js';
 import { Recipe } from './Recipe.js';
 
+async function findDuplicatesInAdminsAndUserScope(
+    doc: any,
+    model: string,
+    attribute: string,
+    value: string
+) {
+    const admins = await User.find({ role: 'admin' });
+    const duplicates = await doc.model(model).find({
+        $and: [
+            { $or: [{ owner: doc.owner }, { owner: { $in: admins } }] },
+            { _id: { $ne: doc._id } },
+            { $or: [{ unique: true }, { unique: { $exists: false } }] },
+            { [attribute]: value },
+        ],
+    });
+
+    return { admins, duplicates };
+}
+
 export function uniqueInAdminsAndUser(model: string, attribute: string, message?: string) {
     async function validator(value: string) {
         if (this.unique !== undefined && !this.unique) {
             return true;
         }
-        const admins = await User.find({ role: 'admin' });
-        const duplicates = await this.model(model).find({
-            $and: [
-                { $or: [{ owner: this.owner }, { owner: { $in: admins } }] },
-                { _id: { $ne: this._id } },
-                { $or: [{ unique: true }, { unique: { $exists: false } }] },
-                { [attribute]: value },
-            ],
-        });
+        const { duplicates } = await findDuplicatesInAdminsAndUserScope(
+            this,
+            model,
+            attribute,
+            value
+        );
 
-        // Vegan copies are allowed to share their original recipe's title
+        return duplicates.length === 0;
+    }
+    return {
+        validator,
+        message: message ? message : `The ${model.toLowerCase()} ${attribute} must be unique.`,
+    };
+}
+
+export function uniqueRecipeTitleInAdminsAndUser(message?: string) {
+    async function validator(value: string) {
+        if (this.unique !== undefined && !this.unique) {
+            return true;
+        }
+
+        const { admins, duplicates } = await findDuplicatesInAdminsAndUserScope(
+            this,
+            'Recipe',
+            'title',
+            value
+        );
+
         if (this.originalRecipe != null) {
-            const original = await this.model(model)
+            const original = await this.model('Recipe')
                 .findOne({
                     _id: this.originalRecipe,
                     $or: [{ owner: this.owner }, { owner: { $in: admins } }],
                 })
-                .select(attribute);
+                .select('title');
 
             if (
-                original?.get(attribute) === value &&
+                original?.get('title') === value &&
                 duplicates.length === 1 &&
                 String(duplicates[0]._id) === String(this.originalRecipe)
             ) {
@@ -39,10 +75,10 @@ export function uniqueInAdminsAndUser(model: string, attribute: string, message?
         }
 
         if (this.veganVersion != null) {
-            const existingDoc = this.isNew ? null : await this.model(model).findById(this._id);
+            const existingDoc = this.isNew ? null : await this.model('Recipe').findById(this._id);
 
             if (
-                existingDoc?.get(attribute) === value &&
+                existingDoc?.get('title') === value &&
                 duplicates.length === 1 &&
                 String(duplicates[0]._id) === String(this.veganVersion)
             ) {
@@ -52,9 +88,10 @@ export function uniqueInAdminsAndUser(model: string, attribute: string, message?
 
         return duplicates.length === 0;
     }
+
     return {
         validator,
-        message: message ? message : `The ${model.toLowerCase()} ${attribute} must be unique.`,
+        message: message ? message : 'The recipe title must be unique.',
     };
 }
 
