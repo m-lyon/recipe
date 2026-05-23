@@ -1444,6 +1444,7 @@ describe('recipeArchiveById', () => {
             if (
                 ids.includes(String(original._id)) &&
                 ids.includes(String(vegan._id)) &&
+                !Array.isArray(update) &&
                 update?.archived === true
             ) {
                 throw new Error('Simulated linked archive failure');
@@ -1644,6 +1645,7 @@ describe('recipeArchiveById', () => {
             if (
                 ids.includes(String(original._id)) &&
                 ids.includes(String(vegan._id)) &&
+                !Array.isArray(update) &&
                 update?.archived === false
             ) {
                 throw new Error('Simulated linked unarchive failure');

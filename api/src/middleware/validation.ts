@@ -51,7 +51,7 @@ export async function validateItemNotInRecipe(
 
     if (recipesUsingItem.length > 0) {
         const otherStr = itemType == 'recipe' ? 'other ' : '';
-        const errorNounStr = errorNoun ? `${errorNoun} ` : 'delete';
+        const errorNounStr = errorNoun ? `${errorNoun}` : 'delete';
 
         throw new GraphQLError(
             `Cannot ${errorNounStr} ${itemType} as it is currently being used in ${otherStr}existing recipes.`,
