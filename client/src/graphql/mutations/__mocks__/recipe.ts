@@ -1108,7 +1108,7 @@ export const mockArchiveRecipeOneInUseError = {
     result: {
         errors: [
             new GraphQLError(
-                'Cannot delete recipe as it is currently being used in other existing recipes.',
+                'Cannot archive recipe as it is currently being used in other existing recipes.',
                 { extensions: { code: 'ITEM_IN_USE' } }
             ),
         ],

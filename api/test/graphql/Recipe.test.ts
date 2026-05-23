@@ -1523,7 +1523,7 @@ describe('recipeArchiveById', () => {
         assert.isDefined(response.body.singleResult.errors, 'Error should be returned');
         assert.equal(
             response.body.singleResult.errors[0].message,
-            'Cannot delete recipe as it is currently being used in other existing recipes.'
+            'Cannot archive recipe as it is currently being used in other existing recipes.'
         );
 
         // Verify recipe is NOT archived
@@ -1564,7 +1564,7 @@ describe('recipeArchiveById', () => {
         assert.isDefined(response.body.singleResult.errors, 'Error should be returned');
         assert.equal(
             response.body.singleResult.errors[0].message,
-            'Cannot delete recipe as it is currently being used in other existing recipes.'
+            'Cannot archive recipe as it is currently being used in other existing recipes.'
         );
 
         const [existingOriginal, existingVegan] = await Promise.all([
@@ -1846,7 +1846,7 @@ describe('recipeArchiveById', () => {
         assert.equal(data.recipeRemoveById.recordId, recipe._id.toString());
     });
 });
-
+// TODO: upto here
 describe('recipeRemoveById', () => {
     before(startServer);
     after(stopServer);

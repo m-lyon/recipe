@@ -198,9 +198,9 @@ RecipeModifyTC.addResolver({
         if (recipe.originalRecipe) {
             throw new Error('Vegan copies cannot be archived directly');
         }
-        await validateItemNotInRecipe(args._id, 'recipe');
+        await validateItemNotInRecipe(args._id, 'recipe', 'archive');
         if (recipe.veganVersion) {
-            await validateItemNotInRecipe(recipe.veganVersion, 'recipe');
+            await validateItemNotInRecipe(recipe.veganVersion, 'recipe', 'archive');
         }
 
         const ids = recipe.veganVersion ? [recipe._id, recipe.veganVersion] : [recipe._id];

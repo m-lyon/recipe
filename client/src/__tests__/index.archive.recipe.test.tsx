@@ -143,7 +143,7 @@ describe('Archive Recipe Workflow', () => {
         expect(await screen.findByText('Archive failed')).not.toBeNull();
         expect(
             await screen.findByText(
-                'Cannot delete recipe as it is currently being used in other existing recipes.'
+                'Cannot archive recipe as it is currently being used in other existing recipes.'
             )
         ).not.toBeNull();
         // Recipe card should still be visible (cache not corrupted)
