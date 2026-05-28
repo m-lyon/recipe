@@ -54,7 +54,7 @@ export function removeRecipeFromLists(
 ) {
     cache.modify({
         fields: {
-            recipeMany(existing: Reference[] = [], { readField }) {
+            recipeMany(existing: readonly Reference[] = [], { readField }) {
                 return existing.filter((ref) => readField('_id', ref) !== recordId);
             },
             recipeCount(count = 0) {
@@ -104,7 +104,10 @@ export function deleteVeganRecipeCache(
                 veganVersion() {
                     return null;
                 },
-                calculatedTags(existing: string[] = []) {
+                calculatedTags(existing: Reference | string[] = []) {
+                    if (!Array.isArray(existing)) {
+                        return existing;
+                    }
                     return existing.filter(
                         (tag) => tag !== formatCalculatedTag(ReservedTags.VeganVersionAvailable)
                     );

@@ -4,15 +4,16 @@ import { useShallow } from 'zustand/shallow';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Reference, useMutation, useQuery } from '@apollo/client';
 
+import { ConfirmModal } from '@recipe/common/components';
 import { useUploadImages } from '@recipe/features/images';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { updateRecipeCache } from '@recipe/features/editing';
 import { useImagesStore, useRecipeStore } from '@recipe/stores';
 import { DELETE_IMAGES } from '@recipe/graphql/mutations/image';
+import { deleteVeganRecipeCache } from '@recipe/features/editing';
 import { UpdateByIdRecipeModifyInput } from '@recipe/graphql/generated';
 import { getAverageRating, useAddRating } from '@recipe/features/rating';
 import { DELAY_LONG, DELAY_SHORT, GRAPHQL_URL, PATH } from '@recipe/constants';
-import { ConfirmModal, deleteVeganRecipeCache } from '@recipe/features/editing';
 import { useErrorToast, useSuccessToast, useWarningToast } from '@recipe/common/hooks';
 import { archiveRecipeCache, archiveRecipeConfirmConfig } from '@recipe/features/editing';
 import { EditableRecipe, deleteVeganVersionConfirmConfig } from '@recipe/features/editing';
@@ -196,8 +197,8 @@ export function EditRecipe() {
         let savedRecipe: RecipeView | null = null;
 
         try {
-            // recipe is guaranteed to be defined here because of the error check above
             const saveResult = await saveRecipe({
+                // recipe is guaranteed to be defined here because of the error check above
                 variables: { id: recipe!._id, recipe: modifiedRecipe },
             });
             savedRecipe = saveResult.data?.recipeUpdateById?.record ?? null;

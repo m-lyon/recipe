@@ -7,10 +7,12 @@ import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
 import { useUser } from '@recipe/features/user';
 import { useSearch } from '@recipe/features/search';
+import { ConfirmModal } from '@recipe/common/components';
 import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
+import { archiveRecipeCache } from '@recipe/features/editing';
 import { ARCHIVE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { FETCH_MORE_NUM, INIT_LOAD_NUM } from '@recipe/constants';
-import { ConfirmArchiveModal, archiveRecipeCache } from '@recipe/features/editing';
+import { archiveRecipeConfirmConfig } from '@recipe/features/editing';
 
 import { RecipeCard } from './RecipeCard';
 import { ImageRecipeCard } from './ImageRecipeCard';
@@ -144,7 +146,12 @@ export function RecipeCardsContainer() {
                     ))}
                 </Masonry>
             </ResponsiveMasonry>
-            <ConfirmArchiveModal show={show} setShow={setShow} onConfirm={handleConfirmArchive} />
+            <ConfirmModal
+                show={show}
+                setShow={setShow}
+                onConfirm={handleConfirmArchive}
+                {...archiveRecipeConfirmConfig}
+            />
         </InfiniteScroll>
     );
 }

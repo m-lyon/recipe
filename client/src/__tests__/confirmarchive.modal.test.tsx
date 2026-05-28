@@ -4,7 +4,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 
 import { theme } from '@recipe/theme';
-import { ConfirmArchiveModal } from '@recipe/features/editing';
+import { ConfirmModal } from '@recipe/common/components';
+import { archiveRecipeConfirmConfig } from '@recipe/features/editing';
 
 vi.mock('@apollo/client', async (importOriginal) => {
     const actual = await importOriginal<typeof import('@apollo/client')>();
@@ -26,7 +27,12 @@ describe('ConfirmArchiveModal', () => {
 
         render(
             <MantineProvider theme={theme} env='test'>
-                <ConfirmArchiveModal show setShow={vi.fn()} onConfirm={handleConfirm} />
+                <ConfirmModal
+                    show
+                    setShow={vi.fn()}
+                    onConfirm={handleConfirm}
+                    {...archiveRecipeConfirmConfig}
+                />
             </MantineProvider>
         );
 
