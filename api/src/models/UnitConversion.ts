@@ -1,5 +1,5 @@
-import { Document, Schema, Types, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
+import { Document, HydratedDocument, Schema, Types, model } from 'mongoose';
 
 import { unitExists } from './validation.js';
 
@@ -31,7 +31,10 @@ const conversionRuleSchema = new Schema<ConversionRule>({
         validate: [
             unitExists(),
             {
-                validator: async function (unit: Types.ObjectId) {
+                validator: async function (
+                    this: HydratedDocument<ConversionRule>,
+                    unit: Types.ObjectId
+                ) {
                     const count = await this.model('ConversionRule').countDocuments({
                         unit,
                         _id: { $ne: this._id }, // Exclude the current conversion rule
