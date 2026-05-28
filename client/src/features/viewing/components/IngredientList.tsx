@@ -14,10 +14,10 @@ export interface IngredientListProps extends BoxProps {
     currentServings: number;
     origServings: number;
     showWakeLockBtn?: boolean;
-    headerAction?: React.ReactNode;
+    dietToggle?: React.ReactNode;
 }
 export function IngredientList(props: IngredientListProps) {
-    const { subsections, currentServings, origServings, showWakeLockBtn, headerAction, ...rest } =
+    const { subsections, currentServings, origServings, showWakeLockBtn, dietToggle, ...rest } =
         props;
     const { apply } = useUnitConversion();
     const { isAwake, toggleWakeLock } = useWakeLock();
@@ -72,7 +72,7 @@ export function IngredientList(props: IngredientListProps) {
             <Flex pb='10px'>
                 <Text fontSize='2xl'>{modifiedSubsections[0].name ?? 'Ingredients'}</Text>
                 <Spacer />
-                {headerAction}
+                {dietToggle}
                 {showWakeLockBtn ? (
                     <Tooltip
                         label={isAwake ? 'Allow screen to sleep' : 'Keep screen awake'}
