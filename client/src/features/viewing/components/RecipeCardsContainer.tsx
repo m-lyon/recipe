@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Box } from '@chakra-ui/react';
 import { useMutation, useQuery } from '@apollo/client';
-import { notifications } from '@mantine/notifications';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
 import { useUser } from '@recipe/features/user';
 import { useSearch } from '@recipe/features/search';
+import { useErrorToast } from '@recipe/common/hooks';
 import { ConfirmModal } from '@recipe/common/components';
 import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { archiveRecipeCache } from '@recipe/features/editing';
@@ -59,12 +59,13 @@ export function RecipeCardsContainer() {
     const [recipeId, setRecipeId] = useState('');
     const { user } = useUser();
     const { filter } = useSearch();
+    const errorToast = useErrorToast();
     const [archiveRecipe] = useMutation(ARCHIVE_RECIPE, {
         onError(error) {
-            notifications.show({
-                color: 'red',
-                title: 'Archive failed',
-                message: error.message,
+            errorToast({
+                title: 'Error archiving recipe',
+                description: error.message,
+                position: 'top',
             });
         },
         update(cache, { data: mutationData }) {
