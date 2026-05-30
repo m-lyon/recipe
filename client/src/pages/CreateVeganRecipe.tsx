@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useNavigate, useParams } from 'react-router-dom';
-import { gql, useMutation, useQuery } from '@apollo/client';
+import { Reference, gql, useMutation, useQuery } from '@apollo/client';
 
 import { ReservedTags } from '@recipe/graphql/enums';
 import { useAddRating } from '@recipe/features/rating';
@@ -186,16 +186,17 @@ export function CreateVeganRecipe() {
                 cache.modify({
                     id: `Recipe:${originalId}`,
                     fields: {
-                        calculatedTags(existing: string[] = []) {
+                        calculatedTags(existing: string[] | Reference) {
+                            const tags = Array.isArray(existing) ? existing : [];
                             if (
-                                existing.includes(
+                                tags.includes(
                                     formatCalculatedTag(ReservedTags.VeganVersionAvailable)
                                 )
                             ) {
-                                return existing;
+                                return tags;
                             }
                             return [
-                                ...existing,
+                                ...tags,
                                 formatCalculatedTag(ReservedTags.VeganVersionAvailable),
                             ];
                         },

@@ -1170,8 +1170,8 @@ export const mockUpdateRecipeOneNowVegan = {
                     veganVersion: null,
                 },
             },
-        },
-    } satisfies UpdateRecipeMutation,
+        } satisfies UpdateRecipeMutation,
+    },
 };
 export const mockCreateVeganRecipeViaMutation = {
     request: {
