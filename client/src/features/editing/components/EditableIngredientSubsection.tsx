@@ -15,6 +15,9 @@ interface Props {
     section: number;
     optionalRef: RefObject<HTMLInputElement> | null;
     handleOpen: (index: number) => void;
+    // On the CreateVeganRecipe page, non-unique units/prep methods from the original recipe are
+    // still referenced by it, so DELETE_UNIT/DELETE_PREP_METHOD always returns ITEM_IN_USE when
+    // the user swaps out an ingredient. This is expected — suppress the error toast in that case.
     suppressItemInUseError?: boolean;
 }
 export function EditableIngredientSubsection(props: Props) {
