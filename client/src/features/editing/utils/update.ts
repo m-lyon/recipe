@@ -1,4 +1,4 @@
-import { ApolloCache, InMemoryCache, Reference } from '@apollo/client';
+import { ApolloCache, NormalizedCacheObject, Reference } from '@apollo/client';
 
 import { ReservedTags } from '@recipe/graphql/enums';
 import { formatCalculatedTag } from '@recipe/features/tags';
@@ -6,7 +6,7 @@ import { RECIPE_INGR_FIELDS } from '@recipe/graphql/queries/recipe';
 import { RECIPE_FIELDS_SUBSET } from '@recipe/graphql/queries/recipe';
 
 export function updateRecipeCache(
-    cache: ApolloCache<InMemoryCache>,
+    cache: ApolloCache<NormalizedCacheObject>,
     record: CompletedRecipeView,
     increment: boolean = false
 ) {
@@ -48,7 +48,7 @@ export function updateRecipeCache(
 }
 
 export function removeRecipeFromLists(
-    cache: ApolloCache<InMemoryCache>,
+    cache: ApolloCache<NormalizedCacheObject>,
     recordId: string,
     decrement: boolean = false
 ) {
@@ -65,7 +65,7 @@ export function removeRecipeFromLists(
 }
 
 export function archiveRecipeCache(
-    cache: ApolloCache<InMemoryCache>,
+    cache: ApolloCache<NormalizedCacheObject>,
     recipe: Pick<CompletedRecipeView, '_id' | 'veganVersion'>
 ) {
     removeRecipeFromLists(cache, recipe._id, true);
@@ -93,7 +93,7 @@ export function archiveRecipeCache(
 }
 
 export function deleteVeganRecipeCache(
-    cache: ApolloCache<InMemoryCache>,
+    cache: ApolloCache<NormalizedCacheObject>,
     recipe: Pick<CompletedRecipeView, '_id' | 'originalRecipe' | 'titleIdentifier'>
 ) {
     const originalId = recipe.originalRecipe?._id;
