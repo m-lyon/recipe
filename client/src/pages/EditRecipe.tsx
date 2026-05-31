@@ -53,8 +53,6 @@ export function EditRecipe() {
     // ---------------------------------------------------------------------
     const [recipe, setRecipe] = useState<RecipeView>(null);
     const [showConfirmAction, setShowConfirmAction] = useState(false);
-    const [isRedirectingAfterDestructiveAction, setIsRedirectingAfterDestructiveAction] =
-        useState(false);
     const navigate = useNavigate();
     const { titleIdentifier } = useParams();
     const [saveRecipe, { data: response, loading: recipeLoading, reset: resetSaveRecipe }] =
@@ -185,10 +183,6 @@ export function EditRecipe() {
         return <div>Loading...</div>;
     }
 
-    if (isRedirectingAfterDestructiveAction) {
-        return <div>Loading...</div>;
-    }
-
     if (error || !data || !data.recipeOne) {
         return <div>Error: {error?.message}</div>;
     }
@@ -310,7 +304,6 @@ export function EditRecipe() {
                     description: 'Redirecting you to the home page',
                     position: 'top',
                 });
-                setIsRedirectingAfterDestructiveAction(true);
             } else {
                 await archiveRecipe({
                     variables: { id: recipe._id },
@@ -326,7 +319,6 @@ export function EditRecipe() {
                     description: 'Redirecting you to the home page',
                     position: 'top',
                 });
-                setIsRedirectingAfterDestructiveAction(true);
             }
         } catch (e: unknown) {
             let description = 'An error occurred while updating the recipe';
