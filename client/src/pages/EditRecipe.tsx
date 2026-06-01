@@ -359,7 +359,7 @@ export function EditRecipe() {
                     </Button>
                 }
                 submitButtonProps={{
-                    submitText: 'Save',
+                    submitText: data.recipeOne.originalRecipe ? 'Save Vegan Version' : 'Save',
                     loadingText: 'Saving Recipe...',
                     disabled: !!response,
                     loading: recipeLoading || uploadLoading,

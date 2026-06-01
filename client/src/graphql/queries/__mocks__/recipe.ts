@@ -1,7 +1,6 @@
 import { ReservedTags } from '@recipe/graphql/enums';
 import { GetRecipeQueryVariables } from '@recipe/graphql/generated';
 import { GetIngredientComponentsQuery } from '@recipe/graphql/generated';
-import { mockRecipeIngredientIdFive } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdNine } from '@recipe/graphql/__mocks__/ids';
 import { GET_INGREDIENT_COMPONENTS } from '@recipe/graphql/queries/recipe';
 import { mockRecipeIngredientIdEight } from '@recipe/graphql/__mocks__/ids';
@@ -23,6 +22,7 @@ import { mockRecipeIdFour, mockRecipeIngredientIdOne } from '@recipe/graphql/__m
 import { GET_LINKED_RECIPES, GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { mockRecipeIdNewAsIngr, mockRecipeIngredientIdSix } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIdFive, mockRecipeIngredientIdFourteen } from '@recipe/graphql/__mocks__/ids';
+import { mockRecipeIdVeganCopy, mockRecipeIngredientIdFive } from '@recipe/graphql/__mocks__/ids';
 import { mockAdminId, mockRecipeIngredientIdTen, mockUserId } from '@recipe/graphql/__mocks__/ids';
 
 import { mockDiced, mockPrepMethods } from './prepMethod';
@@ -151,39 +151,6 @@ export const mockRecipeOne: CompletedRecipeView = {
     originalRecipe: null,
     owner: mockAdminId,
 };
-// A recipe that already has a vegan version linked
-export const mockRecipeWithVeganVersion: CompletedRecipeView = {
-    ...mockRecipeOne,
-    calculatedTags: ['vegetarian'], // not vegan itself
-    veganVersion: {
-        __typename: 'Recipe',
-        _id: mockRecipeIdTwo,
-        title: mockTitleOne,
-        titleIdentifier: 'mock-recipe-one-vegan',
-    },
-    originalRecipe: null,
-};
-// A recipe that is itself a vegan copy (has originalRecipe set)
-export const mockRecipeVeganCopy: CompletedRecipeView = {
-    ...mockRecipeOne,
-    _id: mockRecipeIdTwo,
-    titleIdentifier: 'mock-recipe-one-vegan',
-    calculatedTags: ['vegan', 'vegetarian'],
-    veganVersion: null,
-    originalRecipe: {
-        __typename: 'Recipe',
-        _id: mockRecipeIdOne,
-        title: mockTitleOne,
-        titleIdentifier: 'mock-recipe-one',
-    },
-};
-export const mockRecipeOneRenamed: CompletedRecipeView = {
-    ...mockRecipeOne,
-    title: 'Mock Recipe Renamed',
-    titleIdentifier: 'mock-recipe-renamed',
-    calculatedTags: [],
-    veganVersion: null,
-};
 export const mockRecipeTwo: CompletedRecipeView = {
     ...mockRecipeOne,
     _id: mockRecipeIdTwo,
@@ -298,6 +265,37 @@ export const mockRecipeThree: CompletedRecipeView = {
             ],
         },
     ],
+};
+// A recipe that already has a vegan version linked
+export const mockRecipeWithVeganVersion: CompletedRecipeView = {
+    ...mockRecipeThree,
+    calculatedTags: ['vegan version available'],
+    veganVersion: {
+        __typename: 'Recipe',
+        _id: mockRecipeIdVeganCopy,
+        title: 'Mock Recipe Three',
+        titleIdentifier: 'mock-recipe-three-vegan',
+    },
+    originalRecipe: null,
+};
+// A recipe that is itself a vegan copy (has originalRecipe set)
+export const mockRecipeVeganCopy: CompletedRecipeView = {
+    ...mockRecipeThree,
+    _id: mockRecipeIdVeganCopy,
+    titleIdentifier: 'mock-recipe-three-vegan',
+    calculatedTags: ['vegan', 'vegetarian'],
+    veganVersion: null,
+    originalRecipe: {
+        __typename: 'Recipe',
+        _id: mockRecipeIdThree,
+        title: 'Mock Recipe Three',
+        titleIdentifier: 'mock-recipe-three',
+    },
+};
+export const mockRecipeThreeRenamed: CompletedRecipeView = {
+    ...mockRecipeThree,
+    title: 'Mock Recipe Renamed',
+    titleIdentifier: 'mock-recipe-renamed',
 };
 export const mockRecipeFour: CompletedRecipeView = {
     ...mockRecipeOne,
@@ -439,15 +437,6 @@ export const mockGetRecipeOne = {
     },
     result: { data: { __typename: 'Query', recipeOne: mockRecipeOne } satisfies GetRecipeQuery },
 };
-export const mockGetOldRecipeSlugNotFound = {
-    request: {
-        query: GET_RECIPE,
-        variables: {
-            filter: { titleIdentifier: 'mock-recipe-one' },
-        } satisfies GetRecipeQueryVariables,
-    },
-    result: { data: { __typename: 'Query', recipeOne: null } satisfies GetRecipeQuery },
-};
 export const mockGetRenamedRecipe = {
     request: {
         query: GET_RECIPE,
@@ -456,14 +445,14 @@ export const mockGetRenamedRecipe = {
         } satisfies GetRecipeQueryVariables,
     },
     result: {
-        data: { __typename: 'Query', recipeOne: mockRecipeOneRenamed } satisfies GetRecipeQuery,
+        data: { __typename: 'Query', recipeOne: mockRecipeThreeRenamed } satisfies GetRecipeQuery,
     },
 };
 export const mockGetRecipeWithVeganVersion = {
     request: {
         query: GET_RECIPE,
         variables: {
-            filter: { titleIdentifier: 'mock-recipe-one' },
+            filter: { titleIdentifier: 'mock-recipe-three' },
         } satisfies GetRecipeQueryVariables,
     },
     result: {
@@ -477,7 +466,7 @@ export const mockGetRecipeVeganCopy = {
     request: {
         query: GET_RECIPE,
         variables: {
-            filter: { titleIdentifier: 'mock-recipe-one-vegan' },
+            filter: { titleIdentifier: 'mock-recipe-three-vegan' },
         } satisfies GetRecipeQueryVariables,
     },
     result: {
@@ -595,47 +584,22 @@ export const mockGetRecipes = {
         } satisfies GetRecipesQuery,
     },
 };
-export const mockGetRecipesAfterArchiveRecipeOne = {
+export const mockGetRecipesAfterArchiveRecipeThree = {
     request: mockGetRecipes.request,
     result: {
         data: {
             __typename: 'Query',
-            recipeMany: [mockRecipeTwo, mockRecipeThree, mockRecipeFour],
+            recipeMany: [mockRecipeOne, mockRecipeTwo, mockRecipeFour],
             recipeCount: 3,
         } satisfies GetRecipesQuery,
     },
 };
-export const mockGetRecipeOneAfterVeganDelete = {
-    request: {
-        query: GET_RECIPE,
-        variables: { filter: { titleIdentifier: 'mock-recipe-one-vegan' } },
-    },
-    result: {
-        data: {
-            __typename: 'Query',
-            recipeOne: {
-                ...mockRecipeOne,
-                calculatedTags: ['vegetarian'],
-                veganVersion: null,
-            },
-        },
-    },
-};
-export const mockGetRecipesAfterDeleteVeganVersion = {
+export const mockGetRecipesWithVeganVersion = {
     request: mockGetRecipes.request,
     result: {
         data: {
             __typename: 'Query',
-            recipeMany: [
-                {
-                    ...mockRecipeOne,
-                    calculatedTags: ['vegan', 'vegetarian'],
-                    veganVersion: null,
-                },
-                mockRecipeTwo,
-                mockRecipeThree,
-                mockRecipeFour,
-            ],
+            recipeMany: [mockRecipeOne, mockRecipeTwo, mockRecipeWithVeganVersion, mockRecipeFour],
             recipeCount: 4,
         } satisfies GetRecipesQuery,
     },

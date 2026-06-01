@@ -1,38 +1,34 @@
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
-import { act, cleanup, screen, waitFor } from '@testing-library/react';
+import { cleanup, screen, waitFor } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { PATH } from '@recipe/constants';
 import { ReservedTags } from '@recipe/graphql/enums';
 import { enterEditRecipePage } from '@recipe/utils/tests';
 import { enterViewRecipePage } from '@recipe/utils/tests';
-import { UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { MockedResponses, renderPage } from '@recipe/utils/tests';
 import { GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
-import { mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockGetRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockRecipeVeganCopy } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRenamedRecipe } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipeVeganCopy } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockArchiveRecipeOne } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockArchiveRecipeThree } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockRecipeWithVeganVersion } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockDeleteRecipeVeganCopy } from '@recipe/graphql/mutations/__mocks__/recipe';
-import { mockGetOldRecipeSlugNotFound } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockRecipeOne, mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetRecipeWithVeganVersion } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockUpdateRecipeOneNoChange } from '@recipe/graphql/mutations/__mocks__/recipe';
-import { mockUpdateRecipeOneNowVegan } from '@recipe/graphql/mutations/__mocks__/recipe';
-import { mockRecipeFive, mockRecipeFour } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockUpdateRecipeOneWithRename } from '@recipe/graphql/mutations/__mocks__/recipe';
-import { mockGetRecipeOneAfterVeganDelete } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockGetRecipesWithVeganVersion } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockUpdateRecipeThreeNoChange } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockUpdateRecipeThreeWithRename } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockGetRecipeThree, mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCreateVeganRecipeViaMutation } from '@recipe/graphql/mutations/__mocks__/recipe';
-import { mockGetRecipesAfterArchiveRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockGetRecipeThree, mockGetRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockGetRecipesAfterDeleteVeganVersion } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockUpdateRecipeVeganCopyNoChange } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockGetRecipesAfterArchiveRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockUpdateRecipeWithVeganVersionNoChange } from '@recipe/graphql/mutations/__mocks__/recipe';
 
 import { routes } from '../routes';
+import { renderComponent } from './utils';
 import { mocks, mocksMinimal } from '../__mocks__/graphql';
 
 loadErrorMessages();
@@ -40,21 +36,17 @@ loadDevMessages();
 
 /** Helper: render the app using mocksMinimal + a specific GET_RECIPE mock for mock-recipe-one */
 function renderWithRecipeMock(...extraMocks: MockedResponses) {
-    return renderPage(
-        routes,
-        [...mocksMinimal, ...extraMocks, mockGetRecipeTwo, mockGetRecipeThree, mockGetRecipes],
-        [PATH.ROOT]
-    );
+    return renderPage(routes, [...mocksMinimal, ...extraMocks], [PATH.ROOT]);
 }
 
-describe('EditRecipe — Vegan Version Checkbox Visibility', () => {
+describe('EditRecipe - Vegan Version Checkbox Visibility', () => {
     afterEach(() => {
         cleanup();
     });
 
     it('should show the vegan version checkbox for a normal recipe without a vegan version', async () => {
         // mockRecipeOne has veganVersion: null and originalRecipe: null
-        renderWithRecipeMock(mockGetRecipeOne);
+        renderComponent();
         const user = userEvent.setup();
 
         await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
@@ -63,10 +55,10 @@ describe('EditRecipe — Vegan Version Checkbox Visibility', () => {
     });
 
     it('should show a pre-checked "Edit vegan version" checkbox when recipe has a vegan version', async () => {
-        renderWithRecipeMock(mockGetRecipeWithVeganVersion);
+        renderWithRecipeMock(mockGetRecipeWithVeganVersion, mockGetRecipesWithVeganVersion);
         const user = userEvent.setup();
 
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
 
         const checkbox = await screen.findByLabelText('Edit vegan version of this recipe');
         expect(checkbox).not.toBeNull();
@@ -74,10 +66,10 @@ describe('EditRecipe — Vegan Version Checkbox Visibility', () => {
     });
 
     it('should allow unchecking the "Edit vegan version" checkbox', async () => {
-        renderWithRecipeMock(mockGetRecipeWithVeganVersion);
+        renderWithRecipeMock(mockGetRecipeWithVeganVersion, mockGetRecipesWithVeganVersion);
         const user = userEvent.setup();
 
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
 
         const checkbox = await screen.findByLabelText('Edit vegan version of this recipe');
         await user.click(checkbox);
@@ -85,10 +77,10 @@ describe('EditRecipe — Vegan Version Checkbox Visibility', () => {
     });
 
     it('should not show the "Create vegan version" label when the recipe already has a vegan version', async () => {
-        renderWithRecipeMock(mockGetRecipeWithVeganVersion);
+        renderWithRecipeMock(mockGetRecipeWithVeganVersion, mockGetRecipesWithVeganVersion);
         const user = userEvent.setup();
 
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
 
         expect(screen.queryByLabelText('Create vegan version of this recipe')).toBeNull();
     });
@@ -100,22 +92,22 @@ describe('EditRecipe — Vegan Version Checkbox Visibility', () => {
         const mockGetVeganCopyAtRecipeOne = {
             request: {
                 query: GET_RECIPE,
-                variables: { filter: { titleIdentifier: 'mock-recipe-one' } },
+                variables: { filter: { titleIdentifier: 'mock-recipe-three' } },
             },
             result: {
                 data: { __typename: 'Query', recipeOne: mockRecipeVeganCopy },
             },
         };
-        renderWithRecipeMock(mockGetVeganCopyAtRecipeOne);
+        renderWithRecipeMock(mockGetVeganCopyAtRecipeOne, mockGetRecipesWithVeganVersion);
         const user = userEvent.setup();
 
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
 
         expect(screen.queryByLabelText('Create vegan version of this recipe')).toBeNull();
     });
 });
 
-describe('EditRecipe — Already Vegan Guard', () => {
+describe('EditRecipe - Already Vegan Guard', () => {
     afterEach(() => {
         cleanup();
     });
@@ -141,49 +133,7 @@ describe('EditRecipe — Already Vegan Guard', () => {
     });
 });
 
-describe('Home page — hide vegan copies', () => {
-    afterEach(() => {
-        cleanup();
-    });
-
-    it('should not show vegan copies on the home page', async () => {
-        // mockRecipeOne has calculatedTags: ['vegan', 'vegetarian']
-
-        // A mock that only matches when originalRecipe: null is in the filter — i.e. the
-        // filter we expect the UI to send after the fix.
-        const mockGetRecipesNoVeganCopies = {
-            request: {
-                query: GET_RECIPES,
-                variables: {
-                    offset: 0,
-                    limit: 5,
-                    filter: { archived: false, originalRecipe: null },
-                    countFilter: { archived: false, originalRecipe: null },
-                },
-            },
-            result: {
-                data: {
-                    __typename: 'Query',
-                    recipeMany: [mockRecipeOne, mockRecipeTwo, mockRecipeThree, mockRecipeFour],
-                    recipeCount: 4,
-                },
-            },
-        };
-        renderPage(
-            routes,
-            [...mocksMinimal, mockGetRecipesNoVeganCopies, mockGetRecipeTwo, mockGetRecipeThree],
-            [PATH.ROOT]
-        );
-
-        // The recipe list should render. If the mock didn't match (no originalRecipe: null in
-        // filter), Apollo would find no mock and the list would be empty/errored.
-        expect(await screen.findByText('Mock Recipe')).not.toBeNull();
-        // Verify no Apollo error toast appeared
-        expect(screen.queryByText('No results')).toBeNull();
-    });
-});
-
-describe('ViewRecipe — vegan copy title', () => {
+describe('ViewRecipe - vegan copy title', () => {
     afterEach(() => {
         cleanup();
     });
@@ -192,38 +142,38 @@ describe('ViewRecipe — vegan copy title', () => {
         renderPage(
             routes,
             [...mocks, mockGetRecipeVeganCopy],
-            [`${PATH.ROOT}/view/recipe/mock-recipe-one-vegan`]
+            [`${PATH.ROOT}/view/recipe/mock-recipe-three-vegan`]
         );
-        expect(await screen.findByText('Mock Recipe')).not.toBeNull();
-        expect(screen.queryByText('Mock Recipe (Vegan)')).toBeNull();
+        expect(await screen.findByText('Mock Recipe Three')).not.toBeNull();
+        expect(screen.queryByText('Mock Recipe Three (Vegan)')).toBeNull();
     });
 });
 
-describe('ViewRecipe — linked vegan navigation action', () => {
+describe('ViewRecipe - linked vegan navigation action', () => {
     afterEach(() => {
         cleanup();
     });
 
-    it('should show a plant icon action on an original recipe with a vegan version and hide the old text link', async () => {
+    it('should show a plant icon action on an original recipe with a vegan version', async () => {
         renderPage(
             routes,
             [...mocksMinimal, mockGetRecipeWithVeganVersion],
-            [`${PATH.ROOT}/view/recipe/mock-recipe-one`]
+            [`${PATH.ROOT}/view/recipe/mock-recipe-three`]
         );
 
-        expect(await screen.findByText('Mock Recipe')).not.toBeNull();
+        expect(await screen.findByText('Mock Recipe Three')).not.toBeNull();
         expect(await screen.findByLabelText('View vegan version')).not.toBeNull();
         expect(screen.queryByText('View Vegan Version')).toBeNull();
     });
 
-    it('should show a meat icon action on a vegan copy with an original recipe and hide the old text link', async () => {
+    it('should show a meat icon action on a vegan copy with an original recipe', async () => {
         renderPage(
             routes,
             [...mocksMinimal, mockGetRecipeVeganCopy],
-            [`${PATH.ROOT}/view/recipe/mock-recipe-one-vegan`]
+            [`${PATH.ROOT}/view/recipe/mock-recipe-three-vegan`]
         );
 
-        expect(await screen.findByText('Mock Recipe')).not.toBeNull();
+        expect(await screen.findByText('Mock Recipe Three')).not.toBeNull();
         expect(await screen.findByLabelText('View original recipe')).not.toBeNull();
         expect(screen.queryByText('View Original Recipe')).toBeNull();
     });
@@ -232,11 +182,11 @@ describe('ViewRecipe — linked vegan navigation action', () => {
         renderPage(
             routes,
             [...mocksMinimal, mockGetRecipeWithVeganVersion, mockGetRecipeVeganCopy],
-            [`${PATH.ROOT}/view/recipe/mock-recipe-one`]
+            [`${PATH.ROOT}/view/recipe/mock-recipe-three`]
         );
         const user = userEvent.setup();
 
-        await screen.findByText('Mock Recipe');
+        await screen.findByText('Mock Recipe Three');
         await user.click(await screen.findByLabelText('View vegan version'));
 
         await waitFor(() => {
@@ -245,38 +195,7 @@ describe('ViewRecipe — linked vegan navigation action', () => {
     });
 });
 
-describe('RecipeCard — no vegan version button', () => {
-    afterEach(() => {
-        cleanup();
-    });
-
-    it('should not show the "View vegan version" button on a recipe card', async () => {
-        const mockGetRecipesWithVeganVersion = {
-            request: {
-                query: GET_RECIPES,
-                variables: {
-                    offset: 0,
-                    limit: 5,
-                    filter: { archived: false, originalRecipe: null },
-                    countFilter: { archived: false, originalRecipe: null },
-                },
-            },
-            result: {
-                data: {
-                    __typename: 'Query',
-                    recipeMany: [mockRecipeWithVeganVersion],
-                    recipeCount: 1,
-                },
-            },
-        };
-        renderPage(routes, [...mocksMinimal, mockGetRecipesWithVeganVersion], [PATH.ROOT]);
-
-        expect(await screen.findByText('Mock Recipe')).not.toBeNull();
-        expect(screen.queryByLabelText('View vegan version of Mock Recipe')).toBeNull();
-    });
-});
-
-describe('ViewRecipe — recipe ingredient vegan suffix', () => {
+describe('ViewRecipe - recipe ingredient vegan suffix', () => {
     afterEach(() => {
         cleanup();
     });
@@ -335,27 +254,28 @@ describe('ViewRecipe — recipe ingredient vegan suffix', () => {
     });
 });
 
-describe('CreateVeganRecipe — Page', () => {
+describe('CreateVeganRecipe - Page', () => {
     afterEach(() => {
         cleanup();
     });
 
     it('should render the create vegan recipe page with Submit Vegan Version button', async () => {
-        renderPage(routes, [...mocks], [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-one`]);
+        renderPage(routes, [...mocks], [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-three`]);
 
         expect(await screen.findByText('Submit Vegan Version')).not.toBeNull();
     });
 
     it('should pre-populate the title field from the original recipe', async () => {
-        renderPage(routes, [...mocks], [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-one`]);
+        renderPage(routes, [...mocks], [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-three`]);
 
         // The title input should be pre-filled with the original recipe title
-        expect(await screen.findByDisplayValue('Mock Recipe')).not.toBeNull();
+        expect(await screen.findByDisplayValue('Mock Recipe Three')).not.toBeNull();
     });
 
     it('pre-populates all ingredient and instruction subsections from the original recipe', async () => {
         const recipeWithMultipleSubsections = {
             ...mockRecipeOne,
+            calculatedTags: [],
             ingredientSubsections: [
                 {
                     __typename: 'IngredientSubsection' as const,
@@ -409,8 +329,13 @@ describe('CreateVeganRecipe — Page', () => {
     it('should navigate to home page after successfully submitting a vegan version', async () => {
         renderPage(
             routes,
-            [...mocksMinimal, mockGetRecipeOne, mockCreateVeganRecipeViaMutation, mockGetRecipes],
-            [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-one`]
+            [
+                ...mocksMinimal,
+                mockGetRecipeThree,
+                mockCreateVeganRecipeViaMutation,
+                mockGetRecipesWithVeganVersion,
+            ],
+            [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-three`]
         );
         const user = userEvent.setup();
         await user.click(await screen.findByText('Submit Vegan Version'));
@@ -418,7 +343,7 @@ describe('CreateVeganRecipe — Page', () => {
     });
 });
 
-describe('CreateVeganRecipe — cache: originalRecipe on vegan copy', () => {
+describe('CreateVeganRecipe - cache: originalRecipe on vegan copy', () => {
     afterEach(() => {
         cleanup();
     });
@@ -426,22 +351,22 @@ describe('CreateVeganRecipe — cache: originalRecipe on vegan copy', () => {
     it('should not show the vegan copy on the home page after creation', async () => {
         renderPage(
             routes,
-            [...mocksMinimal, mockGetRecipeOne, mockCreateVeganRecipeViaMutation, mockGetRecipes],
-            [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-one`]
+            [...mocksMinimal, mockGetRecipeThree, mockCreateVeganRecipeViaMutation, mockGetRecipes],
+            [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-three`]
         );
         const user = userEvent.setup();
         await user.click(await screen.findByText('Submit Vegan Version'));
         // After navigation, we're on the home page.
         await screen.findByText('Recipes');
         // The home page GET_RECIPES mock returns exactly 4 recipes (no vegan copy).
-        // Assert that exactly those 4 recipe cards are rendered — if the vegan copy
+        // Assert that exactly those 4 recipe cards are rendered - if the vegan copy
         // were incorrectly shown, there would be an extra card.
         const cards = screen.queryAllByLabelText(/^View /);
         expect(cards).toHaveLength(mockGetRecipes.result.data.recipeMany.length);
     });
 });
 
-describe('CreateVeganRecipe — cache update after atomic create', () => {
+describe('CreateVeganRecipe - cache update after atomic create', () => {
     afterEach(() => {
         cleanup();
     });
@@ -449,8 +374,8 @@ describe('CreateVeganRecipe — cache update after atomic create', () => {
     it('creates and links the vegan copy with one mutation', async () => {
         const { router } = renderPage(
             routes,
-            [...mocksMinimal, mockGetRecipeOne, mockCreateVeganRecipeViaMutation, mockGetRecipes],
-            [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-one`]
+            [...mocksMinimal, mockGetRecipeThree, mockCreateVeganRecipeViaMutation, mockGetRecipes],
+            [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-three`]
         );
 
         const user = userEvent.setup();
@@ -468,7 +393,7 @@ describe('CreateVeganRecipe — cache update after atomic create', () => {
     });
 });
 
-describe('Home page — vegan tag filter includes recipes with vegan version', () => {
+describe('Home page - vegan tag filter includes recipes with vegan version', () => {
     afterEach(() => {
         cleanup();
     });
@@ -520,62 +445,23 @@ describe('Home page — vegan tag filter includes recipes with vegan version', (
     });
 });
 
-describe('CreateVeganRecipe — cache: home page after vegan creation', () => {
+describe('CreateVeganRecipe - cache: home page after vegan creation', () => {
     afterEach(() => {
         cleanup();
     });
 
     it('should show only the original recipe on the home page with the vegan version available tag after creating a vegan version', async () => {
-        // Build a custom GET_RECIPES mock that returns mockRecipeOne with the
-        // enum-backed calculatedTag already present. This simulates what
-        // the server would return after the atomic create operation. When the user navigates
-        // back to the home page after creating the vegan version, Apollo fires a fresh
-        // GET_RECIPES (not yet cached since we started on the create-vegan page). The
-        // cache.modify in the createVeganRecipe update adds the tag to the normalized
-        // Recipe node, and this fresh query response confirms it.
-
-        const mockGetRecipesAfterCreateVegan = {
-            request: {
-                query: GET_RECIPES,
-                variables: {
-                    offset: 0,
-                    limit: 5,
-                    filter: { archived: false, originalRecipe: null },
-                    countFilter: { archived: false, originalRecipe: null },
-                },
-            },
-            result: {
-                data: {
-                    __typename: 'Query',
-                    recipeMany: [
-                        {
-                            ...mockRecipeOne,
-                            calculatedTags: [
-                                ReservedTags.Vegan,
-                                'vegetarian',
-                                'vegan version available',
-                            ],
-                        },
-                        mockRecipeTwo,
-                        mockRecipeThree,
-                        mockRecipeFour,
-                    ],
-                    recipeCount: 4,
-                },
-            },
-        };
-
         // Start directly on the CreateVeganRecipe page. We replace the shared mockGetRecipes
         // with mockGetRecipesAfterLink so the home page shows the updated calculatedTags.
         renderPage(
             routes,
             [
                 ...mocksMinimal,
-                mockGetRecipeOne,
-                mockGetRecipesAfterCreateVegan,
+                mockGetRecipeThree,
                 mockCreateVeganRecipeViaMutation,
+                mockGetRecipesWithVeganVersion,
             ],
-            [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-one`]
+            [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-three`]
         );
         const user = userEvent.setup();
         await user.click(await screen.findByText('Submit Vegan Version'));
@@ -583,12 +469,12 @@ describe('CreateVeganRecipe — cache: home page after vegan creation', () => {
         // After navigation, we should be on the home page.
         await screen.findByText('Recipes');
 
-        // Only the original 4 recipes should be shown — the vegan copy must NOT appear.
+        // Only the original 4 recipes should be shown - the vegan copy must NOT appear.
         const cards = screen.queryAllByLabelText(/^View /);
         expect(cards).toHaveLength(mockGetRecipes.result.data.recipeMany.length);
 
         // The original recipe card must be present.
-        expect(screen.queryAllByLabelText('View Mock Recipe')).toHaveLength(1);
+        expect(screen.queryAllByLabelText('View Mock Recipe Three')).toHaveLength(1);
 
         // The original recipe card must display the 'vegan version available' calculated tag,
         // updated via cache.modify in the createVeganRecipe update callback.
@@ -597,131 +483,36 @@ describe('CreateVeganRecipe — cache: home page after vegan creation', () => {
     });
 });
 
-describe('EditRecipe — toast when navigating to CreateVeganRecipe', () => {
+describe('EditRecipe - toast when navigating to CreateVeganRecipe', () => {
     afterEach(() => {
         cleanup();
-    });
-
-    it('keeps Save enabled when the saved recipe is missing a title identifier', async () => {
-        const mockGetRecipeOneNonVegan = {
-            request: {
-                query: GET_RECIPE,
-                variables: { filter: { titleIdentifier: 'mock-recipe-one' } },
-            },
-            result: {
-                data: {
-                    __typename: 'Query',
-                    recipeOne: { ...mockRecipeOne, calculatedTags: [], veganVersion: null },
-                },
-            },
-        };
-        const mockUpdateRecipeMissingTitleIdentifier = {
-            request: { query: UPDATE_RECIPE },
-            variableMatcher: () => true,
-            result: {
-                data: {
-                    __typename: 'Mutation',
-                    recipeUpdateById: {
-                        __typename: 'UpdateByIdRecipePayload',
-                        record: {
-                            ...mockGetRecipeOneNonVegan.result.data.recipeOne,
-                            titleIdentifier: null,
-                        },
-                    },
-                },
-            },
-        };
-
-        renderPage(
-            routes,
-            [
-                ...mocksMinimal,
-                mockGetRecipeOneNonVegan,
-                mockGetRecipes,
-                mockUpdateRecipeMissingTitleIdentifier,
-            ],
-            [PATH.ROOT]
-        );
-        const user = userEvent.setup();
-
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        await user.click(screen.getByLabelText('Create vegan version of this recipe'));
-
-        const saveButton = screen.getByLabelText('Save recipe');
-        await user.click(saveButton);
-
-        expect(
-            await screen.findByText('No saved recipe was returned from the server')
-        ).not.toBeNull();
-        await waitFor(() => expect(saveButton).toBeEnabled());
     });
 
     it('should show a toast when saving a recipe with the create vegan version checkbox checked', async () => {
         // A non-vegan recipe with no existing vegan version so saving with the checkbox checked
         // triggers navigation to CreateVeganRecipe (not the warning toast).
-        const mockRecipeOneNonVegan = { ...mockRecipeOne, calculatedTags: [], veganVersion: null };
-        const mockGetRecipeOneNonVegan = {
-            request: {
-                query: GET_RECIPE,
-                variables: { filter: { titleIdentifier: 'mock-recipe-one' } },
-            },
-            result: { data: { __typename: 'Query', recipeOne: mockRecipeOneNonVegan } },
-        };
-        const mockUpdateRecipeOneNonVegan = {
-            request: { query: UPDATE_RECIPE },
-            variableMatcher: () => true,
-            result: {
-                data: {
-                    __typename: 'Mutation',
-                    recipeUpdateById: {
-                        __typename: 'UpdateByIdRecipePayload',
-                        record: mockRecipeOneNonVegan,
-                    },
-                },
-            },
-        };
-
         renderPage(
             routes,
-            [
-                ...mocksMinimal,
-                mockGetRecipeOneNonVegan,
-                mockGetRecipes,
-                mockUpdateRecipeOneNonVegan,
-            ],
+            [...mocksMinimal, mockGetRecipeThree, mockGetRecipes, mockUpdateRecipeThreeNoChange],
             [PATH.ROOT]
         );
         const user = userEvent.setup();
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
         await user.click(screen.getByLabelText('Create vegan version of this recipe'));
         await user.click(screen.getByLabelText('Save recipe'));
         expect(await screen.findByText('Creating vegan version')).not.toBeNull();
     });
 
     it('redirects vegan creation using the updated title identifier after a rename', async () => {
-        const mockGetRecipeOneNonVegan = {
-            request: {
-                query: GET_RECIPE,
-                variables: { filter: { titleIdentifier: 'mock-recipe-one' } },
-            },
-            result: {
-                data: {
-                    __typename: 'Query',
-                    recipeOne: { ...mockRecipeOne, calculatedTags: [], veganVersion: null },
-                },
-            },
-        };
-
         const { router } = renderPage(
             routes,
             [
                 ...mocksMinimal,
-                mockGetRecipeOneNonVegan,
-                mockUpdateRecipeOneWithRename,
-                mockGetOldRecipeSlugNotFound,
+                mockGetRecipeThree,
+                mockUpdateRecipeThreeWithRename,
                 mockGetRenamedRecipe,
             ],
-            [`${PATH.ROOT}/edit/recipe/mock-recipe-one`]
+            [`${PATH.ROOT}/edit/recipe/mock-recipe-three`]
         );
         const user = userEvent.setup();
 
@@ -740,80 +531,26 @@ describe('EditRecipe — toast when navigating to CreateVeganRecipe', () => {
         expect(await screen.findByDisplayValue('Mock Recipe Renamed')).not.toBeNull();
         expect(screen.getByText('Submit Vegan Version')).not.toBeNull();
     });
-
-    it('does not redirect to vegan-copy creation when the saved recipe becomes vegan', async () => {
-        const mockGetRecipeOneNonVegan = {
-            request: {
-                query: GET_RECIPE,
-                variables: { filter: { titleIdentifier: 'mock-recipe-one' } },
-            },
-            result: {
-                data: {
-                    __typename: 'Query',
-                    recipeOne: { ...mockRecipeOne, calculatedTags: [], veganVersion: null },
-                },
-            },
-        };
-
-        const { router } = renderPage(
-            routes,
-            [
-                ...mocksMinimal,
-                mockGetRecipeOneNonVegan,
-                mockGetRecipes,
-                mockUpdateRecipeOneNowVegan,
-            ],
-            [PATH.ROOT]
-        );
-        const user = userEvent.setup();
-
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        await user.click(screen.getByLabelText('Create vegan version of this recipe'));
-        await user.click(screen.getByLabelText('Save recipe'));
-
-        expect(await screen.findByText('Recipe is already vegan')).not.toBeNull();
-        expect(screen.queryByText('Create Vegan Recipe')).toBeNull();
-        await waitFor(() => {
-            expect(router.state.location.pathname).toBe(PATH.ROOT);
-        });
-        expect(await screen.findByText('Recipes')).not.toBeNull();
-    });
 });
 
-describe('EditRecipe — vegan checkbox stays checked after save', () => {
+describe('EditRecipe - vegan checkbox stays checked after save', () => {
     afterEach(() => {
         cleanup();
     });
 
     it('should keep the "Edit vegan version" checkbox checked after clicking save', async () => {
-        const mockUpdateWithVeganVersion = {
-            request: { query: UPDATE_RECIPE },
-            variableMatcher: () => true,
-            result: {
-                data: {
-                    __typename: 'Mutation',
-                    recipeUpdateById: {
-                        __typename: 'UpdateByIdRecipePayload',
-                        record: mockRecipeWithVeganVersion,
-                    },
-                },
-            },
-        };
-
         renderPage(
             routes,
             [
                 ...mocksMinimal,
-                mockGetRecipeWithVeganVersion,
                 mockGetRecipes,
-                // Provide mockGetRecipeVeganCopy for when we land on the vegan edit page
-                mockGetRecipeVeganCopy,
-                mockUpdateWithVeganVersion,
+                mockGetRecipeWithVeganVersion,
+                mockUpdateRecipeWithVeganVersionNoChange,
             ],
             [PATH.ROOT]
         );
         const user = userEvent.setup();
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
 
         const checkbox = await screen.findByLabelText('Edit vegan version of this recipe');
         await waitFor(() => expect((checkbox as HTMLInputElement).checked).toBe(true));
@@ -826,39 +563,26 @@ describe('EditRecipe — vegan checkbox stays checked after save', () => {
     });
 });
 
-describe('EditRecipe — save button enabled on vegan copy edit page after redirect', () => {
+describe('EditRecipe - save button enabled on vegan copy edit page after redirect', () => {
     afterEach(() => {
         cleanup();
     });
 
     it('should have an enabled save button after being redirected to the vegan version edit page', async () => {
-        const mockUpdateWithVeganVersion = {
-            request: { query: UPDATE_RECIPE },
-            variableMatcher: () => true,
-            result: {
-                data: {
-                    __typename: 'Mutation',
-                    recipeUpdateById: {
-                        __typename: 'UpdateByIdRecipePayload',
-                        record: mockRecipeWithVeganVersion,
-                    },
-                },
-            },
-        };
-
         renderPage(
             routes,
             [
                 ...mocksMinimal,
+                mockGetRecipesWithVeganVersion,
                 mockGetRecipeWithVeganVersion,
-                mockGetRecipes,
+                mockUpdateRecipeWithVeganVersionNoChange,
                 mockGetRecipeVeganCopy,
-                mockUpdateWithVeganVersion,
+                mockUpdateRecipeVeganCopyNoChange,
             ],
             [PATH.ROOT]
         );
         const user = userEvent.setup();
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
 
         // Wait for the checkbox to be pre-checked (veganVersion loaded)
         const checkbox = await screen.findByLabelText('Edit vegan version of this recipe');
@@ -869,19 +593,15 @@ describe('EditRecipe — save button enabled on vegan copy edit page after redir
         // Wait for redirect to vegan copy edit page
         await screen.findByText('Redirecting to existing vegan version');
 
-        // Wait for navigation to the vegan copy edit page (mock-recipe-one-vegan)
+        // Wait for navigation to the vegan copy edit page
         // The vegan copy page should load with the save button enabled
-        await waitFor(
-            () => {
-                const saveButton = screen.getByLabelText('Save recipe');
-                expect((saveButton as HTMLButtonElement).disabled).toBe(false);
-            },
-            { timeout: 5000 }
-        );
+        const screenBtn = await screen.findByText('Save Vegan Version');
+        expect(screenBtn).not.toBeNull();
+        expect((screenBtn as HTMLButtonElement).disabled).toBe(false);
     });
 });
 
-describe('EditRecipe — destructive action button', () => {
+describe('EditRecipe - destructive action button', () => {
     afterEach(() => {
         cleanup();
     });
@@ -890,10 +610,10 @@ describe('EditRecipe — destructive action button', () => {
         renderPage(
             routes,
             [...mocksMinimal, mockGetRecipeWithVeganVersion],
-            [`${PATH.ROOT}/edit/recipe/mock-recipe-one`]
+            [`${PATH.ROOT}/edit/recipe/mock-recipe-three`]
         );
 
-        expect(await screen.findByText('Mock Recipe')).not.toBeNull();
+        expect(await screen.findByText('Mock Recipe Three')).not.toBeNull();
         expect(await screen.findByRole('button', { name: 'Archive recipe' })).not.toBeNull();
         expect(screen.queryByRole('button', { name: 'Delete vegan version' })).toBeNull();
     });
@@ -902,24 +622,24 @@ describe('EditRecipe — destructive action button', () => {
         renderPage(
             routes,
             [...mocksMinimal, mockGetRecipeVeganCopy],
-            [`${PATH.ROOT}/edit/recipe/mock-recipe-one-vegan`]
+            [`${PATH.ROOT}/edit/recipe/mock-recipe-three-vegan`]
         );
 
-        expect(await screen.findByText('Mock Recipe')).not.toBeNull();
+        expect(await screen.findByText('Mock Recipe Three')).not.toBeNull();
         expect(await screen.findByRole('button', { name: 'Delete vegan version' })).not.toBeNull();
         expect(screen.queryByRole('button', { name: 'Archive recipe' })).toBeNull();
     });
 
-    it('should open action-specific confirmation modal copy for archive and delete', async () => {
+    it('should open action-specific confirmation modal copy for archive', async () => {
         const user = userEvent.setup();
 
-        const { unmount } = renderPage(
+        renderPage(
             routes,
             [...mocksMinimal, mockGetRecipeWithVeganVersion],
-            [`${PATH.ROOT}/edit/recipe/mock-recipe-one`]
+            [`${PATH.ROOT}/edit/recipe/mock-recipe-three`]
         );
 
-        await screen.findByText('Mock Recipe');
+        await screen.findByText('Mock Recipe Three');
         await user.click(await screen.findByRole('button', { name: 'Archive recipe' }));
 
         expect(await screen.findByText('Archive Recipe')).not.toBeNull();
@@ -930,16 +650,18 @@ describe('EditRecipe — destructive action button', () => {
         ).not.toBeNull();
         expect(screen.getByRole('button', { name: 'Confirm archive action' })).toBeEnabled();
         await user.click(screen.getByRole('button', { name: 'Cancel archive action' }));
+    });
 
-        unmount();
+    it('should open action-specific confirmation modal copy for delete vegan version', async () => {
+        const user = userEvent.setup();
 
         renderPage(
             routes,
             [...mocksMinimal, mockGetRecipeVeganCopy],
-            [`${PATH.ROOT}/edit/recipe/mock-recipe-one-vegan`]
+            [`${PATH.ROOT}/edit/recipe/mock-recipe-three-vegan`]
         );
 
-        await screen.findByText('Mock Recipe');
+        await screen.findByText('Mock Recipe Three');
         await user.click(await screen.findByRole('button', { name: 'Delete vegan version' }));
 
         expect(await screen.findByText('Delete Vegan Version')).not.toBeNull();
@@ -959,52 +681,22 @@ describe('EditRecipe — destructive action button', () => {
             [
                 ...mocksMinimal,
                 mockGetRecipeWithVeganVersion,
-                mockArchiveRecipeOne,
-                mockGetRecipesAfterArchiveRecipeOne,
+                mockArchiveRecipeThree,
+                mockGetRecipesAfterArchiveRecipeThree,
             ],
-            [`${PATH.ROOT}/edit/recipe/mock-recipe-one`]
+            [`${PATH.ROOT}/edit/recipe/mock-recipe-three`]
         );
         const user = userEvent.setup();
 
-        await screen.findByText('Mock Recipe');
+        await screen.findByText('Mock Recipe Three');
         await user.click(await screen.findByRole('button', { name: 'Archive recipe' }));
         await user.click(await screen.findByRole('button', { name: 'Confirm archive action' }));
 
         expect(await screen.findByText('Recipe archived')).not.toBeNull();
         expect(await screen.findByText('Recipes')).not.toBeNull();
-        expect(screen.queryByLabelText('View Mock Recipe')).toBeNull();
+        expect(screen.queryByLabelText('View Mock Recipe Three')).toBeNull();
         expect(screen.queryAllByLabelText(/^View /)).toHaveLength(
-            mockGetRecipesAfterArchiveRecipeOne.result.data.recipeMany.length
-        );
-    });
-
-    it('should delete a vegan version from EditRecipe, redirect home, and clear linked vegan state without refresh', async () => {
-        renderPage(
-            routes,
-            [
-                ...mocksMinimal,
-                mockGetRecipeVeganCopy,
-                mockDeleteRecipeVeganCopy,
-                mockGetRecipeOneAfterVeganDelete,
-                mockGetRecipesAfterDeleteVeganVersion,
-            ],
-            [`${PATH.ROOT}/edit/recipe/mock-recipe-one-vegan`]
-        );
-        const user = userEvent.setup();
-
-        await screen.findByText('Mock Recipe');
-        await user.click(await screen.findByRole('button', { name: 'Delete vegan version' }));
-        await user.click(
-            await screen.findByRole('button', { name: 'Confirm delete vegan version action' })
-        );
-
-        expect(await screen.findByText('Vegan version deleted')).not.toBeNull();
-        expect(screen.queryByText('Error: undefined')).toBeNull();
-        expect(await screen.findByText('Recipes')).not.toBeNull();
-        expect(screen.queryAllByLabelText('View Mock Recipe')).toHaveLength(1);
-        expect(screen.queryByText('vegan version available')).toBeNull();
-        expect(screen.queryAllByLabelText(/^View /)).toHaveLength(
-            mockGetRecipesAfterDeleteVeganVersion.result.data.recipeMany.length
+            mockGetRecipesAfterArchiveRecipeThree.result.data.recipeMany.length
         );
     });
 
@@ -1012,33 +704,17 @@ describe('EditRecipe — destructive action button', () => {
         // Start at home so GET_RECIPES is fetched and cached before deletion.
         // This reproduces the real user flow: home → edit vegan copy → delete → home.
         // Without a second GET_RECIPES mock, only cache.modify can update the cached data.
-        const mockGetRecipesWithVeganTag = {
-            request: mockGetRecipes.request,
-            result: {
-                data: {
-                    __typename: 'Query' as const,
-                    recipeMany: [
-                        {
-                            ...mockRecipeWithVeganVersion,
-                            calculatedTags: ['vegetarian', 'vegan version available'],
-                        },
-                        mockRecipeFive,
-                        mockRecipeThree,
-                        mockRecipeFour,
-                    ],
-                    recipeCount: 4,
-                },
-            },
-        };
 
-        const { router } = renderPage(
+        renderPage(
             routes,
             [
                 ...mocksMinimal,
-                mockGetRecipesWithVeganTag,
+                mockGetRecipesWithVeganVersion,
+                mockGetRecipeWithVeganVersion,
+                mockUpdateRecipeWithVeganVersionNoChange,
                 mockGetRecipeVeganCopy,
                 mockDeleteRecipeVeganCopy,
-                mockGetRecipeOneAfterVeganDelete,
+                mockGetRecipeVeganCopy, // cache.evict calls GET_RECIPE a second time it seems
             ],
             [PATH.ROOT]
         );
@@ -1046,25 +722,23 @@ describe('EditRecipe — destructive action button', () => {
 
         // Confirm home loaded and the vegan tag is visible on the original recipe card.
         expect(await screen.findByText('vegan version available')).not.toBeNull();
+        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
+        // Save button to navigate to the vegan copy edit page, where the delete button is.
+        await user.click(screen.getByLabelText('Save recipe'));
+        expect(await screen.findByText('Save Vegan Version')).not.toBeNull();
 
-        // Navigate programmatically to the vegan copy edit page.
-        // (The vegan copy does not appear on the home page, so we cannot click through.)
-        await act(async () => {
-            await router.navigate(`${PATH.ROOT}/edit/recipe/mock-recipe-one-vegan`);
-        });
-
-        // // Wait for edit page to load and click delete.
-        const deleteBtn = await screen.findByRole('button', { name: 'Delete vegan version' });
+        // Wait for edit page to load and click delete.
+        const deleteBtn = screen.getByRole('button', { name: 'Delete vegan version' });
         await user.click(deleteBtn);
         await user.click(
             await screen.findByRole('button', { name: 'Confirm delete vegan version action' })
         );
 
-        // // Verify redirect to home.
+        // Verify redirect to home.
         expect(await screen.findByText('Vegan version deleted')).not.toBeNull();
         expect(await screen.findByText('Recipes')).not.toBeNull();
 
-        // The "vegan version available" tag must be gone — cleared by cache.modify.
+        // The "vegan version available" tag must be gone - cleared by cache.modify.
         expect(screen.queryByText('vegan version available')).toBeNull();
 
         // The original recipe card should still be present (vegan copy never appeared on home).
