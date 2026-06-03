@@ -30,7 +30,19 @@ export function RecipeActionButtons(props: Props) {
                             sx={
                                 isSingleButton
                                     ? { flex: '0 0 auto', justifyContent: 'center' }
-                                    : { flex: '1 1 14rem' }
+                                    : index === 0
+                                      ? {
+                                            flex: '1 1 14rem',
+                                            display: 'flex',
+                                            justifyContent: 'flex-end',
+                                            paddingRight: '0.5rem',
+                                        }
+                                      : {
+                                            flex: '1 1 14rem',
+                                            display: 'flex',
+                                            justifyContent: 'flex-start',
+                                            paddingLeft: '0.5rem',
+                                        }
                             }
                         >
                             {child}
