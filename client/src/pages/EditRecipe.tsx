@@ -2,7 +2,7 @@ import { Button } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Reference, useMutation, useQuery } from '@apollo/client';
+import { ApolloError, Reference, useMutation, useQuery } from '@apollo/client';
 
 import { ConfirmModal } from '@recipe/common/components';
 import { useUploadImages } from '@recipe/features/images';
@@ -197,6 +197,16 @@ export function EditRecipe() {
             });
             savedRecipe = saveResult.data?.recipeUpdateById?.record ?? null;
         } catch (e: unknown) {
+            if (
+                e instanceof ApolloError &&
+                e.graphQLErrors.some((err) => err.extensions?.code === 'ORIGINAL_RECIPE_IS_VEGAN')
+            ) {
+                return warningToast({
+                    title: 'Recipe already has linked vegan version',
+                    description: 'Cannot save recipe as vegan when it has a linked vegan version',
+                    position: 'top',
+                });
+            }
             let description = 'An error occurred while saving the recipe';
             if (e instanceof Error) {
                 description = e.message;

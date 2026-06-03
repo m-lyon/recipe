@@ -1,3 +1,4 @@
+import { GraphQLError } from 'graphql';
 import { composeMongoose } from 'graphql-compose-mongoose';
 import { Document, HydratedDocument, Model, PopulatedDoc, Schema, Types, model } from 'mongoose';
 
@@ -296,6 +297,16 @@ recipeSchema.pre('save', async function (this: HydratedDocument<Recipe>) {
         calculatedTags.push(ReservedRecipeTags.VeganVersionAvailable);
     }
     this.calculatedTags = calculatedTags;
+    if (
+        this.veganVersion != null &&
+        calculatedTags.includes(ReservedIngredientTags.Vegan) &&
+        this.isModified('ingredientSubsections')
+    ) {
+        throw new GraphQLError(
+            'Cannot save original recipe as vegan when it has a linked vegan version',
+            { extensions: { code: 'ORIGINAL_RECIPE_IS_VEGAN' } }
+        );
+    }
     if (this.originalRecipe != null && !calculatedTags.includes(ReservedIngredientTags.Vegan)) {
         throw new Error('Vegan recipe must have all vegan ingredients');
     }

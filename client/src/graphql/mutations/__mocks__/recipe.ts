@@ -1210,6 +1210,23 @@ export const mockUpdateRecipeWithVeganVersionNoChange = {
         } satisfies UpdateRecipeMutation,
     },
 };
+export const mockUpdateRecipeWithVeganVersionBecomeVegan = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: getMockRecipeVariables(mockRecipeWithVeganVersion).id,
+            recipe: getMockRecipeVariables(mockRecipeWithVeganVersion).recipe,
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        errors: [
+            new GraphQLError(
+                'Cannot save original recipe as vegan when it has a linked vegan version',
+                { extensions: { code: 'ORIGINAL_RECIPE_IS_VEGAN' } }
+            ),
+        ],
+    },
+};
 export const mockCreateVeganRecipeViaMutation = {
     request: {
         query: CREATE_VEGAN_RECIPE,

@@ -259,6 +259,10 @@ RecipeModifyTC.addResolver({
             throw new Error('Original recipe already has a vegan version');
         }
 
+        if (original.calculatedTags.includes(ReservedIngredientTags.Vegan)) {
+            throw new Error('Cannot create a vegan copy of a recipe that is already vegan');
+        }
+
         const veganDoc = new Recipe({
             ...recipe,
             owner: original.owner,

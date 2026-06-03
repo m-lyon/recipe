@@ -26,6 +26,7 @@ import { mockCreateVeganRecipeViaMutation } from '@recipe/graphql/mutations/__mo
 import { mockUpdateRecipeVeganCopyNoChange } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetRecipesAfterArchiveRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockUpdateRecipeWithVeganVersionNoChange } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockUpdateRecipeWithVeganVersionBecomeVegan } from '@recipe/graphql/mutations/__mocks__/recipe';
 
 import { routes } from '../routes';
 import { renderComponent } from './utils';
@@ -130,6 +131,27 @@ describe('EditRecipe - Already Vegan Guard', () => {
 
         // Should navigate to home page
         expect(await screen.findByText('Recipes')).not.toBeNull();
+    });
+});
+
+describe('EditRecipe - Vegan Original Guard', () => {
+    afterEach(() => {
+        cleanup();
+    });
+
+    it('should show a warning toast when an original recipe with a linked vegan version is saved as vegan', async () => {
+        renderWithRecipeMock(
+            mockGetRecipeWithVeganVersion,
+            mockGetRecipesWithVeganVersion,
+            mockUpdateRecipeWithVeganVersionBecomeVegan
+        );
+        const user = userEvent.setup();
+
+        await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
+
+        await user.click(screen.getByLabelText('Save recipe'));
+
+        expect(await screen.findByText('Recipe already has linked vegan version')).not.toBeNull();
     });
 });
 
