@@ -6,26 +6,17 @@ import { StarRating } from '@recipe/features/rating';
 import { ImageUpload } from '@recipe/features/images';
 import { IngredientsTabLayout } from '@recipe/layouts';
 import { EditableTagList } from '@recipe/features/tags';
-import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
 
-import { SubmitButton } from './SubmitButton';
 import { EditableNotes } from './EditableNotes';
 import { EditableTitle } from './EditableTitle';
 import { RecipeActionButtons } from './RecipeActionButtons';
 import { EditableInstructionsTab } from './EditableInstructionsTab';
 import { EditableIngredientSubsections } from './EditableIngredientSubsections';
 
-interface SubmitButtonProps {
-    submitText: string;
-    loadingText?: string;
-    disabled?: boolean;
-    loading?: boolean;
-}
 interface Props {
     rating: number;
     addRating: (rating: number) => void;
-    handleSubmitMutation: (recipe: CreateOneRecipeCreateInput) => void;
-    submitButtonProps: SubmitButtonProps;
+    submitButton: React.ReactNode;
     veganVersion?: { _id: string; title: string; titleIdentifier: string };
     originalRecipe?: { _id: string; title: string; titleIdentifier: string };
     suppressItemInUseError?: boolean;
@@ -35,8 +26,7 @@ export function EditableRecipe(props: Props) {
     const {
         rating,
         addRating,
-        handleSubmitMutation,
-        submitButtonProps,
+        submitButton,
         veganVersion,
         originalRecipe,
         suppressItemInUseError,
@@ -139,11 +129,7 @@ export function EditableRecipe(props: Props) {
                 </GridItem>
                 <GridItem padding='6' area='button'>
                     <RecipeActionButtons>
-                        <SubmitButton
-                            {...submitButtonProps}
-                            handleSubmit={handleSubmitMutation}
-                            isLoggedIn={isVerified}
-                        />
+                        {submitButton}
                         {secondaryActionButton}
                     </RecipeActionButtons>
                 </GridItem>

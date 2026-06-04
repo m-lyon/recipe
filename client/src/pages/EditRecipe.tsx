@@ -10,10 +10,10 @@ import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { updateRecipeCache } from '@recipe/features/editing';
 import { useImagesStore, useRecipeStore } from '@recipe/stores';
 import { DELETE_IMAGES } from '@recipe/graphql/mutations/image';
-import { deleteVeganRecipeCache } from '@recipe/features/editing';
 import { UpdateByIdRecipeModifyInput } from '@recipe/graphql/generated';
 import { getAverageRating, useAddRating } from '@recipe/features/rating';
 import { DELAY_LONG, DELAY_SHORT, GRAPHQL_URL, PATH } from '@recipe/constants';
+import { SubmitButton, deleteVeganRecipeCache } from '@recipe/features/editing';
 import { useErrorToast, useSuccessToast, useWarningToast } from '@recipe/common/hooks';
 import { archiveRecipeCache, archiveRecipeConfirmConfig } from '@recipe/features/editing';
 import { EditableRecipe, deleteVeganVersionConfirmConfig } from '@recipe/features/editing';
@@ -353,27 +353,32 @@ export function EditRecipe() {
             <EditableRecipe
                 rating={getAverageRating(data.recipeOne.ratings)}
                 addRating={(rating: number) => addRatingWithToast(rating, data.recipeOne)}
-                handleSubmitMutation={handleSubmitMutation}
                 veganVersion={data.recipeOne.veganVersion ?? undefined}
                 originalRecipe={data.recipeOne.originalRecipe ?? undefined}
+                submitButton={
+                    <SubmitButton
+                        submitText='Save'
+                        disabled={!!response}
+                        loading={recipeLoading || uploadLoading}
+                        handleSubmit={handleSubmitMutation}
+                        ariaLabel={
+                            data.recipeOne.originalRecipe ? 'Save vegan version' : 'Save recipe'
+                        }
+                    />
+                }
                 secondaryActionButton={
                     <Button
                         size='lg'
                         borderRadius='full'
                         colorScheme='red'
                         variant='outline'
+                        backgroundColor='white'
                         aria-label={destructiveAction.buttonLabel}
                         onClick={() => setShowConfirmAction(true)}
                     >
                         {destructiveAction.buttonLabel}
                     </Button>
                 }
-                submitButtonProps={{
-                    submitText: data.recipeOne.originalRecipe ? 'Save Vegan Version' : 'Save',
-                    loadingText: 'Saving Recipe...',
-                    disabled: !!response,
-                    loading: recipeLoading || uploadLoading,
-                }}
             />
             <ConfirmModal
                 show={showConfirmAction}

@@ -1,5 +1,5 @@
 import { Children, ReactNode } from 'react';
-import { Box, Center, Wrap, WrapItem } from '@chakra-ui/react';
+import { Box, Center, Flex } from '@chakra-ui/react';
 
 interface Props {
     children: ReactNode;
@@ -13,32 +13,33 @@ export function RecipeActionButtons(props: Props) {
     return (
         <Center>
             <Box position='fixed' bottom='4' pb='3' px='4' width='100%' maxW='100vw'>
-                <Wrap
+                <Flex
                     justify='center'
-                    spacing='3'
+                    gap='3'
                     data-testid='recipe-action-buttons'
                     sx={{
                         width: 'min(calc(100vw - 2rem), 32rem)',
                         marginInline: 'auto',
-                        flexWrap: 'wrap',
                     }}
                 >
                     {actionChildren.map((child, index) => (
-                        <WrapItem
+                        <Box
                             key={index}
                             data-testid='recipe-action-button-item'
                             sx={
                                 isSingleButton
-                                    ? { flex: '0 0 auto', justifyContent: 'center' }
+                                    ? { flex: '0 0 auto' }
                                     : index === 0
                                       ? {
-                                            flex: '1 1 14rem',
+                                            flex: '1 1 0',
+                                            minWidth: 0,
                                             display: 'flex',
                                             justifyContent: 'flex-end',
                                             paddingRight: '0.5rem',
                                         }
                                       : {
-                                            flex: '1 1 14rem',
+                                            flex: '1 1 0',
+                                            minWidth: 0,
                                             display: 'flex',
                                             justifyContent: 'flex-start',
                                             paddingLeft: '0.5rem',
@@ -46,9 +47,9 @@ export function RecipeActionButtons(props: Props) {
                             }
                         >
                             {child}
-                        </WrapItem>
+                        </Box>
                     ))}
-                </Wrap>
+                </Flex>
             </Box>
         </Center>
     );

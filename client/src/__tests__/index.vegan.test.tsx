@@ -617,7 +617,7 @@ describe('EditRecipe - save button enabled on vegan copy edit page after redirec
 
         // Wait for navigation to the vegan copy edit page
         // The vegan copy page should load with the save button enabled
-        const screenBtn = await screen.findByText('Save Vegan Version');
+        const screenBtn = await screen.findByLabelText('Save vegan version');
         expect(screenBtn).not.toBeNull();
         expect((screenBtn as HTMLButtonElement).disabled).toBe(false);
     });
@@ -636,8 +636,8 @@ describe('EditRecipe - destructive action button', () => {
         );
 
         expect(await screen.findByText('Mock Recipe Three')).not.toBeNull();
-        expect(await screen.findByRole('button', { name: 'Archive recipe' })).not.toBeNull();
-        expect(screen.queryByRole('button', { name: 'Delete vegan version' })).toBeNull();
+        expect(await screen.findByRole('button', { name: 'Archive' })).not.toBeNull();
+        expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull();
     });
 
     it('should show Delete vegan version for a vegan copy edit page and not Archive', async () => {
@@ -648,8 +648,8 @@ describe('EditRecipe - destructive action button', () => {
         );
 
         expect(await screen.findByText('Mock Recipe Three')).not.toBeNull();
-        expect(await screen.findByRole('button', { name: 'Delete vegan version' })).not.toBeNull();
-        expect(screen.queryByRole('button', { name: 'Archive recipe' })).toBeNull();
+        expect(await screen.findByRole('button', { name: 'Delete' })).not.toBeNull();
+        expect(screen.queryByRole('button', { name: 'Archive' })).toBeNull();
     });
 
     it('should open action-specific confirmation modal copy for archive', async () => {
@@ -662,7 +662,7 @@ describe('EditRecipe - destructive action button', () => {
         );
 
         await screen.findByText('Mock Recipe Three');
-        await user.click(await screen.findByRole('button', { name: 'Archive recipe' }));
+        await user.click(await screen.findByRole('button', { name: 'Archive' }));
 
         expect(await screen.findByText('Archive Recipe')).not.toBeNull();
         expect(
@@ -684,7 +684,7 @@ describe('EditRecipe - destructive action button', () => {
         );
 
         await screen.findByText('Mock Recipe Three');
-        await user.click(await screen.findByRole('button', { name: 'Delete vegan version' }));
+        await user.click(await screen.findByRole('button', { name: 'Delete' }));
 
         expect(await screen.findByText('Delete Vegan Version')).not.toBeNull();
         expect(
@@ -711,7 +711,7 @@ describe('EditRecipe - destructive action button', () => {
         const user = userEvent.setup();
 
         await screen.findByText('Mock Recipe Three');
-        await user.click(await screen.findByRole('button', { name: 'Archive recipe' }));
+        await user.click(await screen.findByRole('button', { name: 'Archive' }));
         await user.click(await screen.findByRole('button', { name: 'Confirm archive action' }));
 
         expect(await screen.findByText('Recipe archived')).not.toBeNull();
@@ -747,10 +747,10 @@ describe('EditRecipe - destructive action button', () => {
         await enterEditRecipePage(screen, user, 'Mock Recipe Three', 'Instruction one.');
         // Save button to navigate to the vegan copy edit page, where the delete button is.
         await user.click(screen.getByLabelText('Save recipe'));
-        expect(await screen.findByText('Save Vegan Version')).not.toBeNull();
+        expect(await screen.findByLabelText('Save vegan version')).not.toBeNull();
 
         // Wait for edit page to load and click delete.
-        const deleteBtn = screen.getByRole('button', { name: 'Delete vegan version' });
+        const deleteBtn = screen.getByRole('button', { name: 'Delete' });
         await user.click(deleteBtn);
         await user.click(
             await screen.findByRole('button', { name: 'Confirm delete vegan version action' })

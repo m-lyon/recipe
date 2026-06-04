@@ -12,8 +12,8 @@ import { useImagesStore, useRecipeStore } from '@recipe/stores';
 import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
 import { CREATE_VEGAN_RECIPE } from '@recipe/graphql/mutations/recipe';
-import { EditableRecipe, updateRecipeCache } from '@recipe/features/editing';
 import { DELAY_LONG, DELAY_SHORT, GRAPHQL_URL, PATH } from '@recipe/constants';
+import { EditableRecipe, SubmitButton, updateRecipeCache } from '@recipe/features/editing';
 
 import { queryIngredientToFinished } from './utils';
 
@@ -276,19 +276,23 @@ export function CreateVeganRecipe() {
         <EditableRecipe
             rating={rating}
             addRating={setRating}
-            handleSubmitMutation={handleSubmitMutation}
             originalRecipe={data.recipeOne}
             suppressItemInUseError
-            submitButtonProps={{
-                submitText: 'Submit Vegan Version',
-                loadingText: recipeLoading
-                    ? 'Submitting Recipe...'
-                    : uploadLoading
-                      ? 'Uploading Images...'
-                      : undefined,
-                disabled: !!createResponse,
-                loading: recipeLoading || uploadLoading,
-            }}
+            submitButton={
+                <SubmitButton
+                    submitText='Submit Vegan Version'
+                    loadingText={
+                        recipeLoading
+                            ? 'Submitting Recipe...'
+                            : uploadLoading
+                              ? 'Uploading Images...'
+                              : undefined
+                    }
+                    disabled={!!createResponse}
+                    loading={recipeLoading || uploadLoading}
+                    handleSubmit={handleSubmitMutation}
+                />
+            }
         />
     );
 }

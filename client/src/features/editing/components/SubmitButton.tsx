@@ -1,6 +1,7 @@
 import { Button } from '@chakra-ui/react';
 import { useShallow } from 'zustand/shallow';
 
+import { useUser } from '@recipe/features/user';
 import { useRecipeStore } from '@recipe/stores';
 import { useErrorToast } from '@recipe/common/hooks';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
@@ -11,11 +12,12 @@ interface Props {
     disabled?: boolean;
     loading?: boolean;
     handleSubmit: (recipe: CreateOneRecipeCreateInput) => void;
-    isLoggedIn: boolean;
+    ariaLabel?: string;
 }
 export function SubmitButton(props: Props) {
-    const { submitText, loadingText, disabled, loading, handleSubmit, isLoggedIn } = props;
+    const { submitText, loadingText, disabled, loading, handleSubmit, ariaLabel } = props;
     const toast = useErrorToast();
+    const { isVerified } = useUser();
     const { isIngredient, pluralTitle, source, title, notes, servings, tags, instr, ingr } =
         useRecipeStore(
             useShallow((state) => ({
@@ -134,7 +136,7 @@ export function SubmitButton(props: Props) {
                         .map((value) => (/[.!?]$/.test(value) ? value : value + '.')),
                 };
             });
-        if (!isLoggedIn) {
+        if (!isVerified) {
             toast({ title: 'Please log in to create a recipe', position: 'top' });
             return;
         }
@@ -159,7 +161,7 @@ export function SubmitButton(props: Props) {
         <Button
             size='lg'
             borderRadius='full'
-            aria-label='Save recipe'
+            aria-label={ariaLabel || 'Save recipe'}
             border='1px'
             borderColor='gray.200'
             onClick={onSubmit}
