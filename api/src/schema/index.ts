@@ -44,6 +44,7 @@ const isAuthenticatedMutations = composeResolvers(
     {
         Mutation: {
             recipeCreateOne: RecipeMutation.recipeCreateOne,
+            recipeCreateVeganVersion: RecipeMutation.recipeCreateVeganVersion,
             ratingCreateOne: RatingMutation.ratingCreateOne,
             sizeCreateOne: SizeMutation.sizeCreateOne,
             unitCreateOne: UnitMutation.unitCreateOne,
@@ -65,6 +66,7 @@ const isRecipeOwnerOrAdminMutations = composeResolvers(
     {
         Mutation: {
             recipeUpdateById: RecipeMutation.recipeUpdateById,
+            recipeRemoveById: RecipeMutation.recipeRemoveById,
             recipeArchiveById: RecipeMutation.recipeArchiveById,
             recipeUnarchiveById: RecipeMutation.recipeUnarchiveById,
             imageUploadOne: ImageMutation.imageUploadOne,

@@ -13,6 +13,6 @@ export function createHttpServer(app: express.Application): http.Server {
 
 export function createHttpsServer(app: express.Application): https.Server {
     console.log('Creating HTTPS Server...');
-    const options = { key: fs.readFileSync(PRIVKEY_PEM), cert: fs.readFileSync(FULLCHAIN_PEM) };
+    const options = { key: fs.readFileSync(PRIVKEY_PEM!), cert: fs.readFileSync(FULLCHAIN_PEM!) };
     return https.createServer(options, app);
 }

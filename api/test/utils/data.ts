@@ -196,8 +196,8 @@ export async function createRecipesAsIngredients(user: User) {
     const chopped = await PrepMethod.findOne({ value: 'chopped' });
     const small = await Size.findOne({ value: 'small' });
 
-    if (!small) {
-        throw new Error('Small size not found during recipe creation');
+    if (!chicken || !cup || !chopped || !small) {
+        throw new Error('Required data not found during recipe creation');
     }
 
     const recipe = await new Recipe({

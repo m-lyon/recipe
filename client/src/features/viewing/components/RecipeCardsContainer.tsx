@@ -1,14 +1,18 @@
 import { useState } from 'react';
 import { Box } from '@chakra-ui/react';
-import { useQuery } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
 import { useUser } from '@recipe/features/user';
 import { useSearch } from '@recipe/features/search';
+import { useErrorToast } from '@recipe/common/hooks';
+import { ConfirmModal } from '@recipe/common/components';
 import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
-import { ConfirmArchiveModal } from '@recipe/features/editing';
+import { archiveRecipeCache } from '@recipe/features/editing';
+import { ARCHIVE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { FETCH_MORE_NUM, INIT_LOAD_NUM } from '@recipe/constants';
+import { archiveRecipeConfirmConfig } from '@recipe/features/editing';
 
 import { RecipeCard } from './RecipeCard';
 import { ImageRecipeCard } from './ImageRecipeCard';
@@ -35,10 +39,15 @@ const generateBreakPoints = (maxColumns: number): { [key: number]: number } => {
 };
 const breakPoints: { [key: number]: number } = generateBreakPoints(4);
 
-const defaultFilter = { archived: false };
+const defaultFilter = { archived: false, originalRecipe: null };
 
 export function RecipeCardsContainer() {
-    const { data, loading, error, fetchMore } = useQuery(GET_RECIPES, {
+    const {
+        data: recipeData,
+        loading,
+        error,
+        fetchMore,
+    } = useQuery(GET_RECIPES, {
         variables: {
             offset: 0,
             limit: INIT_LOAD_NUM,
@@ -50,21 +59,48 @@ export function RecipeCardsContainer() {
     const [recipeId, setRecipeId] = useState('');
     const { user } = useUser();
     const { filter } = useSearch();
+    const errorToast = useErrorToast();
+    const [archiveRecipe] = useMutation(ARCHIVE_RECIPE, {
+        onError(error) {
+            errorToast({
+                title: 'Error archiving recipe',
+                description: error.message,
+                position: 'top',
+            });
+        },
+        update(cache, { data: mutationData }) {
+            const recordId = mutationData?.recipeArchiveById?.recordId;
+            if (!recordId) {
+                return;
+            }
+
+            const archivedRecipe = recipeData?.recipeMany.find((recipe) => recipe._id === recordId);
+            if (!archivedRecipe) {
+                return;
+            }
+
+            archiveRecipeCache(cache, archivedRecipe);
+        },
+    });
 
     const handleArchive = (id: string) => {
         setRecipeId(id);
         setShow(true);
     };
 
+    const handleConfirmArchive = async () => {
+        await archiveRecipe({ variables: { id: recipeId } });
+    };
+
     if (loading) {
         return <div>Loading...</div>;
     }
 
-    if (error || !data) {
+    if (error || !recipeData) {
         return <div>Error: {error?.message}</div>;
     }
 
-    const recipes = data.recipeMany;
+    const recipes = recipeData.recipeMany;
 
     const recipeCards = recipes.map((recipe) => {
         if (recipe.images && recipe.images.length > 0) {
@@ -98,7 +134,7 @@ export function RecipeCardsContainer() {
                     },
                 });
             }}
-            hasMore={data.recipeCount ? data.recipeCount > recipes.length : false}
+            hasMore={recipeData.recipeCount ? recipeData.recipeCount > recipes.length : false}
             loader={<h4 style={{ textAlign: 'center' }}>Loading...</h4>}
         >
             <ResponsiveMasonry
@@ -111,7 +147,12 @@ export function RecipeCardsContainer() {
                     ))}
                 </Masonry>
             </ResponsiveMasonry>
-            <ConfirmArchiveModal show={show} setShow={setShow} recipeId={recipeId} />
+            <ConfirmModal
+                show={show}
+                setShow={setShow}
+                onConfirm={handleConfirmArchive}
+                {...archiveRecipeConfirmConfig}
+            />
         </InfiniteScroll>
     );
 }

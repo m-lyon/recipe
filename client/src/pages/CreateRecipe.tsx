@@ -10,7 +10,7 @@ import { CREATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { DELAY_LONG, DELAY_SHORT, PATH } from '@recipe/constants';
 import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
-import { EditableRecipe, updateRecipeCache } from '@recipe/features/editing';
+import { EditableRecipe, SubmitButton, updateRecipeCache } from '@recipe/features/editing';
 
 export function CreateRecipe() {
     const errorToast = useErrorToast();
@@ -104,18 +104,21 @@ export function CreateRecipe() {
         <EditableRecipe
             rating={rating}
             addRating={setRating}
-            handleSubmitMutation={handleSubmitMutation}
-            submitButtonProps={{
-                submitText: 'Submit',
-                loadingText:
-                    recipeLoading || ratingLoading
-                        ? 'Submitting Recipe...'
-                        : uploadLoading
-                          ? 'Uploading Images...'
-                          : undefined,
-                disabled: !!response,
-                loading: recipeLoading || ratingLoading || uploadLoading,
-            }}
+            submitButton={
+                <SubmitButton
+                    submitText='Submit'
+                    loadingText={
+                        recipeLoading || ratingLoading
+                            ? 'Submitting Recipe...'
+                            : uploadLoading
+                              ? 'Uploading Images...'
+                              : undefined
+                    }
+                    disabled={!!response}
+                    loading={recipeLoading || ratingLoading || uploadLoading}
+                    handleSubmit={handleSubmitMutation}
+                />
+            }
         />
     );
 }

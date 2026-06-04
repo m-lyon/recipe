@@ -1,7 +1,6 @@
 import { ReservedTags } from '@recipe/graphql/enums';
 import { GetRecipeQueryVariables } from '@recipe/graphql/generated';
 import { GetIngredientComponentsQuery } from '@recipe/graphql/generated';
-import { mockRecipeIngredientIdFive } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdNine } from '@recipe/graphql/__mocks__/ids';
 import { GET_INGREDIENT_COMPONENTS } from '@recipe/graphql/queries/recipe';
 import { mockRecipeIngredientIdEight } from '@recipe/graphql/__mocks__/ids';
@@ -23,6 +22,7 @@ import { mockRecipeIdFour, mockRecipeIngredientIdOne } from '@recipe/graphql/__m
 import { GET_LINKED_RECIPES, GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { mockRecipeIdNewAsIngr, mockRecipeIngredientIdSix } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIdFive, mockRecipeIngredientIdFourteen } from '@recipe/graphql/__mocks__/ids';
+import { mockRecipeIdVeganCopy, mockRecipeIngredientIdFive } from '@recipe/graphql/__mocks__/ids';
 import { mockAdminId, mockRecipeIngredientIdTen, mockUserId } from '@recipe/graphql/__mocks__/ids';
 
 import { mockDiced, mockPrepMethods } from './prepMethod';
@@ -147,6 +147,8 @@ export const mockRecipeOne: CompletedRecipeView = {
     images: [],
     ratings: [mockRatingOne],
     source: null,
+    veganVersion: null,
+    originalRecipe: null,
     owner: mockAdminId,
 };
 export const mockRecipeTwo: CompletedRecipeView = {
@@ -264,6 +266,37 @@ export const mockRecipeThree: CompletedRecipeView = {
         },
     ],
 };
+// A recipe that already has a vegan version linked
+export const mockRecipeWithVeganVersion: CompletedRecipeView = {
+    ...mockRecipeThree,
+    calculatedTags: ['vegan version available'],
+    veganVersion: {
+        __typename: 'Recipe',
+        _id: mockRecipeIdVeganCopy,
+        title: 'Mock Recipe Three',
+        titleIdentifier: 'mock-recipe-three-vegan',
+    },
+    originalRecipe: null,
+};
+// A recipe that is itself a vegan copy (has originalRecipe set)
+export const mockRecipeVeganCopy: CompletedRecipeView = {
+    ...mockRecipeThree,
+    _id: mockRecipeIdVeganCopy,
+    titleIdentifier: 'mock-recipe-three-vegan',
+    calculatedTags: ['vegan', 'vegetarian'],
+    veganVersion: null,
+    originalRecipe: {
+        __typename: 'Recipe',
+        _id: mockRecipeIdThree,
+        title: 'Mock Recipe Three',
+        titleIdentifier: 'mock-recipe-three',
+    },
+};
+export const mockRecipeThreeRenamed: CompletedRecipeView = {
+    ...mockRecipeThree,
+    title: 'Mock Recipe Renamed',
+    titleIdentifier: 'mock-recipe-renamed',
+};
 export const mockRecipeFour: CompletedRecipeView = {
     ...mockRecipeOne,
     _id: mockRecipeIdFour,
@@ -370,6 +403,8 @@ export const mockRecipeNew: CompletedRecipeView = {
     source: 'Recipe Source',
     images: [],
     ratings: [],
+    veganVersion: null,
+    originalRecipe: null,
     owner: mockAdminId,
 };
 export const mockRecipeNewAsIngr: CompletedRecipeView = {
@@ -401,6 +436,45 @@ export const mockGetRecipeOne = {
         } satisfies GetRecipeQueryVariables,
     },
     result: { data: { __typename: 'Query', recipeOne: mockRecipeOne } satisfies GetRecipeQuery },
+};
+export const mockGetRenamedRecipe = {
+    request: {
+        query: GET_RECIPE,
+        variables: {
+            filter: { titleIdentifier: 'mock-recipe-renamed' },
+        } satisfies GetRecipeQueryVariables,
+    },
+    result: {
+        data: { __typename: 'Query', recipeOne: mockRecipeThreeRenamed } satisfies GetRecipeQuery,
+    },
+};
+export const mockGetRecipeWithVeganVersion = {
+    request: {
+        query: GET_RECIPE,
+        variables: {
+            filter: { titleIdentifier: 'mock-recipe-three' },
+        } satisfies GetRecipeQueryVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeOne: mockRecipeWithVeganVersion,
+        } satisfies GetRecipeQuery,
+    },
+};
+export const mockGetRecipeVeganCopy = {
+    request: {
+        query: GET_RECIPE,
+        variables: {
+            filter: { titleIdentifier: 'mock-recipe-three-vegan' },
+        } satisfies GetRecipeQueryVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeOne: mockRecipeVeganCopy,
+        } satisfies GetRecipeQuery,
+    },
 };
 export const mockGetRecipeTwo = {
     request: {
@@ -498,14 +572,34 @@ export const mockGetRecipes = {
         variables: {
             offset: 0,
             limit: 5,
-            filter: { archived: false },
-            countFilter: { archived: false },
+            filter: { archived: false, originalRecipe: null },
+            countFilter: { archived: false, originalRecipe: null },
         } satisfies GetRecipesQueryVariables,
     },
     result: {
         data: {
             __typename: 'Query',
             recipeMany: [mockRecipeOne, mockRecipeTwo, mockRecipeThree, mockRecipeFour],
+            recipeCount: 4,
+        } satisfies GetRecipesQuery,
+    },
+};
+export const mockGetRecipesAfterArchiveRecipeThree = {
+    request: mockGetRecipes.request,
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeMany: [mockRecipeOne, mockRecipeTwo, mockRecipeFour],
+            recipeCount: 3,
+        } satisfies GetRecipesQuery,
+    },
+};
+export const mockGetRecipesWithVeganVersion = {
+    request: mockGetRecipes.request,
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeMany: [mockRecipeOne, mockRecipeTwo, mockRecipeWithVeganVersion, mockRecipeFour],
             recipeCount: 4,
         } satisfies GetRecipesQuery,
     },
@@ -526,8 +620,8 @@ export const mockGetRecipesLarger = {
         variables: {
             offset: 0,
             limit: 5,
-            filter: { archived: false },
-            countFilter: { archived: false },
+            filter: { archived: false, originalRecipe: null },
+            countFilter: { archived: false, originalRecipe: null },
         } satisfies GetRecipesQueryVariables,
     },
     result: {
@@ -546,7 +640,10 @@ export const mockGetRecipesLarger = {
 };
 // GetRecipes filtered ----------------------------------------------
 const mockFilterOne = {
-    AND: [{ archived: false }, { _operators: { title: { regex: '/one/i' } } }],
+    AND: [
+        { archived: false, originalRecipe: null },
+        { _operators: { title: { regex: '/one/i' } } },
+    ],
 };
 export const mockGetRecipesLargerFilteredOnePageOne = {
     request: {
@@ -596,7 +693,10 @@ export const mockGetRecipesLargerFilteredOnePageTwo = {
     },
 };
 const mockFilterTag = {
-    AND: [{ archived: false }, { _operators: { tags: { in: [mockDinnerTagId] } } }],
+    AND: [
+        { archived: false, originalRecipe: null },
+        { _operators: { tags: { in: [mockDinnerTagId] } } },
+    ],
 };
 export const mockGetRecipesFilteredTag = {
     request: {
@@ -617,7 +717,15 @@ export const mockGetRecipesFilteredTag = {
     },
 };
 const mockFilterCalculatedTag = {
-    AND: [{ archived: false }, { _operators: { calculatedTags: { in: [ReservedTags.Vegan] } } }],
+    AND: [
+        { archived: false, originalRecipe: null },
+        {
+            OR: [
+                { _operators: { calculatedTags: { in: [ReservedTags.Vegan] } } },
+                { _operators: { veganVersion: { exists: true } } },
+            ],
+        },
+    ],
 };
 export const mockGetRecipesFilteredCalculatedTag = {
     request: {
@@ -639,7 +747,7 @@ export const mockGetRecipesFilteredCalculatedTag = {
 };
 const mockFilterIngr = {
     AND: [
-        { archived: false },
+        { archived: false, originalRecipe: null },
         {
             _operators: {
                 ingredientSubsections: {
@@ -669,7 +777,7 @@ export const mockGetRecipesFilteredIngr = {
 };
 const mockFilterTagIngr = {
     AND: [
-        { archived: false },
+        { archived: false, originalRecipe: null },
         {
             _operators: {
                 tags: { in: [mockDinnerTagId] },
@@ -703,7 +811,10 @@ export const mockGetRecipesFilteredTagIngr = {
     },
 };
 const mockFilterTwo = {
-    AND: [{ archived: false }, { _operators: { title: { regex: '/two/i' } } }],
+    AND: [
+        { archived: false, originalRecipe: null },
+        { _operators: { title: { regex: '/two/i' } } },
+    ],
 };
 export const mockGetRecipesFilteredTwo = {
     request: {
@@ -725,7 +836,7 @@ export const mockGetRecipesFilteredTwo = {
 };
 const mockFilterTwoTagIngr = {
     AND: [
-        { archived: false },
+        { archived: false, originalRecipe: null },
         {
             _operators: {
                 title: { regex: '/two/i' },
@@ -861,8 +972,8 @@ export const mockGetArchivedRecipes = {
         variables: {
             offset: 0,
             limit: 5,
-            filter: { archived: true },
-            countFilter: { archived: true },
+            filter: { archived: true, originalRecipe: null },
+            countFilter: { archived: true, originalRecipe: null },
         } satisfies GetRecipesQueryVariables,
     },
     result: {
