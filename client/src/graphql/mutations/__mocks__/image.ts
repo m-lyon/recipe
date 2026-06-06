@@ -1,3 +1,4 @@
+import { mockRecipeIdTwoVeganCopy } from '@recipe/graphql/__mocks__/ids';
 import { DELETE_IMAGES, UPLOAD_IMAGES } from '@recipe/graphql/mutations/image';
 import { mockRecipeIdNew, mockRecipeIdOne } from '@recipe/graphql/__mocks__/ids';
 import { mockTitleNew, mockTitleOne, mockTitleTwo } from '@recipe/graphql/__mocks__/common';
@@ -7,6 +8,7 @@ import { DeleteImagesMutation, DeleteImagesMutationVariables } from '@recipe/gra
 
 export const mockImageFileOne = new File(['hello there'], 'test_image.png', { type: 'image/png' });
 export const mockImageFileNew = new File(['hello'], 'test_image_new.png', { type: 'image/png' });
+
 export const mockImageOne: ImageView = {
     __typename: 'Image',
     _id: mockImageIdOne,
@@ -60,6 +62,26 @@ export const mockUploadImagesNew = {
         data: {
             __typename: 'Mutation',
             imageUploadMany: { __typename: 'ImageUploadManyPayload', records: [mockImageNew] },
+        } satisfies UploadImagesMutation,
+    },
+};
+export const mockUploadImagesTwoVeganCopy = {
+    request: {
+        query: UPLOAD_IMAGES,
+    },
+    variableMatcher: (variables: UploadImagesMutationVariables) => {
+        const [file] = variables.images as File[];
+        return (
+            variables.recipeId === mockRecipeIdTwoVeganCopy &&
+            file instanceof File &&
+            file.name === 'test_image.png' &&
+            file.type === ''
+        );
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            imageUploadMany: { __typename: 'ImageUploadManyPayload', records: [mockImageTwo] },
         } satisfies UploadImagesMutation,
     },
 };

@@ -5,7 +5,7 @@ import { ReservedTags } from '@recipe/graphql/enums';
 import { updateRecipeCache } from '@recipe/features/editing';
 import { GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { mockRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockRecipeVeganCopy } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockRecipeThreeVeganCopy } from '@recipe/graphql/queries/__mocks__/recipe';
 import { archiveRecipeCache, deleteVeganRecipeCache } from '@recipe/features/editing';
 import { mockRecipeWithVeganVersion } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockRecipeFour, mockRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -44,7 +44,7 @@ describe('editing cache helpers', () => {
             data: {
                 __typename: 'Query',
                 recipeOne: {
-                    ...mockRecipeVeganCopy,
+                    ...mockRecipeThreeVeganCopy,
                     calculatedTags: [ReservedTags.Vegan],
                 },
             },
@@ -111,11 +111,11 @@ describe('editing cache helpers', () => {
             variables: { filter: { titleIdentifier: 'mock-recipe-three-vegan' } },
             data: {
                 __typename: 'Query',
-                recipeOne: mockRecipeVeganCopy,
+                recipeOne: mockRecipeThreeVeganCopy,
             },
         });
 
-        deleteVeganRecipeCache(cache, mockRecipeVeganCopy);
+        deleteVeganRecipeCache(cache, mockRecipeThreeVeganCopy);
 
         const homeData = cache.readQuery({
             query: GET_RECIPES,
@@ -143,7 +143,7 @@ describe('editing cache helpers', () => {
         expect(originalData?.recipeOne?.veganVersion).toBeNull();
         expect(originalData?.recipeOne?.calculatedTags).not.toContain('vegan version available');
         expect(veganData?.recipeOne).toBeUndefined();
-        expect(cache.extract()[`Recipe:${mockRecipeVeganCopy._id}`]).toBeUndefined();
+        expect(cache.extract()[`Recipe:${mockRecipeThreeVeganCopy._id}`]).toBeUndefined();
     });
 
     it('updateRecipeCache keeps home-page recipeCount unchanged for vegan copies', () => {
@@ -164,7 +164,7 @@ describe('editing cache helpers', () => {
             },
         });
 
-        updateRecipeCache(cache, mockRecipeVeganCopy, true);
+        updateRecipeCache(cache, mockRecipeThreeVeganCopy, true);
 
         const homeData = cache.readQuery({
             query: GET_RECIPES,

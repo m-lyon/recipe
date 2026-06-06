@@ -3,6 +3,8 @@ import { GetRecipeQueryVariables } from '@recipe/graphql/generated';
 import { GetIngredientComponentsQuery } from '@recipe/graphql/generated';
 import { mockRecipeIngredientIdNine } from '@recipe/graphql/__mocks__/ids';
 import { GET_INGREDIENT_COMPONENTS } from '@recipe/graphql/queries/recipe';
+import { mockRecipeIdThreeVeganCopy } from '@recipe/graphql/__mocks__/ids';
+import { mockRecipeIngredientIdFive } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdEight } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdThree } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdEleven } from '@recipe/graphql/__mocks__/ids';
@@ -22,9 +24,9 @@ import { mockRecipeIdFour, mockRecipeIngredientIdOne } from '@recipe/graphql/__m
 import { GET_LINKED_RECIPES, GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { mockRecipeIdNewAsIngr, mockRecipeIngredientIdSix } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIdFive, mockRecipeIngredientIdFourteen } from '@recipe/graphql/__mocks__/ids';
-import { mockRecipeIdVeganCopy, mockRecipeIngredientIdFive } from '@recipe/graphql/__mocks__/ids';
 import { mockAdminId, mockRecipeIngredientIdTen, mockUserId } from '@recipe/graphql/__mocks__/ids';
 
+import { mockRhurbarbPie } from './ingredient';
 import { mockDiced, mockPrepMethods } from './prepMethod';
 import { mockMedium, mockSizes, mockSmall } from './size';
 import { mockCup, mockOunce, mockTeaspoon, mockUnits } from './unit';
@@ -56,6 +58,22 @@ export const mockGetIngredientComponents = {
             sizes: mockSizes,
             ingredients: mockIngredients,
             recipes: mockRecipeFromIngredients,
+            prepMethods: mockPrepMethods,
+        } satisfies GetIngredientComponentsQuery,
+    },
+};
+
+export const mockGetIngredientComponentsWithoutRecipeTwo = {
+    request: {
+        query: GET_INGREDIENT_COMPONENTS,
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            units: mockUnits,
+            sizes: mockSizes,
+            ingredients: mockIngredients,
+            recipes: [mockRhurbarbPie],
             prepMethods: mockPrepMethods,
         } satisfies GetIngredientComponentsQuery,
     },
@@ -272,16 +290,16 @@ export const mockRecipeWithVeganVersion: CompletedRecipeView = {
     calculatedTags: ['vegan version available'],
     veganVersion: {
         __typename: 'Recipe',
-        _id: mockRecipeIdVeganCopy,
+        _id: mockRecipeIdThreeVeganCopy,
         title: 'Mock Recipe Three',
         titleIdentifier: 'mock-recipe-three-vegan',
     },
     originalRecipe: null,
 };
 // A recipe that is itself a vegan copy (has originalRecipe set)
-export const mockRecipeVeganCopy: CompletedRecipeView = {
+export const mockRecipeThreeVeganCopy: CompletedRecipeView = {
     ...mockRecipeThree,
-    _id: mockRecipeIdVeganCopy,
+    _id: mockRecipeIdThreeVeganCopy,
     titleIdentifier: 'mock-recipe-three-vegan',
     calculatedTags: ['vegan', 'vegetarian'],
     veganVersion: null,
@@ -462,7 +480,7 @@ export const mockGetRecipeWithVeganVersion = {
         } satisfies GetRecipeQuery,
     },
 };
-export const mockGetRecipeVeganCopy = {
+export const mockGetRecipeThreeVeganCopy = {
     request: {
         query: GET_RECIPE,
         variables: {
@@ -472,7 +490,7 @@ export const mockGetRecipeVeganCopy = {
     result: {
         data: {
             __typename: 'Query',
-            recipeOne: mockRecipeVeganCopy,
+            recipeOne: mockRecipeThreeVeganCopy,
         } satisfies GetRecipeQuery,
     },
 };

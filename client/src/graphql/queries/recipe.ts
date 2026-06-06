@@ -36,7 +36,7 @@ export const RECIPE_INGR_FIELDS = gql(`
         _id
         title
         pluralTitle
-        veganVersion {
+        originalRecipe {
             _id
         }
     }
@@ -96,7 +96,7 @@ export const RECIPE_FIELDS_FULL = gql(`
                         _id
                         title
                         pluralTitle
-                        veganVersion {
+                        originalRecipe {
                             _id
                         }
                     }

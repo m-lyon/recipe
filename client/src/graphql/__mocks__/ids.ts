@@ -6,7 +6,8 @@ export const mockRecipeIdFour = '60f4d4e5c3d5a0a4r1b9c0ec';
 export const mockRecipeIdFive = '30f4d5e5c3d5a0a4f1b9c0ec';
 export const mockRecipeIdNew = '60f4d4e5c3d5a0a4f1b9c0ec';
 export const mockRecipeIdNewAsIngr = '60f4d5e9c3d5a0a4f1b9c0ec';
-export const mockRecipeIdVeganCopy = '60f4d2e5c3d5a0g4f1b9c0ed';
+export const mockRecipeIdTwoVeganCopy = '60f4d2e5c3d5b0h4f1b9c0ef';
+export const mockRecipeIdThreeVeganCopy = '60f4d2e5c3d5a0g4f1b9c0ed';
 
 // RecipeIngredients
 export const mockRecipeIngredientIdOne = '60f4d2y5c3d5a0a4f1b9c0ec';
