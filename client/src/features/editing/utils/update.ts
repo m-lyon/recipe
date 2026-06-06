@@ -16,7 +16,7 @@ export function updateRecipeCache(
         fields: {
             recipeMany(existing = [], { storeFieldName, readField }) {
                 let newRef;
-                if (storeFieldName === 'recipeMany:{"filter":{"isIngredient":true}}') {
+                if (storeFieldName.includes('"isIngredient":true')) {
                     if (!record.isIngredient) {
                         return existing;
                     }

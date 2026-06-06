@@ -1,4 +1,6 @@
 import { GetIngredientsQuery } from '@recipe/graphql/generated';
+import { mockTitleTwo } from '@recipe/graphql/__mocks__/common';
+import { mockRecipeIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { GetIngredientsQueryVariables, Ingredient } from '@recipe/graphql/generated';
 import { mockAppleId, mockCarrotId, mockChickenId } from '@recipe/graphql/__mocks__/ids';
 import { mockAdminId, mockLettuceId, mockRhubarbPieId } from '@recipe/graphql/__mocks__/ids';
@@ -52,10 +54,17 @@ export const mockRhurbarbPie: RecipeChoice = {
     __typename: 'Recipe',
     title: 'rhubarb pie',
     pluralTitle: 'rhubarb pies',
-    veganVersion: null,
+    originalRecipe: null,
+};
+const mockRecipeTwoChoice = {
+    _id: mockRecipeIdTwo,
+    __typename: 'Recipe' as const,
+    title: mockTitleTwo,
+    pluralTitle: 'Mock Recipes Two',
+    originalRecipe: null,
 };
 export const mockIngredients = [mockApple, mockChicken, mockCarrot, mockLettuce];
-export const mockRecipeFromIngredients = [mockRhurbarbPie];
+export const mockRecipeFromIngredients = [mockRhurbarbPie, mockRecipeTwoChoice];
 export const mockGetIngredients = {
     request: {
         query: GET_INGREDIENTS,
