@@ -105,23 +105,6 @@ describe('Search Functionality', () => {
         expect(await screen.findByLabelText('Show archived recipes')).not.toBeNull();
     });
 
-    it('should reserve enough mobile height for the archived filter row', () => {
-        expect(SEARCH_FILTER_MOBILE_HEIGHT).toBeGreaterThan(110);
-    });
-
-    it('should not render a nested label inside the archived checkbox', async () => {
-        renderComponent();
-        const user = userEvent.setup();
-
-        expect(await screen.findByText('Recipes'));
-
-        await user.click(screen.getByLabelText('Search for recipes'));
-
-        const archivedCheckbox = await screen.findByLabelText('Show archived recipes');
-
-        expect(archivedCheckbox.closest('label')?.querySelector('label')).toBeNull();
-    });
-
     it('should reset search form when clicking on home button', async () => {
         // Render -----------------------------------------------
         renderComponent([

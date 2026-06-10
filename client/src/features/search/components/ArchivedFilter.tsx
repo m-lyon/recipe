@@ -1,4 +1,4 @@
-import { Checkbox, FormControl, Tooltip, useBreakpointValue } from '@chakra-ui/react';
+import { Checkbox } from '@mantine/core';
 
 interface Props {
     showArchived: boolean;
@@ -7,29 +7,16 @@ interface Props {
 
 export function ArchivedFilter(props: Props) {
     const { showArchived, setShowArchived } = props;
-    const isMobile = useBreakpointValue({ base: true, md: false });
 
     return (
-        <Tooltip
-            label={showArchived ? 'Hide archived recipes' : 'Show archived recipes'}
-            openDelay={500}
-        >
-            <FormControl
-                display='flex'
-                alignItems='center'
-                justifyContent='center'
-                w={isMobile ? '100%' : 'auto'}
-                px={isMobile ? 3 : 0}
-            >
-                <Checkbox
-                    isChecked={showArchived}
-                    onChange={(e) => setShowArchived(e.target.checked)}
-                    colorScheme='teal'
-                    aria-label='Show archived recipes'
-                >
-                    Show archived recipes
-                </Checkbox>
-            </FormControl>
-        </Tooltip>
+        <Checkbox
+            variant='chakra-style'
+            styles={{ label: { color: '#718096' } }}
+            w='100%'
+            checked={showArchived}
+            onChange={(e) => setShowArchived(e.target.checked)}
+            label='Show archived'
+            aria-label='Show archived recipes'
+        />
     );
 }
