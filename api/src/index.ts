@@ -2,7 +2,7 @@ import 'dotenv-flow/config';
 import './utils/database.js';
 import './strategies/GraphQLLocalStrategy.js';
 
-import cors from 'cors';
+import cors, { CorsOptions } from 'cors';
 import express from 'express';
 import passport from 'passport';
 import bodyParser from 'body-parser';
@@ -26,7 +26,7 @@ const apolloServer = new ApolloServer({
     schema,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer: server })],
 });
-const corsOptions = {
+const corsOptions: CorsOptions = {
     origin: function (origin, callback) {
         if (!origin || WHITELIST.indexOf(origin) !== -1) {
             callback(null, true);
@@ -40,7 +40,7 @@ await apolloServer.start();
 app.use(
     session({
         store: MongoStore.create({ mongoUrl: SESSION_URI }),
-        secret: SESSION_SECRET,
+        secret: SESSION_SECRET!, // Non-null assertion since we check this in constants.ts
         resave: false,
         saveUninitialized: false,
     })

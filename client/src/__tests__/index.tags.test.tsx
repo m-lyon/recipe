@@ -157,11 +157,17 @@ describe('Tag Workflow', () => {
         await user.keyboard('{v}{e}{g}{a}{n}');
 
         // Expect ------------------------------------------------
+        expect(screen.queryByText('Reserved tag')).toBeNull();
+
+        await user.keyboard('{Enter}');
+
         expect(await screen.findByText('Reserved tag')).not.toBeNull();
         expect(
             await screen.findByText('vegan tag is automatically determined from ingredients.')
         ).not.toBeNull();
+        expect(screen.getByDisplayValue('vegan')).not.toBeNull();
     });
+
     it('should show a warning for a reserved recipe tag', async () => {
         // Render -----------------------------------------------
         renderComponent([]);
@@ -173,7 +179,36 @@ describe('Tag Workflow', () => {
         await user.keyboard('{i}{n}{g}{r}{e}{d}{i}{e}{n}{t}');
 
         // Expect ------------------------------------------------
+        expect(screen.queryByText('Reserved tag')).toBeNull();
+
+        await user.keyboard('{Enter}');
+
         expect(await screen.findByText('Reserved tag')).not.toBeNull();
         expect(await screen.findByText('ingredient is a reserved tag.')).not.toBeNull();
+        expect(screen.getByDisplayValue('ingredient')).not.toBeNull();
+    });
+
+    it('should show a warning for the human-readable vegan version reserved tag', async () => {
+        // Render -----------------------------------------------
+        renderComponent([]);
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        await enterCreateNewRecipePage(screen, user);
+        await user.click(screen.getByLabelText('Add a tag'));
+        await user.keyboard(
+            '{v}{e}{g}{a}{n}{ }{v}{e}{r}{s}{i}{o}{n}{ }{a}{v}{a}{i}{l}{a}{b}{l}{e}'
+        );
+
+        // Expect ------------------------------------------------
+        expect(screen.queryByText('Reserved tag')).toBeNull();
+
+        await user.keyboard('{Enter}');
+
+        expect(await screen.findByText('Reserved tag')).not.toBeNull();
+        expect(
+            await screen.findByText('vegan version available is a reserved tag.')
+        ).not.toBeNull();
+        expect(screen.getByDisplayValue('vegan version available')).not.toBeNull();
     });
 });

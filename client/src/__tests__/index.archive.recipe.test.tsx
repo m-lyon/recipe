@@ -3,15 +3,21 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen, waitFor } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
+import { PATH } from '@recipe/constants';
+import { renderPage } from '@recipe/utils/tests';
 import { mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
-import { enterViewRecipePage, haveValueByLabelText } from '@recipe/utils/tests';
 import { mockArchiveRecipeOne } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockArchiveRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetArchivedRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockUnarchiveRecipeOne } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockArchiveRecipeOneInUseError } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { MockedResponses, enterViewRecipePage, haveValueByLabelText } from '@recipe/utils/tests';
+import { mockGetIngredientComponentsWithoutRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
 
+import { routes } from '../routes';
 import { renderComponent } from './utils';
+import { mocks } from '../__mocks__/graphql';
 
 loadErrorMessages();
 loadDevMessages();
@@ -39,7 +45,14 @@ describe('Archive Recipe Workflow', () => {
 
     it('should archive a recipe that is an ingredient', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockArchiveRecipeTwo]);
+        // After archiving, GET_INGREDIENT_COMPONENTS should reflect the
+        // post-archive server state, so we replace the default mock.
+        const customMocks: MockedResponses = [
+            ...mocks.filter((m) => m !== mockGetIngredientComponents),
+            mockArchiveRecipeTwo,
+            mockGetIngredientComponentsWithoutRecipeTwo,
+        ];
+        renderPage(routes, customMocks, [PATH.ROOT]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -122,10 +135,10 @@ describe('Archive Recipe Workflow', () => {
         await user.click(screen.getByLabelText('Confirm archive action'));
 
         // Expect ------------------------------------------------
-        expect(await screen.findByText('Archive failed')).not.toBeNull();
+        expect(await screen.findByText('Error archiving recipe')).not.toBeNull();
         expect(
             await screen.findByText(
-                'Cannot delete recipe as it is currently being used in other existing recipes.'
+                'Cannot archive recipe as it is currently being used in other existing recipes.'
             )
         ).not.toBeNull();
         // Recipe card should still be visible (cache not corrupted)

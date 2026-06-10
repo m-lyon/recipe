@@ -1,23 +1,34 @@
 import { GraphQLError } from 'graphql';
 
 import { UpdateRecipeMutation } from '@recipe/graphql/generated';
+import { DeleteRecipeMutation } from '@recipe/graphql/generated';
 import { UnarchiveRecipeMutation } from '@recipe/graphql/generated';
 import { mockSpicyTag } from '@recipe/graphql/queries/__mocks__/tag';
+import { CreateVeganRecipeMutation } from '@recipe/graphql/generated';
 import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
+import { CREATE_VEGAN_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { mockApple } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockDiced } from '@recipe/graphql/queries/__mocks__/prepMethod';
+import { mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockRecipeIdTwoVeganCopy } from '@recipe/graphql/__mocks__/ids';
 import { UpdateRecipeMutationVariables } from '@recipe/graphql/generated';
+import { DeleteRecipeMutationVariables } from '@recipe/graphql/generated';
+import { mockRecipeIdThreeVeganCopy } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdThree } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdSeven } from '@recipe/graphql/__mocks__/ids';
 import { mockRatingNewTwo } from '@recipe/graphql/queries/__mocks__/rating';
 import { GetRecipeQuery, RecipeIngredient } from '@recipe/graphql/generated';
 import { UnarchiveRecipeMutationVariables } from '@recipe/graphql/generated';
-import { CREATE_RECIPE, UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
+import { CreateVeganRecipeMutationVariables } from '@recipe/graphql/generated';
+import { mockRecipeIdThree, mockRecipeIdTwo } from '@recipe/graphql/__mocks__/ids';
+import { mockRecipeThreeVeganCopy } from '@recipe/graphql/queries/__mocks__/recipe';
 import { ARCHIVE_RECIPE, UNARCHIVE_RECIPE } from '@recipe/graphql/mutations/recipe';
-import { mockRecipeOne, mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockRecipeWithVeganVersion } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockRecipeNew, mockRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
+import { CREATE_RECIPE, DELETE_RECIPE, UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { mockRecipeFour, mockRecipeNewAsIngr } from '@recipe/graphql/queries/__mocks__/recipe';
 import { CreateRecipeMutation, CreateRecipeMutationVariables } from '@recipe/graphql/generated';
+import { mockRecipeOne, mockRecipeThreeRenamed } from '@recipe/graphql/queries/__mocks__/recipe';
 import { ArchiveRecipeMutation, ArchiveRecipeMutationVariables } from '@recipe/graphql/generated';
 
 import { mockCreateTag } from './tag';
@@ -130,6 +141,27 @@ export const mockUpdateRecipeNewTitle = {
             recipeUpdateById: {
                 __typename: 'UpdateByIdRecipePayload',
                 record: { ...recipeOneData.record, title: 'New Title' },
+            },
+        } satisfies UpdateRecipeMutation,
+    },
+};
+export const mockUpdateRecipeThreeWithRename = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: getMockRecipeVariables(mockRecipeThree).id,
+            recipe: {
+                ...getMockRecipeVariables(mockRecipeThree).recipe,
+                title: mockRecipeThreeRenamed.title,
+            },
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: mockRecipeThreeRenamed,
             },
         } satisfies UpdateRecipeMutation,
     },
@@ -878,6 +910,19 @@ export const mockUpdateEditInstructionSubsection = {
         } satisfies UpdateRecipeMutation,
     },
 };
+export const mockRecipeTwoVeganCopy: CompletedRecipeView = {
+    ...mockRecipeTwo,
+    _id: mockRecipeIdTwoVeganCopy,
+    titleIdentifier: 'mock-recipe-two-vegan',
+    calculatedTags: ['vegan', 'vegetarian'],
+    veganVersion: null,
+    originalRecipe: {
+        __typename: 'Recipe' as const,
+        _id: mockRecipeIdTwo,
+        title: mockRecipeTwo.title,
+        titleIdentifier: 'mock-recipe-two',
+    },
+};
 const recipeThreeVars = getMockRecipeVariables(mockRecipeThree);
 const recipeThreeData = getMockRecipeReturn(mockRecipeThree);
 export const mockUpdateRecipeRemoveNotes = {
@@ -1044,6 +1089,39 @@ export const mockArchiveRecipeTwo = {
         } satisfies ArchiveRecipeMutation,
     },
 };
+export const mockCreateVeganRecipeTwo = {
+    request: {
+        query: CREATE_VEGAN_RECIPE,
+        variables: {
+            originalId: mockRecipeIdTwo,
+            recipe: getMockRecipeVariables(mockRecipeTwo).recipe,
+        } satisfies CreateVeganRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeCreateVeganVersion: {
+                __typename: 'CreateOneRecipePayload',
+                record: mockRecipeTwoVeganCopy,
+            },
+        } satisfies CreateVeganRecipeMutation,
+    },
+};
+export const mockArchiveRecipeThree = {
+    request: {
+        query: ARCHIVE_RECIPE,
+        variables: { id: recipeThreeVars.id } satisfies ArchiveRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeArchiveById: {
+                __typename: 'RemoveByIdRecipePayload',
+                recordId: recipeThreeVars.id,
+            },
+        } satisfies ArchiveRecipeMutation,
+    },
+};
 export const mockUnarchiveRecipeOne = {
     request: {
         query: UNARCHIVE_RECIPE,
@@ -1082,9 +1160,131 @@ export const mockArchiveRecipeOneInUseError = {
     result: {
         errors: [
             new GraphQLError(
-                'Cannot delete recipe as it is currently being used in other existing recipes.',
+                'Cannot archive recipe as it is currently being used in other existing recipes.',
                 { extensions: { code: 'ITEM_IN_USE' } }
             ),
         ],
+    },
+};
+export const mockDeleteRecipeThreeVeganCopy = {
+    request: {
+        query: DELETE_RECIPE,
+        variables: { id: mockRecipeIdThreeVeganCopy } satisfies DeleteRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeRemoveById: {
+                __typename: 'RemoveByIdRecipePayload',
+                recordId: mockRecipeIdThreeVeganCopy,
+            },
+        } satisfies DeleteRecipeMutation,
+    },
+};
+export const mockCreateVeganRecipeThree = {
+    request: {
+        query: CREATE_VEGAN_RECIPE,
+        variables: {
+            originalId: mockRecipeIdThree,
+            recipe: getMockRecipeVariables(mockRecipeThree).recipe,
+        } satisfies CreateVeganRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeCreateVeganVersion: {
+                __typename: 'CreateOneRecipePayload',
+                record: mockRecipeThreeVeganCopy,
+            },
+        } satisfies CreateVeganRecipeMutation,
+    },
+};
+export const mockCreateVeganRecipeFailure = {
+    request: {
+        query: CREATE_VEGAN_RECIPE,
+    },
+    result: {
+        errors: [new GraphQLError('Original recipe already has a vegan version')],
+    },
+};
+export const mockUpdateRecipeThreeNoChange = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeThreeVars.id,
+            recipe: recipeThreeVars.recipe,
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: recipeThreeData.record,
+            },
+        } satisfies UpdateRecipeMutation,
+    },
+};
+export const mockUpdateRecipeWithVeganVersionNoChange = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: getMockRecipeVariables(mockRecipeWithVeganVersion).id,
+            recipe: getMockRecipeVariables(mockRecipeWithVeganVersion).recipe,
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: getMockRecipeReturn(mockRecipeWithVeganVersion).record,
+            },
+        } satisfies UpdateRecipeMutation,
+    },
+};
+export const mockUpdateRecipeWithVeganVersionBecomeVegan = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: getMockRecipeVariables(mockRecipeWithVeganVersion).id,
+            recipe: getMockRecipeVariables(mockRecipeWithVeganVersion).recipe,
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        errors: [
+            new GraphQLError(
+                'Cannot save original recipe as vegan when it has a linked vegan version',
+                { extensions: { code: 'ORIGINAL_RECIPE_IS_VEGAN' } }
+            ),
+        ],
+    },
+};
+export const mockCreateVeganRecipeViaMutation = {
+    request: {
+        query: CREATE_VEGAN_RECIPE,
+        variables: {
+            originalId: mockRecipeIdThree,
+            recipe: getMockRecipeVariables(mockRecipeThree).recipe,
+        } satisfies CreateVeganRecipeMutationVariables,
+    },
+    result: mockCreateVeganRecipeThree.result,
+};
+export const mockUpdateRecipeThreeVeganCopyNoChange = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: getMockRecipeVariables(mockRecipeThreeVeganCopy).id,
+            recipe: getMockRecipeVariables(mockRecipeThreeVeganCopy).recipe,
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: getMockRecipeReturn(mockRecipeThreeVeganCopy).record,
+            },
+        } satisfies UpdateRecipeMutation,
     },
 };

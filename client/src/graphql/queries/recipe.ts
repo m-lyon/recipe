@@ -36,6 +36,9 @@ export const RECIPE_INGR_FIELDS = gql(`
         _id
         title
         pluralTitle
+        originalRecipe {
+            _id
+        }
     }
 `);
 
@@ -57,6 +60,16 @@ export const RECIPE_FIELDS_SUBSET = gql(`
         }
         calculatedTags
         owner
+        veganVersion {
+            _id
+            title
+            titleIdentifier
+        }
+        originalRecipe {
+            _id
+            title
+            titleIdentifier
+        }
     }
 `);
 
@@ -83,6 +96,9 @@ export const RECIPE_FIELDS_FULL = gql(`
                         _id
                         title
                         pluralTitle
+                        originalRecipe {
+                            _id
+                        }
                     }
                     ... on Ingredient {
                         ...IngredientFields

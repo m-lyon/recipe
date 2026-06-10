@@ -28,7 +28,7 @@ const isAdminMutations = composeResolvers(
             ...ConversionRuleMutation,
         },
     },
-    { 'Mutation.*': [isAdmin()] }
+    { 'Mutation.*': [isAdmin() as any] }
 );
 const isAdminQueries = composeResolvers(
     {
@@ -38,12 +38,13 @@ const isAdminQueries = composeResolvers(
             ...PrepMethodQueryAdmin,
         },
     },
-    { 'Query.*': [isAdmin()] }
+    { 'Query.*': [isAdmin() as any] }
 );
 const isAuthenticatedMutations = composeResolvers(
     {
         Mutation: {
             recipeCreateOne: RecipeMutation.recipeCreateOne,
+            recipeCreateVeganVersion: RecipeMutation.recipeCreateVeganVersion,
             ratingCreateOne: RatingMutation.ratingCreateOne,
             sizeCreateOne: SizeMutation.sizeCreateOne,
             unitCreateOne: UnitMutation.unitCreateOne,
@@ -51,7 +52,7 @@ const isAuthenticatedMutations = composeResolvers(
             ingredientCreateOne: IngredientMutation.ingredientCreateOne,
         },
     },
-    { 'Mutation.*': [isVerified()] }
+    { 'Mutation.*': [isVerified() as any] }
 );
 const isImageOwnerOrAdminMutations = composeResolvers(
     {
@@ -59,19 +60,20 @@ const isImageOwnerOrAdminMutations = composeResolvers(
             imageRemoveMany: ImageMutation.imageRemoveMany,
         },
     },
-    { 'Mutation.*': [isImageOwnerOrAdmin()] }
+    { 'Mutation.*': [isImageOwnerOrAdmin() as any] }
 );
 const isRecipeOwnerOrAdminMutations = composeResolvers(
     {
         Mutation: {
             recipeUpdateById: RecipeMutation.recipeUpdateById,
+            recipeRemoveById: RecipeMutation.recipeRemoveById,
             recipeArchiveById: RecipeMutation.recipeArchiveById,
             recipeUnarchiveById: RecipeMutation.recipeUnarchiveById,
             imageUploadOne: ImageMutation.imageUploadOne,
             imageUploadMany: ImageMutation.imageUploadMany,
         },
     },
-    { 'Mutation.*': [isDocumentOwnerOrAdmin(Recipe)] }
+    { 'Mutation.*': [isDocumentOwnerOrAdmin(Recipe) as any] }
 );
 const isUnitOwnerOrAdminMutations = composeResolvers(
     {
@@ -80,7 +82,7 @@ const isUnitOwnerOrAdminMutations = composeResolvers(
             unitRemoveById: UnitMutation.unitRemoveById,
         },
     },
-    { 'Mutation.*': [isDocumentOwnerOrAdmin(Unit)] }
+    { 'Mutation.*': [isDocumentOwnerOrAdmin(Unit) as any] }
 );
 const isSizeOwnerOrAdminMutations = composeResolvers(
     {
@@ -89,7 +91,7 @@ const isSizeOwnerOrAdminMutations = composeResolvers(
             sizeRemoveById: SizeMutation.sizeRemoveById,
         },
     },
-    { 'Mutation.*': [isDocumentOwnerOrAdmin(Size)] }
+    { 'Mutation.*': [isDocumentOwnerOrAdmin(Size) as any] }
 );
 const isIngredientOwnerOrAdminMutations = composeResolvers(
     {
@@ -98,7 +100,7 @@ const isIngredientOwnerOrAdminMutations = composeResolvers(
             ingredientRemoveById: IngredientMutation.ingredientRemoveById,
         },
     },
-    { 'Mutation.*': [isDocumentOwnerOrAdmin(Ingredient)] }
+    { 'Mutation.*': [isDocumentOwnerOrAdmin(Ingredient) as any] }
 );
 const isPrepMethodOwnerOrAdminMutations = composeResolvers(
     {
@@ -107,7 +109,7 @@ const isPrepMethodOwnerOrAdminMutations = composeResolvers(
             prepMethodRemoveById: PrepMethodMutation.prepMethodRemoveById,
         },
     },
-    { 'Mutation.*': [isDocumentOwnerOrAdmin(PrepMethod)] }
+    { 'Mutation.*': [isDocumentOwnerOrAdmin(PrepMethod) as any] }
 );
 
 const schemaComposer = new SchemaComposer();
