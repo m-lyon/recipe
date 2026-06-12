@@ -5,6 +5,7 @@ import { ListItem, OrderedList } from '@chakra-ui/react';
 
 import { useRecipeStore } from '@recipe/stores';
 import { EditableItemArea } from '@recipe/common/components';
+import { useLayoutAnimation } from '@recipe/common/contexts';
 
 interface Props {
     section: number;
@@ -12,6 +13,7 @@ interface Props {
 export function EditableInstructionList(props: Props) {
     const { section } = props;
     const lastInputRef = useRef<HTMLTextAreaElement>(null);
+    const layout = useLayoutAnimation();
     const { instructions, addLine, setInstruction, removeLine } = useRecipeStore(
         useShallow((state) => ({
             instructions: state.instructionSections[section].instructions,
@@ -56,7 +58,7 @@ export function EditableInstructionList(props: Props) {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 key={instr.key}
-                layout='position'
+                layout={layout}
             >
                 <ListItem color={instr.value ? '' : 'gray.400'}>
                     <EditableItemArea

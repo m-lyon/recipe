@@ -4,6 +4,7 @@ import { useShallow } from 'zustand/shallow';
 import { Input, VStack } from '@chakra-ui/react';
 
 import { useRecipeStore } from '@recipe/stores';
+import { useLayoutAnimation } from '@recipe/common/contexts';
 
 export function AsIngredientCheckbox() {
     const { isIngredient, pluralTitle, toggleIsIngredient, setPluralTitle } = useRecipeStore(
@@ -14,13 +15,14 @@ export function AsIngredientCheckbox() {
             setPluralTitle: state.setPluralTitle,
         }))
     );
+    const layout = useLayoutAnimation();
 
     return (
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            layout='position'
+            layout={layout}
             style={{ width: '100%', justifyContent: 'center', display: 'flex' }}
         >
             <VStack width='100%' justifyContent='flex-end' alignItems='flex-start'>

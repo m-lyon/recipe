@@ -4,6 +4,7 @@ import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 
 import { useRecipeStore } from '@recipe/stores';
 import { EditableText } from '@recipe/common/components';
+import { useLayoutAnimation } from '@recipe/common/contexts';
 
 import { EditableInstructionList } from './EditableInstructionList';
 
@@ -35,6 +36,7 @@ export function EditableInstructionSubsection(props: Props) {
     const lastSectionHasInstructions = useRecipeStore(
         (state) => state.instructionSections.at(-1)!.instructions[0].value.trim() !== ''
     );
+    const layout = useLayoutAnimation();
 
     const onChange = (e: ChangeEvent<HTMLInputElement>) => {
         setName(section, e.target.value);
@@ -68,7 +70,7 @@ export function EditableInstructionSubsection(props: Props) {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    layout='position'
+                    layout={layout}
                 >
                     <LayoutGroup>
                         <EditableText

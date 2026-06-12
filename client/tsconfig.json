@@ -61,6 +61,9 @@
       "@recipe/common/hooks": [
         "common/hooks"
       ],
+      "@recipe/common/contexts": [
+        "common/contexts"
+      ],
     }
   },
   "include": [
