@@ -9,7 +9,7 @@ interface BraisingLoaderProps {
     h?: string | number;
 }
 
-export function BraisingLoader({ size = 100, label = 'Braising...', h }: BraisingLoaderProps) {
+export function BraisingLoader({ size = 100, label, h }: BraisingLoaderProps) {
     return (
         <Center role='status' aria-label='Loading' h={h}>
             <Stack align='center' gap='xs'>
@@ -18,9 +18,11 @@ export function BraisingLoader({ size = 100, label = 'Braising...', h }: Braisin
                     loop
                     style={{ width: size, height: size }}
                 />
-                <Text c='dimmed' size='sm'>
-                    {label}
-                </Text>
+                {label ? (
+                    <Text c='dimmed' size='sm'>
+                        {label}
+                    </Text>
+                ) : undefined}
             </Stack>
         </Center>
     );

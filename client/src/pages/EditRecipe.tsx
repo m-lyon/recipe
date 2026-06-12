@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Reference, useMutation, useQuery } from '@apollo/client';
 
 import { useUploadImages } from '@recipe/features/images';
+import { BraisingLoader } from '@recipe/common/components';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { useImagesStore, useRecipeStore } from '@recipe/stores';
 import { DELETE_IMAGES } from '@recipe/graphql/mutations/image';
@@ -176,7 +177,7 @@ export function EditRecipe() {
     const { addRatingWithToast } = useAddRating();
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <BraisingLoader h='100vh' />;
     }
 
     if (error || !data || !data.recipeOne) {
