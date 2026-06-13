@@ -6,10 +6,11 @@ import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
 import { useUser } from '@recipe/features/user';
 import { useSearch } from '@recipe/features/search';
+import { useMinimumLoading } from '@recipe/common/hooks';
 import { BraisingLoader } from '@recipe/common/components';
 import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { ConfirmDeleteModal } from '@recipe/features/editing';
-import { FETCH_MORE_NUM, INIT_LOAD_NUM } from '@recipe/constants';
+import { DELAY_SHORT, FETCH_MORE_NUM, INIT_LOAD_NUM } from '@recipe/constants';
 
 import { RecipeCard } from './RecipeCard';
 import { ImageRecipeCard } from './ImageRecipeCard';
@@ -40,6 +41,7 @@ export function RecipeCardsContainer() {
     const { data, loading, error, fetchMore } = useQuery(GET_RECIPES, {
         variables: { offset: 0, limit: INIT_LOAD_NUM },
     });
+    const showLoader = useMinimumLoading(loading, DELAY_SHORT);
     const [show, setShow] = useState(false);
     const [recipeId, setRecipeId] = useState('');
     const { user } = useUser();
@@ -50,7 +52,7 @@ export function RecipeCardsContainer() {
         setShow(true);
     };
 
-    if (loading) {
+    if (showLoader) {
         return <BraisingLoader h='100%' />;
     }
 
