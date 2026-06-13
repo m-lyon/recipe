@@ -2,6 +2,9 @@ import { useQuery } from '@apollo/client';
 import { useParams } from 'react-router-dom';
 import { Box, Container, Grid, GridItem } from '@chakra-ui/react';
 
+import { DELAY_SHORT } from '@recipe/constants';
+import { useMinimumLoading } from '@recipe/common/hooks';
+import { BraisingLoader } from '@recipe/common/components';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { ImageViewerRecipe } from '@recipe/features/images';
 import { IngredientsTab, InstructionsTab, Title } from '@recipe/features/viewing';
@@ -11,9 +14,10 @@ export function ViewRecipe() {
     const { data, loading, error } = useQuery(GET_RECIPE, {
         variables: { filter: { titleIdentifier } },
     });
+    const showLoader = useMinimumLoading(loading, DELAY_SHORT);
 
-    if (loading) {
-        return <div>Loading...</div>;
+    if (showLoader) {
+        return <BraisingLoader h='100vh' />;
     }
 
     if (error || !data || !data.recipeOne) {
