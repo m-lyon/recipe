@@ -2,6 +2,7 @@ export { AnimatedLink } from './AnimatedLink';
 export { DropdownItem } from './DropdownItem';
 export { EditableText } from './EditableText';
 export { DropdownList } from './DropdownList';
+export { ConfirmModal } from './ConfirmModal';
 export { ImageCarousel } from './ImageCarousel';
 export { BraisingLoader } from './BraisingLoader';
 export { CentredTextArea } from './CentredTextArea';

@@ -18,7 +18,8 @@ import { SelectedFilters } from './SelectedFilters';
 export function Navbar() {
     const location = useLocation();
     const { isOpen, onToggle, onClose } = useDisclosure();
-    const { setTitle, reset, addFilter, removeFilter } = useSearch();
+    const { setTitle, reset, resetToHome, addFilter, removeFilter, showArchived, setShowArchived } =
+        useSearch();
     const setShowSearch = useSearchStore((state) => state.setShowSearch);
     const { isLoggedIn, isVerified } = useUser();
 
@@ -60,7 +61,7 @@ export function Navbar() {
                             as={ReactRouterLink}
                             aria-label='Navigate to home page'
                             onClick={() => {
-                                reset();
+                                resetToHome();
                                 onClose();
                             }}
                             display={{ base: isHomePage ? 'none' : 'inline', md: 'inline' }}
@@ -91,7 +92,13 @@ export function Navbar() {
                     </Flex>
                 </FlexNav>
                 {isHomePage ? <SelectedFilters removeFilter={removeFilter} /> : undefined}
-                {isHomePage ? <SearchFilter addFilter={addFilter} /> : undefined}
+                {isHomePage ? (
+                    <SearchFilter
+                        addFilter={addFilter}
+                        showArchived={showArchived}
+                        setShowArchived={setShowArchived}
+                    />
+                ) : undefined}
                 <Slide
                     in={isOpen}
                     direction='top'

@@ -3,10 +3,10 @@ import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { User } from '../../src/models/User.js';
 import { Unit } from '../../src/models/Unit.js';
-import { startServer, stopServer } from '../utils/mongodb.js';
 import { Recipe } from '../../src/models/Recipe.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
+import { startServer, stopServer } from '../utils/mongodb.js';
 import { createRecipeIngredientData, removeRecipeIngredientData } from './Recipe.test.js';
 
 async function createRating(context, user, record) {

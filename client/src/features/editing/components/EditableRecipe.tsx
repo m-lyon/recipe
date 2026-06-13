@@ -6,28 +6,32 @@ import { StarRating } from '@recipe/features/rating';
 import { ImageUpload } from '@recipe/features/images';
 import { IngredientsTabLayout } from '@recipe/layouts';
 import { EditableTagList } from '@recipe/features/tags';
-import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
 
-import { SubmitButton } from './SubmitButton';
 import { EditableNotes } from './EditableNotes';
 import { EditableTitle } from './EditableTitle';
+import { RecipeActionButtons } from './RecipeActionButtons';
 import { EditableInstructionsTab } from './EditableInstructionsTab';
 import { EditableIngredientSubsections } from './EditableIngredientSubsections';
 
-interface SubmitButtonProps {
-    submitText: string;
-    loadingText?: string;
-    disabled?: boolean;
-    loading?: boolean;
-}
 interface Props {
     rating: number;
     addRating: (rating: number) => void;
-    handleSubmitMutation: (recipe: CreateOneRecipeCreateInput) => void;
-    submitButtonProps: SubmitButtonProps;
+    submitButton: React.ReactNode;
+    veganVersion?: { _id: string; title: string; titleIdentifier: string };
+    originalRecipe?: { _id: string; title: string; titleIdentifier: string };
+    suppressItemInUseError?: boolean;
+    secondaryActionButton?: React.ReactNode;
 }
 export function EditableRecipe(props: Props) {
-    const { rating, addRating, handleSubmitMutation, submitButtonProps } = props;
+    const {
+        rating,
+        addRating,
+        submitButton,
+        veganVersion,
+        originalRecipe,
+        suppressItemInUseError,
+        secondaryActionButton,
+    } = props;
     const { isVerified } = useUser();
 
     const isMobile = useBreakpointValue({ base: true, md: false });
@@ -68,7 +72,7 @@ export function EditableRecipe(props: Props) {
                     alignItems='center'
                     display='flex'
                 >
-                    <EditableTitle />
+                    <EditableTitle isReadOnly={!!originalRecipe} />
                 </GridItem>
                 <GridItem
                     area='tags'
@@ -97,12 +101,19 @@ export function EditableRecipe(props: Props) {
                                 colour='rgba(0, 0, 0, 0.64)'
                             />
                         }
-                        IngredientList={<EditableIngredientSubsections />}
+                        IngredientList={
+                            <EditableIngredientSubsections
+                                suppressItemInUseError={suppressItemInUseError}
+                            />
+                        }
                         Notes={<EditableNotes />}
                     />
                 </GridItem>
                 <GridItem boxShadow='lg' padding='6' area='instructions' minH='420px'>
-                    <EditableInstructionsTab />
+                    <EditableInstructionsTab
+                        showVeganCheckbox={!originalRecipe}
+                        veganVersion={veganVersion}
+                    />
                 </GridItem>
                 <GridItem
                     boxShadow='lg'
@@ -117,11 +128,10 @@ export function EditableRecipe(props: Props) {
                     <ImageUpload />
                 </GridItem>
                 <GridItem padding='6' area='button'>
-                    <SubmitButton
-                        {...submitButtonProps}
-                        handleSubmit={handleSubmitMutation}
-                        isLoggedIn={isVerified}
-                    />
+                    <RecipeActionButtons>
+                        {submitButton}
+                        {secondaryActionButton}
+                    </RecipeActionButtons>
                 </GridItem>
             </Grid>
         </Container>

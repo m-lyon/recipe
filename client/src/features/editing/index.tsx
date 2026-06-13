@@ -1,3 +1,7 @@
-export { updateRecipeCache } from './utils/update';
+export { SubmitButton } from './components/SubmitButton';
 export { EditableRecipe } from './components/EditableRecipe';
-export { ConfirmDeleteModal } from './components/ConfirmDeleteModal';
+export { RecipeActionButtons } from './components/RecipeActionButtons';
+export { archiveRecipeConfirmConfig } from './components/confirmActionConfigs';
+export { deleteVeganVersionConfirmConfig } from './components/confirmActionConfigs';
+export { CreateVeganVersionCheckbox } from './components/CreateVeganVersionCheckbox';
+export { archiveRecipeCache, deleteVeganRecipeCache, updateRecipeCache } from './utils/update';

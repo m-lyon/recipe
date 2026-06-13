@@ -1,5 +1,6 @@
+import { GraphQLError } from 'graphql';
 import { composeMongoose } from 'graphql-compose-mongoose';
-import { Document, PopulatedDoc, Schema, Types, model } from 'mongoose';
+import { Document, HydratedDocument, Model, PopulatedDoc, Schema, Types, model } from 'mongoose';
 
 import { Size } from './Size.js';
 import { Unit } from './Unit.js';
@@ -8,10 +9,13 @@ import { capitalise } from '../utils/string.js';
 import { generateRandomString } from '../utils/random.js';
 import type { Ingredient as IngredientType } from './Ingredient.js';
 import { Ingredient, ReservedIngredientTags } from './Ingredient.js';
-import { ownerExists, tagsExist, unique, uniqueInAdminsAndUser } from './validation.js';
+import { ownerExists, tagsExist, unique, uniqueRecipeTitleInAdminsAndUser } from './validation.js';
 
 const quantityRegex = /^((\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*)(-(\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*))?)$/;
-const ReservedRecipeTags = { Ingredient: 'ingredient' } as const;
+const ReservedRecipeTags = {
+    Ingredient: 'ingredient',
+    VeganVersionAvailable: 'vegan version available',
+} as const;
 export const ReservedTags = { ...ReservedRecipeTags, ...ReservedIngredientTags } as const;
 type ReservedTags = (typeof ReservedTags)[keyof typeof ReservedTags];
 
@@ -35,7 +39,7 @@ export function generateRecipeIdentifier(title: string, existingSuffix?: string)
     return `${sanitizedTitle}-${suffix}`;
 }
 
-const recipeIngredientSchema = new Schema<RecipeIngredientType>({
+const recipeIngredientSchema: Schema<RecipeIngredientType> = new Schema<RecipeIngredientType>({
     type: { type: String, enum: ['ingredient', 'recipe'] },
     quantity: {
         type: String,
@@ -77,15 +81,17 @@ const recipeIngredientSchema = new Schema<RecipeIngredientType>({
     },
     ingredient: {
         type: Schema.Types.ObjectId,
-        ref: function () {
+        ref: function (this: RecipeIngredientType) {
             return capitalise(this.type);
         },
         required: true,
         validate: {
-            validator: async function (ingredient: Types.ObjectId) {
+            validator: async function (ingredient: Types.ObjectId): Promise<boolean> {
                 const isIngredient = await Ingredient.exists({ _id: ingredient });
-                const isRecipe = await Recipe.exists({ _id: ingredient });
-                return isIngredient || isRecipe;
+                const isRecipe: { _id: Types.ObjectId } | null = await Recipe.exists({
+                    _id: ingredient,
+                });
+                return Boolean(isIngredient || isRecipe);
             },
             message: 'Ingredient does not exist.',
         },
@@ -104,7 +110,7 @@ const recipeIngredientSchema = new Schema<RecipeIngredientType>({
         },
     },
 });
-recipeIngredientSchema.pre('save', async function () {
+recipeIngredientSchema.pre('save', async function (this: HydratedDocument<RecipeIngredientType>) {
     const isIngredient = await Ingredient.exists({ _id: this.ingredient });
     if (isIngredient) {
         this.type = 'ingredient';
@@ -117,7 +123,7 @@ interface IngredientSubsection {
     name?: string;
     ingredients: RecipeIngredientType[];
 }
-const ingredientSubsection = new Schema<IngredientSubsection>({
+const ingredientSubsection: Schema<IngredientSubsection> = new Schema<IngredientSubsection>({
     name: { type: String },
     ingredients: {
         type: [recipeIngredientSchema],
@@ -162,14 +168,17 @@ export interface Recipe extends Document {
     source?: string;
     numServings: number;
     isIngredient: boolean;
+    archived: boolean;
     createdAt: Date;
     lastModified: Date;
+    veganVersion?: Types.ObjectId;
+    originalRecipe?: Types.ObjectId;
 }
-const recipeSchema = new Schema<Recipe>({
+const recipeSchema: Schema<Recipe> = new Schema<Recipe>({
     title: {
         type: String,
         required: true,
-        validate: uniqueInAdminsAndUser('Recipe', 'title'),
+        validate: uniqueRecipeTitleInAdminsAndUser(),
         text: true,
     },
     titleIdentifier: {
@@ -250,37 +259,57 @@ const recipeSchema = new Schema<Recipe>({
     source: { type: String },
     numServings: { type: Number, required: true },
     isIngredient: { type: Boolean, required: true },
+    archived: { type: Boolean, default: false },
     createdAt: { type: Date, required: true },
     lastModified: { type: Date, required: true },
+    veganVersion: { type: Schema.Types.ObjectId, ref: 'Recipe' },
+    originalRecipe: { type: Schema.Types.ObjectId, ref: 'Recipe' },
 });
 
 recipeSchema.index({ 'ingredientSubsections.ingredients.ingredient': 1 });
 
-recipeSchema.pre('save', async function () {
+recipeSchema.pre('save', async function (this: HydratedDocument<Recipe>) {
     const calculatedTags: ReservedTags[] = [];
     await this.populate('ingredientSubsections.ingredients.ingredient');
     if (this.isIngredient) {
         calculatedTags.push(ReservedRecipeTags.Ingredient);
     }
     for (const tag in ReservedIngredientTags) {
+        const typedTag = tag as keyof typeof ReservedIngredientTags;
         const allMembers = this.ingredientSubsections.every((collection: IngredientSubsection) => {
             return collection.ingredients.every((recipeIngr: RecipeIngredientType) => {
                 if (recipeIngr.type === 'ingredient') {
                     const ingr: IngredientType = recipeIngr.ingredient;
-                    return ingr.tags.includes(ReservedIngredientTags[tag]);
+                    return ingr.tags.includes(ReservedIngredientTags[typedTag]);
                 } else if (recipeIngr.type === 'recipe') {
                     const recipe: Recipe = recipeIngr.ingredient;
-                    return recipe.calculatedTags.includes(ReservedIngredientTags[tag]);
+                    return recipe.calculatedTags.includes(ReservedIngredientTags[typedTag]);
                 } else {
                     throw new Error('Invalid RecipeIngredient type');
                 }
             });
         });
         if (allMembers) {
-            calculatedTags.push(ReservedIngredientTags[tag]);
+            calculatedTags.push(ReservedIngredientTags[typedTag]);
         }
     }
+    if (this.veganVersion != null) {
+        calculatedTags.push(ReservedRecipeTags.VeganVersionAvailable);
+    }
     this.calculatedTags = calculatedTags;
+    if (
+        this.veganVersion != null &&
+        calculatedTags.includes(ReservedIngredientTags.Vegan) &&
+        this.isModified('ingredientSubsections')
+    ) {
+        throw new GraphQLError(
+            'Cannot save original recipe as vegan when it has a linked vegan version',
+            { extensions: { code: 'ORIGINAL_RECIPE_IS_VEGAN' } }
+        );
+    }
+    if (this.originalRecipe != null && !calculatedTags.includes(ReservedIngredientTags.Vegan)) {
+        throw new Error('Vegan recipe must have all vegan ingredients');
+    }
 });
 
 export const RecipeIngredient = model<RecipeIngredientType>(
@@ -288,13 +317,30 @@ export const RecipeIngredient = model<RecipeIngredientType>(
     recipeIngredientSchema
 );
 export const RecipeIngredientTC = composeMongoose(RecipeIngredient, { removeFields: ['type'] });
-export const Recipe = model<Recipe>('Recipe', recipeSchema);
+export const Recipe: Model<Recipe> = model<Recipe>('Recipe', recipeSchema);
 export const RecipeTC = composeMongoose(Recipe);
 export const RecipeModifyTC = composeMongoose(Recipe, {
-    removeFields: ['titleIdentifier', 'calculatedTags', 'createdAt', 'lastModified'],
+    removeFields: [
+        'titleIdentifier',
+        'calculatedTags',
+        'archived',
+        'createdAt',
+        'lastModified',
+        'veganVersion',
+        'originalRecipe',
+    ],
     name: 'RecipeModify',
 });
 export const RecipeCreateTC = composeMongoose(Recipe, {
-    removeFields: ['owner', 'titleIdentifier', 'calculatedTags', 'createdAt', 'lastModified'],
+    removeFields: [
+        'owner',
+        'titleIdentifier',
+        'calculatedTags',
+        'archived',
+        'createdAt',
+        'lastModified',
+        'veganVersion',
+        'originalRecipe',
+    ],
     name: 'RecipeCreate',
 });

@@ -15,6 +15,7 @@ import { mockGetRecipesFilteredCalculatedTag } from '@recipe/graphql/queries/__m
 import { enterViewRecipePage, haveValueByLabelText, notNullByLabelText } from '@recipe/utils/tests';
 
 import { renderComponent } from './utils';
+import { SEARCH_FILTER_MOBILE_HEIGHT } from '../features/navbar/constants';
 
 loadErrorMessages();
 loadDevMessages();
@@ -90,6 +91,18 @@ describe('Search Functionality', () => {
         // Expect ------------------------------------------------
         nullByLabelText(screen, 'View Mock Recipe Two', 'View Mock Recipe Three');
         nullByLabelText(screen, 'View Mock Recipe Four');
+    });
+
+    it('should only show archived filter when search is expanded', async () => {
+        renderComponent();
+        const user = userEvent.setup();
+
+        expect(await screen.findByText('Recipes'));
+        expect(screen.queryByLabelText('Show archived recipes')).toBeNull();
+
+        await user.click(screen.getByLabelText('Search for recipes'));
+
+        expect(await screen.findByLabelText('Show archived recipes')).not.toBeNull();
     });
 
     it('should reset search form when clicking on home button', async () => {
