@@ -102,6 +102,7 @@ describe('Archive Recipe Workflow', () => {
 
         // Act --------------------------------------------------
         expect(await screen.findByText('Recipes'));
+        await waitFor(() => expect(screen.queryByRole('status')).toBeNull());
         expect(screen.getByText('Mock Recipe')).not.toBeNull();
 
         // Expand search filters, then toggle archived view

@@ -390,6 +390,7 @@ describe('CreateVeganRecipe - cache: originalRecipe on vegan copy', () => {
         await user.click(await screen.findByText('Submit Vegan Version'));
         // After navigation, we're on the home page.
         await screen.findByText('Recipes');
+        await waitFor(() => expect(screen.queryByRole('status')).toBeNull());
         // The home page GET_RECIPES mock returns exactly 4 recipes (no vegan copy).
         // Assert that exactly those 4 recipe cards are rendered - if the vegan copy
         // were incorrectly shown, there would be an extra card.
@@ -500,6 +501,7 @@ describe('CreateVeganRecipe - cache: home page after vegan creation', () => {
 
         // After navigation, we should be on the home page.
         await screen.findByText('Recipes');
+        await waitFor(() => expect(screen.queryByRole('status')).toBeNull());
 
         // Only the original 4 recipes should be shown - the vegan copy must NOT appear.
         const cards = screen.queryAllByLabelText(/^View /);
@@ -726,6 +728,7 @@ describe('EditRecipe - destructive action button', () => {
 
         expect(await screen.findByText('Recipe archived')).not.toBeNull();
         expect(await screen.findByText('Recipes')).not.toBeNull();
+        await waitFor(() => expect(screen.queryByRole('status')).toBeNull());
         expect(screen.queryByLabelText('View Mock Recipe Three')).toBeNull();
         expect(screen.queryAllByLabelText(/^View /)).toHaveLength(
             mockGetRecipesAfterArchiveRecipeThree.result.data.recipeMany.length
