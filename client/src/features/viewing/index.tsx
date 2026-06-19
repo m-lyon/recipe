@@ -4,3 +4,4 @@ export { IngredientList } from './components/IngredientList';
 export { InstructionsTab } from './components/InstructionsTab';
 export { InstructionList } from './components/InstructionList';
 export { RecipeCardsContainer } from './components/RecipeCardsContainer';
+export { HighlightedInstruction } from './components/HighlightedInstruction';
