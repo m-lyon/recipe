@@ -1,13 +1,14 @@
-import { CloseIcon, HamburgerIcon } from '@chakra-ui/icons';
 import { Link as ChakraLink, VStack } from '@chakra-ui/react';
 import { Box, Flex, IconButton, Slide } from '@chakra-ui/react';
 import { useColorModeValue, useDisclosure } from '@chakra-ui/react';
+import { ArrowBackIcon, CloseIcon, HamburgerIcon } from '@chakra-ui/icons';
 import { Outlet, Link as ReactRouterLink, useLocation } from 'react-router-dom';
 
 import { PATH } from '@recipe/constants';
 import { useSearchStore } from '@recipe/stores';
 import { UserOptions, useUser } from '@recipe/features/user';
 import { SearchBar, useSearch } from '@recipe/features/search';
+import { useBackNavigation, useStandalone } from '@recipe/common/hooks';
 
 import { FlexNav } from './FlexNav';
 import { MobileNav } from './MobileNav';
@@ -22,8 +23,13 @@ export function Navbar() {
         useSearch();
     const setShowSearch = useSearchStore((state) => state.setShowSearch);
     const { isLoggedIn, isVerified } = useUser();
+    const isStandalone = useStandalone();
+    const goBack = useBackNavigation();
 
     const isHomePage = location.pathname === PATH.ROOT;
+    // In standalone PWA mode there is no browser back button, so on sub-pages the
+    // far-left slot shows a back button in place of the hamburger menu.
+    const showBackButton = isStandalone && !isHomePage;
 
     return (
         <>
@@ -34,18 +40,31 @@ export function Navbar() {
                         ml={{ base: -2 }}
                         display={{ base: 'flex', md: 'none' }}
                     >
-                        <IconButton
-                            onClick={() => {
-                                setShowSearch(false);
-                                onToggle();
-                            }}
-                            isDisabled={!isLoggedIn || !isVerified}
-                            icon={
-                                isOpen ? <CloseIcon w={3} h={3} /> : <HamburgerIcon w={5} h={5} />
-                            }
-                            variant='ghost'
-                            aria-label='Toggle Navigation'
-                        />
+                        {showBackButton ? (
+                            <IconButton
+                                onClick={goBack}
+                                icon={<ArrowBackIcon w={5} h={5} />}
+                                variant='ghost'
+                                aria-label='Go back'
+                            />
+                        ) : (
+                            <IconButton
+                                onClick={() => {
+                                    setShowSearch(false);
+                                    onToggle();
+                                }}
+                                isDisabled={!isLoggedIn || !isVerified}
+                                icon={
+                                    isOpen ? (
+                                        <CloseIcon w={3} h={3} />
+                                    ) : (
+                                        <HamburgerIcon w={5} h={5} />
+                                    )
+                                }
+                                variant='ghost'
+                                aria-label='Toggle Navigation'
+                            />
+                        )}
                     </Flex>
                     <Flex
                         flex={{ base: 1 }}

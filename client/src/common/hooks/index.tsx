@@ -1,7 +1,9 @@
 export { useWakeLock } from './useWakeLock';
 export { useDropdown } from './useDropdown';
+export { useStandalone } from './useStandalone';
 import { createToastHook } from './toastCreator';
 export { useMinimumLoading } from './useMinimumLoading';
+export { useBackNavigation } from './useBackNavigation';
 
 export const useInfoToast = createToastHook('info');
 export const useErrorToast = createToastHook('error');
