@@ -6,7 +6,6 @@ import { Tag, TagCloseButton, TagLabel, VStack, Wrap, WrapItem } from '@chakra-u
 import { useRecipeStore } from '@recipe/stores';
 import { GET_TAGS } from '@recipe/graphql/queries/tag';
 import { REMOVE_TAG } from '@recipe/graphql/mutations/tag';
-import { useLayoutAnimation } from '@recipe/common/contexts';
 import { useErrorToast, useInfoToast } from '@recipe/common/hooks';
 
 import { EditableTag } from './EditableTag';
@@ -14,7 +13,6 @@ import { EditableTag } from './EditableTag';
 export function EditableTagList() {
     const errorToast = useErrorToast();
     const infoToast = useInfoToast();
-    const layout = useLayoutAnimation();
     // Preload tags
     useQuery(GET_TAGS);
     const { finished, removeTag } = useRecipeStore(
@@ -50,7 +48,7 @@ export function EditableTagList() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 key={tag.key}
-                layout={layout}
+                layout='position'
             >
                 <WrapItem>
                     <Tag colorScheme={tag.isNew ? 'green' : undefined}>
@@ -76,7 +74,7 @@ export function EditableTagList() {
                 <Wrap spacing='10px'>
                     <AnimatePresence>{tagsList}</AnimatePresence>
                 </Wrap>
-                <motion.div layout={layout}>
+                <motion.div layout='position'>
                     <EditableTag />
                 </motion.div>
             </LayoutGroup>

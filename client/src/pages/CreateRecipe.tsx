@@ -22,10 +22,14 @@ export function CreateRecipe() {
         useShallow((state) => ({ images: state.images, resetImages: state.resetImages }))
     );
     const resetRecipe = useRecipeStore((state) => state.resetRecipe);
+    // Rendering before the reset paints whatever recipe the store last held, and the
+    // stale items then animate out via AnimatePresence, visibly collapsing the page.
+    const [storeReady, setStoreReady] = useState(false);
     useEffect(() => {
         // Resets on unmount and mount
         resetImages();
         resetRecipe();
+        setStoreReady(true);
         return () => {
             resetImages();
             resetRecipe();
@@ -99,6 +103,10 @@ export function CreateRecipe() {
         });
         setTimeout(() => navigate(PATH.ROOT), DELAY_SHORT);
     };
+
+    if (!storeReady) {
+        return null;
+    }
 
     return (
         <EditableRecipe

@@ -52,6 +52,10 @@ export function EditRecipe() {
     );
     // ---------------------------------------------------------------------
     const [recipe, setRecipe] = useState<RecipeView>(null);
+    // Identifier of the recipe the store is currently hydrated for. Rendering before
+    // hydration paints stale store content, then re-keyed items exit/enter via
+    // AnimatePresence and the page visibly collapses when the exits finish.
+    const [hydratedFor, setHydratedFor] = useState<string | null>(null);
     const [showConfirmAction, setShowConfirmAction] = useState(false);
     const navigate = useNavigate();
     const { titleIdentifier } = useParams();
@@ -94,89 +98,91 @@ export function EditRecipe() {
     }, [resetSaveRecipe, titleIdentifier]);
     const { data, loading, error } = useQuery(GET_RECIPE, {
         variables: { filter: titleIdentifier ? { titleIdentifier } : {} },
-        onCompleted: async (data) => {
-            if (!data.recipeOne) {
-                return;
-            }
-            const recipe = data.recipeOne;
-            setRecipe(recipe);
-            recipeState.setTitle(recipe.title);
-            recipeState.setNumServings(recipe.numServings);
-            recipeState.resetIngredients();
-            recipe.ingredientSubsections.forEach((sub, index) => {
-                recipeState.setIngredientSection(
-                    index,
-                    sub.ingredients.map((i) => queryIngredientToFinished(i)),
-                    sub.name || undefined
-                );
-                if (
-                    recipe.ingredientSubsections.length > 1 ||
-                    recipe.ingredientSubsections[0].name
-                ) {
-                    recipeState.addIngredientSection();
-                }
-            });
-            recipeState.resetInstructions();
-            recipe.instructionSubsections.forEach((sub, index) => {
-                recipeState.setInstructionSection(
-                    index,
-                    [...sub.instructions, ''],
-                    sub.name || undefined
-                );
-                if (
-                    recipe.instructionSubsections.length > 1 ||
-                    recipe.instructionSubsections[0].name
-                ) {
-                    recipeState.addInstructionSection();
-                }
-            });
-            if (recipe.notes) {
-                recipeState.setNotes(recipe.notes);
-            } else {
-                recipeState.setNotes('');
-            }
-            recipeState.setTags(
-                data.recipeOne.tags.map((tag) => {
-                    return {
-                        _id: tag._id,
-                        value: tag.value,
-                        key: crypto.randomUUID(),
-                        isNew: false,
-                    };
-                })
+    });
+    // Hydrate the recipe store from the query result. This runs as an effect keyed
+    // on the route identifier rather than as onCompleted: Apollo does not reliably
+    // re-invoke onCompleted when the query variables change (e.g. the redirect from
+    // a recipe to its vegan version), and with cached data it can fire before other
+    // mount effects, which would let a mount-time reset wipe the hydrated store.
+    useEffect(() => {
+        const recipe = data?.recipeOne;
+        if (loading || !recipe || hydratedFor === (titleIdentifier ?? '')) {
+            return;
+        }
+        setRecipe(recipe);
+        recipeState.setTitle(recipe.title);
+        recipeState.setNumServings(recipe.numServings);
+        recipeState.resetIngredients();
+        recipe.ingredientSubsections.forEach((sub, index) => {
+            recipeState.setIngredientSection(
+                index,
+                sub.ingredients.map((i) => queryIngredientToFinished(i)),
+                sub.name || undefined
             );
-            if (recipe.source) {
-                recipeState.setSource(recipe.source);
-            } else {
-                recipeState.setSource('');
+            if (recipe.ingredientSubsections.length > 1 || recipe.ingredientSubsections[0].name) {
+                recipeState.addIngredientSection();
             }
-            if (recipe.isIngredient && recipe.pluralTitle) {
-                recipeState.setAsIngredient();
-                recipeState.setPluralTitle(recipe.pluralTitle);
-            } else {
-                recipeState.resetAsIngredient();
+        });
+        recipeState.resetInstructions();
+        recipe.instructionSubsections.forEach((sub, index) => {
+            recipeState.setInstructionSection(
+                index,
+                [...sub.instructions, ''],
+                sub.name || undefined
+            );
+            if (recipe.instructionSubsections.length > 1 || recipe.instructionSubsections[0].name) {
+                recipeState.addInstructionSection();
             }
-            recipeState.setCreateVeganVersion(!!recipe.veganVersion);
-            if (recipe.images) {
-                try {
-                    const images = await Promise.all(
-                        recipe.images.map(async (img) => {
-                            const res = await fetch(`${GRAPHQL_URL}${img.origUrl}`);
-                            const blob = await res.blob();
-                            return new File([blob], img.origUrl, { type: blob.type });
-                        })
-                    );
-                    setImages(images);
-                } catch (e: unknown) {
+        });
+        if (recipe.notes) {
+            recipeState.setNotes(recipe.notes);
+        } else {
+            recipeState.setNotes('');
+        }
+        recipeState.setTags(
+            recipe.tags.map((tag) => {
+                return {
+                    _id: tag._id,
+                    value: tag.value,
+                    key: tag._id,
+                    isNew: false,
+                };
+            })
+        );
+        if (recipe.source) {
+            recipeState.setSource(recipe.source);
+        } else {
+            recipeState.setSource('');
+        }
+        if (recipe.isIngredient && recipe.pluralTitle) {
+            recipeState.setAsIngredient();
+            recipeState.setPluralTitle(recipe.pluralTitle);
+        } else {
+            recipeState.resetAsIngredient();
+        }
+        recipeState.setCreateVeganVersion(!!recipe.veganVersion);
+        // Store hydration is complete; images load in below without shifting the
+        // content above them, so don't hold up rendering for the fetch.
+        setHydratedFor(titleIdentifier ?? '');
+        if (recipe.images) {
+            Promise.all(
+                recipe.images.map(async (img) => {
+                    const res = await fetch(`${GRAPHQL_URL}${img.origUrl}`);
+                    const blob = await res.blob();
+                    return new File([blob], img.origUrl, { type: blob.type });
+                })
+            )
+                .then(setImages)
+                .catch((e: unknown) => {
                     let description = 'An error occurred while loading images';
                     if (e instanceof Error) {
                         description = e.message;
                     }
                     errorToast({ title: 'Error loading images', description, position: 'top' });
-                }
-            }
-        },
-    });
+                });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data, loading, titleIdentifier, hydratedFor]);
     const { addRatingWithToast } = useAddRating();
 
     if (loading) {
@@ -185,6 +191,10 @@ export function EditRecipe() {
 
     if (error || !data || !data.recipeOne) {
         return <div>Error: {error?.message}</div>;
+    }
+
+    if (hydratedFor !== (titleIdentifier ?? '')) {
+        return <div>Loading...</div>;
     }
 
     const handleSubmitMutation = async (modifiedRecipe: UpdateByIdRecipeModifyInput) => {

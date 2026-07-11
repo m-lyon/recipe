@@ -7,7 +7,6 @@ import { DEBUG } from '@recipe/constants';
 import { useRecipeStore } from '@recipe/stores';
 import { useErrorToast } from '@recipe/common/hooks';
 import { EditableText } from '@recipe/common/components';
-import { useLayoutAnimation } from '@recipe/common/contexts';
 import { DELETE_UNIT } from '@recipe/graphql/mutations/unit';
 import { DELETE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 import { EditableIngredient, FinishedIngredient } from '@recipe/features/recipeIngredient';
@@ -48,7 +47,6 @@ export function EditableIngredientSubsection(props: Props) {
         (state) => state.ingredientSections.at(-1)!.finished.length > 0
     );
     const errorToast = useErrorToast();
-    const layout = useLayoutAnimation();
     const [deleteUnit] = useMutation(DELETE_UNIT, {
         onCompleted: (data) => {
             if (DEBUG) {
@@ -164,7 +162,7 @@ export function EditableIngredientSubsection(props: Props) {
                     >
                         <AnimatePresence>{finishedIngredients}</AnimatePresence>
                     </Reorder.Group>
-                    <motion.div layout={layout} transition={{ duration: 0.3 }}>
+                    <motion.div layout='position' transition={{ duration: 0.3 }}>
                         <EditableIngredient section={section} />
                     </motion.div>
                 </LayoutGroup>
