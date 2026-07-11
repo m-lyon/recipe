@@ -4,10 +4,10 @@ import { Box, Container, Grid, GridItem } from '@chakra-ui/react';
 
 import { DELAY_SHORT } from '@recipe/constants';
 import { useMinimumLoading } from '@recipe/common/hooks';
-import { BraisingLoader } from '@recipe/common/components';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { ImageViewerRecipe } from '@recipe/features/images';
-import { IngredientsTab, InstructionsTab, Title } from '@recipe/features/viewing';
+import { BraisingLoader, PullToRefresh } from '@recipe/common/components';
+import { IngredientsTab, InstructionsTab, ShareButton, Title } from '@recipe/features/viewing';
 
 export function ViewRecipe() {
     const { titleIdentifier } = useParams();
@@ -28,6 +28,7 @@ export function ViewRecipe() {
         isIngredient && pluralTitle ? (numServings > 1 ? pluralTitle : title) : title;
     return (
         <Container maxW='container.xl' pt='60px'>
+            <PullToRefresh />
             <Grid
                 templateAreas={{
                     base: `'title'
@@ -66,6 +67,7 @@ export function ViewRecipe() {
                     <InstructionsTab recipe={data.recipeOne} />
                 </GridItem>
             </Grid>
+            <ShareButton title={titleNormed} />
         </Container>
     );
 }

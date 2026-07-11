@@ -146,7 +146,13 @@ export function RecipeCardsContainer() {
             >
                 <Masonry gutter={`${gutter}px`}>
                     {recipeCards.map((card, index) => (
-                        <Box key={index}>{card}</Box>
+                        <Box
+                            key={index}
+                            display='flex'
+                            justifyContent={{ base: 'center', md: 'flex-start' }}
+                        >
+                            {card}
+                        </Box>
                     ))}
                 </Masonry>
             </ResponsiveMasonry>
