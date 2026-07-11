@@ -2,7 +2,7 @@ import { Link as ChakraLink, VStack } from '@chakra-ui/react';
 import { Box, Flex, IconButton, Slide } from '@chakra-ui/react';
 import { useColorModeValue, useDisclosure } from '@chakra-ui/react';
 import { ArrowBackIcon, CloseIcon, HamburgerIcon } from '@chakra-ui/icons';
-import { Outlet, Link as ReactRouterLink, useLocation } from 'react-router-dom';
+import { Outlet, Link as ReactRouterLink, ScrollRestoration, useLocation } from 'react-router-dom';
 
 import { PATH } from '@recipe/constants';
 import { useSearchStore } from '@recipe/stores';
@@ -128,6 +128,7 @@ export function Navbar() {
                 </Slide>
             </VStack>
             <Outlet />
+            <ScrollRestoration />
         </>
     );
 }
