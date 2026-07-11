@@ -195,7 +195,7 @@ export function EditRecipe() {
     }
 
     if (hydratedFor !== (titleIdentifier ?? '')) {
-        return <div>Loading...</div>;
+        return <BraisingLoader h='100vh' />;
     }
 
     const handleSubmitMutation = async (modifiedRecipe: UpdateByIdRecipeModifyInput) => {
