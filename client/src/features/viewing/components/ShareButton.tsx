@@ -1,7 +1,7 @@
 import { FiShare } from 'react-icons/fi';
 import { IconButton } from '@chakra-ui/react';
 
-import { useSuccessToast } from '@recipe/common/hooks';
+import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 
 interface Props {
     title: string;
@@ -13,6 +13,7 @@ interface Props {
 export function ShareButton(props: Props) {
     const { title } = props;
     const successToast = useSuccessToast();
+    const errorToast = useErrorToast();
 
     const handleShare = async () => {
         const url = window.location.href;
@@ -22,13 +23,17 @@ export function ShareButton(props: Props) {
             } catch (error) {
                 // Ignore user-initiated cancellation of the share sheet.
                 if ((error as Error).name !== 'AbortError') {
-                    throw error;
+                    errorToast({ title: 'Unable to share', position: 'top' });
                 }
             }
             return;
         }
-        await navigator.clipboard.writeText(url);
-        successToast({ title: 'Link copied', position: 'top' });
+        if (navigator.clipboard) {
+            await navigator.clipboard.writeText(url);
+            successToast({ title: 'Link copied', position: 'top' });
+        } else {
+            errorToast({ title: 'Unable to copy link', position: 'top' });
+        }
     };
 
     return (
