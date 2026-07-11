@@ -4,7 +4,7 @@ export { useStandalone } from './useStandalone';
 import { createToastHook } from './toastCreator';
 export { useMinimumLoading } from './useMinimumLoading';
 export { useBackNavigation } from './useBackNavigation';
-export { usePullToRefresh, PULL_THRESHOLD, PULL_MAX } from './usePullToRefresh';
+export { usePullToRefresh, PULL_THRESHOLD } from './usePullToRefresh';
 
 export const useInfoToast = createToastHook('info');
 export const useErrorToast = createToastHook('error');

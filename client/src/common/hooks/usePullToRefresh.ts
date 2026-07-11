@@ -4,13 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useStandalone } from './useStandalone';
 
 export const PULL_THRESHOLD = 80;
-export const PULL_MAX = 120;
+const PULL_MAX = 120;
 
-// Native-style pull-to-refresh for read screens in standalone PWA mode, where the
-// browser's own pull-to-refresh is unavailable. Window-scroll based (the app scrolls
-// the document and the recipe list uses react-infinite-scroll-component in window mode).
-// Refreshes stale data via a soft Apollo refetch of active queries rather than reloading
-// the page.
 export function usePullToRefresh() {
     const isStandalone = useStandalone();
     const client = useApolloClient();
