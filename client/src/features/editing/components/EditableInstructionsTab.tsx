@@ -17,7 +17,13 @@ export function EditableInstructionsTab({ showVeganCheckbox, veganVersion }: Pro
             <Flex direction={{ base: 'column', md: 'row' }} justifyContent='space-between'>
                 <AsIngredientCheckbox />
                 {showVeganCheckbox && (
-                    <Box width='100%' display='flex' justifyContent='center' alignItems='flex-end'>
+                    <Box
+                        width='100%'
+                        display='flex'
+                        justifyContent={{ base: 'flex-start', md: 'center' }}
+                        alignItems='flex-end'
+                        marginTop={{ base: 2, md: 0 }}
+                    >
                         <CreateVeganVersionCheckbox veganVersion={veganVersion} />
                     </Box>
                 )}

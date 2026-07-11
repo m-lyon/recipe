@@ -8,11 +8,13 @@ import { useUser } from '@recipe/features/user';
 import { useSearch } from '@recipe/features/search';
 import { useErrorToast } from '@recipe/common/hooks';
 import { ConfirmModal } from '@recipe/common/components';
+import { useMinimumLoading } from '@recipe/common/hooks';
+import { BraisingLoader } from '@recipe/common/components';
 import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { archiveRecipeCache } from '@recipe/features/editing';
 import { ARCHIVE_RECIPE } from '@recipe/graphql/mutations/recipe';
-import { FETCH_MORE_NUM, INIT_LOAD_NUM } from '@recipe/constants';
 import { archiveRecipeConfirmConfig } from '@recipe/features/editing';
+import { DELAY_SHORT, FETCH_MORE_NUM, INIT_LOAD_NUM } from '@recipe/constants';
 
 import { RecipeCard } from './RecipeCard';
 import { ImageRecipeCard } from './ImageRecipeCard';
@@ -55,6 +57,7 @@ export function RecipeCardsContainer() {
             countFilter: defaultFilter,
         },
     });
+    const showLoader = useMinimumLoading(loading, DELAY_SHORT);
     const [show, setShow] = useState(false);
     const [recipeId, setRecipeId] = useState('');
     const { user } = useUser();
@@ -92,8 +95,8 @@ export function RecipeCardsContainer() {
         await archiveRecipe({ variables: { id: recipeId } });
     };
 
-    if (loading) {
-        return <div>Loading...</div>;
+    if (showLoader) {
+        return <BraisingLoader h='100%' />;
     }
 
     if (error || !recipeData) {
@@ -135,7 +138,7 @@ export function RecipeCardsContainer() {
                 });
             }}
             hasMore={recipeData.recipeCount ? recipeData.recipeCount > recipes.length : false}
-            loader={<h4 style={{ textAlign: 'center' }}>Loading...</h4>}
+            loader={<BraisingLoader />}
         >
             <ResponsiveMasonry
                 columnsCountBreakPoints={breakPoints}
@@ -143,7 +146,13 @@ export function RecipeCardsContainer() {
             >
                 <Masonry gutter={`${gutter}px`}>
                     {recipeCards.map((card, index) => (
-                        <Box key={index}>{card}</Box>
+                        <Box
+                            key={index}
+                            display='flex'
+                            justifyContent={{ base: 'center', md: 'flex-start' }}
+                        >
+                            {card}
+                        </Box>
                     ))}
                 </Masonry>
             </ResponsiveMasonry>
