@@ -5,8 +5,8 @@ import { DeleteRecipeMutation } from '@recipe/graphql/generated';
 import { UnarchiveRecipeMutation } from '@recipe/graphql/generated';
 import { mockSpicyTag } from '@recipe/graphql/queries/__mocks__/tag';
 import { CreateVeganRecipeMutation } from '@recipe/graphql/generated';
-import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 import { CREATE_VEGAN_RECIPE } from '@recipe/graphql/mutations/recipe';
+import { mockTablespoon } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockApple } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockDiced } from '@recipe/graphql/queries/__mocks__/prepMethod';
 import { mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -191,6 +191,48 @@ export const mockUpdateRecipeInstructionsEdit = {
                             __typename: 'InstructionSubsection',
                             name: null,
                             instructions: ['Instruction one.', 'New instruction!'],
+                        },
+                    ],
+                },
+            },
+        } satisfies UpdateRecipeMutation,
+    },
+};
+export const mockUpdateRecipeInstructionsInsert = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: {
+                ...recipeOneVars.recipe,
+                instructionSubsections: [
+                    {
+                        instructions: [
+                            'Instruction one.',
+                            'Inserted instruction.',
+                            'Instruction two.',
+                        ],
+                    },
+                ],
+            },
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: {
+                    ...recipeOneData.record,
+                    instructionSubsections: [
+                        {
+                            __typename: 'InstructionSubsection',
+                            name: null,
+                            instructions: [
+                                'Instruction one.',
+                                'Inserted instruction.',
+                                'Instruction two.',
+                            ],
                         },
                     ],
                 },
@@ -392,8 +434,8 @@ export const mockUpdateRecipeIngredientsAdd = {
                         ingredients: [
                             ...recipeOneVars.recipe.ingredientSubsections[1].ingredients,
                             {
-                                quantity: '4',
-                                unit: mockTeaspoon._id,
+                                quantity: '4/3',
+                                unit: mockTablespoon._id,
                                 ingredient: mockApple._id,
                                 prepMethod: mockDiced._id,
                             },
@@ -420,8 +462,8 @@ export const mockUpdateRecipeIngredientsAdd = {
                                 {
                                     _id: mockRecipeIngredientIdSeven,
                                     __typename: 'RecipeIngredient',
-                                    quantity: '4',
-                                    unit: mockTeaspoon,
+                                    quantity: '4/3',
+                                    unit: mockTablespoon,
                                     size: null,
                                     ingredient: mockApple,
                                     prepMethod: mockDiced,
@@ -449,8 +491,8 @@ export const mockUpdateRecipeIngredientsEdit = {
                                 (ingr: RecipeIngredient) => ingr.quantity !== '2'
                             ),
                             {
-                                quantity: '4',
-                                unit: mockTeaspoon._id,
+                                quantity: '4/3',
+                                unit: mockTablespoon._id,
                                 ingredient: mockApple._id,
                                 prepMethod: mockDiced._id,
                             },
@@ -479,8 +521,8 @@ export const mockUpdateRecipeIngredientsEdit = {
                                 {
                                     _id: mockRecipeIngredientIdThree,
                                     __typename: 'RecipeIngredient',
-                                    quantity: '4',
-                                    unit: mockTeaspoon,
+                                    quantity: '4/3',
+                                    unit: mockTablespoon,
                                     size: null,
                                     ingredient: mockApple,
                                     prepMethod: mockDiced,
@@ -634,8 +676,8 @@ export const mockUpdateRecipeAddIngredientSubsection = {
                         name: 'New Section',
                         ingredients: [
                             {
-                                quantity: '5',
-                                unit: mockTeaspoon._id,
+                                quantity: '5/3',
+                                unit: mockTablespoon._id,
                                 ingredient: mockApple._id,
                                 prepMethod: mockDiced._id,
                             },
@@ -661,8 +703,8 @@ export const mockUpdateRecipeAddIngredientSubsection = {
                                 {
                                     _id: mockRecipeIngredientIdSeven,
                                     __typename: 'RecipeIngredient',
-                                    quantity: '5',
-                                    unit: mockTeaspoon,
+                                    quantity: '5/3',
+                                    unit: mockTablespoon,
                                     size: null,
                                     ingredient: mockApple,
                                     prepMethod: mockDiced,
