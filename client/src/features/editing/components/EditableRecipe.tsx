@@ -41,7 +41,7 @@ export function EditableRecipe(props: Props) {
             <Grid
                 templateAreas={{
                     base: `'title'
-                            'tags' 
+                            'tags'
                             'ingredients'
                             'instructions'
                             'images'

@@ -6,6 +6,7 @@ import { Reference, gql, useMutation, useQuery } from '@apollo/client';
 import { ReservedTags } from '@recipe/graphql/enums';
 import { useAddRating } from '@recipe/features/rating';
 import { useUploadImages } from '@recipe/features/images';
+import { BraisingLoader } from '@recipe/common/components';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { formatCalculatedTag } from '@recipe/features/tags';
 import { useImagesStore, useRecipeStore } from '@recipe/stores';
@@ -41,6 +42,10 @@ export function CreateVeganRecipe() {
     const errorToast = useErrorToast();
     const successToast = useSuccessToast();
     const [rating, setRating] = useState<number>(0);
+    // Identifier of the recipe the store is currently hydrated for. Rendering before
+    // hydration paints stale store content, then re-keyed items exit/enter via
+    // AnimatePresence and the page visibly collapses when the exits finish.
+    const [hydratedFor, setHydratedFor] = useState<string | null>(null);
 
     const { images, setImages, resetImages } = useImagesStore(
         useShallow((state) => ({
@@ -71,8 +76,6 @@ export function CreateVeganRecipe() {
     );
 
     useEffect(() => {
-        resetImages();
-        recipeState.resetRecipe();
         return () => {
             resetImages();
             recipeState.resetRecipe();
@@ -81,76 +84,89 @@ export function CreateVeganRecipe() {
 
     const { data, loading, error } = useQuery(GET_RECIPE, {
         variables: { filter: { titleIdentifier: originalTitleIdentifier } },
-        onCompleted: async (data) => {
-            if (!data.recipeOne) return;
-            const recipe = data.recipeOne;
-            recipeState.setTitle(recipe.title);
-            recipeState.setNumServings(recipe.numServings);
-            recipeState.resetIngredients();
-            recipe.ingredientSubsections.forEach((sub, index) => {
-                recipeState.setIngredientSection(
-                    index,
-                    sub.ingredients.map((i) => queryIngredientToFinished(i)),
-                    sub.name || undefined
-                );
-                if (
-                    index < recipe.ingredientSubsections.length - 1 ||
-                    recipe.ingredientSubsections.length > 1 ||
-                    recipe.ingredientSubsections[0].name
-                ) {
-                    recipeState.addIngredientSection();
-                }
-            });
-            recipeState.resetInstructions();
-            recipe.instructionSubsections.forEach((sub, index) => {
-                recipeState.setInstructionSection(
-                    index,
-                    [...sub.instructions, ''],
-                    sub.name || undefined
-                );
-                if (
-                    index < recipe.instructionSubsections.length - 1 ||
-                    recipe.instructionSubsections.length > 1 ||
-                    recipe.instructionSubsections[0].name
-                ) {
-                    recipeState.addInstructionSection();
-                }
-            });
-            recipeState.setNotes(recipe.notes ?? '');
-            recipeState.setTags(
-                recipe.tags.map((tag) => ({
-                    _id: tag._id,
-                    value: tag.value,
-                    key: crypto.randomUUID(),
-                    isNew: false,
-                }))
+    });
+    // Hydrate the recipe store from the query result. This runs as an effect keyed
+    // on the route identifier rather than as onCompleted: Apollo does not reliably
+    // re-invoke onCompleted when the query variables change, and with cached data it
+    // can fire before mount effects, which would let the mount-time reset wipe the
+    // hydrated store. The reset lives here for the same reason: it must run
+    // immediately before hydration, not race against it.
+    useEffect(() => {
+        const recipe = data?.recipeOne;
+        if (loading || !recipe || hydratedFor === (originalTitleIdentifier ?? '')) {
+            return;
+        }
+        resetImages();
+        recipeState.resetRecipe();
+        recipeState.setTitle(recipe.title);
+        recipeState.setNumServings(recipe.numServings);
+        recipeState.resetIngredients();
+        recipe.ingredientSubsections.forEach((sub, index) => {
+            recipeState.setIngredientSection(
+                index,
+                sub.ingredients.map((i) => queryIngredientToFinished(i)),
+                sub.name || undefined
             );
-            recipeState.setSource(recipe.source ?? '');
-            if (recipe.isIngredient && recipe.pluralTitle) {
-                recipeState.setAsIngredient();
-                recipeState.setPluralTitle(recipe.pluralTitle);
-            } else {
-                recipeState.resetAsIngredient();
+            if (
+                index < recipe.ingredientSubsections.length - 1 ||
+                recipe.ingredientSubsections.length > 1 ||
+                recipe.ingredientSubsections[0].name
+            ) {
+                recipeState.addIngredientSection();
             }
-            recipeState.resetCreateVeganVersion();
-            if (recipe.images) {
-                try {
-                    const fetchedImages = await Promise.all(
-                        recipe.images.map(async (img) => {
-                            const res = await fetch(`${GRAPHQL_URL}${img.origUrl}`);
-                            const blob = await res.blob();
-                            return new File([blob], img.origUrl, { type: blob.type });
-                        })
-                    );
-                    setImages(fetchedImages);
-                } catch (e: unknown) {
+        });
+        recipeState.resetInstructions();
+        recipe.instructionSubsections.forEach((sub, index) => {
+            recipeState.setInstructionSection(
+                index,
+                [...sub.instructions, ''],
+                sub.name || undefined
+            );
+            if (
+                index < recipe.instructionSubsections.length - 1 ||
+                recipe.instructionSubsections.length > 1 ||
+                recipe.instructionSubsections[0].name
+            ) {
+                recipeState.addInstructionSection();
+            }
+        });
+        recipeState.setNotes(recipe.notes ?? '');
+        recipeState.setTags(
+            recipe.tags.map((tag) => ({
+                _id: tag._id,
+                value: tag.value,
+                key: tag._id,
+                isNew: false,
+            }))
+        );
+        recipeState.setSource(recipe.source ?? '');
+        if (recipe.isIngredient && recipe.pluralTitle) {
+            recipeState.setAsIngredient();
+            recipeState.setPluralTitle(recipe.pluralTitle);
+        } else {
+            recipeState.resetAsIngredient();
+        }
+        recipeState.resetCreateVeganVersion();
+        // Store hydration is complete; images load in below without shifting the
+        // content above them, so don't hold up rendering for the fetch.
+        setHydratedFor(originalTitleIdentifier ?? '');
+        if (recipe.images) {
+            Promise.all(
+                recipe.images.map(async (img) => {
+                    const res = await fetch(`${GRAPHQL_URL}${img.origUrl}`);
+                    const blob = await res.blob();
+                    return new File([blob], img.origUrl, { type: blob.type });
+                })
+            )
+                .then(setImages)
+                .catch((e: unknown) => {
                     let description = 'An error occurred while loading images';
                     if (e instanceof Error) description = e.message;
                     errorToast({ title: 'Error loading images', description, position: 'top' });
-                }
-            }
-        },
-    });
+                });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data, loading, originalTitleIdentifier, hydratedFor]);
 
     const [createRecipe, { loading: recipeLoading, data: createResponse }] = useMutation(
         CREATE_VEGAN_RECIPE,
@@ -269,8 +285,10 @@ export function CreateVeganRecipe() {
         setTimeout(() => navigate(PATH.ROOT), DELAY_SHORT);
     };
 
-    if (loading) return <div>Loading...</div>;
-    if (error || !data?.recipeOne) return <div>Recipe not found</div>;
+    if (error || (!loading && !data?.recipeOne)) return <div>Recipe not found</div>;
+    if (loading || !data?.recipeOne || hydratedFor !== (originalTitleIdentifier ?? '')) {
+        return <BraisingLoader h='100vh' />;
+    }
 
     return (
         <EditableRecipe
