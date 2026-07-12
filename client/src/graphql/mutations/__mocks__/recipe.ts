@@ -198,6 +198,48 @@ export const mockUpdateRecipeInstructionsEdit = {
         } satisfies UpdateRecipeMutation,
     },
 };
+export const mockUpdateRecipeInstructionsInsert = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: {
+                ...recipeOneVars.recipe,
+                instructionSubsections: [
+                    {
+                        instructions: [
+                            'Instruction one.',
+                            'Inserted instruction.',
+                            'Instruction two.',
+                        ],
+                    },
+                ],
+            },
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: {
+                    ...recipeOneData.record,
+                    instructionSubsections: [
+                        {
+                            __typename: 'InstructionSubsection',
+                            name: null,
+                            instructions: [
+                                'Instruction one.',
+                                'Inserted instruction.',
+                                'Instruction two.',
+                            ],
+                        },
+                    ],
+                },
+            },
+        } satisfies UpdateRecipeMutation,
+    },
+};
 export const mockUpdateRecipeInstructionsAdd = {
     request: {
         query: UPDATE_RECIPE,

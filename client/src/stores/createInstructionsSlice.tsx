@@ -16,6 +16,7 @@ interface Subsection {
 export interface InstructionSectionsSlice {
     instructionSections: Subsection[];
     addEmptyInstructionLine: (section: number) => void;
+    insertInstructionLine: (section: number, index: number) => void;
     removeInstruction: (section: number, index: number) => void;
     setInstruction: (section: number, index: number, value: string) => void;
     setInstructionSection: (section: number, lines: string[], name?: string) => void;
@@ -39,6 +40,16 @@ export const createInstructionsSlice: StateCreator<
         set(
             produce((state: InstructionSectionsSlice) => {
                 state.instructionSections[index].instructions.push(getEmptyLine());
+            })
+        ),
+    insertInstructionLine: (section: number, index: number) =>
+        set(
+            produce((state: InstructionSectionsSlice) => {
+                state.instructionSections[section].instructions.splice(
+                    index + 1,
+                    0,
+                    getEmptyLine()
+                );
             })
         ),
     removeInstruction: (section: number, index: number) =>

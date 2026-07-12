@@ -11,11 +11,13 @@ interface Props {
 }
 export function EditableInstructionList(props: Props) {
     const { section } = props;
-    const lastInputRef = useRef<HTMLTextAreaElement>(null);
-    const { instructions, addLine, setInstruction, removeLine } = useRecipeStore(
+    const focusRef = useRef<HTMLTextAreaElement>(null);
+    const pendingFocusIndex = useRef<number | null>(null);
+    const { instructions, addLine, insertLine, setInstruction, removeLine } = useRecipeStore(
         useShallow((state) => ({
             instructions: state.instructionSections[section].instructions,
             addLine: state.addEmptyInstructionLine,
+            insertLine: state.insertInstructionLine,
             setInstruction: state.setInstruction,
             removeLine: state.removeInstruction,
         }))
@@ -43,11 +45,21 @@ export function EditableInstructionList(props: Props) {
             }
         };
         const handleEnter = () => {
-            if (lastInputRef.current) {
-                setTimeout(() => {
-                    lastInputRef.current?.focus();
-                }, 0);
+            // Empty lines don't spawn another blank; blur-cleanup handles them.
+            if (instr.value.trim() === '') {
+                return;
             }
+            // Insert a blank instruction immediately after this line and move
+            // focus to it. For the last line, handleSubmit (onBlur) has already
+            // appended the trailing blank, so only insert when not last.
+            if (!isLast) {
+                insertLine(section, index);
+            }
+            pendingFocusIndex.current = index + 1;
+            setTimeout(() => {
+                focusRef.current?.focus();
+                pendingFocusIndex.current = null;
+            }, 0);
         };
 
         return (
@@ -66,7 +78,7 @@ export function EditableInstructionList(props: Props) {
                         handleChange={handleChange}
                         handleSubmit={handleSubmit}
                         handleEnter={handleEnter}
-                        optionalRef={index === instructions.length - 1 ? lastInputRef : null}
+                        optionalRef={index === pendingFocusIndex.current ? focusRef : null}
                         fontSize='lg'
                         fontWeight='600'
                         aria-label={`Enter instruction #${index + 1} for subsection ${section + 1}`}
