@@ -1,5 +1,6 @@
-import { useRef } from 'react';
+import { flushSync } from 'react-dom';
 import { motion } from 'framer-motion';
+import { createRef, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { ListItem, OrderedList } from '@chakra-ui/react';
 
@@ -11,8 +12,6 @@ interface Props {
 }
 export function EditableInstructionList(props: Props) {
     const { section } = props;
-    const focusRef = useRef<HTMLTextAreaElement>(null);
-    const pendingFocusIndex = useRef<number | null>(null);
     const { instructions, addLine, insertLine, setInstruction, removeLine } = useRecipeStore(
         useShallow((state) => ({
             instructions: state.instructionSections[section].instructions,
@@ -22,6 +21,18 @@ export function EditableInstructionList(props: Props) {
             removeLine: state.removeInstruction,
         }))
     );
+    // A stable ref per line, keyed by the line's key so it survives reordering
+    // and stays attached without a re-render. This lets us focus a line whether
+    // insertLine created a new blank or reused an existing one.
+    const inputRefs = useRef<Map<string, React.RefObject<HTMLTextAreaElement>>>(new Map());
+    const refFor = (key: string) => {
+        let ref = inputRefs.current.get(key);
+        if (!ref) {
+            ref = createRef<HTMLTextAreaElement>();
+            inputRefs.current.set(key, ref);
+        }
+        return ref;
+    };
 
     const instructionsList = instructions.map((instr, index) => {
         const isLast = index + 1 === instructions.length;
@@ -49,17 +60,33 @@ export function EditableInstructionList(props: Props) {
             if (instr.value.trim() === '') {
                 return;
             }
-            // Insert a blank instruction immediately after this line and move
-            // focus to it. For the last line, handleSubmit (onBlur) has already
-            // appended the trailing blank, so only insert when not last.
-            if (!isLast) {
-                insertLine(section, index);
+            // Ensure a blank instruction exists immediately after this line and
+            // move focus to it. insertLine returns the key of that line (a new
+            // blank, or an existing one it reused). flushSync commits any newly
+            // inserted line synchronously so its ref is attached before we focus.
+            let focusKey = '';
+            flushSync(() => {
+                focusKey = insertLine(section, index);
+            });
+            inputRefs.current.get(focusKey)?.current?.focus();
+        };
+        const handleBackspace = () => {
+            // Fired only on an empty entry. Move focus (cursor at end) to an
+            // adjacent entry: the previous one, or the next one when this is the
+            // first entry. The target already exists, so no re-render is needed.
+            // Removal of the empty entry is left to the onBlur cleanup
+            // (handleSubmit), which keeps the trailing blank when this is the
+            // last entry rather than removing it.
+            if (instructions.length === 1) {
+                return; // only the trailing blank exists; nowhere to move
             }
-            pendingFocusIndex.current = index + 1;
-            setTimeout(() => {
-                focusRef.current?.focus();
-                pendingFocusIndex.current = null;
-            }, 0);
+            const targetKey = instructions[index === 0 ? index + 1 : index - 1].key;
+            const target = inputRefs.current.get(targetKey)?.current;
+            if (target) {
+                target.focus();
+                const end = target.value.length;
+                target.setSelectionRange(end, end);
+            }
         };
 
         return (
@@ -78,7 +105,8 @@ export function EditableInstructionList(props: Props) {
                         handleChange={handleChange}
                         handleSubmit={handleSubmit}
                         handleEnter={handleEnter}
-                        optionalRef={index === pendingFocusIndex.current ? focusRef : null}
+                        handleBackspace={handleBackspace}
+                        optionalRef={refFor(instr.key)}
                         fontSize='lg'
                         fontWeight='600'
                         aria-label={`Enter instruction #${index + 1} for subsection ${section + 1}`}

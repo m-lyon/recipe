@@ -16,7 +16,7 @@ interface Subsection {
 export interface InstructionSectionsSlice {
     instructionSections: Subsection[];
     addEmptyInstructionLine: (section: number) => void;
-    insertInstructionLine: (section: number, index: number) => void;
+    insertInstructionLine: (section: number, index: number) => string;
     removeInstruction: (section: number, index: number) => void;
     setInstruction: (section: number, index: number, value: string) => void;
     setInstructionSection: (section: number, lines: string[], name?: string) => void;
@@ -42,16 +42,27 @@ export const createInstructionsSlice: StateCreator<
                 state.instructionSections[index].instructions.push(getEmptyLine());
             })
         ),
-    insertInstructionLine: (section: number, index: number) =>
+    insertInstructionLine: (section: number, index: number) => {
+        // Returns the key of the line now following `index` — either a freshly
+        // inserted blank or, if a blank already followed, the existing one
+        // (idempotent: don't stack a blank next to an existing blank). The
+        // caller uses this key to move focus to that line.
+        let focusKey = '';
         set(
             produce((state: InstructionSectionsSlice) => {
-                state.instructionSections[section].instructions.splice(
-                    index + 1,
-                    0,
-                    getEmptyLine()
-                );
+                const lines = state.instructionSections[section].instructions;
+                const next = lines[index + 1];
+                if (next && next.value.trim() === '') {
+                    focusKey = next.key;
+                    return;
+                }
+                const line = getEmptyLine();
+                lines.splice(index + 1, 0, line);
+                focusKey = line.key;
             })
-        ),
+        );
+        return focusKey;
+    },
     removeInstruction: (section: number, index: number) =>
         set(
             produce((state: InstructionSectionsSlice) => {
