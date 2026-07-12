@@ -1,7 +1,7 @@
 import { produce } from 'immer';
 import { StateCreator } from 'zustand';
 
-import { replaceSymbols } from '@recipe/utils/symbol';
+import { autoFormat } from '@recipe/utils/autoformat';
 
 import { RecipeState } from './useRecipeStore';
 
@@ -50,8 +50,7 @@ export const createInstructionsSlice: StateCreator<
     setInstruction: (section: number, index: number, value: string) =>
         set(
             produce((state: InstructionSectionsSlice) => {
-                state.instructionSections[section].instructions[index].value =
-                    replaceSymbols(value);
+                state.instructionSections[section].instructions[index].value = autoFormat(value);
             })
         ),
     setInstructionSection: (section: number, lines: string[], name?: string) =>
