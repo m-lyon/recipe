@@ -23,16 +23,19 @@ export function useUnitConversion(): UseUnitConversionReturnType {
         if (loading || error || !data) {
             return { quantity, unit };
         }
-        const unitConversion = data.unitConversionMany.find((conversion) =>
-            conversion.rules.some((rule) => rule.unit._id === unit._id)
+        const unitConversion = data.unitConversionMany.find(
+            (conversion) =>
+                conversion.baseUnit._id === unit._id ||
+                conversion.rules.some((rule) => rule.unit._id === unit._id)
         );
         if (!unitConversion) {
             return { quantity, unit };
         }
-        // Get base conversion factor
-        const currentUnit = unitConversion.rules.find((rule) => rule.unit._id === unit._id);
-        // currentUnit cannot be undefined because of the find above
-        return applyConversion(quantity, currentUnit!.baseToUnitConversion, unitConversion);
+        // Get base conversion factor. When the unit is the conversion's base unit
+        // the quantity is already expressed in base units, so the factor is 1.
+        const currentRule = unitConversion.rules.find((rule) => rule.unit._id === unit._id);
+        const baseToUnitConversion = currentRule ? currentRule.baseToUnitConversion : 1;
+        return applyConversion(quantity, baseToUnitConversion, unitConversion);
     };
 
     return { apply };
