@@ -34,6 +34,15 @@ export function EditableInstructionList(props: Props) {
         return ref;
     };
 
+    // Drop refs for lines that no longer exist so the map can't grow unbounded
+    // across repeated insert/remove cycles. Deleting during key iteration is safe.
+    const liveKeys = new Set(instructions.map((instr) => instr.key));
+    for (const key of inputRefs.current.keys()) {
+        if (!liveKeys.has(key)) {
+            inputRefs.current.delete(key);
+        }
+    }
+
     const instructionsList = instructions.map((instr, index) => {
         const isLast = index + 1 === instructions.length;
 
