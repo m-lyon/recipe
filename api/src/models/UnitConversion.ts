@@ -43,6 +43,24 @@ const conversionRuleSchema = new Schema<ConversionRule>({
                 },
                 message: 'Unit already has conversion rule.',
             },
+            {
+                validator: function (this: HydratedDocument<ConversionRule>, unit: Types.ObjectId) {
+                    return this.baseUnit == null || !unit.equals(this.baseUnit);
+                },
+                message: 'A conversion rule cannot convert a unit to itself.',
+            },
+            {
+                validator: async function (
+                    this: HydratedDocument<ConversionRule>,
+                    unit: Types.ObjectId
+                ) {
+                    const count = await this.model('UnitConversion').countDocuments({
+                        baseUnit: unit,
+                    });
+                    return count === 0;
+                },
+                message: 'Unit is already the base unit of a conversion.',
+            },
         ],
     },
     baseUnit: { type: Schema.Types.ObjectId, required: true, ref: 'Unit', validate: unitExists() },
@@ -57,7 +75,39 @@ const conversionRuleSchema = new Schema<ConversionRule>({
 });
 
 const unitConversionSchema = new Schema<UnitConversion>({
-    baseUnit: { type: Schema.Types.ObjectId, required: true, ref: 'Unit', validate: unitExists() },
+    baseUnit: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: 'Unit',
+        validate: [
+            unitExists(),
+            {
+                validator: async function (
+                    this: HydratedDocument<UnitConversion>,
+                    baseUnit: Types.ObjectId
+                ) {
+                    const count = await this.model('UnitConversion').countDocuments({
+                        baseUnit,
+                        _id: { $ne: this._id }, // Exclude the current conversion
+                    });
+                    return count === 0;
+                },
+                message: 'A conversion with this base unit already exists.',
+            },
+            {
+                validator: async function (
+                    this: HydratedDocument<UnitConversion>,
+                    baseUnit: Types.ObjectId
+                ) {
+                    const count = await this.model('ConversionRule').countDocuments({
+                        unit: baseUnit,
+                    });
+                    return count === 0;
+                },
+                message: 'Base unit is already used as a conversion rule.',
+            },
+        ],
+    },
     rules: {
         type: [{ type: Schema.Types.ObjectId, ref: 'ConversionRule', required: true }],
         ref: 'ConversionRule',

@@ -126,6 +126,24 @@ describe('conversionRuleCreateOne', () => {
         );
     });
 
+    it('should not create a conversion rule where the unit is the same as the base unit', async function () {
+        const user = await User.findOne({ username: 'testuser2' });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
+        const record = {
+            unit: baseUnit._id,
+            baseUnit: baseUnit._id,
+            baseToUnitConversion: 1,
+            baseUnitThreshold: 1,
+        };
+        const response = await createConversionRule(this, user, record);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors);
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'ConversionRule validation failed: unit: A conversion rule cannot convert a unit to itself.'
+        );
+    });
+
     it('should not create a conversion rule if the unit does not exist', async function () {
         const user = await User.findOne({ username: 'testuser2' });
         const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
@@ -476,13 +494,6 @@ async function createConversionRuleData() {
         baseUnitThreshold: 48 / 4,
     }).save();
     assert(record2);
-    const record3 = await new ConversionRule({
-        unit: baseUnit._id,
-        baseUnit: baseUnit._id,
-        baseToUnitConversion: 1,
-        baseUnitThreshold: 1,
-    }).save();
-    assert(record3);
 }
 
 async function createUnitConversion(context, user, record) {
@@ -561,10 +572,9 @@ describe('unitConversionFindMany', () => {
         await createConversionRuleData();
         const rule1 = await ConversionRule.findOne({ baseUnitThreshold: 3 });
         const rule2 = await ConversionRule.findOne({ baseUnitThreshold: 48 / 4 });
-        const rule3 = await ConversionRule.findOne({ baseUnitThreshold: 1 });
         const unitConversion = await new UnitConversion({
-            baseUnit: rule3.baseUnit,
-            rules: [rule1._id, rule2._id, rule3._id],
+            baseUnit: rule1.baseUnit,
+            rules: [rule1._id, rule2._id],
         }).save();
         assert(unitConversion);
     });
@@ -580,12 +590,10 @@ describe('unitConversionFindMany', () => {
         const user = await User.findOne({ username: 'testuser2' });
         const rule1 = await ConversionRule.findOne({ baseUnitThreshold: 3 });
         const rule2 = await ConversionRule.findOne({ baseUnitThreshold: 48 / 4 });
-        const rule3 = await ConversionRule.findOne({ baseUnitThreshold: 1 });
         const unitConversions = await findUnitConversions(this, user, {});
-        assert.equal(unitConversions[0].rules.length, 3);
+        assert.equal(unitConversions[0].rules.length, 2);
         assert.equal(unitConversions[0].rules[0]._id, rule2._id, 'rule2 is not first');
         assert.equal(unitConversions[0].rules[1]._id, rule1._id, 'rule1 is not second');
-        assert.equal(unitConversions[0].rules[2]._id, rule3._id, 'rule3 is not third');
     });
 });
 
@@ -628,16 +636,70 @@ describe('unitConversionCreateOne', () => {
         assert.equal(createdUnitConversion.baseUnit._id, baseUnit._id);
     });
 
-    it('should create a unit conversion where the base unit is the same as one of the rules', async function () {
+    it('should not create a unit conversion where the base unit is also one of the rules', async function () {
+        const user = await User.findOne({ username: 'testuser2' });
+        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' });
+        const unit2 = await Unit.findOne({ shortSingular: 'cup' });
+        const rule1 = await ConversionRule.findOne({ unit: unit1._id });
+        const rule2 = await ConversionRule.findOne({ unit: unit2._id });
+        const record = { baseUnit: unit1._id, rules: [rule1._id, rule2._id] };
+        const response = await createUnitConversion(this, user, record);
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors);
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'UnitConversion validation failed: baseUnit: Base unit is already used as a conversion rule.'
+        );
+    });
+
+    it('should not create a unit conversion if the base unit already has a conversion', async function () {
         const user = await User.findOne({ username: 'testuser2' });
         const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
         const unit1 = await Unit.findOne({ shortSingular: 'tbsp' });
+        const unit2 = await Unit.findOne({ shortSingular: 'cup' });
         const rule1 = await ConversionRule.findOne({ unit: unit1._id });
-        const rule2 = await ConversionRule.findOne({ unit: baseUnit._id });
-        const record = { baseUnit: unit1._id, rules: [rule1._id, rule2._id] };
-        const response = await createUnitConversion(this, user, record);
-        const createdUnitConversion = parseCreatedUnitConversion(response);
-        assert.equal(createdUnitConversion.baseUnit._id, unit1._id);
+        const rule2 = await ConversionRule.findOne({ unit: unit2._id });
+        const first = await createUnitConversion(this, user, {
+            baseUnit: baseUnit._id,
+            rules: [rule1._id],
+        });
+        parseCreatedUnitConversion(first);
+        const response = await createUnitConversion(this, user, {
+            baseUnit: baseUnit._id,
+            rules: [rule2._id],
+        });
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors);
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'UnitConversion validation failed: baseUnit: A conversion with this base unit already exists.'
+        );
+    });
+
+    it('should not create a conversion rule for a unit that is already a base unit', async function () {
+        const user = await User.findOne({ username: 'testuser2' });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
+        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' });
+        const unit2 = await Unit.findOne({ shortSingular: 'cup' });
+        const rule1 = await ConversionRule.findOne({ unit: unit1._id });
+        const created = await createUnitConversion(this, user, {
+            baseUnit: baseUnit._id,
+            rules: [rule1._id],
+        });
+        parseCreatedUnitConversion(created);
+        // tsp is now a base unit, so a new rule converting tsp must be rejected
+        const response = await createConversionRule(this, user, {
+            unit: baseUnit._id,
+            baseUnit: unit2._id,
+            baseToUnitConversion: 3,
+            baseUnitThreshold: 3,
+        });
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors);
+        assert.equal(
+            response.body.singleResult.errors[0].message,
+            'ConversionRule validation failed: unit: Unit is already the base unit of a conversion.'
+        );
     });
 
     it('should create a unit, and the rules should be sorted by baseUnitThreshold', async function () {
@@ -676,8 +738,9 @@ describe('unitConversionCreateOne', () => {
         const user = await User.findOne({ username: 'testuser2' });
         const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
         const unit1 = await Unit.findOne({ shortSingular: 'tbsp' });
+        const unit2 = await Unit.findOne({ shortSingular: 'cup' });
         const rule1 = await ConversionRule.findOne({ unit: unit1._id });
-        const rule2 = await ConversionRule.findOne({ unit: baseUnit._id });
+        const rule2 = await ConversionRule.findOne({ unit: unit2._id });
         rule2.baseUnitThreshold = rule1.baseUnitThreshold;
         await rule2.save();
         const record = { baseUnit: baseUnit._id, rules: [rule1._id, rule2._id] };
@@ -793,32 +856,7 @@ describe('unitConversionUpdateById', () => {
         const record = { baseUnit: baseUnit._id, rules: [rule1._id, rule2._id] };
         const response = await createUnitConversion(this, user, record);
         const createdUnitConversion = parseCreatedUnitConversion(response);
-        const updateRule = await ConversionRule.findOne({ unit: baseUnit._id });
-        const update = { baseUnit: unit1._id, rules: [rule2._id, updateRule._id] };
-        const updateResponse = await updateUnitConversion(
-            this,
-            user,
-            createdUnitConversion._id,
-            update
-        );
-        assert.equal(updateResponse.body.kind, 'single');
-        assert.isUndefined(updateResponse.body.singleResult.errors);
-        const updatedUnitConversion = parseUpdatedUnitConversion(updateResponse);
-        assert.equal(updatedUnitConversion.baseUnit._id, unit1._id);
-    });
-
-    it('should create a unit conversion where the base unit is the same as one of the rules', async function () {
-        const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' });
-        const unit2 = await Unit.findOne({ shortSingular: 'cup' });
-        const rule1 = await ConversionRule.findOne({ unit: unit1._id });
-        const rule2 = await ConversionRule.findOne({ unit: unit2._id });
-        const rule3 = await ConversionRule.findOne({ unit: baseUnit._id });
-        const record = { baseUnit: baseUnit._id, rules: [rule1._id, rule2._id] };
-        const response = await createUnitConversion(this, user, record);
-        const createdUnitConversion = parseCreatedUnitConversion(response);
-        const update = { rules: [rule2._id, rule3._id] };
+        const update = { rules: [rule1._id] };
         const updateResponse = await updateUnitConversion(
             this,
             user,
@@ -829,6 +867,32 @@ describe('unitConversionUpdateById', () => {
         assert.isUndefined(updateResponse.body.singleResult.errors);
         const updatedUnitConversion = parseUpdatedUnitConversion(updateResponse);
         assert.equal(updatedUnitConversion.baseUnit._id, baseUnit._id);
+        assert.equal(updatedUnitConversion.rules.length, 1);
+    });
+
+    it('should not update a unit conversion so the base unit is also one of the rules', async function () {
+        const user = await User.findOne({ username: 'testuser2' });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
+        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' });
+        const unit2 = await Unit.findOne({ shortSingular: 'cup' });
+        const rule1 = await ConversionRule.findOne({ unit: unit1._id });
+        const rule2 = await ConversionRule.findOne({ unit: unit2._id });
+        const record = { baseUnit: baseUnit._id, rules: [rule1._id, rule2._id] };
+        const response = await createUnitConversion(this, user, record);
+        const createdUnitConversion = parseCreatedUnitConversion(response);
+        const update = { baseUnit: unit1._id };
+        const updateResponse = await updateUnitConversion(
+            this,
+            user,
+            createdUnitConversion._id,
+            update
+        );
+        assert.equal(updateResponse.body.kind, 'single');
+        assert.isDefined(updateResponse.body.singleResult.errors);
+        assert.equal(
+            updateResponse.body.singleResult.errors[0].message,
+            'UnitConversion validation failed: baseUnit: Base unit is already used as a conversion rule.'
+        );
     });
 
     it('should update a unit, and the rules should be sorted by baseUnitThreshold', async function () {
@@ -838,17 +902,14 @@ describe('unitConversionUpdateById', () => {
         const unit2 = await Unit.findOne({ shortSingular: 'cup' });
         const rule1 = await ConversionRule.findOne({ unit: unit1._id });
         const rule2 = await ConversionRule.findOne({ unit: unit2._id });
-        const rule3 = await ConversionRule.findOne({ unit: baseUnit._id });
         rule1.baseUnitThreshold = 2;
         rule2.baseUnitThreshold = 4;
-        rule3.baseUnitThreshold = 6;
         await rule1.save();
         await rule2.save();
-        await rule3.save();
-        const record = { baseUnit: baseUnit._id, rules: [rule2._id, rule1._id] };
+        const record = { baseUnit: baseUnit._id, rules: [rule1._id] };
         const response = await createUnitConversion(this, user, record);
         const createdUnitConversion = parseCreatedUnitConversion(response);
-        const update = { rules: [rule3._id, rule2._id] };
+        const update = { rules: [rule1._id, rule2._id] };
         const updateResponse = await updateUnitConversion(
             this,
             user,
@@ -859,7 +920,7 @@ describe('unitConversionUpdateById', () => {
         assert.isUndefined(updateResponse.body.singleResult.errors);
         const updatedUnitConversion = parseUpdatedUnitConversion(updateResponse);
         assert.equal(updatedUnitConversion.rules.length, 2);
-        assert.equal(updatedUnitConversion.rules[1]._id, rule2._id);
-        assert.equal(updatedUnitConversion.rules[0]._id, rule3._id);
+        assert.equal(updatedUnitConversion.rules[0]._id, rule2._id);
+        assert.equal(updatedUnitConversion.rules[1]._id, rule1._id);
     });
 });
