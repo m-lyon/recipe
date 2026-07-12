@@ -186,15 +186,11 @@ export function EditRecipe() {
     }, [data, loading, titleIdentifier, hydratedFor]);
     const { addRatingWithToast } = useAddRating();
 
-    if (loading) {
-        return <BraisingLoader h='100vh' />;
-    }
-
-    if (error || !data || !data.recipeOne) {
+    if (error || (!loading && !data?.recipeOne)) {
         return <div>Error: {error?.message}</div>;
     }
 
-    if (hydratedFor !== (titleIdentifier ?? '')) {
+    if (loading || !data?.recipeOne || hydratedFor !== (titleIdentifier ?? '')) {
         return <BraisingLoader h='100vh' />;
     }
 

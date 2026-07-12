@@ -6,6 +6,7 @@ import { Reference, gql, useMutation, useQuery } from '@apollo/client';
 import { ReservedTags } from '@recipe/graphql/enums';
 import { useAddRating } from '@recipe/features/rating';
 import { useUploadImages } from '@recipe/features/images';
+import { BraisingLoader } from '@recipe/common/components';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { formatCalculatedTag } from '@recipe/features/tags';
 import { useImagesStore, useRecipeStore } from '@recipe/stores';
@@ -284,9 +285,10 @@ export function CreateVeganRecipe() {
         setTimeout(() => navigate(PATH.ROOT), DELAY_SHORT);
     };
 
-    if (loading) return <div>Loading...</div>;
-    if (error || !data?.recipeOne) return <div>Recipe not found</div>;
-    if (hydratedFor !== (originalTitleIdentifier ?? '')) return <div>Loading...</div>;
+    if (error || (!loading && !data?.recipeOne)) return <div>Recipe not found</div>;
+    if (loading || !data?.recipeOne || hydratedFor !== (originalTitleIdentifier ?? '')) {
+        return <BraisingLoader h='100vh' />;
+    }
 
     return (
         <EditableRecipe
