@@ -2,7 +2,7 @@ import { produce } from 'immer';
 import { StateCreator } from 'zustand';
 
 import { isPlural } from '@recipe/utils/plural';
-import { replaceSymbols } from '@recipe/utils/symbol';
+import { autoFormat } from '@recipe/utils/autoformat';
 import { ApplyUnitConversion } from '@recipe/features/servings';
 import { VALID_NUMBER_REGEX, isRange, validateRange } from '@recipe/utils/number';
 import { ingredientDisplayValue, sizeDisplayValue } from '@recipe/utils/formatting';
@@ -90,7 +90,7 @@ function append(state: IngredientSectionsSlice, section: number, value: string) 
             component.value = value;
         } else {
             if (value === ' ') {
-                component.value = replaceSymbols(component.value + value);
+                component.value = autoFormat(component.value + value);
             } else {
                 component.value += value;
             }
