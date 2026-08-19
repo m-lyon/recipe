@@ -8,6 +8,7 @@ import { Size } from '../models/Size.js';
 import { Image } from '../models/Image.js';
 import { IMAGE_DIR } from '../constants.js';
 import { Recipe } from '../models/Recipe.js';
+import { KeyPhrase } from '../models/KeyPhrase.js';
 import { Ingredient } from '../models/Ingredient.js';
 import { PrepMethod } from '../models/PrepMethod.js';
 
@@ -23,6 +24,37 @@ export async function populateTags() {
         console.log('Dummy tags added:', createdTags);
     } catch (error) {
         console.error('Error populating tags:', error);
+    }
+}
+
+export async function populateKeyPhrases() {
+    try {
+        // Remove all existing key phrases
+        await KeyPhrase.collection.drop();
+
+        const dummyKeyPhrases = [
+            { value: 'sear', description: 'To cook at high heat until a crust forms.' },
+            { value: 'blanch', description: 'Briefly boil then plunge into ice water.' },
+            {
+                value: 'fold in',
+                description:
+                    'Gently combine a lighter mixture into a heavier one without deflating.',
+            },
+            {
+                value: 'season to taste',
+                description:
+                    'Add salt, pepper, or other seasonings according to personal preference.',
+            },
+            {
+                value: 'bring to a boil',
+                description: 'Heat liquid until it reaches 100°C (212°F) and bubbles vigorously.',
+            },
+        ];
+        const createdKeyPhrases = await KeyPhrase.create(dummyKeyPhrases);
+
+        console.log('Dummy key phrases added:', createdKeyPhrases);
+    } catch (error) {
+        console.error('Error populating key phrases:', error);
     }
 }
 

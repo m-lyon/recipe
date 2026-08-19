@@ -362,6 +362,13 @@ declare global {
      * method is created or modified.
      */
     type ModifyablePrepMethod = GetPrepMethodsQuery['prepMethodMany'][number];
+    /**
+     * Represents the key phrase data that is submitted when creating or modifying a key phrase.
+     */
+    interface ModifyableKeyPhrase {
+        value: string;
+        description: string;
+    }
 
     // - Queries and Mutations ----------------------------------------------------
     // ----------------------- GraphQL Query and Mutation Types -------------------

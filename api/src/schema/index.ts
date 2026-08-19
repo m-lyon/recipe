@@ -18,6 +18,7 @@ import { isAdmin, isImageOwnerOrAdmin } from '../middleware/authorisation.js';
 import { UnitConversionMutation, UnitConversionQuery } from './UnitConversion.js';
 import { ConversionRuleMutation, ConversionRuleQuery } from './UnitConversion.js';
 import { isDocumentOwnerOrAdmin, isVerified } from '../middleware/authorisation.js';
+import { KeyPhraseMutation, KeyPhraseQuery, KeyPhraseQueryExtra } from './KeyPhrase.js';
 import { PrepMethodMutation, PrepMethodQuery, PrepMethodQueryAdmin } from './PrepMethod.js';
 
 const isAdminMutations = composeResolvers(
@@ -26,6 +27,7 @@ const isAdminMutations = composeResolvers(
             ...TagMutation,
             ...UnitConversionMutation,
             ...ConversionRuleMutation,
+            ...KeyPhraseMutation,
         },
     },
     { 'Mutation.*': [isAdmin() as any] }
@@ -125,6 +127,8 @@ schemaComposer.Query.addFields({
     ...ImageQuery,
     ...UnitConversionQuery,
     ...ConversionRuleQuery,
+    ...KeyPhraseQuery,
+    ...KeyPhraseQueryExtra,
     ...isAdminQueries.Query,
 });
 schemaComposer.Mutation.addFields({

@@ -1,10 +1,12 @@
 import { useMeasure } from 'react-use';
+import { useQuery } from '@apollo/client';
 import { Box, Flex, Spacer, VStack } from '@chakra-ui/react';
 
 import { TagList } from '@recipe/features/tags';
 import { tagsHeight } from '@recipe/features/tags';
 import { imageCardWidth } from '@recipe/features/images';
 import { ImageViewerRecipe } from '@recipe/features/images';
+import { GET_KEY_PHRASES } from '@recipe/graphql/queries/keyPhrase';
 
 import { Source } from './Source';
 import { InstructionList } from './InstructionList';
@@ -16,6 +18,8 @@ interface Props {
 export function InstructionsTab(props: Props) {
     const { recipe } = props;
     const [ref, { height }] = useMeasure();
+    const { data: keyPhrasesData } = useQuery(GET_KEY_PHRASES);
+    const keyPhrases = keyPhrasesData?.keyPhraseMany ?? [];
     const actualTagsHeight = recipe.tags.length > 0 ? tagsHeight : 0;
     const boxHeight = (height ? height : 0) - actualTagsHeight - instrSpacing;
 
@@ -47,7 +51,10 @@ export function InstructionsTab(props: Props) {
                                     md: recipe.images.length !== 0 ? 'block' : 'none',
                                 }}
                             />
-                            <InstructionList instructions={recipe.instructionSubsections} />
+                            <InstructionList
+                                instructions={recipe.instructionSubsections}
+                                keyPhrases={keyPhrases}
+                            />
                         </Box>
                     </VStack>
                 </Box>
