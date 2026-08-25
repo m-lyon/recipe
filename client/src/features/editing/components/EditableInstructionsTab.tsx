@@ -1,16 +1,32 @@
-import { Flex, Spacer } from '@chakra-ui/react';
+import { Box, Flex, Spacer } from '@chakra-ui/react';
 
 import { EditableSource } from './EditableSource';
 import { AsIngredientCheckbox } from './AsIngredientCheckbox';
+import { CreateVeganVersionCheckbox } from './CreateVeganVersionCheckbox';
 import { EditableInstructionSubsections } from './EditableInstructionSubsections';
 
-export function EditableInstructionsTab() {
+interface Props {
+    showVeganCheckbox?: boolean;
+    veganVersion?: { _id: string; title: string; titleIdentifier: string } | null;
+}
+export function EditableInstructionsTab({ showVeganCheckbox, veganVersion }: Props) {
     return (
         <Flex direction='column' justifyContent='space-between' height='100%'>
             <EditableInstructionSubsections />
             <Spacer />
             <Flex direction={{ base: 'column', md: 'row' }} justifyContent='space-between'>
                 <AsIngredientCheckbox />
+                {showVeganCheckbox && (
+                    <Box
+                        width='100%'
+                        display='flex'
+                        justifyContent={{ base: 'flex-start', md: 'center' }}
+                        alignItems='flex-end'
+                        marginTop={{ base: 2, md: 0 }}
+                    >
+                        <CreateVeganVersionCheckbox veganVersion={veganVersion} />
+                    </Box>
+                )}
                 <EditableSource />
             </Flex>
         </Flex>

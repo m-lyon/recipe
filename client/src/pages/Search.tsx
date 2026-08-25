@@ -1,11 +1,14 @@
 import { Link } from 'react-router-dom';
 import { Box, Button, Flex, Heading, Text } from '@chakra-ui/react';
 
+import { PullToRefresh } from '@recipe/common/components';
+
 import { PATH } from '../constants';
 
 export function Search() {
     return (
         <Flex direction='column' align='center' justify='center' height='100vh' bg='gray.50'>
+            <PullToRefresh />
             <Box textAlign='center'>
                 <Heading as='h1' size='4xl' mb={4}>
                     Search coming soon...

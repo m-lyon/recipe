@@ -3,8 +3,6 @@ import { useShallow } from 'zustand/shallow';
 import { Box, Editable, EditableInput, EditablePreview, useOutsideClick } from '@chakra-ui/react';
 
 import { useRecipeStore } from '@recipe/stores';
-import { useWarningToast } from '@recipe/common/hooks';
-import { IngredientTags, ReservedTags } from '@recipe/graphql/enums';
 
 import { TagDropdown } from './TagDropdown';
 import { useTagDropdown } from '../hooks/useTagDropdown';
@@ -13,7 +11,6 @@ export function EditableTag() {
     const containerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const listRef = useRef<HTMLUListElement>(null);
-    const toast = useWarningToast();
     const { tag, reset, dropdownIsOpen, showDropdown, setTag, isOpen } = useRecipeStore(
         useShallow((state) => ({
             tag: state.editableTag,
@@ -40,27 +37,7 @@ export function EditableTag() {
                 value={tag}
                 selectAllOnFocus={false}
                 onEdit={() => !dropdownIsOpen && showDropdown()}
-                onChange={(value: string) => {
-                    if (
-                        Object.values(IngredientTags).includes(
-                            value.toLowerCase() as IngredientTags
-                        )
-                    ) {
-                        return toast({
-                            title: 'Reserved tag',
-                            description: `${value} tag is automatically determined from ingredients.`,
-                            position: 'top',
-                        });
-                    }
-                    if (Object.values(ReservedTags).includes(value.toLowerCase() as ReservedTags)) {
-                        return toast({
-                            title: 'Reserved tag',
-                            description: `${value} is a reserved tag.`,
-                            position: 'top',
-                        });
-                    }
-                    setTag(value);
-                }}
+                onChange={(value: string) => setTag(value)}
                 onCancel={reset}
                 textAlign='left'
                 color={tag ? '' : 'gray.400'}

@@ -1,5 +1,6 @@
 import { Container, Grid, GridItem, Text, useBreakpointValue } from '@chakra-ui/react';
 
+import { PullToRefresh } from '@recipe/common/components';
 import { useSelectedFilters } from '@recipe/features/search';
 import { RecipeCardsContainer } from '@recipe/features/viewing';
 import { SELECTED_FILTERS_HEIGHT } from '@recipe/features/navbar';
@@ -25,6 +26,7 @@ export function Home() {
             px='16px'
             transition='padding-top 0.3s'
         >
+            <PullToRefresh />
             <Grid
                 templateAreas={`'title'
                                 'recipes'`}

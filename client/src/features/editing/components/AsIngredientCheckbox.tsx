@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
+import { Checkbox } from '@mantine/core';
 import { useShallow } from 'zustand/shallow';
-import { Checkbox, HStack, Input, Text, VStack } from '@chakra-ui/react';
+import { Input, VStack } from '@chakra-ui/react';
 
 import { useRecipeStore } from '@recipe/stores';
 
@@ -22,18 +23,14 @@ export function AsIngredientCheckbox() {
             layout='position'
             style={{ width: '100%', justifyContent: 'center', display: 'flex' }}
         >
-            <VStack width='100%' justifyContent='flex-end'>
-                <HStack width='100%'>
-                    <Checkbox
-                        isChecked={isIngredient}
-                        onChange={toggleIsIngredient}
-                        colorScheme='teal'
-                        aria-label='Toggle recipe as ingredient'
-                    />
-                    <Text fontWeight='medium' color={isIngredient ? undefined : 'gray.400'}>
-                        Register recipe as ingredient
-                    </Text>
-                </HStack>
+            <VStack width='100%' justifyContent='flex-end' alignItems='flex-start'>
+                <Checkbox
+                    variant='chakra-style'
+                    checked={isIngredient}
+                    onChange={toggleIsIngredient}
+                    label='Register recipe as ingredient'
+                    aria-label='Toggle recipe as ingredient'
+                />
                 {isIngredient && (
                     <Input
                         placeholder='Plural title'

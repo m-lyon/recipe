@@ -6,17 +6,25 @@ interface Props extends TextareaProps {
     handleChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
     handleSubmit: () => void;
     handleEnter?: () => void;
+    handleBackspace?: () => void;
     optionalRef?: React.RefObject<HTMLTextAreaElement> | null;
     placeholderColor?: string;
 }
 export function EditableItemArea(props: Props) {
-    const { handleChange, handleSubmit, handleEnter, optionalRef, placeholderColor, ...rest } =
-        props;
+    const {
+        handleChange,
+        handleSubmit,
+        handleEnter,
+        handleBackspace,
+        optionalRef,
+        placeholderColor,
+        ...rest
+    } = props;
     const ref = useRef<HTMLTextAreaElement>(null);
     const refs = useMergeRefs(ref, optionalRef);
 
     useEffect(() => {
-        const onEnter = (e: KeyboardEvent) => {
+        const onKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Enter') {
                 // Prevent default behavior of adding a new line, and instead
                 // blur the text area
@@ -25,19 +33,24 @@ export function EditableItemArea(props: Props) {
                 if (handleEnter) {
                     handleEnter();
                 }
+            } else if (e.key === 'Backspace' && handleBackspace && ref.current?.value === '') {
+                // Backspace on an empty field: nothing to delete, so delegate to
+                // the handler (e.g. remove the entry and move focus).
+                e.preventDefault();
+                handleBackspace();
             }
         };
         const current = ref.current;
         if (current) {
-            current.addEventListener('keydown', onEnter);
+            current.addEventListener('keydown', onKeyDown);
         }
 
         return () => {
             if (current) {
-                current.removeEventListener('keydown', onEnter);
+                current.removeEventListener('keydown', onKeyDown);
             }
         };
-    }, [handleEnter]);
+    }, [handleEnter, handleBackspace]);
 
     return (
         <Textarea

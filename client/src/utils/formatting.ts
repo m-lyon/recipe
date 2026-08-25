@@ -121,7 +121,10 @@ export function ingredientDisplayValue(
     if (ingredient.__typename === 'Ingredient') {
         return plural ? ingredient.pluralName : ingredient.name;
     } else if (ingredient.__typename === 'Recipe') {
-        return plural ? ingredient.pluralTitle!.toLowerCase() : ingredient.title.toLowerCase();
+        const veSuffix = ingredient.originalRecipe ? ' (ve)' : '';
+        return plural
+            ? (ingredient.pluralTitle ?? ingredient.title).toLowerCase() + veSuffix
+            : ingredient.title.toLowerCase() + veSuffix;
     }
     return '';
 }

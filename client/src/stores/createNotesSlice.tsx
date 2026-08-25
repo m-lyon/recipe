@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
 
-import { replaceSymbols } from '@recipe/utils/symbol';
+import { autoFormat } from '@recipe/utils/autoformat';
 
 import { RecipeState } from './useRecipeStore';
 
@@ -11,6 +11,6 @@ export interface NotesSlice {
 }
 export const createNotesSlice: StateCreator<RecipeState, [], [], NotesSlice> = (set) => ({
     notes: '',
-    setNotes: (value: string) => set(() => ({ notes: replaceSymbols(value) })),
+    setNotes: (value: string) => set(() => ({ notes: autoFormat(value) })),
     resetNotes: () => set(() => ({ notes: '' })),
 });

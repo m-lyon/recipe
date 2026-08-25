@@ -1,6 +1,6 @@
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, screen } from '@testing-library/react';
+import { cleanup, screen, waitFor } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { enterEditRecipePage, enterViewRecipePage } from '@recipe/utils/tests';
@@ -39,16 +39,24 @@ describe('Update Recipe Workflow: Rating', () => {
         // Expect ------------------------------------------------
         // ------ View Recipe Page -------------------------------
         await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        expect(screen.getByRole('rating').querySelector('.filled-icons')).toHaveProperty(
-            'title',
-            '2.25 out of 5'
+        // react-simple-star-rating shows a transiently wrong title between mount and
+        // its own initialValue effect, so poll rather than sampling a single frame
+        await waitFor(() =>
+            expect(screen.getByRole('rating').querySelector('.filled-icons')).toHaveProperty(
+                'title',
+                '2.25 out of 5'
+            )
         );
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        expect(screen.getByRole('rating').querySelector('.filled-icons')).toHaveProperty(
-            'title',
-            '2.25 out of 5'
+        // react-simple-star-rating shows a transiently wrong title between mount and
+        // its own initialValue effect, so poll rather than sampling a single frame
+        await waitFor(() =>
+            expect(screen.getByRole('rating').querySelector('.filled-icons')).toHaveProperty(
+                'title',
+                '2.25 out of 5'
+            )
         );
     });
 
@@ -71,16 +79,24 @@ describe('Update Recipe Workflow: Rating', () => {
         // Expect ------------------------------------------------
         // ------ View Recipe Page -------------------------------
         await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        expect(screen.getByRole('rating').querySelector('.filled-icons')).toHaveProperty(
-            'title',
-            '2.25 out of 5'
+        // react-simple-star-rating shows a transiently wrong title between mount and
+        // its own initialValue effect, so poll rather than sampling a single frame
+        await waitFor(() =>
+            expect(screen.getByRole('rating').querySelector('.filled-icons')).toHaveProperty(
+                'title',
+                '2.25 out of 5'
+            )
         );
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        expect(screen.getByRole('rating').querySelector('.filled-icons')).toHaveProperty(
-            'title',
-            '2.25 out of 5'
+        // react-simple-star-rating shows a transiently wrong title between mount and
+        // its own initialValue effect, so poll rather than sampling a single frame
+        await waitFor(() =>
+            expect(screen.getByRole('rating').querySelector('.filled-icons')).toHaveProperty(
+                'title',
+                '2.25 out of 5'
+            )
         );
     });
 });
@@ -112,16 +128,24 @@ describe('View Recipe Workflow: Rating', () => {
         // Expect ------------------------------------------------
         // ------ View Recipe Page -------------------------------
         await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        expect(screen.getByRole('rating').querySelector('.filled-icons')).toHaveProperty(
-            'title',
-            '2.25 out of 5'
+        // react-simple-star-rating shows a transiently wrong title between mount and
+        // its own initialValue effect, so poll rather than sampling a single frame
+        await waitFor(() =>
+            expect(screen.getByRole('rating').querySelector('.filled-icons')).toHaveProperty(
+                'title',
+                '2.25 out of 5'
+            )
         );
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        expect(screen.getByRole('rating').querySelector('.filled-icons')).toHaveProperty(
-            'title',
-            '2.25 out of 5'
+        // react-simple-star-rating shows a transiently wrong title between mount and
+        // its own initialValue effect, so poll rather than sampling a single frame
+        await waitFor(() =>
+            expect(screen.getByRole('rating').querySelector('.filled-icons')).toHaveProperty(
+                'title',
+                '2.25 out of 5'
+            )
         );
     });
 });

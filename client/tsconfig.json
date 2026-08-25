@@ -43,6 +43,9 @@
       "@recipe/utils/*": [
         "utils/*"
       ],
+      "@recipe/theme": [
+        "theme"
+      ],
       "@recipe/layouts": [
         "layouts"
       ],

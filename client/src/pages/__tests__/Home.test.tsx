@@ -69,7 +69,7 @@ describe('Search Functionality', () => {
         fireEvent.scroll(window, { target: { scrollY: 100 } });
 
         // Expect -----------------------------------------------
-        expect(screen.queryByText('Loading...')).toBeNull();
+        expect(screen.queryByRole('status')).toBeNull(); // loading animation
         nullByLabelText(screen, 'View Mock Recipe', 'View Mock Recipe Three');
         expect(screen.queryAllByLabelText('View Mock Recipe Two')).toHaveLength(2);
     });
@@ -88,8 +88,8 @@ describe('Search Functionality', () => {
         await user.keyboard('one');
         await waitForElementToBeRemoved(() => screen.queryAllByLabelText('View Mock Recipe Two'));
         fireEvent.scroll(window, { target: { scrollY: 100 } });
-        expect(screen.queryByText('Loading...')).not.toBeNull();
-        await waitForElementToBeRemoved(() => screen.queryByText('Loading...'));
+        expect(screen.queryByRole('status')).not.toBeNull(); // loading animation
+        await waitForElementToBeRemoved(() => screen.queryByRole('status'));
 
         // Expect -----------------------------------------------
         nullByLabelText(screen, 'View Mock Recipe Two', 'View Mock Recipe Three');

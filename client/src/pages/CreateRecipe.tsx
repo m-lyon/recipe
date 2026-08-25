@@ -10,7 +10,7 @@ import { CREATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { DELAY_LONG, DELAY_SHORT, PATH } from '@recipe/constants';
 import { useErrorToast, useSuccessToast } from '@recipe/common/hooks';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
-import { EditableRecipe, updateRecipeCache } from '@recipe/features/editing';
+import { EditableRecipe, SubmitButton, updateRecipeCache } from '@recipe/features/editing';
 
 export function CreateRecipe() {
     const errorToast = useErrorToast();
@@ -22,10 +22,14 @@ export function CreateRecipe() {
         useShallow((state) => ({ images: state.images, resetImages: state.resetImages }))
     );
     const resetRecipe = useRecipeStore((state) => state.resetRecipe);
+    // Rendering before the reset paints whatever recipe the store last held, and the
+    // stale items then animate out via AnimatePresence, visibly collapsing the page.
+    const [storeReady, setStoreReady] = useState(false);
     useEffect(() => {
         // Resets on unmount and mount
         resetImages();
         resetRecipe();
+        setStoreReady(true);
         return () => {
             resetImages();
             resetRecipe();
@@ -100,22 +104,29 @@ export function CreateRecipe() {
         setTimeout(() => navigate(PATH.ROOT), DELAY_SHORT);
     };
 
+    if (!storeReady) {
+        return null;
+    }
+
     return (
         <EditableRecipe
             rating={rating}
             addRating={setRating}
-            handleSubmitMutation={handleSubmitMutation}
-            submitButtonProps={{
-                submitText: 'Submit',
-                loadingText:
-                    recipeLoading || ratingLoading
-                        ? 'Submitting Recipe...'
-                        : uploadLoading
-                          ? 'Uploading Images...'
-                          : undefined,
-                disabled: !!response,
-                loading: recipeLoading || ratingLoading || uploadLoading,
-            }}
+            submitButton={
+                <SubmitButton
+                    submitText='Submit'
+                    loadingText={
+                        recipeLoading || ratingLoading
+                            ? 'Submitting Recipe...'
+                            : uploadLoading
+                              ? 'Uploading Images...'
+                              : undefined
+                    }
+                    disabled={!!response}
+                    loading={recipeLoading || ratingLoading || uploadLoading}
+                    handleSubmit={handleSubmitMutation}
+                />
+            }
         />
     );
 }

@@ -19,6 +19,7 @@ import { EditIngredient } from './pages/EditIngredient';
 import { EditPrepMethod } from './pages/EditPrepMethod';
 import { CreateIngredient } from './pages/CreateIngredient';
 import { CreatePrepMethod } from './pages/CreatePrepMethod';
+import { CreateVeganRecipe } from './pages/CreateVeganRecipe';
 import { CreateUnitConversion } from './pages/CreateUnitConversion';
 
 export const routes = createRoutesFromElements(
@@ -30,6 +31,10 @@ export const routes = createRoutesFromElements(
             </Route>
             <Route path='create' element={<RequireAuth />}>
                 <Route path='recipe' element={<CreateRecipe />} />
+                <Route
+                    path='recipe/vegan/:originalTitleIdentifier'
+                    element={<CreateVeganRecipe />}
+                />
                 <Route path='unit' element={<CreateUnit />} />
                 <Route path='unit-conversion' element={<CreateUnitConversion />} />
                 <Route path='size' element={<CreateSize />} />

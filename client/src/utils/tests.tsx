@@ -1,11 +1,14 @@
 import { expect } from 'vitest';
 import { MantineProvider } from '@mantine/core';
 import { ChakraProvider } from '@chakra-ui/react';
+import { Notifications } from '@mantine/notifications';
 import { userEvent } from '@testing-library/user-event';
 import { Screen, render } from '@testing-library/react';
 import { MockedProvider, MockedResponse } from '@apollo/client/testing';
 import { RouteObject, RouterProvider, createMemoryRouter } from 'react-router-dom';
 
+import { theme } from '@recipe/theme';
+import { DELAY_LONG } from '@recipe/constants';
 import { getCache } from '@recipe/utils/cache';
 
 export async function enterCreateNewRecipePage(
@@ -104,19 +107,22 @@ export function renderPage(
     mockedResponses: MockedResponses = [],
     initialEntries?: string[]
 ) {
-    return render(
+    const router = createMemoryRouter(route, {
+        initialEntries,
+    });
+
+    const result = render(
         <MockedProvider mocks={mockedResponses} cache={getCache()}>
-            <MantineProvider env='test'>
+            <MantineProvider theme={theme} env='test'>
+                <Notifications autoClose={DELAY_LONG} />
                 <ChakraProvider>
-                    <RouterProvider
-                        router={createMemoryRouter(route, {
-                            initialEntries,
-                        })}
-                    />
+                    <RouterProvider router={router} />
                 </ChakraProvider>
             </MantineProvider>
         </MockedProvider>
     );
+
+    return { ...result, router };
 }
 
 export const getMockedImageBlob = () => {

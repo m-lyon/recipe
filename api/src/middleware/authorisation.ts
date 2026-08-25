@@ -1,10 +1,11 @@
 import { GraphQLError } from 'graphql';
 import { Document, Model, Types } from 'mongoose';
+import { ResolverNextRpCb } from 'graphql-compose';
 
 import { Image } from '../models/Image.js';
-import { Recipe } from '../models/Recipe.js';
+import { ContextImage, GraphQLContext } from '../types.js';
 
-export const isVerified = () => (next) => (rp) => {
+export const isVerified = (): ResolverNextRpCb<unknown, GraphQLContext> => (next) => (rp) => {
     const user = rp.context.getUser();
     if (!user) {
         throw new GraphQLError('You are not authenticated!', {
@@ -19,9 +20,9 @@ export const isVerified = () => (next) => (rp) => {
     return next(rp);
 };
 
-export const isAdmin = () => (next) => (rp) => {
+export const isAdmin = (): ResolverNextRpCb<unknown, GraphQLContext> => (next) => (rp) => {
     const user = rp.context.getUser();
-    if (user.role !== 'admin') {
+    if (!user || user.role !== 'admin') {
         throw new GraphQLError('You are not authorised!', {
             extensions: { code: 'FORBIDDEN' },
         });
@@ -31,7 +32,7 @@ export const isAdmin = () => (next) => (rp) => {
 
 type DocumentWithOwner = Document & { owner: Types.ObjectId };
 export const isDocumentOwnerOrAdmin =
-    <T extends DocumentWithOwner>(Model: Model<T>) =>
+    <T extends DocumentWithOwner>(Model: Model<T>): ResolverNextRpCb<unknown, GraphQLContext> =>
     (next) =>
     async (rp) => {
         const user = rp.context.getUser();
@@ -54,27 +55,28 @@ export const isDocumentOwnerOrAdmin =
         return next(rp);
     };
 
-export const isImageOwnerOrAdmin = () => (next) => async (rp) => {
-    const user = rp.context.getUser();
-    if (!user) {
-        throw new GraphQLError('You are not authenticated!', {
-            extensions: { code: 'FORBIDDEN' },
-        });
-    }
-    const images = await Image.find({ _id: { $in: rp.args.ids } }).populate<{
-        recipe: Recipe;
-    }>({
-        path: 'recipe',
-        select: 'owner',
-    });
-    // Ensure user has permission to remove any and all images
-    images.forEach((image) => {
-        if (!image.recipe.owner.equals(user._id) && user.role !== 'admin') {
-            throw new GraphQLError('You are not authorised!', {
+export const isImageOwnerOrAdmin =
+    (): ResolverNextRpCb<unknown, GraphQLContext> => (next) => async (rp) => {
+        const user = rp.context.getUser();
+        if (!user) {
+            throw new GraphQLError('You are not authenticated!', {
                 extensions: { code: 'FORBIDDEN' },
             });
         }
-    });
-    rp.context.images = images;
-    return next(rp);
-};
+        const images = (await Image.find({ _id: { $in: rp.args.ids } }).populate<{
+            recipe: ContextImage['recipe'];
+        }>({
+            path: 'recipe',
+            select: 'owner',
+        })) as ContextImage[];
+        // Ensure user has permission to remove any and all images
+        images.forEach((image) => {
+            if (!image.recipe.owner.equals(user._id) && user.role !== 'admin') {
+                throw new GraphQLError('You are not authorised!', {
+                    extensions: { code: 'FORBIDDEN' },
+                });
+            }
+        });
+        rp.context.images = images;
+        return next(rp);
+    };

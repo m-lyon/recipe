@@ -28,17 +28,17 @@ describe('Update Recipe Workflow: Ingredients', () => {
         await user.click(screen.getByLabelText('Enter ingredient #3 for subsection 2'));
         await user.keyboard('{4}{ }');
         await clickFindByText(screen, user, 'teaspoons', 'apples', 'diced');
-        expect(await screen.findByLabelText('4 tsp apples, diced')).not.toBeNull();
+        expect(await screen.findByLabelText('1⅓ tbsp apples, diced')).not.toBeNull();
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
         // ------ View Recipe Page -------------------------------
         await enterViewRecipePage(screen, user, 'Mock Recipe', '1 small carrot, diced');
-        await notNullByText(screen, '4 tsp apples, diced', '2 apples, diced');
+        await notNullByText(screen, '1⅓ tbsp apples, diced', '2 apples, diced');
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        await notNullByLabelText(screen, '1 small carrot, diced', '4 tsp apples, diced');
+        await notNullByLabelText(screen, '1 small carrot, diced', '1⅓ tbsp apples, diced');
         await notNullByLabelText(screen, '2 apples, diced');
     });
     it('should edit the ingredients', async () => {
@@ -52,18 +52,18 @@ describe('Update Recipe Workflow: Ingredients', () => {
         await user.click(screen.getByLabelText('Enter ingredient #3 for subsection 1'));
         await user.keyboard('{4}{ }');
         await clickFindByText(screen, user, 'teaspoons', 'apples', 'diced');
-        expect(await screen.findByLabelText('4 tsp apples, diced')).not.toBeNull();
+        expect(await screen.findByLabelText('1⅓ tbsp apples, diced')).not.toBeNull();
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------
         // ------ View Recipe Page -------------------------------
         await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        await notNullByText(screen, '1 small carrot, diced', '4 tsp apples, diced');
+        await notNullByText(screen, '1 small carrot, diced', '1⅓ tbsp apples, diced');
         expect(screen.queryByText('2 apples, diced')).toBeNull();
         await user.click(screen.getByLabelText('Navigate to home page'));
         // ------ Edit Recipe Page -------------------------------
         await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        await notNullByLabelText(screen, '1 small carrot, diced', '4 tsp apples, diced');
+        await notNullByLabelText(screen, '1 small carrot, diced', '1⅓ tbsp apples, diced');
         expect(screen.queryByLabelText('2 apples, diced')).toBeNull();
     });
     it('should remove an ingredient', async () => {

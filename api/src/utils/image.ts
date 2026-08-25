@@ -37,6 +37,9 @@ export async function loadImage(
     try {
         const image = sharp(fpath);
         const metadata = await image.metadata();
+        if (metadata.width === undefined || metadata.height === undefined) {
+            throw new Error('Failed to determine image dimensions');
+        }
         const aspectRatio = metadata.width / metadata.height;
 
         quality = Math.trunc(quality ? quality : 100);

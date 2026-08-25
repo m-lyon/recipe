@@ -4,9 +4,11 @@ import { KeyboardEvent, RefObject } from 'react';
 import { useRecipeStore } from '@recipe/stores';
 import { TAG_FIELDS } from '@recipe/graphql/queries/tag';
 import { CREATE_TAG } from '@recipe/graphql/mutations/tag';
+import { IngredientTags, ReservedTags } from '@recipe/graphql/enums';
 import { useDropdown, useSuccessToast, useWarningToast } from '@recipe/common/hooks';
 
 import { useTagSuggestions } from './useTagSuggestions';
+import { formatCalculatedTag } from '../utils/formatCalculatedTag';
 
 export function useTagDropdown(
     listRef: RefObject<HTMLUListElement>,
@@ -54,6 +56,29 @@ export function useTagDropdown(
 
     const handleSelect = (item: TagChoice) => {
         if (item === undefined) {
+            const normalizedEditable = editable.toLowerCase();
+            const normalizedReservedRecipeTags = Object.values(ReservedTags).map((tag) =>
+                formatCalculatedTag(tag).toLowerCase()
+            );
+
+            if (Object.values(IngredientTags).includes(normalizedEditable as IngredientTags)) {
+                warningToast({
+                    title: 'Reserved tag',
+                    description: `${editable} tag is automatically determined from ingredients.`,
+                    position: 'top',
+                });
+                return;
+            }
+
+            if (normalizedReservedRecipeTags.includes(normalizedEditable)) {
+                warningToast({
+                    title: 'Reserved tag',
+                    description: `${editable} is a reserved tag.`,
+                    position: 'top',
+                });
+                return;
+            }
+
             if (finished.map((tag) => tag.value).includes(editable)) {
                 warningToast({
                     title: 'Tag already exists',

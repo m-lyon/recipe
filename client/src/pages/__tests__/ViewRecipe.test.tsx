@@ -31,14 +31,14 @@ describe('IngredientList', () => {
     it('should not display skipped prep methods', async () => {
         // Render
         renderComponent();
-        await waitFor(() => expect(screen.queryByText('Loading...')).toBeNull());
+        await waitFor(() => expect(screen.queryByRole('status')).toBeNull()); // loading animation
         // Expect
         expect(screen.queryByText('1 oz apples')).not.toBeNull();
     });
     it('should display the used in section for ingredients used in other recipes', async () => {
         // Render
         renderComponent();
-        await waitFor(() => expect(screen.queryByText('Loading...')).toBeNull());
+        await waitFor(() => expect(screen.queryByRole('status')).toBeNull()); // loading animation
         // Expect
         expect(await screen.findByText('Used in')).not.toBeNull();
         expect(screen.queryByText('Recipe Using Mock Recipe Two')).not.toBeNull();

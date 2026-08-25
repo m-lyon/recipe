@@ -5,7 +5,7 @@ export const GET_INGREDIENT_AND_RECIPE_INGREDIENTS = gql(`
         ingredients: ingredientMany(limit: 5000) {
             ...IngredientFields
         }
-        recipes: recipeMany(limit: 5000, filter: {isIngredient: true}) {
+        recipes: recipeMany(limit: 5000, filter: {isIngredient: true, archived: false}) {
             ...RecipeIngrFields
         }
     }
@@ -22,7 +22,7 @@ export const GET_INGREDIENT_COMPONENTS = gql(`
         ingredients: ingredientMany(limit: 5000) {
             ...IngredientFields
         }
-        recipes: recipeMany(limit: 5000, filter: {isIngredient: true}) {
+        recipes: recipeMany(limit: 5000, filter: {isIngredient: true, archived: false}) {
             ...RecipeIngrFields
         }
         prepMethods: prepMethodMany(limit: 5000) {
@@ -36,6 +36,9 @@ export const RECIPE_INGR_FIELDS = gql(`
         _id
         title
         pluralTitle
+        originalRecipe {
+            _id
+        }
     }
 `);
 
@@ -43,6 +46,7 @@ export const RECIPE_FIELDS_SUBSET = gql(`
     fragment RecipeFieldsSubset on Recipe {
         ...RecipeIngrFields
         titleIdentifier
+        archived
         tags {
             ...TagFields
         }
@@ -56,6 +60,16 @@ export const RECIPE_FIELDS_SUBSET = gql(`
         }
         calculatedTags
         owner
+        veganVersion {
+            _id
+            title
+            titleIdentifier
+        }
+        originalRecipe {
+            _id
+            title
+            titleIdentifier
+        }
     }
 `);
 
@@ -82,6 +96,9 @@ export const RECIPE_FIELDS_FULL = gql(`
                         _id
                         title
                         pluralTitle
+                        originalRecipe {
+                            _id
+                        }
                     }
                     ... on Ingredient {
                         ...IngredientFields

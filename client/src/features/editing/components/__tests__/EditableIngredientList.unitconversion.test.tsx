@@ -66,6 +66,30 @@ describe('Unit conversion', () => {
         // Expect
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1½ tsp ');
     });
+    it('should normalise a base unit quantity to its preferred fraction format', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{.}{5}{ }{t}{s}{p}{ }');
+
+        // Expect
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1½ tsp ');
+    });
+    it('should promote a base unit quantity when it exceeds a rule threshold', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{6}{ }{t}{s}{p}{ }');
+
+        // Expect
+        haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '2 tbsp ');
+    });
     it('should preserve whole numbers when returning to quantity after unit conversion', async () => {
         const user = userEvent.setup();
         // Render

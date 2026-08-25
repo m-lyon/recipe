@@ -3,7 +3,10 @@ import { useShallow } from 'zustand/shallow';
 import { useRecipeStore } from '@recipe/stores';
 import { CentredTextArea } from '@recipe/common/components';
 
-export function EditableTitle() {
+interface Props {
+    isReadOnly?: boolean;
+}
+export function EditableTitle({ isReadOnly }: Props) {
     const { title, setTitle } = useRecipeStore(
         useShallow((state) => ({
             title: state.title,
@@ -19,6 +22,7 @@ export function EditableTitle() {
             placeholderColor='gray.400'
             aria-label='Enter recipe title'
             fontWeight={600}
+            isReadOnly={isReadOnly}
         />
     );
 }

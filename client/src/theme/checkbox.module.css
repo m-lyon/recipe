@@ -1,0 +1,17 @@
+.root[data-checked] .label {
+  color: rgba(0, 0, 0, 0.64);
+}
+
+.inner {
+  align-self: center;
+}
+
+.input {
+  cursor: pointer;
+}
+
+.label {
+  color: #a0aec0; /* chakra gray.400 */
+  font-size: 1rem; /* chakra md */
+  font-weight: 500; /* chakra medium */
+}
