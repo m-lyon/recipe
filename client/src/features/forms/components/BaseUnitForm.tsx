@@ -83,6 +83,8 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
         <Stack
             spacing={4}
             pt={3}
+            color='blackAlpha.700'
+            fontWeight='bold'
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             {...rest}

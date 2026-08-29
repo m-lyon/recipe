@@ -4,8 +4,11 @@ import { cleanup, screen, waitFor } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { nullByText } from '@recipe/utils/tests';
+import { DEBOUNCE_TIME } from '@recipe/constants';
 import { mockCreateIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
 import { clickGetByText, haveValueByLabelText, notNullByText } from '@recipe/utils/tests';
+import { mockUsdaSearchChickenBreast } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
+import { mockCreateNutritionalInfoBeef } from '@recipe/graphql/mutations/__mocks__/nutritionalInfo';
 
 import { renderComponent } from './utils';
 
@@ -301,6 +304,39 @@ describe('Create new Ingredient', () => {
         await user.keyboard('{c}');
         await user.click(screen.getByText('add new ingredient'));
         haveValueByLabelText(screen, 'Name', '');
+    });
+
+    it('should link USDA nutritional data staged before the ingredient exists', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent([
+            mockCreateIngredient,
+            mockUsdaSearchChickenBreast,
+            mockCreateNutritionalInfoBeef,
+        ]);
+
+        // Act -- open the new ingredient popover and search/select USDA data before saving
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await clickGetByText(screen, user, 'skip unit', 'skip size', 'add new ingredient');
+        await user.keyboard('beef');
+
+        await user.type(screen.getByLabelText('Search nutritional data'), 'chicken breast');
+        await new Promise((resolve) => setTimeout(resolve, DEBOUNCE_TIME + 50));
+        await user.click(screen.getByLabelText('Search USDA database'));
+        await user.click(await screen.findByText('Chicken breast, cooked'));
+        await user.click(screen.getByLabelText('Link selected nutritional data'));
+        expect(await screen.findByText(/Linked: FDC ID 171077/)).not.toBeNull();
+
+        // Act -- saving the ingredient commits the staged link using the new ingredient's id
+        await user.click(screen.getByLabelText('Save ingredient'));
+
+        // Expect -- ingredient created as usual; mockCreateNutritionalInfoBeef being consumed
+        // (no "mock not found" Apollo error) confirms the follow-up link mutation fired with
+        // the real ingredient id.
+        await waitFor(() =>
+            haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 beef, ')
+        );
     });
 });
 

@@ -103,3 +103,4 @@ export const mockUnitConversionIdThree = '60f4d2e5c3d5a0a4f1b9c0q3';
 // NutritionalInfo
 export const mockNutritionalInfoIdApple = '60f4d2e5c3d5a0a4f1b9d0a1';
 export const mockNutritionalInfoIdCarrot = '60f4d2e5c3d5a0a4f1b9d0a2';
+export const mockNutritionalInfoIdBeef = '60f4d2e5c3d5a0a4f1b9d0a3';

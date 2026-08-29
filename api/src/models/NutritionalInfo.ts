@@ -40,10 +40,7 @@ const nutritionalInfoSchema = new Schema<NutritionalInfo>({
 // At least one of perGram or perUnit must be present
 nutritionalInfoSchema.pre('validate', function () {
     if (!this.perGram && !this.perUnit) {
-        this.invalidate(
-            'perGram',
-            'NutritionalInfo must have at least one of perGram or perUnit.'
-        );
+        this.invalidate('perGram', 'NutritionalInfo must have at least one of perGram or perUnit.');
     }
 });
 

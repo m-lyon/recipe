@@ -1,6 +1,6 @@
 import { ApolloError } from '@apollo/client';
-import { MutableRefObject, useCallback, useEffect } from 'react';
 import { array, boolean, mixed, number, object, string } from 'yup';
+import { MutableRefObject, forwardRef, useCallback, useEffect } from 'react';
 import { Button, ButtonGroup, Checkbox, HStack, Stack, StackProps } from '@chakra-ui/react';
 
 import { IngredientTags } from '@recipe/graphql/enums';
@@ -8,6 +8,8 @@ import { FloatingLabelInput } from '@recipe/common/components';
 
 import { UsdaLinkSection } from './UsdaLinkSection';
 import { useFormLogic } from '../hooks/useFormLogic';
+import { UsdaLinkSectionHandle } from './UsdaLinkSection';
+import { ExistingNutritionalInfo } from './UsdaLinkSection';
 import { useKeyboardSubmit } from '../hooks/useKeyboardSubmit';
 
 export function formatIngredientError(error: ApolloError) {
@@ -34,116 +36,141 @@ export interface BaseIngredientFormProps extends StackProps {
     disabled?: boolean;
     submitForm: (data: ModifyableIngredient) => void;
     onDelete?: () => void;
+    /** Nutritional info for this ingredient, prefetched by the page alongside the ingredient list. */
+    existingNutritionalInfo?: ExistingNutritionalInfo | null;
+    /** Called after a link is created or cleared, so the prefetched list can be refreshed. */
+    onNutritionalInfoChange?: () => void;
 }
-export function BaseIngredientForm(props: BaseIngredientFormProps) {
-    const { fieldRef, initData, ingredientId, disabled, submitForm, onDelete, ...rest } = props;
-    const xfm = useCallback(
-        (data: Partial<ModifyableIngredient>) => ({
-            name: data.name,
-            pluralName: data.pluralName || data.name,
-            tags: data.tags || [],
-            density: data.density || undefined,
-            isCountable: data.isCountable || false,
-        }),
-        []
-    );
-    const { formData, hasError, handleSubmit, handleChange, setData } =
-        useFormLogic<ModifyableIngredient>(
-            formSchema,
-            xfm,
-            initData || {},
+export const BaseIngredientForm = forwardRef<UsdaLinkSectionHandle, BaseIngredientFormProps>(
+    function BaseIngredientForm(props, usdaLinkRef) {
+        const {
+            fieldRef,
+            initData,
+            ingredientId,
+            disabled,
             submitForm,
-            'ingredient'
+            onDelete,
+            existingNutritionalInfo,
+            onNutritionalInfoChange,
+            ...rest
+        } = props;
+        const xfm = useCallback(
+            (data: Partial<ModifyableIngredient>) => ({
+                name: data.name,
+                pluralName: data.pluralName || data.name,
+                tags: data.tags || [],
+                density: data.density || undefined,
+                isCountable: data.isCountable || false,
+            }),
+            []
         );
-    const { setIsFocused } = useKeyboardSubmit(handleSubmit);
-    useEffect(() => {
-        if (disabled) {
-            setData({ name: '', pluralName: '', isCountable: false, tags: [] });
-        }
-    }, [disabled, setData]);
+        const { formData, hasError, handleSubmit, handleChange, setData } =
+            useFormLogic<ModifyableIngredient>(
+                formSchema,
+                xfm,
+                initData || {},
+                submitForm,
+                'ingredient'
+            );
+        const { setIsFocused } = useKeyboardSubmit(handleSubmit);
+        useEffect(() => {
+            if (disabled) {
+                setData({ name: '', pluralName: '', isCountable: false, tags: [] });
+            }
+        }, [disabled, setData]);
 
-    return (
-        <Stack
-            spacing={4}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            {...rest}
-        >
-            <FloatingLabelInput
-                label='Name'
-                id='name'
-                inputRef={fieldRef}
-                value={formData.name || ''}
-                isInvalid={hasError}
-                isRequired
-                isDisabled={disabled}
-                onChange={(e) => handleChange('name', e.target.value.toLowerCase())}
-            />
-            <FloatingLabelInput
-                label='Plural name'
-                id='plural-name'
-                value={formData.pluralName || ''}
-                isInvalid={hasError}
-                isDisabled={disabled}
-                onChange={(e) => handleChange('pluralName', e.target.value.toLowerCase())}
-            />
-            <FloatingLabelInput
-                label='Density (g/ml)'
-                id='density'
-                value={formData.density?.toString() || ''}
-                isInvalid={hasError}
-                isDisabled={disabled}
-                onChange={(e) => handleChange('density', parseFloat(e.target.value) || undefined)}
-            />
-            <Checkbox
-                isChecked={formData.isCountable}
-                onChange={(e) => handleChange('isCountable', e.target.checked)}
-                isDisabled={disabled}
+        return (
+            <Stack
+                spacing={4}
+                color='blackAlpha.700'
+                fontWeight='bold'
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                {...rest}
             >
-                Countable
-            </Checkbox>
-            <HStack>
-                <Checkbox
+                <FloatingLabelInput
+                    label='Name'
+                    id='name'
+                    inputRef={fieldRef}
+                    value={formData.name || ''}
+                    isInvalid={hasError}
+                    isRequired
                     isDisabled={disabled}
-                    pr={6}
-                    isChecked={formData.tags?.includes(IngredientTags.Vegan)}
-                    onChange={(e) => {
-                        const newTags = e.target.checked
-                            ? Object.values(IngredientTags)
-                            : formData.tags?.filter((tag) => tag !== IngredientTags.Vegan) || [];
-                        handleChange('tags', [...new Set(newTags)]);
-                    }}
-                >
-                    Vegan
-                </Checkbox>
-                <Checkbox
-                    isChecked={formData.tags?.includes(IngredientTags.Vegetarian)}
+                    onChange={(e) => handleChange('name', e.target.value.toLowerCase())}
+                />
+                <FloatingLabelInput
+                    label='Plural name'
+                    id='plural-name'
+                    value={formData.pluralName || ''}
+                    isInvalid={hasError}
                     isDisabled={disabled}
-                    onChange={(e) => {
-                        const newTags = e.target.checked
-                            ? [...(formData.tags || []), IngredientTags.Vegetarian]
-                            : [];
-                        handleChange('tags', newTags);
-                    }}
+                    onChange={(e) => handleChange('pluralName', e.target.value.toLowerCase())}
+                />
+                <FloatingLabelInput
+                    label='Density (g/ml)'
+                    id='density'
+                    value={formData.density?.toString() || ''}
+                    isInvalid={hasError}
+                    isDisabled={disabled}
+                    onChange={(e) =>
+                        handleChange('density', parseFloat(e.target.value) || undefined)
+                    }
+                />
+                <Checkbox
+                    isChecked={formData.isCountable}
+                    onChange={(e) => handleChange('isCountable', e.target.checked)}
+                    isDisabled={disabled}
                 >
-                    Vegetarian
+                    Countable
                 </Checkbox>
-            </HStack>
-            <UsdaLinkSection
-                ingredientId={ingredientId}
-                isCountable={formData.isCountable}
-                disabled={disabled}
-            />
-            <ButtonGroup display='flex' justifyContent='flex-end' isDisabled={disabled}>
-                {onDelete && (
-                    <Button colorScheme='red' onClick={onDelete} aria-label='Delete ingredient'>
-                        Delete
+                <HStack>
+                    <Checkbox
+                        isDisabled={disabled}
+                        pr={6}
+                        isChecked={formData.tags?.includes(IngredientTags.Vegan)}
+                        onChange={(e) => {
+                            const newTags = e.target.checked
+                                ? Object.values(IngredientTags)
+                                : formData.tags?.filter((tag) => tag !== IngredientTags.Vegan) ||
+                                  [];
+                            handleChange('tags', [...new Set(newTags)]);
+                        }}
+                    >
+                        Vegan
+                    </Checkbox>
+                    <Checkbox
+                        isChecked={formData.tags?.includes(IngredientTags.Vegetarian)}
+                        isDisabled={disabled}
+                        onChange={(e) => {
+                            const newTags = e.target.checked
+                                ? [...(formData.tags || []), IngredientTags.Vegetarian]
+                                : [];
+                            handleChange('tags', newTags);
+                        }}
+                    >
+                        Vegetarian
+                    </Checkbox>
+                </HStack>
+                <UsdaLinkSection
+                    ref={usdaLinkRef}
+                    ingredientId={ingredientId}
+                    ingredientName={initData?.name}
+                    isCountable={formData.isCountable}
+                    disabled={disabled}
+                    existingNutritionalInfo={existingNutritionalInfo}
+                    onNutritionalInfoChange={onNutritionalInfoChange}
+                />
+                <ButtonGroup display='flex' justifyContent='flex-end' isDisabled={disabled}>
+                    {onDelete && (
+                        <Button colorScheme='red' onClick={onDelete} aria-label='Delete ingredient'>
+                            Delete
+                        </Button>
+                    )}
+                    <Button colorScheme='teal' onClick={handleSubmit} aria-label='Save ingredient'>
+                        Save
                     </Button>
-                )}
-                <Button colorScheme='teal' onClick={handleSubmit} aria-label='Save ingredient'>
-                    Save
-                </Button>
-            </ButtonGroup>
-        </Stack>
-    );
-}
+                </ButtonGroup>
+            </Stack>
+        );
+    }
+);

@@ -1,19 +1,14 @@
-import {
-    mockAppleId,
-    mockCarrotId,
-    mockChickenId,
-    mockNutritionalInfoIdApple,
-    mockNutritionalInfoIdCarrot,
-} from '@recipe/graphql/__mocks__/ids';
-import {
-    GetNutritionalInfoByIngredientQuery,
-    GetNutritionalInfoByIngredientQueryVariables,
-    GetNutritionalInfosByIngredientIdsQuery,
-} from '@recipe/graphql/generated';
-import {
-    GET_NUTRITIONAL_INFO_BY_INGREDIENT,
-    GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS,
-} from '@recipe/graphql/queries/nutritionalInfo';
+import { mockLettuceId } from '@recipe/graphql/__mocks__/ids';
+import { USDA_SEARCH } from '@recipe/graphql/queries/nutritionalInfo';
+import { mockNutritionalInfoIdApple } from '@recipe/graphql/__mocks__/ids';
+import { mockNutritionalInfoIdCarrot } from '@recipe/graphql/__mocks__/ids';
+import { GetNutritionalInfoByIngredientQuery } from '@recipe/graphql/generated';
+import { GetNutritionalInfosByIngredientIdsQuery } from '@recipe/graphql/generated';
+import { UsdaSearchQuery, UsdaSearchQueryVariables } from '@recipe/graphql/generated';
+import { mockAppleId, mockCarrotId, mockChickenId } from '@recipe/graphql/__mocks__/ids';
+import { GetNutritionalInfoByIngredientQueryVariables } from '@recipe/graphql/generated';
+import { GET_NUTRITIONAL_INFO_BY_INGREDIENT } from '@recipe/graphql/queries/nutritionalInfo';
+import { GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS } from '@recipe/graphql/queries/nutritionalInfo';
 
 /** Returns null nutritional info (ingredient has no linked data) */
 const nullResult: GetNutritionalInfoByIngredientQuery = {
@@ -117,4 +112,69 @@ export const mockGetNutritionalInfosForRecipeOneEmpty = {
             nutritionalInfosByIngredientIds: [],
         } as GetNutritionalInfosByIngredientIdsQuery,
     },
+};
+
+// ---------- Batch query mock for the EditIngredient page ----------
+// EditIngredient prefetches nutritional info for every ingredient in the list (in
+// ingredientMany order: apple, chicken, carrot, lettuce) alongside the ingredient list
+// itself, so UsdaLinkSection doesn't need a per-ingredient loading query.
+
+export const mockGetNutritionalInfosForEditIngredient = {
+    request: {
+        query: GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS,
+        variables: {
+            ingredientIds: [mockAppleId, mockChickenId, mockCarrotId, mockLettuceId],
+        },
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            nutritionalInfosByIngredientIds: [],
+        } as GetNutritionalInfosByIngredientIdsQuery,
+    },
+};
+
+/** After carrot is deleted, the ingredient list (and so the batch query's variables) shrinks. */
+export const mockGetNutritionalInfosForEditIngredientAfterCarrotDeleted = {
+    request: {
+        query: GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS,
+        variables: {
+            ingredientIds: [mockAppleId, mockChickenId, mockLettuceId],
+        },
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            nutritionalInfosByIngredientIds: [],
+        } as GetNutritionalInfosByIngredientIdsQuery,
+    },
+};
+
+// ---------- USDA search mocks ----------
+
+const usdaSearchChickenBreastResult: UsdaSearchQuery = {
+    __typename: 'Query',
+    usdaSearch: [
+        {
+            __typename: 'UsdaFoodItem',
+            fdcId: 171077,
+            description: 'Chicken breast, cooked',
+            brandOwner: null,
+            caloriesPer100g: 165,
+            proteinPer100g: 31,
+            carbsPer100g: 0,
+            fatPer100g: 3.6,
+        },
+    ],
+};
+
+export const mockUsdaSearchChickenBreast = {
+    request: {
+        query: USDA_SEARCH,
+        variables: {
+            query: 'chicken breast',
+            pageSize: 20,
+        } satisfies UsdaSearchQueryVariables,
+    },
+    result: { data: usdaSearchChickenBreastResult },
 };

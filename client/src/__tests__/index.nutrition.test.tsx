@@ -4,10 +4,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { enterViewRecipePage } from '@recipe/utils/tests';
-import {
-    mockGetNutritionalInfosForRecipeOne,
-    mockGetNutritionalInfosForRecipeOneEmpty,
-} from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
+import { mockGetNutritionalInfosForRecipeOne } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
+import { mockGetNutritionalInfosForRecipeOneEmpty } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 
 import { renderComponent } from './utils';
 
