@@ -1,0 +1,38 @@
+{
+    "fdcId": 170393,
+    "description": "Carrots, raw",
+    "dataType": "SR Legacy",
+    "foodNutrients": [
+        { "nutrient": { "id": 1008, "name": "Energy", "unitName": "kcal" }, "amount": 41.0 },
+        { "nutrient": { "id": 1003, "name": "Protein", "unitName": "g" }, "amount": 0.93 },
+        { "nutrient": { "id": 1005, "name": "Carbohydrate, by difference", "unitName": "g" }, "amount": 9.58 },
+        { "nutrient": { "id": 1004, "name": "Total lipid (fat)", "unitName": "g" }, "amount": 0.24 },
+        { "nutrient": { "id": 1093, "name": "Sodium, Na", "unitName": "mg" }, "amount": 69.0 }
+    ],
+    "foodPortions": [
+        {
+            "id": 87688,
+            "amount": 1.0,
+            "modifier": "medium",
+            "gramWeight": 61.0,
+            "sequenceNumber": 1,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" }
+        },
+        {
+            "id": 87689,
+            "amount": 1.0,
+            "modifier": "slice",
+            "gramWeight": 10.0,
+            "sequenceNumber": 2,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" }
+        },
+        {
+            "id": 87690,
+            "amount": 1.0,
+            "modifier": "oz",
+            "gramWeight": 28.35,
+            "sequenceNumber": 3,
+            "measureUnit": { "id": 1002, "name": "oz", "abbreviation": "oz" }
+        }
+    ]
+}

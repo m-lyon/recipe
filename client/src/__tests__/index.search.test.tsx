@@ -15,7 +15,6 @@ import { mockGetRecipesFilteredCalculatedTag } from '@recipe/graphql/queries/__m
 import { enterViewRecipePage, haveValueByLabelText, notNullByLabelText } from '@recipe/utils/tests';
 
 import { renderComponent } from './utils';
-import { SEARCH_FILTER_MOBILE_HEIGHT } from '../features/navbar/constants';
 
 loadErrorMessages();
 loadDevMessages();

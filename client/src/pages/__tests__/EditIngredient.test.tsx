@@ -11,6 +11,7 @@ import { mockUpdateIngredient } from '@recipe/graphql/mutations/__mocks__/ingred
 import { mockDeleteIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
 import { MockedResponses, haveValueByLabelText, renderPage } from '@recipe/utils/tests';
 import { mockUsdaSearchChickenBreast } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
+import { mockUsdaFoodItemChickenBreast } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { mockGetNutritionalInfosForEditIngredient } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { mockGetNutritionalInfosForEditIngredientAfterCarrotDeleted } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 
@@ -114,7 +115,7 @@ describe('Edit Ingredient', () => {
     it('should reset the USDA link search and selection when switching ingredients', async () => {
         // Render
         const user = userEvent.setup();
-        renderComponent([mockUsdaSearchChickenBreast]);
+        renderComponent([mockUsdaSearchChickenBreast, mockUsdaFoodItemChickenBreast]);
 
         // Act -- select carrot, search USDA, and select a result without linking it
         expect(await screen.findByText('Edit Ingredient')).not.toBeNull();
@@ -156,7 +157,7 @@ describe('Edit Ingredient', () => {
         // (useKeyboardSubmit) that fires for Enter anywhere inside the form. The USDA
         // search bar must stop that keydown from propagating that far, or it also saves.
         const user = userEvent.setup();
-        renderComponent([mockUsdaSearchChickenBreast]);
+        renderComponent([mockUsdaSearchChickenBreast, mockUsdaFoodItemChickenBreast]);
 
         // Act
         expect(await screen.findByText('Edit Ingredient')).not.toBeNull();

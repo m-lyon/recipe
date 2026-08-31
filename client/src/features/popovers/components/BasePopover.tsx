@@ -34,7 +34,13 @@ export function BasePopover<TChoice, TData>(props: BasePopoverProps<TChoice, TDa
     };
 
     return (
-        <PopoverContent paddingRight={4} paddingBottom={3} paddingLeft={2}>
+        <PopoverContent
+            paddingRight={4}
+            paddingBottom={3}
+            paddingLeft={2}
+            maxH='min(70vh, 600px)'
+            overflowY='auto'
+        >
             <PopoverArrow />
             <PopoverCloseButton aria-label={`Close new ${title.toLowerCase()} form`} />
             <PopoverHeader border='hidden'>Add new {title.toLowerCase()}</PopoverHeader>

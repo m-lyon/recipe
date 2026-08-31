@@ -123,7 +123,7 @@ export const BaseIngredientForm = forwardRef<UsdaLinkSectionHandle, BaseIngredie
                 >
                     Countable
                 </Checkbox>
-                <HStack>
+                <HStack mb={2}>
                     <Checkbox
                         isDisabled={disabled}
                         pr={6}
@@ -156,6 +156,8 @@ export const BaseIngredientForm = forwardRef<UsdaLinkSectionHandle, BaseIngredie
                     ingredientId={ingredientId}
                     ingredientName={initData?.name}
                     isCountable={formData.isCountable}
+                    currentDensity={formData.density ?? undefined}
+                    onDensitySuggested={({ density }) => handleChange('density', density)}
                     disabled={disabled}
                     existingNutritionalInfo={existingNutritionalInfo}
                     onNutritionalInfoChange={onNutritionalInfoChange}

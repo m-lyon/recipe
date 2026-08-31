@@ -8,6 +8,7 @@ import { DEBOUNCE_TIME } from '@recipe/constants';
 import { mockCreateIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
 import { clickGetByText, haveValueByLabelText, notNullByText } from '@recipe/utils/tests';
 import { mockUsdaSearchChickenBreast } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
+import { mockUsdaFoodItemChickenBreast } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { mockCreateNutritionalInfoBeef } from '@recipe/graphql/mutations/__mocks__/nutritionalInfo';
 
 import { renderComponent } from './utils';
@@ -312,6 +313,8 @@ describe('Create new Ingredient', () => {
         renderComponent([
             mockCreateIngredient,
             mockUsdaSearchChickenBreast,
+            // Selecting a result also fetches that item's portions.
+            mockUsdaFoodItemChickenBreast,
             mockCreateNutritionalInfoBeef,
         ]);
 

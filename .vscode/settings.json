@@ -1,0 +1,3 @@
+{
+    "vitest.workspaceConfig": "client/vitest.ide.config.ts"
+}

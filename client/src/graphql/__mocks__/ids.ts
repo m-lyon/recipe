@@ -50,6 +50,7 @@ export const mockCarrotId = '60f4d2e5c3d5a0a4f1b9c0ea';
 export const mockLettuceId = '60f4d2e5c3d5a0a4f1b9c0f0';
 export const mockRhubarbPieId = '60f4d3e5c3d5a0a4f1b9c0eb';
 export const mockBeefId = '60f4d5e5c3d5a0a4f1b9c0ec';
+export const mockOnionId = '60f4d5e5c3d5a0a4f1b9c0ed';
 
 // Prep Method
 export const mockChoppedId = '60f4d2efc3d5a0a4f1b9c0ec';
@@ -104,3 +105,4 @@ export const mockUnitConversionIdThree = '60f4d2e5c3d5a0a4f1b9c0q3';
 export const mockNutritionalInfoIdApple = '60f4d2e5c3d5a0a4f1b9d0a1';
 export const mockNutritionalInfoIdCarrot = '60f4d2e5c3d5a0a4f1b9d0a2';
 export const mockNutritionalInfoIdBeef = '60f4d2e5c3d5a0a4f1b9d0a3';
+export const mockNutritionalInfoIdOnion = '60f4d2e5c3d5a0a4f1b9d0a4';

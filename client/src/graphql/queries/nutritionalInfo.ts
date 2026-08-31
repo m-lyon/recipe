@@ -34,6 +34,37 @@ export const USDA_SEARCH = gql(`
             proteinPer100g
             carbsPer100g
             fatPer100g
+            portions {
+                description
+                gramWeight
+                kind
+            }
+        }
+    }
+`);
+
+/** Portions are only available from the single-item endpoint -- the USDA search
+ *  endpoint returns none -- so selecting a search result triggers this second fetch. */
+export const USDA_FOOD_ITEM = gql(`
+    query UsdaFoodItem($fdcId: Int!) {
+        usdaFoodItem(fdcId: $fdcId) {
+            fdcId
+            description
+            brandOwner
+            caloriesPer100g
+            proteinPer100g
+            carbsPer100g
+            fatPer100g
+            portions {
+                description
+                amount
+                modifier
+                gramWeight
+                kind
+                millilitres
+                impliedDensity
+                ambiguous
+            }
         }
     }
 `);
