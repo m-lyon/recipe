@@ -103,6 +103,8 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
         const [linked, setLinked] = useState(false);
         const [mutationError, setMutationError] = useState<string | null>(null);
         const [searchResults, setSearchResults] = useState<UsdaSearchResultItem[]>([]);
+        // The linked item's USDA name, shown in place of its FDC ID once known.
+        const [linkedFoodName, setLinkedFoodName] = useState<string | null>(null);
         // Portions come from the single-item endpoint only; search results carry none.
         const [portions, setPortions] = useState<UsdaPortion[]>([]);
         const [selectedPortion, setSelectedPortion] = useState<string | null>(null);
@@ -119,6 +121,7 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             setSelectedFdcId(null);
             setMutationError(null);
             setSearchResults([]);
+            setLinkedFoodName(null);
             setPortions([]);
             setSelectedPortion(null);
             setPerUnitDerived(false);
@@ -136,6 +139,11 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                             fat: existingNutritionalInfo.perGram.fat,
                         },
                     });
+                    // Fetch the USDA item's name for the "Linked:" display -- the
+                    // record itself only stores the FDC ID.
+                    if (existingNutritionalInfo.usdaFdcId) {
+                        fetchFoodItem({ variables: { fdcId: existingNutritionalInfo.usdaFdcId } });
+                    }
                 } else {
                     setPendingNutrition(null);
                 }
@@ -167,6 +175,9 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
         const [fetchFoodItem, { loading: detailLoading }] = useLazyQuery(USDA_FOOD_ITEM, {
             onCompleted: (data) => {
                 setPortions(data.usdaFoodItem?.portions ?? []);
+                if (data.usdaFoodItem?.description) {
+                    setLinkedFoodName(data.usdaFoodItem.description);
+                }
             },
             onError: () => {
                 // Portion data is an enhancement: perGram is already linkable without it.
@@ -204,6 +215,7 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                 setExistingNutritionalInfoId(null);
                 setPendingNutrition(null);
                 setPerUnitNutrition(ZERO_MACROS);
+                setLinkedFoodName(null);
                 setPortions([]);
                 setSelectedPortion(null);
                 setPerUnitDerived(false);
@@ -231,8 +243,9 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             setPerUnitDerived(false);
             const item = searchResults.find((r) => r.fdcId === fdcId);
             if (!item) return;
-            // perGram still comes from the cached search result, so the macro display
-            // does not wait on the second request.
+            // perGram and the name both come from the cached search result, so the
+            // macro and "Linked:" displays do not wait on the second request.
+            setLinkedFoodName(item.description);
             setPendingNutrition({
                 fdcId,
                 perGram: {
@@ -370,6 +383,7 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             } else {
                 setPendingNutrition(null);
                 setPerUnitNutrition(ZERO_MACROS);
+                setLinkedFoodName(null);
                 setPortions([]);
                 setSelectedPortion(null);
                 setPerUnitDerived(false);
@@ -404,7 +418,13 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                 {linked && pendingNutrition ? (
                     <Stack spacing={2}>
                         <Text fontSize='sm' fontWeight={500}>
-                            Linked: FDC ID {pendingNutrition.fdcId || '(manual)'}
+                            Linked:{' '}
+                            {(
+                                linkedFoodName ??
+                                (pendingNutrition.fdcId
+                                    ? `FDC ID ${pendingNutrition.fdcId}`
+                                    : '(manual)')
+                            ).toLowerCase()}
                         </Text>
                         <Text fontSize='sm' color='gray.500'>
                             Per 100g: {round1(pendingNutrition.perGram.calories * 100)} kcal ·{' '}

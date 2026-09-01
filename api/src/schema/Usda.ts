@@ -94,6 +94,9 @@ const UsdaFoodItemTC = schemaComposer.createObjectTC({
     fields: {
         fdcId: 'Int!',
         description: 'String!',
+        // "Foundation", "SR Legacy", "Branded", "Survey (FNDDS)". Generic
+        // ingredients should prefer Foundation and SR Legacy over Branded.
+        dataType: 'String',
         brandOwner: 'String',
         caloriesPer100g: 'Float',
         proteinPer100g: 'Float',
@@ -302,6 +305,7 @@ function mapFoodItem(item: Record<string, unknown>) {
     return {
         fdcId: item['fdcId'],
         description: item['description'],
+        dataType: asString(item['dataType']),
         brandOwner: item['brandOwner'] ?? null,
         caloriesPer100g: extractNutrient(nutrients, 1008),
         proteinPer100g: extractNutrient(nutrients, 1003),

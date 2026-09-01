@@ -157,7 +157,7 @@ describe('USDA portion linking from the new ingredient form', () => {
 
         // Act -- stage the link, then save the ingredient
         await user.click(screen.getByLabelText('Link selected nutritional data'));
-        expect(await screen.findByText(/Linked: FDC ID 170000/)).not.toBeNull();
+        expect(await screen.findByText(/Linked: onions, raw/)).not.toBeNull();
         await user.click(screen.getByLabelText('Save ingredient'));
 
         // Expect -- both mutations matched their mocks: ingredientCreateOne carried the

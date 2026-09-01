@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "rootDir": ".",
+        "outDir": "dist",
+        "lib": [
+            "es2023"
+        ],
+        "target": "es2022",
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
+        "esModuleInterop": true,
+        "strict": true,
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "types": [
+            "node",
+            "mocha"
+        ]
+    },
+    "include": [
+        "src/**/*.ts",
+        "test/**/*.ts"
+    ]
+}

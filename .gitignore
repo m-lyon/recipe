@@ -131,6 +131,7 @@ yarn-error.log*
 
 # graphql generated files
 */src/__generated__/
+cli/src/graphql/__generated__/
 
 # testing uploads
 api/uploads/

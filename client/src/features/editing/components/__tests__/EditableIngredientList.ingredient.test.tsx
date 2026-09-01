@@ -329,7 +329,7 @@ describe('Create new Ingredient', () => {
         await user.click(screen.getByLabelText('Search USDA database'));
         await user.click(await screen.findByText('Chicken breast, cooked'));
         await user.click(screen.getByLabelText('Link selected nutritional data'));
-        expect(await screen.findByText(/Linked: FDC ID 171077/)).not.toBeNull();
+        expect(await screen.findByText(/Linked: chicken breast, cooked/)).not.toBeNull();
 
         // Act -- saving the ingredient commits the staged link using the new ingredient's id
         await user.click(screen.getByLabelText('Save ingredient'));

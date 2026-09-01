@@ -111,6 +111,7 @@ const USDA_FOOD_ITEM = `
         usdaFoodItem(fdcId: $fdcId) {
             fdcId
             description
+            dataType
             caloriesPer100g
             proteinPer100g
             carbsPer100g
@@ -620,6 +621,13 @@ describe('usdaFoodItem', function () {
 
         assert.equal(result.fdcId, 171077);
         assert.equal(result.caloriesPer100g, 165);
+    });
+
+    it('should expose dataType, which distinguishes Foundation from Branded', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const result = await fetchItem(this.apolloServer, user, loadFixture('egg-171287'));
+
+        assert.equal(result.dataType, 'SR Legacy');
     });
 
     it('should request format=full, not format=abridged', async function () {
