@@ -30,9 +30,13 @@ export function IngredientsTab(props: Props) {
     const { addRatingWithToast } = useAddRating();
     // Call the hook once; pass the results to both IngredientList and NutritionalInfoPanel
     // to avoid calling the hook twice (which would double the GraphQL requests).
+    // The subsections passed here are the unscaled quantities, which correspond to
+    // recipe.numServings -- not to currentServings, which the servings control moves.
+    // Dividing by currentServings would make the per-serving macros change inversely
+    // with the slider instead of staying invariant.
     const { perServing, uncountedIds, loading } = useNutritionalInfo(
         recipe.ingredientSubsections,
-        currentServings
+        recipe.numServings
     );
     // Compute allUncounted here so NutritionalInfoPanel doesn't need the full subsections array.
     // Guard with !loading so we don't evaluate before data is available — if loading is true,

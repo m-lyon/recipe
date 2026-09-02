@@ -160,6 +160,10 @@ jobs:
           echo "FULLCHAIN_PEM = ${{ secrets.FULLCHAIN_PEM }}" >> .env.production.local
           echo "MONGODB_URI = ${{ secrets.MONGODB_URI }}" >> .env.production.local
           echo "PORT = ${{ secrets.PORT }}" >> .env.production.local
+          # The API terminates TLS itself, so clients connect to this listener directly.
+          # HOST defaults to 127.0.0.1 in api/src/constants.ts, which would leave the
+          # deployed server unreachable, so it is always written explicitly here.
+          echo "HOST = ${{ vars.HOST || '0.0.0.0' }}" >> .env.production.local
           echo "SESSION_SECRET = ${{ secrets.SESSION_SECRET }}" >> .env.production.local
           echo "SESSION_URI = ${{ secrets.SESSION_URI }}" >> .env.production.local
           echo "WHITELISTED_DOMAINS = ${{ secrets.WHITELISTED_DOMAINS }}" >> .env.production.local

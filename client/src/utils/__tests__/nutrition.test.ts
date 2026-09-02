@@ -206,6 +206,28 @@ describe('calculateIngredientNutrition', () => {
         expect(result.macros.calories).toBeCloseTo(perGramMacros.calories * 240);
     });
 
+    it('accepts either spelling of the volume base unit', () => {
+        // Unit names are user-entered: the seeded data uses 'millilitre', but an
+        // admin-created unit may well be named 'milliliter'. Both must match the group.
+        const americanMl = { ...mockMilliliter, longSingular: 'milliliter' };
+        const conversions: UnitConversion[] = [
+            { ...mockUnitConversionVolume, baseUnit: americanMl } as UnitConversion,
+        ];
+        const ri = makeIngredient({
+            quantity: '2',
+            unit: mockCup as unknown as UnitView,
+            ingredient: {
+                __typename: 'Ingredient',
+                _id: 'ing-1',
+                name: 'Honey',
+                density: 0.5,
+            } as unknown as RecipeIngredientView['ingredient'],
+        });
+        const result = calculateIngredientNutrition(ri, nutritionPerGram, conversions);
+        expect(result.calculable).toBe(true);
+        expect(result.macros.calories).toBeCloseTo(perGramMacros.calories * 240);
+    });
+
     it('returns not-calculable for volume unit without density', () => {
         const ri = makeIngredient({
             quantity: '1',

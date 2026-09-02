@@ -8,11 +8,13 @@ import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 import { Unit } from '../../src/models/Unit.js';
 import { User } from '../../src/models/User.js';
 import { __testables } from '../../src/schema/Usda.js';
-import { createAdmin, createUser } from '../utils/data.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
+import { USDA_SEARCH_LIMIT } from '../../src/schema/index.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
+import { resetRateLimits } from '../../src/middleware/rateLimit.js';
 import { UnitConversion } from '../../src/models/UnitConversion.js';
 import { NutritionalInfo } from '../../src/models/NutritionalInfo.js';
+import { createAdmin, createUnverifiedUser, createUser } from '../utils/data.js';
 
 // ---------- helpers ----------
 
@@ -580,7 +582,12 @@ describe('nutritionalInfosByIngredientIds', function () {
 describe('usdaSearch', function () {
     before(startServer);
     after(stopServer);
-    beforeEach(seedUserAndIngredient);
+    beforeEach(async function () {
+        // The limiter keys on user id, and each case re-seeds a fresh user, but clearing
+        // keeps a failed case from starving the next one.
+        resetRateLimits();
+        await seedUserAndIngredient();
+    });
     afterEach(function (done) {
         restore(); // sinon stubs
         dropCollections(done);
@@ -643,9 +650,54 @@ describe('usdaSearch', function () {
         );
         assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors, 'Should fail unauthenticated');
-        assert.include(response.body.singleResult.errors[0].message, 'Not authenticated');
+        // The code, not the wording, is the contract: the CLI keys its re-login retry off it.
+        assert.equal(
+            response.body.singleResult.errors[0].extensions.code,
+            'UNAUTHENTICATED',
+            'Unauthenticated errors must carry a machine-readable code'
+        );
         // fetch should never have been called
         assert.isFalse(fetchStub.called);
+    });
+
+    it('should fail for an unverified user', async function () {
+        const unverified = await createUnverifiedUser();
+        const fetchStub = stub(global, 'fetch');
+
+        const response = await this.apolloServer.executeOperation(
+            { query: USDA_SEARCH, variables: { query: 'chicken' } },
+            makeContext(unverified)
+        );
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Should fail unverified');
+        assert.equal(response.body.singleResult.errors[0].extensions.code, 'FORBIDDEN');
+        // The shared USDA key must never be spent for an unverified account.
+        assert.isFalse(fetchStub.called);
+    });
+
+    it('should rate limit a single user before the shared USDA quota is spent', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const fetchStub = stub(global, 'fetch').resolves({
+            ok: true,
+            json: async () => ({ foods: [] }),
+        } as Response);
+
+        let limited: { message: string; extensions?: { code?: string } } | undefined;
+        for (let i = 0; i < USDA_SEARCH_LIMIT + 1; i++) {
+            const response = await this.apolloServer.executeOperation(
+                { query: USDA_SEARCH, variables: { query: `chicken ${i}` } },
+                makeContext(user)
+            );
+            assert.equal(response.body.kind, 'single');
+            if (response.body.singleResult.errors) {
+                limited = response.body.singleResult.errors[0];
+                break;
+            }
+        }
+        assert.isDefined(limited, 'The user should be cut off within the window');
+        assert.equal(limited!.extensions!.code, 'RATE_LIMITED');
+        // The blocked call must not reach USDA: one fetch per allowed request, no more.
+        assert.equal(fetchStub.callCount, USDA_SEARCH_LIMIT);
     });
 });
 

@@ -333,7 +333,11 @@ export const UsdaQuery = {
         type: [UsdaFoodItemTC],
         args: { query: 'String!', pageSize: { type: 'Int', defaultValue: 20 } },
         resolve: async ({ args, context }) => {
-            if (!context.getUser()) throw new GraphQLError('Not authenticated');
+            if (!context.getUser()) {
+                throw new GraphQLError('Not authenticated', {
+                    extensions: { code: 'UNAUTHENTICATED' },
+                });
+            }
             if (typeof args.query !== 'string' || !args.query) {
                 throw new GraphQLError('Invalid query argument', {
                     extensions: { code: 'BAD_USER_INPUT' },
@@ -354,7 +358,11 @@ export const UsdaQuery = {
         type: UsdaFoodItemTC,
         args: { fdcId: 'Int!' },
         resolve: async ({ args, context }) => {
-            if (!context.getUser()) throw new GraphQLError('Not authenticated');
+            if (!context.getUser()) {
+                throw new GraphQLError('Not authenticated', {
+                    extensions: { code: 'UNAUTHENTICATED' },
+                });
+            }
             // format=full, not abridged: abridged omits foodPortions entirely.
             const url = `${USDA_BASE}/food/${args.fdcId}?format=full`;
             const res = await usdaFetch(url);

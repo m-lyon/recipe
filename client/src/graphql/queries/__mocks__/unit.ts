@@ -88,8 +88,9 @@ export const mockMilliliter: Unit = {
     _id: mockMilliliterId,
     shortSingular: 'ml',
     shortPlural: 'ml',
-    longSingular: 'milliliter',
-    longPlural: 'milliliters',
+    // British spelling, matching what `api/src/utils/populate.ts` seeds.
+    longSingular: 'millilitre',
+    longPlural: 'millilitres',
     preferredNumberFormat: 'decimal',
     owner: mockAdminId,
     unique: true,

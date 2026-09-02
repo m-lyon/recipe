@@ -24,6 +24,20 @@ export async function createUser() {
     return user;
 }
 
+export async function createUnverifiedUser() {
+    const user = await User.register(
+        new User({
+            username: 'testuser3',
+            firstName: 'Tester3',
+            lastName: 'McTestFace',
+            role: 'unverified',
+        }),
+        'password'
+    );
+    assert(user);
+    return user;
+}
+
 export async function createAdmin() {
     const user = await User.register(
         new User({

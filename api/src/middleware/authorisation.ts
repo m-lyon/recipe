@@ -8,8 +8,10 @@ import { ContextImage, GraphQLContext } from '../types.js';
 export const isVerified = (): ResolverNextRpCb<unknown, GraphQLContext> => (next) => (rp) => {
     const user = rp.context.getUser();
     if (!user) {
+        // UNAUTHENTICATED, not FORBIDDEN: no session at all is recoverable by logging in
+        // again, which is how the CLI decides whether to re-authenticate and retry.
         throw new GraphQLError('You are not authenticated!', {
-            extensions: { code: 'FORBIDDEN' },
+            extensions: { code: 'UNAUTHENTICATED' },
         });
     }
     if (user.role === 'unverified') {

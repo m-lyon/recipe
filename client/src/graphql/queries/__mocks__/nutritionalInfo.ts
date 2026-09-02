@@ -165,6 +165,10 @@ export const OLIVE_OIL_CUP_DENSITY = 216 / 236.588;
 /** 160 g of chopped onion in the same cup -- a packing density, hence ambiguous. */
 export const ONION_CUP_DENSITY = 160 / 236.588;
 
+/** The per-100g figures behind mockUsdaSearchChickenBreast, exported so the mutation mock
+ *  can derive per-gram values by the same arithmetic UsdaLinkSection uses. */
+export const usdaChickenBreastPer100g = { calories: 165, protein: 31, carbs: 0, fat: 3.6 };
+
 const usdaSearchChickenBreastResult: UsdaSearchQuery = {
     __typename: 'Query',
     usdaSearch: [
@@ -173,10 +177,10 @@ const usdaSearchChickenBreastResult: UsdaSearchQuery = {
             fdcId: 171077,
             description: 'Chicken breast, cooked',
             brandOwner: null,
-            caloriesPer100g: 165,
-            proteinPer100g: 31,
-            carbsPer100g: 0,
-            fatPer100g: 3.6,
+            caloriesPer100g: usdaChickenBreastPer100g.calories,
+            proteinPer100g: usdaChickenBreastPer100g.protein,
+            carbsPer100g: usdaChickenBreastPer100g.carbs,
+            fatPer100g: usdaChickenBreastPer100g.fat,
             // The USDA search endpoint returns no portion data, so this is always empty.
             portions: [],
         },

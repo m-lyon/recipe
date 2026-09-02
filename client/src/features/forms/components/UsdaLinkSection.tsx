@@ -360,7 +360,11 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
 
         const commitPendingLink = useCallback(
             async (newIngredientId: string) => {
-                if (!pendingNutrition) return;
+                // `linked` -- not `pendingNutrition` -- is the user's confirmation: selecting
+                // a search result stages macros for display, but only "Link selected item"
+                // means they want it saved. Without this the create flow would persist a link
+                // the user merely previewed, while the edit flow requires the explicit click.
+                if (!linked || !pendingNutrition) return;
                 const record = buildRecord(newIngredientId, pendingNutrition);
                 // `useMutation` with an `onError` option resolves instead of rejecting,
                 // so the failure has to be read off the result for the caller's catch.
@@ -372,7 +376,7 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                     throw new Error('The nutritional data link was not saved.');
                 }
             },
-            [pendingNutrition, buildRecord, createNutritionalInfo]
+            [linked, pendingNutrition, buildRecord, createNutritionalInfo]
         );
 
         useImperativeHandle(ref, () => ({ commitPendingLink }), [commitPendingLink]);

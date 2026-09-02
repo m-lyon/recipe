@@ -171,4 +171,83 @@ describe('IngredientsTab nutritional info integration', () => {
         // 1000g × 1.65 kcal/g = 1650 total, ÷ 4 servings = 412.5 → rounded to 413
         expect(await screen.findByText('413 kcal')).not.toBeNull();
     });
+
+    it('keeps per-serving macros fixed when the servings control is moved', async () => {
+        const user = userEvent.setup();
+        // Same recipe as above: 1 kg chicken, 4 servings, 413 kcal per serving.
+        const mockGetNutritionalInfos = {
+            request: {
+                query: GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS,
+                variables: { ingredientIds: [mockChickenId] },
+            },
+            result: {
+                data: {
+                    __typename: 'Query',
+                    nutritionalInfosByIngredientIds: [
+                        {
+                            __typename: 'NutritionalInfo',
+                            _id: 'ni-chicken',
+                            ingredient: mockChickenId,
+                            usdaFdcId: null,
+                            perGram: {
+                                __typename: 'NutritionalInfoPerGram',
+                                calories: 1.65,
+                                protein: 0.31,
+                                carbs: 0,
+                                fat: 0.036,
+                            },
+                            perUnit: null,
+                        },
+                    ],
+                } satisfies GetNutritionalInfosByIngredientIdsQuery,
+            },
+        };
+
+        const MockIngredientsTab = () => {
+            const props = {
+                recipe: {
+                    ...mockRecipeOne,
+                    numServings: 4,
+                    ingredientSubsections: [
+                        {
+                            __typename: 'IngredientSubsection',
+                            name: null,
+                            ingredients: [
+                                {
+                                    _id: '60f4d2e5c3d5a0a4f1b9c0ec',
+                                    __typename: 'RecipeIngredient',
+                                    quantity: '1',
+                                    unit: mockKilogram,
+                                    size: null,
+                                    ingredient: mockChicken,
+                                    prepMethod: null,
+                                },
+                            ],
+                        },
+                    ],
+                } satisfies CompletedRecipeView,
+            };
+            return <IngredientsTab {...props} />;
+        };
+
+        const routes = createRoutesFromElements(
+            <Route path='/' element={<MockIngredientsTab />} />
+        );
+        renderPage(routes, [
+            mockGetIngredientComponents,
+            mockGetUnitConversions,
+            mockCurrentUserAdmin,
+            mockGetNutritionalInfos,
+        ]);
+
+        expect(await screen.findByText('413 kcal')).not.toBeNull();
+
+        // Act -- the ingredient quantities scale with the control, so the per-serving
+        // figure must not move: 5 servings of 1.25 kg is still 413 kcal per serving.
+        await user.click(screen.getByLabelText('Increase serving size'));
+
+        // Expect
+        expect(await screen.findByText('1.25kg chicken')).not.toBeNull();
+        expect(screen.queryByText('413 kcal')).not.toBeNull();
+    });
 });

@@ -10,6 +10,7 @@ import { UserMutation, UserQuery } from './User.js';
 import { Ingredient } from '../models/Ingredient.js';
 import { PrepMethod } from '../models/PrepMethod.js';
 import { ImageMutation, ImageQuery } from './Image.js';
+import { rateLimit } from '../middleware/rateLimit.js';
 import { RecipeMutation, RecipeQuery } from './Recipe.js';
 import { RatingMutation, RatingQuery } from './Rating.js';
 import { SizeMutation, SizeQuery, SizeQueryAdmin } from './Size.js';
@@ -21,6 +22,10 @@ import { ConversionRuleMutation, ConversionRuleQuery } from './UnitConversion.js
 import { isDocumentOwnerOrAdmin, isVerified } from '../middleware/authorisation.js';
 import { NutritionalInfoMutation, NutritionalInfoQuery } from './NutritionalInfo.js';
 import { PrepMethodMutation, PrepMethodQuery, PrepMethodQueryAdmin } from './PrepMethod.js';
+
+/** Per-user USDA search budget: enough for a linking session, far below the key's quota. */
+export const USDA_SEARCH_LIMIT = 60;
+export const USDA_SEARCH_WINDOW_MS = 60 * 60 * 1000;
 
 const isAdminMutations = composeResolvers(
     {
@@ -41,6 +46,19 @@ const isAdminQueries = composeResolvers(
         },
     },
     { 'Query.*': [isAdmin() as any] }
+);
+// The USDA proxy spends a single server-wide API key (1000 requests/hour), so it is
+// restricted to verified accounts and the uncached search path is additionally capped
+// per user. usdaFoodItem is not capped: it is keyed by fdcId and cached client-side.
+const usdaQueries = composeResolvers(
+    { Query: { ...UsdaQuery } },
+    {
+        'Query.usdaSearch': [
+            isVerified() as any,
+            rateLimit('usdaSearch', USDA_SEARCH_LIMIT, USDA_SEARCH_WINDOW_MS) as any,
+        ],
+        'Query.usdaFoodItem': [isVerified() as any],
+    }
 );
 const isAuthenticatedMutations = composeResolvers(
     {
@@ -131,7 +149,7 @@ schemaComposer.Query.addFields({
     ...UnitConversionQuery,
     ...ConversionRuleQuery,
     ...NutritionalInfoQuery,
-    ...UsdaQuery,
+    ...usdaQueries.Query,
     ...isAdminQueries.Query,
 });
 schemaComposer.Mutation.addFields({

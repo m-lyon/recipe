@@ -60,10 +60,14 @@ export function quantityToFloat(quantity: string): number {
     return parseFloat(quantity);
 }
 
-/** The base unit every mass conversion group must be anchored to. */
-const MASS_BASE_UNIT = 'gram';
-/** The base unit every volume conversion group must be anchored to. */
-const VOLUME_BASE_UNIT = 'milliliter';
+/**
+ * The accepted `longSingular` spellings of the base unit each mass conversion group must
+ * be anchored to. Unit names are user-entered free text, and the seeded data uses British
+ * spellings (`api/src/utils/populate.ts`), so both spellings are matched case-insensitively.
+ */
+const MASS_BASE_UNIT_NAMES = ['gram', 'gramme'];
+/** The accepted `longSingular` spellings of the volume conversion group's base unit. */
+const VOLUME_BASE_UNIT_NAMES = ['millilitre', 'milliliter'];
 
 /**
  * Convert a quantity in a given unit to the given base unit using the UnitConversion data.
@@ -82,11 +86,11 @@ function convertToBaseUnit(
     quantity: number,
     unit: NonNullable<UnitView>,
     unitConversions: UnitConversion[],
-    baseUnitLongSingular: string
+    baseUnitNames: string[]
 ): number | null {
     const uc = unitConversions.find(
         (conv) =>
-            conv.baseUnit.longSingular === baseUnitLongSingular &&
+            baseUnitNames.includes(conv.baseUnit.longSingular.toLowerCase()) &&
             (conv.baseUnit._id === unit._id ||
                 conv.rules.some((rule) => rule.unit._id === unit._id))
     );
@@ -104,7 +108,7 @@ function convertToGrams(
     unit: NonNullable<UnitView>,
     unitConversions: UnitConversion[]
 ): number | null {
-    return convertToBaseUnit(quantity, unit, unitConversions, MASS_BASE_UNIT);
+    return convertToBaseUnit(quantity, unit, unitConversions, MASS_BASE_UNIT_NAMES);
 }
 
 /**
@@ -116,7 +120,7 @@ function convertToMl(
     unit: NonNullable<UnitView>,
     unitConversions: UnitConversion[]
 ): number | null {
-    return convertToBaseUnit(quantity, unit, unitConversions, VOLUME_BASE_UNIT);
+    return convertToBaseUnit(quantity, unit, unitConversions, VOLUME_BASE_UNIT_NAMES);
 }
 
 /**

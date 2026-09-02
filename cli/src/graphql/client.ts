@@ -213,11 +213,6 @@ export class ApiClient {
                             'exhausted (1000 requests per hour). Wait and try again.'
                     );
                 }
-                // The USDA resolvers throw a plain "Not authenticated" without an
-                // extensions code, so match on the message as well.
-                if (!failure.extensions?.code && /not authenticated/i.test(failure.message)) {
-                    throw notAuthenticated(failure.message);
-                }
                 throw fromGraphQLCode(failure.extensions?.code, failure.message);
             }
             if (!json.data) {
