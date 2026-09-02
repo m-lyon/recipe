@@ -2,11 +2,28 @@
 //
 // dotenv-flow is pointed at the package root rather than the working directory,
 // because `recipe` is meant to be run from anywhere once it is linked.
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
 import { config as loadEnvFiles } from 'dotenv-flow';
 
-const PACKAGE_ROOT = fileURLToPath(new URL('../../', import.meta.url));
+/**
+ * The directory holding the CLI's package.json, found by walking up from this
+ * module. A fixed relative path would be layout-dependent: this file runs from
+ * `cli/dist/src/` when built and from `cli/src/` under a TypeScript loader.
+ */
+function findPackageRoot(from: string): string {
+    let dir = dirname(from);
+    while (!existsSync(join(dir, 'package.json'))) {
+        const parent = dirname(dir);
+        if (parent === dir) return dirname(from);
+        dir = parent;
+    }
+    return dir;
+}
+
+const PACKAGE_ROOT = findPackageRoot(fileURLToPath(import.meta.url));
 
 export const NODE_ENV = process.env.NODE_ENV ?? 'development';
 

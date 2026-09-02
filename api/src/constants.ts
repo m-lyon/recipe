@@ -29,6 +29,7 @@ if (!TEST) {
         SMTP_ADMIN_EMAIL,
         SENDGRID_API_KEY,
         MONGODB_URI,
+        USDA_API_KEY,
     };
     for (const [key, value] of Object.entries(requiredEnvVars)) {
         if (!value) {

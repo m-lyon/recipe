@@ -167,6 +167,7 @@ jobs:
           echo "SMTP_FROM_DOMAIN = ${{ secrets.SMTP_FROM_DOMAIN }}" >> .env.production.local
           echo "SMTP_ADMIN_EMAIL = ${{ secrets.SMTP_ADMIN_EMAIL }}" >> .env.production.local
           echo "SENDGRID_API_KEY = ${{ secrets.SENDGRID_API_KEY }}" >> .env.production.local
+          echo "USDA_API_KEY = ${{ secrets.USDA_API_KEY }}" >> .env.production.local
 
       - name: Create client environment file
         working-directory: ./client

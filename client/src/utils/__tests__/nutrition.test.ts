@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
+import { mockMilliliter, mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockUnitConversionOne } from '@recipe/graphql/queries/__mocks__/unitConversion';
 import { mockUnitConversionTwo } from '@recipe/graphql/queries/__mocks__/unitConversion';
+import { mockCup, mockGram, mockKilogram } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockUnitConversionVolume } from '@recipe/graphql/queries/__mocks__/unitConversion';
-import { mockCup, mockKilogram, mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 
 import { MacroNutrients, NutritionalInfoData, addMacros } from '../nutrition';
 import { calculateIngredientNutrition, quantityToFloat, sumRecipeNutrition } from '../nutrition';
@@ -118,12 +119,37 @@ describe('calculateIngredientNutrition', () => {
         expect(result.calculable).toBe(false);
     });
 
-    it('calculates grams for a gram unit ingredient', () => {
-        // mockGram is in mockUnitConversionOne with baseToUnitConversion handled via rule
-        // mockUnitConversionOne: baseUnit=gram, rules=[kg rule: baseToUnitConversion=1000]
-        // For gram itself there's no rule — it IS the base unit, so we need a direct gram conversion.
-        // Actually gram is the base unit; to convert "grams" to grams we need it in unitConversions.
-        // The mock only has a kg rule. Let's use kg instead.
+    it('calculates grams for an ingredient measured in the base unit itself', () => {
+        // Gram is mockUnitConversionOne's base unit, so it never appears in `rules`
+        // (a ConversionRule cannot convert a unit to itself). Its factor is 1.
+        const ri = makeIngredient({ quantity: '100', unit: mockGram as unknown as UnitView });
+        const result = calculateIngredientNutrition(ri, nutritionPerGram, unitConversions);
+        expect(result.calculable).toBe(true);
+        expect(result.macros.calories).toBeCloseTo(perGramMacros.calories * 100);
+        expect(result.macros.protein).toBeCloseTo(perGramMacros.protein * 100);
+    });
+
+    it('calculates millilitres for an ingredient measured in the volume base unit itself', () => {
+        // 250 ml × density 0.8 g/ml = 200 g
+        const ri = makeIngredient({
+            quantity: '250',
+            unit: mockMilliliter as unknown as UnitView,
+            ingredient: {
+                __typename: 'Ingredient',
+                _id: 'ing-1',
+                name: 'Olive oil',
+                density: 0.8,
+            } as unknown as RecipeIngredientView['ingredient'],
+        });
+        const result = calculateIngredientNutrition(ri, nutritionPerGram, [
+            mockUnitConversionOne,
+            mockUnitConversionVolume,
+        ]);
+        expect(result.calculable).toBe(true);
+        expect(result.macros.calories).toBeCloseTo(perGramMacros.calories * 200);
+    });
+
+    it('calculates grams for a non-base mass unit ingredient', () => {
         const ri = makeIngredient({ quantity: '1', unit: mockKilogram as unknown as UnitView });
         const result = calculateIngredientNutrition(ri, nutritionPerGram, unitConversions);
         expect(result.calculable).toBe(true);
@@ -137,12 +163,10 @@ describe('calculateIngredientNutrition', () => {
         expect(result.calculable).toBe(false);
     });
 
-    it('calculates via density for a volume unit ingredient with density', () => {
-        // mockCup: volume, mockUnitConversionTwo has cup rule: baseToUnitConversion=48 (48 tsp per cup)
-        // Teaspoon is base unit of mockUnitConversionTwo but its measureType is null (not volume).
-        // Actually mockUnitConversionTwo.baseUnit = mockTeaspoon (measureType: null, not 'volume')
-        // So convertToMl will return null since baseUnit.measureType !== 'volume'.
-        // Let's verify this path is not calculable with the current mocks, which is expected.
+    it('rejects a volume unit whose only conversion group is not millilitre-based', () => {
+        // mockUnitConversionTwo holds a cup rule, but its base unit is the teaspoon.
+        // Multiplying by 48 would yield teaspoons fed straight into per-gram macros,
+        // so the group is not eligible and the ingredient is reported as uncounted.
         const ri = makeIngredient({
             quantity: '1',
             unit: mockCup as unknown as UnitView,
@@ -154,8 +178,6 @@ describe('calculateIngredientNutrition', () => {
             } as unknown as RecipeIngredientView['ingredient'],
         });
         const result = calculateIngredientNutrition(ri, nutritionPerGram, unitConversions);
-        // mockUnitConversionTwo baseUnit is teaspoon with measureType: null (not volume)
-        // so this is not calculable
         expect(result.calculable).toBe(false);
         expect(result.reason).toContain('Cannot convert');
     });

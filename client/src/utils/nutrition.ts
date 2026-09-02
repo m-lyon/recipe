@@ -60,42 +60,63 @@ export function quantityToFloat(quantity: string): number {
     return parseFloat(quantity);
 }
 
+/** The base unit every mass conversion group must be anchored to. */
+const MASS_BASE_UNIT = 'gram';
+/** The base unit every volume conversion group must be anchored to. */
+const VOLUME_BASE_UNIT = 'milliliter';
+
+/**
+ * Convert a quantity in a given unit to the given base unit using the UnitConversion data.
+ *
+ * The unit may be the group's base unit itself -- a ConversionRule cannot convert a unit
+ * to itself (see `api/src/models/UnitConversion.ts`), so the base unit never appears in
+ * `rules` and its conversion factor is 1. This mirrors `useUnitConversion.apply`.
+ *
+ * The group is matched on the identity of its base unit, not just its measureType: a mass
+ * group based on ounces, or a volume group based on teaspoons, would otherwise yield
+ * ounces/teaspoons fed straight into per-gram macros.
+ *
+ * Returns null when the unit is not part of a conversion group with that base unit.
+ */
+function convertToBaseUnit(
+    quantity: number,
+    unit: NonNullable<UnitView>,
+    unitConversions: UnitConversion[],
+    baseUnitLongSingular: string
+): number | null {
+    const uc = unitConversions.find(
+        (conv) =>
+            conv.baseUnit.longSingular === baseUnitLongSingular &&
+            (conv.baseUnit._id === unit._id ||
+                conv.rules.some((rule) => rule.unit._id === unit._id))
+    );
+    if (!uc) return null;
+    const rule = uc.rules.find((r) => r.unit._id === unit._id);
+    return quantity * (rule ? rule.baseToUnitConversion : 1);
+}
+
 /**
  * Convert a quantity in a given unit to grams using the UnitConversion data.
- * Returns null if the unit is not part of a mass UnitConversion group.
+ * Returns null if the unit is not part of a gram-based UnitConversion group.
  */
 function convertToGrams(
     quantity: number,
     unit: NonNullable<UnitView>,
     unitConversions: UnitConversion[]
 ): number | null {
-    const uc = unitConversions.find((conv) =>
-        conv.rules.some((rule) => rule.unit._id === unit._id)
-    );
-    if (!uc) return null;
-    if (uc.baseUnit.measureType !== 'mass') return null;
-    const rule = uc.rules.find((r) => r.unit._id === unit._id);
-    if (!rule) return null;
-    return quantity * rule.baseToUnitConversion;
+    return convertToBaseUnit(quantity, unit, unitConversions, MASS_BASE_UNIT);
 }
 
 /**
  * Convert a quantity in a given unit to millilitres using the UnitConversion data.
- * Returns null if the unit is not part of a volume UnitConversion group.
+ * Returns null if the unit is not part of a millilitre-based UnitConversion group.
  */
 function convertToMl(
     quantity: number,
     unit: NonNullable<UnitView>,
     unitConversions: UnitConversion[]
 ): number | null {
-    const uc = unitConversions.find((conv) =>
-        conv.rules.some((rule) => rule.unit._id === unit._id)
-    );
-    if (!uc) return null;
-    if (uc.baseUnit.measureType !== 'volume') return null;
-    const rule = uc.rules.find((r) => r.unit._id === unit._id);
-    if (!rule) return null;
-    return quantity * rule.baseToUnitConversion;
+    return convertToBaseUnit(quantity, unit, unitConversions, VOLUME_BASE_UNIT);
 }
 
 /**

@@ -5,7 +5,7 @@ import { NutritionalInfoData, sumRecipeNutrition } from '@recipe/utils/nutrition
 import { GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS } from '@recipe/graphql/queries/nutritionalInfo';
 
 export function useNutritionalInfo(subsections: IngredientSubsectionView[], numServings: number) {
-    const { unitConversions } = useUnitConversion();
+    const { unitConversions, loading: conversionsLoading } = useUnitConversion();
 
     // Collect unique ingredient IDs from Ingredient-type items
     const ingredientIds = [
@@ -17,7 +17,7 @@ export function useNutritionalInfo(subsections: IngredientSubsectionView[], numS
         ),
     ];
 
-    const { data, loading } = useQuery(GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS, {
+    const { data, loading: nutritionLoading } = useQuery(GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS, {
         variables: { ingredientIds },
         skip: ingredientIds.length === 0,
     });
@@ -38,5 +38,7 @@ export function useNutritionalInfo(subsections: IngredientSubsectionView[], numS
         numServings
     );
 
-    return { ...result, loading };
+    // The conversions query runs separately: without it, every mass/volume ingredient
+    // is uncalculable, so a settled-looking (and wrong) total would render while it loads.
+    return { ...result, loading: nutritionLoading || conversionsLoading };
 }

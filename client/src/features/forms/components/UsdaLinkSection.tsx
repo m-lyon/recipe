@@ -311,19 +311,8 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                 ingredient: string;
                 usdaFdcId?: number;
                 perGram: MacroNutrients;
-                perUnit?: MacroNutrients;
+                perUnit: MacroNutrients | null;
             } => {
-                const record: {
-                    ingredient: string;
-                    usdaFdcId?: number;
-                    perGram: MacroNutrients;
-                    perUnit?: MacroNutrients;
-                } = {
-                    ingredient: targetIngredientId,
-                    usdaFdcId: nutrition.fdcId || undefined,
-                    perGram: nutrition.perGram,
-                };
-
                 const hasPerUnit =
                     isCountable &&
                     (perUnitNutrition.calories > 0 ||
@@ -331,11 +320,15 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                         perUnitNutrition.carbs > 0 ||
                         perUnitNutrition.fat > 0);
 
-                if (hasPerUnit) {
-                    record.perUnit = perUnitNutrition;
-                }
-
-                return record;
+                // perUnit is always set, explicitly null when there is none: the update
+                // is a partial `doc.set(record)`, so an omitted field would leave a stale
+                // perUnit behind when "Countable" is unchecked. Matches `nutrition link`.
+                return {
+                    ingredient: targetIngredientId,
+                    usdaFdcId: nutrition.fdcId || undefined,
+                    perGram: nutrition.perGram,
+                    perUnit: hasPerUnit ? perUnitNutrition : null,
+                };
             },
             [isCountable, perUnitNutrition]
         );
@@ -369,7 +362,15 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             async (newIngredientId: string) => {
                 if (!pendingNutrition) return;
                 const record = buildRecord(newIngredientId, pendingNutrition);
-                await createNutritionalInfo({ variables: { record } });
+                // `useMutation` with an `onError` option resolves instead of rejecting,
+                // so the failure has to be read off the result for the caller's catch.
+                const result = await createNutritionalInfo({ variables: { record } });
+                if (result.errors?.length) {
+                    throw new Error(result.errors[0].message);
+                }
+                if (!result.data?.nutritionalInfoCreateOne?.record) {
+                    throw new Error('The nutritional data link was not saved.');
+                }
             },
             [pendingNutrition, buildRecord, createNutritionalInfo]
         );

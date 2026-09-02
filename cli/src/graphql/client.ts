@@ -64,7 +64,7 @@ export class ApiClient {
     readonly session: SessionCache;
     /** Requests actually put on the wire. Asserted on by the transport tests. */
     requestCount = 0;
-    /** Whether the last cachedFoodItem call was served from disk. */
+    /** Whether the last cachedFoodItem call was served from a cache (memory or disk). */
     usdaCacheHit = false;
 
     /** True when this process started with a cookie on disk. */
@@ -103,7 +103,9 @@ export class ApiClient {
                 throw error;
             }
             await this.login();
-            return this.send(document, variables);
+            // Fall through rather than returning, so the retry still gets the
+            // `staleWhen` post-check applied to the normal path.
+            result = await this.send(document, variables);
         }
         // Some resolvers answer an expired session with a null field rather than
         // an UNAUTHENTICATED error, so the caller can recognise that shape too.
@@ -135,7 +137,10 @@ export class ApiClient {
         options: { refresh?: boolean } = {}
     ): Promise<TResult> {
         const hit = this.foodItemCache.get(fdcId);
-        if (hit !== undefined && !options.refresh) return hit as TResult;
+        if (hit !== undefined && !options.refresh) {
+            this.usdaCacheHit = true;
+            return hit as TResult;
+        }
 
         const key = fingerprint(print(assertGenerated(document)));
         if (!options.refresh) {

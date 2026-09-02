@@ -46,26 +46,15 @@ NutritionalInfoTC.addResolver({
 });
 
 export const NutritionalInfoQuery = {
-    nutritionalInfoByIngredient: NutritionalInfoTC.mongooseResolvers
-        .findOne()
-        .wrapResolve((next) => async (rp) => {
-            if (!rp.context.getUser()) {
-                throw new GraphQLError('Not authenticated', {
-                    extensions: { code: 'UNAUTHENTICATED' },
-                });
-            }
-            return next(rp);
-        }),
+    // Reads are public: recipes and ingredients are readable without a session
+    // (`view/recipe/:titleIdentifier` is not behind RequireAuth), and nutritional
+    // info is derived reference data, not owner-scoped.
+    nutritionalInfoByIngredient: NutritionalInfoTC.mongooseResolvers.findOne(),
     nutritionalInfosByIngredientIds: schemaComposer.createResolver({
         name: 'nutritionalInfosByIngredientIds',
         type: [NutritionalInfoTC],
         args: { ingredientIds: '[MongoID!]!' },
-        resolve: async ({ args, context }) => {
-            if (!context.getUser()) {
-                throw new GraphQLError('Not authenticated', {
-                    extensions: { code: 'UNAUTHENTICATED' },
-                });
-            }
+        resolve: async ({ args }) => {
             return NutritionalInfo.find({ ingredient: { $in: args.ingredientIds } });
         },
     }),
@@ -91,6 +80,12 @@ export const NutritionalInfoMutation = {
             const user = rp.context.getUser();
             const isUserAdmin = user?.role === 'admin';
             await assertIngredientOwnerOrAdmin(existing.ingredient, user?._id, isUserAdmin);
+            // The update input carries `ingredient`, so a caller could otherwise
+            // reassign the record to an ingredient they do not own.
+            const incoming = rp.args.record?.ingredient;
+            if (incoming && String(incoming) !== String(existing.ingredient)) {
+                await assertIngredientOwnerOrAdmin(incoming, user?._id, isUserAdmin);
+            }
             return next(rp);
         }
     ),

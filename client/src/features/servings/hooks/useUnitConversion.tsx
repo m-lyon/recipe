@@ -13,6 +13,7 @@ export type ApplyUnitConversion = ({ quantity, unit }: UnitConversionArgs) => Un
 interface UseUnitConversionReturnType {
     apply: ApplyUnitConversion;
     unitConversions: UnitConversion[];
+    loading: boolean;
 }
 export function useUnitConversion(): UseUnitConversionReturnType {
     const { data, loading, error } = useQuery(GET_UNIT_CONVERSIONS);
@@ -39,7 +40,7 @@ export function useUnitConversion(): UseUnitConversionReturnType {
         return applyConversion(quantity, baseToUnitConversion, unitConversion);
     };
 
-    return { apply, unitConversions: data?.unitConversionMany ?? [] };
+    return { apply, unitConversions: data?.unitConversionMany ?? [], loading };
 }
 
 function applyConversion(

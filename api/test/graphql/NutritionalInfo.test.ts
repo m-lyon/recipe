@@ -7,8 +7,8 @@ import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { Unit } from '../../src/models/Unit.js';
 import { User } from '../../src/models/User.js';
-import { createAdmin, createUser } from '../utils/data.js';
 import { __testables } from '../../src/schema/Usda.js';
+import { createAdmin, createUser } from '../utils/data.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { UnitConversion } from '../../src/models/UnitConversion.js';
@@ -338,6 +338,67 @@ describe('nutritionalInfoUpdateById', function () {
         assert.isUndefined(response.body.singleResult.errors);
         const record = (response.body.singleResult.data as any).nutritionalInfoUpdateById.record;
         assert.approximately(record.perGram.calories, 2.0, 0.001);
+    });
+
+    it('should NOT reassign the record to an ingredient owned by someone else', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ownIngredient = await Ingredient.findOne({ name: 'chicken' });
+        const otherUser = await createOtherUser();
+        const otherIngredient = await new Ingredient({
+            name: 'beef',
+            pluralName: 'beefs',
+            isCountable: true,
+            owner: otherUser._id,
+            tags: [],
+        }).save();
+
+        const ni = await new NutritionalInfo({
+            ingredient: ownIngredient._id,
+            perGram: VALID_PER_GRAM,
+        }).save();
+
+        const response = await this.apolloServer.executeOperation(
+            {
+                query: UPDATE_MUTATION,
+                variables: {
+                    id: ni._id.toString(),
+                    record: { ingredient: otherIngredient._id.toString() },
+                },
+            },
+            makeContext(user)
+        );
+        assert.equal(response.body.kind, 'single');
+        assert.isDefined(response.body.singleResult.errors, 'Should fail for a foreign ingredient');
+        assert.equal(response.body.singleResult.errors[0].message, 'Not authorized');
+        const unchanged = await NutritionalInfo.findById(ni._id);
+        assert.equal(String(unchanged.ingredient), String(ownIngredient._id));
+    });
+
+    it("should allow an update that repeats the record's own ingredient", async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const ni = await new NutritionalInfo({
+            ingredient: ingredient._id,
+            perGram: VALID_PER_GRAM,
+        }).save();
+
+        const response = await this.apolloServer.executeOperation(
+            {
+                query: UPDATE_MUTATION,
+                variables: {
+                    id: ni._id.toString(),
+                    record: {
+                        ingredient: ingredient._id.toString(),
+                        perGram: { calories: 3.0, protein: 0.4, carbs: 0.02, fat: 0.06 },
+                    },
+                },
+            },
+            makeContext(user)
+        );
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(response.body.singleResult.errors);
+        const record = (response.body.singleResult.data as any).nutritionalInfoUpdateById.record;
+        assert.approximately(record.perGram.calories, 3.0, 0.001);
     });
 
     it('should NOT update nutritional info as non-owner', async function () {
