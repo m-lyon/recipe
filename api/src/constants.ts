@@ -13,6 +13,7 @@ export const SESSION_URI = process.env.SESSION_URI;
 export const MONGODB_URI = process.env.MONGODB_URI;
 export const MONGODB_VERSION = process.env.MONGODB_VERSION;
 export const PORT = process.env.PORT ? normalisePort(process.env.PORT) : 4000;
+export const HOST = process.env.HOST ? process.env.HOST : '127.0.0.1';
 export const PRIVKEY_PEM = process.env.PRIVKEY_PEM;
 export const FULLCHAIN_PEM = process.env.FULLCHAIN_PEM;
 export const IMAGE_DIR = process.env.IMAGE_DIR ? process.env.IMAGE_DIR : '/data/recipe/images';
