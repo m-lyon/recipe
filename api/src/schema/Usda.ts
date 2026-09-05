@@ -24,6 +24,7 @@ const VOLUME_ML: Record<string, number> = {
     pint: 473.176,
     quart: 946.353,
     gallon: 3785.41,
+    'cubic inch': 16.387,
 };
 
 const MASS_UNITS = new Set([
@@ -112,10 +113,42 @@ const UsdaFoodItemTC = schemaComposer.createObjectTC({
     },
 });
 
-/** Strips a trailing qualifier so "cup, chopped" and "cup (4.86 large eggs)" both
- *  resolve their leading unit.*/
+/** A leading count in a portion label: "1", "1.5", "1/2", "1 1/2". */
+const LEADING_AMOUNT = /^\s*(\d+\s+\d+\/\d+|\d+\/\d+|\d*\.\d+|\d+)\s+/;
+
+function parseAmountToken(raw: string): number | null {
+    const mixed = /^(\d+)\s+(\d+)\/(\d+)$/.exec(raw);
+    if (mixed) {
+        const denominator = Number(mixed[3]);
+        return denominator === 0 ? null : Number(mixed[1]) + Number(mixed[2]) / denominator;
+    }
+    const fraction = /^(\d+)\/(\d+)$/.exec(raw);
+    if (fraction) {
+        const denominator = Number(fraction[2]);
+        return denominator === 0 ? null : Number(fraction[1]) / denominator;
+    }
+    const value = Number(raw);
+    return Number.isFinite(value) ? value : null;
+}
+
+/**
+ * Splits a leading amount off a portion label.
+ *
+ * SR Legacy keeps the count in `amount` and the unit in `modifier` ("cup, chopped").
+ * FNDDS (Survey) has no `amount` and puts both in `portionDescription` ("1 cup"), so
+ * without this split every Survey volume portion is misread as a countable item.
+ */
+function splitLeadingAmount(label: string): { amount: number | null; rest: string } {
+    const match = LEADING_AMOUNT.exec(label);
+    if (!match) return { amount: null, rest: label };
+    return { amount: parseAmountToken(match[1]), rest: label.slice(match[0].length) };
+}
+
+/** Strips a leading amount and a trailing qualifier, so "1 cup", "cup, chopped" and
+ *  "cup (4.86 large eggs)" all resolve their unit word. */
 function unitToken(label: string): string {
-    return label.toLowerCase().split(/[,(]/)[0].trim().replace(/\.$/, '');
+    const { rest } = splitLeadingAmount(label);
+    return rest.toLowerCase().split(/[,(]/)[0].trim().replace(/\.$/, '');
 }
 
 /** Millilitres for one of a free-text portion unit, or null when it is not a volume. */
@@ -221,10 +254,16 @@ function buildPortion(
     const usableModifier = modifier && !isNumericCode(modifier) ? modifier : null;
     const label = usableModifier ?? portionDescription;
     const kind = classifyPortion(label, measureUnitName, fromServingSize);
+    // An explicit `amount` is authoritative; only fall back to a count embedded in the
+    // label, which is the sole source on FNDDS records.
+    const embedded = label ? splitLeadingAmount(label).amount : null;
+    const effectiveAmount = amount ?? embedded ?? 1;
     // Only a VOLUME portion carries volume information. A RACC or a branded serving
     // that happens to name a cup is a serving size, not a measured volume.
     const mlPerUnit = kind === 'VOLUME' ? volumeMlPerUnit(label) : null;
-    const millilitres = mlPerUnit == null ? null : mlPerUnit * (amount ?? 1);
+    // A zero or negative amount would divide by zero downstream.
+    const millilitres =
+        mlPerUnit == null || effectiveAmount <= 0 ? null : mlPerUnit * effectiveAmount;
     return {
         description: buildDescription(amount, usableModifier, portionDescription, measureUnitName),
         amount,
@@ -233,7 +272,7 @@ function buildPortion(
         kind,
         millilitres,
         impliedDensity: millilitres ? gramWeight / millilitres : null,
-        ambiguous: isAmbiguous(label, amount),
+        ambiguous: isAmbiguous(label, effectiveAmount),
     };
 }
 

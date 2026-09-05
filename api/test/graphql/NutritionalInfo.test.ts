@@ -1025,4 +1025,157 @@ describe('usdaFoodItem', function () {
             0.001
         );
     });
+
+    it('should classify a Survey volume portion as VOLUME with the correct density', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const result = await fetchItem(this.apolloServer, user, loadFixture('vegan-mayo-2710205'));
+        const portions: Portion[] = result.portions;
+
+        const cup = portionByDescription(portions, '1 cup');
+        assert.equal(cup.kind, 'VOLUME');
+        assert.equal(cup.millilitres, 236.588);
+        assert.closeTo(cup.impliedDensity!, 0.951, 0.001);
+    });
+
+    it("should agree on density between a Survey record's cup and tablespoon portions", async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const result = await fetchItem(this.apolloServer, user, loadFixture('vegan-mayo-2710205'));
+        const portions: Portion[] = result.portions;
+
+        const cup = portionByDescription(portions, '1 cup');
+        const tbsp = portionByDescription(portions, '1 tablespoon');
+        // Dropping the amount multiplier would make the tablespoon read 14x too dense.
+        assert.closeTo(cup.impliedDensity! / tbsp.impliedDensity!, 1, 0.01);
+    });
+
+    it('should derive a density from a single Survey volume portion', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const result = await fetchItem(this.apolloServer, user, loadFixture('soy-sauce-2707442'));
+
+        const tbsp = portionByDescription(result.portions, '1 tablespoon');
+        assert.closeTo(tbsp.impliedDensity!, 1.082, 0.001);
+    });
+
+    it('should leave Survey non-volume portions unaffected', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const mayo = await fetchItem(this.apolloServer, user, loadFixture('vegan-mayo-2710205'));
+        assert.equal(portionByDescription(mayo.portions, 'Quantity not specified').kind, 'SERVING');
+
+        restore();
+        const soySauce = await fetchItem(this.apolloServer, user, loadFixture('soy-sauce-2707442'));
+        assert.equal(portionByDescription(soySauce.portions, '1 individual packet').kind, 'ITEM');
+    });
+
+    it('should classify a Survey mass portion as WEIGHT, not ITEM', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const item = {
+            fdcId: 999998,
+            description: 'Synthetic Survey mass portion',
+            dataType: 'Survey (FNDDS)',
+            foodNutrients: [],
+            foodPortions: [
+                {
+                    measureUnit: { id: 9999, name: 'undetermined' },
+                    modifier: '30000',
+                    gramWeight: 28.35,
+                    portionDescription: '1 oz',
+                    sequenceNumber: 1,
+                },
+            ],
+        };
+
+        const result = await fetchItem(this.apolloServer, user, item);
+
+        assert.equal(result.portions.length, 1);
+        assert.equal(result.portions[0].kind, 'WEIGHT');
+    });
+
+    it('should parse fraction and mixed-number amounts embedded in Survey labels', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const item = {
+            fdcId: 999997,
+            description: 'Synthetic Survey fractional amounts',
+            dataType: 'Survey (FNDDS)',
+            foodNutrients: [],
+            foodPortions: [
+                {
+                    measureUnit: { id: 9999, name: 'undetermined' },
+                    modifier: '40000',
+                    gramWeight: 118,
+                    portionDescription: '1/2 cup',
+                    sequenceNumber: 1,
+                },
+                {
+                    measureUnit: { id: 9999, name: 'undetermined' },
+                    modifier: '40001',
+                    gramWeight: 355,
+                    portionDescription: '1 1/2 cups',
+                    sequenceNumber: 2,
+                },
+            ],
+        };
+
+        const result = await fetchItem(this.apolloServer, user, item);
+        const portions: Portion[] = result.portions;
+
+        assert.closeTo(portionByDescription(portions, '1/2 cup').millilitres!, 118.294, 0.001);
+        assert.closeTo(portionByDescription(portions, '1 1/2 cups').millilitres!, 354.882, 0.001);
+    });
+
+    it('should yield no density for a zero-amount Survey portion, without throwing', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const item = {
+            fdcId: 999996,
+            description: 'Synthetic Survey zero amount',
+            dataType: 'Survey (FNDDS)',
+            foodNutrients: [],
+            foodPortions: [
+                {
+                    measureUnit: { id: 9999, name: 'undetermined' },
+                    modifier: '50000',
+                    gramWeight: 118,
+                    portionDescription: '0 cup',
+                    sequenceNumber: 1,
+                },
+            ],
+        };
+
+        const result = await fetchItem(this.apolloServer, user, item);
+
+        assert.equal(result.portions.length, 1);
+        assert.isNull(result.portions[0].millilitres);
+        assert.isNull(result.portions[0].impliedDensity);
+    });
+
+    it('should flag ambiguous qualifiers on Survey labels the same as SR Legacy', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+        const item = {
+            fdcId: 999995,
+            description: 'Synthetic Survey ambiguity check',
+            dataType: 'Survey (FNDDS)',
+            foodNutrients: [],
+            foodPortions: [
+                {
+                    measureUnit: { id: 9999, name: 'undetermined' },
+                    modifier: '60000',
+                    gramWeight: 30,
+                    portionDescription: '1 fl oz (with ice)',
+                    sequenceNumber: 1,
+                },
+                {
+                    measureUnit: { id: 9999, name: 'undetermined' },
+                    modifier: '60001',
+                    gramWeight: 240,
+                    portionDescription: '1 cup',
+                    sequenceNumber: 2,
+                },
+            ],
+        };
+
+        const result = await fetchItem(this.apolloServer, user, item);
+        const portions: Portion[] = result.portions;
+
+        assert.isTrue(portionByDescription(portions, '1 fl oz (with ice)').ambiguous);
+        assert.isFalse(portionByDescription(portions, '1 cup').ambiguous);
+    });
 });
