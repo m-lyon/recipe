@@ -7,7 +7,7 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { renderPage } from '@recipe/utils/tests';
 import { mockKilogram } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockChicken } from '@recipe/graphql/queries/__mocks__/ingredient';
+import { mockChicken, mockRhurbarbPie } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { GetNutritionalInfosByIngredientIdsQuery } from '@recipe/graphql/generated';
 import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -249,5 +249,48 @@ describe('IngredientsTab nutritional info integration', () => {
         // Expect
         expect(await screen.findByText('1.25kg chicken')).not.toBeNull();
         expect(screen.queryByText('413 kcal')).not.toBeNull();
+    });
+
+    it('shows the empty state when the recipe contains only sub-recipes', async () => {
+        // Sub-recipe entries are skipped by sumRecipeNutrition, so there is nothing to count
+        // and nothing to report as uncounted -- the panel must not render a 0 kcal total.
+        const MockIngredientsTab = () => {
+            const props = {
+                recipe: {
+                    ...mockRecipeOne,
+                    numServings: 4,
+                    ingredientSubsections: [
+                        {
+                            __typename: 'IngredientSubsection',
+                            name: null,
+                            ingredients: [
+                                {
+                                    _id: '60f4d2e5c3d5a0a4f1b9c0ed',
+                                    __typename: 'RecipeIngredient',
+                                    quantity: '1',
+                                    unit: null,
+                                    size: null,
+                                    ingredient: mockRhurbarbPie,
+                                    prepMethod: null,
+                                },
+                            ],
+                        },
+                    ],
+                } satisfies CompletedRecipeView,
+            };
+            return <IngredientsTab {...props} />;
+        };
+
+        const routes = createRoutesFromElements(
+            <Route path='/' element={<MockIngredientsTab />} />
+        );
+        renderPage(routes, [
+            mockGetIngredientComponents,
+            mockGetUnitConversions,
+            mockCurrentUserAdmin,
+        ]);
+
+        expect(await screen.findByText(/not available/i)).not.toBeNull();
+        expect(screen.queryByText('0 kcal')).toBeNull();
     });
 });

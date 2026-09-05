@@ -318,13 +318,28 @@ function mapFoodItem(item: Record<string, unknown>) {
     };
 }
 
-function usdaFetch(url: string): Promise<Response> {
+/**
+ * Fetch a USDA endpoint and parse its JSON body.
+ *
+ * The abort timer covers the body read as well as the headers: `fetch` settles as soon as
+ * the response headers arrive, so clearing the timer there would leave a response that
+ * stalls mid-body holding the GraphQL request open indefinitely.
+ */
+async function usdaFetchJson(url: string): Promise<Record<string, unknown>> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), USDA_REQUEST_TIMEOUT_MS);
-    return fetch(url, {
-        headers: { 'X-Api-Key': USDA_API_KEY },
-        signal: controller.signal,
-    }).finally(() => clearTimeout(timer));
+    try {
+        const res = await fetch(url, {
+            headers: { 'X-Api-Key': USDA_API_KEY },
+            signal: controller.signal,
+        });
+        if (!res.ok) {
+            throw new GraphQLError(`USDA API error: ${res.status} ${res.statusText}`);
+        }
+        return (await res.json()) as Record<string, unknown>;
+    } finally {
+        clearTimeout(timer);
+    }
 }
 
 export const UsdaQuery = {
@@ -345,11 +360,7 @@ export const UsdaQuery = {
             }
             const safePageSize = Math.min((args.pageSize as number) ?? 20, USDA_MAX_PAGE_SIZE);
             const url = `${USDA_BASE}/foods/search?query=${encodeURIComponent(args.query)}&pageSize=${safePageSize}`;
-            const res = await usdaFetch(url);
-            if (!res.ok) {
-                throw new GraphQLError(`USDA API error: ${res.status} ${res.statusText}`);
-            }
-            const json = (await res.json()) as Record<string, unknown>;
+            const json = await usdaFetchJson(url);
             return ((json['foods'] as Array<Record<string, unknown>>) ?? []).map(mapFoodItem);
         },
     }),
@@ -365,11 +376,7 @@ export const UsdaQuery = {
             }
             // format=full, not abridged: abridged omits foodPortions entirely.
             const url = `${USDA_BASE}/food/${args.fdcId}?format=full`;
-            const res = await usdaFetch(url);
-            if (!res.ok) {
-                throw new GraphQLError(`USDA API error: ${res.status} ${res.statusText}`);
-            }
-            const json = (await res.json()) as Record<string, unknown>;
+            const json = await usdaFetchJson(url);
             if (!json['fdcId']) {
                 throw new GraphQLError('Food item not found', {
                     extensions: { code: 'NOT_FOUND' },

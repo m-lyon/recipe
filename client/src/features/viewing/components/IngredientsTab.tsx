@@ -38,14 +38,18 @@ export function IngredientsTab(props: Props) {
         recipe.ingredientSubsections,
         recipe.numServings
     );
-    // Compute allUncounted here so NutritionalInfoPanel doesn't need the full subsections array.
-    // Guard with !loading so we don't evaluate before data is available — if loading is true,
-    // the panel renders skeletons regardless of allUncounted.
+    // Compute nothingCounted here so NutritionalInfoPanel doesn't need the full subsections
+    // array. Guard with !loading so we don't evaluate before data is available — if loading is
+    // true, the panel renders skeletons regardless.
+    // The empty state is "nothing was counted", not "everything was uncounted": a recipe whose
+    // entries are all sub-recipes has no Ingredient-type items at all, so uncountedIds is empty
+    // (sumRecipeNutrition skips sub-recipes silently) and the panel would otherwise present a
+    // fabricated 0 kcal / 0 g total as a computed result.
     const totalIngredients = recipe.ingredientSubsections
         .flatMap((s) => s.ingredients)
         .filter((i) => i.ingredient.__typename === 'Ingredient').length;
-    const allUncounted =
-        !loading && uncountedIds.size > 0 && totalIngredients === uncountedIds.size;
+    const nothingCounted =
+        !loading && (totalIngredients === 0 || totalIngredients === uncountedIds.size);
     useEffect(() => {
         setNumServings(recipe.numServings);
     }, [recipe.numServings, setNumServings]);
@@ -96,7 +100,7 @@ export function IngredientsTab(props: Props) {
                     <NutritionalInfoPanel
                         perServing={perServing}
                         uncountedIds={uncountedIds}
-                        allUncounted={allUncounted}
+                        nothingCounted={nothingCounted}
                         loading={loading}
                     />
                 </>

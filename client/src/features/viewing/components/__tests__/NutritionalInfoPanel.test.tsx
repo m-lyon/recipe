@@ -26,7 +26,7 @@ describe('NutritionalInfoPanel', () => {
                     <NutritionalInfoPanel
                         perServing={{ calories: 825, protein: 31, carbs: 0, fat: 3.6 }}
                         uncountedIds={new Set()}
-                        allUncounted={false}
+                        nothingCounted={false}
                         loading={false}
                     />
                 }
@@ -45,7 +45,7 @@ describe('NutritionalInfoPanel', () => {
                     <NutritionalInfoPanel
                         perServing={{ calories: 825, protein: 31, carbs: 0, fat: 3.6 }}
                         uncountedIds={new Set()}
-                        allUncounted={false}
+                        nothingCounted={false}
                         loading={false}
                     />
                 }
@@ -63,7 +63,7 @@ describe('NutritionalInfoPanel', () => {
                     <NutritionalInfoPanel
                         perServing={emptyMacros}
                         uncountedIds={new Set()}
-                        allUncounted={false}
+                        nothingCounted={false}
                         loading={true}
                     />
                 }
@@ -75,7 +75,7 @@ describe('NutritionalInfoPanel', () => {
     });
 
     it('shows uncounted notice when some ingredients have no nutritional data', () => {
-        // Partial uncounting: some ingredients counted, some not → allUncounted=false
+        // Partial uncounting: some ingredients counted, some not → nothingCounted=false
         const routes = createRoutesFromElements(
             <Route
                 path='/'
@@ -83,7 +83,7 @@ describe('NutritionalInfoPanel', () => {
                     <NutritionalInfoPanel
                         perServing={{ calories: 190, protein: 0.5, carbs: 25, fat: 0.3 }}
                         uncountedIds={new Set(['ri-1'])}
-                        allUncounted={false}
+                        nothingCounted={false}
                         loading={false}
                     />
                 }
@@ -101,7 +101,7 @@ describe('NutritionalInfoPanel', () => {
                     <NutritionalInfoPanel
                         perServing={emptyMacros}
                         uncountedIds={new Set(['ri-1'])}
-                        allUncounted={true}
+                        nothingCounted={true}
                         loading={false}
                     />
                 }

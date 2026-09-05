@@ -7,8 +7,8 @@ import { MacroNutrients } from '@recipe/utils/nutrition';
 interface NutritionalInfoPanelProps {
     perServing: MacroNutrients;
     uncountedIds: Set<string>;
-    /** True when every Ingredient-type item in the recipe is uncounted. */
-    allUncounted: boolean;
+    /** True when no ingredient contributed to the totals (none countable, or none present). */
+    nothingCounted: boolean;
     loading: boolean;
 }
 
@@ -17,7 +17,7 @@ function round1(n: number): string {
 }
 
 export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
-    const { perServing, uncountedIds, allUncounted, loading } = props;
+    const { perServing, uncountedIds, nothingCounted, loading } = props;
     const [open, setOpen] = useState(true);
 
     return (
@@ -42,7 +42,7 @@ export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
                         <Skeleton height={40} />
                         <Skeleton height={40} />
                     </SimpleGrid>
-                ) : allUncounted ? (
+                ) : nothingCounted ? (
                     <Text c='dimmed' mt='xs'>
                         Nutritional info not available for this recipe yet.
                     </Text>
