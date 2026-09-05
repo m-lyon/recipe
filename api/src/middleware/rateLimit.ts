@@ -13,6 +13,10 @@ import { GraphQLContext } from '../types.js';
  */
 const buckets = new Map<string, number[]>();
 
+/** Requests handled since the last sweep of fully expired keys. */
+let sinceSweep = 0;
+const SWEEP_INTERVAL = 100;
+
 export const rateLimit =
     (name: string, limit: number, windowMs: number): ResolverNextRpCb<unknown, GraphQLContext> =>
     (next) =>
@@ -36,10 +40,21 @@ export const rateLimit =
         }
         hits.push(now);
         buckets.set(key, hits);
+        // Periodically drop keys whose window has fully expired, so the map does not
+        // grow monotonically with every user that has ever hit a limited resolver.
+        if (++sinceSweep >= SWEEP_INTERVAL) {
+            sinceSweep = 0;
+            for (const [otherKey, times] of buckets) {
+                if (otherKey !== key && now - times[times.length - 1] >= windowMs) {
+                    buckets.delete(otherKey);
+                }
+            }
+        }
         return next(rp);
     };
 
 /** Test hook: drops every recorded window so cases do not leak into each other. */
 export function resetRateLimits(): void {
     buckets.clear();
+    sinceSweep = 0;
 }

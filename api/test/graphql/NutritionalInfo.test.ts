@@ -638,6 +638,27 @@ describe('usdaSearch', function () {
         assert.deepEqual(results[0].portions, []);
     });
 
+    it('should clamp a non-positive pageSize instead of spending a USDA request on a 400', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+
+        const fetchStub = stub(global, 'fetch').resolves({
+            ok: true,
+            json: async () => ({ foods: [] }),
+        } as Response);
+
+        const response = await this.apolloServer.executeOperation(
+            {
+                query: USDA_SEARCH,
+                variables: { query: 'chicken', pageSize: 0 },
+            },
+            makeContext(user)
+        );
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(response.body.singleResult.errors);
+        const url = fetchStub.firstCall.args[0] as string;
+        assert.include(url, 'pageSize=1', 'pageSize must be clamped to at least 1');
+    });
+
     it('should fail for unauthenticated user', async function () {
         const fetchStub = stub(global, 'fetch');
 

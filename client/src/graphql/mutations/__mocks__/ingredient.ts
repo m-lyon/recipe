@@ -7,9 +7,9 @@ import { ModifyIngredientMutationVariables } from '@recipe/graphql/generated';
 import { CreateIngredientMutationVariables } from '@recipe/graphql/generated';
 import { CreateIngredientMutation, Ingredient } from '@recipe/graphql/generated';
 import { mockAdminId, mockBeefId, mockOnionId } from '@recipe/graphql/__mocks__/ids';
-import { ONION_CUP_DENSITY } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
-import { OLIVE_OIL_CUP_DENSITY } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { CREATE_INGREDIENT, MODIFY_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
+import { ONION_CUP_DENSITY_APPLIED } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
+import { OLIVE_OIL_CUP_DENSITY_APPLIED } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 
 export const mockBeef: Ingredient = {
     _id: mockBeefId,
@@ -49,7 +49,7 @@ export const mockOnion: Ingredient = {
     name: 'onion',
     pluralName: 'onion',
     isCountable: true,
-    density: ONION_CUP_DENSITY,
+    density: ONION_CUP_DENSITY_APPLIED,
     owner: mockAdminId,
     tags: [],
 };
@@ -66,7 +66,7 @@ export const mockCreateIngredientOnionWithDensity = {
                 pluralName: mockOnion.pluralName,
                 isCountable: true,
                 tags: [],
-                density: ONION_CUP_DENSITY,
+                density: ONION_CUP_DENSITY_APPLIED,
             },
         } satisfies CreateIngredientMutationVariables,
     },
@@ -92,7 +92,7 @@ export const mockUpdateIngredientCarrotWithDensity = {
                 pluralName: mockCarrot.pluralName,
                 isCountable: mockCarrot.isCountable,
                 tags: mockCarrot.tags,
-                density: OLIVE_OIL_CUP_DENSITY,
+                density: OLIVE_OIL_CUP_DENSITY_APPLIED,
             },
         } satisfies ModifyIngredientMutationVariables,
     },
@@ -101,7 +101,7 @@ export const mockUpdateIngredientCarrotWithDensity = {
             __typename: 'Mutation',
             ingredientUpdateById: {
                 __typename: 'UpdateByIdIngredientPayload',
-                record: { ...mockCarrot, density: OLIVE_OIL_CUP_DENSITY },
+                record: { ...mockCarrot, density: OLIVE_OIL_CUP_DENSITY_APPLIED },
             },
         } satisfies ModifyIngredientMutation,
     },

@@ -159,11 +159,16 @@ export const mockGetNutritionalInfosForEditIngredientAfterCarrotDeleted = {
  *  them -- no hand-copied floats to drift. */
 export const usdaOnionPer100g = { calories: 40, protein: 1.1, carbs: 9.34, fat: 0.1 };
 
-/** 216 g of olive oil in a US customary cup. Exported so a mutation mock can assert
- *  the exact float that reaches the ingredient record. */
+/** 216 g of olive oil in a US customary cup: the raw quotient the USDA portion implies. */
 export const OLIVE_OIL_CUP_DENSITY = 216 / 236.588;
 /** 160 g of chopped onion in the same cup -- a packing density, hence ambiguous. */
 export const ONION_CUP_DENSITY = 160 / 236.588;
+
+/** Applying a suggestion rounds to 4dp, matching the CLI, so these -- not the raw
+ *  quotients above -- are what reaches the form field and the ingredient record. */
+export const round4 = (n: number): number => Math.round(n * 1e4) / 1e4;
+export const OLIVE_OIL_CUP_DENSITY_APPLIED = round4(OLIVE_OIL_CUP_DENSITY);
+export const ONION_CUP_DENSITY_APPLIED = round4(ONION_CUP_DENSITY);
 
 /** The per-100g figures behind mockUsdaSearchChickenBreast, exported so the mutation mock
  *  can derive per-gram values by the same arithmetic UsdaLinkSection uses. */
@@ -343,6 +348,15 @@ const usdaSearchBananaResult: UsdaSearchQuery = {
             portions: [],
         },
     ],
+};
+
+/** A search USDA answers with no matches at all. */
+export const mockUsdaSearchNoMatches = {
+    request: {
+        query: USDA_SEARCH,
+        variables: { query: 'zzzzz', pageSize: 20 } satisfies UsdaSearchQueryVariables,
+    },
+    result: { data: { __typename: 'Query', usdaSearch: [] } as UsdaSearchQuery },
 };
 
 export const mockUsdaSearchBanana = {

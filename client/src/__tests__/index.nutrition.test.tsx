@@ -5,7 +5,6 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { PATH } from '@recipe/constants';
 import { renderPage } from '@recipe/utils/tests';
-import { DEBOUNCE_TIME } from '@recipe/constants';
 import { haveValueByLabelText } from '@recipe/utils/tests';
 import { enterCreateNewRecipePage } from '@recipe/utils/tests';
 import { clickGetByText, enterViewRecipePage } from '@recipe/utils/tests';
@@ -14,6 +13,8 @@ import { mockUsdaSearchOnion } from '@recipe/graphql/queries/__mocks__/nutrition
 import { mockUsdaFoodItemOnion } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { mockUsdaSearchOliveOil } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { mockUsdaFoodItemOliveOil } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
+import { ONION_CUP_DENSITY_APPLIED } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
+import { OLIVE_OIL_CUP_DENSITY_APPLIED } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { mockCreateNutritionalInfoOnion } from '@recipe/graphql/mutations/__mocks__/nutritionalInfo';
 import { mockCreateIngredientOnionWithDensity } from '@recipe/graphql/mutations/__mocks__/ingredient';
 import { mockUpdateIngredientCarrotWithDensity } from '@recipe/graphql/mutations/__mocks__/ingredient';
@@ -137,7 +138,6 @@ describe('USDA portion linking from the new ingredient form', () => {
 
         // Act -- search USDA and select the record, which fetches its portions
         await user.type(screen.getByLabelText('Search nutritional data'), 'onion');
-        await new Promise((resolve) => setTimeout(resolve, DEBOUNCE_TIME + 50));
         await user.click(screen.getByLabelText('Search USDA database'));
         await user.click(await screen.findByText('Onions, raw'));
 
@@ -151,7 +151,7 @@ describe('USDA portion linking from the new ingredient form', () => {
         await waitFor(() =>
             expect(screen.getByLabelText('Density (g/ml)')).toHaveProperty(
                 'value',
-                String(160 / 236.588)
+                String(ONION_CUP_DENSITY_APPLIED)
             )
         );
 
@@ -201,7 +201,6 @@ describe('USDA portion linking from the edit ingredient page', () => {
         // Act -- search USDA and select a record with a volume portion
         await user.clear(screen.getByLabelText('Search nutritional data'));
         await user.type(screen.getByLabelText('Search nutritional data'), 'olive oil');
-        await new Promise((resolve) => setTimeout(resolve, DEBOUNCE_TIME + 50));
         await user.click(screen.getByLabelText('Search USDA database'));
         await user.click(await screen.findByText('Oil, olive, salad or cooking'));
 
@@ -210,7 +209,7 @@ describe('USDA portion linking from the edit ingredient page', () => {
         await waitFor(() =>
             expect(screen.getByLabelText('Density (g/ml)')).toHaveProperty(
                 'value',
-                String(216 / 236.588)
+                String(OLIVE_OIL_CUP_DENSITY_APPLIED)
             )
         );
 
@@ -226,7 +225,7 @@ describe('USDA portion linking from the edit ingredient page', () => {
         await waitFor(() =>
             expect(screen.getByLabelText('Density (g/ml)')).toHaveProperty(
                 'value',
-                String(216 / 236.588)
+                String(OLIVE_OIL_CUP_DENSITY_APPLIED)
             )
         );
     });

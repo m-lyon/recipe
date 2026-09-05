@@ -1,4 +1,3 @@
-import { useDebounce } from 'use-debounce';
 import { useLazyQuery, useMutation } from '@apollo/client';
 import { NumberInputStepper, Stack, Text } from '@chakra-ui/react';
 import { FormControl, FormLabel, NumberDecrementStepper } from '@chakra-ui/react';
@@ -7,7 +6,6 @@ import { NumberIncrementStepper, NumberInput, NumberInputField } from '@chakra-u
 import { Alert, AlertDescription, AlertIcon, AlertTitle, Box, Button } from '@chakra-ui/react';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react';
 
-import { DEBOUNCE_TIME } from '@recipe/constants';
 import { MacroNutrients } from '@recipe/utils/nutrition';
 import { UsdaSearchQuery } from '@recipe/graphql/generated';
 import { FloatingLabelInput } from '@recipe/common/components';
@@ -89,7 +87,6 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
         } = props;
 
         const [searchInput, setSearchInput] = useState('');
-        const [debouncedSearch] = useDebounce(searchInput, DEBOUNCE_TIME);
 
         const [selectedFdcId, setSelectedFdcId] = useState<number | null>(null);
         const [pendingNutrition, setPendingNutrition] = useState<{
@@ -103,6 +100,9 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
         const [linked, setLinked] = useState(false);
         const [mutationError, setMutationError] = useState<string | null>(null);
         const [searchResults, setSearchResults] = useState<UsdaSearchResultItem[]>([]);
+        /** True once a search has run for the current input, so an empty result list can
+         *  be reported as "no matches" instead of rendering nothing. */
+        const [searchAttempted, setSearchAttempted] = useState(false);
         // The linked item's USDA name, shown in place of its FDC ID once known.
         const [linkedFoodName, setLinkedFoodName] = useState<string | null>(null);
         // Portions come from the single-item endpoint only; search results carry none.
@@ -121,6 +121,7 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             setSelectedFdcId(null);
             setMutationError(null);
             setSearchResults([]);
+            setSearchAttempted(false);
             setLinkedFoodName(null);
             setPortions([]);
             setSelectedPortion(null);
@@ -222,6 +223,7 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                 setSelectedFdcId(null);
                 setLinked(false);
                 setSearchInput('');
+                setSearchAttempted(false);
                 setMutationError(null);
                 onNutritionalInfoChange?.();
             },
@@ -231,9 +233,12 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
         });
 
         const handleSearch = () => {
-            if (debouncedSearch.trim()) {
-                runSearch({ variables: { query: debouncedSearch.trim(), pageSize: 20 } });
-            }
+            // The live input, not a debounced copy: this only fires on an explicit
+            // trigger, so searching a stale value would silently drop recent keystrokes.
+            const query = searchInput.trim();
+            if (!query) return;
+            setSearchAttempted(true);
+            runSearch({ variables: { query, pageSize: 20 } });
         };
 
         const handleSelectResult = (fdcId: number) => {
@@ -296,7 +301,9 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
         const handleApplyDensity = () => {
             if (densitySource == null || densitySource.impliedDensity == null) return;
             onDensitySuggested?.({
-                density: densitySource.impliedDensity,
+                // 4dp, matching the CLI's density rounding (cli/src/lib/density.ts) so
+                // both paths persist the same precision for the same portion.
+                density: Math.round(densitySource.impliedDensity * 1e4) / 1e4,
                 portionDescription: densitySource.description,
                 gramWeight: densitySource.gramWeight,
                 ambiguous: densitySource.ambiguous,
@@ -395,6 +402,7 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                 setSelectedFdcId(null);
                 setLinked(false);
                 setSearchInput('');
+                setSearchAttempted(false);
             }
         };
 
@@ -494,6 +502,12 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                                 <Skeleton height='40px' />
                                 <Skeleton height='40px' />
                             </Stack>
+                        )}
+
+                        {!searchLoading && searchAttempted && searchResults.length === 0 && (
+                            <Text fontSize='sm' color='gray.600'>
+                                No matches found. Try a different search term.
+                            </Text>
                         )}
 
                         {!searchLoading && searchResults.length > 0 && (

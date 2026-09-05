@@ -358,7 +358,12 @@ export const UsdaQuery = {
                     extensions: { code: 'BAD_USER_INPUT' },
                 });
             }
-            const safePageSize = Math.min((args.pageSize as number) ?? 20, USDA_MAX_PAGE_SIZE);
+            // Clamped at both ends: USDA answers 400 for pageSize < 1, and that wasted
+            // request still spends the shared key's hourly quota.
+            const safePageSize = Math.min(
+                Math.max((args.pageSize as number) ?? 20, 1),
+                USDA_MAX_PAGE_SIZE
+            );
             const url = `${USDA_BASE}/foods/search?query=${encodeURIComponent(args.query)}&pageSize=${safePageSize}`;
             const json = await usdaFetchJson(url);
             return ((json['foods'] as Array<Record<string, unknown>>) ?? []).map(mapFoodItem);

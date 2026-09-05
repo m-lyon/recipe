@@ -8,11 +8,11 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { theme } from '@recipe/theme';
 import { getCache } from '@recipe/utils/cache';
-import { DEBOUNCE_TIME } from '@recipe/constants';
 import { MockedResponses, haveValueByLabelText } from '@recipe/utils/tests';
 import { mockUsdaSearchBanana } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { mockUsdaSearchOliveOil } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { mockUsdaFoodItemBanana } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
+import { mockUsdaSearchNoMatches } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { mockUsdaFoodItemOliveOil } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { mockUsdaSearchChickenBreast } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { mockUsdaFoodItemChickenBreast } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
@@ -42,10 +42,38 @@ async function searchAndSelect(
     resultText: string
 ) {
     await user.type(screen.getByLabelText('Search nutritional data'), query);
-    await new Promise((resolve) => setTimeout(resolve, DEBOUNCE_TIME + 50));
     await user.click(screen.getByLabelText('Search USDA database'));
     await user.click(await screen.findByText(resultText));
 }
+
+describe('UsdaLinkSection search', () => {
+    afterEach(() => {
+        cleanup();
+    });
+
+    it('should search the text just typed, without waiting', async () => {
+        const user = userEvent.setup();
+        renderSection([mockUsdaSearchChickenBreast]);
+
+        // No pause between the last keystroke and the click: the mock only answers
+        // the full query, so a stale value would leave the list empty.
+        await user.type(screen.getByLabelText('Search nutritional data'), 'chicken breast');
+        await user.click(screen.getByLabelText('Search USDA database'));
+
+        expect(await screen.findByText('Chicken breast, cooked')).not.toBeNull();
+    });
+
+    it('should say so when a search returns no matches', async () => {
+        const user = userEvent.setup();
+        renderSection([mockUsdaSearchNoMatches]);
+
+        expect(screen.queryByText(/No matches found/)).toBeNull();
+        await user.type(screen.getByLabelText('Search nutritional data'), 'zzzzz');
+        await user.click(screen.getByLabelText('Search USDA database'));
+
+        expect(await screen.findByText(/No matches found/)).not.toBeNull();
+    });
+});
 
 describe('UsdaLinkSection portion picker', () => {
     afterEach(() => {
