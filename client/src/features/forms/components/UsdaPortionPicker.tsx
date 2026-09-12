@@ -8,10 +8,11 @@ export type UsdaPortion = NonNullable<UsdaFoodItemQuery['usdaFoodItem']>['portio
 export interface UsdaPortionPickerProps {
     /** Already filtered to kind ITEM by the caller. */
     portions: UsdaPortion[];
-    selected: string | null;
+    /** Index into `portions`, not the portion's description (descriptions can repeat). */
+    selected: number | null;
     loading?: boolean;
     disabled?: boolean;
-    onSelect: (portion: UsdaPortion) => void;
+    onSelect: (portion: UsdaPortion, index: number) => void;
 }
 
 /** Lets the reader choose which USDA portion means "one" of a countable ingredient.
@@ -43,18 +44,19 @@ export function UsdaPortionPicker(props: UsdaPortionPickerProps) {
                 Portion for one unit
             </Text>
             <Radio.Group
-                value={selected ?? ''}
+                value={selected != null ? String(selected) : ''}
                 onChange={(value) => {
-                    const portion = portions.find((p) => p.description === value);
-                    if (portion) onSelect(portion);
+                    const index = Number(value);
+                    const portion = portions[index];
+                    if (portion) onSelect(portion, index);
                 }}
                 aria-label='USDA portion for one unit'
             >
                 <Stack gap={4}>
-                    {portions.map((portion) => (
+                    {portions.map((portion, index) => (
                         <Radio
-                            key={portion.description}
-                            value={portion.description}
+                            key={index}
+                            value={String(index)}
                             disabled={disabled}
                             label={
                                 <Group gap={6}>

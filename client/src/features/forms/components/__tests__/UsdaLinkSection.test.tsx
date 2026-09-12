@@ -16,6 +16,8 @@ import { mockUsdaSearchNoMatches } from '@recipe/graphql/queries/__mocks__/nutri
 import { mockUsdaFoodItemOliveOil } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { mockUsdaSearchChickenBreast } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { mockUsdaFoodItemChickenBreast } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
+import { mockUsdaSearchChickenDuplicatePortions } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
+import { mockUsdaFoodItemChickenDuplicatePortions } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 
 import { UsdaLinkSection, UsdaLinkSectionProps } from '../UsdaLinkSection';
 
@@ -90,7 +92,11 @@ describe('UsdaLinkSection portion picker', () => {
 
         const radios = await screen.findAllByRole('radio', { name: /=/ });
         // The WEIGHT portion ("1 oz") is never offered: it is redundant with perGram.
-        expect(radios.map((r) => r.getAttribute('value'))).toEqual(['1 breast', '1 slice']);
+        // Radio values are index-based (portion descriptions can repeat), so order is
+        // asserted through each radio's accessible name instead of its DOM value.
+        expect(radios).toHaveLength(2);
+        expect(radios[0]).toHaveAccessibleName(/^1 breast/);
+        expect(radios[1]).toHaveAccessibleName(/^1 slice/);
         expect(screen.getByText('1 slice = 21 g')).not.toBeNull();
         expect(screen.getByLabelText('Potentially inaccurate portion')).not.toBeNull();
     });
@@ -123,6 +129,31 @@ describe('UsdaLinkSection portion picker', () => {
         haveValueByLabelText(screen, 'Per unit carbs', '0');
         haveValueByLabelText(screen, 'Per unit fat', '6.19');
         expect(screen.getByText(/from selected portion/)).not.toBeNull();
+    });
+
+    it('should select the clicked portion by identity, not by description, when two portions share one', async () => {
+        const user = userEvent.setup();
+        renderSection(
+            [mockUsdaSearchChickenDuplicatePortions, mockUsdaFoodItemChickenDuplicatePortions],
+            { isCountable: true }
+        );
+
+        await searchAndSelect(
+            user,
+            'chicken dup',
+            'Chicken, duplicate portion descriptions'
+        );
+        const radios = await screen.findAllByRole('radio', { name: /1 serving/ });
+        expect(radios).toHaveLength(2);
+
+        // Both portions read "1 serving", so the second radio must resolve to the
+        // second (200 g) portion, not fall back to the first (100 g) one.
+        await user.click(radios[1]);
+
+        // perGram x 200 g: 1.65, 0.31, 0 and 0.036 per gram.
+        haveValueByLabelText(screen, 'Per unit calories', '330');
+        haveValueByLabelText(screen, 'Per unit protein', '62');
+        haveValueByLabelText(screen, 'Per unit fat', '7.2');
     });
 
     it('should let a manual edit override a derived value', async () => {

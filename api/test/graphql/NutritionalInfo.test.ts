@@ -9,12 +9,12 @@ import { Unit } from '../../src/models/Unit.js';
 import { User } from '../../src/models/User.js';
 import { __testables } from '../../src/schema/Usda.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
-import { USDA_SEARCH_LIMIT } from '../../src/schema/index.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { resetRateLimits } from '../../src/middleware/rateLimit.js';
 import { UnitConversion } from '../../src/models/UnitConversion.js';
 import { NutritionalInfo } from '../../src/models/NutritionalInfo.js';
 import { createAdmin, createUnverifiedUser, createUser } from '../utils/data.js';
+import { USDA_FOOD_ITEM_LIMIT, USDA_SEARCH_LIMIT } from '../../src/schema/index.js';
 
 // ---------- helpers ----------
 
@@ -725,7 +725,12 @@ describe('usdaSearch', function () {
 describe('usdaFoodItem', function () {
     before(startServer);
     after(stopServer);
-    beforeEach(seedUserAndIngredient);
+    beforeEach(async function () {
+        // The limiter keys on user id, and each case re-seeds a fresh user, but clearing
+        // keeps a failed case from starving the next one.
+        resetRateLimits();
+        await seedUserAndIngredient();
+    });
     afterEach(function (done) {
         restore();
         dropCollections(done);
@@ -1177,5 +1182,29 @@ describe('usdaFoodItem', function () {
 
         assert.isTrue(portionByDescription(portions, '1 fl oz (with ice)').ambiguous);
         assert.isFalse(portionByDescription(portions, '1 cup').ambiguous);
+    });
+
+    it('should rate limit a single user before the shared USDA quota is spent', async function () {
+        const user = await User.findOne({ username: 'testuser1' });
+
+        let limited: { message: string; extensions?: { code?: string } } | undefined;
+        for (let i = 1; i <= USDA_FOOD_ITEM_LIMIT + 1; i++) {
+            stub(global, 'fetch').resolves({
+                ok: true,
+                json: async () => ({ fdcId: i, description: `item ${i}`, foodNutrients: [] }),
+            } as Response);
+            const response = await this.apolloServer.executeOperation(
+                { query: USDA_FOOD_ITEM, variables: { fdcId: i } },
+                makeContext(user)
+            );
+            restore(); // sinon: unstub before the next iteration re-stubs fetch
+            assert.equal(response.body.kind, 'single');
+            if (response.body.singleResult.errors) {
+                limited = response.body.singleResult.errors[0];
+                break;
+            }
+        }
+        assert.isDefined(limited, 'The user should be cut off within the window');
+        assert.equal(limited!.extensions!.code, 'RATE_LIMITED');
     });
 });

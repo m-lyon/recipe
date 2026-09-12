@@ -27,11 +27,11 @@ export function nutritionStatus(
     if (ingredient.__typename !== 'Ingredient') {
         return { state: 'recipe', reason: 'Sub-recipe, not linkable' };
     }
-    if (!info) {
-        return { state: 'missing', reason: 'No nutritional data' };
-    }
     if (!recipeIngredient.quantity) {
         return { state: 'partial', reason: 'No quantity' };
+    }
+    if (!info) {
+        return { state: 'missing', reason: 'No nutritional data' };
     }
     const unit = recipeIngredient.unit;
     // Case 1: no unit means a countable ingredient, which needs perUnit.

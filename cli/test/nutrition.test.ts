@@ -74,4 +74,8 @@ describe('nutrition state, in the words the web UI uses', () => {
     it('reports a missing quantity', () => {
         expect(nutritionStatus(entry({ quantity: null }), info()).reason).to.equal('No quantity');
     });
+
+    it('reports the missing quantity before the missing record, matching the web UI', () => {
+        expect(nutritionStatus(entry({ quantity: null }), null).reason).to.equal('No quantity');
+    });
 });

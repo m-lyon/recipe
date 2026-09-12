@@ -294,6 +294,84 @@ export const mockUsdaFoodItemChickenBreast = {
     result: { data: usdaFoodItemChickenBreastResult },
 };
 
+/** Two portions sharing the same description ("1 serving", buildDescription's fallback
+ *  when a portion has no modifier, portionDescription, or usable measureUnit name) but
+ *  different gram weights. Exercises picking the second one, not the first, by identity
+ *  rather than by description text. */
+const usdaSearchChickenDuplicatePortionsResult: UsdaSearchQuery = {
+    __typename: 'Query',
+    usdaSearch: [
+        {
+            __typename: 'UsdaFoodItem',
+            fdcId: 171998,
+            description: 'Chicken, duplicate portion descriptions',
+            brandOwner: null,
+            caloriesPer100g: 165,
+            proteinPer100g: 31,
+            carbsPer100g: 0,
+            fatPer100g: 3.6,
+            portions: [],
+        },
+    ],
+};
+
+export const mockUsdaSearchChickenDuplicatePortions = {
+    request: {
+        query: USDA_SEARCH,
+        variables: {
+            query: 'chicken dup',
+            pageSize: 20,
+        } satisfies UsdaSearchQueryVariables,
+    },
+    result: { data: usdaSearchChickenDuplicatePortionsResult },
+};
+
+const usdaFoodItemChickenDuplicatePortionsResult: UsdaFoodItemQuery = {
+    __typename: 'Query',
+    usdaFoodItem: {
+        __typename: 'UsdaFoodItem',
+        fdcId: 171998,
+        description: 'Chicken, duplicate portion descriptions',
+        brandOwner: null,
+        caloriesPer100g: 165,
+        proteinPer100g: 31,
+        carbsPer100g: 0,
+        fatPer100g: 3.6,
+        portions: [
+            {
+                __typename: 'UsdaFoodPortion',
+                description: '1 serving',
+                amount: null,
+                modifier: null,
+                gramWeight: 100,
+                kind: 'ITEM',
+                millilitres: null,
+                impliedDensity: null,
+                ambiguous: false,
+            },
+            {
+                __typename: 'UsdaFoodPortion',
+                description: '1 serving',
+                amount: null,
+                modifier: null,
+                gramWeight: 200,
+                kind: 'ITEM',
+                millilitres: null,
+                impliedDensity: null,
+                ambiguous: false,
+            },
+        ],
+    },
+};
+
+export const mockUsdaFoodItemChickenDuplicatePortions = {
+    request: {
+        query: USDA_FOOD_ITEM,
+        variables: { fdcId: 171998 } satisfies UsdaFoodItemQueryVariables,
+    },
+    result: { data: usdaFoodItemChickenDuplicatePortionsResult },
+};
+
 /** Volume portions only: yields a density suggestion, and no per-item portion at all. */
 const usdaFoodItemOliveOilResult: UsdaFoodItemQuery = {
     __typename: 'Query',

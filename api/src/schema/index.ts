@@ -26,6 +26,10 @@ import { PrepMethodMutation, PrepMethodQuery, PrepMethodQueryAdmin } from './Pre
 /** Per-user USDA search budget: enough for a linking session, far below the key's quota. */
 export const USDA_SEARCH_LIMIT = 60;
 export const USDA_SEARCH_WINDOW_MS = 60 * 60 * 1000;
+/** Per-user USDA food-item budget: higher than search since bulk linking looks up many
+ *  fdcIds, but still bounded so a scripted caller can't exhaust the shared key. */
+export const USDA_FOOD_ITEM_LIMIT = 300;
+export const USDA_FOOD_ITEM_WINDOW_MS = 60 * 60 * 1000;
 
 const isAdminMutations = composeResolvers(
     {
@@ -48,8 +52,8 @@ const isAdminQueries = composeResolvers(
     { 'Query.*': [isAdmin() as any] }
 );
 // The USDA proxy spends a single server-wide API key (1000 requests/hour), so it is
-// restricted to verified accounts and the uncached search path is additionally capped
-// per user. usdaFoodItem is not capped: it is keyed by fdcId and cached client-side.
+// restricted to verified accounts and both paths are additionally capped per user:
+// search more tightly, usdaFoodItem more loosely since bulk linking looks up many fdcIds.
 const usdaQueries = composeResolvers(
     { Query: { ...UsdaQuery } },
     {
@@ -57,7 +61,10 @@ const usdaQueries = composeResolvers(
             isVerified() as any,
             rateLimit('usdaSearch', USDA_SEARCH_LIMIT, USDA_SEARCH_WINDOW_MS) as any,
         ],
-        'Query.usdaFoodItem': [isVerified() as any],
+        'Query.usdaFoodItem': [
+            isVerified() as any,
+            rateLimit('usdaFoodItem', USDA_FOOD_ITEM_LIMIT, USDA_FOOD_ITEM_WINDOW_MS) as any,
+        ],
     }
 );
 const isAuthenticatedMutations = composeResolvers(

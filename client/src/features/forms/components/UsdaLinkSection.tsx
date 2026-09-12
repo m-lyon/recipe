@@ -107,7 +107,7 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
         const [linkedFoodName, setLinkedFoodName] = useState<string | null>(null);
         // Portions come from the single-item endpoint only; search results carry none.
         const [portions, setPortions] = useState<UsdaPortion[]>([]);
-        const [selectedPortion, setSelectedPortion] = useState<string | null>(null);
+        const [selectedPortion, setSelectedPortion] = useState<number | null>(null);
         /** True while the per-unit fields hold portion-derived values the reader has
          *  not touched. Editing any field clears it but keeps the value. */
         const [perUnitDerived, setPerUnitDerived] = useState(false);
@@ -285,8 +285,8 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             currentDensity > 0 &&
             Math.abs(currentDensity - suggestedDensity) / suggestedDensity <= DENSITY_TOLERANCE;
 
-        const handleSelectPortion = (portion: UsdaPortion) => {
-            setSelectedPortion(portion.description);
+        const handleSelectPortion = (portion: UsdaPortion, index: number) => {
+            setSelectedPortion(index);
             if (!pendingNutrition) return;
             const grams = portion.gramWeight;
             setPerUnitNutrition({

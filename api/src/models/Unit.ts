@@ -12,7 +12,7 @@ export interface Unit extends Document {
     owner: Types.ObjectId;
     hasSpace: boolean;
     unique: boolean;
-    measureType?: 'mass' | 'volume';
+    measureType?: 'mass' | 'volume' | null;
 }
 
 const unitSchema = new Schema<Unit>({
@@ -62,7 +62,9 @@ const unitSchema = new Schema<Unit>({
     unique: { type: Boolean, required: true },
     measureType: {
         type: String,
-        enum: ['mass', 'volume'],
+        // `null` is a valid "not set" value the client sends explicitly; Mongoose's
+        // enum validator only exempts `undefined`, so it must be listed here too.
+        enum: ['mass', 'volume', null],
         required: false,
     },
 });
