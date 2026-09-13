@@ -1,0 +1,80 @@
+{
+  "name": "recipe-cli",
+  "version": "1.0.0",
+  "description": "Command line tool for querying and modifying the recipe database",
+  "type": "module",
+  "license": "ISC",
+  "bin": {
+    "recipe": "./bin/run.js"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "oclif.manifest.json"
+  ],
+  "oclif": {
+    "bin": "recipe",
+    "dirname": "recipe",
+    "commands": "./dist/src/commands",
+    "topicSeparator": " ",
+    "topics": {
+      "auth": {
+        "description": "Diagnose authentication. Commands authenticate themselves, so there is no login step."
+      },
+      "recipes": {
+        "description": "List and inspect recipes"
+      },
+      "ingredients": {
+        "description": "List and inspect ingredients"
+      },
+      "usda": {
+        "description": "Search USDA FoodData Central and inspect a food item"
+      },
+      "nutrition": {
+        "description": "Link ingredients to USDA food items"
+      }
+    }
+  },
+  "scripts": {
+    "build": "npm run rm-dist && tsc",
+    "rm-dist": "rm -rf ./dist",
+    "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0",
+    "check-types": "tsc --noEmit",
+    "generate": "npm run rm-generated && NODE_ENV=development graphql-codegen",
+    "generate:test": "npm run rm-generated && NODE_ENV=test graphql-codegen",
+    "rm-generated": "[ -d src/graphql/__generated__/ ] && rm -r src/graphql/__generated__/ || true",
+    "test": "npm run build && npm run start:test --",
+    "start:test": "NODE_ENV=test mocha \"./dist/test/**/*.test.js\""
+  },
+  "dependencies": {
+    "@oclif/core": "^4.14.0",
+    "dotenv-flow": "^3.3.0",
+    "graphql": "^16.6.0"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.2",
+    "@graphql-codegen/client-preset": "^4.2.5",
+    "@oclif/test": "^4.2.0",
+    "@types/chai": "^4.3.12",
+    "@types/dotenv-flow": "^3.3.3",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.19.11",
+    "@types/sinon": "^17.0.4",
+    "@typescript-eslint/eslint-plugin": "^7.5.0",
+    "@typescript-eslint/parser": "^7.5.0",
+    "chai": "^5.1.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-import-line-sorter": "^1.0.4",
+    "eslint-plugin-prettier": "^5.1.3",
+    "mocha": "^10.3.0",
+    "oclif": "^4.24.0",
+    "sinon": "^21.0.0",
+    "typescript": "^5.1.6"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -1,0 +1,22 @@
+{
+    "fdcId": 168894,
+    "description": "Wheat flour, white, all-purpose, enriched, unbleached",
+    "dataType": "SR Legacy",
+    "foodNutrients": [
+        { "nutrient": { "id": 1008, "name": "Energy", "unitName": "kcal" }, "amount": 364.0 },
+        { "nutrient": { "id": 1003, "name": "Protein", "unitName": "g" }, "amount": 10.33 },
+        { "nutrient": { "id": 1005, "name": "Carbohydrate, by difference", "unitName": "g" }, "amount": 76.31 },
+        { "nutrient": { "id": 1004, "name": "Total lipid (fat)", "unitName": "g" }, "amount": 0.98 },
+        { "nutrient": { "id": 1093, "name": "Sodium, Na", "unitName": "mg" }, "amount": 2.0 }
+    ],
+    "foodPortions": [
+        {
+            "id": 87021,
+            "amount": 1.0,
+            "modifier": "cup",
+            "gramWeight": 125.0,
+            "sequenceNumber": 1,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" }
+        }
+    ]
+}

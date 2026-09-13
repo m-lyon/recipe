@@ -1,0 +1,37 @@
+{
+    "fdcId": 2707442,
+    "description": "Soy sauce",
+    "dataType": "Survey (FNDDS)",
+    "foodNutrients": [
+        { "nutrient": { "id": 1008, "name": "Energy", "unitName": "kcal" }, "amount": 60.0 },
+        { "nutrient": { "id": 1003, "name": "Protein", "unitName": "g" }, "amount": 10.51 },
+        { "nutrient": { "id": 1005, "name": "Carbohydrate, by difference", "unitName": "g" }, "amount": 5.57 },
+        { "nutrient": { "id": 1004, "name": "Total lipid (fat)", "unitName": "g" }, "amount": 0.1 }
+    ],
+    "foodPortions": [
+        {
+            "id": 502001,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" },
+            "modifier": "21000",
+            "gramWeight": 16.0,
+            "portionDescription": "1 tablespoon",
+            "sequenceNumber": 1
+        },
+        {
+            "id": 502002,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" },
+            "modifier": "60890",
+            "gramWeight": 6.0,
+            "portionDescription": "1 individual packet",
+            "sequenceNumber": 2
+        },
+        {
+            "id": 502003,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" },
+            "modifier": "98811",
+            "gramWeight": 16.0,
+            "portionDescription": "1 guideline amount - condiment",
+            "sequenceNumber": 3
+        }
+    ]
+}

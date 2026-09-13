@@ -35,7 +35,9 @@ export function SearchableSelect({
         onDropdownClose: () => combobox.resetSelectedOption(),
     });
 
+    const [focused, setFocused] = useState(false);
     const [search, setSearch] = useState(options.find((opt) => opt.value === value)?.label ?? '');
+    const isFloating = focused || !!search;
 
     // Sync the search text when the external value or options change
     useEffect(() => {
@@ -50,7 +52,9 @@ export function SearchableSelect({
         return (
             <Combobox.Option value={opt.value} key={opt.value}>
                 <Group gap='xs'>
-                    <Text c={opt.colour}>{opt.label}</Text>
+                    <Text className={classes.optionText} c={opt.colour}>
+                        {opt.label}
+                    </Text>
                     {Icon && <Icon />}
                 </Group>
             </Combobox.Option>
@@ -61,6 +65,8 @@ export function SearchableSelect({
         <Combobox
             store={combobox}
             width='target'
+            transitionProps={{ duration: 200, transition: 'fade', timingFunction: 'ease' }}
+            classNames={{ dropdown: classes.dropdown }}
             onOptionSubmit={(val) => {
                 onChange(val);
                 const selected = options.find((opt) => opt.value === val);
@@ -72,9 +78,12 @@ export function SearchableSelect({
                 <TextInput
                     w='100%'
                     label={label}
-                    labelProps={{ style: { fontSize: '16px', marginBottom: '8px' } }}
                     styles={{ input: { fontSize: '16px' } }}
-                    classNames={{ input: classes.input }}
+                    classNames={{
+                        root: classes.root,
+                        input: classes.input,
+                        label: `${classes.label} ${isFloating ? classes.labelFloating : ''}`,
+                    }}
                     rightSection={<Combobox.Chevron />}
                     rightSectionPointerEvents='none'
                     placeholder={placeholder}
@@ -89,10 +98,12 @@ export function SearchableSelect({
                         combobox.openDropdown();
                     }}
                     onFocus={() => {
+                        setFocused(true);
                         setSearch('');
                         combobox.openDropdown();
                     }}
                     onBlur={() => {
+                        setFocused(false);
                         combobox.closeDropdown();
                         setSearch(options.find((opt) => opt.value === value)?.label ?? '');
                     }}

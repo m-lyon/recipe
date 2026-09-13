@@ -1,6 +1,7 @@
 import { SchemaComposer } from 'graphql-compose';
 import { composeResolvers } from '@graphql-tools/resolvers-composition';
 
+import { UsdaQuery } from './Usda.js';
 import { Unit } from '../models/Unit.js';
 import { Size } from '../models/Size.js';
 import { Recipe } from '../models/Recipe.js';
@@ -9,6 +10,7 @@ import { UserMutation, UserQuery } from './User.js';
 import { Ingredient } from '../models/Ingredient.js';
 import { PrepMethod } from '../models/PrepMethod.js';
 import { ImageMutation, ImageQuery } from './Image.js';
+import { rateLimit } from '../middleware/rateLimit.js';
 import { RecipeMutation, RecipeQuery } from './Recipe.js';
 import { RatingMutation, RatingQuery } from './Rating.js';
 import { SizeMutation, SizeQuery, SizeQueryAdmin } from './Size.js';
@@ -18,7 +20,16 @@ import { isAdmin, isImageOwnerOrAdmin } from '../middleware/authorisation.js';
 import { UnitConversionMutation, UnitConversionQuery } from './UnitConversion.js';
 import { ConversionRuleMutation, ConversionRuleQuery } from './UnitConversion.js';
 import { isDocumentOwnerOrAdmin, isVerified } from '../middleware/authorisation.js';
+import { NutritionalInfoMutation, NutritionalInfoQuery } from './NutritionalInfo.js';
 import { PrepMethodMutation, PrepMethodQuery, PrepMethodQueryAdmin } from './PrepMethod.js';
+
+/** Per-user USDA search budget: enough for a linking session, far below the key's quota. */
+export const USDA_SEARCH_LIMIT = 60;
+export const USDA_SEARCH_WINDOW_MS = 60 * 60 * 1000;
+/** Per-user USDA food-item budget: higher than search since bulk linking looks up many
+ *  fdcIds, but still bounded so a scripted caller can't exhaust the shared key. */
+export const USDA_FOOD_ITEM_LIMIT = 300;
+export const USDA_FOOD_ITEM_WINDOW_MS = 60 * 60 * 1000;
 
 const isAdminMutations = composeResolvers(
     {
@@ -40,6 +51,22 @@ const isAdminQueries = composeResolvers(
     },
     { 'Query.*': [isAdmin() as any] }
 );
+// The USDA proxy spends a single server-wide API key (1000 requests/hour), so it is
+// restricted to verified accounts and both paths are additionally capped per user:
+// search more tightly, usdaFoodItem more loosely since bulk linking looks up many fdcIds.
+const usdaQueries = composeResolvers(
+    { Query: { ...UsdaQuery } },
+    {
+        'Query.usdaSearch': [
+            isVerified() as any,
+            rateLimit('usdaSearch', USDA_SEARCH_LIMIT, USDA_SEARCH_WINDOW_MS) as any,
+        ],
+        'Query.usdaFoodItem': [
+            isVerified() as any,
+            rateLimit('usdaFoodItem', USDA_FOOD_ITEM_LIMIT, USDA_FOOD_ITEM_WINDOW_MS) as any,
+        ],
+    }
+);
 const isAuthenticatedMutations = composeResolvers(
     {
         Mutation: {
@@ -50,6 +77,9 @@ const isAuthenticatedMutations = composeResolvers(
             unitCreateOne: UnitMutation.unitCreateOne,
             prepMethodCreateOne: PrepMethodMutation.prepMethodCreateOne,
             ingredientCreateOne: IngredientMutation.ingredientCreateOne,
+            nutritionalInfoCreateOne: NutritionalInfoMutation.nutritionalInfoCreateOne,
+            nutritionalInfoUpdateById: NutritionalInfoMutation.nutritionalInfoUpdateById,
+            nutritionalInfoRemoveById: NutritionalInfoMutation.nutritionalInfoRemoveById,
         },
     },
     { 'Mutation.*': [isVerified() as any] }
@@ -125,6 +155,8 @@ schemaComposer.Query.addFields({
     ...ImageQuery,
     ...UnitConversionQuery,
     ...ConversionRuleQuery,
+    ...NutritionalInfoQuery,
+    ...usdaQueries.Query,
     ...isAdminQueries.Query,
 });
 schemaComposer.Mutation.addFields({

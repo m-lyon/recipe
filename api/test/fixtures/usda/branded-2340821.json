@@ -1,0 +1,16 @@
+{
+    "fdcId": 2340821,
+    "description": "TOMATO KETCHUP",
+    "dataType": "Branded",
+    "brandOwner": "Test Brands Inc.",
+    "servingSize": 17.0,
+    "servingSizeUnit": "g",
+    "householdServingFullText": "1 Tbsp",
+    "foodNutrients": [
+        { "nutrient": { "id": 1008, "name": "Energy", "unitName": "kcal" }, "amount": 118.0 },
+        { "nutrient": { "id": 1003, "name": "Protein", "unitName": "g" }, "amount": 1.18 },
+        { "nutrient": { "id": 1005, "name": "Carbohydrate, by difference", "unitName": "g" }, "amount": 29.41 },
+        { "nutrient": { "id": 1004, "name": "Total lipid (fat)", "unitName": "g" }, "amount": 0.0 },
+        { "nutrient": { "id": 1093, "name": "Sodium, Na", "unitName": "mg" }, "amount": 1059.0 }
+    ]
+}

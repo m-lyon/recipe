@@ -1,16 +1,40 @@
 import { userEvent } from '@testing-library/user-event';
+import { MockedResponse } from '@apollo/client/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, screen, waitFor } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { nullByText } from '@recipe/utils/tests';
+import { DEBOUNCE_TIME } from '@recipe/constants';
+import { mockBeefId } from '@recipe/graphql/__mocks__/ids';
+import { CreateNutritionalInfoMutationVariables } from '@recipe/graphql/generated';
 import { mockCreateIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
 import { clickGetByText, haveValueByLabelText, notNullByText } from '@recipe/utils/tests';
+import { mockUsdaSearchChickenBreast } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
+import { mockUsdaFoodItemChickenBreast } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
+import { mockCreateNutritionalInfoBeef } from '@recipe/graphql/mutations/__mocks__/nutritionalInfo';
 
 import { renderComponent } from './utils';
 
 loadErrorMessages();
 loadDevMessages();
+
+/**
+ * mockCreateNutritionalInfoBeef, wrapped so the mutation's variables are captured when
+ * Apollo matches it. `result` as a function is called only on a match, which makes the
+ * returned array a direct record of whether the link mutation actually fired.
+ */
+function recordingLinkMock(): [MockedResponse, CreateNutritionalInfoMutationVariables[]] {
+    const calls: CreateNutritionalInfoMutationVariables[] = [];
+    const mock: MockedResponse = {
+        ...mockCreateNutritionalInfoBeef,
+        result: (variables: CreateNutritionalInfoMutationVariables) => {
+            calls.push(variables);
+            return mockCreateNutritionalInfoBeef.result;
+        },
+    };
+    return [mock, calls];
+}
 
 describe('Ingredient Keyboard', () => {
     afterEach(() => {
@@ -301,6 +325,80 @@ describe('Create new Ingredient', () => {
         await user.keyboard('{c}');
         await user.click(screen.getByText('add new ingredient'));
         haveValueByLabelText(screen, 'Name', '');
+    });
+
+    it('should link USDA nutritional data staged before the ingredient exists', async () => {
+        const user = userEvent.setup();
+        // Render -- the link mock records the variables it was called with, so the test can
+        // assert the mutation actually fired. Asserting on the ingredient string alone would
+        // not: CreateIngredientForm calls handleComplete whether the link succeeded or not.
+        const [linkMock, linkCalls] = recordingLinkMock();
+        renderComponent([
+            mockCreateIngredient,
+            mockUsdaSearchChickenBreast,
+            // Selecting a result also fetches that item's portions.
+            mockUsdaFoodItemChickenBreast,
+            linkMock,
+        ]);
+
+        // Act -- open the new ingredient popover and search/select USDA data before saving
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await clickGetByText(screen, user, 'skip unit', 'skip size', 'add new ingredient');
+        await user.keyboard('beef');
+
+        await user.type(screen.getByLabelText('Search nutritional data'), 'chicken breast');
+        await new Promise((resolve) => setTimeout(resolve, DEBOUNCE_TIME + 50));
+        await user.click(screen.getByLabelText('Search USDA database'));
+        await user.click(await screen.findByText('Chicken breast, cooked'));
+        await user.click(screen.getByLabelText('Link selected nutritional data'));
+        expect(await screen.findByText(/Linked: chicken breast, cooked/)).not.toBeNull();
+
+        // Act -- saving the ingredient commits the staged link using the new ingredient's id
+        await user.click(screen.getByLabelText('Save ingredient'));
+
+        // Expect -- ingredient created as usual, and the staged link committed against the
+        // id of the ingredient that was just created.
+        await waitFor(() =>
+            haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 beef, ')
+        );
+        await waitFor(() => expect(linkCalls.length).toBe(1));
+        expect(linkCalls[0].record.ingredient).toBe(mockBeefId);
+        expect(linkCalls[0].record.usdaFdcId).toBe(171077);
+        expect(screen.queryByText('Ingredient saved, but nutritional data link failed')).toBeNull();
+    });
+
+    it('should not link USDA data that was previewed but never confirmed', async () => {
+        const user = userEvent.setup();
+        // Render -- the link mock is supplied, so firing it would be recorded rather than
+        // silently swallowed as a mock mismatch.
+        const [linkMock, linkCalls] = recordingLinkMock();
+        renderComponent([
+            mockCreateIngredient,
+            mockUsdaSearchChickenBreast,
+            mockUsdaFoodItemChickenBreast,
+            linkMock,
+        ]);
+
+        // Act -- select a search result to inspect its macros, but never click "Link"
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await clickGetByText(screen, user, 'skip unit', 'skip size', 'add new ingredient');
+        await user.keyboard('beef');
+
+        await user.type(screen.getByLabelText('Search nutritional data'), 'chicken breast');
+        await new Promise((resolve) => setTimeout(resolve, DEBOUNCE_TIME + 50));
+        await user.click(screen.getByLabelText('Search USDA database'));
+        await user.click(await screen.findByText('Chicken breast, cooked'));
+
+        await user.click(screen.getByLabelText('Save ingredient'));
+
+        // Expect -- the ingredient saves, and no link mutation is attempted: a merely
+        // previewed USDA result must not be persisted.
+        await waitFor(() =>
+            haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 beef, ')
+        );
+        expect(linkCalls).toEqual([]);
     });
 });
 

@@ -5,12 +5,21 @@ import { ResolverNextRpCb } from 'graphql-compose';
 import { Image } from '../models/Image.js';
 import { ContextImage, GraphQLContext } from '../types.js';
 
+/**
+ * UNAUTHENTICATED, not FORBIDDEN: no session at all is recoverable by logging in again,
+ * which is how the CLI decides whether to re-authenticate and retry. FORBIDDEN stays for
+ * the wrong-owner/wrong-role branches, which re-authenticating never fixes.
+ */
+function unauthenticated(): GraphQLError {
+    return new GraphQLError('You are not authenticated!', {
+        extensions: { code: 'UNAUTHENTICATED' },
+    });
+}
+
 export const isVerified = (): ResolverNextRpCb<unknown, GraphQLContext> => (next) => (rp) => {
     const user = rp.context.getUser();
     if (!user) {
-        throw new GraphQLError('You are not authenticated!', {
-            extensions: { code: 'FORBIDDEN' },
-        });
+        throw unauthenticated();
     }
     if (user.role === 'unverified') {
         throw new GraphQLError('You are not verified!', {
@@ -22,7 +31,10 @@ export const isVerified = (): ResolverNextRpCb<unknown, GraphQLContext> => (next
 
 export const isAdmin = (): ResolverNextRpCb<unknown, GraphQLContext> => (next) => (rp) => {
     const user = rp.context.getUser();
-    if (!user || user.role !== 'admin') {
+    if (!user) {
+        throw unauthenticated();
+    }
+    if (user.role !== 'admin') {
         throw new GraphQLError('You are not authorised!', {
             extensions: { code: 'FORBIDDEN' },
         });
@@ -37,9 +49,7 @@ export const isDocumentOwnerOrAdmin =
     async (rp) => {
         const user = rp.context.getUser();
         if (!user) {
-            throw new GraphQLError('You are not authenticated!', {
-                extensions: { code: 'FORBIDDEN' },
-            });
+            throw unauthenticated();
         }
         const document = await Model.findById(rp.args._id);
         if (!document) {
@@ -59,9 +69,7 @@ export const isImageOwnerOrAdmin =
     (): ResolverNextRpCb<unknown, GraphQLContext> => (next) => async (rp) => {
         const user = rp.context.getUser();
         if (!user) {
-            throw new GraphQLError('You are not authenticated!', {
-                extensions: { code: 'FORBIDDEN' },
-            });
+            throw unauthenticated();
         }
         const images = (await Image.find({ _id: { $in: rp.args.ids } }).populate<{
             recipe: ContextImage['recipe'];
