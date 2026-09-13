@@ -4,11 +4,13 @@ Guidance for AI agents working on this codebase.
 
 ## Project Structure
 
-Two independent Node.js projects in one git repo. No root `package.json` or monorepo tooling.
+Three independent Node.js projects in one git repo. No root `package.json` or monorepo
+tooling.
 
 ```dir
 api/          # Express + Apollo Server + Mongoose (Node backend)
 client/       # React + Vite + Apollo Client (frontend SPA)
+cli/          # oclif command line tool, talks to the API over GraphQL
 .github/      # CI/CD workflows
 ```
 
@@ -26,6 +28,9 @@ client/       # React + Vite + Apollo Client (frontend SPA)
 | Client UI | Chakra UI 2 **and** Mantine 8 (both used simultaneously) |
 | Client state | Zustand 5 (slice pattern) |
 | Client routing | react-router-dom 6 |
+| CLI framework | oclif 4 (TypeScript, ESM) |
+| CLI transport | `fetch` against the API's GraphQL endpoint; session cookie, no direct DB access |
+| CLI tests | Mocha + Chai + Sinon + `@oclif/test` |
 
 ## Commands
 
@@ -56,6 +61,21 @@ There is **no lint script** in the API. ESLint config exists but there is no `np
 | Build | `npm run build` |
 | Dev server | `npm run dev` |
 
+### CLI (`cd cli/`)
+
+| Task | Command |
+| ---- | ------- |
+| Install deps | `npm install` |
+| Lint | `npm run lint` |
+| Fix formatting | `npm run lint -- --fix` |
+| Run tests | `npm test` (builds first, then runs mocha) |
+| Type check | `npm run check-types` |
+| Codegen | `npm run generate` (requires running API, see below) |
+| Build | `npm run build` |
+| Put `recipe` on PATH | `npm link` |
+
+The CLI is a development tool. It is not deployed.
+
 ## Running Tests
 
 ### API tests
@@ -84,6 +104,20 @@ cd client && npm test -- run
 - Apollo mocking uses `MockedProvider` with per-test mock arrays.
 - Browser tests (`*.browser.test.tsx`) use Playwright and are currently flaky/disabled in CI.
 
+### CLI tests
+
+```bash
+cd cli && npm test
+```
+
+- Uses **Mocha** + **Chai** + **Sinon**, matching `api/`.
+- TypeScript compiles to `dist/` first, then mocha runs the JS.
+- `global.fetch` is stubbed with canned GraphQL responses, so no API and no database are
+  needed — but `src/graphql/__generated__/` must exist, so run codegen first.
+- Command tests use `runCommand` from `@oclif/test`. **It joins the argv array into one
+  string and re-splits it**, so an argument containing a space must carry its own quotes:
+  `['nutrition', 'link', '"olive oil"', ...]`.
+
 ### Pre-existing test failures
 
 These fail on `main` and are not caused by your changes:
@@ -103,7 +137,14 @@ NODE_ENV=development node ./dist/src/index.js &
 cd client && npm run generate
 ```
 
-- Output goes to `client/src/__generated__/` (gitignored).
+The CLI does the same, with `cli/codegen.ts` reading `RECIPE_API_URL`:
+
+```bash
+cd cli && npm run generate
+```
+
+- Output goes to `client/src/__generated__/` and `cli/src/graphql/__generated__/` (both
+  gitignored).
 - After any GraphQL schema change (queries, mutations, fragments), you must re-run codegen.
 - In CI, `npm run generate:test` is used with the API started in test mode.
 
@@ -251,7 +292,7 @@ GitHub Actions workflow (`.github/workflows/deploy.yml`) on push to `main`:
 
 ## Common Pitfalls
 
-- **Forgetting codegen**: After changing GraphQL operations (queries, mutations, fragments), run `npm run generate` in `client/`. The `__generated__/` directory is gitignored and must be regenerated.
+- **Forgetting codegen**: After changing GraphQL operations (queries, mutations, fragments), run `npm run generate` in `client/` **and in `cli/`**. The `__generated__/` directories are gitignored and must be regenerated. Editing a *fragment* changes every document that uses it, so the operations that embed it go stale too. The CLI transport detects a stale document and says so; the client does not.
 - **Codegen needs a running API**: The codegen config introspects the schema from a live server. Start the API first.
 - **API tests require compilation**: `npm test` compiles TS to `dist/` then runs mocha on JS files. If you edit `.ts` files, the tests always recompile.
 - **`MockedProvider` consumes each mock once**: Apollo's `MockedProvider` uses each entry in the mocks array exactly once (unless `newData` is used). If a component fires the same query multiple times (e.g. on mount and after navigation), provide the mock twice in the array.
