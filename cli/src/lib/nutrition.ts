@@ -28,7 +28,7 @@ export function nutritionStatus(
         return { state: 'recipe', reason: 'Sub-recipe, not linkable' };
     }
     if (!recipeIngredient.quantity) {
-        return { state: 'partial', reason: 'No quantity' };
+        return { state: info ? 'partial' : 'missing', reason: 'No quantity' };
     }
     if (!info) {
         return { state: 'missing', reason: 'No nutritional data' };

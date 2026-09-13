@@ -71,11 +71,18 @@ describe('nutrition state, in the words the web UI uses', () => {
         );
     });
 
-    it('reports a missing quantity', () => {
-        expect(nutritionStatus(entry({ quantity: null }), info()).reason).to.equal('No quantity');
+    it('reports a missing quantity as partial when a record exists', () => {
+        expect(nutritionStatus(entry({ quantity: null }), info())).to.deep.equal({
+            state: 'partial',
+            reason: 'No quantity',
+        });
     });
 
-    it('reports the missing quantity before the missing record, matching the web UI', () => {
-        expect(nutritionStatus(entry({ quantity: null }), null).reason).to.equal('No quantity');
+    it('reports the missing quantity reason before the missing record, matching the web UI, ' +
+        'but keeps state missing when no record exists', () => {
+        expect(nutritionStatus(entry({ quantity: null }), null)).to.deep.equal({
+            state: 'missing',
+            reason: 'No quantity',
+        });
     });
 });
