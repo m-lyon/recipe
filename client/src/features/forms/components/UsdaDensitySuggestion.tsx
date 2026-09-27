@@ -1,4 +1,4 @@
-import { Button, Group, Stack, Text } from '@mantine/core';
+import { Button, Stack, Text } from '@chakra-ui/react';
 
 import { UsdaPortion } from './UsdaPortionPicker';
 
@@ -23,33 +23,32 @@ export function UsdaDensitySuggestion(props: UsdaDensitySuggestionProps) {
     const { portion, density, currentDensity, disabled, onApply } = props;
 
     return (
-        <Stack gap={4}>
-            <Text size='sm'>
+        <Stack spacing={1}>
+            <Text fontSize='sm'>
                 Suggested density: {round2(density)} g/ml (from {portion.description} ={' '}
                 {portion.gramWeight} g)
             </Text>
             {portion.ambiguous && (
-                <Text size='xs' c='orange'>
+                <Text fontSize='xs' color='orange.500'>
                     “{portion.description}” carries a qualifier, so this is a packing density rather
                     than a true density. Check it before applying.
                 </Text>
             )}
             {currentDensity != null && (
-                <Text size='xs' c='dimmed'>
+                <Text fontSize='xs' color='gray.500'>
                     Current density: {round2(currentDensity)} g/ml
                 </Text>
             )}
-            <Group gap='xs'>
-                <Button
-                    size='xs'
-                    variant='outline'
-                    disabled={disabled}
-                    onClick={onApply}
-                    aria-label='Apply suggested density'
-                >
-                    Apply
-                </Button>
-            </Group>
+            <Button
+                size='sm'
+                variant='outline'
+                alignSelf='flex-start'
+                isDisabled={disabled}
+                onClick={onApply}
+                aria-label='Apply suggested density'
+            >
+                Apply
+            </Button>
         </Stack>
     );
 }

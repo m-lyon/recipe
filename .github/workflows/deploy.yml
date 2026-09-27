@@ -65,8 +65,8 @@ jobs:
         working-directory: ./cli
         run: |
           echo "RECIPE_API_URL = ${{ vars.VITE_GRAPHQL_URL }}" > .env.test.local
-          echo "RECIPE_USERNAME = ci" >> .env.test.local
-          echo "RECIPE_PASSWORD = ci" >> .env.test.local
+          echo "RECIPE_USERNAME = ${{ vars.TEST_USERNAME }}" >> .env.test.local
+          echo "RECIPE_PASSWORD = ${{ vars.TEST_PASSWORD }}" >> .env.test.local
 
       - name: Load MongoDB binary cache
         id: cache-mongodb-binaries
@@ -98,7 +98,6 @@ jobs:
         working-directory: ./client
         run: npm run test -- run
 
-      # The CLI introspects the same running server the client codegen used.
       - name: Generate CLI GraphQL types
         working-directory: ./cli
         run: npm run generate:test
@@ -160,10 +159,7 @@ jobs:
           echo "FULLCHAIN_PEM = ${{ secrets.FULLCHAIN_PEM }}" >> .env.production.local
           echo "MONGODB_URI = ${{ secrets.MONGODB_URI }}" >> .env.production.local
           echo "PORT = ${{ secrets.PORT }}" >> .env.production.local
-          # The API terminates TLS itself, so clients connect to this listener directly.
-          # HOST defaults to 127.0.0.1 in api/src/constants.ts, which would leave the
-          # deployed server unreachable, so it is always written explicitly here.
-          echo "HOST = ${{ vars.HOST || '0.0.0.0' }}" >> .env.production.local
+          echo "HOST = ${{ vars.HOST }}" >> .env.production.local
           echo "SESSION_SECRET = ${{ secrets.SESSION_SECRET }}" >> .env.production.local
           echo "SESSION_URI = ${{ secrets.SESSION_URI }}" >> .env.production.local
           echo "WHITELISTED_DOMAINS = ${{ secrets.WHITELISTED_DOMAINS }}" >> .env.production.local

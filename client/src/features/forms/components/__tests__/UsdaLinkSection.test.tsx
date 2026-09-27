@@ -243,6 +243,22 @@ describe('UsdaLinkSection density suggestion', () => {
         await screen.findAllByRole('radio', { name: /=/ });
 
         expect(screen.queryByText(/Suggested density/)).toBeNull();
+        expect(screen.getByText(/No density suggestion/)).not.toBeNull();
+    });
+
+    it('should keep the suggestion available after the item is linked', async () => {
+        const user = userEvent.setup();
+        // No ingredient id: linking stages locally, so no mutation mock is needed.
+        renderSection([mockUsdaSearchOliveOil, mockUsdaFoodItemOliveOil], {
+            ingredientId: undefined,
+        });
+
+        await searchAndSelect(user, 'olive oil', 'Oil, olive, salad or cooking');
+        await screen.findByText(/Suggested density/);
+        await user.click(screen.getByLabelText('Link selected nutritional data'));
+
+        expect(await screen.findByText(/Linked:/)).not.toBeNull();
+        expect(screen.getByLabelText('Apply suggested density')).not.toBeNull();
     });
 
     it('should warn that an ambiguous-only suggestion is a packing density', async () => {

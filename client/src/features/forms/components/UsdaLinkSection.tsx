@@ -173,18 +173,21 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             },
         });
 
-        const [fetchFoodItem, { loading: detailLoading }] = useLazyQuery(USDA_FOOD_ITEM, {
-            onCompleted: (data) => {
-                setPortions(data.usdaFoodItem?.portions ?? []);
-                if (data.usdaFoodItem?.description) {
-                    setLinkedFoodName(data.usdaFoodItem.description);
-                }
-            },
-            onError: () => {
-                // Portion data is an enhancement: perGram is already linkable without it.
-                setPortions([]);
-            },
-        });
+        const [fetchFoodItem, { loading: detailLoading, error: detailError }] = useLazyQuery(
+            USDA_FOOD_ITEM,
+            {
+                onCompleted: (data) => {
+                    setPortions(data.usdaFoodItem?.portions ?? []);
+                    if (data.usdaFoodItem?.description) {
+                        setLinkedFoodName(data.usdaFoodItem.description);
+                    }
+                },
+                onError: () => {
+                    // Portion data is an enhancement: perGram is already linkable without it.
+                    setPortions([]);
+                },
+            }
+        );
 
         const [createNutritionalInfo] = useMutation(CREATE_NUTRITIONAL_INFO, {
             onCompleted: (data) => {
@@ -430,7 +433,7 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
 
                 {linked && pendingNutrition ? (
                     <Stack spacing={2}>
-                        <Text fontSize='sm' fontWeight={500}>
+                        <Text fontSize='sm'>
                             Linked:{' '}
                             {(
                                 linkedFoodName ??
@@ -454,8 +457,8 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                             </Text>
                         )}
                         <Button
-                            size='xs'
-                            variant='ghost'
+                            size='sm'
+                            variant='outline'
                             colorScheme='red'
                             alignSelf='flex-start'
                             onClick={handleClear}
@@ -684,20 +687,6 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                             </Stack>
                         )}
 
-                        {pendingNutrition && densitySource && !densityAlreadySet && (
-                            <UsdaDensitySuggestion
-                                portion={densitySource}
-                                density={densitySource.impliedDensity!}
-                                currentDensity={
-                                    currentDensity && currentDensity > 0
-                                        ? currentDensity
-                                        : undefined
-                                }
-                                disabled={disabled}
-                                onApply={handleApplyDensity}
-                            />
-                        )}
-
                         {pendingNutrition && (
                             <HStack spacing={2}>
                                 <Button
@@ -710,7 +699,7 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                                 </Button>
                                 <Button
                                     size='sm'
-                                    variant='ghost'
+                                    variant='outline'
                                     colorScheme='red'
                                     onClick={handleClear}
                                     isDisabled={disabled}
@@ -722,6 +711,27 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                         )}
                     </Stack>
                 )}
+
+                {/* Outside the linked/unlinked branch: density belongs to the ingredient,
+                    not the link, so it stays applicable after the link is made. A manual
+                    record (no FDC ID) has no USDA portions to derive one from. */}
+                {pendingNutrition?.fdcId && !detailLoading && !detailError && !densityAlreadySet ? (
+                    densitySource ? (
+                        <UsdaDensitySuggestion
+                            portion={densitySource}
+                            density={densitySource.impliedDensity!}
+                            currentDensity={
+                                currentDensity && currentDensity > 0 ? currentDensity : undefined
+                            }
+                            disabled={disabled}
+                            onApply={handleApplyDensity}
+                        />
+                    ) : (
+                        <Text fontSize='sm' color='gray.500'>
+                            No density suggestion: this USDA item has no volume portion.
+                        </Text>
+                    )
+                ) : null}
             </Stack>
         );
     }

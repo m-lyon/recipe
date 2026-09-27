@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { useClickOutside } from '@mantine/hooks';
 import { TbLock, TbLockOpen2, TbQuestionMark } from 'react-icons/tb';
 import { ActionIcon, Tooltip as MantineTooltip } from '@mantine/core';
 import { BoxProps, Tooltip, UnorderedList, VStack } from '@chakra-ui/react';
@@ -9,6 +11,34 @@ import { useUnitConversion } from '@recipe/features/servings';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 
 import { RecipeIngredient } from './RecipeIngredient';
+
+/** Mantine only. Hover does not exist on touch screens, so the tooltip is controlled:
+ *  a mouse opens it on hover, a tap toggles it, and a tap elsewhere closes it. */
+function UncountedIngredientHint() {
+    const [opened, setOpened] = useState(false);
+    const [target, setTarget] = useState<HTMLSpanElement | null>(null);
+    useClickOutside(() => setOpened(false), null, [target]);
+
+    return (
+        <MantineTooltip label='Not included in nutritional calculation' withArrow opened={opened}>
+            <ActionIcon
+                ref={setTarget}
+                variant='transparent'
+                size='xs'
+                ml={4}
+                aria-label='Not counted in nutrition'
+                aria-expanded={opened}
+                component='span'
+                display='inline-flex'
+                onPointerEnter={(e) => e.pointerType === 'mouse' && setOpened(true)}
+                onPointerLeave={(e) => e.pointerType === 'mouse' && setOpened(false)}
+                onPointerDown={(e) => e.pointerType !== 'mouse' && setOpened((o) => !o)}
+            >
+                <TbQuestionMark />
+            </ActionIcon>
+        </MantineTooltip>
+    );
+}
 
 export interface IngredientListProps extends BoxProps {
     subsections: IngredientSubsectionView[];
@@ -47,28 +77,7 @@ export function IngredientList(props: IngredientListProps) {
                         aria-label={`Ingredient #${i + 1} in subsection ${index + 1}`}
                     >
                         {getFinishedRecipeIngredientStr(item)}
-                        {uncountedIngredientIds?.has(item._id) && (
-                            // MantineTooltip is used here (not Chakra Tooltip) because this
-                            // tooltip is new code added for the nutritional info feature.
-                            // Per spec, new UI code must use Mantine only. The Chakra Tooltip
-                            // used for the wake-lock button below is pre-existing and not
-                            // converted per spec.
-                            <MantineTooltip
-                                label='Not included in nutritional calculation'
-                                withArrow
-                            >
-                                <ActionIcon
-                                    variant='transparent'
-                                    size='xs'
-                                    ml={4}
-                                    aria-label='Not counted in nutrition'
-                                    component='span'
-                                    display='inline-flex'
-                                >
-                                    <TbQuestionMark />
-                                </ActionIcon>
-                            </MantineTooltip>
-                        )}
+                        {uncountedIngredientIds?.has(item._id) && <UncountedIngredientHint />}
                     </ListItem>
                 );
             }
