@@ -11,5 +11,5 @@ export function RequireAdmin() {
         return <div>Loading...</div>;
     }
 
-    return isAdmin ? <Outlet /> : <Navigate to={PATH.ROOT} />;
+    return isAdmin ? <Outlet /> : <Navigate to={PATH.ROOT} replace />;
 }

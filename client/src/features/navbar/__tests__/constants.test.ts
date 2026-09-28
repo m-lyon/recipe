@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { NavItem, PUBLIC_NAV_ITEMS, getNavItems } from '../constants';
+import { NavItem, PUBLIC_NAV_ITEMS, filterNavItems, getNavItems } from '../constants';
 
 const items: Array<NavItem> = [
     {
@@ -19,15 +19,17 @@ const items: Array<NavItem> = [
 
 describe('getNavItems', () => {
     it('should return public items for unverified users', () => {
-        expect(getNavItems(false, false, items)).toBe(PUBLIC_NAV_ITEMS);
+        expect(getNavItems(false, false)).toBe(PUBLIC_NAV_ITEMS);
     });
+});
 
+describe('filterNavItems', () => {
     it('should keep every item for admins', () => {
-        expect(getNavItems(true, true, items)).toEqual(items);
+        expect(filterNavItems(items, true)).toEqual(items);
     });
 
     it('should drop admin-only items and groups left empty for non-admins', () => {
-        expect(getNavItems(true, false, items)).toEqual([
+        expect(filterNavItems(items, false)).toEqual([
             { label: 'Mixed', children: [{ label: 'Public child', href: '/public' }] },
             { label: 'Link', href: '/link' },
         ]);
