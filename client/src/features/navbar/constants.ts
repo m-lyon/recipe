@@ -7,6 +7,8 @@ export interface NavItem {
     children?: Array<NavItem>;
     href?: string;
     parentOnToggle?: () => void;
+    /** Only shown to admins, e.g. when the API restricts the page's actions to admins */
+    adminOnly?: boolean;
 }
 export const USER_NAV_ITEMS: Array<NavItem> = [
     {
@@ -41,6 +43,7 @@ export const USER_NAV_ITEMS: Array<NavItem> = [
             {
                 label: 'Unit Conversion',
                 ariaLabel: 'Create new unit conversion rule',
+                adminOnly: true,
                 href: `${PATH.ROOT}/create/unit-conversion`,
             },
         ],
@@ -71,6 +74,7 @@ export const USER_NAV_ITEMS: Array<NavItem> = [
             {
                 label: 'Unit Conversion',
                 ariaLabel: 'Edit existing unit conversion',
+                adminOnly: true,
                 href: `${PATH.ROOT}/edit/unit-conversion`,
             },
         ],
@@ -78,6 +82,19 @@ export const USER_NAV_ITEMS: Array<NavItem> = [
 ];
 
 export const PUBLIC_NAV_ITEMS: Array<NavItem> = [];
+
+/** Nav items to show the current user, without admin-only entries for non-admins. */
+export function getNavItems(isVerified: boolean, isAdmin: boolean): Array<NavItem> {
+    if (!isVerified) return PUBLIC_NAV_ITEMS;
+    const filterItems = (items: Array<NavItem>): Array<NavItem> =>
+        items
+            .filter((item) => isAdmin || !item.adminOnly)
+            .map((item) =>
+                item.children ? { ...item, children: filterItems(item.children) } : item
+            );
+    return filterItems(USER_NAV_ITEMS);
+}
+
 export const NAV_HEIGHT = 60;
 export const SEARCH_FILTER_MOBILE_HEIGHT = 150;
 export const SELECTED_FILTERS_HEIGHT = 32;
