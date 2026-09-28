@@ -1,3 +1,5 @@
+import { GraphQLError } from 'graphql';
+
 import { mockOunce } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockUnitConversionIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { mockConversionRuleIdNew } from '@recipe/graphql/__mocks__/ids';
@@ -139,5 +141,56 @@ export const mockRemoveUnitConversionOne = {
                 recordId: mockUnitConversionIdOne,
             },
         } satisfies RemoveUnitConversionMutation,
+    },
+};
+
+export const mockUpdateUnitConversionAddRuleError = {
+    request: mockUpdateUnitConversionAddRule.request,
+    result: { errors: [new GraphQLError('Failed to update unit conversion')] },
+};
+
+export const mockRemoveConversionRuleNew = {
+    request: {
+        query: REMOVE_CONVERSION_RULE,
+        variables: { id: mockConversionRuleIdNew } satisfies RemoveConversionRuleMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            conversionRuleRemoveById: {
+                __typename: 'RemoveByIdConversionRulePayload',
+                recordId: mockConversionRuleIdNew,
+            },
+        } satisfies RemoveConversionRuleMutation,
+    },
+};
+
+export const mockRemoveConversionRuleOneError = {
+    request: mockRemoveConversionRuleOne.request,
+    result: { errors: [new GraphQLError('Failed to remove conversion rule')] },
+};
+
+export const mockRemoveConversionRuleTwoError = {
+    request: mockRemoveConversionRuleTwo.request,
+    result: { errors: [new GraphQLError('Failed to remove conversion rule')] },
+};
+
+// Re-attaches the tbsp rule to the tsp conversion after its deletion failed
+export const mockUpdateUnitConversionReattachRule = {
+    request: {
+        query: UPDATE_UNIT_CONVERSION,
+        variables: {
+            id: mockUnitConversionIdTwo,
+            record: { rules: [mockConversionRuleIdThree, mockConversionRuleIdTwo] },
+        } satisfies UpdateUnitConversionMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            unitConversionUpdateById: {
+                __typename: 'UpdateByIdUnitConversionPayload',
+                record: mockUnitConversionTwo,
+            },
+        } satisfies UpdateUnitConversionMutation,
     },
 };

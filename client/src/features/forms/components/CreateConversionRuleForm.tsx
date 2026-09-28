@@ -42,6 +42,10 @@ export function CreateConversionRuleForm(props: Props) {
             });
             if (data?.conversionRuleCreateOne?.record) {
                 await onCreate(data.conversionRuleCreateOne.record);
+                // Clear the form so several rules can be added in a row
+                setUnit(undefined);
+                setThreshold(0);
+                setbaseToUnitConversion(0);
             }
         } catch (err) {
             if (err instanceof Error) {
@@ -58,7 +62,7 @@ export function CreateConversionRuleForm(props: Props) {
                         <FormLabel>Unit</FormLabel>
                         <Select
                             placeholder='-'
-                            value={unit?._id}
+                            value={unit?._id ?? ''}
                             onChange={(e) => {
                                 setUnit(units.find((unit) => unit._id === e.target.value));
                             }}

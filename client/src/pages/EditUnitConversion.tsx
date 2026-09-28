@@ -68,8 +68,17 @@ export function EditUnitConversion() {
                     record: { rules: ruleIds.filter((id) => id !== rule._id) },
                 },
             });
+        } catch (err) {
+            showError(err);
+            return;
+        }
+        try {
             await removeConversionRule({ variables: { id: rule._id } });
         } catch (err) {
+            // Re-attach the rule so it isn't orphaned (blocking its unit) and can be retried
+            await updateUnitConversion({
+                variables: { id: current._id, record: { rules: ruleIds } },
+            }).catch(console.error);
             showError(err);
         }
     };
@@ -78,12 +87,26 @@ export function EditUnitConversion() {
         if (!current) return;
         try {
             await removeUnitConversion({ variables: { id: current._id } });
-            await Promise.all(ruleIds.map((id) => removeConversionRule({ variables: { id } })));
-            setCurrentId(null);
-            successToast({ title: 'Unit conversion deleted', position: 'top' });
         } catch (err) {
             showError(err);
+            return;
         }
+        // The conversion is gone, so clean up every rule even if some deletions fail
+        setCurrentId(null);
+        const results = await Promise.allSettled(
+            ruleIds.map((id) => removeConversionRule({ variables: { id } }))
+        );
+        const failed = results.filter((r) => r.status === 'rejected');
+        if (failed.length) {
+            failed.forEach((r) => console.error(r.reason));
+            errorToast({
+                title: 'Unit conversion deleted',
+                description: `${failed.length} of ${ruleIds.length} rules could not be deleted`,
+                position: 'top',
+            });
+            return;
+        }
+        successToast({ title: 'Unit conversion deleted', position: 'top' });
     };
 
     return (
