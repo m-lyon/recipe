@@ -221,7 +221,7 @@ When adding a new field to a query/mutation, update the corresponding `__mocks__
 
 ## Chakra UI → Mantine Migration
 
-The codebase is gradually moving from Chakra UI v2 to Mantine 8. Both libraries are active simultaneously. When writing new UI code, prefer Mantine. When styling Mantine components to match existing Chakra components, follow the guidance below.
+Both Chakra UI v2 and Mantine 8 libraries are active simultaneously in this project. Style Mantine components to match Chakra components by following the guidance below.
 
 ### Discovering Chakra's rendered values
 

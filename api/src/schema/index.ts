@@ -21,6 +21,7 @@ import { UnitConversionMutation, UnitConversionQuery } from './UnitConversion.js
 import { ConversionRuleMutation, ConversionRuleQuery } from './UnitConversion.js';
 import { isDocumentOwnerOrAdmin, isVerified } from '../middleware/authorisation.js';
 import { NutritionalInfoMutation, NutritionalInfoQuery } from './NutritionalInfo.js';
+import { isNutritionalInfoOwnerOrAdmin } from '../middleware/authorisation.js';
 import { PrepMethodMutation, PrepMethodQuery, PrepMethodQueryAdmin } from './PrepMethod.js';
 
 /** Per-user USDA search budget: enough for a linking session, far below the key's quota. */
@@ -77,12 +78,13 @@ const isAuthenticatedMutations = composeResolvers(
             unitCreateOne: UnitMutation.unitCreateOne,
             prepMethodCreateOne: PrepMethodMutation.prepMethodCreateOne,
             ingredientCreateOne: IngredientMutation.ingredientCreateOne,
-            nutritionalInfoCreateOne: NutritionalInfoMutation.nutritionalInfoCreateOne,
-            nutritionalInfoUpdateById: NutritionalInfoMutation.nutritionalInfoUpdateById,
-            nutritionalInfoRemoveById: NutritionalInfoMutation.nutritionalInfoRemoveById,
         },
     },
     { 'Mutation.*': [isVerified() as any] }
+);
+const isNutritionalInfoOwnerOrAdminMutations = composeResolvers(
+    { Mutation: NutritionalInfoMutation },
+    { 'Mutation.*': [isVerified() as any, isNutritionalInfoOwnerOrAdmin() as any] }
 );
 const isImageOwnerOrAdminMutations = composeResolvers(
     {
@@ -168,6 +170,7 @@ schemaComposer.Mutation.addFields({
     ...isSizeOwnerOrAdminMutations.Mutation,
     ...isIngredientOwnerOrAdminMutations.Mutation,
     ...isPrepMethodOwnerOrAdminMutations.Mutation,
+    ...isNutritionalInfoOwnerOrAdminMutations.Mutation,
     ...isImageOwnerOrAdminMutations.Mutation,
 });
 

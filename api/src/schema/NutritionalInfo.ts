@@ -1,35 +1,8 @@
-import { GraphQLError } from 'graphql';
 import { schemaComposer } from 'graphql-compose';
 
-import { Ingredient } from '../models/Ingredient.js';
 import { NutritionalInfoTC } from '../models/NutritionalInfo.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
 import { NutritionalInfo, NutritionalInfoCreateTC } from '../models/NutritionalInfo.js';
-
-async function assertIngredientOwnerOrAdmin(
-    ingredientId: unknown,
-    userId: unknown,
-    isUserAdmin: boolean
-) {
-    // Explicit auth check before ownership check
-    if (!userId) {
-        throw new GraphQLError('Not authenticated', {
-            extensions: { code: 'UNAUTHENTICATED' },
-        });
-    }
-    if (isUserAdmin) return;
-    const ingr = await Ingredient.findById(ingredientId);
-    if (!ingr) {
-        throw new GraphQLError('Ingredient not found', {
-            extensions: { code: 'NOT_FOUND' },
-        });
-    }
-    if (String(ingr.owner) !== String(userId)) {
-        throw new GraphQLError('Not authorized', {
-            extensions: { code: 'FORBIDDEN' },
-        });
-    }
-}
 
 NutritionalInfoCreateTC.addResolver({
     name: 'createOne',
@@ -61,46 +34,7 @@ export const NutritionalInfoQuery = {
 };
 
 export const NutritionalInfoMutation = {
-    nutritionalInfoCreateOne: NutritionalInfoCreateTC.getResolver('createOne').wrapResolve(
-        (next) => async (rp) => {
-            const user = rp.context.getUser();
-            const isUserAdmin = user?.role === 'admin';
-            await assertIngredientOwnerOrAdmin(rp.args.record.ingredient, user?._id, isUserAdmin);
-            return next(rp);
-        }
-    ),
-    nutritionalInfoUpdateById: NutritionalInfoTC.getResolver('updateById').wrapResolve(
-        (next) => async (rp) => {
-            const existing = await NutritionalInfo.findById(rp.args._id);
-            if (!existing) {
-                throw new GraphQLError('NutritionalInfo not found', {
-                    extensions: { code: 'NOT_FOUND' },
-                });
-            }
-            const user = rp.context.getUser();
-            const isUserAdmin = user?.role === 'admin';
-            await assertIngredientOwnerOrAdmin(existing.ingredient, user?._id, isUserAdmin);
-            // The update input carries `ingredient`, so a caller could otherwise
-            // reassign the record to an ingredient they do not own.
-            const incoming = rp.args.record?.ingredient;
-            if (incoming && String(incoming) !== String(existing.ingredient)) {
-                await assertIngredientOwnerOrAdmin(incoming, user?._id, isUserAdmin);
-            }
-            return next(rp);
-        }
-    ),
-    nutritionalInfoRemoveById: NutritionalInfoTC.mongooseResolvers
-        .removeById()
-        .wrapResolve((next) => async (rp) => {
-            const existing = await NutritionalInfo.findById(rp.args._id);
-            if (!existing) {
-                throw new GraphQLError('NutritionalInfo not found', {
-                    extensions: { code: 'NOT_FOUND' },
-                });
-            }
-            const user = rp.context.getUser();
-            const isUserAdmin = user?.role === 'admin';
-            await assertIngredientOwnerOrAdmin(existing.ingredient, user?._id, isUserAdmin);
-            return next(rp);
-        }),
+    nutritionalInfoCreateOne: NutritionalInfoCreateTC.getResolver('createOne'),
+    nutritionalInfoUpdateById: NutritionalInfoTC.getResolver('updateById'),
+    nutritionalInfoRemoveById: NutritionalInfoTC.mongooseResolvers.removeById(),
 };

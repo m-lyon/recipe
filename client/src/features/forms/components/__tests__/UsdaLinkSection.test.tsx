@@ -138,11 +138,7 @@ describe('UsdaLinkSection portion picker', () => {
             { isCountable: true }
         );
 
-        await searchAndSelect(
-            user,
-            'chicken dup',
-            'Chicken, duplicate portion descriptions'
-        );
+        await searchAndSelect(user, 'chicken dup', 'Chicken, duplicate portion descriptions');
         const radios = await screen.findAllByRole('radio', { name: /1 serving/ });
         expect(radios).toHaveLength(2);
 

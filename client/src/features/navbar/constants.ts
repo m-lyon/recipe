@@ -68,6 +68,11 @@ export const USER_NAV_ITEMS: Array<NavItem> = [
                 ariaLabel: 'Edit existing prep method',
                 href: `${PATH.ROOT}/edit/prep-method`,
             },
+            {
+                label: 'Unit Conversion',
+                ariaLabel: 'Edit existing unit conversion',
+                href: `${PATH.ROOT}/edit/unit-conversion`,
+            },
         ],
     },
 ];

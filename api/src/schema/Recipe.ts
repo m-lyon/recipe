@@ -13,10 +13,10 @@ import { IMAGE_DIR } from '../constants.js';
 import { ImageTC } from '../models/Image.js';
 import { RatingTC } from '../models/Rating.js';
 import { PrepMethodTC } from '../models/PrepMethod.js';
+import { validateItemNotInRecipe } from './validation.js';
 import { ReservedIngredientTags } from '../models/Ingredient.js';
 import { Ingredient, IngredientTC } from '../models/Ingredient.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
-import { validateItemNotInRecipe } from '../middleware/validation.js';
 import { RecipeTC, generateRecipeIdentifier } from '../models/Recipe.js';
 import { Recipe, RecipeCreateTC, RecipeIngredientTC, RecipeModifyTC } from '../models/Recipe.js';
 

@@ -15,6 +15,20 @@
     border-color: #cbd5e0;
 }
 
+/* Match Chakra's disabled Input: no grey fill, just faded (opacity 0.4) */
+.root .input:disabled,
+.root .input[data-disabled] {
+    background-color: white;
+    color: rgba(0, 0, 0, 0.64);
+    border-color: #e2e8f0;
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.root:has(input:disabled) .label {
+    opacity: 0.4;
+}
+
 .label {
     position: absolute;
     top: 0;

@@ -20,6 +20,7 @@ import { EditPrepMethod } from './pages/EditPrepMethod';
 import { CreateIngredient } from './pages/CreateIngredient';
 import { CreatePrepMethod } from './pages/CreatePrepMethod';
 import { CreateVeganRecipe } from './pages/CreateVeganRecipe';
+import { EditUnitConversion } from './pages/EditUnitConversion';
 import { CreateUnitConversion } from './pages/CreateUnitConversion';
 
 export const routes = createRoutesFromElements(
@@ -46,6 +47,7 @@ export const routes = createRoutesFromElements(
                 <Route path='size' element={<EditSize />} />
                 <Route path='ingredient' element={<EditIngredient />} />
                 <Route path='prep-method' element={<EditPrepMethod />} />
+                <Route path='unit-conversion' element={<EditUnitConversion />} />
                 <Route path='recipe/:titleIdentifier' element={<EditRecipe />} />
             </Route>
             <Route path='login' element={<Login />} />

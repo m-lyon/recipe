@@ -258,7 +258,7 @@ describe('nutritionalInfoCreateOne', function () {
         );
         assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors, 'Should fail for non-owner');
-        assert.equal(response.body.singleResult.errors[0].message, 'Not authorized');
+        assert.equal(response.body.singleResult.errors[0].message, 'You are not authorised!');
     });
 
     it('should allow admin to create nutritional info for any ingredient', async function () {
@@ -371,7 +371,7 @@ describe('nutritionalInfoUpdateById', function () {
         );
         assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors, 'Should fail for a foreign ingredient');
-        assert.equal(response.body.singleResult.errors[0].message, 'Not authorized');
+        assert.equal(response.body.singleResult.errors[0].message, 'You are not authorised!');
         const unchanged = await NutritionalInfo.findById(ni._id);
         assert.equal(String(unchanged.ingredient), String(ownIngredient._id));
     });
@@ -424,7 +424,7 @@ describe('nutritionalInfoUpdateById', function () {
         );
         assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors, 'Should fail for non-owner');
-        assert.equal(response.body.singleResult.errors[0].message, 'Not authorized');
+        assert.equal(response.body.singleResult.errors[0].message, 'You are not authorised!');
     });
 });
 
@@ -478,7 +478,7 @@ describe('nutritionalInfoRemoveById', function () {
         );
         assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors, 'Should fail for non-owner');
-        assert.equal(response.body.singleResult.errors[0].message, 'Not authorized');
+        assert.equal(response.body.singleResult.errors[0].message, 'You are not authorised!');
 
         // Confirm it was NOT deleted
         const found = await NutritionalInfo.findById(ni._id);

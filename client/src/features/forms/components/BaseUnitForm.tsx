@@ -1,14 +1,14 @@
-import { Select } from '@mantine/core';
+import { Stack } from '@chakra-ui/react';
 import { ApolloError } from '@apollo/client';
 import { StackProps } from '@chakra-ui/react';
 import { boolean, mixed, object, string } from 'yup';
 import { MutableRefObject, useCallback, useEffect } from 'react';
 import { Button, ButtonGroup, Checkbox } from '@chakra-ui/react';
-import { FormControl, FormHelperText, HStack, Radio, RadioGroup, Stack } from '@chakra-ui/react';
+import { FormControl, FormHelperText, HStack, Radio, RadioGroup } from '@chakra-ui/react';
 
 import { NumberFormat } from '@recipe/graphql/enums';
-import { FloatingLabelInput } from '@recipe/common/components';
 import { EnumUnitCreateMeasureType } from '@recipe/graphql/generated';
+import { FloatingLabelInput, SearchableSelect } from '@recipe/common/components';
 
 import { useFormLogic } from '../hooks/useFormLogic';
 import { useKeyboardSubmit } from '../hooks/useKeyboardSubmit';
@@ -21,9 +21,9 @@ export function formatUnitError(error: ApolloError) {
 }
 
 const MEASURE_TYPE_OPTIONS = [
-    { value: 'mass', label: 'Mass (e.g. kg, oz)' },
-    { value: 'volume', label: 'Volume (e.g. ml, cup)' },
-    { value: '', label: 'None / custom' },
+    { value: 'mass', label: 'Mass' },
+    { value: 'volume', label: 'Volume' },
+    { value: '', label: 'None' },
 ];
 
 export const unitFormSchema = object({
@@ -144,19 +144,25 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
             >
                 Space after quantity
             </Checkbox>
-            {/* Mantine Select — new field, mixed Mantine/Chakra intentional (see NutritionalInfoPanel note) */}
-            <Select
-                label='Measure type'
-                description='Set to Mass or Volume to enable nutritional calculations'
-                data={MEASURE_TYPE_OPTIONS}
-                value={formData.measureType ?? ''}
-                onChange={(val) =>
-                    handleChange('measureType', (val || null) as 'mass' | 'volume' | null)
-                }
-                disabled={disabled}
-                clearable={false}
-                aria-label='Measure type'
-            />
+            <FormControl isDisabled={disabled}>
+                <SearchableSelect
+                    label='Measure type'
+                    aria-label='Measure type'
+                    options={MEASURE_TYPE_OPTIONS}
+                    value={
+                        disabled || formData.measureType === undefined
+                            ? null
+                            : (formData.measureType ?? '')
+                    }
+                    onChange={(val) =>
+                        handleChange('measureType', (val || null) as 'mass' | 'volume' | null)
+                    }
+                    disabled={disabled}
+                />
+                <FormHelperText>
+                    Set to Mass or Volume to enable nutritional calculations
+                </FormHelperText>
+            </FormControl>
             <ButtonGroup
                 display='flex'
                 justifyContent='flex-end'
