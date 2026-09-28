@@ -4,6 +4,9 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { PATH } from '@recipe/constants';
 import { renderPage } from '@recipe/utils/tests';
+import { GET_UNITS } from '@recipe/graphql/queries/unit';
+import { CURRENT_USER } from '@recipe/graphql/queries/user';
+import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockCurrentUser, mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 
 import { routes } from '../routes';
@@ -12,9 +15,12 @@ import { mocks } from '../__mocks__/graphql';
 loadErrorMessages();
 loadDevMessages();
 
+// The unit conversion pages list every unit, so they query without a filter
+const mockGetAllUnits = { ...mockGetUnits, request: { query: GET_UNITS } };
+
 const renderAs = (currentUser: typeof mockCurrentUser, path: string) => {
-    const userMocks = [currentUser, ...mocks.filter((m) => m !== mockCurrentUserAdmin)];
-    return renderPage(routes, userMocks, [path]);
+    const otherMocks = mocks.filter((m) => m.request.query !== CURRENT_USER);
+    return renderPage(routes, [currentUser, mockGetAllUnits, ...otherMocks], [path]);
 };
 
 describe.each([
@@ -31,14 +37,18 @@ describe.each([
 
         // Expect ------------------------------------------------
         expect(await screen.findByRole('heading', { name: heading })).not.toBeNull();
+        // Unit options only appear once the units query has resolved
+        expect(await screen.findByRole('option', { name: 'oz' })).not.toBeNull();
+        expect(screen.getByRole('heading', { name: heading })).not.toBeNull();
     });
 
     it('should redirect non-admins to the home page', async () => {
         // Render -----------------------------------------------
-        renderAs(mockCurrentUser, path);
+        const { router } = renderAs(mockCurrentUser, path);
 
         // Expect ------------------------------------------------
         expect(await screen.findByLabelText('View Mock Recipe')).not.toBeNull();
         expect(screen.queryByRole('heading', { name: heading })).toBeNull();
+        expect(router.state.historyAction).toBe('REPLACE');
     });
 });

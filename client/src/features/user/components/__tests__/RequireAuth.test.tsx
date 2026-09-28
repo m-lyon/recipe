@@ -4,38 +4,38 @@ import { Route, createRoutesFromElements } from 'react-router-dom';
 
 import { PATH } from '@recipe/constants';
 import { MockedResponses, renderPage } from '@recipe/utils/tests';
-import { mockCurrentUser, mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
+import { mockCurrentUser, mockCurrentUserNull } from '@recipe/graphql/queries/__mocks__/user';
 
-import { RequireAdmin } from '../RequireAdmin';
+import { RequireAuth } from '../RequireAuth';
 
 const renderComponent = (mocks: MockedResponses) => {
     const routes = createRoutesFromElements(
         <Route path={PATH.ROOT}>
             <Route index element={<div>Home page</div>} />
-            <Route element={<RequireAdmin />}>
-                <Route path='admin' element={<div>Admin page</div>} />
+            <Route element={<RequireAuth />}>
+                <Route path='private' element={<div>Private page</div>} />
             </Route>
         </Route>
     );
-    return renderPage(routes, mocks, [`${PATH.ROOT}/admin`]);
+    return renderPage(routes, mocks, [`${PATH.ROOT}/private`]);
 };
 
-describe('RequireAdmin', () => {
+describe('RequireAuth', () => {
     afterEach(() => {
         cleanup();
     });
 
-    it('should render the page for admins', async () => {
-        renderComponent([mockCurrentUserAdmin]);
+    it('should render the page for verified users', async () => {
+        renderComponent([mockCurrentUser]);
 
-        expect(await screen.findByText('Admin page')).not.toBeNull();
+        expect(await screen.findByText('Private page')).not.toBeNull();
     });
 
-    it('should redirect non-admins to the home page', async () => {
-        const { router } = renderComponent([mockCurrentUser]);
+    it('should redirect signed-out users to the home page', async () => {
+        const { router } = renderComponent([mockCurrentUserNull]);
 
         expect(await screen.findByText('Home page')).not.toBeNull();
-        expect(screen.queryByText('Admin page')).toBeNull();
+        expect(screen.queryByText('Private page')).toBeNull();
         // Replace, so Back doesn't return to the blocked route
         expect(router.state.historyAction).toBe('REPLACE');
     });
