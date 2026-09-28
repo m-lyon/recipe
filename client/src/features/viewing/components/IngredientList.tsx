@@ -1,9 +1,8 @@
-import { useState } from 'react';
-import { useClickOutside } from '@mantine/hooks';
-import { TbLock, TbLockOpen2, TbQuestionMark } from 'react-icons/tb';
-import { ActionIcon, Tooltip as MantineTooltip } from '@mantine/core';
-import { BoxProps, Tooltip, UnorderedList, VStack } from '@chakra-ui/react';
+import { LuAsterisk } from 'react-icons/lu';
+import { TbLock, TbLockOpen2 } from 'react-icons/tb';
+import { PointerEvent, useRef, useState } from 'react';
 import { Box, Flex, IconButton, ListItem, Spacer, Text } from '@chakra-ui/react';
+import { BoxProps, Tooltip, UnorderedList, VStack, useOutsideClick } from '@chakra-ui/react';
 
 import { useWakeLock } from '@recipe/common/hooks';
 import { changeQuantity } from '@recipe/utils/quantity';
@@ -12,31 +11,40 @@ import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 
 import { RecipeIngredient } from './RecipeIngredient';
 
-/** Mantine only. Hover does not exist on touch screens, so the tooltip is controlled:
- *  a mouse opens it on hover, a tap toggles it, and a tap elsewhere closes it. */
+/** Hover does not exist on touch screens, so the tooltip is controlled: a mouse
+ *  opens it on hover, a tap toggles it, and a tap elsewhere closes it. */
 function UncountedIngredientHint() {
-    const [opened, setOpened] = useState(false);
-    const [target, setTarget] = useState<HTMLSpanElement | null>(null);
-    useClickOutside(() => setOpened(false), null, [target]);
+    const [isOpen, setIsOpen] = useState(false);
+    const ref = useRef<HTMLSpanElement>(null);
+    useOutsideClick({ ref, handler: () => setIsOpen(false) });
 
     return (
-        <MantineTooltip label='Not included in nutritional calculation' withArrow opened={opened}>
-            <ActionIcon
-                ref={setTarget}
-                variant='transparent'
-                size='xs'
-                ml={4}
-                aria-label='Not counted in nutrition'
-                aria-expanded={opened}
-                component='span'
+        <Tooltip label='Not included in nutritional calculation' hasArrow isOpen={isOpen}>
+            <Box
+                as='span'
+                ref={ref}
                 display='inline-flex'
-                onPointerEnter={(e) => e.pointerType === 'mouse' && setOpened(true)}
-                onPointerLeave={(e) => e.pointerType === 'mouse' && setOpened(false)}
-                onPointerDown={(e) => e.pointerType !== 'mouse' && setOpened((o) => !o)}
+                verticalAlign='middle'
+                position='relative'
+                top='-0.35em'
+                ml={1}
+                color='teal'
+                cursor='pointer'
+                aria-label='Not counted in nutrition'
+                aria-expanded={isOpen}
+                onPointerEnter={(e: PointerEvent<HTMLSpanElement>) =>
+                    e.pointerType === 'mouse' && setIsOpen(true)
+                }
+                onPointerLeave={(e: PointerEvent<HTMLSpanElement>) =>
+                    e.pointerType === 'mouse' && setIsOpen(false)
+                }
+                onPointerDown={(e: PointerEvent<HTMLSpanElement>) =>
+                    e.pointerType !== 'mouse' && setIsOpen((o) => !o)
+                }
             >
-                <TbQuestionMark />
-            </ActionIcon>
-        </MantineTooltip>
+                <LuAsterisk />
+            </Box>
+        </Tooltip>
     );
 }
 

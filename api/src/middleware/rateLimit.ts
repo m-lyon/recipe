@@ -2,14 +2,13 @@ import { GraphQLError } from 'graphql';
 import { ResolverNextRpCb } from 'graphql-compose';
 
 import { GraphQLContext } from '../types.js';
+import { unauthenticated } from './authorisation.js';
 
 /**
  * Per-user sliding-window rate limit.
  *
  * The USDA proxy resolvers spend a single server-wide API key with a 1000 requests/hour
- * quota, so one account looping searches would exhaust it for everybody. The window is
- * held in process memory: the API runs as a single node, and losing the counters on a
- * restart only forgives usage, it never over-restricts.
+ * quota, so one account looping searches would exhaust it for everyone.
  */
 const buckets = new Map<string, number[]>();
 
@@ -23,9 +22,7 @@ export const rateLimit =
     (rp) => {
         const user = rp.context.getUser();
         if (!user) {
-            throw new GraphQLError('You are not authenticated!', {
-                extensions: { code: 'UNAUTHENTICATED' },
-            });
+            throw unauthenticated();
         }
         const key = `${name}:${user._id.toString()}`;
         const now = Date.now();
@@ -41,7 +38,7 @@ export const rateLimit =
         hits.push(now);
         buckets.set(key, hits);
         // Periodically drop keys whose window has fully expired, so the map does not
-        // grow monotonically with every user that has ever hit a limited resolver.
+        // grow monotonically with every user.
         if (++sinceSweep >= SWEEP_INTERVAL) {
             sinceSweep = 0;
             for (const [otherKey, times] of buckets) {

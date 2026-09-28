@@ -5,12 +5,7 @@ import { ResolverNextRpCb } from 'graphql-compose';
 import { Image } from '../models/Image.js';
 import { ContextImage, GraphQLContext } from '../types.js';
 
-/**
- * UNAUTHENTICATED, not FORBIDDEN: no session at all is recoverable by logging in again,
- * which is how the CLI decides whether to re-authenticate and retry. FORBIDDEN stays for
- * the wrong-owner/wrong-role branches, which re-authenticating never fixes.
- */
-function unauthenticated(): GraphQLError {
+export function unauthenticated(): GraphQLError {
     return new GraphQLError('You are not authenticated!', {
         extensions: { code: 'UNAUTHENTICATED' },
     });
