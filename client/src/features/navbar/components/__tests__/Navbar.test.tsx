@@ -29,8 +29,9 @@ describe('Navbar', () => {
 
         // Expect
         expect((await screen.findAllByLabelText('Create new recipe')).length).toBeGreaterThan(0);
-        expect(screen.queryAllByLabelText('Create new unit conversion rule')).not.toHaveLength(0);
-        expect(screen.queryAllByLabelText('Edit existing unit conversion')).not.toHaveLength(0);
+        // One entry each in the desktop and mobile navs
+        expect(screen.queryAllByLabelText('Create new unit conversion rule')).toHaveLength(2);
+        expect(screen.queryAllByLabelText('Edit existing unit conversion')).toHaveLength(2);
     });
 
     it('should hide unit conversion entries from non-admins', async () => {

@@ -2,7 +2,7 @@ import { Route, createRoutesFromElements } from 'react-router-dom';
 
 import { PATH } from '@recipe/constants';
 import { Navbar } from '@recipe/features/navbar';
-import { RequireAuth } from '@recipe/features/user';
+import { RequireAdmin, RequireAuth } from '@recipe/features/user';
 
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
@@ -37,7 +37,9 @@ export const routes = createRoutesFromElements(
                     element={<CreateVeganRecipe />}
                 />
                 <Route path='unit' element={<CreateUnit />} />
-                <Route path='unit-conversion' element={<CreateUnitConversion />} />
+                <Route element={<RequireAdmin />}>
+                    <Route path='unit-conversion' element={<CreateUnitConversion />} />
+                </Route>
                 <Route path='size' element={<CreateSize />} />
                 <Route path='ingredient' element={<CreateIngredient />} />
                 <Route path='prep-method' element={<CreatePrepMethod />} />
@@ -47,7 +49,9 @@ export const routes = createRoutesFromElements(
                 <Route path='size' element={<EditSize />} />
                 <Route path='ingredient' element={<EditIngredient />} />
                 <Route path='prep-method' element={<EditPrepMethod />} />
-                <Route path='unit-conversion' element={<EditUnitConversion />} />
+                <Route element={<RequireAdmin />}>
+                    <Route path='unit-conversion' element={<EditUnitConversion />} />
+                </Route>
                 <Route path='recipe/:titleIdentifier' element={<EditRecipe />} />
             </Route>
             <Route path='login' element={<Login />} />

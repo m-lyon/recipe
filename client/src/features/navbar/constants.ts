@@ -84,15 +84,21 @@ export const USER_NAV_ITEMS: Array<NavItem> = [
 export const PUBLIC_NAV_ITEMS: Array<NavItem> = [];
 
 /** Nav items to show the current user, without admin-only entries for non-admins. */
-export function getNavItems(isVerified: boolean, isAdmin: boolean): Array<NavItem> {
+export function getNavItems(
+    isVerified: boolean,
+    isAdmin: boolean,
+    userNavItems: Array<NavItem> = USER_NAV_ITEMS
+): Array<NavItem> {
     if (!isVerified) return PUBLIC_NAV_ITEMS;
     const filterItems = (items: Array<NavItem>): Array<NavItem> =>
         items
             .filter((item) => isAdmin || !item.adminOnly)
             .map((item) =>
                 item.children ? { ...item, children: filterItems(item.children) } : item
-            );
-    return filterItems(USER_NAV_ITEMS);
+            )
+            // Drop groups left with nothing to open
+            .filter((item) => item.href || !item.children || item.children.length > 0);
+    return filterItems(userNavItems);
 }
 
 export const NAV_HEIGHT = 60;
