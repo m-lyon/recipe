@@ -110,3 +110,6 @@ export const mockGetUnits = {
     request: { query: GET_UNITS, variables: { filter: {} } satisfies GetUnitsQueryVariables },
     result: { data: { __typename: 'Query', unitMany: mockUnits } satisfies GetUnitsQuery },
 };
+
+// Pages that list every unit query without a filter
+export const mockGetAllUnits = { ...mockGetUnits, request: { query: GET_UNITS } };

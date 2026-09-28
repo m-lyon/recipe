@@ -20,6 +20,8 @@ export const mockUser: User = {
     lastName: 'User',
 };
 
+export const mockUnverifiedUser: User = { ...mockUser, role: 'unverified' };
+
 export const mockCurrentUserAdmin = {
     request: {
         query: CURRENT_USER,
@@ -52,6 +54,18 @@ export const mockCurrentUserNull = {
         data: {
             __typename: 'Query',
             currentUser: null,
+        } satisfies CurrentUserQuery,
+    },
+};
+
+export const mockCurrentUserUnverified = {
+    request: {
+        query: CURRENT_USER,
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            currentUser: mockUnverifiedUser,
         } satisfies CurrentUserQuery,
     },
 };

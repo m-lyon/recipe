@@ -4,9 +4,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { GET_UNITS } from '@recipe/graphql/queries/unit';
 import { MockedResponses, renderPage } from '@recipe/utils/tests';
-import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
+import { mockGetAllUnits } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
 import { mockRemoveUnitConversionOne } from '@recipe/graphql/mutations/__mocks__/unitConversion';
 import { mockRemoveConversionRuleOne } from '@recipe/graphql/mutations/__mocks__/unitConversion';
@@ -24,9 +23,6 @@ import { EditUnitConversion } from '../EditUnitConversion';
 
 loadErrorMessages();
 loadDevMessages();
-
-// The page lists every unit, so it queries without a filter
-const mockGetAllUnits = { ...mockGetUnits, request: { query: GET_UNITS } };
 
 const renderComponent = (mocks: MockedResponses = []) => {
     const routes = createRoutesFromElements(<Route path='/' element={<EditUnitConversion />} />);

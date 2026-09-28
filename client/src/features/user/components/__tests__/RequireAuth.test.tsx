@@ -4,6 +4,7 @@ import { Route, createRoutesFromElements } from 'react-router-dom';
 
 import { PATH } from '@recipe/constants';
 import { MockedResponses, renderPage } from '@recipe/utils/tests';
+import { mockCurrentUserUnverified } from '@recipe/graphql/queries/__mocks__/user';
 import { mockCurrentUser, mockCurrentUserNull } from '@recipe/graphql/queries/__mocks__/user';
 
 import { RequireAuth } from '../RequireAuth';
@@ -37,6 +38,14 @@ describe('RequireAuth', () => {
         expect(await screen.findByText('Home page')).not.toBeNull();
         expect(screen.queryByText('Private page')).toBeNull();
         // Replace, so Back doesn't return to the blocked route
+        expect(router.state.historyAction).toBe('REPLACE');
+    });
+
+    it('should redirect unverified users to the home page', async () => {
+        const { router } = renderComponent([mockCurrentUserUnverified]);
+
+        expect(await screen.findByText('Home page')).not.toBeNull();
+        expect(screen.queryByText('Private page')).toBeNull();
         expect(router.state.historyAction).toBe('REPLACE');
     });
 });

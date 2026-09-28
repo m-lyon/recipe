@@ -4,9 +4,8 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { PATH } from '@recipe/constants';
 import { renderPage } from '@recipe/utils/tests';
-import { GET_UNITS } from '@recipe/graphql/queries/unit';
 import { CURRENT_USER } from '@recipe/graphql/queries/user';
-import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
+import { mockGetAllUnits } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockCurrentUser, mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 
 import { routes } from '../routes';
@@ -14,9 +13,6 @@ import { mocks } from '../__mocks__/graphql';
 
 loadErrorMessages();
 loadDevMessages();
-
-// The unit conversion pages list every unit, so they query without a filter
-const mockGetAllUnits = { ...mockGetUnits, request: { query: GET_UNITS } };
 
 const renderAs = (currentUser: typeof mockCurrentUser, path: string) => {
     const otherMocks = mocks.filter((m) => m.request.query !== CURRENT_USER);
@@ -36,7 +32,6 @@ describe.each([
         renderAs(mockCurrentUserAdmin, path);
 
         // Expect ------------------------------------------------
-        expect(await screen.findByRole('heading', { name: heading })).not.toBeNull();
         // Unit options only appear once the units query has resolved
         expect(await screen.findByRole('option', { name: 'oz' })).not.toBeNull();
         expect(screen.getByRole('heading', { name: heading })).not.toBeNull();
