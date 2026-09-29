@@ -5,7 +5,6 @@ import { cleanup, screen, waitFor } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { nullByText } from '@recipe/utils/tests';
-import { DEBOUNCE_TIME } from '@recipe/constants';
 import { mockBeefId } from '@recipe/graphql/__mocks__/ids';
 import { CreateNutritionalInfoMutationVariables } from '@recipe/graphql/generated';
 import { mockCreateIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
@@ -348,7 +347,6 @@ describe('Create new Ingredient', () => {
         await user.keyboard('beef');
 
         await user.type(screen.getByLabelText('Search nutritional data'), 'chicken breast');
-        await new Promise((resolve) => setTimeout(resolve, DEBOUNCE_TIME + 50));
         await user.click(screen.getByLabelText('Search USDA database'));
         await user.click(await screen.findByText('Chicken breast, cooked'));
         await user.click(screen.getByLabelText('Link selected nutritional data'));
@@ -387,7 +385,6 @@ describe('Create new Ingredient', () => {
         await user.keyboard('beef');
 
         await user.type(screen.getByLabelText('Search nutritional data'), 'chicken breast');
-        await new Promise((resolve) => setTimeout(resolve, DEBOUNCE_TIME + 50));
         await user.click(screen.getByLabelText('Search USDA database'));
         await user.click(await screen.findByText('Chicken breast, cooked'));
 

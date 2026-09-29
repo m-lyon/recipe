@@ -44,7 +44,8 @@ describe('Edit Unit Conversion', () => {
         await user.click(screen.getByLabelText('Select unit conversion'));
         await user.click(await screen.findByRole('option', { name: 'gram' }));
         expect(screen.getByText('1000 g = 1 kg, g >= 1000')).not.toBeNull();
-        await user.selectOptions(screen.getByRole('combobox', { name: 'Unit' }), 'oz');
+        await user.click(screen.getByLabelText('Unit'));
+        await user.click(await screen.findByRole('option', { name: 'oz' }));
         await user.clear(screen.getByPlaceholderText('Threshold'));
         await user.type(screen.getByPlaceholderText('Threshold'), '28');
         await user.clear(screen.getByPlaceholderText('Base Conversion'));
@@ -54,7 +55,7 @@ describe('Edit Unit Conversion', () => {
         // Expect
         expect(await screen.findByText('28 g = 1 oz, g >= 28')).not.toBeNull();
         expect(screen.getByText('1000 g = 1 kg, g >= 1000')).not.toBeNull();
-        expect(screen.getByRole<HTMLSelectElement>('combobox', { name: 'Unit' }).value).toBe('');
+        await expect.poll(() => screen.getByLabelText<HTMLInputElement>('Unit').value).toBe('');
         expect(screen.getByPlaceholderText<HTMLInputElement>('Threshold').value).toBe('0');
         expect(screen.getByPlaceholderText<HTMLInputElement>('Base Conversion').value).toBe('0');
     });
@@ -73,7 +74,8 @@ describe('Edit Unit Conversion', () => {
         expect(await screen.findByText('Edit Unit Conversion')).not.toBeNull();
         await user.click(screen.getByLabelText('Select unit conversion'));
         await user.click(await screen.findByRole('option', { name: 'gram' }));
-        await user.selectOptions(screen.getByRole('combobox', { name: 'Unit' }), 'oz');
+        await user.click(screen.getByLabelText('Unit'));
+        await user.click(await screen.findByRole('option', { name: 'oz' }));
         await user.clear(screen.getByPlaceholderText('Threshold'));
         await user.type(screen.getByPlaceholderText('Threshold'), '28');
         await user.clear(screen.getByPlaceholderText('Base Conversion'));

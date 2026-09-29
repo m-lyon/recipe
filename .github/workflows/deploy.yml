@@ -26,7 +26,6 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v4
         with:
-          # Same pinned version the server runs, via nvm-exec reading the deployed .nvmrc.
           node-version-file: .nvmrc
 
       - name: Start MongoDB
@@ -138,7 +137,7 @@ jobs:
           path: ./client/src/__generated__/
 
   deploy:
-    runs-on: ubuntu-22.04 # matches the server, so native modules such as sharp link against the same glibc
+    runs-on: ubuntu-22.04 # matches the server
     environment: production
     needs: test
     # One group for the deploy target, so two runs never touch the server at once
@@ -157,7 +156,6 @@ jobs:
         with:
           node-version-file: .nvmrc
 
-      # Runtime configuration and secrets live on the server in /etc/recipe.env, not in CI.
       - name: Compile API
         working-directory: ./api
         run: |
@@ -232,8 +230,6 @@ jobs:
               exit 1
           }
 
-      # Files land group-readable by svc-recipe via the setgid target directory.
-      # The service can read its code but not modify it.
       - name: Deploy API
         run: >
           rsync -rlpt --delete --chmod=D2750,F0640

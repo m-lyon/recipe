@@ -1,9 +1,10 @@
 import { FormEvent, useState } from 'react';
 import { number, object, string } from 'yup';
 import { useMutation } from '@apollo/client';
-import { Box, Button, FormControl, FormLabel, HStack, Input, Select } from '@chakra-ui/react';
+import { Box, Button, FormControl, FormLabel, HStack, Input } from '@chakra-ui/react';
 
 import { useErrorToast } from '@recipe/common/hooks';
+import { SearchableSelect } from '@recipe/common/components';
 import { CREATE_CONVERSION_RULE } from '@recipe/graphql/mutations/unitConversion';
 
 export type ConversionRule = NonNullable<CompletedCreateConversionRule['record']>;
@@ -60,19 +61,15 @@ export function CreateConversionRuleForm(props: Props) {
                 <HStack height='4em' alignItems='flex-end'>
                     <FormControl isDisabled={!baseUnit}>
                         <FormLabel>Unit</FormLabel>
-                        <Select
-                            placeholder='-'
-                            value={unit?._id ?? ''}
-                            onChange={(e) => {
-                                setUnit(units.find((unit) => unit._id === e.target.value));
-                            }}
-                        >
-                            {units.map((unit) => (
-                                <option key={unit._id} value={unit._id}>
-                                    {unit.shortSingular}
-                                </option>
-                            ))}
-                        </Select>
+                        <SearchableSelect
+                            aria-label='Unit'
+                            options={units
+                                .filter((unit) => unit._id !== baseUnit?._id)
+                                .map((unit) => ({ value: unit._id, label: unit.shortSingular }))}
+                            value={unit?._id ?? null}
+                            onChange={(id) => setUnit(units.find((unit) => unit._id === id))}
+                            disabled={!baseUnit}
+                        />
                     </FormControl>
                     <FormControl isDisabled={!baseUnit}>
                         <FormLabel>Threshold</FormLabel>

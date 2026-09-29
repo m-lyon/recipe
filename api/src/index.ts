@@ -21,7 +21,6 @@ import { DELAY, HOST, PORT, SESSION_SECRET, SESSION_URI, WHITELIST } from './con
 
 console.log('Node version:', process.version);
 const app = express();
-// TLS is terminated by nginx
 const server = createHttpServer(app);
 const apolloServer = new ApolloServer({
     schema,

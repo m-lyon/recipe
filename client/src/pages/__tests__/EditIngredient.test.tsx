@@ -4,7 +4,6 @@ import { cleanup, screen, waitFor } from '@testing-library/react';
 import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { DEBOUNCE_TIME } from '@recipe/constants';
 import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockUpdateIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
@@ -130,8 +129,6 @@ describe('Edit Ingredient', () => {
         // Clear the prepopulated text before typing a different USDA search query.
         await user.clear(screen.getByLabelText('Search nutritional data'));
         await user.type(screen.getByLabelText('Search nutritional data'), 'chicken breast');
-        // Wait for the search input's debounce to settle before searching
-        await new Promise((resolve) => setTimeout(resolve, DEBOUNCE_TIME + 50));
         await user.click(screen.getByLabelText('Search USDA database'));
         await user.click(await screen.findByText('Chicken breast, cooked'));
         expect(await screen.findByLabelText('Link selected nutritional data')).not.toBeNull();
@@ -172,7 +169,6 @@ describe('Edit Ingredient', () => {
 
         await user.clear(screen.getByLabelText('Search nutritional data'));
         await user.type(screen.getByLabelText('Search nutritional data'), 'chicken breast');
-        await new Promise((resolve) => setTimeout(resolve, DEBOUNCE_TIME + 50));
         await user.type(screen.getByLabelText('Search nutritional data'), '{Enter}');
 
         // Expect -- Enter triggered the USDA search...
