@@ -58,7 +58,7 @@ export function IngredientsTab(props: Props) {
         <Tooltip label='View original recipe' openDelay={500}>
             <IconButton
                 as={Link}
-                to={`${PATH.ROOT}/view/recipe/${recipe.originalRecipe.titleIdentifier}`}
+                to={`${PATH.BASE}/view/recipe/${recipe.originalRecipe.titleIdentifier}`}
                 aria-label='View original recipe'
                 icon={<TbMeat />}
                 mr='2'
@@ -68,7 +68,7 @@ export function IngredientsTab(props: Props) {
         <Tooltip label='View vegan version' openDelay={500}>
             <IconButton
                 as={Link}
-                to={`${PATH.ROOT}/view/recipe/${recipe.veganVersion.titleIdentifier}`}
+                to={`${PATH.BASE}/view/recipe/${recipe.veganVersion.titleIdentifier}`}
                 aria-label='View vegan version'
                 icon={<PiPlant />}
                 mr='2'

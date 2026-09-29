@@ -20,8 +20,8 @@ const renderAs = (currentUser: typeof mockCurrentUser, path: string) => {
 };
 
 describe.each([
-    ['Create Unit Conversion', `${PATH.ROOT}/create/unit-conversion`],
-    ['Edit Unit Conversion', `${PATH.ROOT}/edit/unit-conversion`],
+    ['Create Unit Conversion', `${PATH.BASE}/create/unit-conversion`],
+    ['Edit Unit Conversion', `${PATH.BASE}/edit/unit-conversion`],
 ])('Unit conversion route: %s', (heading, path) => {
     afterEach(() => {
         cleanup();

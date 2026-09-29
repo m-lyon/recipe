@@ -17,7 +17,7 @@ const renderComponent = (mocks: MockedResponses) => {
             </Route>
         </Route>
     );
-    return renderPage(routes, mocks, [`${PATH.ROOT}/admin`]);
+    return renderPage(routes, mocks, [`${PATH.BASE}/admin`]);
 };
 
 describe('RequireAdmin', () => {

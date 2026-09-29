@@ -18,7 +18,7 @@ const renderComponent = (mocks: MockedResponses) => {
             </Route>
         </Route>
     );
-    return renderPage(routes, mocks, [`${PATH.ROOT}/private`]);
+    return renderPage(routes, mocks, [`${PATH.BASE}/private`]);
 };
 
 describe('RequireAuth', () => {

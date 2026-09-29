@@ -187,7 +187,7 @@ describe('USDA portion linking from the edit ingredient page', () => {
                 mockUsdaFoodItemOliveOil,
                 mockUpdateIngredientCarrotWithDensity,
             ],
-            [`${PATH.ROOT}/edit/ingredient`]
+            [`${PATH.BASE}/edit/ingredient`]
         );
 
         // Act -- pick an ingredient to edit
