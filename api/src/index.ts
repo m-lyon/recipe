@@ -16,12 +16,13 @@ import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHt
 
 import { schema } from './schema/index.js';
 import { uploadRouter } from './routes/uploads.js';
-import { createHttpServer, createHttpsServer } from './utils/server.js';
-import { DELAY, HOST, HTTPS, PORT, SESSION_SECRET, SESSION_URI, WHITELIST } from './constants.js';
+import { createHttpServer } from './utils/server.js';
+import { DELAY, HOST, PORT, SESSION_SECRET, SESSION_URI, WHITELIST } from './constants.js';
 
 console.log('Node version:', process.version);
 const app = express();
-const server = HTTPS ? createHttpsServer(app) : createHttpServer(app);
+// TLS is terminated by nginx
+const server = createHttpServer(app);
 const apolloServer = new ApolloServer({
     schema,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer: server })],
