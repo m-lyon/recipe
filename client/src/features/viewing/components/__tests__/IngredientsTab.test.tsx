@@ -7,12 +7,12 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { renderPage } from '@recipe/utils/tests';
 import { mockKilogram } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockChicken, mockRhurbarbPie } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { GetNutritionalInfosByIngredientIdsQuery } from '@recipe/graphql/generated';
 import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockChickenId, mockRecipeIngredientIdOne } from '@recipe/graphql/__mocks__/ids';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
+import { mockChicken, mockRhurbarbPie } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS } from '@recipe/graphql/queries/nutritionalInfo';
 
 import { IngredientsTab } from '../IngredientsTab';

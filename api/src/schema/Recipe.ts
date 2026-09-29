@@ -10,6 +10,7 @@ import { TagTC } from '../models/Tag.js';
 import { SizeTC } from '../models/Size.js';
 import { UnitTC } from '../models/Unit.js';
 import { IMAGE_DIR } from '../constants.js';
+import { ResolveParams } from '../types.js';
 import { ImageTC } from '../models/Image.js';
 import { RatingTC } from '../models/Rating.js';
 import { PrepMethodTC } from '../models/PrepMethod.js';
@@ -27,7 +28,7 @@ const IngredientOrRecipeTC = schemaComposer.createUnionTC({
         if (value && value.constructor) {
             return value.constructor.modelName;
         }
-        return null;
+        return undefined;
     },
 });
 
@@ -61,7 +62,7 @@ RecipeIngredientTC.addResolver({
     description:
         'Determine if the object is an ingredient or a recipe and return the appropriate type',
     args: { _id: 'MongoID!' },
-    resolve: async (rp) => {
+    resolve: async (rp: ResolveParams<{ _id: string }>) => {
         if (!rp?.args?._id) {
             throw new GraphQLError(
                 `${IngredientOrRecipeTC.getTypeName()}.ingredientOrRecipe resolver requires args._id value`
@@ -191,15 +192,15 @@ RecipeModifyTC.addResolver({
     description: 'Archive a recipe by its ID',
     type: RecipeTC.mongooseResolvers.removeById().getType(),
     args: { _id: 'MongoID!' },
-    resolve: async ({ args }) => {
+    resolve: async ({ args }: ResolveParams<{ _id: string }>) => {
         const recipe = await Recipe.findById(args._id);
         if (!recipe) {
-            return { recordId: recipe?._id, record: recipe };
+            return { recordId: undefined, record: null };
         }
         if (recipe.originalRecipe) {
             throw new Error('Vegan copies cannot be archived directly');
         }
-        await validateItemNotInRecipe(args._id, 'recipe', 'archive');
+        await validateItemNotInRecipe(recipe._id, 'recipe', 'archive');
         if (recipe.veganVersion) {
             await validateItemNotInRecipe(recipe.veganVersion, 'recipe', 'archive');
         }
@@ -217,10 +218,10 @@ RecipeModifyTC.addResolver({
     description: 'Unarchive a recipe by its ID',
     type: RecipeTC.mongooseResolvers.removeById().getType(),
     args: { _id: 'MongoID!' },
-    resolve: async ({ args }) => {
+    resolve: async ({ args }: ResolveParams<{ _id: string }>) => {
         const recipe = await Recipe.findById(args._id);
         if (!recipe) {
-            return { recordId: recipe?._id, record: recipe };
+            return { recordId: undefined, record: null };
         }
         if (recipe.originalRecipe) {
             throw new Error('Vegan copies cannot be unarchived directly');
@@ -238,9 +239,18 @@ RecipeModifyTC.addResolver({
     name: 'recipeCreateVeganVersion',
     type: RecipeCreateTC.getResolver('createOne').getType(),
     args: { originalId: 'MongoID!', recipe: 'CreateOneRecipeCreateInput!' },
-    resolve: async ({ args, context }) => {
+    resolve: async ({
+        args,
+        context,
+    }: ResolveParams<{
+        originalId: string;
+        recipe: { title: string; [key: string]: unknown };
+    }>) => {
         const { originalId, recipe } = args;
         const user = context.getUser();
+        if (!user) {
+            throw new Error('Not authenticated');
+        }
         const original = await Recipe.findById(originalId);
 
         if (!original) {

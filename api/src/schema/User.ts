@@ -1,3 +1,4 @@
+import { ResolveParams } from '../types.js';
 import { sendEmail } from '../utils/email.js';
 import { User, UserTC } from '../models/User.js';
 import { SMTP_ADMIN_EMAIL, SMTP_FROM_DOMAIN, TEST } from '../constants.js';
@@ -6,7 +7,7 @@ UserTC.addResolver({
     name: 'currentUser',
     description: 'Retrieve the currently authenticated user',
     type: UserTC,
-    resolve: ({ context }) => {
+    resolve: ({ context }: ResolveParams) => {
         const user = context.getUser();
         return user;
     },
@@ -17,7 +18,7 @@ UserTC.addResolver({
     description: 'Login a user',
     type: UserTC,
     args: { username: 'String!', password: 'String!' },
-    resolve: async ({ args, context }) => {
+    resolve: async ({ args, context }: ResolveParams<{ username: string; password: string }>) => {
         if (context.isAuthenticated()) {
             return context.getUser();
         }
@@ -36,7 +37,7 @@ UserTC.addResolver({
     name: 'logout',
     description: 'Logout a user',
     type: 'Boolean!',
-    resolve: async ({ context }) => {
+    resolve: async ({ context }: ResolveParams) => {
         await context.logout();
         return true;
     },
@@ -46,7 +47,15 @@ UserTC.addResolver({
     description: 'Register a new user',
     type: UserTC,
     args: { username: 'String!', password: 'String!', firstName: 'String!', lastName: 'String!' },
-    resolve: async ({ args, context }) => {
+    resolve: async ({
+        args,
+        context,
+    }: ResolveParams<{
+        username: string;
+        password: string;
+        firstName: string;
+        lastName: string;
+    }>) => {
         const user = await User.register(
             new User({
                 username: args.username,
@@ -61,7 +70,7 @@ UserTC.addResolver({
             Username: ${args.username}
             First Name: ${args.firstName}
             Last Name: ${args.lastName}`;
-            sendEmail(`noreply@${SMTP_FROM_DOMAIN}`, SMTP_ADMIN_EMAIL, 'Verify User', text).catch(
+            sendEmail(`noreply@${SMTP_FROM_DOMAIN}`, SMTP_ADMIN_EMAIL!, 'Verify User', text).catch(
                 (error) => {
                     console.error('Failed to send verification email:', error);
                 }
