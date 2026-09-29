@@ -288,7 +288,7 @@ Mantine's `[data-checked]` attribute is set on the root element when the checkbo
 GitHub Actions workflow (`.github/workflows/deploy.yml`) on push to `main`:
 
 1. **test job**: Install both projects, run API tests (mocha), start API, run codegen, run client tests (vitest).
-2. **deploy job**: Compile API (prod), build client, deploy both via SSH/rsync.
+2. **deploy job**: Compile API (prod), build client, join the tailnet (Tailscale, `tag:ci`), rsync both to the server as `deploy-recipe`, restart `recipe.service`, and health-check https://recipes.mattlyon.co.uk. Runtime config lives in `/etc/recipe.env` on the server. See README.
 
 ## Common Pitfalls
 
