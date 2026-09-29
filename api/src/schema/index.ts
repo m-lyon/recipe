@@ -1,10 +1,10 @@
-import { SchemaComposer } from 'graphql-compose';
-import { composeResolvers } from '@graphql-tools/resolvers-composition';
+import { Resolver, ResolverNextRpCb, SchemaComposer } from 'graphql-compose';
 
 import { UsdaQuery } from './Usda.js';
 import { Unit } from '../models/Unit.js';
 import { Size } from '../models/Size.js';
 import { Recipe } from '../models/Recipe.js';
+import { GraphQLContext } from '../types.js';
 import { TagMutation, TagQuery } from './Tag.js';
 import { UserMutation, UserQuery } from './User.js';
 import { Ingredient } from '../models/Ingredient.js';
@@ -17,131 +17,128 @@ import { SizeMutation, SizeQuery, SizeQueryAdmin } from './Size.js';
 import { UnitMutation, UnitQuery, UnitQueryAdmin } from './Unit.js';
 import { IngredientMutation, IngredientQuery } from './Ingredient.js';
 import { isAdmin, isImageOwnerOrAdmin } from '../middleware/authorisation.js';
+import { isNutritionalInfoOwnerOrAdmin } from '../middleware/authorisation.js';
 import { UnitConversionMutation, UnitConversionQuery } from './UnitConversion.js';
 import { ConversionRuleMutation, ConversionRuleQuery } from './UnitConversion.js';
 import { isDocumentOwnerOrAdmin, isVerified } from '../middleware/authorisation.js';
 import { NutritionalInfoMutation, NutritionalInfoQuery } from './NutritionalInfo.js';
-import { isNutritionalInfoOwnerOrAdmin } from '../middleware/authorisation.js';
 import { PrepMethodMutation, PrepMethodQuery, PrepMethodQueryAdmin } from './PrepMethod.js';
 
-/** Per-user USDA search budget: enough for a linking session, far below the key's quota. */
 export const USDA_SEARCH_LIMIT = 60;
 export const USDA_SEARCH_WINDOW_MS = 60 * 60 * 1000;
-/** Per-user USDA food-item budget: higher than search since bulk linking looks up many
- *  fdcIds, but still bounded so a scripted caller can't exhaust the shared key. */
 export const USDA_FOOD_ITEM_LIMIT = 300;
 export const USDA_FOOD_ITEM_WINDOW_MS = 60 * 60 * 1000;
 
-const isAdminMutations = composeResolvers(
+type Middleware = ResolverNextRpCb<unknown, GraphQLContext>;
+
+/**
+ * Wraps every resolver in the map with the given middleware. The first middleware is the
+ * outermost, so it runs first.
+ */
+function withMiddleware(
+    resolvers: Record<string, Resolver>,
+    ...middleware: Middleware[]
+): Record<string, Resolver> {
+    const wrapped: Record<string, Resolver> = {};
+    for (const [name, resolver] of Object.entries(resolvers)) {
+        wrapped[name] = middleware.reduceRight(
+            (composed, next) => composed.wrapResolve(next),
+            resolver
+        );
+    }
+    return wrapped;
+}
+
+const isAdminMutations = withMiddleware(
     {
-        Mutation: {
-            ...TagMutation,
-            ...UnitConversionMutation,
-            ...ConversionRuleMutation,
-        },
+        ...TagMutation,
+        ...UnitConversionMutation,
+        ...ConversionRuleMutation,
     },
-    { 'Mutation.*': [isAdmin() as any] }
+    isAdmin()
 );
-const isAdminQueries = composeResolvers(
+const isAdminQueries = withMiddleware(
     {
-        Query: {
-            ...SizeQueryAdmin,
-            ...UnitQueryAdmin,
-            ...PrepMethodQueryAdmin,
-        },
+        ...SizeQueryAdmin,
+        ...UnitQueryAdmin,
+        ...PrepMethodQueryAdmin,
     },
-    { 'Query.*': [isAdmin() as any] }
+    isAdmin()
 );
 // The USDA proxy spends a single server-wide API key (1000 requests/hour), so it is
-// restricted to verified accounts and both paths are additionally capped per user:
-// search more tightly, usdaFoodItem more loosely since bulk linking looks up many fdcIds.
-const usdaQueries = composeResolvers(
-    { Query: { ...UsdaQuery } },
+// capped per user: search more tightly, usdaFoodItem more loosely since bulk linking
+// looks up many fdcIds.
+const usdaQueries = {
+    ...withMiddleware(
+        { usdaSearch: UsdaQuery.usdaSearch },
+        isVerified(),
+        rateLimit('usdaSearch', USDA_SEARCH_LIMIT, USDA_SEARCH_WINDOW_MS)
+    ),
+    ...withMiddleware(
+        { usdaFoodItem: UsdaQuery.usdaFoodItem },
+        isVerified(),
+        rateLimit('usdaFoodItem', USDA_FOOD_ITEM_LIMIT, USDA_FOOD_ITEM_WINDOW_MS)
+    ),
+};
+const isAuthenticatedMutations = withMiddleware(
     {
-        'Query.usdaSearch': [
-            isVerified() as any,
-            rateLimit('usdaSearch', USDA_SEARCH_LIMIT, USDA_SEARCH_WINDOW_MS) as any,
-        ],
-        'Query.usdaFoodItem': [
-            isVerified() as any,
-            rateLimit('usdaFoodItem', USDA_FOOD_ITEM_LIMIT, USDA_FOOD_ITEM_WINDOW_MS) as any,
-        ],
-    }
-);
-const isAuthenticatedMutations = composeResolvers(
-    {
-        Mutation: {
-            recipeCreateOne: RecipeMutation.recipeCreateOne,
-            recipeCreateVeganVersion: RecipeMutation.recipeCreateVeganVersion,
-            ratingCreateOne: RatingMutation.ratingCreateOne,
-            sizeCreateOne: SizeMutation.sizeCreateOne,
-            unitCreateOne: UnitMutation.unitCreateOne,
-            prepMethodCreateOne: PrepMethodMutation.prepMethodCreateOne,
-            ingredientCreateOne: IngredientMutation.ingredientCreateOne,
-        },
+        recipeCreateOne: RecipeMutation.recipeCreateOne,
+        recipeCreateVeganVersion: RecipeMutation.recipeCreateVeganVersion,
+        ratingCreateOne: RatingMutation.ratingCreateOne,
+        sizeCreateOne: SizeMutation.sizeCreateOne,
+        unitCreateOne: UnitMutation.unitCreateOne,
+        prepMethodCreateOne: PrepMethodMutation.prepMethodCreateOne,
+        ingredientCreateOne: IngredientMutation.ingredientCreateOne,
     },
-    { 'Mutation.*': [isVerified() as any] }
+    isVerified()
 );
-const isNutritionalInfoOwnerOrAdminMutations = composeResolvers(
-    { Mutation: NutritionalInfoMutation },
-    { 'Mutation.*': [isVerified() as any, isNutritionalInfoOwnerOrAdmin() as any] }
+const isNutritionalInfoOwnerOrAdminMutations = withMiddleware(
+    NutritionalInfoMutation,
+    isVerified(),
+    isNutritionalInfoOwnerOrAdmin()
 );
-const isImageOwnerOrAdminMutations = composeResolvers(
+const isImageOwnerOrAdminMutations = withMiddleware(
+    { imageRemoveMany: ImageMutation.imageRemoveMany },
+    isImageOwnerOrAdmin()
+);
+const isRecipeOwnerOrAdminMutations = withMiddleware(
     {
-        Mutation: {
-            imageRemoveMany: ImageMutation.imageRemoveMany,
-        },
+        recipeUpdateById: RecipeMutation.recipeUpdateById,
+        recipeRemoveById: RecipeMutation.recipeRemoveById,
+        recipeArchiveById: RecipeMutation.recipeArchiveById,
+        recipeUnarchiveById: RecipeMutation.recipeUnarchiveById,
+        imageUploadOne: ImageMutation.imageUploadOne,
+        imageUploadMany: ImageMutation.imageUploadMany,
     },
-    { 'Mutation.*': [isImageOwnerOrAdmin() as any] }
+    isDocumentOwnerOrAdmin(Recipe)
 );
-const isRecipeOwnerOrAdminMutations = composeResolvers(
+const isUnitOwnerOrAdminMutations = withMiddleware(
     {
-        Mutation: {
-            recipeUpdateById: RecipeMutation.recipeUpdateById,
-            recipeRemoveById: RecipeMutation.recipeRemoveById,
-            recipeArchiveById: RecipeMutation.recipeArchiveById,
-            recipeUnarchiveById: RecipeMutation.recipeUnarchiveById,
-            imageUploadOne: ImageMutation.imageUploadOne,
-            imageUploadMany: ImageMutation.imageUploadMany,
-        },
+        unitUpdateById: UnitMutation.unitUpdateById,
+        unitRemoveById: UnitMutation.unitRemoveById,
     },
-    { 'Mutation.*': [isDocumentOwnerOrAdmin(Recipe) as any] }
+    isDocumentOwnerOrAdmin(Unit)
 );
-const isUnitOwnerOrAdminMutations = composeResolvers(
+const isSizeOwnerOrAdminMutations = withMiddleware(
     {
-        Mutation: {
-            unitUpdateById: UnitMutation.unitUpdateById,
-            unitRemoveById: UnitMutation.unitRemoveById,
-        },
+        sizeUpdateById: SizeMutation.sizeUpdateById,
+        sizeRemoveById: SizeMutation.sizeRemoveById,
     },
-    { 'Mutation.*': [isDocumentOwnerOrAdmin(Unit) as any] }
+    isDocumentOwnerOrAdmin(Size)
 );
-const isSizeOwnerOrAdminMutations = composeResolvers(
+const isIngredientOwnerOrAdminMutations = withMiddleware(
     {
-        Mutation: {
-            sizeUpdateById: SizeMutation.sizeUpdateById,
-            sizeRemoveById: SizeMutation.sizeRemoveById,
-        },
+        ingredientUpdateById: IngredientMutation.ingredientUpdateById,
+        ingredientRemoveById: IngredientMutation.ingredientRemoveById,
     },
-    { 'Mutation.*': [isDocumentOwnerOrAdmin(Size) as any] }
+    isDocumentOwnerOrAdmin(Ingredient)
 );
-const isIngredientOwnerOrAdminMutations = composeResolvers(
+const isPrepMethodOwnerOrAdminMutations = withMiddleware(
     {
-        Mutation: {
-            ingredientUpdateById: IngredientMutation.ingredientUpdateById,
-            ingredientRemoveById: IngredientMutation.ingredientRemoveById,
-        },
+        prepMethodUpdateById: PrepMethodMutation.prepMethodUpdateById,
+        prepMethodRemoveById: PrepMethodMutation.prepMethodRemoveById,
     },
-    { 'Mutation.*': [isDocumentOwnerOrAdmin(Ingredient) as any] }
-);
-const isPrepMethodOwnerOrAdminMutations = composeResolvers(
-    {
-        Mutation: {
-            prepMethodUpdateById: PrepMethodMutation.prepMethodUpdateById,
-            prepMethodRemoveById: PrepMethodMutation.prepMethodRemoveById,
-        },
-    },
-    { 'Mutation.*': [isDocumentOwnerOrAdmin(PrepMethod) as any] }
+    isDocumentOwnerOrAdmin(PrepMethod)
 );
 
 const schemaComposer = new SchemaComposer();
@@ -158,20 +155,20 @@ schemaComposer.Query.addFields({
     ...UnitConversionQuery,
     ...ConversionRuleQuery,
     ...NutritionalInfoQuery,
-    ...usdaQueries.Query,
-    ...isAdminQueries.Query,
+    ...usdaQueries,
+    ...isAdminQueries,
 });
 schemaComposer.Mutation.addFields({
     ...UserMutation,
-    ...isAdminMutations.Mutation,
-    ...isAuthenticatedMutations.Mutation,
-    ...isRecipeOwnerOrAdminMutations.Mutation,
-    ...isUnitOwnerOrAdminMutations.Mutation,
-    ...isSizeOwnerOrAdminMutations.Mutation,
-    ...isIngredientOwnerOrAdminMutations.Mutation,
-    ...isPrepMethodOwnerOrAdminMutations.Mutation,
-    ...isNutritionalInfoOwnerOrAdminMutations.Mutation,
-    ...isImageOwnerOrAdminMutations.Mutation,
+    ...isAdminMutations,
+    ...isAuthenticatedMutations,
+    ...isRecipeOwnerOrAdminMutations,
+    ...isUnitOwnerOrAdminMutations,
+    ...isSizeOwnerOrAdminMutations,
+    ...isIngredientOwnerOrAdminMutations,
+    ...isPrepMethodOwnerOrAdminMutations,
+    ...isNutritionalInfoOwnerOrAdminMutations,
+    ...isImageOwnerOrAdminMutations,
 });
 
 export const schema = schemaComposer.buildSchema();

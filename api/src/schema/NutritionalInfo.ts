@@ -19,9 +19,6 @@ NutritionalInfoTC.addResolver({
 });
 
 export const NutritionalInfoQuery = {
-    // Reads are public: recipes and ingredients are readable without a session
-    // (`view/recipe/:titleIdentifier` is not behind RequireAuth), and nutritional
-    // info is derived reference data, not owner-scoped.
     nutritionalInfoByIngredient: NutritionalInfoTC.mongooseResolvers.findOne(),
     nutritionalInfosByIngredientIds: schemaComposer.createResolver({
         name: 'nutritionalInfosByIngredientIds',

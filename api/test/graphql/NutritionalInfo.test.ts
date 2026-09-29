@@ -3,18 +3,19 @@ import { readFileSync } from 'fs';
 import { assert } from 'chai';
 import mongoose from 'mongoose';
 import { restore, stub } from 'sinon';
+import { ApolloServer } from '@apollo/server';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { Unit } from '../../src/models/Unit.js';
 import { User } from '../../src/models/User.js';
-import { __testables } from '../../src/schema/Usda.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { resetRateLimits } from '../../src/middleware/rateLimit.js';
 import { UnitConversion } from '../../src/models/UnitConversion.js';
-import { NutritionalInfo } from '../../src/models/NutritionalInfo.js';
+import { MappedPortion, __testables } from '../../src/schema/Usda.js';
 import { createAdmin, createUnverifiedUser, createUser } from '../utils/data.js';
 import { USDA_FOOD_ITEM_LIMIT, USDA_SEARCH_LIMIT } from '../../src/schema/index.js';
+import { MacroNutrients, NutritionalInfo } from '../../src/models/NutritionalInfo.js';
 
 // ---------- helpers ----------
 
@@ -132,16 +133,45 @@ function loadFixture(name: string): Record<string, unknown> {
     return JSON.parse(readFileSync(url, 'utf-8'));
 }
 
-interface Portion {
+interface UsdaFoodItem {
+    fdcId: number;
     description: string;
-    amount: number | null;
-    modifier: string | null;
-    gramWeight: number;
-    kind: string;
-    millilitres: number | null;
-    impliedDensity: number | null;
-    ambiguous: boolean;
+    dataType: string | null;
+    caloriesPer100g: number | null;
+    proteinPer100g: number | null;
+    carbsPer100g: number | null;
+    fatPer100g: number | null;
+    servingSize: number | null;
+    servingSizeUnit: string | null;
+    householdServingFullText: string | null;
+    portions: MappedPortion[];
 }
+
+interface NutritionalInfoRecord {
+    _id: string;
+    ingredient: string;
+    usdaFdcId: number | null;
+    perGram: MacroNutrients | null;
+    perUnit: MacroNutrients | null;
+}
+
+// Response shapes for the operations above.
+type CreateOneData = { nutritionalInfoCreateOne: { record: NutritionalInfoRecord } };
+type UpdateByIdData = { nutritionalInfoUpdateById: { record: NutritionalInfoRecord } };
+type RemoveByIdData = { nutritionalInfoRemoveById: { recordId: string } };
+type ByIngredientData = { nutritionalInfoByIngredient: NutritionalInfoRecord | null };
+type ByIngredientIdsData = { nutritionalInfosByIngredientIds: NutritionalInfoRecord[] };
+type UsdaSearchData = {
+    usdaSearch: (Pick<
+        UsdaFoodItem,
+        | 'fdcId'
+        | 'description'
+        | 'caloriesPer100g'
+        | 'proteinPer100g'
+        | 'carbsPer100g'
+        | 'fatPer100g'
+    > & { brandOwner: string | null; portions: MappedPortion[] })[];
+};
 
 function makeContext(user: unknown) {
     return {
@@ -164,7 +194,7 @@ async function createOtherUser() {
     );
 }
 
-function dropCollections(done) {
+function dropCollections(done: Mocha.Done) {
     const collections = mongoose.connection.collections;
     const drops: Promise<boolean>[] = [];
     for (const name of ['users', 'ingredients', 'nutritionalinfos']) {
@@ -189,8 +219,8 @@ describe('nutritionalInfoCreateOne', function () {
     afterEach(dropCollections);
 
     it('should create nutritional info as ingredient owner (perGram only)', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
-        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const response = await this.apolloServer.executeOperation(
             {
                 query: CREATE_MUTATION,
@@ -206,16 +236,17 @@ describe('nutritionalInfoCreateOne', function () {
         );
         assert.equal(response.body.kind, 'single');
         assert.isUndefined(response.body.singleResult.errors);
-        const record = (response.body.singleResult.data as any).nutritionalInfoCreateOne.record;
+        const record = (response.body.singleResult.data as CreateOneData).nutritionalInfoCreateOne
+            .record;
         assert.equal(record.ingredient, ingredient._id.toString());
         assert.equal(record.usdaFdcId, 171077);
-        assert.approximately(record.perGram.calories, 1.65, 0.001);
+        assert.approximately(record.perGram!.calories, 1.65, 0.001);
         assert.isNull(record.perUnit);
     });
 
     it('should create nutritional info with both perGram and perUnit', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
-        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const response = await this.apolloServer.executeOperation(
             {
                 query: CREATE_MUTATION,
@@ -231,14 +262,15 @@ describe('nutritionalInfoCreateOne', function () {
         );
         assert.equal(response.body.kind, 'single');
         assert.isUndefined(response.body.singleResult.errors);
-        const record = (response.body.singleResult.data as any).nutritionalInfoCreateOne.record;
-        assert.approximately(record.perGram.calories, 1.65, 0.001);
-        assert.approximately(record.perUnit.calories, 78, 0.001);
+        const record = (response.body.singleResult.data as CreateOneData).nutritionalInfoCreateOne
+            .record;
+        assert.approximately(record.perGram!.calories, 1.65, 0.001);
+        assert.approximately(record.perUnit!.calories, 78, 0.001);
     });
 
     it('should NOT create nutritional info as non-owner', async function () {
-        const owner = await User.findOne({ username: 'testuser1' });
-        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const owner = await User.findOne({ username: 'testuser1' }).orFail();
+        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         assert.equal(String(ingredient.owner), String(owner._id));
 
         // Create a second (non-owner) user
@@ -263,7 +295,7 @@ describe('nutritionalInfoCreateOne', function () {
 
     it('should allow admin to create nutritional info for any ingredient', async function () {
         const admin = await createAdmin();
-        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
 
         const response = await this.apolloServer.executeOperation(
             {
@@ -279,13 +311,14 @@ describe('nutritionalInfoCreateOne', function () {
         );
         assert.equal(response.body.kind, 'single');
         assert.isUndefined(response.body.singleResult.errors);
-        const record = (response.body.singleResult.data as any).nutritionalInfoCreateOne.record;
-        assert.approximately(record.perGram.calories, 1.65, 0.001);
+        const record = (response.body.singleResult.data as CreateOneData).nutritionalInfoCreateOne
+            .record;
+        assert.approximately(record.perGram!.calories, 1.65, 0.001);
     });
 
     it('should NOT create nutritional info with neither perGram nor perUnit', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
-        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
 
         const response = await this.apolloServer.executeOperation(
             {
@@ -315,8 +348,8 @@ describe('nutritionalInfoUpdateById', function () {
     afterEach(dropCollections);
 
     it('should update nutritional info as ingredient owner', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
-        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
 
         // Seed a NutritionalInfo document directly
         const ni = await new NutritionalInfo({
@@ -338,13 +371,14 @@ describe('nutritionalInfoUpdateById', function () {
         );
         assert.equal(response.body.kind, 'single');
         assert.isUndefined(response.body.singleResult.errors);
-        const record = (response.body.singleResult.data as any).nutritionalInfoUpdateById.record;
-        assert.approximately(record.perGram.calories, 2.0, 0.001);
+        const record = (response.body.singleResult.data as UpdateByIdData).nutritionalInfoUpdateById
+            .record;
+        assert.approximately(record.perGram!.calories, 2.0, 0.001);
     });
 
     it('should NOT reassign the record to an ingredient owned by someone else', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
-        const ownIngredient = await Ingredient.findOne({ name: 'chicken' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const ownIngredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const otherUser = await createOtherUser();
         const otherIngredient = await new Ingredient({
             name: 'beef',
@@ -372,13 +406,13 @@ describe('nutritionalInfoUpdateById', function () {
         assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors, 'Should fail for a foreign ingredient');
         assert.equal(response.body.singleResult.errors[0].message, 'You are not authorised!');
-        const unchanged = await NutritionalInfo.findById(ni._id);
+        const unchanged = await NutritionalInfo.findById(ni._id).orFail();
         assert.equal(String(unchanged.ingredient), String(ownIngredient._id));
     });
 
     it("should allow an update that repeats the record's own ingredient", async function () {
-        const user = await User.findOne({ username: 'testuser1' });
-        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const ni = await new NutritionalInfo({
             ingredient: ingredient._id,
             perGram: VALID_PER_GRAM,
@@ -399,12 +433,13 @@ describe('nutritionalInfoUpdateById', function () {
         );
         assert.equal(response.body.kind, 'single');
         assert.isUndefined(response.body.singleResult.errors);
-        const record = (response.body.singleResult.data as any).nutritionalInfoUpdateById.record;
-        assert.approximately(record.perGram.calories, 3.0, 0.001);
+        const record = (response.body.singleResult.data as UpdateByIdData).nutritionalInfoUpdateById
+            .record;
+        assert.approximately(record.perGram!.calories, 3.0, 0.001);
     });
 
     it('should NOT update nutritional info as non-owner', async function () {
-        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const ni = await new NutritionalInfo({
             ingredient: ingredient._id,
             perGram: VALID_PER_GRAM,
@@ -435,8 +470,8 @@ describe('nutritionalInfoRemoveById', function () {
     afterEach(dropCollections);
 
     it('should remove nutritional info as ingredient owner', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
-        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
 
         const ni = await new NutritionalInfo({
             ingredient: ingredient._id,
@@ -452,7 +487,8 @@ describe('nutritionalInfoRemoveById', function () {
         );
         assert.equal(response.body.kind, 'single');
         assert.isUndefined(response.body.singleResult.errors);
-        const result = (response.body.singleResult.data as any).nutritionalInfoRemoveById;
+        const result = (response.body.singleResult.data as RemoveByIdData)
+            .nutritionalInfoRemoveById;
         assert.equal(result.recordId, ni._id.toString());
 
         // Confirm it was actually deleted
@@ -461,7 +497,7 @@ describe('nutritionalInfoRemoveById', function () {
     });
 
     it('should NOT remove nutritional info as non-owner', async function () {
-        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const ni = await new NutritionalInfo({
             ingredient: ingredient._id,
             perGram: VALID_PER_GRAM,
@@ -495,8 +531,8 @@ describe('nutritionalInfoByIngredient', function () {
     afterEach(dropCollections);
 
     it('should return nutritional info for an ingredient', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
-        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
 
         await new NutritionalInfo({
             ingredient: ingredient._id,
@@ -512,14 +548,15 @@ describe('nutritionalInfoByIngredient', function () {
         );
         assert.equal(response.body.kind, 'single');
         assert.isUndefined(response.body.singleResult.errors);
-        const result = (response.body.singleResult.data as any).nutritionalInfoByIngredient;
+        const result = (response.body.singleResult.data as ByIngredientData)
+            .nutritionalInfoByIngredient;
         assert.isNotNull(result);
-        assert.approximately(result.perGram.calories, 1.65, 0.001);
+        assert.approximately(result!.perGram!.calories, 1.65, 0.001);
     });
 
     it('should return null when ingredient has no nutritional info', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
-        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
 
         const response = await this.apolloServer.executeOperation(
             {
@@ -530,7 +567,8 @@ describe('nutritionalInfoByIngredient', function () {
         );
         assert.equal(response.body.kind, 'single');
         assert.isUndefined(response.body.singleResult.errors);
-        const result = (response.body.singleResult.data as any).nutritionalInfoByIngredient;
+        const result = (response.body.singleResult.data as ByIngredientData)
+            .nutritionalInfoByIngredient;
         assert.isNull(result);
     });
 });
@@ -542,8 +580,8 @@ describe('nutritionalInfosByIngredientIds', function () {
     afterEach(dropCollections);
 
     it('should return nutritional infos for multiple ingredients', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
-        const ingredient1 = await Ingredient.findOne({ name: 'chicken' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const ingredient1 = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const ingredient2 = await new Ingredient({
             name: 'tomato',
             pluralName: 'tomatoes',
@@ -572,7 +610,8 @@ describe('nutritionalInfosByIngredientIds', function () {
         );
         assert.equal(response.body.kind, 'single');
         assert.isUndefined(response.body.singleResult.errors);
-        const results = (response.body.singleResult.data as any).nutritionalInfosByIngredientIds;
+        const results = (response.body.singleResult.data as ByIngredientIdsData)
+            .nutritionalInfosByIngredientIds;
         assert.equal(results.length, 2);
     });
 });
@@ -594,7 +633,7 @@ describe('usdaSearch', function () {
     });
 
     it('should return mapped USDA search results', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
 
         const mockResponse = {
             foods: [
@@ -626,7 +665,7 @@ describe('usdaSearch', function () {
         );
         assert.equal(response.body.kind, 'single');
         assert.isUndefined(response.body.singleResult.errors);
-        const results = (response.body.singleResult.data as any).usdaSearch;
+        const results = (response.body.singleResult.data as UsdaSearchData).usdaSearch;
         assert.equal(results.length, 1);
         assert.equal(results[0].fdcId, 171077);
         assert.equal(results[0].description, 'Chicken, broilers or fryers');
@@ -639,7 +678,7 @@ describe('usdaSearch', function () {
     });
 
     it('should clamp a non-positive pageSize instead of spending a USDA request on a 400', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
 
         const fetchStub = stub(global, 'fetch').resolves({
             ok: true,
@@ -697,7 +736,7 @@ describe('usdaSearch', function () {
     });
 
     it('should rate limit a single user before the shared USDA quota is spent', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const fetchStub = stub(global, 'fetch').resolves({
             ok: true,
             json: async () => ({ foods: [] }),
@@ -737,25 +776,29 @@ describe('usdaFoodItem', function () {
     });
 
     /** Stubs fetch with `item` and runs usdaFoodItem, returning the resolved item. */
-    async function fetchItem(server, user: unknown, item: Record<string, unknown>) {
+    async function fetchItem(
+        server: ApolloServer,
+        user: unknown,
+        item: Record<string, unknown>
+    ): Promise<UsdaFoodItem> {
         stub(global, 'fetch').resolves({ ok: true, json: async () => item } as Response);
-        const response = await server.executeOperation(
+        const response = await server.executeOperation<{ usdaFoodItem: UsdaFoodItem }>(
             { query: USDA_FOOD_ITEM, variables: { fdcId: item['fdcId'] } },
             makeContext(user)
         );
-        assert.equal(response.body.kind, 'single');
+        assert(response.body.kind === 'single');
         assert.isUndefined(response.body.singleResult.errors);
-        return (response.body.singleResult.data as any).usdaFoodItem;
+        return response.body.singleResult.data!.usdaFoodItem;
     }
 
-    function portionByDescription(portions: Portion[], description: string): Portion {
+    function portionByDescription(portions: MappedPortion[], description: string): MappedPortion {
         const found = portions.find((p) => p.description === description);
         assert.isDefined(found, `No portion described as "${description}"`);
         return found!;
     }
 
     it('should return a mapped USDA food item', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const result = await fetchItem(this.apolloServer, user, loadFixture('no-portions-171077'));
 
         assert.equal(result.fdcId, 171077);
@@ -763,14 +806,14 @@ describe('usdaFoodItem', function () {
     });
 
     it('should expose dataType, which distinguishes Foundation from Branded', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const result = await fetchItem(this.apolloServer, user, loadFixture('egg-171287'));
 
         assert.equal(result.dataType, 'SR Legacy');
     });
 
     it('should request format=full, not format=abridged', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const fetchStub = stub(global, 'fetch').resolves({
             ok: true,
             json: async () => loadFixture('egg-171287'),
@@ -788,7 +831,7 @@ describe('usdaFoodItem', function () {
     });
 
     it('should extract macros unchanged under format=full', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         // Full-format entries nest the id under `nutrient.id` rather than `nutrientId`.
         const result = await fetchItem(this.apolloServer, user, loadFixture('egg-171287'));
 
@@ -799,9 +842,9 @@ describe('usdaFoodItem', function () {
     });
 
     it('should return egg portions sorted by sequence number', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const result = await fetchItem(this.apolloServer, user, loadFixture('egg-171287'));
-        const portions: Portion[] = result.portions;
+        const portions = result.portions;
 
         assert.equal(portions.length, 6);
         assert.deepEqual(
@@ -824,9 +867,9 @@ describe('usdaFoodItem', function () {
     });
 
     it('should flag "cup (4.86 large eggs)" as ambiguous and never as an item', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const result = await fetchItem(this.apolloServer, user, loadFixture('egg-171287'));
-        const portions: Portion[] = result.portions;
+        const portions = result.portions;
 
         const cup = portionByDescription(portions, '1 cup (4.86 large eggs)');
         assert.isTrue(cup.ambiguous);
@@ -838,9 +881,9 @@ describe('usdaFoodItem', function () {
     });
 
     it('should derive a consistent density from both olive oil portions', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const result = await fetchItem(this.apolloServer, user, loadFixture('olive-oil-171413'));
-        const portions: Portion[] = result.portions;
+        const portions = result.portions;
 
         const cup = portionByDescription(portions, '1 cup');
         const tbsp = portionByDescription(portions, '1 tablespoon');
@@ -849,7 +892,7 @@ describe('usdaFoodItem', function () {
     });
 
     it('should use the US customary cup of 236.588 ml', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const result = await fetchItem(this.apolloServer, user, loadFixture('olive-oil-171413'));
 
         const cup = portionByDescription(result.portions, '1 cup');
@@ -857,7 +900,7 @@ describe('usdaFoodItem', function () {
     });
 
     it('should derive the reference density for all-purpose flour', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const result = await fetchItem(this.apolloServer, user, loadFixture('flour-168894'));
 
         const cup = portionByDescription(result.portions, '1 cup');
@@ -865,9 +908,9 @@ describe('usdaFoodItem', function () {
     });
 
     it('should report no item portions for a volume-only food', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const result = await fetchItem(this.apolloServer, user, loadFixture('olive-oil-171413'));
-        const portions: Portion[] = result.portions;
+        const portions = result.portions;
 
         assert.equal(portions.length, 2);
         assert.isTrue(portions.every((p) => p.kind === 'VOLUME'));
@@ -879,9 +922,9 @@ describe('usdaFoodItem', function () {
     });
 
     it('should classify a RACC portion as SERVING, not ITEM', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const result = await fetchItem(this.apolloServer, user, loadFixture('garlic-1104647'));
-        const portions: Portion[] = result.portions;
+        const portions = result.portions;
 
         assert.equal(portions.length, 1);
         assert.equal(portions[0].gramWeight, 85);
@@ -894,7 +937,7 @@ describe('usdaFoodItem', function () {
     });
 
     it('should flag an NLEA serving as ambiguous', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const result = await fetchItem(this.apolloServer, user, loadFixture('banana-173944'));
 
         const nlea = portionByDescription(result.portions, '1 NLEA serving');
@@ -902,7 +945,7 @@ describe('usdaFoodItem', function () {
     });
 
     it('should flag a "yields" portion as ambiguous', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const result = await fetchItem(this.apolloServer, user, loadFixture('lemon-juice-167747'));
 
         // The juice from a lemon, not a lemon.
@@ -911,9 +954,9 @@ describe('usdaFoodItem', function () {
     });
 
     it('should classify a slice as an ambiguous ITEM and an ounce as WEIGHT', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const result = await fetchItem(this.apolloServer, user, loadFixture('carrot-170393'));
-        const portions: Portion[] = result.portions;
+        const portions = result.portions;
 
         const slice = portionByDescription(portions, '1 slice');
         assert.equal(slice.kind, 'ITEM');
@@ -928,9 +971,9 @@ describe('usdaFoodItem', function () {
     });
 
     it('should use portionDescription, not the numeric FNDDS modifier code, for the label', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const result = await fetchItem(this.apolloServer, user, loadFixture('anchovy-2706232'));
-        const portions: Portion[] = result.portions;
+        const portions = result.portions;
 
         assert.equal(portions.length, 3);
         assert.deepEqual(
@@ -942,9 +985,9 @@ describe('usdaFoodItem', function () {
     });
 
     it('should classify FNDDS "Quantity not specified" as SERVING, not ITEM', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const result = await fetchItem(this.apolloServer, user, loadFixture('anchovy-2706232'));
-        const portions: Portion[] = result.portions;
+        const portions = result.portions;
 
         const notSpecified = portionByDescription(portions, 'Quantity not specified');
         assert.equal(notSpecified.kind, 'SERVING');
@@ -955,9 +998,9 @@ describe('usdaFoodItem', function () {
     });
 
     it('should build one SERVING portion from a branded servingSize', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const result = await fetchItem(this.apolloServer, user, loadFixture('branded-2340821'));
-        const portions: Portion[] = result.portions;
+        const portions = result.portions;
 
         assert.equal(result.servingSize, 17);
         assert.equal(result.servingSizeUnit, 'g');
@@ -969,14 +1012,14 @@ describe('usdaFoodItem', function () {
     });
 
     it('should return an empty portion list when the item has no portion data', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const result = await fetchItem(this.apolloServer, user, loadFixture('no-portions-171077'));
 
         assert.deepEqual(result.portions, []);
     });
 
     it('should classify every known volume unit as VOLUME', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         // A gap in the table silently promotes a volume word to ITEM, so loop the
         // whole table rather than spot-checking a few keys.
         const units = Object.keys(__testables.VOLUME_ML);
@@ -994,7 +1037,7 @@ describe('usdaFoodItem', function () {
         };
 
         const result = await fetchItem(this.apolloServer, user, item);
-        const portions: Portion[] = result.portions;
+        const portions = result.portions;
 
         assert.equal(portions.length, units.length);
         for (const portion of portions) {
@@ -1005,7 +1048,7 @@ describe('usdaFoodItem', function () {
     });
 
     it('should return null millilitres for an unrecognised modifier', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const result = await fetchItem(this.apolloServer, user, loadFixture('egg-171287'));
 
         // Not an error: "1 large" carries no volume information at all.
@@ -1016,7 +1059,7 @@ describe('usdaFoodItem', function () {
     });
 
     it('should derive densities without reading Unit or UnitConversion', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         // This is the state of the production database: populateUnits() creates no
         // conversions, so a measureType-based lookup would return nothing at all.
         assert.equal(await Unit.countDocuments(), 0);
@@ -1032,9 +1075,9 @@ describe('usdaFoodItem', function () {
     });
 
     it('should classify a Survey volume portion as VOLUME with the correct density', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const result = await fetchItem(this.apolloServer, user, loadFixture('vegan-mayo-2710205'));
-        const portions: Portion[] = result.portions;
+        const portions = result.portions;
 
         const cup = portionByDescription(portions, '1 cup');
         assert.equal(cup.kind, 'VOLUME');
@@ -1043,9 +1086,9 @@ describe('usdaFoodItem', function () {
     });
 
     it("should agree on density between a Survey record's cup and tablespoon portions", async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const result = await fetchItem(this.apolloServer, user, loadFixture('vegan-mayo-2710205'));
-        const portions: Portion[] = result.portions;
+        const portions = result.portions;
 
         const cup = portionByDescription(portions, '1 cup');
         const tbsp = portionByDescription(portions, '1 tablespoon');
@@ -1054,7 +1097,7 @@ describe('usdaFoodItem', function () {
     });
 
     it('should derive a density from a single Survey volume portion', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const result = await fetchItem(this.apolloServer, user, loadFixture('soy-sauce-2707442'));
 
         const tbsp = portionByDescription(result.portions, '1 tablespoon');
@@ -1062,7 +1105,7 @@ describe('usdaFoodItem', function () {
     });
 
     it('should leave Survey non-volume portions unaffected', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const mayo = await fetchItem(this.apolloServer, user, loadFixture('vegan-mayo-2710205'));
         assert.equal(portionByDescription(mayo.portions, 'Quantity not specified').kind, 'SERVING');
 
@@ -1072,7 +1115,7 @@ describe('usdaFoodItem', function () {
     });
 
     it('should classify a Survey mass portion as WEIGHT, not ITEM', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const item = {
             fdcId: 999998,
             description: 'Synthetic Survey mass portion',
@@ -1096,7 +1139,7 @@ describe('usdaFoodItem', function () {
     });
 
     it('should parse fraction and mixed-number amounts embedded in Survey labels', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const item = {
             fdcId: 999997,
             description: 'Synthetic Survey fractional amounts',
@@ -1121,14 +1164,14 @@ describe('usdaFoodItem', function () {
         };
 
         const result = await fetchItem(this.apolloServer, user, item);
-        const portions: Portion[] = result.portions;
+        const portions = result.portions;
 
         assert.closeTo(portionByDescription(portions, '1/2 cup').millilitres!, 118.294, 0.001);
         assert.closeTo(portionByDescription(portions, '1 1/2 cups').millilitres!, 354.882, 0.001);
     });
 
     it('should yield no density for a zero-amount Survey portion, without throwing', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const item = {
             fdcId: 999996,
             description: 'Synthetic Survey zero amount',
@@ -1153,7 +1196,7 @@ describe('usdaFoodItem', function () {
     });
 
     it('should flag ambiguous qualifiers on Survey labels the same as SR Legacy', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const item = {
             fdcId: 999995,
             description: 'Synthetic Survey ambiguity check',
@@ -1178,14 +1221,14 @@ describe('usdaFoodItem', function () {
         };
 
         const result = await fetchItem(this.apolloServer, user, item);
-        const portions: Portion[] = result.portions;
+        const portions = result.portions;
 
         assert.isTrue(portionByDescription(portions, '1 fl oz (with ice)').ambiguous);
         assert.isFalse(portionByDescription(portions, '1 cup').ambiguous);
     });
 
     it('should rate limit a single user before the shared USDA quota is spent', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
 
         let limited: { message: string; extensions?: { code?: string } } | undefined;
         for (let i = 1; i <= USDA_FOOD_ITEM_LIMIT + 1; i++) {

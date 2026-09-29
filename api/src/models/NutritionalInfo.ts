@@ -1,7 +1,7 @@
 import { Document, Schema, Types, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 
-interface MacroNutrients {
+export interface MacroNutrients {
     calories: number; // kcal
     protein: number; // g
     carbs: number; // g
