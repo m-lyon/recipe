@@ -7,9 +7,9 @@ import { Recipe } from '../../src/models/Recipe.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 
-const getMockRecipe = async (quantity: string = '1') => {
-    const user = await User.findOne({ firstName: 'Tester1' });
-    const ingredient = await Ingredient.findOne({ name: 'test ingredient' });
+const getMockRecipe = async (quantity: string | null = '1') => {
+    const user = await User.findOne({ firstName: 'Tester1' }).orFail();
+    const ingredient = await Ingredient.findOne({ name: 'test ingredient' }).orFail();
 
     const recipeIngredient = {
         quantity: quantity,
@@ -82,7 +82,7 @@ describe('Quantity Validation', function () {
             });
     });
 
-    const assertValidQuantity = async (quantity: string) => {
+    const assertValidQuantity = async (quantity: string | null) => {
         const recipe = await getMockRecipe(quantity);
         try {
             await recipe.save();
@@ -98,7 +98,7 @@ describe('Quantity Validation', function () {
             await recipe.save();
             assert.fail(`Invalid quantity '${quantity}' saved`);
         } catch (error) {
-            assert.include(error.message, 'Invalid quantity format');
+            assert.include((error as Error).message, 'Invalid quantity format');
         }
     };
 

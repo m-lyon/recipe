@@ -1,5 +1,6 @@
 import { assert } from 'chai';
 import mongoose from 'mongoose';
+import type { GraphQLResponse } from '@apollo/server';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { createUser } from '../utils/data.js';
@@ -8,7 +9,11 @@ import { Recipe } from '../../src/models/Recipe.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { createRecipeIngredientData, removeRecipeIngredientData } from './Recipe.test.js';
 
-async function createPrepMethod(context, user, record) {
+async function createPrepMethod(
+    context: Mocha.Context,
+    user: unknown,
+    record: Record<string, unknown>
+) {
     const query = `
     mutation PrepMethodCreateOne($record: CreateOnePrepMethodCreateInput!) {
         prepMethodCreateOne(record: $record) {
@@ -33,8 +38,8 @@ async function createPrepMethod(context, user, record) {
     return response;
 }
 
-const parseCreatedPrepMethod = (response) => {
-    assert.equal(response.body.kind, 'single');
+const parseCreatedPrepMethod = (response: GraphQLResponse) => {
+    assert(response.body.kind === 'single');
     assert.isUndefined(response.body.singleResult.errors);
 
     const record = (
@@ -110,7 +115,12 @@ describe('prepMethodUpdateById', () => {
             });
     });
 
-    async function updatePrepMethod(context, user, id, record) {
+    async function updatePrepMethod(
+        context: Mocha.Context,
+        user: unknown,
+        id: unknown,
+        record: Record<string, unknown>
+    ) {
         const query = `
         mutation UpdatePrepMethodById($id: MongoID!, $record: UpdateByIdPrepMethodInput!) {
             prepMethodUpdateById(_id: $id, record: $record) {
@@ -201,7 +211,7 @@ describe('prepMethodRemoveById', () => {
 
     afterEach(removeRecipeIngredientData);
 
-    async function deletePrepMethod(context, user, id) {
+    async function deletePrepMethod(context: Mocha.Context, user: unknown, id: unknown) {
         const query = `
         mutation PrepMethodRemoveById($id: MongoID!) {
             prepMethodRemoveById(_id: $id) {

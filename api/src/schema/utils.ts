@@ -1,20 +1,27 @@
 import { GraphQLError } from 'graphql';
-import { Document, Model } from 'mongoose';
-import { ObjectTypeComposer } from 'graphql-compose';
+import { Document, Error as MongooseError, Model } from 'mongoose';
+import { ObjectTypeComposer, ResolverResolveParams } from 'graphql-compose';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { findById } from 'graphql-compose-mongoose/lib/resolvers/findById.js';
+
+// Mongoose sets `_message` (e.g. "Recipe validation failed") but doesn't declare it
+type ValidationError = MongooseError.ValidationError & { _message: string };
 
 export async function validateDoc(doc: Document) {
     try {
         await doc.validate();
     } catch (errors) {
-        const errorList = Object.keys(errors.errors).map((key) => {
-            const { message, value, path } = errors.errors[key];
+        if (!(errors instanceof MongooseError.ValidationError)) {
+            throw errors;
+        }
+        const { _message, errors: fieldErrors } = errors as ValidationError;
+        const errorList = Object.keys(fieldErrors).map((key) => {
+            const { message, value, path } = fieldErrors[key];
             return { path, message, value };
         });
         // Just show the first error, if more than one, otherwise formatting is too verbose
         const error = errorList[0];
-        throw new GraphQLError(`${errors._message}: ${error.path}: ${error.message}`, {
+        throw new GraphQLError(`${_message}: ${error.path}: ${error.message}`, {
             extensions: {
                 code: ApolloServerErrorCode.GRAPHQL_VALIDATION_FAILED,
                 value: error.value,
@@ -23,11 +30,13 @@ export async function validateDoc(doc: Document) {
     }
 }
 
+type MutationResolveParams<TArgs> = ResolverResolveParams<unknown, unknown, TArgs>;
+
 export function createOneResolver<TDoc extends Document>(
     model: Model<TDoc>,
     tc: ObjectTypeComposer<TDoc>
 ) {
-    const resolve = async (rp) => {
+    const resolve = async (rp: MutationResolveParams<{ record?: Record<string, unknown> }>) => {
         const recordData = rp?.args?.record;
 
         if (!(typeof recordData === 'object') || Object.keys(recordData).length === 0) {
@@ -55,7 +64,9 @@ export function updateByIdResolver<TDoc extends Document>(
     tc: ObjectTypeComposer<TDoc>
 ) {
     const findByIdResolver = findById(model, tc);
-    const resolve = async (rp) => {
+    const resolve = async (
+        rp: MutationResolveParams<{ record?: Record<string, unknown>; _id: string }>
+    ) => {
         const recordData = rp?.args?.record;
 
         if (!(typeof recordData === 'object')) {

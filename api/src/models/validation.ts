@@ -25,7 +25,7 @@ async function findDuplicatesInAdminsAndUserScope(
 }
 
 export function uniqueInAdminsAndUser(model: string, attribute: string, message?: string) {
-    async function validator(value: string) {
+    async function validator(this: any, value: string) {
         if (this.unique !== undefined && !this.unique) {
             return true;
         }
@@ -45,7 +45,7 @@ export function uniqueInAdminsAndUser(model: string, attribute: string, message?
 }
 
 export function uniqueRecipeTitleInAdminsAndUser(message?: string) {
-    async function validator(value: string) {
+    async function validator(this: any, value: string) {
         if (this.unique !== undefined && !this.unique) {
             return true;
         }
@@ -96,7 +96,7 @@ export function uniqueRecipeTitleInAdminsAndUser(message?: string) {
 }
 
 export function unique(model: string, attribute: string) {
-    async function validator(value: string) {
+    async function validator(this: any, value: string) {
         if (this._id) {
             const count = await this.model(model).countDocuments({
                 $and: [
