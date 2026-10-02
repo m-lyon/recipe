@@ -7,12 +7,14 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { renderPage } from '@recipe/utils/tests';
 import { mockKilogram } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockRecipeIngredientIdOne } from '@recipe/graphql/__mocks__/ids';
 import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
+import { mockRecipeIngredientIdSixteen } from '@recipe/graphql/__mocks__/ids';
 import { GetNutritionalInfosByIngredientIdsQuery } from '@recipe/graphql/generated';
 import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockChickenId, mockRecipeIngredientIdOne } from '@recipe/graphql/__mocks__/ids';
 import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
 import { mockChicken, mockRhurbarbPie } from '@recipe/graphql/queries/__mocks__/ingredient';
+import { mockChickenId, mockRecipeIngredientIdFifteen } from '@recipe/graphql/__mocks__/ids';
 import { GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS } from '@recipe/graphql/queries/nutritionalInfo';
 
 import { IngredientsTab } from '../IngredientsTab';
@@ -141,7 +143,7 @@ describe('IngredientsTab nutritional info integration', () => {
                             name: null,
                             ingredients: [
                                 {
-                                    _id: '60f4d2e5c3d5a0a4f1b9c0ec',
+                                    _id: mockRecipeIngredientIdFifteen,
                                     __typename: 'RecipeIngredient',
                                     quantity: '1',
                                     unit: mockKilogram,
@@ -214,7 +216,7 @@ describe('IngredientsTab nutritional info integration', () => {
                             name: null,
                             ingredients: [
                                 {
-                                    _id: '60f4d2e5c3d5a0a4f1b9c0ec',
+                                    _id: mockRecipeIngredientIdFifteen,
                                     __typename: 'RecipeIngredient',
                                     quantity: '1',
                                     unit: mockKilogram,
@@ -265,7 +267,7 @@ describe('IngredientsTab nutritional info integration', () => {
                             name: null,
                             ingredients: [
                                 {
-                                    _id: '60f4d2e5c3d5a0a4f1b9c0ed',
+                                    _id: mockRecipeIngredientIdSixteen,
                                     __typename: 'RecipeIngredient',
                                     quantity: '1',
                                     unit: null,

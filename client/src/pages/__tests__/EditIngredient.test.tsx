@@ -24,8 +24,6 @@ const renderComponent = (mocks: MockedResponses = []) => {
     return renderPage(routes, [
         mockGetIngredients,
         mockCurrentUserAdmin,
-        // EditIngredient prefetches nutritional info for every ingredient alongside the
-        // ingredient list itself, in a single batch query.
         mockGetNutritionalInfosForEditIngredient,
         ...mocks,
     ]);

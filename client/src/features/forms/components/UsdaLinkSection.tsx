@@ -500,10 +500,13 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                         </HStack>
 
                         {searchLoading && (
-                            <Stack spacing={2}>
-                                <Skeleton height='40px' />
-                                <Skeleton height='40px' />
-                                <Skeleton height='40px' />
+                            <Stack spacing={3}>
+                                <Skeleton height='10px' width='40%' />
+                                <Skeleton height='10px' />
+                                <Skeleton height='10px' />
+                                <Skeleton height='10px' width='40%' />
+                                <Skeleton height='10px' />
+                                <Skeleton height='10px' />
                             </Stack>
                         )}
 

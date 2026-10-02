@@ -38,7 +38,5 @@ export function useNutritionalInfo(subsections: IngredientSubsectionView[], numS
         numServings
     );
 
-    // The conversions query runs separately: without it, every mass/volume ingredient
-    // is uncalculable, so a settled-looking (and wrong) total would render while it loads.
     return { ...result, loading: nutritionLoading || conversionsLoading };
 }

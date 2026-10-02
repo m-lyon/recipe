@@ -36,11 +36,10 @@ export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
 
             <Collapse in={open} id='nutrition-panel-content'>
                 {loading ? (
-                    <SimpleGrid cols={4} mt='xs'>
-                        <Skeleton height={40} />
-                        <Skeleton height={40} />
-                        <Skeleton height={40} />
-                        <Skeleton height={40} />
+                    <SimpleGrid cols={1} mt='xs' spacing='xs'>
+                        <Skeleton height={10} />
+                        <Skeleton height={10} />
+                        <Skeleton height={10} width='70%' />
                     </SimpleGrid>
                 ) : nothingCounted ? (
                     <Text c='dimmed' mt='xs'>

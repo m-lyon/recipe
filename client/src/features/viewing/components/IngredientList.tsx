@@ -1,8 +1,7 @@
 import { LuAsterisk } from 'react-icons/lu';
 import { TbLock, TbLockOpen2 } from 'react-icons/tb';
-import { PointerEvent, useRef, useState } from 'react';
+import { BoxProps, Tooltip, UnorderedList, VStack } from '@chakra-ui/react';
 import { Box, Flex, IconButton, ListItem, Spacer, Text } from '@chakra-ui/react';
-import { BoxProps, Tooltip, UnorderedList, VStack, useOutsideClick } from '@chakra-ui/react';
 
 import { useWakeLock } from '@recipe/common/hooks';
 import { changeQuantity } from '@recipe/utils/quantity';
@@ -11,18 +10,17 @@ import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 
 import { RecipeIngredient } from './RecipeIngredient';
 
-/** Hover does not exist on touch screens, so the tooltip is controlled: a mouse
- *  opens it on hover, a tap toggles it, and a tap elsewhere closes it. */
 function UncountedIngredientHint() {
-    const [isOpen, setIsOpen] = useState(false);
-    const ref = useRef<HTMLSpanElement>(null);
-    useOutsideClick({ ref, handler: () => setIsOpen(false) });
-
     return (
-        <Tooltip label='Not included in nutritional calculation' hasArrow isOpen={isOpen}>
+        <Tooltip
+            label='Not included in nutritional calculation'
+            hasArrow
+            closeOnClick={false}
+            closeOnPointerDown={false}
+        >
             <Box
                 as='span'
-                ref={ref}
+                tabIndex={0}
                 display='inline-flex'
                 verticalAlign='middle'
                 position='relative'
@@ -31,16 +29,6 @@ function UncountedIngredientHint() {
                 color='teal'
                 cursor='pointer'
                 aria-label='Not counted in nutrition'
-                aria-expanded={isOpen}
-                onPointerEnter={(e: PointerEvent<HTMLSpanElement>) =>
-                    e.pointerType === 'mouse' && setIsOpen(true)
-                }
-                onPointerLeave={(e: PointerEvent<HTMLSpanElement>) =>
-                    e.pointerType === 'mouse' && setIsOpen(false)
-                }
-                onPointerDown={(e: PointerEvent<HTMLSpanElement>) =>
-                    e.pointerType !== 'mouse' && setIsOpen((o) => !o)
-                }
             >
                 <LuAsterisk />
             </Box>

@@ -43,8 +43,6 @@ export const USDA_SEARCH = gql(`
     }
 `);
 
-/** Portions are only available from the single-item endpoint -- the USDA search
- *  endpoint returns none -- so selecting a search result triggers this second fetch. */
 export const USDA_FOOD_ITEM = gql(`
     query UsdaFoodItem($fdcId: Int!) {
         usdaFoodItem(fdcId: $fdcId) {

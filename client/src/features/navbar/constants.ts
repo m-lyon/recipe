@@ -7,7 +7,6 @@ export interface NavItem {
     children?: Array<NavItem>;
     href?: string;
     parentOnToggle?: () => void;
-    /** Only shown to admins, e.g. when the API restricts the page's actions to admins */
     adminOnly?: boolean;
 }
 export const USER_NAV_ITEMS: Array<NavItem> = [

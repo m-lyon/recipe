@@ -32,11 +32,6 @@ export const mockConversionRuleThree: ConversionRule = {
     baseUnitThreshold: 12,
     baseToUnitConversion: 48,
 };
-/**
- * Volume conversion rule: 1 cup = 240 ml (baseToUnitConversion = 240).
- * This rule's baseUnit is mockMilliliter (measureType: 'volume'), so convertToMl
- * will return a valid result, enabling the volume → density → grams pipeline.
- */
 export const mockConversionRuleFour: ConversionRule = {
     __typename: 'ConversionRule',
     _id: mockConversionRuleIdFour,
@@ -57,7 +52,6 @@ export const mockUnitConversionTwo: UnitConversion = {
     baseUnit: mockTeaspoon,
     rules: [mockConversionRuleThree, mockConversionRuleTwo],
 };
-/** Volume unit conversion group: base unit is milliliter (measureType: 'volume'). */
 export const mockUnitConversionVolume: UnitConversion = {
     __typename: 'UnitConversion',
     _id: mockUnitConversionIdThree,
