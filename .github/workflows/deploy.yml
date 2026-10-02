@@ -30,10 +30,10 @@ jobs:
     environment: test
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -90,7 +90,7 @@ jobs:
 
       - name: Load MongoDB binary cache
         id: cache-mongodb-binaries
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/mongodb-binaries
           key: ${{ runner.os }}-mongodb-${{ vars.MONGODB_VERSION }}
@@ -114,7 +114,6 @@ jobs:
         working-directory: ./cli
         run: npm run generate:test
 
-      # Cheap checks first, so formatting and type errors fail within a couple of minutes
       - name: Lint client
         working-directory: ./client
         run: npm run lint
@@ -153,18 +152,16 @@ jobs:
       #   working-directory: ./client
       #   run: npm run test:browser -- run
 
-  # Builds what was tested on the PR. Codegen needs the API running, so this uses the
-  # throwaway test MongoDB; no production secrets are available to this job.
   build:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-22.04 # matches the server
     environment: test
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -207,7 +204,6 @@ jobs:
           VITE_GRAPHQL_URL: http://localhost:${{ vars.PORT }}/
         run: npm run generate:test
 
-      # Served from the root of recipes.mattlyon.co.uk, with the API on the same origin at /api/
       - name: Build client
         working-directory: ./client
         env:
@@ -226,7 +222,7 @@ jobs:
           tar czf ../api.tgz dist node_modules package.json package-lock.json .nvmrc
 
       - name: Upload build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build
           path: |
@@ -248,7 +244,7 @@ jobs:
       id-token: write # lets the Tailscale action authenticate with GitHub's OIDC token
     steps:
       - name: Download build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build
 
@@ -295,8 +291,6 @@ jobs:
               exit 1
           }
 
-      # Files land group-readable by svc-recipe via the setgid target directory.
-      # The service can read its code but not modify it.
       - name: Deploy API
         run: rsync -rlpt --delete --chmod=D2750,F0640 ./api/ deploy-target:${{ env.API_TARGET }}
 
