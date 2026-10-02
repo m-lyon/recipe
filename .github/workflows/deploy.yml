@@ -4,10 +4,19 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'dev-docs/**'
   workflow_dispatch:
 
 permissions:
   contents: read
+
+# A new push to a PR cancels its in-flight run; runs on main always finish
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   REMOTE_USER: deploy-recipe
@@ -27,6 +36,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            api/package-lock.json
+            client/package-lock.json
+            cli/package-lock.json
 
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.11.0
@@ -35,15 +49,15 @@ jobs:
 
       - name: Install API dependencies
         working-directory: ./api
-        run: npm install
+        run: npm ci
 
       - name: Install client dependencies
         working-directory: ./client
-        run: npm install
+        run: npm ci
 
       - name: Install CLI dependencies
         working-directory: ./cli
-        run: npm install
+        run: npm ci
 
       - name: Create API environment file
         working-directory: ./api
@@ -85,10 +99,6 @@ jobs:
         working-directory: ./api
         run: npm run dl_memory
 
-      - name: Run API tests
-        working-directory: ./api
-        run: npm run start:test
-
       - name: Start server in development mode
         working-directory: ./api
         run: NODE_ENV=test npm run start &
@@ -100,17 +110,30 @@ jobs:
         working-directory: ./client
         run: npm run generate:test
 
-      - name: Test client
-        working-directory: ./client
-        run: npm run test -- run
-
       - name: Generate CLI GraphQL types
         working-directory: ./cli
         run: npm run generate:test
 
+      # Cheap checks first, so formatting and type errors fail within a couple of minutes
+      - name: Lint client
+        working-directory: ./client
+        run: npm run lint
+
+      - name: Type-check client
+        working-directory: ./client
+        run: npm run check-types
+
       - name: Lint CLI
         working-directory: ./cli
         run: npm run lint
+
+      - name: Run API tests
+        working-directory: ./api
+        run: npm run start:test
+
+      - name: Test client
+        working-directory: ./client
+        run: npm run test -- run
 
       - name: Build CLI
         working-directory: ./cli
@@ -140,6 +163,8 @@ jobs:
     runs-on: ubuntu-22.04 # matches the server
     environment: production
     needs: test
+    # PRs only run the tests; deploys come from main
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     # One group for the deploy target, so two runs never touch the server at once
     concurrency:
       group: deploy-production
