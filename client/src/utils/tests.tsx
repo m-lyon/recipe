@@ -10,6 +10,7 @@ import { RouteObject, RouterProvider, createMemoryRouter } from 'react-router-do
 import { theme } from '@recipe/theme';
 import { DELAY_LONG } from '@recipe/constants';
 import { getCache } from '@recipe/utils/cache';
+import { mockGetNutritionalInfosFallback } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 
 export async function enterCreateNewRecipePage(
     screen: Screen,
@@ -112,7 +113,10 @@ export function renderPage(
     });
 
     const result = render(
-        <MockedProvider mocks={mockedResponses} cache={getCache()}>
+        <MockedProvider
+            mocks={[...mockedResponses, mockGetNutritionalInfosFallback]}
+            cache={getCache()}
+        >
             <MantineProvider theme={theme} env='test'>
                 <Notifications autoClose={DELAY_LONG} />
                 <ChakraProvider>

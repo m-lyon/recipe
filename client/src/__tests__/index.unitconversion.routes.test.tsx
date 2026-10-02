@@ -1,3 +1,4 @@
+import { userEvent } from '@testing-library/user-event';
 import { cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
@@ -19,21 +20,25 @@ const renderAs = (currentUser: typeof mockCurrentUser, path: string) => {
     return renderPage(routes, [currentUser, mockGetAllUnits, ...otherMocks], [path]);
 };
 
+// Each page's first select, and an option that only appears once its query has resolved
 describe.each([
-    ['Create Unit Conversion', `${PATH.BASE}/create/unit-conversion`],
-    ['Edit Unit Conversion', `${PATH.BASE}/edit/unit-conversion`],
-])('Unit conversion route: %s', (heading, path) => {
+    ['Create Unit Conversion', `${PATH.BASE}/create/unit-conversion`, 'Base unit', 'ounce'],
+    ['Edit Unit Conversion', `${PATH.BASE}/edit/unit-conversion`, 'Select unit conversion', 'gram'],
+])('Unit conversion route: %s', (heading, path, selectLabel, optionName) => {
     afterEach(() => {
         cleanup();
     });
 
     it('should render the page for admins', async () => {
         // Render -----------------------------------------------
+        const user = userEvent.setup();
         renderAs(mockCurrentUserAdmin, path);
 
+        // Act --------------------------------------------------
+        await user.click(await screen.findByLabelText(selectLabel));
+
         // Expect ------------------------------------------------
-        // Unit options only appear once the units query has resolved
-        expect(await screen.findByRole('option', { name: 'oz' })).not.toBeNull();
+        expect(await screen.findByRole('option', { name: optionName })).not.toBeNull();
         expect(screen.getByRole('heading', { name: heading })).not.toBeNull();
     });
 

@@ -116,6 +116,20 @@ export const mockGetNutritionalInfosForRecipeOneEmpty = {
     },
 };
 
+/** Fallback for any page that shows recipe nutrition: no ingredient has nutritional data.
+ *  renderPage appends this after the test's own mocks, so a specific mock still wins. */
+export const mockGetNutritionalInfosFallback = {
+    request: { query: GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS },
+    variableMatcher: () => true,
+    maxUsageCount: Number.POSITIVE_INFINITY,
+    result: {
+        data: {
+            __typename: 'Query',
+            nutritionalInfosByIngredientIds: [],
+        } as GetNutritionalInfosByIngredientIdsQuery,
+    },
+};
+
 // ---------- Batch query mock for the EditIngredient page ----------
 // EditIngredient prefetches nutritional info for every ingredient in the list (in
 // ingredientMany order: apple, chicken, carrot, lettuce) alongside the ingredient list
