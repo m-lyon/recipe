@@ -27,7 +27,8 @@ root.render(
         <MantineProvider theme={theme}>
             <Notifications autoClose={DELAY_LONG} />
             <ChakraProvider>
-                <RouterProvider router={createBrowserRouter(routes)} />
+                {/* Keep react-router 6 behaviour: v7 wraps every navigation in startTransition */}
+                <RouterProvider router={createBrowserRouter(routes)} useTransitions={false} />
             </ChakraProvider>
         </MantineProvider>
     </ApolloProvider>

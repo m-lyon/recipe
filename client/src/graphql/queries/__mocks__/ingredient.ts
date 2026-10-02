@@ -1,7 +1,8 @@
+import { Ingredient } from '@recipe/graphql/schema';
 import { GetIngredientsQuery } from '@recipe/graphql/generated';
 import { mockTitleTwo } from '@recipe/graphql/__mocks__/common';
 import { mockRecipeIdTwo } from '@recipe/graphql/__mocks__/ids';
-import { GetIngredientsQueryVariables, Ingredient } from '@recipe/graphql/generated';
+import { GetIngredientsQueryVariables } from '@recipe/graphql/generated';
 import { mockAppleId, mockCarrotId, mockChickenId } from '@recipe/graphql/__mocks__/ids';
 import { mockAdminId, mockLettuceId, mockRhubarbPieId } from '@recipe/graphql/__mocks__/ids';
 

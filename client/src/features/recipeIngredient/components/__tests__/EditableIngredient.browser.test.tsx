@@ -21,7 +21,7 @@ describe('Dropdown Action Keyboard', () => {
     it('should move down correctly in overflowed dropdown when cursor highlights', async () => {
         const user = userEvent.setup();
         // Render
-        const screen = renderBrowserPage(
+        const screen = await renderBrowserPage(
             createRoutesFromElements(
                 <Route path='/' element={<EditableIngredient section={0} />} />
             ),

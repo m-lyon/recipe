@@ -1,6 +1,7 @@
+import { ConversionRule } from '@recipe/graphql/schema';
+import { GetUnitConversionsQuery } from '@recipe/graphql/generated';
 import { mockConversionRuleIdThree } from '@recipe/graphql/__mocks__/ids';
 import { GET_UNIT_CONVERSIONS } from '@recipe/graphql/queries/unitConversion';
-import { ConversionRule, GetUnitConversionsQuery } from '@recipe/graphql/generated';
 import { mockConversionRuleIdOne, mockUnitConversionIdOne } from '@recipe/graphql/__mocks__/ids';
 import { mockConversionRuleIdTwo, mockUnitConversionIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { mockConversionRuleIdFour, mockUnitConversionIdThree } from '@recipe/graphql/__mocks__/ids';

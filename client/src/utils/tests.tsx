@@ -120,7 +120,7 @@ export function renderPage(
             <MantineProvider theme={theme} env='test'>
                 <Notifications autoClose={DELAY_LONG} />
                 <ChakraProvider>
-                    <RouterProvider router={router} />
+                    <RouterProvider router={router} useTransitions={false} />
                 </ChakraProvider>
             </MantineProvider>
         </MockedProvider>

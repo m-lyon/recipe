@@ -8,7 +8,14 @@ const config: CodegenConfig = {
         './src/graphql/__generated__/': {
             preset: 'client',
             config: {
-                enumsAsConst: true,
+                // Codegen types custom scalars as `unknown` unless they are mapped here
+                scalars: {
+                    MongoID: 'string',
+                    Date: 'string',
+                    RegExpAsString: 'string',
+                    Upload: 'File',
+                },
+                enumType: 'const',
                 nonOptionalTypename: true,
             },
             presetConfig: {

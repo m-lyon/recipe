@@ -3,16 +3,16 @@ import { BoxProps } from '@chakra-ui/react';
 
 import { DropdownItem, DropdownList } from '@recipe/common/components';
 
-interface Props {
+interface Props<T extends FilterChoice> {
     isOpen: boolean;
     width?: BoxProps['width'];
-    suggestions: TagChoice[];
+    suggestions: T[];
     active: number;
     handleSetActive: (index: number) => void;
-    handleSelect: (suggestion: TagChoice) => void;
+    handleSelect: (suggestion: T) => void;
     listRef: RefObject<HTMLUListElement>;
 }
-export function TagDropdown(props: Props) {
+export function TagDropdown<T extends FilterChoice>(props: Props<T>) {
     const { isOpen, width, suggestions, active, handleSetActive, handleSelect, listRef } = props;
 
     const listItems = suggestions.map((tag, index) => (

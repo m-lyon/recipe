@@ -1,4 +1,5 @@
-import { GetSizesQuery, GetSizesQueryVariables, Size } from '@recipe/graphql/generated';
+import { Size } from '@recipe/graphql/schema';
+import { GetSizesQuery, GetSizesQueryVariables } from '@recipe/graphql/generated';
 import { mockAdminId, mockLargeId, mockMediumId, mockSmallId } from '@recipe/graphql/__mocks__/ids';
 
 import { GET_SIZES } from '../size';

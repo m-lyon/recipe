@@ -18,7 +18,7 @@ cli/          # oclif command line tool, talks to the API over GraphQL
 
 | Layer | Technology |
 | ----- | ---------- |
-| API server | Express 4 + Apollo Server 4 |
+| API server | Express 4 + Apollo Server 5 (`@as-integrations/express4`) |
 | API GraphQL | graphql-compose + graphql-compose-mongoose (auto-CRUD from Mongoose models) |
 | Database | MongoDB via Mongoose 7 |
 | Auth | Passport + passport-local-mongoose (session-based) |
@@ -27,7 +27,7 @@ cli/          # oclif command line tool, talks to the API over GraphQL
 | Client GraphQL | Apollo Client 3 |
 | Client UI | Chakra UI 2 **and** Mantine 8 (both used simultaneously) |
 | Client state | Zustand 5 (slice pattern) |
-| Client routing | react-router-dom 6 |
+| Client routing | react-router-dom 7 |
 | CLI framework | oclif 4 (TypeScript, ESM) |
 | CLI transport | `fetch` against the API's GraphQL endpoint; session cookie, no direct DB access |
 | CLI tests | Mocha + Chai + Sinon + `@oclif/test` |
@@ -175,6 +175,7 @@ All aliases resolve from `client/src/`:
 | ----- | ---- |
 | `@recipe/graphql/*` | `graphql/*` |
 | `@recipe/graphql/generated` | `__generated__/graphql` |
+| `@recipe/graphql/schema` | `__generated__/schema` (full schema object types, for mocks) |
 | `@recipe/features/*` | `features/*` |
 | `@recipe/utils/*` | `utils/*` |
 | `@recipe/theme` | `theme` |

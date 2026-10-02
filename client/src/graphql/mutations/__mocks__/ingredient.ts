@@ -1,11 +1,12 @@
+import { Ingredient } from '@recipe/graphql/schema';
 import { ModifyIngredientMutation } from '@recipe/graphql/generated';
 import { DeleteIngredientMutation } from '@recipe/graphql/generated';
+import { CreateIngredientMutation } from '@recipe/graphql/generated';
 import { DELETE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 import { mockCarrot } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { DeleteIngredientMutationVariables } from '@recipe/graphql/generated';
 import { ModifyIngredientMutationVariables } from '@recipe/graphql/generated';
 import { CreateIngredientMutationVariables } from '@recipe/graphql/generated';
-import { CreateIngredientMutation, Ingredient } from '@recipe/graphql/generated';
 import { mockAdminId, mockBeefId, mockOnionId } from '@recipe/graphql/__mocks__/ids';
 import { CREATE_INGREDIENT, MODIFY_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 import { ONION_CUP_DENSITY_APPLIED } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
