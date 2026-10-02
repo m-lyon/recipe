@@ -10,6 +10,7 @@ export const UNIT_FIELDS = gql(`
         preferredNumberFormat
         hasSpace
         unique
+        measureType
     }
 `);
 

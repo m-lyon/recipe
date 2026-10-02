@@ -1,12 +1,14 @@
+import { Stack } from '@chakra-ui/react';
 import { ApolloError } from '@apollo/client';
 import { StackProps } from '@chakra-ui/react';
 import { boolean, mixed, object, string } from 'yup';
 import { MutableRefObject, useCallback, useEffect } from 'react';
 import { Button, ButtonGroup, Checkbox } from '@chakra-ui/react';
-import { FormControl, FormHelperText, HStack, Radio, RadioGroup, Stack } from '@chakra-ui/react';
+import { FormControl, FormHelperText, HStack, Radio, RadioGroup } from '@chakra-ui/react';
 
 import { NumberFormat } from '@recipe/graphql/enums';
-import { FloatingLabelInput } from '@recipe/common/components';
+import { EnumUnitCreateMeasureType } from '@recipe/graphql/generated';
+import { FloatingLabelInput, SearchableSelect } from '@recipe/common/components';
 
 import { useFormLogic } from '../hooks/useFormLogic';
 import { useKeyboardSubmit } from '../hooks/useKeyboardSubmit';
@@ -18,6 +20,12 @@ export function formatUnitError(error: ApolloError) {
     return error.message;
 }
 
+const MEASURE_TYPE_OPTIONS = [
+    { value: 'mass', label: 'Mass' },
+    { value: 'volume', label: 'Volume' },
+    { value: '', label: 'None' },
+];
+
 export const unitFormSchema = object({
     shortSingular: string().required('Short singular name is required'),
     shortPlural: string().required('Short plural name is required'),
@@ -28,6 +36,10 @@ export const unitFormSchema = object({
         .oneOf(Object.values(NumberFormat), 'You must select a number format'),
     hasSpace: boolean().required(),
     unique: boolean().required(),
+    measureType: mixed<EnumUnitCreateMeasureType>()
+        .nullable()
+        .optional()
+        .transform((v) => v || null),
 });
 export interface BaseUnitFormProps extends StackProps {
     fieldRef?: MutableRefObject<HTMLInputElement | null>;
@@ -47,6 +59,7 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
             preferredNumberFormat: data.preferredNumberFormat,
             hasSpace: data.hasSpace,
             unique: true,
+            measureType: data.measureType ?? null,
         }),
         []
     );
@@ -70,6 +83,8 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
         <Stack
             spacing={4}
             pt={3}
+            color='blackAlpha.700'
+            fontWeight='bold'
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             {...rest}
@@ -129,6 +144,25 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
             >
                 Space after quantity
             </Checkbox>
+            <FormControl isDisabled={disabled}>
+                <SearchableSelect
+                    label='Measure type'
+                    aria-label='Measure type'
+                    options={MEASURE_TYPE_OPTIONS}
+                    value={
+                        disabled || formData.measureType === undefined
+                            ? null
+                            : (formData.measureType ?? '')
+                    }
+                    onChange={(val) =>
+                        handleChange('measureType', (val || null) as 'mass' | 'volume' | null)
+                    }
+                    disabled={disabled}
+                />
+                <FormHelperText>
+                    Set to Mass or Volume to enable nutritional calculations
+                </FormHelperText>
+            </FormControl>
             <ButtonGroup
                 display='flex'
                 justifyContent='flex-end'

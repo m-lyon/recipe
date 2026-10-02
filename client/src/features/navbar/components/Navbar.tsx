@@ -22,7 +22,7 @@ export function Navbar() {
     const { setTitle, reset, resetToHome, addFilter, removeFilter, showArchived, setShowArchived } =
         useSearch();
     const setShowSearch = useSearchStore((state) => state.setShowSearch);
-    const { isLoggedIn, isVerified } = useUser();
+    const { isLoggedIn, isVerified, isAdmin } = useUser();
     const isStandalone = useStandalone();
     const goBack = useBackNavigation();
 
@@ -89,7 +89,11 @@ export function Navbar() {
                             Home
                         </ChakraLink>
                         <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
-                            <DesktopNav isLoggedIn={isLoggedIn} isVerified={isVerified} />
+                            <DesktopNav
+                                isLoggedIn={isLoggedIn}
+                                isVerified={isVerified}
+                                isAdmin={isAdmin}
+                            />
                         </Flex>
                         <Flex
                             display={{ base: isHomePage ? 'flex' : 'none', md: 'flex' }}
@@ -124,7 +128,11 @@ export function Navbar() {
                     style={{ zIndex: 11, marginTop: '60px' }}
                     transition={{ enter: { duration: 0.3 } }}
                 >
-                    <MobileNav isVerified={isVerified} parentOnToggle={onToggle} />
+                    <MobileNav
+                        isVerified={isVerified}
+                        isAdmin={isAdmin}
+                        parentOnToggle={onToggle}
+                    />
                 </Slide>
             </VStack>
             <Outlet />

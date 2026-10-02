@@ -1,0 +1,38 @@
+{
+    "fdcId": 2706232,
+    "description": "Fish, anchovy",
+    "dataType": "Survey (FNDDS)",
+    "foodNutrients": [
+        { "nutrient": { "id": 1008, "name": "Energy", "unitName": "kcal" }, "amount": 210.0 },
+        { "nutrient": { "id": 1003, "name": "Protein", "unitName": "g" }, "amount": 28.89 },
+        { "nutrient": { "id": 1005, "name": "Carbohydrate, by difference", "unitName": "g" }, "amount": 0.0 },
+        { "nutrient": { "id": 1004, "name": "Total lipid (fat)", "unitName": "g" }, "amount": 9.71 },
+        { "nutrient": { "id": 1093, "name": "Sodium, Na", "unitName": "mg" }, "amount": 3668.0 }
+    ],
+    "foodPortions": [
+        {
+            "id": 294302,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" },
+            "modifier": "60482",
+            "gramWeight": 45,
+            "portionDescription": "1 can",
+            "sequenceNumber": 1
+        },
+        {
+            "id": 294303,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" },
+            "modifier": "60316",
+            "gramWeight": 4,
+            "portionDescription": "1 anchovy",
+            "sequenceNumber": 2
+        },
+        {
+            "id": 294304,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" },
+            "modifier": "90000",
+            "gramWeight": 85,
+            "portionDescription": "Quantity not specified",
+            "sequenceNumber": 3
+        }
+    ]
+}

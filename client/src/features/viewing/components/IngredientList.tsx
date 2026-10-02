@@ -1,3 +1,4 @@
+import { LuAsterisk } from 'react-icons/lu';
 import { TbLock, TbLockOpen2 } from 'react-icons/tb';
 import { BoxProps, Tooltip, UnorderedList, VStack } from '@chakra-ui/react';
 import { Box, Flex, IconButton, ListItem, Spacer, Text } from '@chakra-ui/react';
@@ -9,16 +10,50 @@ import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 
 import { RecipeIngredient } from './RecipeIngredient';
 
+function UncountedIngredientHint() {
+    return (
+        <Tooltip
+            label='Not included in nutritional calculation'
+            hasArrow
+            closeOnClick={false}
+            closeOnPointerDown={false}
+        >
+            <Box
+                as='span'
+                tabIndex={0}
+                display='inline-flex'
+                verticalAlign='middle'
+                position='relative'
+                top='-0.35em'
+                ml={1}
+                color='teal'
+                cursor='pointer'
+                aria-label='Not counted in nutrition'
+            >
+                <LuAsterisk />
+            </Box>
+        </Tooltip>
+    );
+}
+
 export interface IngredientListProps extends BoxProps {
     subsections: IngredientSubsectionView[];
     currentServings: number;
     origServings: number;
     showWakeLockBtn?: boolean;
+    uncountedIngredientIds?: Set<string>;
     dietToggle?: React.ReactNode;
 }
 export function IngredientList(props: IngredientListProps) {
-    const { subsections, currentServings, origServings, showWakeLockBtn, dietToggle, ...rest } =
-        props;
+    const {
+        subsections,
+        currentServings,
+        origServings,
+        showWakeLockBtn,
+        uncountedIngredientIds,
+        dietToggle,
+        ...rest
+    } = props;
     const { apply } = useUnitConversion();
     const { isAwake, toggleWakeLock } = useWakeLock();
 
@@ -38,6 +73,7 @@ export function IngredientList(props: IngredientListProps) {
                         aria-label={`Ingredient #${i + 1} in subsection ${index + 1}`}
                     >
                         {getFinishedRecipeIngredientStr(item)}
+                        {uncountedIngredientIds?.has(item._id) && <UncountedIngredientHint />}
                     </ListItem>
                 );
             }

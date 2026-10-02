@@ -1,0 +1,10 @@
+node_modules/
+dist/
+build/
+coverage/
+
+# graphql codegen output
+**/src/__generated__/
+cli/src/graphql/__generated__/
+
+package-lock.json

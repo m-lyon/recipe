@@ -4,15 +4,16 @@ import { Link as ReactRouterLink } from 'react-router-dom';
 import { useColorModeValue, useDisclosure } from '@chakra-ui/react';
 import { Collapse, Flex, Icon, Stack, Text } from '@chakra-ui/react';
 
-import { NavItem, PUBLIC_NAV_ITEMS, USER_NAV_ITEMS } from '../constants';
+import { NavItem, getNavItems } from '../constants';
 
 interface MobileNavProps {
     isVerified: boolean;
+    isAdmin: boolean;
     parentOnToggle: () => void;
 }
 export function MobileNav(props: MobileNavProps) {
-    const { isVerified, parentOnToggle } = props;
-    const navItems = isVerified ? USER_NAV_ITEMS : PUBLIC_NAV_ITEMS;
+    const { isVerified, isAdmin, parentOnToggle } = props;
+    const navItems = getNavItems(isVerified, isAdmin);
     return (
         <Stack bg={useColorModeValue('white', 'gray.800')} display={{ md: 'none' }} width='100%'>
             {navItems.map((navItem) => (

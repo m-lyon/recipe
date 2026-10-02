@@ -16,6 +16,8 @@ import { StarRating, getAverageRating } from '@recipe/features/rating';
 import { Notes } from './Notes';
 import { UsedIn } from './UsedIn';
 import { IngredientList } from './IngredientList';
+import { NutritionalInfoPanel } from './NutritionalInfoPanel';
+import { useNutritionalInfo } from '../hooks/useNutritionalInfo';
 
 interface Props {
     recipe: CompletedRecipeView;
@@ -26,6 +28,15 @@ export function IngredientsTab(props: Props) {
     const currentServings = useRecipeStore((state) => state.numServings);
     const { isVerified } = useUser();
     const { addRatingWithToast } = useAddRating();
+    const { perServing, uncountedIds, loading } = useNutritionalInfo(
+        recipe.ingredientSubsections,
+        recipe.numServings
+    );
+    const totalIngredients = recipe.ingredientSubsections
+        .flatMap((s) => s.ingredients)
+        .filter((i) => i.ingredient.__typename === 'Ingredient').length;
+    const nothingCounted =
+        !loading && (totalIngredients === 0 || totalIngredients === uncountedIds.size);
     useEffect(() => {
         setNumServings(recipe.numServings);
     }, [recipe.numServings, setNumServings]);
@@ -34,7 +45,7 @@ export function IngredientsTab(props: Props) {
         <Tooltip label='View original recipe' openDelay={500}>
             <IconButton
                 as={Link}
-                to={`${PATH.ROOT}/view/recipe/${recipe.originalRecipe.titleIdentifier}`}
+                to={`${PATH.BASE}/view/recipe/${recipe.originalRecipe.titleIdentifier}`}
                 aria-label='View original recipe'
                 icon={<TbMeat />}
                 mr='2'
@@ -44,7 +55,7 @@ export function IngredientsTab(props: Props) {
         <Tooltip label='View vegan version' openDelay={500}>
             <IconButton
                 as={Link}
-                to={`${PATH.ROOT}/view/recipe/${recipe.veganVersion.titleIdentifier}`}
+                to={`${PATH.BASE}/view/recipe/${recipe.veganVersion.titleIdentifier}`}
                 aria-label='View vegan version'
                 icon={<PiPlant />}
                 mr='2'
@@ -64,13 +75,22 @@ export function IngredientsTab(props: Props) {
                 />
             }
             IngredientList={
-                <IngredientList
-                    subsections={recipe.ingredientSubsections}
-                    origServings={recipe.numServings}
-                    currentServings={currentServings}
-                    dietToggle={dietToggle}
-                    showWakeLockBtn
-                />
+                <>
+                    <IngredientList
+                        subsections={recipe.ingredientSubsections}
+                        origServings={recipe.numServings}
+                        currentServings={currentServings}
+                        showWakeLockBtn
+                        uncountedIngredientIds={uncountedIds}
+                        dietToggle={dietToggle}
+                    />
+                    <NutritionalInfoPanel
+                        perServing={perServing}
+                        uncountedIds={uncountedIds}
+                        nothingCounted={nothingCounted}
+                        loading={loading}
+                    />
+                </>
             }
             Notes={<Notes notes={recipe.notes} />}
             Tags={

@@ -76,7 +76,7 @@ export function ModifyButtons(props: Props) {
                             }}
                             transition='opacity 0.3s, transform 0.3s'
                             as={Link}
-                            to={`${PATH.ROOT}/edit/recipe/${recipe.titleIdentifier}`}
+                            to={`${PATH.BASE}/edit/recipe/${recipe.titleIdentifier}`}
                         />
                     </Tooltip>
                 </Box>

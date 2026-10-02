@@ -67,5 +67,12 @@ export function ModifyIngredientForm(props: Props) {
         }
     };
 
-    return <BaseIngredientForm {...rest} submitForm={handleSubmit} onDelete={handleDelete} />;
+    return (
+        <BaseIngredientForm
+            {...rest}
+            ingredientId={ingredientId}
+            submitForm={handleSubmit}
+            onDelete={handleDelete}
+        />
+    );
 }

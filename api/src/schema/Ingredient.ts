@@ -1,7 +1,7 @@
+import { validateItemNotInRecipe } from './validation.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { filterIsOwnerOrAdmin } from '../middleware/filters.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
-import { validateItemNotInRecipe } from '../middleware/validation.js';
 import { Ingredient, IngredientCreateTC, IngredientTC } from '../models/Ingredient.js';
 
 IngredientTC.addResolver({

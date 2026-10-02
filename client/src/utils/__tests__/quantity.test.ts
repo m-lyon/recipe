@@ -27,6 +27,7 @@ describe('changeQuantity', () => {
             shortSingular: 'cup',
             preferredNumberFormat: 'fraction',
             unique: true,
+            measureType: null,
         };
         const recipeIngredient: RecipeIngredientView = {
             __typename: 'RecipeIngredient',

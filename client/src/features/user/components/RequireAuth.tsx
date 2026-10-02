@@ -11,5 +11,5 @@ export function RequireAuth() {
         return <div>Loading...</div>;
     }
 
-    return isVerified ? <Outlet /> : <Navigate to={PATH.ROOT} />;
+    return isVerified ? <Outlet /> : <Navigate to={PATH.ROOT} replace />;
 }

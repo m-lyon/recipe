@@ -6,19 +6,20 @@ import { Tooltip, useColorModeValue } from '@chakra-ui/react';
 import { Box, Flex, Icon, Stack, Text } from '@chakra-ui/react';
 import { Link as ChakraLink, Popover, PopoverContent, PopoverTrigger } from '@chakra-ui/react';
 
-import { NavItem, PUBLIC_NAV_ITEMS, USER_NAV_ITEMS } from '../constants';
+import { NavItem, getNavItems } from '../constants';
 
 interface DesktopNavProps {
     isLoggedIn: boolean;
     isVerified: boolean;
+    isAdmin: boolean;
 }
 export function DesktopNav(props: DesktopNavProps) {
-    const { isLoggedIn, isVerified } = props;
+    const { isLoggedIn, isVerified, isAdmin } = props;
     const ref = useRef<HTMLAnchorElement>(null);
     const linkColor = useColorModeValue('gray.600', 'gray.200');
     const linkHoverColor = useColorModeValue('gray.800', 'white');
     const popoverContentBgColor = useColorModeValue('white', 'gray.800');
-    const navItems = isVerified ? USER_NAV_ITEMS : PUBLIC_NAV_ITEMS;
+    const navItems = getNavItems(isVerified, isAdmin);
 
     if (isLoggedIn && !isVerified) {
         return (

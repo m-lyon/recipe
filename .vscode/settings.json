@@ -1,0 +1,6 @@
+{
+    "vitest.workspaceConfig": "client/vitest.ide.config.ts",
+    "vitest.configSearchPatternExclude": "{**/node_modules/**,**/vendor/**,**/.*/**,**/*.d.ts,**/{vite,vitest}*.config*.*}",
+    "vitest.rootConfig": "",
+    "vitest.vitestPackagePath": ""
+}

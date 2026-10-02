@@ -44,7 +44,7 @@ export function UsedIn(props: Props) {
                 {data.recipeMany.map((recipe) => (
                     <AnimatedLink
                         key={recipe._id}
-                        to={`${PATH.ROOT}/view/recipe/${recipe.titleIdentifier}`}
+                        to={`${PATH.BASE}/view/recipe/${recipe.titleIdentifier}`}
                         size='md'
                         fw={700}
                         c='rgba(0, 0, 0, 0.64)'

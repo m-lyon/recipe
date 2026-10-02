@@ -1,0 +1,62 @@
+{
+    "fdcId": 171287,
+    "description": "Egg, whole, raw, fresh",
+    "dataType": "SR Legacy",
+    "foodNutrients": [
+        { "nutrient": { "id": 1008, "name": "Energy", "unitName": "kcal" }, "amount": 143.0 },
+        { "nutrient": { "id": 1003, "name": "Protein", "unitName": "g" }, "amount": 12.56 },
+        { "nutrient": { "id": 1005, "name": "Carbohydrate, by difference", "unitName": "g" }, "amount": 0.72 },
+        { "nutrient": { "id": 1004, "name": "Total lipid (fat)", "unitName": "g" }, "amount": 9.51 },
+        { "nutrient": { "id": 1093, "name": "Sodium, Na", "unitName": "mg" }, "amount": 142.0 }
+    ],
+    "foodPortions": [
+        {
+            "id": 88374,
+            "amount": 1.0,
+            "modifier": "large",
+            "gramWeight": 50.0,
+            "sequenceNumber": 3,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" }
+        },
+        {
+            "id": 88372,
+            "amount": 1.0,
+            "modifier": "small",
+            "gramWeight": 38.0,
+            "sequenceNumber": 1,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" }
+        },
+        {
+            "id": 88373,
+            "amount": 1.0,
+            "modifier": "medium",
+            "gramWeight": 44.0,
+            "sequenceNumber": 2,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" }
+        },
+        {
+            "id": 88375,
+            "amount": 1.0,
+            "modifier": "extra large",
+            "gramWeight": 56.0,
+            "sequenceNumber": 4,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" }
+        },
+        {
+            "id": 88376,
+            "amount": 1.0,
+            "modifier": "jumbo",
+            "gramWeight": 63.0,
+            "sequenceNumber": 5,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" }
+        },
+        {
+            "id": 88377,
+            "amount": 1.0,
+            "modifier": "cup (4.86 large eggs)",
+            "gramWeight": 243.0,
+            "sequenceNumber": 6,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" }
+        }
+    ]
+}
