@@ -28,6 +28,14 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     environment: test
+    # API settings, shared with the build job
+    env: &api-test-env
+      MONGODB_URI: ${{ vars.MONGODB_URI }}
+      MONGODB_VERSION: ${{ vars.MONGODB_VERSION }}
+      PORT: ${{ vars.PORT }}
+      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+      SESSION_URI: ${{ secrets.SESSION_URI }}
+      WHITELISTED_DOMAINS: ${{ secrets.WHITELISTED_DOMAINS }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -59,16 +67,6 @@ jobs:
         working-directory: ./cli
         run: npm ci
 
-      - name: Create API environment file
-        working-directory: ./api
-        run: |
-          echo "MONGODB_URI = ${{ vars.MONGODB_URI }}" > .env.test.local
-          echo "MONGODB_VERSION = ${{ vars.MONGODB_VERSION }}" >> .env.test.local
-          echo "PORT = ${{ vars.PORT }}" >> .env.test.local
-          echo "SESSION_SECRET = ${{ secrets.SESSION_SECRET }}" >> .env.test.local
-          echo "SESSION_URI = ${{ secrets.SESSION_URI }}" >> .env.test.local
-          echo "WHITELISTED_DOMAINS = ${{ secrets.WHITELISTED_DOMAINS }}" >> .env.test.local
-
       - name: Create client environment file
         working-directory: ./client
         run: |
@@ -99,12 +97,18 @@ jobs:
         working-directory: ./api
         run: npm run dl_memory
 
-      - name: Start server in development mode
+      - &start-api
+        name: Start API (test mode)
         working-directory: ./api
-        run: NODE_ENV=test npm run start &
-
-      - name: Wait for server start
-        run: sleep 3s
+        run: |
+          [ -f dist/src/index.js ] || npm run compile
+          NODE_ENV=test nohup node ./dist/src/index.js > /tmp/api.log 2>&1 &
+          for i in $(seq 1 30); do
+              curl -s -o /dev/null "http://localhost:$PORT/" && exit 0
+              sleep 1
+          done
+          cat /tmp/api.log
+          exit 1
 
       - name: Generate GraphQL types
         working-directory: ./client
@@ -156,6 +160,7 @@ jobs:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-22.04 # matches the server
     environment: test
+    env: *api-test-env
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -179,24 +184,7 @@ jobs:
           (cd api && npm ci)
           (cd client && npm ci)
 
-      - name: Start API for codegen
-        working-directory: ./api
-        env:
-          NODE_ENV: test
-          PORT: ${{ vars.PORT }}
-          MONGODB_URI: ${{ vars.MONGODB_URI }}
-          MONGODB_VERSION: ${{ vars.MONGODB_VERSION }}
-          SESSION_URI: ${{ secrets.SESSION_URI }}
-          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
-        run: |
-          npm run compile
-          nohup node ./dist/src/index.js > /tmp/api.log 2>&1 &
-          for i in $(seq 1 30); do
-              curl -s -o /dev/null "http://localhost:$PORT/" && exit 0
-              sleep 1
-          done
-          cat /tmp/api.log
-          exit 1
+      - *start-api
 
       - name: Generate GraphQL types
         working-directory: ./client
