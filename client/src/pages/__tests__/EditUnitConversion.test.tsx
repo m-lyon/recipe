@@ -32,6 +32,7 @@ const renderComponent = (mocks: MockedResponses = []) => {
 describe('Edit Unit Conversion', () => {
     afterEach(() => {
         cleanup();
+        vi.restoreAllMocks();
     });
 
     it('should add a rule to a unit conversion', async () => {
@@ -109,6 +110,7 @@ describe('Edit Unit Conversion', () => {
         // Render
         const user = userEvent.setup();
         const reattachRule = vi.fn(() => mockUpdateUnitConversionReattachRule.result);
+        const consoleMock = vi.spyOn(console, 'error').mockImplementation(() => undefined);
         renderComponent([
             mockUpdateUnitConversionRemoveRule,
             mockRemoveConversionRuleTwoError,
@@ -125,6 +127,10 @@ describe('Edit Unit Conversion', () => {
         expect(await screen.findByText('Failed to remove conversion rule')).not.toBeNull();
         await expect.poll(() => reattachRule.mock.calls.length).toBe(1);
         expect(await screen.findByText('3 tsp = 1 tbsp, tsp >= 3')).not.toBeNull();
+        expect(consoleMock).toHaveBeenCalledOnce();
+        expect(consoleMock).toHaveBeenLastCalledWith(
+            expect.objectContaining({ message: 'Failed to remove conversion rule' })
+        );
     });
 
     it('should not remove the last rule of a unit conversion', async () => {
@@ -165,6 +171,7 @@ describe('Edit Unit Conversion', () => {
     it('should report rules that could not be deleted with the unit conversion', async () => {
         // Render
         const user = userEvent.setup();
+        const consoleMock = vi.spyOn(console, 'error').mockImplementation(() => undefined);
         renderComponent([mockRemoveUnitConversionOne, mockRemoveConversionRuleOneError]);
 
         // Act
@@ -178,5 +185,9 @@ describe('Edit Unit Conversion', () => {
         expect(screen.queryByText('1000 g = 1 kg, g >= 1000')).toBeNull();
         await user.click(screen.getByLabelText('Select unit conversion'));
         expect(screen.queryByRole('option', { name: 'gram' })).toBeNull();
+        expect(consoleMock).toHaveBeenCalledOnce();
+        expect(consoleMock).toHaveBeenLastCalledWith(
+            expect.objectContaining({ message: 'Failed to remove conversion rule' })
+        );
     });
 });

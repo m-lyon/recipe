@@ -2128,6 +2128,11 @@ describe('recipeRemoveById', () => {
         fs.unlinkSync = () => {
             throw new Error('Simulated unlink failure');
         };
+        const originalConsoleError = console.error;
+        const consoleErrors: unknown[][] = [];
+        console.error = (...args: unknown[]) => {
+            consoleErrors.push(args);
+        };
 
         try {
             const response = await removeRecipe(this, user, recipe._id);
@@ -2146,8 +2151,12 @@ describe('recipeRemoveById', () => {
 
             assert.isNull(deletedRecipe, 'Recipe should be deleted');
             assert.isNull(deletedImage, 'Image should be deleted even if unlink fails');
+            assert.deepEqual(consoleErrors, [
+                ['Error deleting images from disk: uploads/images/recipe1_image2.jpeg'],
+            ]);
         } finally {
             fs.unlinkSync = originalUnlinkSync;
+            console.error = originalConsoleError;
         }
     });
 });
