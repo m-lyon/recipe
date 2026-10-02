@@ -5,9 +5,6 @@ on:
     branches:
       - main
   pull_request:
-    paths-ignore:
-      - '**.md'
-      - 'dev-docs/**'
   workflow_dispatch:
 
 permissions:
@@ -25,7 +22,10 @@ env:
   PUBLIC_URL: https://recipes.mattlyon.co.uk
 
 jobs:
+  # Required to pass before a PR can merge into main (ruleset, branch must be up to date),
+  # so main is not re-tested on push.
   test:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     environment: test
     steps:
@@ -153,25 +153,12 @@ jobs:
       #   working-directory: ./client
       #   run: npm run test:browser -- run
 
-      - name: Upload GraphQL types
-        uses: actions/upload-artifact@v4
-        with:
-          name: graphql-types
-          path: ./client/src/__generated__/
-
-  deploy:
-    runs-on: ubuntu-22.04 # matches the server
-    environment: production
-    needs: test
-    # PRs only run the tests; deploys come from main
+  # Builds what was tested on the PR. Codegen needs the API running, so this uses the
+  # throwaway test MongoDB; no production secrets are available to this job.
+  build:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    # One group for the deploy target, so two runs never touch the server at once
-    concurrency:
-      group: deploy-production
-      cancel-in-progress: false
-    permissions:
-      contents: read
-      id-token: write # lets the Tailscale action authenticate with GitHub's OIDC token
+    runs-on: ubuntu-22.04 # matches the server
+    environment: test
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -180,40 +167,93 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            api/package-lock.json
+            client/package-lock.json
 
-      - name: Compile API
-        working-directory: ./api
-        run: |
-          npm ci
-          npm run prod:compile
-          npm prune --omit=dev
-          cp ../.nvmrc .nvmrc
-
-      - name: Create client environment file
-        working-directory: ./client
-        run: |
-          echo "VITE_DEBOUNCE_TIME = ${{ vars.VITE_DEBOUNCE_TIME }}" > .env.production.local
-          echo "VITE_DELAY_LONG = ${{ vars.VITE_DELAY_LONG }}" >> .env.production.local
-          echo "VITE_DELAY_SHORT = ${{ vars.VITE_DELAY_SHORT }}" >> .env.production.local
-          echo "VITE_FETCH_MORE_NUM = ${{ vars.VITE_FETCH_MORE_NUM }}" >> .env.production.local
-          echo "VITE_INIT_LOAD_NUM = ${{ vars.VITE_INIT_LOAD_NUM }}" >> .env.production.local
-          echo "VITE_LOGIN_ENDPOINT = ${{ vars.VITE_LOGIN_ENDPOINT }}" >> .env.production.local
-
-      - name: Download GraphQL types
-        uses: actions/download-artifact@v4
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.11.0
         with:
-          name: graphql-types
-          path: ./client/src/__generated__/
+          mongodb-version: ${{ vars.MONGODB_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          (cd api && npm ci)
+          (cd client && npm ci)
+
+      - name: Start API for codegen
+        working-directory: ./api
+        env:
+          NODE_ENV: test
+          PORT: ${{ vars.PORT }}
+          MONGODB_URI: ${{ vars.MONGODB_URI }}
+          MONGODB_VERSION: ${{ vars.MONGODB_VERSION }}
+          SESSION_URI: ${{ secrets.SESSION_URI }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+        run: |
+          npm run compile
+          nohup node ./dist/src/index.js > /tmp/api.log 2>&1 &
+          for i in $(seq 1 30); do
+              curl -s -o /dev/null "http://localhost:$PORT/" && exit 0
+              sleep 1
+          done
+          cat /tmp/api.log
+          exit 1
+
+      - name: Generate GraphQL types
+        working-directory: ./client
+        env:
+          VITE_GRAPHQL_URL: http://localhost:${{ vars.PORT }}/
+        run: npm run generate:test
 
       # Served from the root of recipes.mattlyon.co.uk, with the API on the same origin at /api/
-      - name: Compile client
+      - name: Build client
         working-directory: ./client
         env:
           VITE_GRAPHQL_URL: /api/
           VITE_ROOT_PATH: ''
+        run: npm run build
+
+      - name: Build API
+        working-directory: ./api
         run: |
-          npm ci
-          npm run build
+          rm -rf dist
+          npm run prod:compile
+          npm prune --omit=dev
+          cp ../.nvmrc .nvmrc
+          # tar keeps node_modules symlinks and modes intact through the artifact
+          tar czf ../api.tgz dist node_modules package.json package-lock.json .nvmrc
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: |
+            api.tgz
+            client/dist/
+          retention-days: 7
+
+  # Ships the build. Holds the production secrets but runs no npm installs or project code.
+  deploy:
+    needs: build
+    runs-on: ubuntu-22.04
+    environment: production
+    # One group for the deploy target, so two runs never touch the server at once
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write # lets the Tailscale action authenticate with GitHub's OIDC token
+    steps:
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+
+      - name: Unpack API
+        run: mkdir api && tar xzf api.tgz -C api
 
       # The server has no public SSH. The runner joins the tailnet as an
       # ephemeral tag:ci node, which the tailnet policy lets reach only
@@ -249,19 +289,16 @@ jobs:
 
       - name: Check server has the pinned Node version
         run: |
-          v=$(cat .nvmrc)
+          v=$(cat api/.nvmrc)
           ssh deploy-target test -x "/usr/local/nvm/versions/node/$v/bin/node" || {
               echo "::error::Node $v is not installed on the server. As root: NVM_DIR=/usr/local/nvm bash -c '. /usr/local/nvm/nvm.sh && nvm install $v'"
               exit 1
           }
 
+      # Files land group-readable by svc-recipe via the setgid target directory.
+      # The service can read its code but not modify it.
       - name: Deploy API
-        run: >
-          rsync -rlpt --delete --chmod=D2750,F0640
-          --include='/dist/***' --include='/node_modules/***'
-          --include='/package.json' --include='/package-lock.json' --include='/.nvmrc'
-          --exclude='*'
-          ./api/ deploy-target:${{ env.API_TARGET }}
+        run: rsync -rlpt --delete --chmod=D2750,F0640 ./api/ deploy-target:${{ env.API_TARGET }}
 
       - name: Deploy client
         run: rsync -rlpt --delete --chmod=D755,F644 ./client/dist/ deploy-target:${{ env.CLIENT_TARGET }}
