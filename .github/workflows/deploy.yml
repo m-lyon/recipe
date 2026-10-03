@@ -37,7 +37,8 @@ jobs:
       SESSION_URI: ${{ secrets.SESSION_URI }}
       WHITELISTED_DOMAINS: ${{ secrets.WHITELISTED_DOMAINS }}
     steps:
-      - name: Checkout code
+      - &checkout-code
+        name: Checkout code
         uses: actions/checkout@v7
 
       - name: Setup node
@@ -50,16 +51,19 @@ jobs:
             client/package-lock.json
             cli/package-lock.json
 
-      - name: Start MongoDB
+      - &start-mongodb
+        name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.11.0
         with:
           mongodb-version: ${{ vars.MONGODB_VERSION }}
 
-      - name: Install API dependencies
+      - &install-api-deps
+        name: Install API dependencies
         working-directory: ./api
         run: npm ci
 
-      - name: Install client dependencies
+      - &install-client-deps
+        name: Install client dependencies
         working-directory: ./client
         run: npm ci
 
@@ -110,7 +114,7 @@ jobs:
           cat /tmp/api.log
           exit 1
 
-      - name: Generate GraphQL types
+      - name: Generate client GraphQL types
         working-directory: ./client
         run: npm run generate:test
 
@@ -162,8 +166,7 @@ jobs:
     environment: test
     env: *api-test-env
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
+      - *checkout-code
 
       - name: Setup node
         uses: actions/setup-node@v7
@@ -174,15 +177,11 @@ jobs:
             api/package-lock.json
             client/package-lock.json
 
-      - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.11.0
-        with:
-          mongodb-version: ${{ vars.MONGODB_VERSION }}
+      - *start-mongodb
 
-      - name: Install dependencies
-        run: |
-          (cd api && npm ci)
-          (cd client && npm ci)
+      - *install-api-deps
+
+      - *install-client-deps
 
       - *start-api
 
