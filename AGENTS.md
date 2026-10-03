@@ -119,12 +119,6 @@ cd cli && npm test
   string and re-splits it**, so an argument containing a space must carry its own quotes:
   `['nutrition', 'link', '"olive oil"', ...]`.
 
-### Pre-existing test failures
-
-These fail or flake on `main` and are not caused by your changes:
-
-- `index.image.test.tsx`, `index.vegan.test.tsx` and the image-and-rating case in
-  `index.create.recipe.test.tsx` are flaky locally under load.
 
 ## GraphQL Codegen
 
