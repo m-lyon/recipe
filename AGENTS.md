@@ -129,7 +129,7 @@ These fail on `main` and are not caused by your changes:
 The client uses `@graphql-codegen/cli` to generate TypeScript types from the API schema via introspection. **This requires the API to be running.**
 
 ```bash
-# 1. Start the API (must be on port 4004 for test/dev)
+# 1. Start the API (port 4004 for test/dev, or API_PORT in .claude/worktree.env in a worktree)
 cd api && npm install && npm run compile
 NODE_ENV=development node ./dist/src/index.js &
 
@@ -290,6 +290,16 @@ GitHub Actions workflow (`.github/workflows/deploy.yml`):
 1. **test job** (pull requests): install, start the API, codegen, lint and type-check client and CLI, then run the API, client and CLI tests. `main` only accepts PRs whose `test` check passed on a branch that is up to date with `main` (ruleset), so `main` is not re-tested on push.
 2. **build job** (push to `main`): start the API against a throwaway MongoDB for codegen, build the client and the production API.
 3. **deploy job** (after build): join the tailnet (Tailscale, `tag:ci`), rsync both to the server as `deploy-recipe`, restart `recipe.service`, and health-check. It holds the production secrets but runs no installs or project code. Runtime config lives in `/etc/recipe.env` on the server. See README.
+
+## Claude Code Worktrees
+
+Worktrees live at `.claude/worktrees/<name>`. A local (not committed) `WorktreeCreate` hook
+may set them up. When it does, the worktree has a `.claude/worktree.env` file:
+
+- The worktree has its own ports, `API_PORT` and `VITE_PORT`. Use these, not 4004 and 5173.
+- The env files in the worktree already use these ports. `client/vite.config.ts` reads
+  `VITE_PORT` from `client/.env.development.local`.
+- MongoDB is shared: all worktrees use the databases on `localhost:27017`.
 
 ## Common Pitfalls
 
