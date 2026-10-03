@@ -293,20 +293,13 @@ GitHub Actions workflow (`.github/workflows/deploy.yml`):
 
 ## Claude Code Worktrees
 
-`.claude/settings.json` registers `.claude/hooks/worktree.sh` as the `WorktreeCreate` and
-`WorktreeRemove` hook. On create it:
+Worktrees live at `.claude/worktrees/<name>`. A local (not committed) `WorktreeCreate` hook
+may set them up. When it does, the worktree has a `.claude/worktree.env` file:
 
-- Adds the worktree at `.claude/worktrees/<name>` on branch `worktree-<name>`, based on
-  `origin/HEAD`.
-- Gives the worktree a slot N and moves local ports by `N * 10` (API `4004 + 10N`, Vite
-  `5173 + 10N`). The ports are in `.claude/worktree.env`.
-- Copies the gitignored `.env*` files from the main checkout and rewrites `:4004` and `:5173`
-  in them (this covers `PORT`, `WHITELISTED_DOMAINS` and `VITE_GRAPHQL_URL`). It adds
-  `VITE_PORT` to `client/.env.development.local`.
-- Copies `.claude/settings.local.json` and the generated GraphQL types, then runs `npm ci` in
-  each project. Set `RECIPE_WORKTREE_SKIP_INSTALL=1` to skip the install.
-
-MongoDB is not moved: all worktrees share the databases on `localhost:27017`.
+- The worktree has its own ports, `API_PORT` and `VITE_PORT`. Use these, not 4004 and 5173.
+- The env files in the worktree already use these ports. `client/vite.config.ts` reads
+  `VITE_PORT` from `client/.env.development.local`.
+- MongoDB is shared: all worktrees use the databases on `localhost:27017`.
 
 ## Common Pitfalls
 
