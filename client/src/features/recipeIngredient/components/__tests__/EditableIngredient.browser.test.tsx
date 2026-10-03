@@ -32,7 +32,8 @@ describe('Dropdown Action Keyboard', () => {
         await screen.getByText('Enter ingredient').click();
         await user.keyboard('{1}{ }');
         await screen.getByLabelText('gram', { exact: true }).hover();
-        await user.keyboard('{ArrowDown>5/}');
+        // From gram: kilogram, millilitre, ounce, tablespoon, teaspoon, large
+        await user.keyboard('{ArrowDown>6/}');
         await new Promise((resolve) => setTimeout(resolve, 300));
 
         // Expect

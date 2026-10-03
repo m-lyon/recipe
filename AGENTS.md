@@ -102,7 +102,8 @@ cd client && npm test -- run
 - Page tests at `client/src/pages/__tests__/*.test.tsx`.
 - Zustand stores auto-reset between tests via the mock at `client/__mocks__/zustand.ts`.
 - Apollo mocking uses `MockedProvider` with per-test mock arrays.
-- Browser tests (`*.browser.test.tsx`) use Playwright and are currently flaky/disabled in CI.
+- Browser tests (`*.browser.test.tsx`) run in Firefox via Playwright: `npm run test:browser -- run`.
+  Install the browser once with `npx playwright install --with-deps firefox` (`--with-deps` needs sudo).
 
 ### CLI tests
 
@@ -120,9 +121,10 @@ cd cli && npm test
 
 ### Pre-existing test failures
 
-These fail on `main` and are not caused by your changes:
+These fail or flake on `main` and are not caused by your changes:
 
-- `EditableIngredient.browser.test.tsx` -- browser mode config issue.
+- `index.image.test.tsx`, `index.vegan.test.tsx` and the image-and-rating case in
+  `index.create.recipe.test.tsx` are flaky locally under load.
 
 ## GraphQL Codegen
 

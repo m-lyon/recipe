@@ -37,7 +37,7 @@
         "./src/__generated__/graphql"
       ],
       "@recipe/graphql/schema": [
-        "__generated__/schema"
+        "./src/__generated__/schema"
       ],
       "@recipe/features/*": [
         "./src/features/*"

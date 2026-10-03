@@ -150,15 +150,13 @@ jobs:
         working-directory: ./cli
         run: npm run start:test
 
-      # NOTE: disabling browser tests for now due to issues
-      # with latest version of @vitest/browser
-      # - name: Install Playwright Browsers
-      #   working-directory: ./client
-      #   run: npx playwright install --with-deps
+      - name: Install Playwright Firefox
+        working-directory: ./client
+        run: npx playwright install --with-deps firefox
 
-      # - name: Test client in browser mode
-      #   working-directory: ./client
-      #   run: npm run test:browser -- run
+      - name: Test client in browser mode
+        working-directory: ./client
+        run: npm run test:browser -- run
 
   build:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
