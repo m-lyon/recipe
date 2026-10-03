@@ -1,6 +1,6 @@
-import { defineWorkspace } from 'vitest/config';
+import { TestProjectInlineConfiguration, defineConfig } from 'vitest/config';
 
-export default defineWorkspace([
+export const defaultProjects: TestProjectInlineConfiguration[] = [
     {
         extends: 'vitest.config.ts',
         test: {
@@ -15,4 +15,6 @@ export default defineWorkspace([
             ],
         },
     },
-]);
+];
+
+export default defineConfig({ test: { projects: defaultProjects } });

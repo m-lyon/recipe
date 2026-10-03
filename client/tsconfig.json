@@ -13,7 +13,7 @@
       "vite/client",
       "node",
       "@testing-library/jest-dom",
-      "@vitest/browser/providers/playwright"
+      "@vitest/browser-playwright"
     ],
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -35,6 +35,9 @@
       ],
       "@recipe/graphql/generated": [
         "./src/__generated__/graphql"
+      ],
+      "@recipe/graphql/schema": [
+        "./src/__generated__/schema"
       ],
       "@recipe/features/*": [
         "./src/features/*"

@@ -1,11 +1,12 @@
+import { PrepMethod } from '@recipe/graphql/schema';
 import { CreatePrepMethodMutation } from '@recipe/graphql/generated';
 import { ModifyPrepMethodMutation } from '@recipe/graphql/generated';
+import { DeletePrepMethodMutation } from '@recipe/graphql/generated';
 import { mockDiced } from '@recipe/graphql/queries/__mocks__/prepMethod';
 import { DELETE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 import { ModifyPrepMethodMutationVariables } from '@recipe/graphql/generated';
 import { DeletePrepMethodMutationVariables } from '@recipe/graphql/generated';
 import { CreatePrepMethodMutationVariables } from '@recipe/graphql/generated';
-import { DeletePrepMethodMutation, PrepMethod } from '@recipe/graphql/generated';
 import { mockAdminId, mockPippedId, mockPostedId } from '@recipe/graphql/__mocks__/ids';
 import { CREATE_PREP_METHOD, MODIFY_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 

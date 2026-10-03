@@ -18,7 +18,7 @@ cli/          # oclif command line tool, talks to the API over GraphQL
 
 | Layer | Technology |
 | ----- | ---------- |
-| API server | Express 4 + Apollo Server 4 |
+| API server | Express 4 + Apollo Server 5 (`@as-integrations/express4`) |
 | API GraphQL | graphql-compose + graphql-compose-mongoose (auto-CRUD from Mongoose models) |
 | Database | MongoDB via Mongoose 7 |
 | Auth | Passport + passport-local-mongoose (session-based) |
@@ -27,7 +27,7 @@ cli/          # oclif command line tool, talks to the API over GraphQL
 | Client GraphQL | Apollo Client 3 |
 | Client UI | Chakra UI 2 **and** Mantine 8 (both used simultaneously) |
 | Client state | Zustand 5 (slice pattern) |
-| Client routing | react-router-dom 6 |
+| Client routing | react-router-dom 7 |
 | CLI framework | oclif 4 (TypeScript, ESM) |
 | CLI transport | `fetch` against the API's GraphQL endpoint; session cookie, no direct DB access |
 | CLI tests | Mocha + Chai + Sinon + `@oclif/test` |
@@ -102,7 +102,8 @@ cd client && npm test -- run
 - Page tests at `client/src/pages/__tests__/*.test.tsx`.
 - Zustand stores auto-reset between tests via the mock at `client/__mocks__/zustand.ts`.
 - Apollo mocking uses `MockedProvider` with per-test mock arrays.
-- Browser tests (`*.browser.test.tsx`) use Playwright and are currently flaky/disabled in CI.
+- Browser tests (`*.browser.test.tsx`) run in Firefox via Playwright: `npm run test:browser -- run`.
+  Install the browser once with `npx playwright install --with-deps firefox` (`--with-deps` needs sudo).
 
 ### CLI tests
 
@@ -118,11 +119,6 @@ cd cli && npm test
   string and re-splits it**, so an argument containing a space must carry its own quotes:
   `['nutrition', 'link', '"olive oil"', ...]`.
 
-### Pre-existing test failures
-
-These fail on `main` and are not caused by your changes:
-
-- `EditableIngredient.browser.test.tsx` -- browser mode config issue.
 
 ## GraphQL Codegen
 
@@ -175,6 +171,7 @@ All aliases resolve from `client/src/`:
 | ----- | ---- |
 | `@recipe/graphql/*` | `graphql/*` |
 | `@recipe/graphql/generated` | `__generated__/graphql` |
+| `@recipe/graphql/schema` | `__generated__/schema` (full schema object types, for mocks) |
 | `@recipe/features/*` | `features/*` |
 | `@recipe/utils/*` | `utils/*` |
 | `@recipe/theme` | `theme` |

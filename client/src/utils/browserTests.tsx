@@ -18,6 +18,7 @@ export function renderBrowserPage(
                     router={createMemoryRouter(route, {
                         initialEntries,
                     })}
+                    useTransitions={false}
                 />
             </ChakraProvider>
         </MockedProvider>

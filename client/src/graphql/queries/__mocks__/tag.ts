@@ -1,4 +1,5 @@
-import { GetTagsQuery, Tag } from '@recipe/graphql/generated';
+import { Tag } from '@recipe/graphql/schema';
+import { GetTagsQuery } from '@recipe/graphql/generated';
 import { mockHighProteinTagId } from '@recipe/graphql/__mocks__/ids';
 import { mockLowCarbTagId, mockSpicyTagId } from '@recipe/graphql/__mocks__/ids';
 import { mockBreakfastTagId, mockBrunchTagId } from '@recipe/graphql/__mocks__/ids';

@@ -1,6 +1,7 @@
+import { Unit } from '@recipe/graphql/schema';
 import { mockMilliliterId, mockOunceId } from '@recipe/graphql/__mocks__/ids';
+import { GetUnitsQuery, GetUnitsQueryVariables } from '@recipe/graphql/generated';
 import { mockCupId, mockGramId, mockKilogramId } from '@recipe/graphql/__mocks__/ids';
-import { GetUnitsQuery, GetUnitsQueryVariables, Unit } from '@recipe/graphql/generated';
 import { mockAdminId, mockTablespoonId, mockTeaspoonId } from '@recipe/graphql/__mocks__/ids';
 
 import { GET_UNITS } from '../unit';
