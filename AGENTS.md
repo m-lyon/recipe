@@ -129,7 +129,7 @@ These fail on `main` and are not caused by your changes:
 The client uses `@graphql-codegen/cli` to generate TypeScript types from the API schema via introspection. **This requires the API to be running.**
 
 ```bash
-# 1. Start the API (must be on port 4004 for test/dev)
+# 1. Start the API (port 4004 for test/dev, or API_PORT in .claude/worktree.env in a worktree)
 cd api && npm install && npm run compile
 NODE_ENV=development node ./dist/src/index.js &
 
@@ -290,6 +290,23 @@ GitHub Actions workflow (`.github/workflows/deploy.yml`):
 1. **test job** (pull requests): install, start the API, codegen, lint and type-check client and CLI, then run the API, client and CLI tests. `main` only accepts PRs whose `test` check passed on a branch that is up to date with `main` (ruleset), so `main` is not re-tested on push.
 2. **build job** (push to `main`): start the API against a throwaway MongoDB for codegen, build the client and the production API.
 3. **deploy job** (after build): join the tailnet (Tailscale, `tag:ci`), rsync both to the server as `deploy-recipe`, restart `recipe.service`, and health-check. It holds the production secrets but runs no installs or project code. Runtime config lives in `/etc/recipe.env` on the server. See README.
+
+## Claude Code Worktrees
+
+`.claude/settings.json` registers `.claude/hooks/worktree.sh` as the `WorktreeCreate` and
+`WorktreeRemove` hook. On create it:
+
+- Adds the worktree at `.claude/worktrees/<name>` on branch `worktree-<name>`, based on
+  `origin/HEAD`.
+- Gives the worktree a slot N and moves local ports by `N * 10` (API `4004 + 10N`, Vite
+  `5173 + 10N`). The ports are in `.claude/worktree.env`.
+- Copies the gitignored `.env*` files from the main checkout and rewrites `:4004` and `:5173`
+  in them (this covers `PORT`, `WHITELISTED_DOMAINS` and `VITE_GRAPHQL_URL`). It adds
+  `VITE_PORT` to `client/.env.development.local`.
+- Copies `.claude/settings.local.json` and the generated GraphQL types, then runs `npm ci` in
+  each project. Set `RECIPE_WORKTREE_SKIP_INSTALL=1` to skip the install.
+
+MongoDB is not moved: all worktrees share the databases on `localhost:27017`.
 
 ## Common Pitfalls
 
