@@ -29,40 +29,39 @@
     "noFallthroughCasesInSwitch": true,
     "noErrorTruncation": true,
     /* Paths */
-    "baseUrl": "src",
     "paths": {
       "@recipe/graphql/*": [
-        "graphql/*"
+        "./src/graphql/*"
       ],
       "@recipe/graphql/generated": [
-        "__generated__/graphql"
+        "./src/__generated__/graphql"
       ],
       "@recipe/graphql/schema": [
         "__generated__/schema"
       ],
       "@recipe/features/*": [
-        "features/*"
+        "./src/features/*"
       ],
       "@recipe/utils/*": [
-        "utils/*"
+        "./src/utils/*"
       ],
       "@recipe/theme": [
-        "theme"
+        "./src/theme"
       ],
       "@recipe/layouts": [
-        "layouts"
+        "./src/layouts"
       ],
       "@recipe/stores": [
-        "stores"
+        "./src/stores"
       ],
       "@recipe/constants": [
-        "constants.ts"
+        "./src/constants.ts"
       ],
       "@recipe/common/components": [
-        "common/components"
+        "./src/common/components"
       ],
       "@recipe/common/hooks": [
-        "common/hooks"
+        "./src/common/hooks"
       ],
     }
   },
