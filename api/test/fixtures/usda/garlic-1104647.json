@@ -1,0 +1,23 @@
+{
+    "fdcId": 1104647,
+    "description": "Garlic, raw",
+    "dataType": "Foundation",
+    "foodNutrients": [
+        { "nutrient": { "id": 1008, "name": "Energy", "unitName": "kcal" }, "amount": 143.0 },
+        { "nutrient": { "id": 1003, "name": "Protein", "unitName": "g" }, "amount": 6.62 },
+        { "nutrient": { "id": 1005, "name": "Carbohydrate, by difference", "unitName": "g" }, "amount": 28.2 },
+        { "nutrient": { "id": 1004, "name": "Total lipid (fat)", "unitName": "g" }, "amount": 0.38 },
+        { "nutrient": { "id": 1093, "name": "Sodium, Na", "unitName": "mg" }, "amount": 8.0 }
+    ],
+    "foodPortions": [
+        {
+            "id": 118047,
+            "amount": null,
+            "modifier": null,
+            "portionDescription": null,
+            "gramWeight": 85.0,
+            "sequenceNumber": 1,
+            "measureUnit": { "id": 9999, "name": "RACC", "abbreviation": "RACC" }
+        }
+    ]
+}

@@ -94,6 +94,18 @@ describe('Unit Model', function () {
         }
     });
 
+    it('Should save and update a unit with measureType explicitly set to null', async function () {
+        const user = await User.findOne({ firstName: 'Tester1' });
+        const newUnit = new Unit({ ...getMockUnitOne(user), measureType: null });
+        await newUnit.save();
+        assert.isFalse(newUnit.isNew);
+        assert.isNull(newUnit.measureType);
+
+        newUnit.measureType = null;
+        await newUnit.save();
+        assert.isNull(newUnit.measureType);
+    });
+
     it('Should NOT save a unit with a duplicate short singular name admin1 to user1', async function () {
         const user = await User.findOne({ firstName: 'Tester1' });
         const admin = await User.findOne({ firstName: 'Admin1', role: 'admin' });

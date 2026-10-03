@@ -1,0 +1,61 @@
+{
+    "fdcId": 2710205,
+    "description": "Mayonnaise, vegan",
+    "dataType": "Survey (FNDDS)",
+    "foodNutrients": [
+        { "nutrient": { "id": 1008, "name": "Energy", "unitName": "kcal" }, "amount": 718.0 },
+        { "nutrient": { "id": 1003, "name": "Protein", "unitName": "g" }, "amount": 0.24 },
+        { "nutrient": { "id": 1005, "name": "Carbohydrate, by difference", "unitName": "g" }, "amount": 2.63 },
+        { "nutrient": { "id": 1004, "name": "Total lipid (fat)", "unitName": "g" }, "amount": 79.4 }
+    ],
+    "foodPortions": [
+        {
+            "id": 501001,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" },
+            "modifier": "10205",
+            "gramWeight": 225.0,
+            "portionDescription": "1 cup",
+            "sequenceNumber": 1
+        },
+        {
+            "id": 501002,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" },
+            "modifier": "21000",
+            "gramWeight": 14.1,
+            "portionDescription": "1 tablespoon",
+            "sequenceNumber": 2
+        },
+        {
+            "id": 501003,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" },
+            "modifier": "90000",
+            "gramWeight": 220.0,
+            "portionDescription": "Quantity not specified",
+            "sequenceNumber": 3
+        },
+        {
+            "id": 501004,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" },
+            "modifier": "98800",
+            "gramWeight": 5.0,
+            "portionDescription": "1 guideline amount - dip",
+            "sequenceNumber": 4
+        },
+        {
+            "id": 501005,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" },
+            "modifier": "98806",
+            "gramWeight": 14.0,
+            "portionDescription": "1 guideline amount - sandwich",
+            "sequenceNumber": 5
+        },
+        {
+            "id": 501006,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" },
+            "modifier": "98807",
+            "gramWeight": 28.0,
+            "portionDescription": "1 guideline amount - salad",
+            "sequenceNumber": 6
+        }
+    ]
+}

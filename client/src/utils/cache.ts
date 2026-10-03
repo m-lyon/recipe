@@ -60,5 +60,14 @@ export const getCache = () =>
                     },
                 },
             },
+            UnitConversion: {
+                fields: {
+                    rules: {
+                        merge(_existing, incoming) {
+                            return incoming;
+                        },
+                    },
+                },
+            },
         },
     });

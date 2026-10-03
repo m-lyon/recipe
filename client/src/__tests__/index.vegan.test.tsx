@@ -174,7 +174,7 @@ describe('ViewRecipe - vegan copy title', () => {
         renderPage(
             routes,
             [...mocks, mockGetRecipeThreeVeganCopy],
-            [`${PATH.ROOT}/view/recipe/mock-recipe-three-vegan`]
+            [`${PATH.BASE}/view/recipe/mock-recipe-three-vegan`]
         );
         expect(await screen.findByText('Mock Recipe Three')).not.toBeNull();
         expect(screen.queryByText('Mock Recipe Three (Vegan)')).toBeNull();
@@ -190,7 +190,7 @@ describe('ViewRecipe - linked vegan navigation action', () => {
         renderPage(
             routes,
             [...mocksMinimal, mockGetRecipeWithVeganVersion],
-            [`${PATH.ROOT}/view/recipe/mock-recipe-three`]
+            [`${PATH.BASE}/view/recipe/mock-recipe-three`]
         );
 
         expect(await screen.findByText('Mock Recipe Three')).not.toBeNull();
@@ -202,7 +202,7 @@ describe('ViewRecipe - linked vegan navigation action', () => {
         renderPage(
             routes,
             [...mocksMinimal, mockGetRecipeThreeVeganCopy],
-            [`${PATH.ROOT}/view/recipe/mock-recipe-three-vegan`]
+            [`${PATH.BASE}/view/recipe/mock-recipe-three-vegan`]
         );
 
         expect(await screen.findByText('Mock Recipe Three')).not.toBeNull();
@@ -214,7 +214,7 @@ describe('ViewRecipe - linked vegan navigation action', () => {
         renderPage(
             routes,
             [...mocksMinimal, mockGetRecipeWithVeganVersion, mockGetRecipeThreeVeganCopy],
-            [`${PATH.ROOT}/view/recipe/mock-recipe-three`]
+            [`${PATH.BASE}/view/recipe/mock-recipe-three`]
         );
         const user = userEvent.setup();
 
@@ -292,13 +292,13 @@ describe('CreateVeganRecipe - Page', () => {
     });
 
     it('should render the create vegan recipe page with Submit Vegan Version button', async () => {
-        renderPage(routes, [...mocks], [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-three`]);
+        renderPage(routes, [...mocks], [`${PATH.BASE}/create/recipe/vegan/mock-recipe-three`]);
 
         expect(await screen.findByText('Submit Vegan Version')).not.toBeNull();
     });
 
     it('should pre-populate the title field from the original recipe', async () => {
-        renderPage(routes, [...mocks], [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-three`]);
+        renderPage(routes, [...mocks], [`${PATH.BASE}/create/recipe/vegan/mock-recipe-three`]);
 
         // The title input should be pre-filled with the original recipe title
         expect(await screen.findByDisplayValue('Mock Recipe Three')).not.toBeNull();
@@ -349,7 +349,7 @@ describe('CreateVeganRecipe - Page', () => {
         renderPage(
             routes,
             [...mocksMinimal, mockGetRecipeWithSubsections],
-            [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-one`]
+            [`${PATH.BASE}/create/recipe/vegan/mock-recipe-one`]
         );
 
         expect(await screen.findByDisplayValue('Sauce')).not.toBeNull();
@@ -367,7 +367,7 @@ describe('CreateVeganRecipe - Page', () => {
                 mockCreateVeganRecipeViaMutation,
                 mockGetRecipesWithVeganVersion,
             ],
-            [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-three`]
+            [`${PATH.BASE}/create/recipe/vegan/mock-recipe-three`]
         );
         const user = userEvent.setup();
         await user.click(await screen.findByText('Submit Vegan Version'));
@@ -384,7 +384,7 @@ describe('CreateVeganRecipe - cache: originalRecipe on vegan copy', () => {
         renderPage(
             routes,
             [...mocksMinimal, mockGetRecipeThree, mockCreateVeganRecipeViaMutation, mockGetRecipes],
-            [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-three`]
+            [`${PATH.BASE}/create/recipe/vegan/mock-recipe-three`]
         );
         const user = userEvent.setup();
         await user.click(await screen.findByText('Submit Vegan Version'));
@@ -408,7 +408,7 @@ describe('CreateVeganRecipe - cache update after atomic create', () => {
         const { router } = renderPage(
             routes,
             [...mocksMinimal, mockGetRecipeThree, mockCreateVeganRecipeViaMutation, mockGetRecipes],
-            [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-three`]
+            [`${PATH.BASE}/create/recipe/vegan/mock-recipe-three`]
         );
 
         const user = userEvent.setup();
@@ -494,7 +494,7 @@ describe('CreateVeganRecipe - cache: home page after vegan creation', () => {
                 mockCreateVeganRecipeViaMutation,
                 mockGetRecipesWithVeganVersion,
             ],
-            [`${PATH.ROOT}/create/recipe/vegan/mock-recipe-three`]
+            [`${PATH.BASE}/create/recipe/vegan/mock-recipe-three`]
         );
         const user = userEvent.setup();
         await user.click(await screen.findByText('Submit Vegan Version'));
@@ -546,7 +546,7 @@ describe('EditRecipe - toast when navigating to CreateVeganRecipe', () => {
                 mockUpdateRecipeThreeWithRename,
                 mockGetRenamedRecipe,
             ],
-            [`${PATH.ROOT}/edit/recipe/mock-recipe-three`]
+            [`${PATH.BASE}/edit/recipe/mock-recipe-three`]
         );
         const user = userEvent.setup();
 
@@ -559,7 +559,7 @@ describe('EditRecipe - toast when navigating to CreateVeganRecipe', () => {
         await screen.findByText('Creating vegan version');
         await waitFor(() => {
             expect(router.state.location.pathname).toBe(
-                `${PATH.ROOT}/create/recipe/vegan/mock-recipe-renamed`
+                `${PATH.BASE}/create/recipe/vegan/mock-recipe-renamed`
             );
         });
         expect(await screen.findByDisplayValue('Mock Recipe Renamed')).not.toBeNull();
@@ -644,7 +644,7 @@ describe('EditRecipe - destructive action button', () => {
         renderPage(
             routes,
             [...mocksMinimal, mockGetRecipeWithVeganVersion],
-            [`${PATH.ROOT}/edit/recipe/mock-recipe-three`]
+            [`${PATH.BASE}/edit/recipe/mock-recipe-three`]
         );
 
         expect(await screen.findByText('Mock Recipe Three')).not.toBeNull();
@@ -656,7 +656,7 @@ describe('EditRecipe - destructive action button', () => {
         renderPage(
             routes,
             [...mocksMinimal, mockGetRecipeThreeVeganCopy],
-            [`${PATH.ROOT}/edit/recipe/mock-recipe-three-vegan`]
+            [`${PATH.BASE}/edit/recipe/mock-recipe-three-vegan`]
         );
 
         expect(await screen.findByText('Mock Recipe Three')).not.toBeNull();
@@ -670,7 +670,7 @@ describe('EditRecipe - destructive action button', () => {
         renderPage(
             routes,
             [...mocksMinimal, mockGetRecipeWithVeganVersion],
-            [`${PATH.ROOT}/edit/recipe/mock-recipe-three`]
+            [`${PATH.BASE}/edit/recipe/mock-recipe-three`]
         );
 
         await screen.findByText('Mock Recipe Three');
@@ -692,7 +692,7 @@ describe('EditRecipe - destructive action button', () => {
         renderPage(
             routes,
             [...mocksMinimal, mockGetRecipeThreeVeganCopy],
-            [`${PATH.ROOT}/edit/recipe/mock-recipe-three-vegan`]
+            [`${PATH.BASE}/edit/recipe/mock-recipe-three-vegan`]
         );
 
         await screen.findByText('Mock Recipe Three');
@@ -718,7 +718,7 @@ describe('EditRecipe - destructive action button', () => {
                 mockArchiveRecipeThree,
                 mockGetRecipesAfterArchiveRecipeThree,
             ],
-            [`${PATH.ROOT}/edit/recipe/mock-recipe-three`]
+            [`${PATH.BASE}/edit/recipe/mock-recipe-three`]
         );
         const user = userEvent.setup();
 

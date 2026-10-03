@@ -37,7 +37,7 @@ export function ImageRecipeCard(props: Props) {
                 <CardHeader>
                     <LinkOverlay
                         as={Link}
-                        to={`${PATH.ROOT}/view/recipe/${recipe.titleIdentifier}`}
+                        to={`${PATH.BASE}/view/recipe/${recipe.titleIdentifier}`}
                     >
                         <Heading size='md' color='blackAlpha.700'>
                             {getCardTitle(recipe)}
@@ -47,7 +47,7 @@ export function ImageRecipeCard(props: Props) {
                 <CardBody p='0'>
                     <LinkOverlay
                         as={Link}
-                        to={`${PATH.ROOT}/view/recipe/${recipe.titleIdentifier}`}
+                        to={`${PATH.BASE}/view/recipe/${recipe.titleIdentifier}`}
                         aria-label={`View ${recipe.title}`}
                     >
                         <VStack spacing={2} align='left'>

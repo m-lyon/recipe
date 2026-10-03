@@ -1,0 +1,22 @@
+{
+    "fdcId": 167747,
+    "description": "Lemon juice, raw",
+    "dataType": "SR Legacy",
+    "foodNutrients": [
+        { "nutrient": { "id": 1008, "name": "Energy", "unitName": "kcal" }, "amount": 22.0 },
+        { "nutrient": { "id": 1003, "name": "Protein", "unitName": "g" }, "amount": 0.35 },
+        { "nutrient": { "id": 1005, "name": "Carbohydrate, by difference", "unitName": "g" }, "amount": 6.9 },
+        { "nutrient": { "id": 1004, "name": "Total lipid (fat)", "unitName": "g" }, "amount": 0.24 },
+        { "nutrient": { "id": 1093, "name": "Sodium, Na", "unitName": "mg" }, "amount": 1.0 }
+    ],
+    "foodPortions": [
+        {
+            "id": 89093,
+            "amount": 1.0,
+            "modifier": "lemon yields",
+            "gramWeight": 48.0,
+            "sequenceNumber": 1,
+            "measureUnit": { "id": 9999, "name": "undetermined", "abbreviation": "undetermined" }
+        }
+    ]
+}

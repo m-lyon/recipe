@@ -127,11 +127,11 @@ yarn-debug.log*
 yarn-error.log*
 
 # vscode
-.vscode/
 *.code-workspace
 
 # graphql generated files
 */src/__generated__/
+cli/src/graphql/__generated__/
 
 # testing uploads
 api/uploads/
@@ -143,3 +143,11 @@ api/seed_data/
 # LLM docs
 *llm.txt
 spec-document.md
+
+# roborev snapshots
+/.roborev/
+
+# Claude Code worktrees (see .claude/hooks/worktree.sh)
+.claude/worktrees/
+.claude/worktree.env
+.claude/settings.local.json

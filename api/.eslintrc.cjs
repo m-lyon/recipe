@@ -17,16 +17,8 @@ module.exports = {
     ],
     noInlineConfig: false,
     rules: {
-        'prettier/prettier': [
-            'error',
-            {
-                singleQuote: true,
-                jsxSingleQuote: true,
-                printWidth: 100,
-                tabWidth: 4,
-                trailingComma: 'es5',
-            },
-        ],
+        // formatting options live in the root .prettierrc
+        'prettier/prettier': 'error',
         'sort-imports': [
             'error',
             {

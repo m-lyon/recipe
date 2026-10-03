@@ -1,7 +1,7 @@
+import { validateItemNotInRecipe } from './validation.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { Size, SizeCreateTC, SizeTC } from '../models/Size.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
-import { validateItemNotInRecipe } from '../middleware/validation.js';
 import { filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
 
 SizeTC.addResolver({

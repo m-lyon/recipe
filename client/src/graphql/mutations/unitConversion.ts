@@ -36,3 +36,32 @@ export const CREATE_UNIT_CONVERSION = gql(`
         }
     }
 `);
+
+export const UPDATE_UNIT_CONVERSION = gql(`
+    mutation UpdateUnitConversion($id: MongoID!, $record: UpdateByIdUnitConversionInput!) {
+        unitConversionUpdateById(_id: $id, record: $record) {
+            record {
+                _id
+                baseUnit {
+                    ...UnitFields
+                }
+                rules(sort: THRESHOLD_DESC) {
+                    _id
+                    baseUnitThreshold
+                    baseToUnitConversion
+                    unit {
+                        ...UnitFields
+                    }
+                }
+            }
+        }
+    }
+`);
+
+export const REMOVE_UNIT_CONVERSION = gql(`
+    mutation RemoveUnitConversion($id: MongoID!) {
+        unitConversionRemoveById(_id: $id) {
+            recordId
+        }
+    }
+`);

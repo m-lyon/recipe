@@ -17,6 +17,7 @@ export const mockUnit: Unit = {
     hasSpace: true,
     unique: true,
     owner: mockAdminId,
+    measureType: null,
 };
 
 export const mockCreateUnit = {
@@ -31,6 +32,7 @@ export const mockCreateUnit = {
                 preferredNumberFormat: 'decimal',
                 unique: mockTeaspoon.unique,
                 hasSpace: true,
+                measureType: null,
             },
         } satisfies CreateUnitMutationVariables,
     },
@@ -56,6 +58,7 @@ export const mockCreateBespokeUnit = {
                 preferredNumberFormat: 'decimal',
                 unique: false,
                 hasSpace: true,
+                measureType: null,
             },
         } satisfies CreateUnitMutationVariables,
     },
@@ -74,6 +77,7 @@ export const mockCreateBespokeUnit = {
                     preferredNumberFormat: 'decimal',
                     hasSpace: true,
                     unique: false,
+                    measureType: null,
                 },
             },
         } satisfies CreateUnitMutation,
@@ -92,6 +96,7 @@ export const mockUpdateUnit = {
                 preferredNumberFormat: mockTeaspoon.preferredNumberFormat,
                 unique: mockTeaspoon.unique,
                 hasSpace: mockTeaspoon.hasSpace,
+                measureType: mockTeaspoon.measureType,
             },
         } satisfies ModifyUnitMutationVariables,
     },

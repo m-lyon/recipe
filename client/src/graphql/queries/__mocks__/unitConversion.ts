@@ -3,8 +3,10 @@ import { GET_UNIT_CONVERSIONS } from '@recipe/graphql/queries/unitConversion';
 import { ConversionRule, GetUnitConversionsQuery } from '@recipe/graphql/generated';
 import { mockConversionRuleIdOne, mockUnitConversionIdOne } from '@recipe/graphql/__mocks__/ids';
 import { mockConversionRuleIdTwo, mockUnitConversionIdTwo } from '@recipe/graphql/__mocks__/ids';
+import { mockConversionRuleIdFour, mockUnitConversionIdThree } from '@recipe/graphql/__mocks__/ids';
 
-import { mockCup, mockGram, mockKilogram, mockTablespoon, mockTeaspoon } from './unit';
+import { mockTeaspoon } from './unit';
+import { mockCup, mockGram, mockKilogram, mockMilliliter, mockTablespoon } from './unit';
 
 export const mockConversionRuleOne: ConversionRule = {
     __typename: 'ConversionRule',
@@ -30,6 +32,14 @@ export const mockConversionRuleThree: ConversionRule = {
     baseUnitThreshold: 12,
     baseToUnitConversion: 48,
 };
+export const mockConversionRuleFour: ConversionRule = {
+    __typename: 'ConversionRule',
+    _id: mockConversionRuleIdFour,
+    unit: mockCup,
+    baseUnit: mockMilliliter,
+    baseUnitThreshold: 50,
+    baseToUnitConversion: 240,
+};
 export const mockUnitConversionOne: UnitConversion = {
     __typename: 'UnitConversion',
     _id: mockUnitConversionIdOne,
@@ -42,6 +52,12 @@ export const mockUnitConversionTwo: UnitConversion = {
     baseUnit: mockTeaspoon,
     rules: [mockConversionRuleThree, mockConversionRuleTwo],
 };
+export const mockUnitConversionVolume: UnitConversion = {
+    __typename: 'UnitConversion',
+    _id: mockUnitConversionIdThree,
+    baseUnit: mockMilliliter,
+    rules: [mockConversionRuleFour],
+};
 export const mockGetUnitConversions = {
     request: {
         query: GET_UNIT_CONVERSIONS,
@@ -49,7 +65,11 @@ export const mockGetUnitConversions = {
     result: {
         data: {
             __typename: 'Query',
-            unitConversionMany: [mockUnitConversionOne, mockUnitConversionTwo],
+            unitConversionMany: [
+                mockUnitConversionOne,
+                mockUnitConversionTwo,
+                mockUnitConversionVolume,
+            ],
         } satisfies GetUnitConversionsQuery,
     },
 };

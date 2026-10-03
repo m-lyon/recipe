@@ -265,7 +265,7 @@ export function EditRecipe() {
                 });
                 return setTimeout(() => {
                     recipeState.resetCreateVeganVersion();
-                    navigate(`${PATH.ROOT}/edit/recipe/${veganTitleIdentifier}`);
+                    navigate(`${PATH.BASE}/edit/recipe/${veganTitleIdentifier}`);
                 }, DELAY_SHORT);
             } else {
                 if (!savedRecipe?.titleIdentifier) {
@@ -284,7 +284,7 @@ export function EditRecipe() {
                 });
                 return setTimeout(() => {
                     recipeState.resetCreateVeganVersion();
-                    navigate(`${PATH.ROOT}/create/recipe/vegan/${savedRecipe.titleIdentifier}`);
+                    navigate(`${PATH.BASE}/create/recipe/vegan/${savedRecipe.titleIdentifier}`);
                 }, DELAY_SHORT);
             }
         }

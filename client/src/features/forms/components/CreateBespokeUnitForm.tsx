@@ -48,6 +48,7 @@ export function CreateBespokeUnitForm(props: Props) {
                 preferredNumberFormat,
                 hasSpace,
                 unique: false,
+                measureType: null,
             });
             saveUnit({ variables: { record: validated } });
         } catch (e: unknown) {

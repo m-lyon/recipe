@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { mockOnionId } from '@recipe/graphql/__mocks__/ids';
 import { ingredientDisplayValue } from '@recipe/utils/formatting';
 import { getEditableRecipeIngredientStr } from '@recipe/utils/formatting';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
@@ -20,13 +21,14 @@ describe('getEditableRecipeIngredientStr', () => {
                     preferredNumberFormat: 'fraction',
                     hasSpace: true,
                     unique: true,
+                    measureType: null,
                 },
             },
             size: { value: null, data: null },
             ingredient: {
                 value: 'onion',
                 data: {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0ec',
+                    _id: mockOnionId,
                     __typename: 'Ingredient',
                     name: 'onion',
                     pluralName: 'onions',
@@ -50,7 +52,7 @@ describe('getEditableRecipeIngredientStr', () => {
             ingredient: {
                 value: 'onion',
                 data: {
-                    _id: '60f4d2e5c3d5a0a4f1b9c0ec',
+                    _id: mockOnionId,
                     __typename: 'Ingredient',
                     name: 'onion',
                     pluralName: 'onions',
@@ -81,10 +83,11 @@ describe('getFinishedRecipeIngredientStr', () => {
                 preferredNumberFormat: 'fraction',
                 hasSpace: true,
                 unique: true,
+                measureType: null,
             },
             size: null,
             ingredient: {
-                _id: '60f4d2e5c3d5a0a4f1b9c0ec',
+                _id: mockOnionId,
                 __typename: 'Ingredient',
                 name: 'onion',
                 pluralName: 'onions',
@@ -103,7 +106,7 @@ describe('getFinishedRecipeIngredientStr', () => {
             unit: null,
             size: null,
             ingredient: {
-                _id: '60f4d2e5c3d5a0a4f1b9c0ec',
+                _id: mockOnionId,
                 __typename: 'Ingredient',
                 name: 'onion',
                 pluralName: 'onions',

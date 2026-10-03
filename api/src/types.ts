@@ -1,5 +1,6 @@
 import type { Types } from 'mongoose';
 import type { PassportContext } from 'graphql-passport';
+import type { ResolverResolveParams } from 'graphql-compose';
 
 import type { User } from './models/User.js';
 
@@ -24,3 +25,13 @@ export interface GraphQLContext
     extends PassportContext<User, { username: string; password: string }> {
     images?: ContextImage[];
 }
+
+/**
+ * Resolve params for resolvers added with `TC.addResolver`, which can't infer them because it
+ * accepts either a Resolver or a resolver definition.
+ */
+export type ResolveParams<TArgs = Record<string, never>> = ResolverResolveParams<
+    unknown,
+    GraphQLContext,
+    TArgs
+>;
