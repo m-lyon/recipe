@@ -285,10 +285,11 @@ Checkbox: Checkbox.extend({
 
 Mantine's `[data-checked]` attribute is set on the root element when the checkbox is checked, so CSS-only state-dependent label colours work without any JS conditionals.
 
-GitHub Actions workflow (`.github/workflows/deploy.yml`) on push to `main`:
+GitHub Actions workflow (`.github/workflows/deploy.yml`):
 
-1. **test job**: Install both projects, run API tests (mocha), start API, run codegen, run client tests (vitest).
-2. **deploy job**: Compile API (prod), build client, join the tailnet (Tailscale, `tag:ci`), rsync both to the server as `deploy-recipe`, restart `recipe.service`, and health-check.
+1. **test job** (pull requests): install, start the API, codegen, lint and type-check client and CLI, then run the API, client and CLI tests. `main` only accepts PRs whose `test` check passed on a branch that is up to date with `main` (ruleset), so `main` is not re-tested on push.
+2. **build job** (push to `main`): start the API against a throwaway MongoDB for codegen, build the client and the production API.
+3. **deploy job** (after build): join the tailnet (Tailscale, `tag:ci`), rsync both to the server as `deploy-recipe`, restart `recipe.service`, and health-check. It holds the production secrets but runs no installs or project code. Runtime config lives in `/etc/recipe.env` on the server. See README.
 
 ## Common Pitfalls
 
