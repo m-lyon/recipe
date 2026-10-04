@@ -6,6 +6,7 @@ import { Reference, gql, useMutation, useQuery } from '@apollo/client';
 import { ReservedTags } from '@recipe/graphql/enums';
 import { useAddRating } from '@recipe/features/rating';
 import { useUploadImages } from '@recipe/features/images';
+import { useRecipeDraft } from '@recipe/features/editing';
 import { BraisingLoader } from '@recipe/common/components';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { formatCalculatedTag } from '@recipe/features/tags';
@@ -46,6 +47,10 @@ export function CreateVeganRecipe() {
     // hydration paints stale store content, then re-keyed items exit/enter via
     // AnimatePresence and the page visibly collapses when the exits finish.
     const [hydratedFor, setHydratedFor] = useState<string | null>(null);
+    const { loadDraft, clearDraft } = useRecipeDraft(
+        `create-vegan:${originalTitleIdentifier ?? ''}`,
+        hydratedFor !== null && hydratedFor === (originalTitleIdentifier ?? '')
+    );
 
     const { images, setImages, resetImages } = useImagesStore(
         useShallow((state) => ({
@@ -97,56 +102,60 @@ export function CreateVeganRecipe() {
             return;
         }
         resetImages();
-        recipeState.resetRecipe();
-        recipeState.setTitle(recipe.title);
-        recipeState.setNumServings(recipe.numServings);
-        recipeState.resetIngredients();
-        recipe.ingredientSubsections.forEach((sub, index) => {
-            recipeState.setIngredientSection(
-                index,
-                sub.ingredients.map((i) => queryIngredientToFinished(i)),
-                sub.name || undefined
+        // A draft holds unsaved changes from before the app was closed; it wins over
+        // the server copy.
+        if (!loadDraft()) {
+            recipeState.resetRecipe();
+            recipeState.setTitle(recipe.title);
+            recipeState.setNumServings(recipe.numServings);
+            recipeState.resetIngredients();
+            recipe.ingredientSubsections.forEach((sub, index) => {
+                recipeState.setIngredientSection(
+                    index,
+                    sub.ingredients.map((i) => queryIngredientToFinished(i)),
+                    sub.name || undefined
+                );
+                if (
+                    index < recipe.ingredientSubsections.length - 1 ||
+                    recipe.ingredientSubsections.length > 1 ||
+                    recipe.ingredientSubsections[0].name
+                ) {
+                    recipeState.addIngredientSection();
+                }
+            });
+            recipeState.resetInstructions();
+            recipe.instructionSubsections.forEach((sub, index) => {
+                recipeState.setInstructionSection(
+                    index,
+                    [...sub.instructions, ''],
+                    sub.name || undefined
+                );
+                if (
+                    index < recipe.instructionSubsections.length - 1 ||
+                    recipe.instructionSubsections.length > 1 ||
+                    recipe.instructionSubsections[0].name
+                ) {
+                    recipeState.addInstructionSection();
+                }
+            });
+            recipeState.setNotes(recipe.notes ?? '');
+            recipeState.setTags(
+                recipe.tags.map((tag) => ({
+                    _id: tag._id,
+                    value: tag.value,
+                    key: tag._id,
+                    isNew: false,
+                }))
             );
-            if (
-                index < recipe.ingredientSubsections.length - 1 ||
-                recipe.ingredientSubsections.length > 1 ||
-                recipe.ingredientSubsections[0].name
-            ) {
-                recipeState.addIngredientSection();
+            recipeState.setSource(recipe.source ?? '');
+            if (recipe.isIngredient && recipe.pluralTitle) {
+                recipeState.setAsIngredient();
+                recipeState.setPluralTitle(recipe.pluralTitle);
+            } else {
+                recipeState.resetAsIngredient();
             }
-        });
-        recipeState.resetInstructions();
-        recipe.instructionSubsections.forEach((sub, index) => {
-            recipeState.setInstructionSection(
-                index,
-                [...sub.instructions, ''],
-                sub.name || undefined
-            );
-            if (
-                index < recipe.instructionSubsections.length - 1 ||
-                recipe.instructionSubsections.length > 1 ||
-                recipe.instructionSubsections[0].name
-            ) {
-                recipeState.addInstructionSection();
-            }
-        });
-        recipeState.setNotes(recipe.notes ?? '');
-        recipeState.setTags(
-            recipe.tags.map((tag) => ({
-                _id: tag._id,
-                value: tag.value,
-                key: tag._id,
-                isNew: false,
-            }))
-        );
-        recipeState.setSource(recipe.source ?? '');
-        if (recipe.isIngredient && recipe.pluralTitle) {
-            recipeState.setAsIngredient();
-            recipeState.setPluralTitle(recipe.pluralTitle);
-        } else {
-            recipeState.resetAsIngredient();
+            recipeState.resetCreateVeganVersion();
         }
-        recipeState.resetCreateVeganVersion();
         // Store hydration is complete; images load in below without shifting the
         // content above them, so don't hold up rendering for the fetch.
         setHydratedFor(originalTitleIdentifier ?? '');
@@ -241,6 +250,8 @@ export function CreateVeganRecipe() {
                 });
             }
             recipeResult = result.data.recipeCreateVeganVersion.record;
+            // The recipe now exists, so a restored draft would create a duplicate.
+            clearDraft();
         } catch (e) {
             let description = 'An error occurred while creating the vegan recipe';
             if (e instanceof Error) description = e.message;
