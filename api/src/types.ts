@@ -7,6 +7,8 @@ import type { User } from './models/User.js';
 type UserDocument = User;
 
 declare global {
+    // Passport's types declare `Express.User` in this namespace, so it can only be extended here
+    // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace Express {
         // Passport puts the Mongoose user document on the request
         interface User extends UserDocument {}

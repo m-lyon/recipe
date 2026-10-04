@@ -1,7 +1,7 @@
 import { GraphQLError } from 'graphql';
-import { Document, Error as MongooseError, Model } from 'mongoose';
-import { ObjectTypeComposer, ResolverResolveParams } from 'graphql-compose';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
+import { Document, Model, Error as MongooseError } from 'mongoose';
+import { ObjectTypeComposer, ResolverResolveParams } from 'graphql-compose';
 import { findById } from 'graphql-compose-mongoose/lib/resolvers/findById.js';
 
 // Mongoose sets `_message` (e.g. "Recipe validation failed") but doesn't declare it

@@ -1,12 +1,22 @@
-import { Types } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 import { Tag } from './Tag.js';
 import { User } from './User.js';
 import { Unit } from './Unit.js';
 import { Recipe } from './Recipe.js';
 
+/**
+ * The fields these validators read from the document being validated.
+ */
+type ValidatedDoc = Document<Types.ObjectId> & {
+    owner?: Types.ObjectId;
+    unique?: boolean;
+    originalRecipe?: Types.ObjectId | null;
+    veganVersion?: Types.ObjectId | null;
+};
+
 async function findDuplicatesInAdminsAndUserScope(
-    doc: any,
+    doc: ValidatedDoc,
     model: string,
     attribute: string,
     value: string
@@ -25,7 +35,7 @@ async function findDuplicatesInAdminsAndUserScope(
 }
 
 export function uniqueInAdminsAndUser(model: string, attribute: string, message?: string) {
-    async function validator(this: any, value: string) {
+    async function validator(this: ValidatedDoc, value: string) {
         if (this.unique !== undefined && !this.unique) {
             return true;
         }
@@ -45,7 +55,7 @@ export function uniqueInAdminsAndUser(model: string, attribute: string, message?
 }
 
 export function uniqueRecipeTitleInAdminsAndUser(message?: string) {
-    async function validator(this: any, value: string) {
+    async function validator(this: ValidatedDoc, value: string) {
         if (this.unique !== undefined && !this.unique) {
             return true;
         }
@@ -96,7 +106,7 @@ export function uniqueRecipeTitleInAdminsAndUser(message?: string) {
 }
 
 export function unique(model: string, attribute: string) {
-    async function validator(this: any, value: string) {
+    async function validator(this: ValidatedDoc, value: string) {
         if (this._id) {
             const count = await this.model(model).countDocuments({
                 $and: [
