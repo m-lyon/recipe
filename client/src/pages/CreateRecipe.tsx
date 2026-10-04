@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useAddRating } from '@recipe/features/rating';
 import { useUploadImages } from '@recipe/features/images';
+import { useRecipeDraft } from '@recipe/features/editing';
 import { useImagesStore, useRecipeStore } from '@recipe/stores';
 import { CREATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { DELAY_LONG, DELAY_SHORT, PATH } from '@recipe/constants';
@@ -25,16 +26,18 @@ export function CreateRecipe() {
     // Rendering before the reset paints whatever recipe the store last held, and the
     // stale items then animate out via AnimatePresence, visibly collapsing the page.
     const [storeReady, setStoreReady] = useState(false);
+    const { loadDraft, clearDraft } = useRecipeDraft('create', storeReady);
     useEffect(() => {
         // Resets on unmount and mount
         resetImages();
         resetRecipe();
+        loadDraft();
         setStoreReady(true);
         return () => {
             resetImages();
             resetRecipe();
         };
-    }, [resetImages, resetRecipe]);
+    }, [resetImages, resetRecipe, loadDraft]);
     // --------------------------------------------------------------------
     const [createRecipe, { loading: recipeLoading, data: response }] = useMutation(CREATE_RECIPE, {
         update(cache, { data }) {
@@ -54,6 +57,8 @@ export function CreateRecipe() {
             // Create Recipe
             const result = await createRecipe({ variables: { recipe } });
             recipeResult = result.data?.recipeCreateOne?.record;
+            // The recipe now exists, so a restored draft would create a duplicate.
+            clearDraft();
         } catch (e) {
             let description = 'An error occurred while creating the recipe';
             if (e instanceof Error) {

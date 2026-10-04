@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 vi.mock('zustand');
 vi.mock('lottie-react', () => ({ default: () => null }));
@@ -9,3 +9,8 @@ vi.mock('lottie-react', () => ({ default: () => null }));
 if ('happyDOM' in window) {
     delete (Element.prototype as Partial<Element>).animate;
 }
+
+// Drafts and the last route persist in localStorage; keep each test independent.
+afterEach(() => {
+    localStorage.clear();
+});
