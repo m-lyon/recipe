@@ -12,6 +12,8 @@ type ReservedIngredientTags = (typeof ReservedIngredientTags)[keyof typeof Reser
 export interface Ingredient extends Document {
     name: string;
     pluralName: string;
+    /** Display only: a countable ingredient is pluralised after a unit, "200 g mushrooms". */
+    isCountable: boolean;
     owner: Types.ObjectId;
     tags: ReservedIngredientTags[];
 }
@@ -36,6 +38,7 @@ const ingredientSchema = new Schema<Ingredient>({
             'The plural ingredient name must be unique.'
         ),
     },
+    isCountable: { type: Boolean, required: true },
     owner: { type: Schema.Types.ObjectId, required: true, ref: 'User', validate: ownerExists() },
     tags: {
         type: [String],

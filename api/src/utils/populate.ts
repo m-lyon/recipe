@@ -195,27 +195,31 @@ export async function populateIngredients() {
         const user = await User.findOne({ role: 'user' });
 
         const dummyIngredients = [
-            { name: 'onion', pluralName: 'onions', owner: admin._id },
+            { name: 'onion', pluralName: 'onions', isCountable: true, owner: admin._id },
             {
                 name: 'tomato',
+                isCountable: true,
                 pluralName: 'tomatoes',
                 owner: admin._id,
                 tags: ['vegan', 'vegetarian'],
             },
             {
                 name: 'chicken',
+                isCountable: false,
                 pluralName: 'chickens',
                 owner: admin._id,
                 tags: [],
             },
             {
                 name: 'beef',
+                isCountable: false,
                 pluralName: 'beef',
                 owner: user._id,
                 tags: [],
             },
             {
                 name: 'rice',
+                isCountable: false,
                 pluralName: 'rice',
                 owner: user._id,
                 tags: ['vegan', 'vegetarian'],

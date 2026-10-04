@@ -146,6 +146,7 @@ export async function createSizes(user: User) {
 export async function createIngredients(user: User) {
     const ingredient1 = await new Ingredient({
         name: 'chicken',
+        isCountable: true,
         pluralName: 'chickens',
         owner: user._id,
         tags: [],
@@ -153,6 +154,7 @@ export async function createIngredients(user: User) {
     assert(ingredient1);
     const ingredient2 = await new Ingredient({
         name: 'tomato',
+        isCountable: true,
         pluralName: 'tomatoes',
         owner: user._id,
         tags: ['vegan', 'vegetarian'],
@@ -160,6 +162,7 @@ export async function createIngredients(user: User) {
     assert(ingredient2);
     const ingredient3 = await new Ingredient({
         name: 'salt',
+        isCountable: false,
         pluralName: 'salt',
         owner: user._id,
         tags: ['vegan', 'vegetarian'],

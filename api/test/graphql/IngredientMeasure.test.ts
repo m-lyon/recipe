@@ -43,14 +43,6 @@ const QUERY_BY_INGREDIENT_IDS = `
         }
     }`;
 
-const IS_COUNTABLE_QUERY = `
-    query Ingredients {
-        ingredientMany {
-            name
-            isCountable
-        }
-    }`;
-
 const REMOVE_UNIT_MUTATION = `
     mutation RemoveUnit($id: MongoID!) {
         unitRemoveById(_id: $id) {
@@ -240,36 +232,6 @@ describe('ingredientMeasuresByIngredientIds', function () {
         assert.equal(results[0].grams, 123);
         assert.equal(results[0].unit.dimension, 'count');
         assert.isNull(results[0].size);
-    });
-});
-
-describe('Ingredient.isCountable', function () {
-    before(startServer);
-    after(stopServer);
-    beforeEach(seed);
-    afterEach(dropCollections);
-
-    it('should be true only for ingredients with a count measure', async function () {
-        const user = await User.findOne({ username: 'testuser1' }).orFail();
-        const tomato = await Ingredient.findOne({ name: 'tomato' }).orFail();
-        const salt = await Ingredient.findOne({ name: 'salt' }).orFail();
-        const each = await Unit.findOne({ longSingular: 'each' }).orFail();
-        const tsp = await Unit.findOne({ longSingular: 'teaspoon' }).orFail();
-        await new IngredientMeasure({ ingredient: tomato._id, unit: each._id, grams: 123 }).save();
-        await new IngredientMeasure({ ingredient: salt._id, unit: tsp._id, grams: 6 }).save();
-
-        const response = await this.apolloServer.executeOperation(
-            { query: IS_COUNTABLE_QUERY },
-            makeContext(user)
-        );
-        assert.isUndefined(response.body.singleResult.errors);
-        const ingredients = (
-            response.body.singleResult.data as {
-                ingredientMany: Array<{ name: string; isCountable: boolean }>;
-            }
-        ).ingredientMany;
-        const byName = Object.fromEntries(ingredients.map((i) => [i.name, i.isCountable]));
-        assert.deepEqual(byName, { chicken: false, salt: false, tomato: true });
     });
 });
 

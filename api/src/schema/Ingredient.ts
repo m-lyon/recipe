@@ -1,5 +1,3 @@
-import { Unit } from '../models/Unit.js';
-import { GraphQLContext } from '../types.js';
 import { validateItemNotInRecipe } from './validation.js';
 import { IngredientMeasure } from '../models/IngredientMeasure.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
@@ -21,39 +19,6 @@ IngredientCreateTC.addResolver({
     type: IngredientTC.mongooseResolvers.createOne().getType(),
     args: IngredientCreateTC.mongooseResolvers.createOne().getArgs(),
     resolve: createOneResolver(Ingredient, IngredientCreateTC),
-});
-
-/**
- * The ids of every ingredient with a count measure, loaded once per request: an ingredient
- * list resolves `isCountable` for every row.
- */
-const countableIngredientIds = new WeakMap<object, Promise<Set<string>>>();
-function getCountableIngredientIds(context: GraphQLContext): Promise<Set<string>> {
-    let ids = countableIngredientIds.get(context);
-    if (!ids) {
-        ids = (async () => {
-            const countUnits = await Unit.find({ dimension: 'count' }).distinct('_id');
-            const ingredients = await IngredientMeasure.find({
-                unit: { $in: countUnits },
-            }).distinct('ingredient');
-            return new Set(ingredients.map(String));
-        })();
-        countableIngredientIds.set(context, ids);
-    }
-    return ids;
-}
-
-// Derived, not stored: an ingredient is countable when it has a count measure.
-IngredientTC.addFields({
-    isCountable: {
-        type: 'Boolean!',
-        description: 'True when the ingredient has a measure in a count unit, e.g. 1 each',
-        projection: { _id: true },
-        resolve: async (source, _args, context: GraphQLContext) => {
-            const ids = await getCountableIngredientIds(context);
-            return ids.has(String(source._id));
-        },
-    },
 });
 
 export const IngredientQuery = {

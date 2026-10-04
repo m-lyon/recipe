@@ -70,6 +70,7 @@ describe('ingredientCreateOne', () => {
         const newRecord = {
             name: 'chicken',
             pluralName: 'chickens',
+            isCountable: true,
             tags: ['vegetarian'],
         };
         const response = await createIngredient(this, user, newRecord);
@@ -79,7 +80,7 @@ describe('ingredientCreateOne', () => {
 
     it('should create an ingredient with an empty tags list', async function () {
         const user = await User.findOne({ username: 'testuser1' });
-        const newRecord = { name: 'chicken', pluralName: 'chickens', tags: [] };
+        const newRecord = { name: 'chicken', pluralName: 'chickens', isCountable: true, tags: [] };
         const response = await createIngredient(this, user, newRecord);
         const record = parseCreatedIngredient(response);
         assert.equal(record.name, 'chicken');
@@ -90,11 +91,13 @@ describe('ingredientCreateOne', () => {
         const newRecordOne = {
             name: 'chicken',
             pluralName: 'chickens',
+            isCountable: true,
             tags: [],
         };
         const newRecordTwo = {
             name: 'chicken',
             pluralName: 'chickeny',
+            isCountable: true,
             tags: [],
         };
         await createIngredient(this, user, newRecordOne);
@@ -112,6 +115,7 @@ describe('ingredientCreateOne', () => {
         const newRecord = {
             name: 'chicken',
             pluralName: 'chickens',
+            isCountable: true,
             tags: ['fish'],
         };
         const response = await createIngredient(this, user, newRecord);
@@ -174,11 +178,13 @@ describe('ingredientUpdateById', () => {
         const recordOneVars = {
             name: 'chicken',
             pluralName: 'chickens',
+            isCountable: true,
             tags: ['vegetarian'],
         };
         const recordTwoVars = {
             name: 'beef',
             pluralName: 'beefs',
+            isCountable: true,
             tags: ['vegan'],
         };
         const recordOneResponse = await createIngredient(this, user, recordOneVars);
@@ -202,11 +208,13 @@ describe('ingredientUpdateById', () => {
         const recordOneVars = {
             name: 'chicken',
             pluralName: 'chickens',
+            isCountable: true,
             tags: ['vegetarian'],
         };
         const recordTwoVars = {
             name: 'beef',
             pluralName: 'beefs',
+            isCountable: true,
             tags: ['vegan'],
         };
         const recordOneResponse = await createIngredient(this, user, recordOneVars);
@@ -234,9 +242,10 @@ describe('ingredientUpdateById', () => {
         const recordOneVars = {
             name: 'chicken',
             pluralName: 'chickens',
+            isCountable: true,
             tags: [],
         };
-        const recordTwoVars = { name: 'beef', pluralName: 'beefs', tags: [] };
+        const recordTwoVars = { name: 'beef', pluralName: 'beefs', isCountable: true, tags: [] };
         const recordOneResponse = await createIngredient(this, user, recordOneVars);
         const recordOne = parseCreatedIngredient(recordOneResponse);
         await createIngredient(this, user, recordTwoVars);
@@ -256,9 +265,10 @@ describe('ingredientUpdateById', () => {
         const recordOneVars = {
             name: 'chicken',
             pluralName: 'chickens',
+            isCountable: true,
             tags: [],
         };
-        const recordTwoVars = { name: 'beef', pluralName: 'beefs', tags: [] };
+        const recordTwoVars = { name: 'beef', pluralName: 'beefs', isCountable: true, tags: [] };
         const recordOneResponse = await createIngredient(this, user, recordOneVars);
         const recordOne = parseCreatedIngredient(recordOneResponse);
         await createIngredient(this, user, recordTwoVars);
@@ -313,6 +323,7 @@ describe('ingredientRemoveById', () => {
         const unusedIngredient = {
             name: 'unused-ingredient',
             pluralName: 'unused-ingredients',
+            isCountable: true,
             tags: [],
         };
 

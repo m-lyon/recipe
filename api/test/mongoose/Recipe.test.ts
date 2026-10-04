@@ -46,6 +46,7 @@ describe('Quantity Validation', function () {
         const ingredient = new Ingredient({
             name: 'test ingredient',
             pluralName: 'test ingredients',
+            isCountable: true,
             owner: user._id,
             tags: [],
         });
