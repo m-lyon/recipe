@@ -34,6 +34,28 @@ describe('suggestFromPortion', () => {
         });
     });
 
+    it('finds a size word inside a described item portion', () => {
+        const result = suggest(
+            portion({
+                description: '1 Potato large (3" to 4-1/4" dia)',
+                modifier: 'Potato large (3" to 4-1/4" dia)',
+                gramWeight: 369,
+            })
+        );
+        expect(result?.draft).toEqual({
+            unitId: mockEach._id,
+            sizeId: mockLargeId,
+            prepMethodId: null,
+            grams: 369,
+        });
+    });
+
+    it('does not read "extra large" as large', () => {
+        expect(
+            suggest(portion({ description: '1 extra large', modifier: 'extra large' }))?.reason
+        ).toBe('no matching unit or size "extra large"');
+    });
+
     it('maps "cup, chopped" to cup + prep method, per one cup', () => {
         const result = suggest(
             portion({

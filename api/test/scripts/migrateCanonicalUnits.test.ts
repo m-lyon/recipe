@@ -18,6 +18,8 @@ const ids = {
     millilitre: id(),
     clove: id(),
     mystery: id(),
+    ounce: id(),
+    pound: id(),
     onion: id(),
     flour: id(),
     garlic: id(),
@@ -56,6 +58,9 @@ async function seedLegacy() {
         unit(ids.millilitre, 'milliliter', 'ml', { measureType: 'volume' }),
         unit(ids.clove, 'clove', 'clove', { measureType: null }),
         unit(ids.mystery, 'scoop', 'scoop', { measureType: 'volume' }),
+        // Production has no measure type on any unit, and lb and oz are in no group.
+        unit(ids.ounce, 'ounce', 'oz'),
+        unit(ids.pound, 'pound', 'lb'),
     ]);
     const rules = [
         { _id: id(), unit: ids.tablespoon, baseUnit: ids.teaspoon, baseUnitThreshold: 3, baseToUnitConversion: 3 },
@@ -178,7 +183,7 @@ describe('migrateCanonicalUnits', function () {
 
     it('should build ladders with thresholds in canonical units', async function () {
         const report = await migrateCanonicalUnits(mongoose.connection.db);
-        assert.sameMembers(report.laddersCreated, ['us-volume', 'metric-mass']);
+        assert.sameMembers(report.laddersCreated, ['us-volume', 'metric-mass', 'us-mass']);
 
         const ladders = mongoose.connection.db.collection('displayladders');
         const usVolume = await ladders.findOne({ name: 'us-volume' });
@@ -193,6 +198,11 @@ describe('migrateCanonicalUnits', function () {
         assert.deepEqual(
             metricMass!.steps.map((step: { minCanonical: number }) => step.minCanonical),
             [1000, 0]
+        );
+        const usMass = await ladders.findOne({ name: 'us-mass' });
+        assert.deepEqual(
+            usMass!.steps.map((step: { unit: Types.ObjectId }) => String(step.unit)),
+            [String(ids.pound), String(ids.ounce)]
         );
         assert.sameMembers(report.collectionsDropped, ['unitconversions', 'conversionrules']);
     });

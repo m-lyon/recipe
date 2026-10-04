@@ -417,21 +417,23 @@ async function migrateLadders(
         await create(base.dimension, base.system, steps);
     }
 
-    // A metric ladder per dimension, when the conversion groups did not already make one.
-    const metric: Array<[UnitDimension, number, number]> = [
-        ['mass', 1000, 1],
-        ['volume', 1000, 1],
+    // A metric ladder per dimension, and a US mass ladder, when the conversion groups did
+    // not already make one. Without a ladder a reader's system preference cannot convert.
+    const defaults: Array<[UnitDimension, UnitSystem, number, number]> = [
+        ['mass', 'metric', 1000, 1],
+        ['volume', 'metric', 1000, 1],
+        ['mass', 'us', 453.59237, 28.349523125],
     ];
-    for (const [dimension, large, small] of metric) {
-        if (covered.has(`${dimension}-metric`)) continue;
+    for (const [dimension, system, large, small] of defaults) {
+        if (covered.has(`${dimension}-${system}`)) continue;
         const find = (size: number) =>
             [...assigned.entries()].find(
-                ([, m]) => m.dimension === dimension && m.system === 'metric' && m.perCanonical === size
+                ([, m]) => m.dimension === dimension && m.system === system && m.perCanonical === size
             )?.[0];
         const largeId = find(large);
         const smallId = find(small);
         if (!largeId || !smallId) continue;
-        await create(dimension, 'metric', [
+        await create(dimension, system, [
             { unit: new Types.ObjectId(largeId), minCanonical: large },
             { unit: new Types.ObjectId(smallId), minCanonical: 0 },
         ]);

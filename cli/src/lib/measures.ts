@@ -98,6 +98,21 @@ function matchUnit(units: UnitSummary[], name: string): UnitSummary | undefined 
     );
 }
 
+/** Words that make a size a different size: "extra large" is not "large". */
+const SIZE_MODIFIERS = new Set(['extra', 'very', 'super', 'x']);
+
+function sizeWithin(sizes: NamedSummary[], text: string): NamedSummary | undefined {
+    const words = normalise(text).split(/\s+/);
+    return sizes.find((size) => {
+        const target = normalise(size.value).split(/\s+/);
+        for (let i = 0; i + target.length <= words.length; i++) {
+            const matches = target.every((word, j) => words[i + j] === word);
+            if (matches && !SIZE_MODIFIERS.has(words[i - 1])) return true;
+        }
+        return false;
+    });
+}
+
 function matchNamed(options: NamedSummary[], name: string): NamedSummary | undefined {
     const target = normalise(name);
     return options.find((option) => normalise(option.value) === target);
@@ -136,10 +151,13 @@ export function suggestFromPortion(
     if (!(amount > 0)) {
         return { label, reason: 'no amount' };
     }
-    if (rest.includes('(')) {
+    // An item's parenthetical only describes it ("medium (2-1/4" to 3-1/4" dia)"), but a
+    // volume's changes what is measured ("cup (4.86 large eggs)").
+    const described = portion.kind === 'ITEM' ? rest.replace(/\s*\(.*\)\s*/g, ' ').trim() : rest;
+    if (described.includes('(')) {
         return { label, reason: 'qualified portion, enter it by hand' };
     }
-    const [head, qualifier] = rest.split(',').map((part) => part.trim());
+    const [head, qualifier] = described.split(',').map((part) => part.trim());
 
     let unitId: string;
     let sizeId: string | null = null;
@@ -151,7 +169,8 @@ export function suggestFromPortion(
         if (!unit) return { label, reason: `no matching unit "${head}"` };
         unitId = unit._id;
     } else {
-        const size = matchNamed(sizes, head);
+        // "1 large" names a size; "1 Potato medium" names one among other words.
+        const size = matchNamed(sizes, head) ?? sizeWithin(sizes, head);
         const countUnit = matchUnit(
             units.filter((u) => u.dimension === 'count'),
             head

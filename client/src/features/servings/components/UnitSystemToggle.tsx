@@ -17,6 +17,7 @@ export function UnitSystemToggle(props: SelectProps) {
         <Select
             size='xs'
             width='auto'
+            minW='7.5em'
             variant='outline'
             aria-label='Show quantities in'
             value={unitSystem}
