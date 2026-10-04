@@ -4,7 +4,7 @@ import { runCommand } from '@oclif/test';
 import { ExitCode } from '../../src/lib/errors.js';
 import { SessionCache } from '../../src/lib/session.js';
 import { FakeApi, LOGIN_OK } from '../helpers/fakeApi.js';
-import { EGG, INGREDIENTS, OLIVE_OIL } from '../helpers/fixtures.js';
+import { EACH, EGG, GARLIC, GRAM, INGREDIENTS, OLIVE_OIL } from '../helpers/fixtures.js';
 import { ROOT, cleanTestEnvironment, sessionFile, useTestEnvironment } from '../helpers/env.js';
 
 const USER = {
@@ -31,20 +31,17 @@ const RECIPE = {
                 {
                     _id: 'ri-1',
                     quantity: '2',
-                    unit: null,
+                    unit: EACH,
                     size: null,
+                    prepMethod: null,
                     ingredient: INGREDIENTS[0],
                 },
                 {
                     _id: 'ri-2',
                     quantity: '30',
-                    unit: {
-                        __typename: 'Unit',
-                        _id: 'u-g',
-                        shortSingular: 'g',
-                        measureType: 'mass',
-                    },
+                    unit: GRAM,
                     size: null,
+                    prepMethod: null,
                     ingredient: INGREDIENTS[1],
                 },
             ],
@@ -58,7 +55,17 @@ const EGG_INFO = {
     ingredient: 'ing-egg',
     usdaFdcId: 171287,
     perGram: { calories: 1.43, protein: 0.1256, carbs: 0.0072, fat: 0.0951 },
-    perUnit: { calories: 71.5, protein: 6.28, carbs: 0.36, fat: 4.755 },
+};
+
+/** One egg weighs 50 g, so "2 eggs" is calculable. */
+const EGG_MEASURE = {
+    __typename: 'IngredientMeasure',
+    _id: 'meas-egg',
+    ingredient: 'ing-egg',
+    grams: 50,
+    unit: EACH,
+    size: null,
+    prepMethod: null,
 };
 
 /** The output envelope. The caller names the shape of `data` it asserts on. */
@@ -84,6 +91,9 @@ describe('read commands', () => {
             CliGetRecipeByIdentifier: { data: { recipeOne: RECIPE } },
             CliGetNutritionalInfos: { data: { nutritionalInfosByIngredientIds: [EGG_INFO] } },
             CliGetNutritionalInfo: { data: { nutritionalInfoByIngredient: EGG_INFO } },
+            CliGetIngredientMeasures: {
+                data: { ingredientMeasuresByIngredientIds: [EGG_MEASURE] },
+            },
             CliUsdaSearch: {
                 data: { usdaSearch: [{ __typename: 'UsdaFoodItem', ...OLIVE_OIL, portions: [] }] },
             },
@@ -186,26 +196,42 @@ describe('read commands', () => {
         api.install();
         const { stdout } = await runCommand(['usda', 'show', '171287'], ROOT);
         expect(stdout).to.contain('KIND');
-        expect(stdout).to.contain('5 item portions');
+        expect(stdout).to.contain('6 item or volume portions');
         expect(stdout).to.contain('ambiguous');
     });
 
-    it('usda show says when a record has no item portions', async () => {
+    it('usda show says when a record has nothing to store as a measure', async () => {
         api.on('CliUsdaFoodItem', {
-            data: { usdaFoodItem: { __typename: 'UsdaFoodItem', ...OLIVE_OIL } },
+            data: { usdaFoodItem: { __typename: 'UsdaFoodItem', ...GARLIC } },
         });
         api.install();
-        const { stdout } = await runCommand(['usda', 'show', '171413'], ROOT);
-        expect(stdout).to.contain('No item portions');
+        const { stdout } = await runCommand(['usda', 'show', '1104647'], ROOT);
+        expect(stdout).to.contain('No item or volume portions');
     });
 
-    it('nutrition status reports coverage', async () => {
+    it('nutrition status counts calculable rows by the rule recipes show uses', async () => {
         api.install();
         const { stdout } = await runCommand(['nutrition', 'status', '--json'], ROOT);
-        const payload = json<{ total: number; linked: number; missing: number }>(stdout).data;
-        expect(payload.total).to.equal(INGREDIENTS.length);
-        expect(payload.linked).to.equal(1);
-        expect(payload.missing).to.equal(INGREDIENTS.length - 1);
+        type Counts = { total: number; linked: number; partial: number; missing: number };
+        const payload = json<{ rows: Counts; ingredients: Counts }>(stdout).data;
+        // 2 eggs is calculable through the egg measure; olive oil has no record.
+        expect(payload.rows).to.deep.equal({ total: 2, linked: 1, partial: 0, missing: 1 });
+        expect(payload.ingredients.total).to.equal(INGREDIENTS.length);
+        expect(payload.ingredients.linked).to.equal(1);
+    });
+
+    it('nutrition status lists the weights that would make rows calculable', async () => {
+        api.on('CliGetIngredientMeasures', { data: { ingredientMeasuresByIngredientIds: [] } });
+        api.install();
+        const { stdout } = await runCommand(['nutrition', 'status', '--json'], ROOT);
+        const payload = json<{
+            rows: { partial: number };
+            gaps: { missingWeights: Array<{ weight: string; rows: number }> };
+        }>(stdout).data;
+        expect(payload.rows.partial).to.equal(1);
+        expect(payload.gaps.missingWeights).to.deep.equal([
+            { ingredient: 'ing-egg', weight: '1 egg', rows: 1 },
+        ]);
     });
 
     it('nutrition unlink removes the record, and sends nothing under --dry-run', async () => {

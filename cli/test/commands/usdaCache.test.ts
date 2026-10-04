@@ -3,7 +3,7 @@ import { runCommand } from '@oclif/test';
 
 import { SessionCache } from '../../src/lib/session.js';
 import { FakeApi, LOGIN_OK } from '../helpers/fakeApi.js';
-import { EGG, INGREDIENTS } from '../helpers/fixtures.js';
+import { EGG, INGREDIENTS, MEASURE_COMPONENTS } from '../helpers/fixtures.js';
 import { ROOT, cleanTestEnvironment, sessionFile, useTestEnvironment } from '../helpers/env.js';
 
 describe('USDA caching across commands', () => {
@@ -17,6 +17,15 @@ describe('USDA caching across commands', () => {
             CliGetAllIngredients: { data: { ingredientManyAll: INGREDIENTS } },
             CliUsdaFoodItem: { data: { usdaFoodItem: { __typename: 'UsdaFoodItem', ...EGG } } },
             CliGetNutritionalInfo: { data: { nutritionalInfoByIngredient: null } },
+            CliGetMeasureComponents: { data: MEASURE_COMPONENTS },
+            CliGetIngredientMeasures: { data: { ingredientMeasuresByIngredientIds: [] } },
+            CliCreateIngredientMeasure: (variables) => ({
+                data: {
+                    ingredientMeasureCreateOne: {
+                        record: { _id: 'meas-1', ...(variables.record as object) },
+                    },
+                },
+            }),
             CliCreateNutritionalInfo: (variables) => ({
                 data: {
                     nutritionalInfoCreateOne: {

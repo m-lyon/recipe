@@ -1,11 +1,6 @@
 import type { UsdaPortion } from './types.js';
+import { ambiguous, notFound } from './errors.js';
 import { EMPTY, num, renderTable } from './format.js';
-import { ambiguous, notFound, rejected } from './errors.js';
-
-/** Only ITEM portions describe one whole countable thing. */
-export function itemPortions(portions: UsdaPortion[]): UsdaPortion[] {
-    return portions.filter((portion) => portion.kind === 'ITEM');
-}
 
 /**
  * The portion table, numbered from 1 so that `--portion 3` and the printed
@@ -31,15 +26,16 @@ export function renderPortions(portions: UsdaPortion[]): string {
             portion.ambiguous ? 'ambiguous' : '',
         ])
     );
-    const items = itemPortions(portions);
-    // Say plainly when there is nothing to derive perUnit from. Roughly a third
-    // of foods have no item portion at all.
+    const storable = portions.filter(
+        (portion) => portion.kind === 'ITEM' || portion.kind === 'VOLUME'
+    );
+    // Say plainly when there is nothing to store. Weights are priced by perGram alone.
     const footer =
-        items.length === 0
-            ? 'No item portions. This record cannot supply --portion; look for a different ' +
-              'record, or enter perUnit by hand.'
-            : `${items.length} item portion${items.length === 1 ? '' : 's'}. ` +
-              'Only item portions can supply --portion.';
+        storable.length === 0
+            ? 'No item or volume portions. Nothing here can be stored as a measure; look for ' +
+              'a different record, or enter a measure by hand.'
+            : `${storable.length} item or volume portion${storable.length === 1 ? '' : 's'}. ` +
+              'Pass --portion to "nutrition link" to store one as a measure.';
     return ['PORTIONS', table, '', footer].join('\n');
 }
 
@@ -75,22 +71,4 @@ export function selectPortion(portions: UsdaPortion[], selector: string): UsdaPo
         );
     }
     return matches[0];
-}
-
-/**
- * Refuses any portion that is not an item.
- *
- * A VOLUME portion such as "cup (4.86 large eggs)" overstates one egg roughly
- * fivefold, and a SERVING portion such as garlic's 85 g RACC by more than an
- * order of magnitude.
- */
-export function assertItemPortion(portion: UsdaPortion): void {
-    if (portion.kind !== 'ITEM') {
-        throw rejected(
-            `Portion "${portion.description}" is of kind ${portion.kind.toLowerCase()}, not item. ` +
-                'Only an item portion describes one whole thing, so only an item portion can ' +
-                'supply perUnit.',
-            { portion }
-        );
-    }
 }

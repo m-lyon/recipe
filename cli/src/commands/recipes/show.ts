@@ -2,9 +2,11 @@ import { Args } from '@oclif/core';
 
 import { BaseCommand } from '../../lib/base.js';
 import { resolveRecipe } from '../../lib/resolve.js';
-import type { NutritionalInfoSummary } from '../../lib/types.js';
+import { measuresByIngredient } from '../../lib/measures.js';
 import { GET_NUTRITIONAL_INFOS } from '../../graphql/operations.js';
+import { GET_INGREDIENT_MEASURES } from '../../graphql/operations.js';
 import { EMPTY, indent, renderTable, text } from '../../lib/format.js';
+import type { MeasureSummary, NutritionalInfoSummary } from '../../lib/types.js';
 import { indexByIngredient, nutritionStatus, recipeIngredientIds } from '../../lib/nutrition.js';
 
 export default class RecipesShow extends BaseCommand {
@@ -36,6 +38,12 @@ export default class RecipesShow extends BaseCommand {
                 : ((await client.request(GET_NUTRITIONAL_INFOS, { ingredientIds }))
                       .nutritionalInfosByIngredientIds as unknown as NutritionalInfoSummary[]);
         const byIngredient = indexByIngredient(infos.filter(Boolean));
+        const measures =
+            ingredientIds.length === 0
+                ? []
+                : (((await client.request(GET_INGREDIENT_MEASURES, { ingredientIds }))
+                      .ingredientMeasuresByIngredientIds ?? []) as unknown as MeasureSummary[]);
+        const measuresOf = measuresByIngredient(measures);
 
         const blocks: string[] = [];
         const subsections = recipe.ingredientSubsections.map((subsection) => {
@@ -43,7 +51,11 @@ export default class RecipesShow extends BaseCommand {
                 const ingredient = entry.ingredient;
                 const isRecipe = ingredient.__typename !== 'Ingredient';
                 const info = isRecipe ? null : byIngredient.get(ingredient._id);
-                const status = nutritionStatus(entry, info);
+                const status = nutritionStatus(
+                    entry,
+                    info,
+                    isRecipe ? [] : (measuresOf.get(ingredient._id) ?? [])
+                );
                 return {
                     _id: ingredient._id,
                     type: isRecipe ? 'recipe' : 'ingredient',
@@ -51,7 +63,8 @@ export default class RecipesShow extends BaseCommand {
                         ? (ingredient as { title: string }).title
                         : (ingredient as { name: string }).name,
                     quantity: entry.quantity ?? null,
-                    unit: entry.unit?.shortSingular ?? null,
+                    // The hidden each unit is shown as no unit, as recipes render it.
+                    unit: entry.unit && !entry.unit.hidden ? entry.unit.shortSingular : null,
                     nutrition: status.state,
                     reason: status.reason,
                     usdaFdcId: info?.usdaFdcId ?? null,

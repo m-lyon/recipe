@@ -34,8 +34,40 @@ export const INGREDIENT_FIELDS = gql(`
         name
         pluralName
         isCountable
-        density
         tags
+    }
+`);
+
+export const UNIT_FIELDS = gql(`
+    fragment CliUnitFields on Unit {
+        _id
+        shortSingular
+        shortPlural
+        longSingular
+        longPlural
+        dimension
+        perCanonical
+        system
+        hidden
+    }
+`);
+
+export const INGREDIENT_MEASURE_FIELDS = gql(`
+    fragment CliIngredientMeasureFields on IngredientMeasure {
+        _id
+        ingredient
+        grams
+        unit {
+            ...CliUnitFields
+        }
+        size {
+            _id
+            value
+        }
+        prepMethod {
+            _id
+            value
+        }
     }
 `);
 
@@ -45,12 +77,6 @@ export const NUTRITIONAL_INFO_FIELDS = gql(`
         ingredient
         usdaFdcId
         perGram {
-            calories
-            protein
-            carbs
-            fat
-        }
-        perUnit {
             calories
             protein
             carbs
@@ -102,11 +128,13 @@ export const RECIPE_INGREDIENT_FIELDS = gql(`
                 _id
                 quantity
                 unit {
-                    _id
-                    shortSingular
-                    measureType
+                    ...CliUnitFields
                 }
                 size {
+                    _id
+                    value
+                }
+                prepMethod {
                     _id
                     value
                 }
@@ -227,12 +255,44 @@ export const DELETE_NUTRITIONAL_INFO = gql(`
     }
 `);
 
-export const UPDATE_INGREDIENT = gql(`
-    mutation CliUpdateIngredient($id: MongoID!, $record: UpdateByIdIngredientInput!) {
-        ingredientUpdateById(_id: $id, record: $record) {
+export const GET_INGREDIENT_MEASURES = gql(`
+    query CliGetIngredientMeasures($ingredientIds: [MongoID!]!) {
+        ingredientMeasuresByIngredientIds(ingredientIds: $ingredientIds) {
+            ...CliIngredientMeasureFields
+        }
+    }
+`);
+
+export const GET_MEASURE_COMPONENTS = gql(`
+    query CliGetMeasureComponents {
+        units: unitMany(limit: 5000) {
+            ...CliUnitFields
+        }
+        sizes: sizeMany(limit: 5000) {
+            _id
+            value
+        }
+        prepMethods: prepMethodMany(limit: 5000) {
+            _id
+            value
+        }
+    }
+`);
+
+export const CREATE_INGREDIENT_MEASURE = gql(`
+    mutation CliCreateIngredientMeasure($record: CreateOneIngredientMeasureInput!) {
+        ingredientMeasureCreateOne(record: $record) {
             record {
-                ...CliIngredientFields
+                ...CliIngredientMeasureFields
             }
+        }
+    }
+`);
+
+export const DELETE_INGREDIENT_MEASURE = gql(`
+    mutation CliDeleteIngredientMeasure($id: MongoID!) {
+        ingredientMeasureRemoveById(_id: $id) {
+            recordId
         }
     }
 `);

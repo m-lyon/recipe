@@ -15,10 +15,10 @@ This document is the workflow and the judgement rules.
      recipe usda search "<name>" --json                  candidates
      recipe usda show <fdcId> --json                     macros and portions
      recipe nutrition link <id> --fdc-id <n> \
-       [--portion "<label>"] [--set-density] --dry-run   plan
+       [--portion "<label>"]... --dry-run                plan
 4. review the planned writes
 5. re-run step 3 without --dry-run
-6. recipe nutrition status --recipe <identifier>         confirm coverage
+6. recipe nutrition status --recipe <identifier>         confirm calculable rows
 
 Exit code 5 means the ingredient already has data. Do NOT add --overwrite on your
 own. Report it and let the operator decide, because that data may have been
@@ -44,27 +44,32 @@ USDA API, recorded in `spec-usda-portions.md`.
   `usda search` and the heading of `usda show` carry the data type.
 - Match the preparation state: raw against raw, cooked against cooked.
 
-### Choosing the portion
+### Choosing portions
 
-- Only `kind: ITEM` portions can supply `perUnit`. The CLI refuses the others with exit 6, so
-  do not try to force one through.
-- Roughly a third of foods offer no `ITEM` portion at all. When that happens, look for a
-  better record before giving up. If none exists, link `perGram` only and report the
-  ingredient as needing manual per-unit entry. **Do not invent a gram weight.**
+A linked ingredient has `perGram` macros. A recipe line reaches grams by its unit:
+
+- a mass unit (g, kg, oz) converts directly, and needs nothing more;
+- a volume unit (cup, tbsp, ml) needs a **volume measure**, such as `1 cup = 216 g`;
+- a count unit (each, clove, can) needs a **measure for that exact unit**, such as `1 each = 50 g`.
+
+`recipes show` names the missing weight: `No weight recorded for 1 cup of honey`.
+`nutrition status` lists the missing weights that would make the most rows calculable.
+
+- `--portion` stores a USDA portion as a measure. Repeat it to store several. `"1 large"`
+  becomes `each` + size `large`; `"cup, chopped"` becomes `cup` + prep method `chopped`.
+- A portion whose unit, size or prep method has no match in the database is refused with
+  exit 6 and the reason, such as `no matching unit or size "jumbo"`. Do not force it through.
+- `--all-portions` stores every portion that maps, and warns about each one it skips.
+- A volume row is a density: one `1 cup` row prices teaspoons and millilitres of the same
+  ingredient too. Prefer an unqualified volume portion; `cup, chopped` is a packing density.
+- Roughly a third of foods offer no item portion. When a recipe counts the ingredient, look
+  for a better record before giving up. **Do not invent a gram weight.**
 - The `ambiguous` flag means read the label carefully. `NLEA serving`, `1 lemon yields` and
   `slice` all count like items and are not one whole item.
-- When several sizes exist — egg spans 38 g to 63 g, onion 70 g to 150 g — pick the one a
-  recipe writer would mean, usually medium or large. **State which you picked.**
-
-### Density
-
-- `--set-density` writes `Ingredient.density`, a field on a different document from the one
-  the link creates. Only pass it when the operator asked for it.
-- A density can only come from a `VOLUME` portion. The CLI picks the largest volume portion
-  on the record, because a cup is measured with less rounding error than a teaspoon, and it
-  warns when the record's volume portions disagree.
-- An ambiguous label such as `cup, chopped` describes a packing density rather than a true
-  density. The CLI refuses it unless `--allow-ambiguous-density` is also given.
+- When several sizes exist — egg spans 38 g to 63 g, onion 70 g to 150 g — store the sizes the
+  recipes use, or the one a recipe writer would mean, usually medium or large. **State which
+  you picked.**
+- A measure with the same unit, size and prep method as an existing one exits 5. Report it.
 
 ## The USDA cache
 
@@ -90,9 +95,8 @@ never parse the tables.
 { "ok": false, "error": { "code": "WOULD_OVERWRITE", "message": "...", "existing": {} } }
 ```
 
-`warnings` is where the CLI tells you something is incomplete but not wrong — a countable
-ingredient linked without a `perUnit`, a portion flagged ambiguous, a USDA record missing a
-macro. Report them; do not discard them.
+`warnings` is where the CLI tells you something is incomplete but not wrong — storable
+portions that were not chosen, a portion flagged ambiguous, a USDA record missing a macro. Report them; do not discard them.
 
 ## Exit codes worth branching on
 
@@ -101,7 +105,7 @@ macro. Report them; do not discard them.
 | 3 | not authenticated, or the wrong role | stop; the account needs to be an admin |
 | 4 | not found, or an ambiguous identifier | the error lists the candidates; pick an id |
 | 5 | existing data would be replaced | **stop and report**; do not add `--overwrite` |
-| 6 | the write was rejected | a non-item portion, or server validation; re-plan |
+| 6 | the write was rejected | an unmatched portion, or server validation; re-plan |
 
 Exit 5 and exit 6 are deliberately separate. Exit 6 may be worth retrying with different
 arguments. Exit 5 is a decision for a person.
