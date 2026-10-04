@@ -8,7 +8,7 @@ import { MONGODB_VERSION } from '../../src/constants.js';
 
 export const MONGODB_OPTS = { binary: { version: MONGODB_VERSION } };
 
-export async function startServer() {
+export async function startServer(this: Mocha.Context) {
     try {
         this.mongoServer = await MongoMemoryServer.create(MONGODB_OPTS);
         await mongoose.connect(this.mongoServer.getUri());
@@ -20,7 +20,7 @@ export async function startServer() {
     }
 }
 
-export async function stopServer() {
+export async function stopServer(this: Mocha.Context) {
     try {
         if (mongoose.connection) {
             await mongoose.connection.close();

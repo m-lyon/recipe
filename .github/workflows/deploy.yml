@@ -22,8 +22,55 @@ env:
   PUBLIC_URL: https://recipes.mattlyon.co.uk
 
 jobs:
-  # Required to pass before a PR can merge into main (ruleset, branch must be up to date),
-  # so main is not re-tested on push.
+  # lint and test are both required to pass before a PR can merge into main (ruleset, branch
+  # must be up to date), so main is not re-tested on push.
+  lint:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - &checkout-code
+        name: Checkout code
+        uses: actions/checkout@v7
+
+      - &setup-node-all
+        name: Setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            api/package-lock.json
+            client/package-lock.json
+            cli/package-lock.json
+
+      - &install-api-deps
+        name: Install API dependencies
+        working-directory: ./api
+        run: npm ci
+
+      - &install-client-deps
+        name: Install client dependencies
+        working-directory: ./client
+        run: npm ci
+
+      - &install-cli-deps
+        name: Install CLI dependencies
+        working-directory: ./cli
+        run: npm ci
+
+      # Linting doesn't need the generated GraphQL types, so no API or codegen here
+      - name: Lint API
+        working-directory: ./api
+        run: npm run lint
+
+      - name: Lint client
+        working-directory: ./client
+        run: npm run lint
+
+      - name: Lint CLI
+        working-directory: ./cli
+        run: npm run lint
+
   test:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -37,19 +84,9 @@ jobs:
       SESSION_URI: ${{ secrets.SESSION_URI }}
       WHITELISTED_DOMAINS: ${{ secrets.WHITELISTED_DOMAINS }}
     steps:
-      - &checkout-code
-        name: Checkout code
-        uses: actions/checkout@v7
+      - *checkout-code
 
-      - name: Setup node
-        uses: actions/setup-node@v7
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-          cache-dependency-path: |
-            api/package-lock.json
-            client/package-lock.json
-            cli/package-lock.json
+      - *setup-node-all
 
       - &start-mongodb
         name: Start MongoDB
@@ -57,19 +94,11 @@ jobs:
         with:
           mongodb-version: ${{ vars.MONGODB_VERSION }}
 
-      - &install-api-deps
-        name: Install API dependencies
-        working-directory: ./api
-        run: npm ci
+      - *install-api-deps
 
-      - &install-client-deps
-        name: Install client dependencies
-        working-directory: ./client
-        run: npm ci
+      - *install-client-deps
 
-      - name: Install CLI dependencies
-        working-directory: ./cli
-        run: npm ci
+      - *install-cli-deps
 
       - name: Create client environment file
         working-directory: ./client
@@ -122,17 +151,9 @@ jobs:
         working-directory: ./cli
         run: npm run generate:test
 
-      - name: Lint client
-        working-directory: ./client
-        run: npm run lint
-
       - name: Type-check client
         working-directory: ./client
         run: npm run check-types
-
-      - name: Lint CLI
-        working-directory: ./cli
-        run: npm run lint
 
       - name: Run API tests
         working-directory: ./api

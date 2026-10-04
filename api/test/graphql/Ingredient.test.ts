@@ -1,5 +1,6 @@
 import { assert } from 'chai';
 import mongoose from 'mongoose';
+import type { GraphQLResponse } from '@apollo/server';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { createUser } from '../utils/data.js';
@@ -8,7 +9,11 @@ import { Ingredient } from '../../src/models/Ingredient.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { createRecipeIngredientData, removeRecipeIngredientData } from './Recipe.test.js';
 
-async function createIngredient(context, user, record) {
+async function createIngredient(
+    context: Mocha.Context,
+    user: unknown,
+    record: Record<string, unknown>
+) {
     const query = `
     mutation IngredientCreateOne($record: CreateOneIngredientCreateInput!) {
         ingredientCreateOne(record: $record) {
@@ -33,8 +38,8 @@ async function createIngredient(context, user, record) {
     return response;
 }
 
-const parseCreatedIngredient = (response) => {
-    assert.equal(response.body.kind, 'single');
+const parseCreatedIngredient = (response: GraphQLResponse) => {
+    assert(response.body.kind === 'single');
     assert.isUndefined(response.body.singleResult.errors);
     const record = (
         response.body.singleResult.data as {
@@ -149,7 +154,12 @@ describe('ingredientUpdateById', () => {
             });
     });
 
-    async function updateIngredient(context, user, id, record) {
+    async function updateIngredient(
+        context: Mocha.Context,
+        user: unknown,
+        id: unknown,
+        record: Record<string, unknown>
+    ) {
         const query = `
         mutation IngredientUpdateById($id: MongoID!, $record: UpdateByIdIngredientInput!) {
             ingredientUpdateById(_id: $id, record: $record) {
@@ -297,7 +307,7 @@ describe('ingredientRemoveById', () => {
 
     afterEach(removeRecipeIngredientData);
 
-    async function deleteIngredient(context, user, id) {
+    async function deleteIngredient(context: Mocha.Context, user: unknown, id: unknown) {
         const query = `
         mutation IngredientRemoveById($id: MongoID!) {
             ingredientRemoveById(_id: $id) {
@@ -343,7 +353,7 @@ describe('ingredientRemoveById', () => {
 
     it('should NOT delete an ingredient that is used in recipes', async function () {
         const user = await User.findOne({ username: 'testuser1' });
-        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
 
         // Try to delete the ingredient that's used in recipes - should fail
         const response = await deleteIngredient(this, user, ingredient._id);

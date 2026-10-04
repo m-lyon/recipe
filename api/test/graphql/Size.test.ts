@@ -1,5 +1,6 @@
 import { assert } from 'chai';
 import mongoose from 'mongoose';
+import type { GraphQLResponse } from '@apollo/server';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { createUser } from '../utils/data.js';
@@ -8,7 +9,7 @@ import { Recipe } from '../../src/models/Recipe.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { createRecipeIngredientData, removeRecipeIngredientData } from './Recipe.test.js';
 
-async function createSize(context, user, record) {
+async function createSize(context: Mocha.Context, user: unknown, record: Record<string, unknown>) {
     const query = `
     mutation SizeCreateOne($record: CreateOneSizeCreateInput!) {
         sizeCreateOne(record: $record) {
@@ -36,8 +37,8 @@ async function createSize(context, user, record) {
 const mockSmall = { value: 'small', unique: true };
 const mockLarge = { value: 'large', unique: true };
 
-const parseCreatedSize = (response) => {
-    assert.equal(response.body.kind, 'single');
+const parseCreatedSize = (response: GraphQLResponse) => {
+    assert(response.body.kind === 'single');
     assert.isUndefined(response.body.singleResult.errors);
     const record = (
         response.body.singleResult.data as {
@@ -128,7 +129,12 @@ describe('sizeUpdateById', () => {
             });
     });
 
-    async function updateSize(context, user, id, record) {
+    async function updateSize(
+        context: Mocha.Context,
+        user: unknown,
+        id: unknown,
+        record: Record<string, unknown>
+    ) {
         const query = `
         mutation SizeUpdateById($id: MongoID!, $record: UpdateByIdSizeInput!) {
             sizeUpdateById(_id: $id, record: $record) {
@@ -150,8 +156,8 @@ describe('sizeUpdateById', () => {
         return response;
     }
 
-    const parseUpdatedSize = (response) => {
-        assert.equal(response.body.kind, 'single');
+    const parseUpdatedSize = (response: GraphQLResponse) => {
+        assert(response.body.kind === 'single');
         assert.isUndefined(response.body.singleResult.errors);
         const record = (
             response.body.singleResult.data as {
@@ -231,7 +237,7 @@ describe('sizeRemoveById', () => {
 
     afterEach(removeRecipeIngredientData);
 
-    async function deleteSize(context, user, id) {
+    async function deleteSize(context: Mocha.Context, user: unknown, id: unknown) {
         const query = `
         mutation SizeRemoveById($id: MongoID!) {
             sizeRemoveById(_id: $id) {

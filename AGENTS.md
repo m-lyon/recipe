@@ -39,13 +39,13 @@ cli/          # oclif command line tool, talks to the API over GraphQL
 | Task | Command |
 | ---- | ------- |
 | Install deps | `npm install` |
+| Lint | `npm run lint` |
+| Fix formatting | `npm run lint -- --fix` |
 | Compile TS | `npm run compile` |
 | Run tests | `npm test` (compiles first, then runs mocha) |
 | Type check | `npm run check-types` |
 | Dev server | `npm run dev` |
 | Start server | `NODE_ENV=development node ./dist/src/index.js` |
-
-There is **no lint script** in the API. ESLint config exists but there is no `npm run lint`.
 
 ### Client (`cd client/`)
 
@@ -284,9 +284,11 @@ Mantine's `[data-checked]` attribute is set on the root element when the checkbo
 
 GitHub Actions workflow (`.github/workflows/deploy.yml`):
 
-1. **test job** (pull requests): install, start the API, codegen, lint and type-check client and CLI, then run the API, client and CLI tests. `main` only accepts PRs whose `test` check passed on a branch that is up to date with `main` (ruleset), so `main` is not re-tested on push.
-2. **build job** (push to `main`): start the API against a throwaway MongoDB for codegen, build the client and the production API.
-3. **deploy job** (after build): join the tailnet (Tailscale, `tag:ci`), rsync both to the server as `deploy-recipe`, restart `recipe.service`, and health-check. It holds the production secrets but runs no installs or project code. Runtime config lives in `/etc/recipe.env` on the server. See README.
+1. **lint job** (pull requests): install, then lint the API, client and CLI. Linting doesn't need the generated GraphQL types, so it skips the API and codegen.
+2. **test job** (pull requests): install, start the API, codegen, type-check the client, then run the API, client and CLI tests.
+   `main` only accepts PRs whose `lint` and `test` checks both passed on a branch that is up to date with `main` (ruleset), so `main` is not re-tested on push.
+3. **build job** (push to `main`): start the API against a throwaway MongoDB for codegen, build the client and the production API.
+4. **deploy job** (after build): join the tailnet (Tailscale, `tag:ci`), rsync both to the server as `deploy-recipe`, restart `recipe.service`, and health-check. It holds the production secrets but runs no installs or project code. Runtime config lives in `/etc/recipe.env` on the server. See README.
 
 ## Claude Code Worktrees
 

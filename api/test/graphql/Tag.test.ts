@@ -1,12 +1,13 @@
 import { assert } from 'chai';
 import mongoose from 'mongoose';
+import type { GraphQLResponse } from '@apollo/server';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { User } from '../../src/models/User.js';
 import { createAdmin, createUser } from '../utils/data.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 
-async function createTag(context, user, record) {
+async function createTag(context: Mocha.Context, user: unknown, record: Record<string, unknown>) {
     const query = `
     mutation TagCreateOne($record: CreateOneTagInput!) {
         tagCreateOne(record: $record) {
@@ -31,8 +32,8 @@ async function createTag(context, user, record) {
     return response;
 }
 
-const parseCreatedTag = (response) => {
-    assert.equal(response.body.kind, 'single');
+const parseCreatedTag = (response: GraphQLResponse) => {
+    assert(response.body.kind === 'single');
     assert.isUndefined(response.body.singleResult.errors);
     const record = (
         response.body.singleResult.data as {
@@ -133,7 +134,12 @@ describe('tagUpdateById', function () {
             });
     });
 
-    async function updateTag(context, user, id, record) {
+    async function updateTag(
+        context: Mocha.Context,
+        user: unknown,
+        id: unknown,
+        record: Record<string, unknown>
+    ) {
         const query = `
         mutation TagUpdateById($id: MongoID!, $record: UpdateByIdTagInput!) {
             tagUpdateById(_id: $id, record: $record) {

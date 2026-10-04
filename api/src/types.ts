@@ -4,6 +4,17 @@ import type { ResolverResolveParams } from 'graphql-compose';
 
 import type { User } from './models/User.js';
 
+type UserDocument = User;
+
+declare global {
+    // Passport's types declare `Express.User` in this namespace, so it can only be extended here
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    namespace Express {
+        // Passport puts the Mongoose user document on the request
+        interface User extends UserDocument {}
+    }
+}
+
 /**
  * Minimal shape of an image stored on the request context by isImageOwnerOrAdmin middleware.
  * The runtime value is a hydrated Image document with recipe populated, but the context only

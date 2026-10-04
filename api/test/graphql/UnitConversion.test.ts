@@ -1,5 +1,6 @@
 import { assert } from 'chai';
 import mongoose from 'mongoose';
+import type { GraphQLResponse } from '@apollo/server';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { User } from '../../src/models/User.js';
@@ -13,7 +14,7 @@ async function createData() {
     await createUnits(user);
 }
 
-function removeData(done) {
+function removeData(done: Mocha.Done) {
     mongoose.connection.collections.users
         .drop()
         .then(() => mongoose.connection.collections.units.drop())
@@ -34,7 +35,11 @@ function removeData(done) {
         });
 }
 
-async function createConversionRule(context, user, record) {
+async function createConversionRule(
+    context: Mocha.Context,
+    user: unknown,
+    record: Record<string, unknown>
+) {
     const query = `
     mutation ConversionRuleCreateOne($record: CreateOneConversionRuleInput!) {
         conversionRuleCreateOne(record: $record) {
@@ -66,8 +71,8 @@ async function createConversionRule(context, user, record) {
     return response;
 }
 
-const parseCreatedConversionRule = (response) => {
-    assert.equal(response.body.kind, 'single');
+const parseCreatedConversionRule = (response: GraphQLResponse) => {
+    assert(response.body.kind === 'single');
     assert.isUndefined(response.body.singleResult.errors);
     const record = (
         response.body.singleResult.data as {
@@ -93,8 +98,8 @@ describe('conversionRuleCreateOne', () => {
 
     it('should create a conversion rule', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-        const unit = await Unit.findOne({ shortSingular: 'tbsp' });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
+        const unit = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
         const record = {
             unit: unit._id,
             baseUnit: baseUnit._id,
@@ -108,8 +113,8 @@ describe('conversionRuleCreateOne', () => {
 
     it('should not create a conversion rule if the unit already has a conversion rule', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-        const unit = await Unit.findOne({ shortSingular: 'tbsp' });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
+        const unit = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
         const record = {
             unit: unit._id,
             baseUnit: baseUnit._id,
@@ -128,7 +133,7 @@ describe('conversionRuleCreateOne', () => {
 
     it('should not create a conversion rule where the unit is the same as the base unit', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
         const record = {
             unit: baseUnit._id,
             baseUnit: baseUnit._id,
@@ -146,7 +151,7 @@ describe('conversionRuleCreateOne', () => {
 
     it('should not create a conversion rule if the unit does not exist', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
         const record = {
             unit: '60a9c5d4d3f6c1c1e8a3c1c1',
             baseUnit: baseUnit._id,
@@ -164,8 +169,8 @@ describe('conversionRuleCreateOne', () => {
 
     it('should not create a conversion rule if the baseUnitThreshold is less than or equal to 0', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-        const unit = await Unit.findOne({ shortSingular: 'tbsp' });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
+        const unit = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
         const record = {
             unit: unit._id,
             baseUnit: baseUnit._id,
@@ -182,7 +187,7 @@ describe('conversionRuleCreateOne', () => {
     });
     it('should not create a conversion rule if the baseUnit does not exist', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const unit = await Unit.findOne({ shortSingular: 'tbsp' });
+        const unit = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
         const record = {
             unit: unit._id,
             baseUnit: '60a9c5d4d3f6c1c1e8a3c1c1',
@@ -200,8 +205,8 @@ describe('conversionRuleCreateOne', () => {
 
     it('should not create a conversion rule if the baseToUnitConversion is less than 1', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-        const unit = await Unit.findOne({ shortSingular: 'tbsp' });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
+        const unit = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
         const record = {
             unit: unit._id,
             baseUnit: baseUnit._id,
@@ -224,7 +229,12 @@ describe('conversionRuleUpdateById', () => {
     beforeEach(createData);
     afterEach(removeData);
 
-    async function updateConversionRule(context, user, id, record) {
+    async function updateConversionRule(
+        context: Mocha.Context,
+        user: unknown,
+        id: unknown,
+        record: Record<string, unknown>
+    ) {
         const query = `
         mutation ConversionRuleUpdateById($id: MongoID!, $record: UpdateByIdConversionRuleInput!) {
             conversionRuleUpdateById(_id: $id, record: $record) {
@@ -258,8 +268,8 @@ describe('conversionRuleUpdateById', () => {
 
     it('should update a conversion rule', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-        const unit = await Unit.findOne({ shortSingular: 'tbsp' });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
+        const unit = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
         const record = {
             unit: unit._id,
             baseUnit: baseUnit._id,
@@ -300,8 +310,8 @@ describe('conversionRuleUpdateById', () => {
 
     it('should not update a conversion rule if the unit does not exist', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-        const unit = await Unit.findOne({ shortSingular: 'tbsp' });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
+        const unit = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
         const record = {
             unit: unit._id,
             baseUnit: baseUnit._id,
@@ -329,8 +339,8 @@ describe('conversionRuleUpdateById', () => {
 
     it('should not update a conversion rule if the baseUnitThreshold is less than or equal to 0', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-        const unit = await Unit.findOne({ shortSingular: 'tbsp' });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
+        const unit = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
         const record = {
             unit: unit._id,
             baseUnit: baseUnit._id,
@@ -358,8 +368,8 @@ describe('conversionRuleUpdateById', () => {
 
     it('should not update a conversion rule if the baseUnit does not exist', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const unit = await Unit.findOne({ shortSingular: 'tbsp' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
+        const unit = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
         const record = {
             unit: unit._id,
             baseUnit: baseUnit._id,
@@ -387,8 +397,8 @@ describe('conversionRuleUpdateById', () => {
 
     it('should not update a conversion rule if the baseToUnitConversion is less than 1', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-        const unit = await Unit.findOne({ shortSingular: 'tbsp' });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
+        const unit = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
         const record = {
             unit: unit._id,
             baseUnit: baseUnit._id,
@@ -416,8 +426,8 @@ describe('conversionRuleUpdateById', () => {
 
     it('should not update a conversion rule if the conversion rule does not exist', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-        const unit = await Unit.findOne({ shortSingular: 'tbsp' });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
+        const unit = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
         const record = {
             unit: unit._id,
             baseUnit: baseUnit._id,
@@ -442,8 +452,8 @@ describe('conversionRuleUpdateById', () => {
 
     it('should not update a conversion rule if the unit already has a conversion rule', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-        const unit = await Unit.findOne({ shortSingular: 'tbsp' });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
+        const unit = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
         const record = {
             unit: unit._id,
             baseUnit: baseUnit._id,
@@ -452,7 +462,7 @@ describe('conversionRuleUpdateById', () => {
         };
         const response = await createConversionRule(this, user, record);
         const createdConversionRule = parseCreatedConversionRule(response);
-        const unit2 = await Unit.findOne({ shortSingular: 'cup' });
+        const unit2 = await Unit.findOne({ shortSingular: 'cup' }).orFail();
         const record2 = {
             unit: unit2._id,
             baseUnit: baseUnit._id,
@@ -477,8 +487,8 @@ describe('conversionRuleUpdateById', () => {
 });
 
 async function createConversionRuleData() {
-    const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-    const unit1 = await Unit.findOne({ shortSingular: 'tbsp' });
+    const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
+    const unit1 = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
     const record1 = await new ConversionRule({
         unit: unit1._id,
         baseUnit: baseUnit._id,
@@ -486,7 +496,7 @@ async function createConversionRuleData() {
         baseUnitThreshold: 3,
     }).save();
     assert(record1);
-    const unit2 = await Unit.findOne({ shortSingular: 'cup' });
+    const unit2 = await Unit.findOne({ shortSingular: 'cup' }).orFail();
     const record2 = await new ConversionRule({
         unit: unit2._id,
         baseUnit: baseUnit._id,
@@ -496,7 +506,11 @@ async function createConversionRuleData() {
     assert(record2);
 }
 
-async function createUnitConversion(context, user, record) {
+async function createUnitConversion(
+    context: Mocha.Context,
+    user: unknown,
+    record: Record<string, unknown>
+) {
     const query = `
     mutation UnitConversionCreateOne($record: CreateOneUnitConversionInput!) {
         unitConversionCreateOne(record: $record) {
@@ -526,7 +540,11 @@ async function createUnitConversion(context, user, record) {
     return response;
 }
 
-async function findUnitConversions(context, user, filter) {
+async function findUnitConversions(
+    context: Mocha.Context,
+    user: unknown,
+    filter: Record<string, unknown>
+) {
     const query = `
     query UnitConversionMany($filter: FilterFindManyUnitConversionInput) {
         unitConversionMany(filter: $filter) {
@@ -570,8 +588,8 @@ describe('unitConversionFindMany', () => {
     beforeEach(async function () {
         await createData();
         await createConversionRuleData();
-        const rule1 = await ConversionRule.findOne({ baseUnitThreshold: 3 });
-        const rule2 = await ConversionRule.findOne({ baseUnitThreshold: 48 / 4 });
+        const rule1 = await ConversionRule.findOne({ baseUnitThreshold: 3 }).orFail();
+        const rule2 = await ConversionRule.findOne({ baseUnitThreshold: 48 / 4 }).orFail();
         const unitConversion = await new UnitConversion({
             baseUnit: rule1.baseUnit,
             rules: [rule1._id, rule2._id],
@@ -588,8 +606,8 @@ describe('unitConversionFindMany', () => {
 
     it('should find all unit conversions sorted by baseUnitThreshold', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const rule1 = await ConversionRule.findOne({ baseUnitThreshold: 3 });
-        const rule2 = await ConversionRule.findOne({ baseUnitThreshold: 48 / 4 });
+        const rule1 = await ConversionRule.findOne({ baseUnitThreshold: 3 }).orFail();
+        const rule2 = await ConversionRule.findOne({ baseUnitThreshold: 48 / 4 }).orFail();
         const unitConversions = await findUnitConversions(this, user, {});
         assert.equal(unitConversions[0].rules.length, 2);
         assert.equal(unitConversions[0].rules[0]._id, rule2._id, 'rule2 is not first');
@@ -606,8 +624,8 @@ describe('unitConversionCreateOne', () => {
     });
     afterEach(removeData);
 
-    const parseCreatedUnitConversion = (response) => {
-        assert.equal(response.body.kind, 'single');
+    const parseCreatedUnitConversion = (response: GraphQLResponse) => {
+        assert(response.body.kind === 'single');
         assert.isUndefined(response.body.singleResult.errors);
         const record = (
             response.body.singleResult.data as {
@@ -625,11 +643,11 @@ describe('unitConversionCreateOne', () => {
 
     it('should create a unit conversion', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' });
-        const unit2 = await Unit.findOne({ shortSingular: 'cup' });
-        const rule1 = await ConversionRule.findOne({ unit: unit1._id });
-        const rule2 = await ConversionRule.findOne({ unit: unit2._id });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
+        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
+        const unit2 = await Unit.findOne({ shortSingular: 'cup' }).orFail();
+        const rule1 = await ConversionRule.findOne({ unit: unit1._id }).orFail();
+        const rule2 = await ConversionRule.findOne({ unit: unit2._id }).orFail();
         const record = { baseUnit: baseUnit._id, rules: [rule1._id, rule2._id] };
         const response = await createUnitConversion(this, user, record);
         const createdUnitConversion = parseCreatedUnitConversion(response);
@@ -638,10 +656,10 @@ describe('unitConversionCreateOne', () => {
 
     it('should not create a unit conversion where the base unit is also one of the rules', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' });
-        const unit2 = await Unit.findOne({ shortSingular: 'cup' });
-        const rule1 = await ConversionRule.findOne({ unit: unit1._id });
-        const rule2 = await ConversionRule.findOne({ unit: unit2._id });
+        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
+        const unit2 = await Unit.findOne({ shortSingular: 'cup' }).orFail();
+        const rule1 = await ConversionRule.findOne({ unit: unit1._id }).orFail();
+        const rule2 = await ConversionRule.findOne({ unit: unit2._id }).orFail();
         const record = { baseUnit: unit1._id, rules: [rule1._id, rule2._id] };
         const response = await createUnitConversion(this, user, record);
         assert.equal(response.body.kind, 'single');
@@ -654,11 +672,11 @@ describe('unitConversionCreateOne', () => {
 
     it('should not create a unit conversion if the base unit already has a conversion', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' });
-        const unit2 = await Unit.findOne({ shortSingular: 'cup' });
-        const rule1 = await ConversionRule.findOne({ unit: unit1._id });
-        const rule2 = await ConversionRule.findOne({ unit: unit2._id });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
+        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
+        const unit2 = await Unit.findOne({ shortSingular: 'cup' }).orFail();
+        const rule1 = await ConversionRule.findOne({ unit: unit1._id }).orFail();
+        const rule2 = await ConversionRule.findOne({ unit: unit2._id }).orFail();
         const first = await createUnitConversion(this, user, {
             baseUnit: baseUnit._id,
             rules: [rule1._id],
@@ -678,10 +696,10 @@ describe('unitConversionCreateOne', () => {
 
     it('should not create a conversion rule for a unit that is already a base unit', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' });
-        const unit2 = await Unit.findOne({ shortSingular: 'cup' });
-        const rule1 = await ConversionRule.findOne({ unit: unit1._id });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
+        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
+        const unit2 = await Unit.findOne({ shortSingular: 'cup' }).orFail();
+        const rule1 = await ConversionRule.findOne({ unit: unit1._id }).orFail();
         const created = await createUnitConversion(this, user, {
             baseUnit: baseUnit._id,
             rules: [rule1._id],
@@ -704,11 +722,11 @@ describe('unitConversionCreateOne', () => {
 
     it('should create a unit, and the rules should be sorted by baseUnitThreshold', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' });
-        const unit2 = await Unit.findOne({ shortSingular: 'cup' });
-        const rule1 = await ConversionRule.findOne({ unit: unit1._id });
-        const rule2 = await ConversionRule.findOne({ unit: unit2._id });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
+        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
+        const unit2 = await Unit.findOne({ shortSingular: 'cup' }).orFail();
+        const rule1 = await ConversionRule.findOne({ unit: unit1._id }).orFail();
+        const rule2 = await ConversionRule.findOne({ unit: unit2._id }).orFail();
         rule1.baseUnitThreshold = 2;
         rule2.baseUnitThreshold = 4;
         await rule1.save();
@@ -723,7 +741,7 @@ describe('unitConversionCreateOne', () => {
 
     it('should not create a unit conversion if no rules are given', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
         const record = { baseUnit: baseUnit._id, rules: [] };
         const response = await createUnitConversion(this, user, record);
         assert.equal(response.body.kind, 'single');
@@ -736,11 +754,11 @@ describe('unitConversionCreateOne', () => {
 
     it('should not create a unit conversion if the rules have duplicate baseUnitThresholds', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' });
-        const unit2 = await Unit.findOne({ shortSingular: 'cup' });
-        const rule1 = await ConversionRule.findOne({ unit: unit1._id });
-        const rule2 = await ConversionRule.findOne({ unit: unit2._id });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
+        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
+        const unit2 = await Unit.findOne({ shortSingular: 'cup' }).orFail();
+        const rule1 = await ConversionRule.findOne({ unit: unit1._id }).orFail();
+        const rule2 = await ConversionRule.findOne({ unit: unit2._id }).orFail();
         rule2.baseUnitThreshold = rule1.baseUnitThreshold;
         await rule2.save();
         const record = { baseUnit: baseUnit._id, rules: [rule1._id, rule2._id] };
@@ -755,11 +773,11 @@ describe('unitConversionCreateOne', () => {
 
     it('should not create a unit conversion if the rules have different base units', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' });
-        const unit2 = await Unit.findOne({ shortSingular: 'cup' });
-        const rule1 = await ConversionRule.findOne({ unit: unit1._id });
-        const rule2 = await ConversionRule.findOne({ unit: unit2._id });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
+        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
+        const unit2 = await Unit.findOne({ shortSingular: 'cup' }).orFail();
+        const rule1 = await ConversionRule.findOne({ unit: unit1._id }).orFail();
+        const rule2 = await ConversionRule.findOne({ unit: unit2._id }).orFail();
         rule2.baseUnit = unit1._id;
         await rule2.save();
         const record = { baseUnit: baseUnit._id, rules: [rule1._id, rule2._id] };
@@ -782,7 +800,12 @@ describe('unitConversionUpdateById', () => {
     });
     afterEach(removeData);
 
-    async function updateUnitConversion(context, user, id, record) {
+    async function updateUnitConversion(
+        context: Mocha.Context,
+        user: unknown,
+        id: unknown,
+        record: Record<string, unknown>
+    ) {
         const query = `
         mutation UnitConversionUpdateById($id: MongoID!, $record: UpdateByIdUnitConversionInput!) {
             unitConversionUpdateById(_id: $id, record: $record) {
@@ -812,8 +835,8 @@ describe('unitConversionUpdateById', () => {
         return response;
     }
 
-    function parseCreatedUnitConversion(response) {
-        assert.equal(response.body.kind, 'single');
+    function parseCreatedUnitConversion(response: GraphQLResponse) {
+        assert(response.body.kind === 'single');
         assert.isUndefined(response.body.singleResult.errors);
         const record = (
             response.body.singleResult.data as {
@@ -829,8 +852,8 @@ describe('unitConversionUpdateById', () => {
         return record;
     }
 
-    function parseUpdatedUnitConversion(response) {
-        assert.equal(response.body.kind, 'single');
+    function parseUpdatedUnitConversion(response: GraphQLResponse) {
+        assert(response.body.kind === 'single');
         assert.isUndefined(response.body.singleResult.errors);
         const record = (
             response.body.singleResult.data as {
@@ -848,11 +871,11 @@ describe('unitConversionUpdateById', () => {
 
     it('should update a unit conversion', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' });
-        const unit2 = await Unit.findOne({ shortSingular: 'cup' });
-        const rule1 = await ConversionRule.findOne({ unit: unit1._id });
-        const rule2 = await ConversionRule.findOne({ unit: unit2._id });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
+        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
+        const unit2 = await Unit.findOne({ shortSingular: 'cup' }).orFail();
+        const rule1 = await ConversionRule.findOne({ unit: unit1._id }).orFail();
+        const rule2 = await ConversionRule.findOne({ unit: unit2._id }).orFail();
         const record = { baseUnit: baseUnit._id, rules: [rule1._id, rule2._id] };
         const response = await createUnitConversion(this, user, record);
         const createdUnitConversion = parseCreatedUnitConversion(response);
@@ -872,11 +895,11 @@ describe('unitConversionUpdateById', () => {
 
     it('should not update a unit conversion so the base unit is also one of the rules', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' });
-        const unit2 = await Unit.findOne({ shortSingular: 'cup' });
-        const rule1 = await ConversionRule.findOne({ unit: unit1._id });
-        const rule2 = await ConversionRule.findOne({ unit: unit2._id });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
+        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
+        const unit2 = await Unit.findOne({ shortSingular: 'cup' }).orFail();
+        const rule1 = await ConversionRule.findOne({ unit: unit1._id }).orFail();
+        const rule2 = await ConversionRule.findOne({ unit: unit2._id }).orFail();
         const record = { baseUnit: baseUnit._id, rules: [rule1._id, rule2._id] };
         const response = await createUnitConversion(this, user, record);
         const createdUnitConversion = parseCreatedUnitConversion(response);
@@ -897,11 +920,11 @@ describe('unitConversionUpdateById', () => {
 
     it('should update a unit, and the rules should be sorted by baseUnitThreshold', async function () {
         const user = await User.findOne({ username: 'testuser2' });
-        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' });
-        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' });
-        const unit2 = await Unit.findOne({ shortSingular: 'cup' });
-        const rule1 = await ConversionRule.findOne({ unit: unit1._id });
-        const rule2 = await ConversionRule.findOne({ unit: unit2._id });
+        const baseUnit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
+        const unit1 = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
+        const unit2 = await Unit.findOne({ shortSingular: 'cup' }).orFail();
+        const rule1 = await ConversionRule.findOne({ unit: unit1._id }).orFail();
+        const rule2 = await ConversionRule.findOne({ unit: unit2._id }).orFail();
         rule1.baseUnitThreshold = 2;
         rule2.baseUnitThreshold = 4;
         await rule1.save();

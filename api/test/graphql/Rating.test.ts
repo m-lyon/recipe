@@ -1,4 +1,5 @@
 import { assert } from 'chai';
+import type { GraphQLResponse } from '@apollo/server';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { User } from '../../src/models/User.js';
@@ -9,7 +10,11 @@ import { Ingredient } from '../../src/models/Ingredient.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { createRecipeIngredientData, removeRecipeIngredientData } from './Recipe.test.js';
 
-async function createRating(context, user, record) {
+async function createRating(
+    context: Mocha.Context,
+    user: unknown,
+    record: Record<string, unknown>
+) {
     const query = `
     mutation RatingCreateOne($record: CreateOneRatingCreateInput!) {
         ratingCreateOne(record: $record) {
@@ -35,10 +40,10 @@ async function createRating(context, user, record) {
 }
 
 async function createRecipeData() {
-    const user = await User.findOne({ username: 'testuser1' });
-    const ingredient = await Ingredient.findOne({ name: 'chicken' });
-    const unit = await Unit.findOne({ shortSingular: 'g' });
-    const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
+    const user = await User.findOne({ username: 'testuser1' }).orFail();
+    const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
+    const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
+    const prepMethod = await PrepMethod.findOne({ value: 'chopped' }).orFail();
     const recipe = await new Recipe({
         title: 'Chicken Soup',
         titleIdentifier: 'chicken-soup',
@@ -71,8 +76,8 @@ async function createRecipeData() {
     assert(recipe);
 }
 
-const parseCreatedRating = (response) => {
-    assert.equal(response.body.kind, 'single');
+const parseCreatedRating = (response: GraphQLResponse) => {
+    assert(response.body.kind === 'single');
     assert.isUndefined(response.body.singleResult.errors);
     const record = (
         response.body.singleResult.data as {
@@ -94,7 +99,7 @@ describe('ratingCreateOne', () => {
 
     it('should create a rating', async function () {
         const user = await User.findOne({ username: 'testuser1' });
-        const recipe = await Recipe.findOne({ title: 'Chicken Soup' });
+        const recipe = await Recipe.findOne({ title: 'Chicken Soup' }).orFail();
         const record = { value: 5, recipe: recipe._id };
         const response = await createRating(this, user, record);
         const createdRating = parseCreatedRating(response);
@@ -103,7 +108,7 @@ describe('ratingCreateOne', () => {
 
     it('should not create a rating with a value less than 0', async function () {
         const user = await User.findOne({ username: 'testuser1' });
-        const recipe = await Recipe.findOne({ title: 'Chicken Soup' });
+        const recipe = await Recipe.findOne({ title: 'Chicken Soup' }).orFail();
         const record = { value: -1, recipe: recipe._id };
         const response = await createRating(this, user, record);
         assert.equal(response.body.kind, 'single');
@@ -116,7 +121,7 @@ describe('ratingCreateOne', () => {
 
     it('should not create a rating with a value greater than 10', async function () {
         const user = await User.findOne({ username: 'testuser1' });
-        const recipe = await Recipe.findOne({ title: 'Chicken Soup' });
+        const recipe = await Recipe.findOne({ title: 'Chicken Soup' }).orFail();
         const record = { value: 11, recipe: recipe._id };
         const response = await createRating(this, user, record);
         assert.equal(response.body.kind, 'single');
@@ -129,7 +134,7 @@ describe('ratingCreateOne', () => {
 
     it('should not create a rating, recipe does not exist', async function () {
         const user = await User.findOne({ username: 'testuser1' });
-        const recipe = await Recipe.findOne({ title: 'Chicken Soup' });
+        const recipe = await Recipe.findOne({ title: 'Chicken Soup' }).orFail();
         await Recipe.deleteOne({ _id: recipe._id });
         const deletedRecipe = await Recipe.findOne({ title: 'Chicken Soup' });
         assert.isNull(deletedRecipe);

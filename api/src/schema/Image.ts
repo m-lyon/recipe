@@ -5,6 +5,7 @@ import { GraphQLString } from 'graphql';
 import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
 import { GraphQLError, GraphQLList, GraphQLNonNull, GraphQLObjectType } from 'graphql';
 
+import { ResolveParams } from '../types.js';
 import { IMAGE_DIR } from '../constants.js';
 import { RecipeTC } from '../models/Recipe.js';
 import { Image, ImageTC, saveImageToDb } from '../models/Image.js';
@@ -25,7 +26,9 @@ ImageTC.addResolver({
         _id: { type: 'MongoID!', description: 'Recipe ID.' },
         note: { type: 'String', description: 'Note about the image.' },
     },
-    resolve: async ({ args }) => {
+    resolve: async ({
+        args,
+    }: ResolveParams<{ file: Promise<FileUpload>; _id: string; note?: string }>) => {
         await validateImageFile(args.file);
         const origFilepath = storeUpload(args.file);
         const image = await saveImageToDb(origFilepath, args._id, args.note);
@@ -53,7 +56,9 @@ ImageTC.addResolver({
         _id: { type: 'MongoID!', description: 'Recipe ID.' },
         note: { type: 'String', description: 'Note about the image.' },
     },
-    resolve: async ({ args }) => {
+    resolve: async ({
+        args,
+    }: ResolveParams<{ files: Promise<FileUpload>[]; _id: string; note?: string }>) => {
         const images = await Promise.all(
             args.files.map(async (file: Promise<FileUpload>) => {
                 await validateImageFile(file);
@@ -81,9 +86,9 @@ ImageTC.addResolver({
     args: {
         ids: { type: '[MongoID!]!', description: 'Image IDs.' },
     },
-    resolve: async (rp) => {
+    resolve: async (rp: ResolveParams<{ ids: string[] }>) => {
         const { args, context } = rp;
-        const images: Image[] = context.images;
+        const images = context.images ?? [];
         // Remove the images from the database
         await Image.deleteMany({ _id: { $in: args.ids } });
         // Remove files from disk

@@ -1,5 +1,6 @@
 import { assert } from 'chai';
 import mongoose from 'mongoose';
+import type { GraphQLResponse } from '@apollo/server';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { createUser } from '../utils/data.js';
@@ -8,7 +9,7 @@ import { User } from '../../src/models/User.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { createRecipeIngredientData, removeRecipeIngredientData } from './Recipe.test.js';
 
-async function createUnit(context, user, record) {
+async function createUnit(context: Mocha.Context, user: unknown, record: Record<string, unknown>) {
     const query = `
     mutation UnitCreateOne($record: CreateOneUnitCreateInput!) {
         unitCreateOne(record: $record) {
@@ -52,8 +53,8 @@ const mockTablespoon = {
     unique: true,
 };
 
-const parseCreatedUnit = (response) => {
-    assert.equal(response.body.kind, 'single');
+const parseCreatedUnit = (response: GraphQLResponse) => {
+    assert(response.body.kind === 'single');
     assert.isUndefined(response.body.singleResult.errors);
     const record = (
         response.body.singleResult.data as {
@@ -158,7 +159,12 @@ describe('unitUpdateById', () => {
             });
     });
 
-    async function updateUnit(context, user, id, record) {
+    async function updateUnit(
+        context: Mocha.Context,
+        user: unknown,
+        id: unknown,
+        record: Record<string, unknown>
+    ) {
         const query = `
         mutation UnitUpdateById($id: MongoID!, $record: UpdateByIdUnitInput!) {
             unitUpdateById(_id: $id, record: $record) {
@@ -180,8 +186,8 @@ describe('unitUpdateById', () => {
         return response;
     }
 
-    const parseUpdatedUnit = (response) => {
-        assert.equal(response.body.kind, 'single');
+    const parseUpdatedUnit = (response: GraphQLResponse) => {
+        assert(response.body.kind === 'single');
         assert.isUndefined(response.body.singleResult.errors);
         const record = (
             response.body.singleResult.data as {
@@ -261,7 +267,7 @@ describe('unitRemoveById', () => {
 
     afterEach(removeRecipeIngredientData);
 
-    async function deleteUnit(context, user, id) {
+    async function deleteUnit(context: Mocha.Context, user: unknown, id: unknown) {
         const query = `
         mutation UnitRemoveById($id: MongoID!) {
             unitRemoveById(_id: $id) {
@@ -307,7 +313,7 @@ describe('unitRemoveById', () => {
 
     it('should NOT delete a unit that is used in recipes', async function () {
         const user = await User.findOne({ username: 'testuser1' });
-        const unit = await Unit.findOne({ shortSingular: 'cup' });
+        const unit = await Unit.findOne({ shortSingular: 'cup' }).orFail();
 
         // Try to delete the unit that's used in recipes - should fail
         const response = await deleteUnit(this, user, unit._id);
@@ -322,7 +328,7 @@ describe('unitRemoveById', () => {
 
     it('should NOT delete a unit that is a base unit in a conversion', async function () {
         const user = await User.findOne({ username: 'testuser1' });
-        const unit = await Unit.findOne({ shortSingular: 'tsp' });
+        const unit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
 
         // Try to delete the unit that's used in conversions - should fail
         const response = await deleteUnit(this, user, unit._id);
@@ -337,7 +343,7 @@ describe('unitRemoveById', () => {
 
     it('should NOT delete a unit that is used in a conversion rule', async function () {
         const user = await User.findOne({ username: 'testuser1' });
-        const unit = await Unit.findOne({ shortSingular: 'tbsp' });
+        const unit = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
 
         // Try to delete the unit that's used in conversions - should fail
         const response = await deleteUnit(this, user, unit._id);
