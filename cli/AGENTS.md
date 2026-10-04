@@ -28,6 +28,9 @@ entered by hand.
 `recipe ingredients list --missing-nutrition --json` is the entry point for a run across the
 whole database rather than one recipe.
 
+A link belongs to the `Ingredient`, not to the recipe, so every recipe that uses the
+ingredient gains it. Link ingredients that `recipes show` reports as `No quantity` too.
+
 ## Judgement rules
 
 These are not style advice. Each one was derived from a real error found while sampling the
@@ -43,6 +46,14 @@ USDA API, recorded in `spec-usda-portions.md`.
 - Prefer Foundation and SR Legacy over Branded for generic ingredients. The `TYPE` column in
   `usda search` and the heading of `usda show` carry the data type.
 - Match the preparation state: raw against raw, cooked against cooked.
+- Do not trust one search. A generic query can miss the standard record entirely: `milk
+  whole` returned 20 hits without *Milk, whole, 3.25% milkfat*. Read all 20 results (the
+  default `--page-size`), and if the obvious record is absent, search again with USDA's own
+  wording (`milk whole 3.25% milkfat`).
+- Check the record in `usda show` before preferring Foundation. Many Foundation records
+  lack calories and carry only a `serving` portion (`1 RACC`), so they supply no `perUnit`
+  and no density. An SR Legacy record with full macros and real portions is then the better
+  choice. Seen for russet potato, table salt, whole milk and salted butter.
 
 ### Choosing the portion
 
@@ -55,6 +66,9 @@ USDA API, recorded in `spec-usda-portions.md`.
   `slice` all count like items and are not one whole item.
 - When several sizes exist — egg spans 38 g to 63 g, onion 70 g to 150 g — pick the one a
   recipe writer would mean, usually medium or large. **State which you picked.**
+- An `ITEM` portion is not always a unit of the ingredient. `1 dash` of salt, `1 pat` or
+  `1 stick` of butter are measures, not "one salt" or "one butter". Leave `perUnit` unset
+  for ingredients that are not counted.
 
 ### Density
 
@@ -65,6 +79,14 @@ USDA API, recorded in `spec-usda-portions.md`.
   warns when the record's volume portions disagree.
 - An ambiguous label such as `cup, chopped` describes a packing density rather than a true
   density. The CLI refuses it unless `--allow-ambiguous-density` is also given.
+- Decide on the override by comparing the qualifier with the ingredient name:
+  - The qualifier **is** the ingredient's form: `1 tbsp, ground` for *ground black pepper*.
+    The density is correct, so ask the operator to approve `--allow-ambiguous-density`.
+  - The qualifier is a preparation the recipe does not use: `0.5 cup, diced` for *russet
+    potato*. Leave the density unset; potatoes are measured by weight or count anyway.
+- The refusal message names the first candidate as "the only density candidate" even when
+  there are several. With the override, the CLI still picks the largest volume portion.
+  Read `usda show` for the full list.
 
 ## The USDA cache
 
@@ -105,3 +127,16 @@ macro. Report them; do not discard them.
 
 Exit 5 and exit 6 are deliberately separate. Exit 6 may be worth retrying with different
 arguments. Exit 5 is a decision for a person.
+
+## Environment pitfalls
+
+- **Quote a password that contains `#`.** Unquoted, dotenv reads `#` as the start of a
+  comment and truncates the value. Wrap it in single quotes, which also stops `$` expansion.
+- **Login failure with a correct password** usually means the wrong `RECIPE_USERNAME`. The
+  account is identified by its email address.
+- **Worktrees do not pick up edited env files.** The worktree hook copies `.env*` files
+  only when the worktree lacks them, and its session-start step stops once
+  `.claude/worktree.env` exists. Copy changed files by hand, and change local ports (4004,
+  5173) to the worktree's ports from `.claude/worktree.env`.
+- **Production needs no local API.** A local API is only needed for `npm run generate`. It
+  will not start without `USDA_API_KEY`; for codegen alone, `USDA_API_KEY=DEMO_KEY` works.
