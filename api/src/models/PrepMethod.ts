@@ -13,7 +13,11 @@ const prepMethodSchema = new Schema<PrepMethod>({
     value: {
         type: String,
         required: true,
-        validate: uniqueInAdminsAndUser('PrepMethod', 'value', 'The prep method must be unique.'),
+        validate: uniqueInAdminsAndUser<PrepMethod>(
+            'PrepMethod',
+            'value',
+            'The prep method must be unique.'
+        ),
     },
     unique: { type: Boolean, required: true },
     owner: { type: Schema.Types.ObjectId, ref: 'User', required: true, validate: ownerExists() },
