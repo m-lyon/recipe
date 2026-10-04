@@ -8,7 +8,7 @@ import { Image } from '../../src/models/Image.js';
 import { Recipe } from '../../src/models/Recipe.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
-import { ConversionRule, UnitConversion } from '../../src/models/UnitConversion.js';
+import { DisplayLadder } from '../../src/models/DisplayLadder.js';
 
 export async function createUser() {
     const user = await User.register(
@@ -73,6 +73,9 @@ export async function createUnits(user: User) {
         owner: user._id,
         hasSpace: true,
         unique: true,
+        dimension: 'volume',
+        perCanonical: 4.92892159375,
+        system: 'us',
     }).save();
     assert(unit1);
     const unit2 = await new Unit({
@@ -84,6 +87,9 @@ export async function createUnits(user: User) {
         owner: user._id,
         hasSpace: true,
         unique: true,
+        dimension: 'volume',
+        perCanonical: 14.78676478125,
+        system: 'us',
     }).save();
     assert(unit2);
     const unit3 = await new Unit({
@@ -95,6 +101,9 @@ export async function createUnits(user: User) {
         owner: user._id,
         hasSpace: true,
         unique: true,
+        dimension: 'volume',
+        perCanonical: 236.5882365,
+        system: 'us',
     }).save();
     assert(unit3);
     const unit4 = await new Unit({
@@ -106,6 +115,9 @@ export async function createUnits(user: User) {
         owner: user._id,
         hasSpace: false,
         unique: true,
+        dimension: 'mass',
+        perCanonical: 1,
+        system: 'metric',
     }).save();
     assert(unit4);
 }
@@ -135,7 +147,6 @@ export async function createIngredients(user: User) {
     const ingredient1 = await new Ingredient({
         name: 'chicken',
         pluralName: 'chickens',
-        isCountable: true,
         owner: user._id,
         tags: [],
     }).save();
@@ -143,7 +154,6 @@ export async function createIngredients(user: User) {
     const ingredient2 = await new Ingredient({
         name: 'tomato',
         pluralName: 'tomatoes',
-        isCountable: true,
         owner: user._id,
         tags: ['vegan', 'vegetarian'],
     }).save();
@@ -151,44 +161,34 @@ export async function createIngredients(user: User) {
     const ingredient3 = await new Ingredient({
         name: 'salt',
         pluralName: 'salt',
-        isCountable: false,
         owner: user._id,
         tags: ['vegan', 'vegetarian'],
     }).save();
     assert(ingredient3);
 }
 
-export async function createUnitConversions() {
+export async function createDisplayLadders(user: User) {
     const cup = await Unit.findOne({ shortSingular: 'cup' });
     const tablespoon = await Unit.findOne({ shortSingular: 'tbsp' });
     const teaspoon = await Unit.findOne({ shortSingular: 'tsp' });
-    const gram = await Unit.findOne({ shortSingular: 'g' });
 
-    if (!cup || !tablespoon || !teaspoon || !gram) {
-        throw new Error('Units not found during conversion creation');
+    if (!cup || !tablespoon || !teaspoon) {
+        throw new Error('Units not found during display ladder creation');
     }
 
-    const rule1 = await new ConversionRule({
-        baseUnit: teaspoon._id,
-        baseUnitThreshold: 3,
-        unit: tablespoon._id,
-        baseToUnitConversion: 3,
+    const ladder = await new DisplayLadder({
+        name: 'us-volume',
+        dimension: 'volume',
+        system: 'us',
+        scope: 'global',
+        owner: user._id,
+        steps: [
+            { unit: teaspoon._id, minCanonical: 0 },
+            { unit: cup._id, minCanonical: 12 * teaspoon.perCanonical },
+            { unit: tablespoon._id, minCanonical: 3 * teaspoon.perCanonical },
+        ],
     }).save();
-    assert(rule1);
-
-    const rule2 = await new ConversionRule({
-        baseUnit: teaspoon._id,
-        baseUnitThreshold: 12,
-        unit: cup._id,
-        baseToUnitConversion: 48,
-    }).save();
-    assert(rule2);
-
-    const conversion1 = await new UnitConversion({
-        baseUnit: teaspoon._id,
-        rules: [rule1._id, rule2._id],
-    }).save();
-    assert(conversion1);
+    assert(ladder);
 }
 
 export async function createImages() {

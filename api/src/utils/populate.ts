@@ -10,6 +10,8 @@ import { IMAGE_DIR } from '../constants.js';
 import { Recipe } from '../models/Recipe.js';
 import { Ingredient } from '../models/Ingredient.js';
 import { PrepMethod } from '../models/PrepMethod.js';
+import { DisplayLadder } from '../models/DisplayLadder.js';
+import { IngredientMeasure } from '../models/IngredientMeasure.js';
 
 export async function populateTags() {
     try {
@@ -68,6 +70,9 @@ export async function populateUnits() {
                 preferredNumberFormat: 'decimal',
                 hasSpace: true,
                 unique: true,
+                dimension: 'mass',
+                perCanonical: 1000,
+                system: 'metric',
                 owner: admin._id,
             },
             {
@@ -78,6 +83,9 @@ export async function populateUnits() {
                 preferredNumberFormat: 'decimal',
                 hasSpace: true,
                 unique: true,
+                dimension: 'volume',
+                perCanonical: 1,
+                system: 'metric',
                 owner: user._id,
             },
             {
@@ -88,6 +96,9 @@ export async function populateUnits() {
                 preferredNumberFormat: 'fraction',
                 hasSpace: true,
                 unique: true,
+                dimension: 'volume',
+                perCanonical: 4.92892159375,
+                system: 'us',
                 owner: admin._id,
             },
             {
@@ -98,6 +109,9 @@ export async function populateUnits() {
                 preferredNumberFormat: 'fraction',
                 hasSpace: true,
                 unique: true,
+                dimension: 'volume',
+                perCanonical: 14.78676478125,
+                system: 'us',
                 owner: admin._id,
             },
             {
@@ -108,7 +122,38 @@ export async function populateUnits() {
                 preferredNumberFormat: 'fraction',
                 hasSpace: true,
                 unique: true,
+                dimension: 'volume',
+                perCanonical: 236.5882365,
+                system: 'us',
                 owner: user._id,
+            },
+            {
+                shortSingular: 'g',
+                shortPlural: 'g',
+                longSingular: 'gram',
+                longPlural: 'grams',
+                preferredNumberFormat: 'decimal',
+                hasSpace: false,
+                unique: true,
+                dimension: 'mass',
+                perCanonical: 1,
+                system: 'metric',
+                owner: admin._id,
+            },
+            {
+                // Rendered without a name: "2 onions".
+                shortSingular: 'ea',
+                shortPlural: 'ea',
+                longSingular: 'each',
+                longPlural: 'each',
+                preferredNumberFormat: 'fraction',
+                hasSpace: true,
+                unique: true,
+                dimension: 'count',
+                perCanonical: 1,
+                system: null,
+                hidden: true,
+                owner: admin._id,
             },
         ];
         const createdUnits = await Unit.create(dummyUnits);
@@ -150,36 +195,28 @@ export async function populateIngredients() {
         const user = await User.findOne({ role: 'user' });
 
         const dummyIngredients = [
-            { name: 'onion', pluralName: 'onions', isCountable: true, owner: admin._id },
+            { name: 'onion', pluralName: 'onions', owner: admin._id },
             {
                 name: 'tomato',
                 pluralName: 'tomatoes',
-                isCountable: true,
-                density: 0.8,
                 owner: admin._id,
                 tags: ['vegan', 'vegetarian'],
             },
             {
                 name: 'chicken',
                 pluralName: 'chickens',
-                isCountable: false,
-                density: 1.0,
                 owner: admin._id,
                 tags: [],
             },
             {
                 name: 'beef',
                 pluralName: 'beef',
-                isCountable: false,
-                density: 1.0,
                 owner: user._id,
                 tags: [],
             },
             {
                 name: 'rice',
                 pluralName: 'rice',
-                isCountable: false,
-                density: 0.6,
                 owner: user._id,
                 tags: ['vegan', 'vegetarian'],
             },
@@ -189,6 +226,97 @@ export async function populateIngredients() {
         console.log('Ingredients with prepMethods added:', createdIngredients);
     } catch (error) {
         console.error('Error populating ingredients:', error);
+    }
+}
+
+export async function populateIngredientMeasures() {
+    try {
+        await IngredientMeasure.collection.drop();
+
+        const unit = async (longSingular: string) =>
+            (await Unit.findOne({ longSingular }))._id;
+        const ingredient = async (name: string) => (await Ingredient.findOne({ name }))._id;
+        const large = (await Size.findOne({ value: 'large' }))._id;
+        const chopped = (await PrepMethod.findOne({ value: 'chopped' }))._id;
+
+        const dummyMeasures = [
+            { ingredient: await ingredient('onion'), unit: await unit('each'), grams: 110 },
+            {
+                ingredient: await ingredient('onion'),
+                unit: await unit('each'),
+                size: large,
+                grams: 150,
+            },
+            {
+                ingredient: await ingredient('onion'),
+                unit: await unit('cup'),
+                prepMethod: chopped,
+                grams: 160,
+            },
+            { ingredient: await ingredient('tomato'), unit: await unit('each'), grams: 123 },
+            { ingredient: await ingredient('tomato'), unit: await unit('millilitre'), grams: 0.8 },
+            { ingredient: await ingredient('rice'), unit: await unit('cup'), grams: 185 },
+        ];
+        const createdMeasures = await IngredientMeasure.create(dummyMeasures);
+
+        console.log('Dummy ingredient measures added:', createdMeasures);
+    } catch (error) {
+        console.error('Error populating ingredient measures:', error);
+    }
+}
+
+export async function populateDisplayLadders() {
+    try {
+        await DisplayLadder.collection.drop();
+
+        const admin = await User.findOne({ role: 'admin' });
+        const unit = async (longSingular: string) =>
+            Unit.findOne({ longSingular }).orFail();
+        const kilogram = await unit('kilogram');
+        const gram = await unit('gram');
+        const cup = await unit('cup');
+        const tablespoon = await unit('tablespoon');
+        const teaspoon = await unit('teaspoon');
+        const millilitre = await unit('millilitre');
+
+        const dummyLadders = [
+            {
+                name: 'metric-mass',
+                dimension: 'mass',
+                system: 'metric',
+                scope: 'global',
+                owner: admin._id,
+                steps: [
+                    { unit: kilogram._id, minCanonical: 1000 },
+                    { unit: gram._id, minCanonical: 0 },
+                ],
+            },
+            {
+                name: 'metric-volume',
+                dimension: 'volume',
+                system: 'metric',
+                scope: 'global',
+                owner: admin._id,
+                steps: [{ unit: millilitre._id, minCanonical: 0 }],
+            },
+            {
+                name: 'us-volume',
+                dimension: 'volume',
+                system: 'us',
+                scope: 'global',
+                owner: admin._id,
+                steps: [
+                    { unit: cup._id, minCanonical: cup.perCanonical / 4 },
+                    { unit: tablespoon._id, minCanonical: tablespoon.perCanonical },
+                    { unit: teaspoon._id, minCanonical: 0 },
+                ],
+            },
+        ];
+        const createdLadders = await DisplayLadder.create(dummyLadders);
+
+        console.log('Dummy display ladders added:', createdLadders);
+    } catch (error) {
+        console.error('Error populating display ladders:', error);
     }
 }
 
@@ -214,7 +342,7 @@ export async function populateRecipes() {
                     ingredients: [
                         {
                             quantity: '1',
-                            unit: null,
+                            unit: (await Unit.findOne({ longSingular: 'each' }))._id,
                             size: null,
                             ingredient: (await Ingredient.findOne({ name: 'onion' }))._id,
                             prepMethod: (await PrepMethod.findOne({ value: 'chopped' }))._id,
@@ -273,7 +401,7 @@ export async function populateRecipes() {
                         ingredients: [
                             {
                                 quantity: '1/2',
-                                unit: null,
+                                unit: (await Unit.findOne({ longSingular: 'each' }))._id,
                                 size: null,
                                 ingredient: (await Ingredient.findOne({ name: 'onion' }))._id,
                                 prepMethod: (await PrepMethod.findOne({ value: 'sliced' }))._id,
@@ -347,7 +475,7 @@ export async function populateRecipes() {
                         ingredients: [
                             {
                                 quantity: '1',
-                                unit: null,
+                                unit: (await Unit.findOne({ longSingular: 'each' }))._id,
                                 size: null,
                                 ingredient: (await Ingredient.findOne({ name: 'onion' }))._id,
                                 prepMethod: (await PrepMethod.findOne({ value: 'chopped' }))._id,

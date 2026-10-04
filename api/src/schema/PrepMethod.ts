@@ -1,4 +1,4 @@
-import { validateItemNotInRecipe } from './validation.js';
+import { validateItemNotInMeasure, validateItemNotInRecipe } from './validation.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
 import { filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
@@ -55,6 +55,7 @@ export const PrepMethodMutation = {
         .setDescription('Remove a prep method by its ID')
         .wrapResolve((next) => async (rp) => {
             await validateItemNotInRecipe(rp.args._id, 'prepMethod');
+            await validateItemNotInMeasure(rp.args._id, 'prepMethod');
             return next(rp);
         }),
 };

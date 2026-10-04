@@ -16,6 +16,8 @@ const getMockUnitOne = (user) => {
         owner: user._id,
         hasSpace: false,
         unique: true,
+        dimension: 'count',
+        perCanonical: 1,
     };
     return UnitOne;
 };
@@ -30,6 +32,8 @@ const getMockUnitTwo = (user) => {
         owner: user._id,
         hasSpace: false,
         unique: true,
+        dimension: 'count',
+        perCanonical: 1,
     };
     return UnitTwo;
 };
@@ -94,16 +98,73 @@ describe('Unit Model', function () {
         }
     });
 
-    it('Should save and update a unit with measureType explicitly set to null', async function () {
+    it('Should save a mass unit with a system', async function () {
         const user = await User.findOne({ firstName: 'Tester1' });
-        const newUnit = new Unit({ ...getMockUnitOne(user), measureType: null });
+        const newUnit = new Unit({
+            ...getMockUnitOne(user),
+            dimension: 'mass',
+            perCanonical: 1000,
+            system: 'metric',
+        });
         await newUnit.save();
         assert.isFalse(newUnit.isNew);
-        assert.isNull(newUnit.measureType);
+        assert.isFalse(newUnit.hidden);
+    });
 
-        newUnit.measureType = null;
-        await newUnit.save();
-        assert.isNull(newUnit.measureType);
+    it('Should NOT save a unit without a dimension', async function () {
+        const user = await User.findOne({ firstName: 'Tester1' });
+        const { dimension: _dimension, ...rest } = getMockUnitOne(user);
+        try {
+            await new Unit(rest).save();
+            assert.fail('Validation error should occur');
+        } catch (error) {
+            assert.equal(error.errors.dimension.kind, 'required');
+        }
+    });
+
+    it('Should NOT save a unit with a size of 0', async function () {
+        const user = await User.findOne({ firstName: 'Tester1' });
+        try {
+            await new Unit({
+                ...getMockUnitOne(user),
+                dimension: 'mass',
+                perCanonical: 0,
+                system: 'metric',
+            }).save();
+            assert.fail('Validation error should occur');
+        } catch (error) {
+            assert.equal(error.errors.perCanonical.message, 'The size of a unit must be greater than 0.');
+        }
+    });
+
+    it('Should NOT save a count unit with a size other than 1', async function () {
+        const user = await User.findOne({ firstName: 'Tester1' });
+        try {
+            await new Unit({ ...getMockUnitOne(user), perCanonical: 2 }).save();
+            assert.fail('Validation error should occur');
+        } catch (error) {
+            assert.equal(error.errors.perCanonical.message, 'A count unit must have a size of 1.');
+        }
+    });
+
+    it('Should NOT save a volume unit without a system', async function () {
+        const user = await User.findOne({ firstName: 'Tester1' });
+        try {
+            await new Unit({ ...getMockUnitOne(user), dimension: 'volume', perCanonical: 5 }).save();
+            assert.fail('Validation error should occur');
+        } catch (error) {
+            assert.property(error.errors, 'system');
+        }
+    });
+
+    it('Should NOT save a count unit with a system', async function () {
+        const user = await User.findOne({ firstName: 'Tester1' });
+        try {
+            await new Unit({ ...getMockUnitOne(user), system: 'metric' }).save();
+            assert.fail('Validation error should occur');
+        } catch (error) {
+            assert.property(error.errors, 'system');
+        }
     });
 
     it('Should NOT save a unit with a duplicate short singular name admin1 to user1', async function () {

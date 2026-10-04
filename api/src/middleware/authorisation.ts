@@ -6,6 +6,7 @@ import { Image } from '../models/Image.js';
 import { Ingredient } from '../models/Ingredient.js';
 import { ContextImage, GraphQLContext } from '../types.js';
 import { NutritionalInfo } from '../models/NutritionalInfo.js';
+import { IngredientMeasure } from '../models/IngredientMeasure.js';
 
 export function unauthenticated(): GraphQLError {
     return new GraphQLError('You are not authenticated!', {
@@ -64,23 +65,29 @@ export const isDocumentOwnerOrAdmin =
         return next(rp);
     };
 
+type DocumentWithIngredient = Document & { ingredient: Types.ObjectId };
 /**
- * NutritionalInfo has no owner of its own; it is owned through its ingredient. Checks the
- * ingredient of the existing record (update/remove) and of the incoming record
- * (create/update), so an update cannot reassign a record to an ingredient the user does
- * not own.
+ * NutritionalInfo and IngredientMeasure have no owner of their own; they are owned through
+ * their ingredient. Checks the ingredient of the existing record (update/remove) and of the
+ * incoming record (create/update), so an update cannot reassign a record to an ingredient
+ * the user does not own.
  */
-export const isNutritionalInfoOwnerOrAdmin =
-    (): ResolverNextRpCb<unknown, GraphQLContext> => (next) => async (rp) => {
+export const isIngredientOwnerOrAdmin =
+    <T extends DocumentWithIngredient>(
+        Model: Model<T>,
+        modelName: string
+    ): ResolverNextRpCb<unknown, GraphQLContext> =>
+    (next) =>
+    async (rp) => {
         const user = rp.context.getUser();
         if (!user) {
             throw unauthenticated();
         }
         const ingredientIds: unknown[] = [];
         if (rp.args._id) {
-            const existing = await NutritionalInfo.findById(rp.args._id);
+            const existing = await Model.findById(rp.args._id);
             if (!existing) {
-                throw new GraphQLError('NutritionalInfo not found', {
+                throw new GraphQLError(`${modelName} not found`, {
                     extensions: { code: 'NOT_FOUND' },
                 });
             }
@@ -106,6 +113,12 @@ export const isNutritionalInfoOwnerOrAdmin =
         }
         return next(rp);
     };
+
+export const isNutritionalInfoOwnerOrAdmin = () =>
+    isIngredientOwnerOrAdmin(NutritionalInfo, 'NutritionalInfo');
+
+export const isIngredientMeasureOwnerOrAdmin = () =>
+    isIngredientOwnerOrAdmin(IngredientMeasure, 'IngredientMeasure');
 
 export const isImageOwnerOrAdmin =
     (): ResolverNextRpCb<unknown, GraphQLContext> => (next) => async (rp) => {

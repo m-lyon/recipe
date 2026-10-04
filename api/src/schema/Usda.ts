@@ -56,9 +56,9 @@ export interface MappedPortion {
 schemaComposer.createEnumTC({
     name: 'UsdaPortionKind',
     values: {
-        // One countable thing: "1 large", "1 clove", "1 slice". Usable for perUnit.
+        // One countable thing: "1 large", "1 clove", "1 slice". Usable for a count measure.
         ITEM: { value: 'ITEM' },
-        // Maps to a volume unit: "1 cup", "1 tbsp". Usable for density, never perUnit.
+        // Maps to a volume unit: "1 cup", "1 tbsp". Usable for a volume measure.
         VOLUME: { value: 'VOLUME' },
         // Maps to a mass unit: "1 oz". Redundant with perGram; offer for neither.
         WEIGHT: { value: 'WEIGHT' },
@@ -75,8 +75,8 @@ const UsdaFoodPortionTC = schemaComposer.createObjectTC({
         amount: 'Float',
         modifier: 'String',
         gramWeight: 'Float!',
-        // What the portion measures. Only ITEM portions may be used to
-        // derive perUnit; only VOLUME portions can imply a density.
+        // What the portion measures. Only ITEM portions may become a count
+        // measure; only VOLUME portions can imply a density.
         kind: 'UsdaPortionKind!',
         // Non-null only when `modifier` maps to a known volume unit
         millilitres: 'Float',

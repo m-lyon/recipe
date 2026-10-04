@@ -2,7 +2,8 @@ import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { Unit, UnitCreateTC, UnitTC } from '../models/Unit.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
 import { filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
-import { validateItemNotInRecipe, validateUnitNotInConversion } from './validation.js';
+import { validateItemNotInMeasure, validateItemNotInRecipe } from './validation.js';
+import { validateUnitNotInLadder } from './validation.js';
 
 UnitTC.addResolver({
     name: 'updateById',
@@ -45,7 +46,8 @@ export const UnitMutation = {
         .setDescription('Remove a unit by its ID')
         .wrapResolve((next) => async (rp) => {
             await validateItemNotInRecipe(rp.args._id, 'unit');
-            await validateUnitNotInConversion(rp.args._id);
+            await validateItemNotInMeasure(rp.args._id, 'unit');
+            await validateUnitNotInLadder(rp.args._id);
             return next(rp);
         }),
 };

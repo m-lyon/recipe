@@ -16,7 +16,7 @@ import { Ingredient } from '../../src/models/Ingredient.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
 import { RecipeMutation } from '../../src/schema/Recipe.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
-import { createRecipeTags, createUnitConversions } from '../utils/data.js';
+import { createDisplayLadders, createRecipeTags } from '../utils/data.js';
 import { createImages, createIngredients, createPrepMethods } from '../utils/data.js';
 import { createAdmin, createRecipesAsIngredients, createSizes } from '../utils/data.js';
 
@@ -28,7 +28,7 @@ export async function createRecipeIngredientData() {
     await createPrepMethods(user);
     await createRecipeTags();
     await createRecipesAsIngredients(user);
-    await createUnitConversions();
+    await createDisplayLadders(user);
     await createImages();
 }
 
@@ -47,6 +47,11 @@ export function removeRecipeIngredientData(done) {
         .then(() => {
             if (mongoose.connection.collections.recipes) {
                 mongoose.connection.collections.recipes.drop();
+            }
+        })
+        .then(() => {
+            if (mongoose.connection.collections.displayladders) {
+                return mongoose.connection.collections.displayladders.drop();
             }
         })
         .then(() => done())

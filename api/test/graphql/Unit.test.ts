@@ -41,6 +41,9 @@ const mockTeaspoon = {
     preferredNumberFormat: 'fraction',
     hasSpace: true,
     unique: true,
+    dimension: 'volume',
+    perCanonical: 4.92892159375,
+    system: 'us',
 };
 const mockTablespoon = {
     shortPlural: 'tbsp',
@@ -50,6 +53,9 @@ const mockTablespoon = {
     preferredNumberFormat: 'fraction',
     hasSpace: true,
     unique: true,
+    dimension: 'volume',
+    perCanonical: 14.78676478125,
+    system: 'us',
 };
 
 const parseCreatedUnit = (response) => {
@@ -292,6 +298,8 @@ describe('unitRemoveById', () => {
             preferredNumberFormat: 'fraction',
             hasSpace: false,
             unique: true,
+            dimension: 'count',
+            perCanonical: 1,
         };
 
         const createResponse = await createUnit(this, user, unusedUnit);
@@ -320,32 +328,32 @@ describe('unitRemoveById', () => {
         assert.equal(response.body.singleResult.errors[0].extensions.code, 'ITEM_IN_USE');
     });
 
-    it('should NOT delete a unit that is a base unit in a conversion', async function () {
+    it('should NOT delete a unit that is the floor step of a display ladder', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         const unit = await Unit.findOne({ shortSingular: 'tsp' });
 
-        // Try to delete the unit that's used in conversions - should fail
+        // Try to delete the unit that's used in a ladder - should fail
         const response = await deleteUnit(this, user, unit._id);
         assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
         assert.equal(
             response.body.singleResult.errors[0].message,
-            'Cannot delete unit as it is currently being used in existing conversions.'
+            'Cannot delete unit as it is currently being used in display ladders.'
         );
         assert.equal(response.body.singleResult.errors[0].extensions.code, 'ITEM_IN_USE');
     });
 
-    it('should NOT delete a unit that is used in a conversion rule', async function () {
+    it('should NOT delete a unit that is a middle step of a display ladder', async function () {
         const user = await User.findOne({ username: 'testuser1' });
         const unit = await Unit.findOne({ shortSingular: 'tbsp' });
 
-        // Try to delete the unit that's used in conversions - should fail
+        // Try to delete the unit that's used in a ladder - should fail
         const response = await deleteUnit(this, user, unit._id);
         assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors, 'Validation error should occur');
         assert.equal(
             response.body.singleResult.errors[0].message,
-            'Cannot delete unit as it is currently being used in existing conversions.'
+            'Cannot delete unit as it is currently being used in display ladders.'
         );
         assert.equal(response.body.singleResult.errors[0].extensions.code, 'ITEM_IN_USE');
     });

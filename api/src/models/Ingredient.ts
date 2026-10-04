@@ -12,8 +12,6 @@ type ReservedIngredientTags = (typeof ReservedIngredientTags)[keyof typeof Reser
 export interface Ingredient extends Document {
     name: string;
     pluralName: string;
-    density?: number;
-    isCountable: boolean;
     owner: Types.ObjectId;
     tags: ReservedIngredientTags[];
 }
@@ -38,8 +36,6 @@ const ingredientSchema = new Schema<Ingredient>({
             'The plural ingredient name must be unique.'
         ),
     },
-    density: { type: Number, required: false },
-    isCountable: { type: Boolean, required: true },
     owner: { type: Schema.Types.ObjectId, required: true, ref: 'User', validate: ownerExists() },
     tags: {
         type: [String],
