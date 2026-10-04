@@ -1,4 +1,4 @@
-import { PrepMethod } from '@recipe/graphql/generated';
+import { PrepMethod } from '@recipe/graphql/schema';
 import { mockAdminId, mockWholeId } from '@recipe/graphql/__mocks__/ids';
 import { mockChoppedId, mockDicedId, mockSlicedId } from '@recipe/graphql/__mocks__/ids';
 import { GetPrepMethodsQuery, GetPrepMethodsQueryVariables } from '@recipe/graphql/generated';

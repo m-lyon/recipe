@@ -10,7 +10,7 @@ import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import { ApolloServer } from '@apollo/server';
 import { buildContext } from 'graphql-passport';
-import { expressMiddleware } from '@apollo/server/express4';
+import { expressMiddleware } from '@as-integrations/express4';
 import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 

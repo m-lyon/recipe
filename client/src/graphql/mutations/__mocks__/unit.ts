@@ -1,6 +1,7 @@
+import { Unit } from '@recipe/graphql/schema';
 import { ModifyUnitMutation } from '@recipe/graphql/generated';
 import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
-import { ModifyUnitMutationVariables, Unit } from '@recipe/graphql/generated';
+import { ModifyUnitMutationVariables } from '@recipe/graphql/generated';
 import { mockAdminId, mockBumpId, mockCuttingId } from '@recipe/graphql/__mocks__/ids';
 import { CREATE_UNIT, DELETE_UNIT, MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
 import { CreateUnitMutation, CreateUnitMutationVariables } from '@recipe/graphql/generated';

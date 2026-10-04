@@ -1,7 +1,8 @@
+import { Tag } from '@recipe/graphql/schema';
 import { mockTagId } from '@recipe/graphql/__mocks__/ids';
 import { CREATE_TAG, REMOVE_TAG } from '@recipe/graphql/mutations/tag';
 import { RemoveTagMutation, RemoveTagMutationVariables } from '@recipe/graphql/generated';
-import { CreateTagMutation, CreateTagMutationVariables, Tag } from '@recipe/graphql/generated';
+import { CreateTagMutation, CreateTagMutationVariables } from '@recipe/graphql/generated';
 
 export const mockTag: Tag = {
     __typename: 'Tag',

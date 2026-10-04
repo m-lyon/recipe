@@ -1,3 +1,4 @@
+import { Size } from '@recipe/graphql/schema';
 import { DELETE_SIZE } from '@recipe/graphql/mutations/size';
 import { mockExtraLargeId } from '@recipe/graphql/__mocks__/ids';
 import { mockSmall } from '@recipe/graphql/queries/__mocks__/size';
@@ -5,7 +6,7 @@ import { CREATE_SIZE, MODIFY_SIZE } from '@recipe/graphql/mutations/size';
 import { mockAdminId, mockReallyBigId } from '@recipe/graphql/__mocks__/ids';
 import { ModifySizeMutation, ModifySizeMutationVariables } from '@recipe/graphql/generated';
 import { DeleteSizeMutation, DeleteSizeMutationVariables } from '@recipe/graphql/generated';
-import { CreateSizeMutation, CreateSizeMutationVariables, Size } from '@recipe/graphql/generated';
+import { CreateSizeMutation, CreateSizeMutationVariables } from '@recipe/graphql/generated';
 
 export const mockExtraLarge: Size = {
     _id: mockExtraLargeId,

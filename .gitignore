@@ -146,3 +146,8 @@ spec-document.md
 
 # roborev snapshots
 /.roborev/
+
+# Claude Code worktrees (see .claude/hooks/worktree.sh)
+.claude/worktrees/
+.claude/worktree.env
+.claude/settings.local.json
