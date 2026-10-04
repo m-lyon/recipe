@@ -126,6 +126,7 @@ describe('migrateCanonicalUnits', function () {
         assert.include(clove, { dimension: 'count', perCanonical: 1, system: null });
         assert.notProperty(clove, 'measureType');
 
+        assert.deepEqual(report.unitsAssumedCount, ['clove']);
         assert.deepEqual(report.unitsUnassigned, [
             {
                 unit: 'scoop',

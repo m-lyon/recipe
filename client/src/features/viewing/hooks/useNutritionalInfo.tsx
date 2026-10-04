@@ -1,12 +1,10 @@
 import { useQuery } from '@apollo/client';
 
-import { useUnitConversion } from '@recipe/features/servings';
-import { NutritionalInfoData, sumRecipeNutrition } from '@recipe/utils/nutrition';
-import { GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS } from '@recipe/graphql/queries/nutritionalInfo';
+import { sumRecipeNutrition } from '@recipe/utils/nutrition';
+import { GET_RECIPE_NUTRITION } from '@recipe/graphql/queries/nutritionalInfo';
+import { IngredientMeasureData, NutritionalInfoData } from '@recipe/utils/nutrition';
 
 export function useNutritionalInfo(subsections: IngredientSubsectionView[], numServings: number) {
-    const { unitConversions, loading: conversionsLoading } = useUnitConversion();
-
     // Collect unique ingredient IDs from Ingredient-type items
     const ingredientIds = [
         ...new Set(
@@ -17,26 +15,29 @@ export function useNutritionalInfo(subsections: IngredientSubsectionView[], numS
         ),
     ];
 
-    const { data, loading: nutritionLoading } = useQuery(GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS, {
+    const { data, loading, refetch } = useQuery(GET_RECIPE_NUTRITION, {
         variables: { ingredientIds },
         skip: ingredientIds.length === 0,
     });
 
-    // Build a map from ingredient _id → NutritionalInfoData (or null)
+    // Build maps from ingredient _id → NutritionalInfoData (or null) and → measures
     const nutritionalInfoMap = new Map<string, NutritionalInfoData | null>();
+    const measuresMap = new Map<string, IngredientMeasureData[]>();
     for (const id of ingredientIds) {
         const info = data?.nutritionalInfosByIngredientIds?.find(
             (n) => n != null && String(n.ingredient) === id
         );
         nutritionalInfoMap.set(id, info ?? null);
+        measuresMap.set(
+            id,
+            (data?.ingredientMeasuresByIngredientIds ?? []).filter((m) => m.ingredient === id)
+        );
     }
-
-    const result = sumRecipeNutrition(
-        subsections,
-        nutritionalInfoMap,
-        unitConversions,
-        numServings
+    const owners = new Map(
+        (data?.ingredientByIds ?? []).map((ingredient) => [ingredient._id, ingredient.owner])
     );
 
-    return { ...result, loading: nutritionLoading || conversionsLoading };
+    const result = sumRecipeNutrition(subsections, nutritionalInfoMap, measuresMap, numServings);
+
+    return { ...result, owners, loading, refetch };
 }

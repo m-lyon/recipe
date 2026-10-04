@@ -15,7 +15,6 @@ export const mockApple: Ingredient = {
     name: 'apple',
     pluralName: 'apples',
     isCountable: true,
-    density: null,
     owner: mockAdminId,
     tags: ['vegan', 'vegetarian'],
 };
@@ -25,7 +24,6 @@ export const mockChicken: Ingredient = {
     name: 'chicken',
     pluralName: 'chickens',
     isCountable: false,
-    density: null,
     owner: mockAdminId,
     tags: [],
 };
@@ -35,7 +33,6 @@ export const mockCarrot: Ingredient = {
     name: 'carrot',
     pluralName: 'carrots',
     isCountable: true,
-    density: null,
     owner: mockAdminId,
     tags: ['vegan', 'vegetarian'],
 };
@@ -45,7 +42,6 @@ export const mockLettuce: Ingredient = {
     name: 'iceberg lettuce',
     pluralName: 'iceberg lettuces',
     isCountable: false,
-    density: null,
     owner: mockAdminId,
     tags: ['vegan', 'vegetarian'],
 };

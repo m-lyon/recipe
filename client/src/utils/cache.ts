@@ -60,9 +60,9 @@ export const getCache = () =>
                     },
                 },
             },
-            UnitConversion: {
+            DisplayLadder: {
                 fields: {
-                    rules: {
+                    steps: {
                         merge(_existing, incoming) {
                             return incoming;
                         },

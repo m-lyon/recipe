@@ -13,7 +13,7 @@ import { mockCurrentUserNull } from '@recipe/graphql/queries/__mocks__/user';
 import { mockLogin, mockLogout } from '@recipe/graphql/mutations/__mocks__/user';
 import { mockArchiveRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
+import { mockGetDisplayLadders } from '@recipe/graphql/queries/__mocks__/displayLadder';
 import { mockGetRecipeTwo, mockGetRecipes } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCurrentUser, mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { MockedResponses, enterEditRecipePage, enterViewRecipePage } from '@recipe/utils/tests';
@@ -66,7 +66,7 @@ describe('Auth Workflow', () => {
         renderComponent([
             mockCurrentUserAdmin,
             mockGetRecipeOne,
-            mockGetUnitConversions,
+            mockGetDisplayLadders,
             mockLogout,
         ]);
         const user = userEvent.setup();
@@ -95,7 +95,7 @@ describe('Edit & Archive Permissions', () => {
             mockCurrentUser,
             mockGetRecipeTwo,
             mockGetIngredientComponents,
-            mockGetUnitConversions,
+            mockGetDisplayLadders,
         ]);
         const user = userEvent.setup();
 

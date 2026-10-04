@@ -8,9 +8,9 @@ import { PATH } from '@recipe/constants';
 import { useUser } from '@recipe/features/user';
 import { useRecipeStore } from '@recipe/stores';
 import { TagList } from '@recipe/features/tags';
-import { Servings } from '@recipe/features/servings';
 import { IngredientsTabLayout } from '@recipe/layouts';
 import { useAddRating } from '@recipe/features/rating';
+import { Servings, UnitSystemToggle } from '@recipe/features/servings';
 import { StarRating, getAverageRating } from '@recipe/features/rating';
 
 import { Notes } from './Notes';
@@ -26,9 +26,9 @@ export function IngredientsTab(props: Props) {
     const { recipe } = props;
     const setNumServings = useRecipeStore((state) => state.setNumServings);
     const currentServings = useRecipeStore((state) => state.numServings);
-    const { isVerified } = useUser();
+    const { isVerified, isAdmin, user } = useUser();
     const { addRatingWithToast } = useAddRating();
-    const { perServing, uncountedIds, loading } = useNutritionalInfo(
+    const { perServing, uncountedIds, uncounted, owners, loading, refetch } = useNutritionalInfo(
         recipe.ingredientSubsections,
         recipe.numServings
     );
@@ -65,7 +65,12 @@ export function IngredientsTab(props: Props) {
 
     return (
         <IngredientsTabLayout
-            Servings={<Servings />}
+            Servings={
+                <>
+                    <Servings />
+                    <UnitSystemToggle ml={2} />
+                </>
+            }
             StarRating={
                 <StarRating
                     rating={getAverageRating(recipe.ratings)}
@@ -87,6 +92,11 @@ export function IngredientsTab(props: Props) {
                     <NutritionalInfoPanel
                         perServing={perServing}
                         uncountedIds={uncountedIds}
+                        uncounted={uncounted}
+                        canEditIngredient={(id) =>
+                            isVerified && (isAdmin || (!!user && owners.get(id) === user._id))
+                        }
+                        onMeasureSaved={() => refetch()}
                         nothingCounted={nothingCounted}
                         loading={loading}
                     />

@@ -21,6 +21,9 @@ UnitCreateTC.addResolver({
     resolve: createOneResolver(Unit, UnitCreateTC),
 });
 
+// Mongoose fills in the default, so a stored unit always has a value.
+UnitTC.extendField('hidden', { type: 'Boolean!' });
+
 export const UnitQuery = {
     unitById: UnitTC.mongooseResolvers.findById().setDescription('Retrieve a unit by its ID'),
     unitByIds: UnitTC.mongooseResolvers

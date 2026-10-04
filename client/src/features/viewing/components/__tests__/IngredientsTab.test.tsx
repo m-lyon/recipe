@@ -5,17 +5,17 @@ import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { renderPage } from '@recipe/utils/tests';
+import { GetRecipeNutritionQuery } from '@recipe/graphql/generated';
 import { mockKilogram } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockRecipeIngredientIdOne } from '@recipe/graphql/__mocks__/ids';
 import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { mockRecipeIngredientIdSixteen } from '@recipe/graphql/__mocks__/ids';
-import { GetNutritionalInfosByIngredientIdsQuery } from '@recipe/graphql/generated';
+import { GET_RECIPE_NUTRITION } from '@recipe/graphql/queries/nutritionalInfo';
 import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
+import { mockGetDisplayLadders } from '@recipe/graphql/queries/__mocks__/displayLadder';
 import { mockChicken, mockRhurbarbPie } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockChickenId, mockRecipeIngredientIdFifteen } from '@recipe/graphql/__mocks__/ids';
-import { GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS } from '@recipe/graphql/queries/nutritionalInfo';
 
 import { IngredientsTab } from '../IngredientsTab';
 
@@ -52,7 +52,7 @@ const renderComponent = () => {
     const routes = createRoutesFromElements(<Route path='/' element={<MockIngredientsTab />} />);
     return renderPage(routes, [
         mockGetIngredientComponents,
-        mockGetUnitConversions,
+        mockGetDisplayLadders,
         mockCurrentUserAdmin,
     ]);
 };
@@ -106,7 +106,7 @@ describe('IngredientsTab nutritional info integration', () => {
         // 1 kg chicken × 1.65 kcal/g = 1650 kcal; recipe has 4 servings → 412.5 → 413 kcal/serving
         const mockGetNutritionalInfos = {
             request: {
-                query: GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS,
+                query: GET_RECIPE_NUTRITION,
                 variables: { ingredientIds: [mockChickenId] },
             },
             result: {
@@ -117,7 +117,6 @@ describe('IngredientsTab nutritional info integration', () => {
                             __typename: 'NutritionalInfo',
                             _id: 'ni-chicken',
                             ingredient: mockChickenId,
-                            usdaFdcId: null,
                             perGram: {
                                 __typename: 'NutritionalInfoPerGram',
                                 calories: 1.65,
@@ -125,10 +124,11 @@ describe('IngredientsTab nutritional info integration', () => {
                                 carbs: 0,
                                 fat: 0.036,
                             },
-                            perUnit: null,
                         },
                     ],
-                } satisfies GetNutritionalInfosByIngredientIdsQuery,
+                    ingredientMeasuresByIngredientIds: [],
+                    ingredientByIds: [],
+                } satisfies GetRecipeNutritionQuery,
             },
         };
 
@@ -164,7 +164,7 @@ describe('IngredientsTab nutritional info integration', () => {
         );
         renderPage(routes, [
             mockGetIngredientComponents,
-            mockGetUnitConversions,
+            mockGetDisplayLadders,
             mockCurrentUserAdmin,
             mockGetNutritionalInfos,
         ]);
@@ -179,7 +179,7 @@ describe('IngredientsTab nutritional info integration', () => {
         // Same recipe as above: 1 kg chicken, 4 servings, 413 kcal per serving.
         const mockGetNutritionalInfos = {
             request: {
-                query: GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS,
+                query: GET_RECIPE_NUTRITION,
                 variables: { ingredientIds: [mockChickenId] },
             },
             result: {
@@ -190,7 +190,6 @@ describe('IngredientsTab nutritional info integration', () => {
                             __typename: 'NutritionalInfo',
                             _id: 'ni-chicken',
                             ingredient: mockChickenId,
-                            usdaFdcId: null,
                             perGram: {
                                 __typename: 'NutritionalInfoPerGram',
                                 calories: 1.65,
@@ -198,10 +197,11 @@ describe('IngredientsTab nutritional info integration', () => {
                                 carbs: 0,
                                 fat: 0.036,
                             },
-                            perUnit: null,
                         },
                     ],
-                } satisfies GetNutritionalInfosByIngredientIdsQuery,
+                    ingredientMeasuresByIngredientIds: [],
+                    ingredientByIds: [],
+                } satisfies GetRecipeNutritionQuery,
             },
         };
 
@@ -237,7 +237,7 @@ describe('IngredientsTab nutritional info integration', () => {
         );
         renderPage(routes, [
             mockGetIngredientComponents,
-            mockGetUnitConversions,
+            mockGetDisplayLadders,
             mockCurrentUserAdmin,
             mockGetNutritionalInfos,
         ]);
@@ -288,7 +288,7 @@ describe('IngredientsTab nutritional info integration', () => {
         );
         renderPage(routes, [
             mockGetIngredientComponents,
-            mockGetUnitConversions,
+            mockGetDisplayLadders,
             mockCurrentUserAdmin,
         ]);
 

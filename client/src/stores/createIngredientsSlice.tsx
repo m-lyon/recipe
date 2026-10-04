@@ -151,6 +151,25 @@ function setPrepMethod(state: IngredientSectionsSlice, section: number, data: Fi
     newEditable.showDropdown = true;
     state.ingredientSections[section].editable = newEditable;
 }
+/**
+ * A quantity with no unit is a count: "2 onions" is 2 each. The each unit is hidden, so the
+ * line renders the same, but it is stored with a real unit. Without a quantity, the line
+ * keeps no unit.
+ */
+function resolveSkippedUnit(
+    state: IngredientSectionsSlice,
+    section: number,
+    data: IngredientComponents | undefined
+) {
+    const item = state.ingredientSections[section]?.editable;
+    if (!item || item.quantity === null || item.unit.data !== null) {
+        return;
+    }
+    const each = data?.units.find((unit) => unit.hidden && unit.dimension === 'count');
+    if (each) {
+        item.unit = { value: null, data: each };
+    }
+}
 interface handleChangeOpts {
     state: IngredientSectionsSlice;
     section: number;
@@ -370,7 +389,7 @@ export const createIngredientsSlice: StateCreator<RecipeState, [], [], Ingredien
         attr: SetAttr,
         data: IngredientComponents | undefined,
         apply: ApplyUnitConversion
-    ) =>
+    ) => {
         set(
             produce((state: IngredientSectionsSlice) => {
                 const inputState = state.ingredientSections[section].editable.state;
@@ -438,7 +457,9 @@ export const createIngredientsSlice: StateCreator<RecipeState, [], [], Ingredien
                         break;
                 }
             })
-        ),
+        );
+        set(produce((state: IngredientSectionsSlice) => resolveSkippedUnit(state, section, data)));
+    },
     removeIngredientCharacter: (section: number) => {
         set(
             produce((state: IngredientSectionsSlice) => {
@@ -501,6 +522,7 @@ export const createIngredientsSlice: StateCreator<RecipeState, [], [], Ingredien
                 }
             })
         );
+        set(produce((state: IngredientSectionsSlice) => resolveSkippedUnit(state, section, data)));
     },
     setFinishedIngredients: (section: number, ingredients: FinishedRecipeIngredient[]) =>
         set(

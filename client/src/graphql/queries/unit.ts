@@ -10,7 +10,10 @@ export const UNIT_FIELDS = gql(`
         preferredNumberFormat
         hasSpace
         unique
-        measureType
+        dimension
+        perCanonical
+        system
+        hidden
     }
 `);
 

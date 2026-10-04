@@ -9,8 +9,6 @@ import { ModifyIngredientMutationVariables } from '@recipe/graphql/generated';
 import { CreateIngredientMutationVariables } from '@recipe/graphql/generated';
 import { mockAdminId, mockBeefId, mockOnionId } from '@recipe/graphql/__mocks__/ids';
 import { CREATE_INGREDIENT, MODIFY_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
-import { ONION_CUP_DENSITY_APPLIED } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
-import { OLIVE_OIL_CUP_DENSITY_APPLIED } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 
 export const mockBeef: Ingredient = {
     _id: mockBeefId,
@@ -18,7 +16,6 @@ export const mockBeef: Ingredient = {
     name: 'beef',
     pluralName: 'beef',
     isCountable: false,
-    density: null,
     owner: mockAdminId,
     tags: [],
 };
@@ -50,15 +47,13 @@ export const mockOnion: Ingredient = {
     name: 'onion',
     pluralName: 'onion',
     isCountable: true,
-    density: ONION_CUP_DENSITY_APPLIED,
     owner: mockAdminId,
     tags: [],
 };
 
-/** A countable ingredient created with a density accepted from a USDA volume portion.
- *  The density rides in the create record itself, so it saves in one round trip,
- *  before the ingredient (and so any NutritionalInfo link) exists. */
-export const mockCreateIngredientOnionWithDensity = {
+/** A countable ingredient created from the recipe ingredient popover. Its nutrition
+ *  link and measures are staged and committed once it has an id. */
+export const mockCreateIngredientOnion = {
     request: {
         query: CREATE_INGREDIENT,
         variables: {
@@ -67,7 +62,6 @@ export const mockCreateIngredientOnionWithDensity = {
                 pluralName: mockOnion.pluralName,
                 isCountable: true,
                 tags: [],
-                density: ONION_CUP_DENSITY_APPLIED,
             },
         } satisfies CreateIngredientMutationVariables,
     },
@@ -79,32 +73,6 @@ export const mockCreateIngredientOnionWithDensity = {
                 record: mockOnion,
             },
         } satisfies CreateIngredientMutation,
-    },
-};
-
-/** The edit flow: an accepted density persists through the ordinary ingredient save. */
-export const mockUpdateIngredientCarrotWithDensity = {
-    request: {
-        query: MODIFY_INGREDIENT,
-        variables: {
-            id: mockCarrot._id,
-            record: {
-                name: mockCarrot.name,
-                pluralName: mockCarrot.pluralName,
-                isCountable: mockCarrot.isCountable,
-                tags: mockCarrot.tags,
-                density: OLIVE_OIL_CUP_DENSITY_APPLIED,
-            },
-        } satisfies ModifyIngredientMutationVariables,
-    },
-    result: {
-        data: {
-            __typename: 'Mutation',
-            ingredientUpdateById: {
-                __typename: 'UpdateByIdIngredientPayload',
-                record: { ...mockCarrot, density: OLIVE_OIL_CUP_DENSITY_APPLIED },
-            },
-        } satisfies ModifyIngredientMutation,
     },
 };
 

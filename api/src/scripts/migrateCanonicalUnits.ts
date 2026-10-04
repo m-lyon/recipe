@@ -63,6 +63,8 @@ export interface MigrationReport {
     unitsAssigned: Array<{ unit: string } & Magnitude>;
     unitsAlreadyAssigned: string[];
     unitsUnassigned: Array<{ unit: string; reason: string }>;
+    /** Units with no known size, made count units. An owner should check each one. */
+    unitsAssumedCount: string[];
     eachUnit: 'created' | 'updated' | 'missing admin';
     recipeLinesRewritten: number;
     densityMeasuresCreated: number;
@@ -173,8 +175,9 @@ async function assignUnitMagnitudes(db: Db, report: MigrationReport, write: bool
                 dimension: 'count',
                 perCanonical: 1,
                 system: null,
-                source: 'no measure type',
+                source: 'no known size, assumed count',
             });
+            report.unitsAssumedCount.push(unit.longSingular);
         }
     }
 
@@ -479,6 +482,7 @@ export async function migrateCanonicalUnits(
         unitsAssigned: [],
         unitsAlreadyAssigned: [],
         unitsUnassigned: [],
+        unitsAssumedCount: [],
         eachUnit: 'missing admin',
         recipeLinesRewritten: 0,
         densityMeasuresCreated: 0,
@@ -516,6 +520,7 @@ function printReport(report: MigrationReport) {
     );
     list('Units already sized', report.unitsAlreadyAssigned, (u) => u);
     list('Units NOT sized, need an owner to set them', report.unitsUnassigned, (u) => `${u.unit}: ${u.reason}`);
+    list('Units assumed to be count units, check each one', report.unitsAssumedCount, (u) => u);
     console.log(`\neach unit: ${report.eachUnit}`);
     console.log(`Recipe lines rewritten to each: ${report.recipeLinesRewritten}`);
     console.log(`Density measures created: ${report.densityMeasuresCreated}`);

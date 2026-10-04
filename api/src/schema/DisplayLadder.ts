@@ -50,6 +50,7 @@ DisplayLadderStepTC.addRelation('unit', {
     projection: { unit: true },
 });
 DisplayLadderStepTC.extendField('unit', { type: new GraphQLNonNull(UnitTC.getType()) });
+DisplayLadderTC.extendField('steps', { type: DisplayLadderStepTC.NonNull.List.NonNull });
 
 export const DisplayLadderQuery = {
     displayLadderMany: DisplayLadderTC.mongooseResolvers

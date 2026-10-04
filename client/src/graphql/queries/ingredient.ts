@@ -12,7 +12,6 @@ export const INGREDIENT_FIELDS_FULL = gql(`
     fragment IngredientFieldsFull on Ingredient {
         ...IngredientFields
         tags
-        density
     }
 `);
 

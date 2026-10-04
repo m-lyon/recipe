@@ -1,101 +1,44 @@
 import { useQuery } from '@apollo/client';
-import { Fraction, MathType, divide, fraction, multiply } from 'mathjs';
 
-import { isFraction, isRange } from '@recipe/utils/number';
-import { GET_UNIT_CONVERSIONS } from '@recipe/graphql/queries/unitConversion';
-import { returnQuantityFromFloat, returnQuantityFromFraction } from '@recipe/utils/quantity';
+import { applyLadder, convertToSystem } from '@recipe/utils/units';
+import { GET_DISPLAY_LADDERS } from '@recipe/graphql/queries/displayLadder';
+import { DisplayLadder, SystemConversion, UnitSystemPreference } from '@recipe/utils/units';
 
 export interface UnitConversionArgs {
     quantity: FinishedQuantity;
     unit: FinishedUnit;
 }
 export type ApplyUnitConversion = ({ quantity, unit }: UnitConversionArgs) => UnitConversionArgs;
+export type ConvertToSystem = (
+    args: UnitConversionArgs,
+    preference: UnitSystemPreference
+) => UnitConversionArgs & Pick<SystemConversion, 'approximate'>;
 interface UseUnitConversionReturnType {
+    /** Ladders a quantity within its authored unit's system: 1500 g becomes 1.5 kg. */
     apply: ApplyUnitConversion;
-    unitConversions: UnitConversion[];
+    /** Shows a quantity in the reader's chosen system, rounded and marked approximate. */
+    convert: ConvertToSystem;
+    ladders: DisplayLadder[];
     loading: boolean;
 }
 export function useUnitConversion(): UseUnitConversionReturnType {
-    const { data, loading, error } = useQuery(GET_UNIT_CONVERSIONS);
+    const { data, loading, error } = useQuery(GET_DISPLAY_LADDERS);
+    const ladders = data?.displayLadderMany ?? [];
+    const ready = !loading && !error && data != null;
 
     const apply = ({ quantity, unit }: UnitConversionArgs): UnitConversionArgs => {
-        if (unit == null || quantity == null) {
+        if (unit == null || quantity == null || !ready) {
             return { quantity, unit };
         }
-        if (loading || error || !data) {
-            return { quantity, unit };
-        }
-        const unitConversion = data.unitConversionMany.find(
-            (conversion) =>
-                conversion.baseUnit._id === unit._id ||
-                conversion.rules.some((rule) => rule.unit._id === unit._id)
-        );
-        if (!unitConversion) {
-            return { quantity, unit };
-        }
-        // Get base conversion factor. When the unit is the conversion's base unit
-        // the quantity is already expressed in base units, so the factor is 1.
-        const currentRule = unitConversion.rules.find((rule) => rule.unit._id === unit._id);
-        const baseToUnitConversion = currentRule ? currentRule.baseToUnitConversion : 1;
-        return applyConversion(quantity, baseToUnitConversion, unitConversion);
+        return applyLadder(quantity, unit, ladders);
     };
 
-    return { apply, unitConversions: data?.unitConversionMany ?? [], loading };
-}
-
-function applyConversion(
-    quantity: string,
-    baseToUnitConversion: number,
-    unitConversion: UnitConversion
-): UnitConversionArgs {
-    if (isRange(quantity)) {
-        const [start, end] = quantity.split('-');
-        const startConversion = applyConversion(start, baseToUnitConversion, unitConversion);
-        const endConversion = applyConversion(end, baseToUnitConversion, unitConversion);
-        return {
-            quantity: `${startConversion.quantity}-${endConversion.quantity}`,
-            unit: startConversion.unit,
-        };
-    }
-    if (isFraction(quantity)) {
-        return applyFractionConversion(quantity, baseToUnitConversion, unitConversion);
-    } else {
-        return applyFloatConversion(quantity, baseToUnitConversion, unitConversion);
-    }
-}
-
-function applyFractionConversion(
-    quantity: string,
-    baseToUnitConversion: number,
-    unitConversion: UnitConversion
-): UnitConversionArgs {
-    const baseQuantity = multiply(fraction(quantity), fraction(baseToUnitConversion)) as Fraction;
-    for (const rule of unitConversion.rules) {
-        if (baseQuantity >= (rule.baseUnitThreshold as MathType)) {
-            const result = divide(baseQuantity, fraction(rule.baseToUnitConversion)) as Fraction;
-            return { quantity: returnQuantityFromFraction(result, rule.unit), unit: rule.unit };
+    const convert: ConvertToSystem = ({ quantity, unit }, preference) => {
+        if (unit == null || quantity == null || !ready) {
+            return { quantity, unit, approximate: false };
         }
-    }
-    return {
-        quantity: returnQuantityFromFraction(baseQuantity, unitConversion.baseUnit),
-        unit: unitConversion.baseUnit,
+        return convertToSystem(quantity, unit, preference, ladders);
     };
-}
 
-function applyFloatConversion(
-    quantity: string,
-    baseToUnitConversion: number,
-    unitConversion: UnitConversion
-): UnitConversionArgs {
-    const baseQuantity = parseFloat(quantity) * baseToUnitConversion;
-    for (const rule of unitConversion.rules) {
-        if (baseQuantity >= rule.baseUnitThreshold) {
-            const result = baseQuantity / rule.baseToUnitConversion;
-            return { quantity: returnQuantityFromFloat(result, rule.unit), unit: rule.unit };
-        }
-    }
-    return {
-        quantity: returnQuantityFromFloat(baseQuantity, unitConversion.baseUnit),
-        unit: unitConversion.baseUnit,
-    };
+    return { apply, convert, ladders, loading };
 }
