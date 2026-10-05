@@ -117,7 +117,8 @@ export function EditRecipe() {
         }
         setRecipe(recipe);
         // A draft holds unsaved changes from before the app was closed; it wins over
-        // the server copy.
+        // the server copy, even when that copy is newer (e.g. saved from another device).
+        // Saving then overwrites those changes; leaving the page discards the draft.
         if (!loadDraft()) {
             recipeState.setTitle(recipe.title);
             recipeState.setNumServings(recipe.numServings);
