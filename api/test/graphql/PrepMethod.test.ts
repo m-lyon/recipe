@@ -6,13 +6,15 @@ import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 import { createUser } from '../utils/data.js';
 import { User } from '../../src/models/User.js';
 import { Recipe } from '../../src/models/Recipe.js';
+import type { DocId, RecordInput } from '../utils/types.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
+import type { PrepMethod } from '../../src/models/PrepMethod.js';
 import { createRecipeIngredientData, removeRecipeIngredientData } from './Recipe.test.js';
 
 async function createPrepMethod(
     context: Mocha.Context,
-    user: unknown,
-    record: Record<string, unknown>
+    user: User,
+    record: RecordInput<PrepMethod>
 ) {
     const query = `
     mutation PrepMethodCreateOne($record: CreateOnePrepMethodCreateInput!) {
@@ -68,7 +70,7 @@ describe('prepMethodCreateOne', () => {
     });
 
     it('should create a prep method', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const newRecord = { value: 'chopped', unique: true };
         const response = await createPrepMethod(this, user, newRecord);
         const record = parseCreatedPrepMethod(response);
@@ -76,7 +78,7 @@ describe('prepMethodCreateOne', () => {
     });
 
     it('should NOT create a prep method, duplicate data', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const newRecord = { value: 'chopped', unique: true };
         await createPrepMethod(this, user, newRecord);
         const response = await createPrepMethod(this, user, newRecord);
@@ -89,7 +91,7 @@ describe('prepMethodCreateOne', () => {
     });
 
     it('should create a prep method, duplicate data with unique set to false', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const newRecord = { value: 'chopped', unique: false };
         await createPrepMethod(this, user, newRecord);
         const response = await createPrepMethod(this, user, newRecord);
@@ -117,9 +119,9 @@ describe('prepMethodUpdateById', () => {
 
     async function updatePrepMethod(
         context: Mocha.Context,
-        user: unknown,
-        id: unknown,
-        record: Record<string, unknown>
+        user: User,
+        id: DocId,
+        record: RecordInput<PrepMethod>
     ) {
         const query = `
         mutation UpdatePrepMethodById($id: MongoID!, $record: UpdateByIdPrepMethodInput!) {
@@ -143,7 +145,7 @@ describe('prepMethodUpdateById', () => {
     }
 
     it('should update a prep method', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         // Create the ingredients
         const recordOneVars = { value: 'chopped', unique: true };
         const recordTwoVars = { value: 'diced', unique: true };
@@ -163,7 +165,7 @@ describe('prepMethodUpdateById', () => {
     });
 
     it('should NOT update a prep method, duplicate data', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         // Create the ingredients
         const recordOneVars = { value: 'chopped', unique: true };
         const recordTwoVars = { value: 'diced', unique: true };
@@ -181,7 +183,7 @@ describe('prepMethodUpdateById', () => {
     });
 
     it('should update a prep method, duplicate data with unique set to false', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         // Create the ingredients
         const recordOneVars = { value: 'chopped', unique: false };
         const recordTwoVars = { value: 'diced', unique: false };
@@ -211,7 +213,7 @@ describe('prepMethodRemoveById', () => {
 
     afterEach(removeRecipeIngredientData);
 
-    async function deletePrepMethod(context: Mocha.Context, user: unknown, id: unknown) {
+    async function deletePrepMethod(context: Mocha.Context, user: User, id: DocId) {
         const query = `
         mutation PrepMethodRemoveById($id: MongoID!) {
             prepMethodRemoveById(_id: $id) {
@@ -231,7 +233,7 @@ describe('prepMethodRemoveById', () => {
     }
 
     it('should delete a prep method that is not used in recipes', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
 
         // Create a new prep method that won't be used in recipes
         const unusedPrepMethod = {
@@ -253,7 +255,7 @@ describe('prepMethodRemoveById', () => {
     });
 
     it('should NOT delete a prep method that is used in recipes', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
 
         // Find the recipe and get the prep method that's used in one of its ingredients
         const recipe = await Recipe.findOne({ title: 'Bimibap' });

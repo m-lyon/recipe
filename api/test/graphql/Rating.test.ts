@@ -5,16 +5,14 @@ import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 import { User } from '../../src/models/User.js';
 import { Unit } from '../../src/models/Unit.js';
 import { Recipe } from '../../src/models/Recipe.js';
+import type { RecordInput } from '../utils/types.js';
+import type { Rating } from '../../src/models/Rating.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { createRecipeIngredientData, removeRecipeIngredientData } from './Recipe.test.js';
 
-async function createRating(
-    context: Mocha.Context,
-    user: unknown,
-    record: Record<string, unknown>
-) {
+async function createRating(context: Mocha.Context, user: User, record: RecordInput<Rating>) {
     const query = `
     mutation RatingCreateOne($record: CreateOneRatingCreateInput!) {
         ratingCreateOne(record: $record) {
@@ -98,7 +96,7 @@ describe('ratingCreateOne', () => {
     afterEach(removeRecipeIngredientData);
 
     it('should create a rating', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const recipe = await Recipe.findOne({ title: 'Chicken Soup' }).orFail();
         const record = { value: 5, recipe: recipe._id };
         const response = await createRating(this, user, record);
@@ -107,7 +105,7 @@ describe('ratingCreateOne', () => {
     });
 
     it('should not create a rating with a value less than 0', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const recipe = await Recipe.findOne({ title: 'Chicken Soup' }).orFail();
         const record = { value: -1, recipe: recipe._id };
         const response = await createRating(this, user, record);
@@ -120,7 +118,7 @@ describe('ratingCreateOne', () => {
     });
 
     it('should not create a rating with a value greater than 10', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const recipe = await Recipe.findOne({ title: 'Chicken Soup' }).orFail();
         const record = { value: 11, recipe: recipe._id };
         const response = await createRating(this, user, record);
@@ -133,7 +131,7 @@ describe('ratingCreateOne', () => {
     });
 
     it('should not create a rating, recipe does not exist', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const recipe = await Recipe.findOne({ title: 'Chicken Soup' }).orFail();
         await Recipe.deleteOne({ _id: recipe._id });
         const deletedRecipe = await Recipe.findOne({ title: 'Chicken Soup' });

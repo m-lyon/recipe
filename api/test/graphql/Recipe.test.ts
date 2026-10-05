@@ -16,6 +16,7 @@ import { createUnits, createUser } from '../utils/data.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
 import { RecipeMutation } from '../../src/schema/Recipe.js';
+import type { DocId, RecordInput } from '../utils/types.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { createRecipeTags, createUnitConversions } from '../utils/data.js';
 import { createImages, createIngredients, createPrepMethods } from '../utils/data.js';
@@ -112,11 +113,7 @@ describe('recipeCreateOne', () => {
     beforeEach(createRecipeIngredientData);
     afterEach(removeRecipeIngredientData);
 
-    async function createRecipe(
-        context: Mocha.Context,
-        user: unknown,
-        record: Record<string, unknown>
-    ) {
+    async function createRecipe(context: Mocha.Context, user: User, record: RecordInput<Recipe>) {
         const query = `
         mutation RecipeCreateOne($record: CreateOneRecipeCreateInput!) {
             recipeCreateOne(record: $record) {
@@ -156,7 +153,7 @@ describe('recipeCreateOne', () => {
     };
 
     it('should create a recipe', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' }).orFail();
@@ -168,7 +165,7 @@ describe('recipeCreateOne', () => {
     });
 
     it('should create a vegan recipe', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Ingredient.findOne({ name: 'tomato' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
@@ -205,7 +202,7 @@ describe('recipeCreateOne', () => {
     });
 
     it('should create a non-vegan recipe', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient1 = await Ingredient.findOne({ name: 'tomato' });
         const ingredient2 = await Ingredient.findOne({ name: 'chicken' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
@@ -249,7 +246,7 @@ describe('recipeCreateOne', () => {
     });
 
     it('should create a recipe with recipe as ingredient', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' }).orFail();
@@ -282,7 +279,7 @@ describe('recipeCreateOne', () => {
     });
 
     it('should NOT create a recipe, duplicate title', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' }).orFail();
@@ -298,7 +295,7 @@ describe('recipeCreateOne', () => {
     });
 
     it('should NOT create a recipe, tag does not exist', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' }).orFail();
@@ -317,7 +314,7 @@ describe('recipeCreateOne', () => {
     });
 
     it('should NOT create a recipe, incorrect unit id in recipe ingredient', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
         unit._id = 'incorrect_id';
@@ -334,7 +331,7 @@ describe('recipeCreateOne', () => {
     });
 
     it('should NOT create a recipe, incorrect size id in recipe ingredient', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
         const size = await Size.findOne({ value: 'small' }).orFail();
@@ -352,7 +349,7 @@ describe('recipeCreateOne', () => {
     });
 
     it('should NOT create a recipe, incorrect ingredient id in recipe ingredient', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
         ingredient._id = 'incorrect_id';
@@ -369,7 +366,7 @@ describe('recipeCreateOne', () => {
     });
 
     it('should NOT create a recipe, incorrect recipe id in recipe ingredient', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Recipe.findOne({ title: 'Bimibap' }).orFail();
         const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
         ingredient._id = 'incorrect_id';
@@ -386,7 +383,7 @@ describe('recipeCreateOne', () => {
     });
 
     it('should NOT create a recipe, incorrect prep method id in recipe ingredient', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' }).orFail();
@@ -403,7 +400,7 @@ describe('recipeCreateOne', () => {
     });
 
     it('should NOT create a recipe, one unnamed ingredient subsection', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient1 = await Ingredient.findOne({ name: 'tomato' });
         const ingredient2 = await Ingredient.findOne({ name: 'chicken' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
@@ -461,7 +458,7 @@ describe('recipeCreateOne', () => {
     });
 
     it('should NOT create a recipe, no ingredients in subsection', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' }).orFail();
@@ -478,7 +475,7 @@ describe('recipeCreateOne', () => {
     });
 
     it('should NOT create a recipe, no ingredient subsections', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' }).orFail();
@@ -495,7 +492,7 @@ describe('recipeCreateOne', () => {
     });
 
     it('should NOT create a recipe, one unnamed instruction subsection', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' }).orFail();
@@ -522,7 +519,7 @@ describe('recipeCreateOne', () => {
     });
 
     it('should NOT create a recipe, no instructions in subsection', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' }).orFail();
@@ -539,7 +536,7 @@ describe('recipeCreateOne', () => {
     });
 
     it('should NOT create a recipe, no instruction subsections', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' }).orFail();
@@ -556,7 +553,7 @@ describe('recipeCreateOne', () => {
     });
 
     it('should generate different suffixes for different recipes with same title', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' }).orFail();
@@ -602,9 +599,9 @@ describe('recipeUpdateById', () => {
 
     async function updateRecipe(
         context: Mocha.Context,
-        user: unknown,
-        id: unknown,
-        record: Record<string, unknown>
+        user: User,
+        id: DocId,
+        record: RecordInput<Recipe>
     ) {
         const query = `
         mutation RecipeUpdateById($id: MongoID!, $record: UpdateByIdRecipeModifyInput!) {
@@ -628,9 +625,9 @@ describe('recipeUpdateById', () => {
     }
 
     async function updateRecipeResolverDirectly(
-        user: unknown,
-        id: unknown,
-        record: Record<string, unknown>
+        user: User,
+        id: DocId,
+        record: RecordInput<Recipe>
     ) {
         return RecipeMutation.recipeUpdateById.resolve({
             args: { _id: id, record },
@@ -1378,7 +1375,7 @@ describe('recipeArchiveById', () => {
     beforeEach(createRecipeIngredientData);
     afterEach(removeRecipeIngredientData);
 
-    async function archiveRecipe(context: Mocha.Context, user: unknown, id: unknown) {
+    async function archiveRecipe(context: Mocha.Context, user: User, id: DocId) {
         const query = `
         mutation RecipeArchiveById($id: MongoID!) {
             recipeArchiveById(_id: $id) {
@@ -1402,7 +1399,7 @@ describe('recipeArchiveById', () => {
         return response;
     }
 
-    async function unarchiveRecipe(context: Mocha.Context, user: unknown, id: unknown) {
+    async function unarchiveRecipe(context: Mocha.Context, user: User, id: DocId) {
         const query = `
         mutation RecipeUnarchiveById($id: MongoID!) {
             recipeUnarchiveById(_id: $id) {
@@ -1427,7 +1424,7 @@ describe('recipeArchiveById', () => {
     }
 
     it('should archive a recipe', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const recipe = await Recipe.findOne({ title: 'Bimibap' });
         assert.isFalse(recipe?.archived, 'Recipe should not be archived initially');
 
@@ -1485,7 +1482,7 @@ describe('recipeArchiveById', () => {
 
         const originalUpdateMany = Recipe.updateMany;
         Recipe.updateMany = async function (this: typeof Recipe, filter, update, options) {
-            const ids = filter?._id?.$in?.map((id: unknown) => String(id)) ?? [];
+            const ids = filter?._id?.$in?.map((id: DocId) => String(id)) ?? [];
             if (
                 ids.includes(String(original._id)) &&
                 ids.includes(String(vegan._id)) &&
@@ -1538,7 +1535,7 @@ describe('recipeArchiveById', () => {
     });
 
     it('should NOT archive a recipe that is used as an ingredient in another recipe', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const recipeIngredient = await Recipe.findOne({ title: 'Bimibap' });
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
@@ -1622,7 +1619,7 @@ describe('recipeArchiveById', () => {
     });
 
     it('should unarchive a recipe', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const recipe = await Recipe.findOne({ title: 'Bimibap' });
 
         // First archive the recipe directly in the DB
@@ -1686,7 +1683,7 @@ describe('recipeArchiveById', () => {
 
         const originalUpdateMany = Recipe.updateMany;
         Recipe.updateMany = async function (this: typeof Recipe, filter, update, options) {
-            const ids = filter?._id?.$in?.map((id: unknown) => String(id)) ?? [];
+            const ids = filter?._id?.$in?.map((id: DocId) => String(id)) ?? [];
             if (
                 ids.includes(String(original._id)) &&
                 ids.includes(String(vegan._id)) &&
@@ -1900,7 +1897,7 @@ describe('recipeRemoveById', () => {
     beforeEach(createRecipeIngredientData);
     afterEach(removeRecipeIngredientData);
 
-    async function removeRecipe(context: Mocha.Context, user: unknown, id: unknown) {
+    async function removeRecipe(context: Mocha.Context, user: User, id: DocId) {
         const query = `
         mutation RecipeRemoveById($id: MongoID!) {
             recipeRemoveById(_id: $id) {
@@ -2000,7 +1997,7 @@ describe('recipeRemoveById', () => {
     });
 
     it('should NOT remove linked data before recipe deletion succeeds', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const tomato = await Ingredient.findOne({ name: 'tomato' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
@@ -2068,7 +2065,7 @@ describe('recipeRemoveById', () => {
     });
 
     it('should delete a recipe with attached images', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const tomato = await Ingredient.findOne({ name: 'tomato' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
@@ -2128,7 +2125,7 @@ describe('recipeRemoveById', () => {
     });
 
     it('should still succeed when image unlink fails after recipe delete', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const tomato = await Ingredient.findOne({ name: 'tomato' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
@@ -2205,11 +2202,7 @@ describe('recipeCreateOne vegan validation', () => {
     beforeEach(createRecipeIngredientData);
     afterEach(removeRecipeIngredientData);
 
-    async function createRecipe(
-        context: Mocha.Context,
-        user: unknown,
-        record: Record<string, unknown>
-    ) {
+    async function createRecipe(context: Mocha.Context, user: User, record: RecordInput<Recipe>) {
         const query = `
         mutation RecipeCreateOne($record: CreateOneRecipeCreateInput!) {
             recipeCreateOne(record: $record) {
@@ -2227,9 +2220,9 @@ describe('recipeCreateOne vegan validation', () => {
 
     async function createVeganCopy(
         context: Mocha.Context,
-        user: unknown,
+        user: User,
         originalId: string,
-        recipe: Record<string, unknown>
+        recipe: RecordInput<Recipe>
     ) {
         const query = `
         mutation CreateVeganCopy($originalId: MongoID!, $recipe: CreateOneRecipeCreateInput!) {
@@ -2247,7 +2240,7 @@ describe('recipeCreateOne vegan validation', () => {
     }
 
     it('should NOT create a vegan copy with recipeCreateVeganVersion if not all ingredients are vegan', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const chicken = await Ingredient.findOne({ name: 'chicken' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
@@ -2310,7 +2303,7 @@ describe('recipeCreateOne vegan validation', () => {
     });
 
     it('should allow a vegan copy to have the same title as the original recipe via recipeCreateVeganVersion', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const chicken = await Ingredient.findOne({ name: 'chicken' });
         const tomato = await Ingredient.findOne({ name: 'tomato' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
@@ -2377,7 +2370,7 @@ describe('recipeCreateOne vegan validation', () => {
     });
 
     it('should NOT allow recipeCreateOne to create a linked vegan copy with originalRecipe set', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const tomato = await Ingredient.findOne({ name: 'tomato' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
@@ -2443,7 +2436,7 @@ describe('recipeCreateOne vegan validation', () => {
     });
 
     it('should allow re-saving an original recipe after linking a same-title vegan copy', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const chicken = await Ingredient.findOne({ name: 'chicken' });
         const tomato = await Ingredient.findOne({ name: 'tomato' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
@@ -2525,7 +2518,7 @@ describe('recipeCreateOne vegan validation', () => {
     });
 
     it('should NOT allow a vegan copy to duplicate an unrelated recipe title', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const chicken = await Ingredient.findOne({ name: 'chicken' });
         const tomato = await Ingredient.findOne({ name: 'tomato' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
@@ -2605,7 +2598,7 @@ describe('recipeCreateOne vegan validation', () => {
     });
 
     it('should NOT allow a vegan copy to duplicate the title of an unrelated existing vegan copy', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const chicken = await Ingredient.findOne({ name: 'chicken' });
         const tomato = await Ingredient.findOne({ name: 'tomato' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
@@ -2716,7 +2709,7 @@ describe('recipeCreateOne vegan validation', () => {
     });
 
     it('should NOT allow a vegan copy to use an out-of-scope original to bypass title uniqueness', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const otherUser = await User.register(
             new User({
                 username: 'testuser3',
@@ -2804,7 +2797,7 @@ describe('recipeCreateOne vegan validation', () => {
     });
 
     it('should allow creating a vegan copy with recipeCreateVeganVersion', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const chicken = await Ingredient.findOne({ name: 'chicken' });
         const tomato = await Ingredient.findOne({ name: 'tomato' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
@@ -2900,7 +2893,7 @@ describe('recipeCreateOne vegan validation', () => {
     });
 
     it('should NOT leave an orphaned vegan copy behind when atomic create fails linkability checks', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const chicken = await Ingredient.findOne({ name: 'chicken' });
         const tomato = await Ingredient.findOne({ name: 'tomato' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
@@ -2985,7 +2978,7 @@ describe('recipeCreateOne vegan validation', () => {
     });
 
     it('should roll back the vegan copy when the original re-save fails after vegan save succeeds', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const chicken = await Ingredient.findOne({ name: 'chicken' });
         const tomato = await Ingredient.findOne({ name: 'tomato' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
@@ -3077,7 +3070,7 @@ describe('recipeCreateOne vegan validation', () => {
     });
 
     it('should NOT allow recipeCreateOne to create a linked vegan copy for another user original', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const otherUser = await User.register(
             new User({
                 username: 'testuser4',
@@ -3146,9 +3139,9 @@ describe('recipeCreateOne vegan validation', () => {
     });
 
     it('should assign admin-created vegan copies to the original recipe owner', async function () {
-        const owner = await User.findOne({ username: 'testuser1' });
+        const owner = await User.findOne({ username: 'testuser1' }).orFail();
         await createAdmin();
-        const admin = await User.findOne({ username: 'testuser2' });
+        const admin = await User.findOne({ username: 'testuser2' }).orFail();
         const chicken = await Ingredient.findOne({ name: 'chicken' });
         const tomato = await Ingredient.findOne({ name: 'tomato' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
@@ -3216,7 +3209,7 @@ describe('recipeCreateOne vegan validation', () => {
     });
 
     it('should NOT allow recipeCreateOne to create a linked vegan copy with a missing originalRecipe', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const tomato = await Ingredient.findOne({ name: 'tomato' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' });
@@ -3251,7 +3244,7 @@ describe('recipeCreateOne vegan validation', () => {
     });
 
     it('should NOT create a second vegan copy when the original is already linked before save completes', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const chicken = await Ingredient.findOne({ name: 'chicken' });
         const tomato = await Ingredient.findOne({ name: 'tomato' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
@@ -3336,7 +3329,7 @@ describe('recipeCreateOne vegan validation', () => {
     });
 
     it('should roll back the original veganVersion link if vegan copy persistence fails', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const chicken = await Ingredient.findOne({ name: 'chicken' });
         const tomato = await Ingredient.findOne({ name: 'tomato' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
@@ -3423,7 +3416,7 @@ describe('recipeCreateOne vegan validation', () => {
     });
 
     it('should NOT allow a non-vegan-copy recipe to have a duplicate title', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const tomato = await Ingredient.findOne({ name: 'tomato' });
         const unit = await Unit.findOne({ shortSingular: 'g' });
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' });

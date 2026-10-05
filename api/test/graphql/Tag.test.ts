@@ -4,10 +4,12 @@ import type { GraphQLResponse } from '@apollo/server';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { User } from '../../src/models/User.js';
+import type { Tag } from '../../src/models/Tag.js';
 import { createAdmin, createUser } from '../utils/data.js';
+import type { DocId, RecordInput } from '../utils/types.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 
-async function createTag(context: Mocha.Context, user: unknown, record: Record<string, unknown>) {
+async function createTag(context: Mocha.Context, user: User, record: RecordInput<Tag>) {
     const query = `
     mutation TagCreateOne($record: CreateOneTagInput!) {
         tagCreateOne(record: $record) {
@@ -68,7 +70,7 @@ describe('tagCreateOne', function () {
     });
 
     it('should create a tag', async function () {
-        const user = await User.findOne({ username: 'testuser2' });
+        const user = await User.findOne({ username: 'testuser2' }).orFail();
         const newRecord = { value: 'Nutty' };
         const response = await createTag(this, user, newRecord);
         const record = parseCreatedTag(response);
@@ -76,7 +78,7 @@ describe('tagCreateOne', function () {
     });
 
     it('should NOT create a tag with a forbidden value', async function () {
-        const user = await User.findOne({ username: 'testuser2' });
+        const user = await User.findOne({ username: 'testuser2' }).orFail();
         const newRecord = { value: 'Vegan' };
         const response = await createTag(this, user, newRecord);
         assert.equal(response.body.kind, 'single');
@@ -88,7 +90,7 @@ describe('tagCreateOne', function () {
     });
 
     it('should NOT create a tag with a non admin user', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const newRecord = { value: 'Nutty' };
         const response = await createTag(this, user, newRecord);
         assert.equal(response.body.kind, 'single');
@@ -97,7 +99,7 @@ describe('tagCreateOne', function () {
     });
 
     it('should NOT create a tag with a duplicate value', async function () {
-        const user = await User.findOne({ username: 'testuser2' });
+        const user = await User.findOne({ username: 'testuser2' }).orFail();
         const newRecord = { value: 'Nutty' };
         await createTag(this, user, newRecord);
         const response = await createTag(this, user, newRecord);
@@ -136,9 +138,9 @@ describe('tagUpdateById', function () {
 
     async function updateTag(
         context: Mocha.Context,
-        user: unknown,
-        id: unknown,
-        record: Record<string, unknown>
+        user: User,
+        id: DocId,
+        record: RecordInput<Tag>
     ) {
         const query = `
         mutation TagUpdateById($id: MongoID!, $record: UpdateByIdTagInput!) {
@@ -165,7 +167,7 @@ describe('tagUpdateById', function () {
     }
 
     it('should update a tag', async function () {
-        const user = await User.findOne({ username: 'testuser2' });
+        const user = await User.findOne({ username: 'testuser2' }).orFail();
         const newRecord = { value: 'Nutty' };
         const createResponse = await createTag(this, user, newRecord);
         const record = parseCreatedTag(createResponse);
@@ -181,7 +183,7 @@ describe('tagUpdateById', function () {
     });
 
     it('should NOT update a tag with a forbidden value', async function () {
-        const user = await User.findOne({ username: 'testuser2' });
+        const user = await User.findOne({ username: 'testuser2' }).orFail();
         const newRecord = { value: 'Nutty' };
         const createResponse = await createTag(this, user, newRecord);
         const record = parseCreatedTag(createResponse);
@@ -195,8 +197,8 @@ describe('tagUpdateById', function () {
     });
 
     it('should NOT update a tag with a non admin user', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
-        const admin = await User.findOne({ username: 'testuser2' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const admin = await User.findOne({ username: 'testuser2' }).orFail();
         const newRecord = { value: 'Nutty' };
         const createResponse = await createTag(this, admin, newRecord);
         const record = parseCreatedTag(createResponse);
@@ -207,7 +209,7 @@ describe('tagUpdateById', function () {
     });
 
     it('should NOT update a tag with a duplicate value', async function () {
-        const user = await User.findOne({ username: 'testuser2' });
+        const user = await User.findOne({ username: 'testuser2' }).orFail();
         const newRecord = { value: 'Nutty' };
         const createResponse = await createTag(this, user, newRecord);
         parseCreatedTag(createResponse);
