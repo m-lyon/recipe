@@ -503,7 +503,7 @@ describe('Bespoke Unit', () => {
 
         // Expect --------------------------------------------------------------
         expect(screen.queryByLabelText('1 bump chicken')).not.toBeNull();
-        expect(screen.queryByText('teaspoon')).not.toBeNull;
+        expect(screen.queryByText('teaspoon')).not.toBeNull();
         expect(screen.queryByText('bump')).toBeNull();
     });
     it('should reset new bespoke unit form after close', async () => {

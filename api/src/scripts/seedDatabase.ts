@@ -1,4 +1,5 @@
 import 'dotenv-flow/config';
+import '../requireEnv.js';
 import mongoose from '../utils/database.js';
 import { populateIngredients, populateUsers } from '../utils/populate.js';
 import { populateImages, populateRecipes, populateTags } from '../utils/populate.js';

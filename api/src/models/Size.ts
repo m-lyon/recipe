@@ -13,7 +13,7 @@ const sizeSchema = new Schema<Size>({
     value: {
         type: String,
         required: true,
-        validate: uniqueInAdminsAndUser('Size', 'value', 'The size must be unique.'),
+        validate: uniqueInAdminsAndUser<Size>('Size', 'value', 'The size must be unique.'),
     },
     unique: { type: Boolean, required: true },
     owner: { type: Schema.Types.ObjectId, ref: 'User', required: true, validate: ownerExists() },

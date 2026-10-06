@@ -1,14 +1,16 @@
 import { assert } from 'chai';
 import mongoose from 'mongoose';
+import type { GraphQLResponse } from '@apollo/server';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { createUser } from '../utils/data.js';
 import { Unit } from '../../src/models/Unit.js';
 import { User } from '../../src/models/User.js';
+import type { DocId, RecordInput } from '../utils/types.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { createRecipeIngredientData, removeRecipeIngredientData } from './Recipe.test.js';
 
-async function createUnit(context, user, record) {
+async function createUnit(context: Mocha.Context, user: User, record: RecordInput<Unit>) {
     const query = `
     mutation UnitCreateOne($record: CreateOneUnitCreateInput!) {
         unitCreateOne(record: $record) {
@@ -52,8 +54,8 @@ const mockTablespoon = {
     unique: true,
 };
 
-const parseCreatedUnit = (response) => {
-    assert.equal(response.body.kind, 'single');
+const parseCreatedUnit = (response: GraphQLResponse) => {
+    assert(response.body.kind === 'single');
     assert.isUndefined(response.body.singleResult.errors);
     const record = (
         response.body.singleResult.data as {
@@ -85,14 +87,14 @@ describe('unitCreateOne', function () {
     });
 
     it('should create a unit', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const response = await createUnit(this, user, mockTeaspoon);
         const record = parseCreatedUnit(response);
         assert.equal(record.longSingular, 'teaspoon');
     });
 
     it('should NOT create a unit, duplicate data', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         await createUnit(this, user, mockTeaspoon);
         // Modify the record to only have the same shortPlural
         const newRecord = {
@@ -111,7 +113,7 @@ describe('unitCreateOne', function () {
     });
 
     it('should create a unit, duplicate data with unique set to false', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         await createUnit(this, user, { ...mockTeaspoon, unique: false });
         // Modify the record to only have the same shortPlural
         const newRecord = {
@@ -127,7 +129,7 @@ describe('unitCreateOne', function () {
     });
 
     it('should NOT create a unit, owner does not exist', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         await User.deleteOne({ username: 'testuser1' });
         const deletedUser = await User.findOne({ username: 'testuser1' });
         assert.isNull(deletedUser);
@@ -158,7 +160,12 @@ describe('unitUpdateById', () => {
             });
     });
 
-    async function updateUnit(context, user, id, record) {
+    async function updateUnit(
+        context: Mocha.Context,
+        user: User,
+        id: DocId,
+        record: RecordInput<Unit>
+    ) {
         const query = `
         mutation UnitUpdateById($id: MongoID!, $record: UpdateByIdUnitInput!) {
             unitUpdateById(_id: $id, record: $record) {
@@ -180,8 +187,8 @@ describe('unitUpdateById', () => {
         return response;
     }
 
-    const parseUpdatedUnit = (response) => {
-        assert.equal(response.body.kind, 'single');
+    const parseUpdatedUnit = (response: GraphQLResponse) => {
+        assert(response.body.kind === 'single');
         assert.isUndefined(response.body.singleResult.errors);
         const record = (
             response.body.singleResult.data as {
@@ -192,7 +199,7 @@ describe('unitUpdateById', () => {
     };
 
     it('should update a unit', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         // Create the ingredients
         const recordOneResponse = await createUnit(this, user, mockTeaspoon);
         const recordOne = parseCreatedUnit(recordOneResponse);
@@ -204,7 +211,7 @@ describe('unitUpdateById', () => {
     });
 
     it('should NOT update a unit, duplicate data', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         // Create the ingredients
         const recordOneResponse = await createUnit(this, user, mockTeaspoon);
         const recordOne = parseCreatedUnit(recordOneResponse);
@@ -220,7 +227,7 @@ describe('unitUpdateById', () => {
     });
 
     it('should update a unit, duplicate data with unique set to false', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         // Create the ingredients
         const recordOneResponse = await createUnit(this, user, { ...mockTeaspoon, unique: false });
         const recordOne = parseCreatedUnit(recordOneResponse);
@@ -232,7 +239,7 @@ describe('unitUpdateById', () => {
     });
 
     it('should NOT update a unit, owner does not exist', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         // Create the ingredients
         const recordOneResponse = await createUnit(this, user, mockTeaspoon);
         const recordOne = parseCreatedUnit(recordOneResponse);
@@ -261,7 +268,7 @@ describe('unitRemoveById', () => {
 
     afterEach(removeRecipeIngredientData);
 
-    async function deleteUnit(context, user, id) {
+    async function deleteUnit(context: Mocha.Context, user: User, id: DocId) {
         const query = `
         mutation UnitRemoveById($id: MongoID!) {
             unitRemoveById(_id: $id) {
@@ -281,7 +288,7 @@ describe('unitRemoveById', () => {
     }
 
     it('should delete a unit that is not used in recipes', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
 
         // Create a new unit that won't be used in recipes
         const unusedUnit = {
@@ -306,8 +313,8 @@ describe('unitRemoveById', () => {
     });
 
     it('should NOT delete a unit that is used in recipes', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
-        const unit = await Unit.findOne({ shortSingular: 'cup' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const unit = await Unit.findOne({ shortSingular: 'cup' }).orFail();
 
         // Try to delete the unit that's used in recipes - should fail
         const response = await deleteUnit(this, user, unit._id);
@@ -321,8 +328,8 @@ describe('unitRemoveById', () => {
     });
 
     it('should NOT delete a unit that is a base unit in a conversion', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
-        const unit = await Unit.findOne({ shortSingular: 'tsp' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const unit = await Unit.findOne({ shortSingular: 'tsp' }).orFail();
 
         // Try to delete the unit that's used in conversions - should fail
         const response = await deleteUnit(this, user, unit._id);
@@ -336,8 +343,8 @@ describe('unitRemoveById', () => {
     });
 
     it('should NOT delete a unit that is used in a conversion rule', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
-        const unit = await Unit.findOne({ shortSingular: 'tbsp' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const unit = await Unit.findOne({ shortSingular: 'tbsp' }).orFail();
 
         // Try to delete the unit that's used in conversions - should fail
         const response = await deleteUnit(this, user, unit._id);

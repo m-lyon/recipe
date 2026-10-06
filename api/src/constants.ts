@@ -19,24 +19,18 @@ export const SMTP_ADMIN_EMAIL = process.env.SMTP_ADMIN_EMAIL;
 export const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 export const USDA_API_KEY = process.env.USDA_API_KEY ?? '';
 
-if (!TEST) {
-    const requiredEnvVars = {
-        SESSION_SECRET,
-        SESSION_URI,
-        SMTP_FROM_DOMAIN,
-        SMTP_ADMIN_EMAIL,
-        SENDGRID_API_KEY,
-        MONGODB_URI,
-        USDA_API_KEY,
-    };
-    for (const [key, value] of Object.entries(requiredEnvVars)) {
-        if (!value) {
-            throw new Error(`${key} is required`);
-        }
-    }
-}
-if (TEST) {
-    const requiredEnvVars = { MONGODB_VERSION };
+export function assertRequiredEnv() {
+    const requiredEnvVars = TEST
+        ? { MONGODB_VERSION }
+        : {
+              SESSION_SECRET,
+              SESSION_URI,
+              SMTP_FROM_DOMAIN,
+              SMTP_ADMIN_EMAIL,
+              SENDGRID_API_KEY,
+              MONGODB_URI,
+              USDA_API_KEY,
+          };
     for (const [key, value] of Object.entries(requiredEnvVars)) {
         if (!value) {
             throw new Error(`${key} is required`);
