@@ -4,7 +4,6 @@ import { useRecipeStore } from '@recipe/stores';
 import type { RecipeState } from '@recipe/stores';
 import { useInfoToast } from '@recipe/common/hooks';
 
-
 const STORAGE_PREFIX = 'recipe:draft:';
 export const DRAFT_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 

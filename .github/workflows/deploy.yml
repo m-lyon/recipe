@@ -22,8 +22,6 @@ env:
   PUBLIC_URL: https://recipes.mattlyon.co.uk
 
 jobs:
-  # lint and test are both required to pass before a PR can merge into main (ruleset, branch
-  # must be up to date), so main is not re-tested on push.
   lint:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
