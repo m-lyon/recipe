@@ -6,7 +6,7 @@ import { User } from '../../src/models/User.js';
 import { Unit } from '../../src/models/Unit.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 
-const getMockUnitOne = (user) => {
+const getMockUnitOne = (user: { _id: mongoose.Types.ObjectId }) => {
     const UnitOne = {
         shortSingular: 'test',
         shortPlural: 'tests',
@@ -16,13 +16,13 @@ const getMockUnitOne = (user) => {
         owner: user._id,
         hasSpace: false,
         unique: true,
-        dimension: 'count',
+        dimension: 'count' as const,
         perCanonical: 1,
     };
     return UnitOne;
 };
 
-const getMockUnitTwo = (user) => {
+const getMockUnitTwo = (user: { _id: mongoose.Types.ObjectId }) => {
     const UnitTwo = {
         shortSingular: 'test2',
         shortPlural: 'tests2',
@@ -32,7 +32,7 @@ const getMockUnitTwo = (user) => {
         owner: user._id,
         hasSpace: false,
         unique: true,
-        dimension: 'count',
+        dimension: 'count' as const,
         perCanonical: 1,
     };
     return UnitTwo;
@@ -87,7 +87,7 @@ describe('Unit Model', function () {
     });
 
     it('Should save a new unit', async function () {
-        const user = await User.findOne({ firstName: 'Tester1' });
+        const user = await User.findOne({ firstName: 'Tester1' }).orFail();
         const newUnit = new Unit(getMockUnitOne(user));
         try {
             await newUnit.save();
@@ -99,12 +99,12 @@ describe('Unit Model', function () {
     });
 
     it('Should save a mass unit with a system', async function () {
-        const user = await User.findOne({ firstName: 'Tester1' });
+        const user = await User.findOne({ firstName: 'Tester1' }).orFail();
         const newUnit = new Unit({
             ...getMockUnitOne(user),
-            dimension: 'mass',
+            dimension: 'mass' as const,
             perCanonical: 1000,
-            system: 'metric',
+            system: 'metric' as const,
         });
         await newUnit.save();
         assert.isFalse(newUnit.isNew);
@@ -112,64 +112,77 @@ describe('Unit Model', function () {
     });
 
     it('Should NOT save a unit without a dimension', async function () {
-        const user = await User.findOne({ firstName: 'Tester1' });
-        const { dimension: _dimension, ...rest } = getMockUnitOne(user);
+        const user = await User.findOne({ firstName: 'Tester1' }).orFail();
+        const record: Partial<ReturnType<typeof getMockUnitOne>> = getMockUnitOne(user);
+        delete record.dimension;
         try {
-            await new Unit(rest).save();
+            await new Unit(record).save();
             assert.fail('Validation error should occur');
         } catch (error) {
+            if (!(error instanceof mongoose.Error.ValidationError)) throw error;
             assert.equal(error.errors.dimension.kind, 'required');
         }
     });
 
     it('Should NOT save a unit with a size of 0', async function () {
-        const user = await User.findOne({ firstName: 'Tester1' });
+        const user = await User.findOne({ firstName: 'Tester1' }).orFail();
         try {
             await new Unit({
                 ...getMockUnitOne(user),
-                dimension: 'mass',
+                dimension: 'mass' as const,
                 perCanonical: 0,
-                system: 'metric',
+                system: 'metric' as const,
             }).save();
             assert.fail('Validation error should occur');
         } catch (error) {
-            assert.equal(error.errors.perCanonical.message, 'The size of a unit must be greater than 0.');
+            if (!(error instanceof mongoose.Error.ValidationError)) throw error;
+            assert.equal(
+                error.errors.perCanonical.message,
+                'The size of a unit must be greater than 0.'
+            );
         }
     });
 
     it('Should NOT save a count unit with a size other than 1', async function () {
-        const user = await User.findOne({ firstName: 'Tester1' });
+        const user = await User.findOne({ firstName: 'Tester1' }).orFail();
         try {
             await new Unit({ ...getMockUnitOne(user), perCanonical: 2 }).save();
             assert.fail('Validation error should occur');
         } catch (error) {
+            if (!(error instanceof mongoose.Error.ValidationError)) throw error;
             assert.equal(error.errors.perCanonical.message, 'A count unit must have a size of 1.');
         }
     });
 
     it('Should NOT save a volume unit without a system', async function () {
-        const user = await User.findOne({ firstName: 'Tester1' });
+        const user = await User.findOne({ firstName: 'Tester1' }).orFail();
         try {
-            await new Unit({ ...getMockUnitOne(user), dimension: 'volume', perCanonical: 5 }).save();
+            await new Unit({
+                ...getMockUnitOne(user),
+                dimension: 'volume' as const,
+                perCanonical: 5,
+            }).save();
             assert.fail('Validation error should occur');
         } catch (error) {
+            if (!(error instanceof mongoose.Error.ValidationError)) throw error;
             assert.property(error.errors, 'system');
         }
     });
 
     it('Should NOT save a count unit with a system', async function () {
-        const user = await User.findOne({ firstName: 'Tester1' });
+        const user = await User.findOne({ firstName: 'Tester1' }).orFail();
         try {
-            await new Unit({ ...getMockUnitOne(user), system: 'metric' }).save();
+            await new Unit({ ...getMockUnitOne(user), system: 'metric' as const }).save();
             assert.fail('Validation error should occur');
         } catch (error) {
+            if (!(error instanceof mongoose.Error.ValidationError)) throw error;
             assert.property(error.errors, 'system');
         }
     });
 
     it('Should NOT save a unit with a duplicate short singular name admin1 to user1', async function () {
-        const user = await User.findOne({ firstName: 'Tester1' });
-        const admin = await User.findOne({ firstName: 'Admin1', role: 'admin' });
+        const user = await User.findOne({ firstName: 'Tester1' }).orFail();
+        const admin = await User.findOne({ firstName: 'Admin1', role: 'admin' }).orFail();
         const newUnit = new Unit(getMockUnitOne(admin));
 
         try {
@@ -187,14 +200,14 @@ describe('Unit Model', function () {
             assert.fail('Duplicate unit saved');
         } catch (error) {
             assert.equal(
-                error.errors.shortSingular.message,
+                (error as mongoose.Error.ValidationError).errors.shortSingular.message,
                 'The short singular unit name must be unique.'
             );
         }
     });
 
     it('Should NOT update a unit with a duplicate short singular name admin1 to user1', async function () {
-        const admin = await User.findOne({ firstName: 'Admin1', role: 'admin' });
+        const admin = await User.findOne({ firstName: 'Admin1', role: 'admin' }).orFail();
         const newUnit1 = new Unit(getMockUnitOne(admin));
         const newUnit2 = new Unit(getMockUnitTwo(admin));
 
@@ -214,15 +227,15 @@ describe('Unit Model', function () {
             assert.fail('Duplicate unit saved');
         } catch (error) {
             assert.equal(
-                error.errors.shortSingular.message,
+                (error as mongoose.Error.ValidationError).errors.shortSingular.message,
                 'The short singular unit name must be unique.'
             );
         }
     });
 
     it('Should NOT save a unit with a duplicate short singular name admin1 to admin2', async function () {
-        const admin1 = await User.findOne({ firstName: 'Admin1', role: 'admin' });
-        const admin2 = await User.findOne({ firstName: 'Admin2', role: 'admin' });
+        const admin1 = await User.findOne({ firstName: 'Admin1', role: 'admin' }).orFail();
+        const admin2 = await User.findOne({ firstName: 'Admin2', role: 'admin' }).orFail();
         const newUnit = new Unit(getMockUnitOne(admin1));
 
         try {
@@ -240,15 +253,15 @@ describe('Unit Model', function () {
             assert.fail('Duplicate unit saved');
         } catch (error) {
             assert.equal(
-                error.errors.shortSingular.message,
+                (error as mongoose.Error.ValidationError).errors.shortSingular.message,
                 'The short singular unit name must be unique.'
             );
         }
     });
 
     it('Should NOT update a unit with a duplicate short singular name admin1 to admin2', async function () {
-        const admin1 = await User.findOne({ firstName: 'Admin1', role: 'admin' });
-        const admin2 = await User.findOne({ firstName: 'Admin2', role: 'admin' });
+        const admin1 = await User.findOne({ firstName: 'Admin1', role: 'admin' }).orFail();
+        const admin2 = await User.findOne({ firstName: 'Admin2', role: 'admin' }).orFail();
         const newUnit1 = new Unit(getMockUnitOne(admin1));
         const newUnit2 = new Unit(getMockUnitTwo(admin2));
 
@@ -268,14 +281,14 @@ describe('Unit Model', function () {
             assert.fail('Duplicate unit saved');
         } catch (error) {
             assert.equal(
-                error.errors.shortSingular.message,
+                (error as mongoose.Error.ValidationError).errors.shortSingular.message,
                 'The short singular unit name must be unique.'
             );
         }
     });
 
     it('Should NOT save a unit with a duplicate short singular name user1 to user1', async function () {
-        const user = await User.findOne({ firstName: 'Tester1' });
+        const user = await User.findOne({ firstName: 'Tester1' }).orFail();
         const newUnit = new Unit(getMockUnitOne(user));
 
         try {
@@ -293,14 +306,14 @@ describe('Unit Model', function () {
             assert.fail('Duplicate unit saved');
         } catch (error) {
             assert.equal(
-                error.errors.shortSingular.message,
+                (error as mongoose.Error.ValidationError).errors.shortSingular.message,
                 'The short singular unit name must be unique.'
             );
         }
     });
 
     it('Should NOT update a unit with a duplicate short singular name user1 to user2', async function () {
-        const user = await User.findOne({ firstName: 'Tester1' });
+        const user = await User.findOne({ firstName: 'Tester1' }).orFail();
         const newUnit1 = new Unit(getMockUnitOne(user));
         const newUnit2 = new Unit(getMockUnitTwo(user));
 
@@ -320,15 +333,15 @@ describe('Unit Model', function () {
             assert.fail('Duplicate unit saved');
         } catch (error) {
             assert.equal(
-                error.errors.shortSingular.message,
+                (error as mongoose.Error.ValidationError).errors.shortSingular.message,
                 'The short singular unit name must be unique.'
             );
         }
     });
 
     it('Should save a unit with a duplicate short singular name user1 to user2', async function () {
-        const user1 = await User.findOne({ firstName: 'Tester1' });
-        const user2 = await User.findOne({ firstName: 'Tester2' });
+        const user1 = await User.findOne({ firstName: 'Tester1' }).orFail();
+        const user2 = await User.findOne({ firstName: 'Tester2' }).orFail();
         const newUnit = new Unit(getMockUnitOne(user1));
 
         try {
@@ -343,14 +356,14 @@ describe('Unit Model', function () {
         try {
             await duplicateUnit.save();
             assert.isFalse(duplicateUnit.isNew);
-        } catch (error) {
+        } catch {
             assert.fail('Duplicate unit not saved');
         }
     });
 
     it('Should update a unit with a duplicate short singular name user1 to user2', async function () {
-        const user1 = await User.findOne({ firstName: 'Tester1' });
-        const user2 = await User.findOne({ firstName: 'Tester2' });
+        const user1 = await User.findOne({ firstName: 'Tester1' }).orFail();
+        const user2 = await User.findOne({ firstName: 'Tester2' }).orFail();
         const newUnit1 = new Unit(getMockUnitOne(user1));
         const newUnit2 = new Unit({ ...getMockUnitOne(user2), shortSingular: 'test2' });
 

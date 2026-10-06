@@ -1,8 +1,8 @@
-import 'dotenv-flow/config';
 import { CodegenConfig } from '@graphql-codegen/cli';
 
 const config: CodegenConfig = {
-    schema: process.env.RECIPE_API_URL,
+    // Written by `npm run print-schema` in api/
+    schema: '../api/schema.graphql',
     documents: ['src/**/*.ts'],
     generates: {
         './src/graphql/__generated__/': {

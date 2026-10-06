@@ -1,16 +1,17 @@
 import { assert } from 'chai';
+import { ApolloServer } from '@apollo/server';
 import mongoose from 'mongoose';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { Unit } from '../../src/models/Unit.js';
 import { User } from '../../src/models/User.js';
 import { Size } from '../../src/models/Size.js';
+import { createUnits, createUser } from '../utils/data.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { PrepMethod } from '../../src/models/PrepMethod.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { IngredientMeasure } from '../../src/models/IngredientMeasure.js';
 import { createIngredients, createPrepMethods, createSizes } from '../utils/data.js';
-import { createUnits, createUser } from '../utils/data.js';
 
 const CREATE_MUTATION = `
     mutation CreateMeasure($record: CreateOneIngredientMeasureInput!) {
@@ -103,8 +104,13 @@ type CreateData = {
     };
 };
 
-async function createMeasure(server, user, record: Record<string, unknown>) {
-    return server.executeOperation({ query: CREATE_MUTATION, variables: { record } }, makeContext(user));
+async function createMeasure(server: ApolloServer, user: User, record: Record<string, unknown>) {
+    const response = await server.executeOperation(
+        { query: CREATE_MUTATION, variables: { record } },
+        makeContext(user)
+    );
+    assert(response.body.kind === 'single');
+    return { body: response.body };
 }
 
 describe('ingredientMeasureCreateOne', function () {
@@ -159,7 +165,7 @@ describe('ingredientMeasureCreateOne', function () {
         const response = await createMeasure(this.apolloServer, user, { ...record, grams: 200 });
         assert.isDefined(response.body.singleResult.errors, 'Validation error expected');
         assert.include(
-            response.body.singleResult.errors[0].message,
+            response.body.singleResult.errors?.[0].message,
             'A measure for this unit, size and prep method already exists.'
         );
     });
@@ -175,7 +181,7 @@ describe('ingredientMeasureCreateOne', function () {
         });
         assert.isDefined(response.body.singleResult.errors, 'Validation error expected');
         assert.include(
-            response.body.singleResult.errors[0].message,
+            response.body.singleResult.errors?.[0].message,
             'The weight must be greater than 0.'
         );
     });
@@ -193,7 +199,7 @@ describe('ingredientMeasureCreateOne', function () {
             grams: 180,
         });
         assert.isDefined(response.body.singleResult.errors, 'Authorisation error expected');
-        assert.equal(response.body.singleResult.errors[0].message, 'You are not authorised!');
+        assert.equal(response.body.singleResult.errors?.[0].message, 'You are not authorised!');
     });
 });
 
@@ -269,7 +275,7 @@ describe('ingredientMeasure removal', function () {
         );
         assert.isDefined(response.body.singleResult.errors, 'In-use error expected');
         assert.equal(
-            response.body.singleResult.errors[0].message,
+            response.body.singleResult.errors?.[0].message,
             'Cannot delete unit as it is currently being used in ingredient measures.'
         );
     });

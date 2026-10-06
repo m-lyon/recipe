@@ -72,7 +72,7 @@ export async function loadImage(
         }
 
         return { stream, contentType };
-    } catch (error) {
+    } catch {
         throw new Error('Failed to load image');
     }
 }

@@ -32,7 +32,7 @@ const unitSchema = new Schema<Unit>({
         type: String,
         required: true,
         set: (value: string) => value.toLowerCase(),
-        validate: uniqueInAdminsAndUser(
+        validate: uniqueInAdminsAndUser<Unit>(
             'Unit',
             'shortSingular',
             'The short singular unit name must be unique.'
@@ -42,7 +42,7 @@ const unitSchema = new Schema<Unit>({
         type: String,
         required: true,
         set: (value: string) => value.toLowerCase(),
-        validate: uniqueInAdminsAndUser(
+        validate: uniqueInAdminsAndUser<Unit>(
             'Unit',
             'shortPlural',
             'The short plural unit name must be unique.'
@@ -52,7 +52,7 @@ const unitSchema = new Schema<Unit>({
         type: String,
         required: true,
         set: (value: string) => value.toLowerCase(),
-        validate: uniqueInAdminsAndUser(
+        validate: uniqueInAdminsAndUser<Unit>(
             'Unit',
             'longSingular',
             'The long singular unit name must be unique.'
@@ -62,7 +62,7 @@ const unitSchema = new Schema<Unit>({
         type: String,
         required: true,
         set: (value: string) => value.toLowerCase(),
-        validate: uniqueInAdminsAndUser(
+        validate: uniqueInAdminsAndUser<Unit>(
             'Unit',
             'longPlural',
             'The long plural unit name must be unique.'

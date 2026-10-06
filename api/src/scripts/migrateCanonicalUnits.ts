@@ -11,6 +11,7 @@
  * unitconversions and conversionrules collections.
  */
 import { pathToFileURL } from 'url';
+
 import mongoose, { Types, mongo } from 'mongoose';
 
 import { knownMagnitude } from '../utils/units.js';
@@ -187,10 +188,12 @@ async function assignUnitMagnitudes(db: Db, report: MigrationReport, write: bool
         report.unitsAssigned.push({ unit: unit.longSingular, ...magnitude });
         if (write) {
             const { dimension, perCanonical, system } = magnitude;
-            await db.collection('units').updateOne(
-                { _id: unit._id },
-                { $set: { dimension, perCanonical, system, hidden: unit.hidden ?? false } }
-            );
+            await db
+                .collection('units')
+                .updateOne(
+                    { _id: unit._id },
+                    { $set: { dimension, perCanonical, system, hidden: unit.hidden ?? false } }
+                );
         }
     }
     return { units, byId, assigned, rules, conversions };
@@ -231,7 +234,12 @@ async function ensureEachUnit(db: Db, report: MigrationReport, write: boolean, a
 }
 
 /** Phase 3b: "2 onions" becomes 2 each. A line with no quantity keeps no unit. */
-async function rewriteUnitlessCounts(db: Db, report: MigrationReport, write: boolean, each: ObjectId) {
+async function rewriteUnitlessCounts(
+    db: Db,
+    report: MigrationReport,
+    write: boolean,
+    each: ObjectId
+) {
     const [counted] = await db
         .collection('recipes')
         .aggregate<{ lines: number }>([
@@ -248,11 +256,13 @@ async function rewriteUnitlessCounts(db: Db, report: MigrationReport, write: boo
         .toArray();
     report.recipeLinesRewritten = counted?.lines ?? 0;
     if (write && report.recipeLinesRewritten > 0) {
-        await db.collection('recipes').updateMany(
-            {},
-            { $set: { 'ingredientSubsections.$[].ingredients.$[line].unit': each } },
-            { arrayFilters: [{ 'line.quantity': { $ne: null }, 'line.unit': null }] }
-        );
+        await db
+            .collection('recipes')
+            .updateMany(
+                {},
+                { $set: { 'ingredientSubsections.$[].ingredients.$[line].unit': each } },
+                { arrayFilters: [{ 'line.quantity': { $ne: null }, 'line.unit': null }] }
+            );
     }
 }
 
@@ -284,9 +294,7 @@ async function migrateMeasures(
         ([, m]) => m.dimension === 'volume' && m.perCanonical === 1 && m.system === 'metric'
     );
     const ingredients = await db
-        .collection<{ _id: ObjectId; name: string; density?: number }>(
-            'ingredients'
-        )
+        .collection<{ _id: ObjectId; name: string; density?: number }>('ingredients')
         .find()
         .toArray();
     const names = new Map(ingredients.map((i) => [String(i._id), i.name]));
@@ -384,7 +392,15 @@ async function migrateLadders(
         report.laddersCreated.push(name);
         steps.sort((a, b) => b.minCanonical - a.minCanonical);
         if (write) {
-            await ladders.insertOne({ name, dimension, system, scope: 'global', owner: admin, steps, __v: 0 });
+            await ladders.insertOne({
+                name,
+                dimension,
+                system,
+                scope: 'global',
+                owner: admin,
+                steps,
+                __v: 0,
+            });
         }
     };
 
@@ -412,7 +428,10 @@ async function migrateLadders(
                 });
                 continue;
             }
-            steps.push({ unit: rule.unit, minCanonical: rule.baseUnitThreshold * base.perCanonical });
+            steps.push({
+                unit: rule.unit,
+                minCanonical: rule.baseUnitThreshold * base.perCanonical,
+            });
         }
         await create(base.dimension, base.system, steps);
     }
@@ -428,7 +447,8 @@ async function migrateLadders(
         if (covered.has(`${dimension}-${system}`)) continue;
         const find = (size: number) =>
             [...assigned.entries()].find(
-                ([, m]) => m.dimension === dimension && m.system === system && m.perCanonical === size
+                ([, m]) =>
+                    m.dimension === dimension && m.system === system && m.perCanonical === size
             )?.[0];
         const largeId = find(large);
         const smallId = find(small);
@@ -462,7 +482,9 @@ async function dropLegacyData(db: Db, report: MigrationReport, write: boolean) {
         existing.has(name)
     );
     if (!write) return;
-    await db.collection('nutritionalinfos').deleteMany({ _id: { $in: withoutPerGram.map((i) => i._id) } });
+    await db
+        .collection('nutritionalinfos')
+        .deleteMany({ _id: { $in: withoutPerGram.map((i) => i._id) } });
     // An unsized unit keeps its measure type, so a re-run still reports it as unsized.
     await db
         .collection('units')
@@ -517,21 +539,40 @@ function printReport(report: MigrationReport) {
         for (const item of items) console.log(`  - ${format(item)}`);
     };
     console.log(report.dryRun ? 'DRY RUN: nothing was written.' : 'Migration complete.');
-    list('Units sized', report.unitsAssigned, (u) =>
-        `${u.unit}: ${u.dimension} × ${u.perCanonical}${u.system ? ` (${u.system})` : ''}, from ${u.source}`
+    list(
+        'Units sized',
+        report.unitsAssigned,
+        (u) =>
+            `${u.unit}: ${u.dimension} × ${u.perCanonical}${u.system ? ` (${u.system})` : ''}, from ${u.source}`
     );
     list('Units already sized', report.unitsAlreadyAssigned, (u) => u);
-    list('Units NOT sized, need an owner to set them', report.unitsUnassigned, (u) => `${u.unit}: ${u.reason}`);
+    list(
+        'Units NOT sized, need an owner to set them',
+        report.unitsUnassigned,
+        (u) => `${u.unit}: ${u.reason}`
+    );
     list('Units assumed to be count units, check each one', report.unitsAssumedCount, (u) => u);
     console.log(`\neach unit: ${report.eachUnit}`);
     console.log(`Recipe lines rewritten to each: ${report.recipeLinesRewritten}`);
     console.log(`Density measures created: ${report.densityMeasuresCreated}`);
-    list('Densities NOT migrated', report.densityNotMigrated, (d) => `${d.ingredient}: ${d.reason}`);
+    list(
+        'Densities NOT migrated',
+        report.densityNotMigrated,
+        (d) => `${d.ingredient}: ${d.reason}`
+    );
     console.log(`Count measures created from perUnit: ${report.countMeasuresCreated}`);
     list('perUnit NOT migrated', report.perUnitNotMigrated, (d) => `${d.ingredient}: ${d.reason}`);
     list('Display ladders created', report.laddersCreated, (l) => l);
-    list('Ladder steps dropped', report.ladderStepsDropped, (s) => `${s.ladder}: ${s.unit}, ${s.reason}`);
-    list('Nutritional infos removed', report.nutritionalInfosRemoved, (n) => `${n.ingredient}: ${n.reason}`);
+    list(
+        'Ladder steps dropped',
+        report.ladderStepsDropped,
+        (s) => `${s.ladder}: ${s.unit}, ${s.reason}`
+    );
+    list(
+        'Nutritional infos removed',
+        report.nutritionalInfosRemoved,
+        (n) => `${n.ingredient}: ${n.reason}`
+    );
     list('Collections dropped', report.collectionsDropped, (c) => c);
 }
 

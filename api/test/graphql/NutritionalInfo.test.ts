@@ -168,7 +168,7 @@ type UsdaSearchData = {
     > & { brandOwner: string | null; portions: MappedPortion[] })[];
 };
 
-function makeContext(user: unknown) {
+function makeContext(user: User | null) {
     return {
         contextValue: {
             isAuthenticated: () => !!user,
@@ -304,10 +304,7 @@ describe('nutritionalInfoCreateOne', function () {
         );
         assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors, 'Validation error expected');
-        assert.include(
-            response.body.singleResult.errors[0].message,
-            'perGram'
-        );
+        assert.include(response.body.singleResult.errors[0].message, 'perGram');
     });
 });
 
@@ -748,7 +745,7 @@ describe('usdaFoodItem', function () {
     /** Stubs fetch with `item` and runs usdaFoodItem, returning the resolved item. */
     async function fetchItem(
         server: ApolloServer,
-        user: unknown,
+        user: User,
         item: Record<string, unknown>
     ): Promise<UsdaFoodItem> {
         stub(global, 'fetch').resolves({ ok: true, json: async () => item } as Response);

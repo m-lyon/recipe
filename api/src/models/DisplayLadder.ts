@@ -1,8 +1,8 @@
 import { composeMongoose } from 'graphql-compose-mongoose';
 import { Document, HydratedDocument, Schema, Types, model } from 'mongoose';
 
-import { Unit, UnitSystems } from './Unit.js';
 import type { UnitSystem } from './Unit.js';
+import { Unit, UnitSystems } from './Unit.js';
 import { ownerExists, uniqueInAdminsAndUser } from './validation.js';
 
 export const LadderDimensions = ['mass', 'volume'] as const;
@@ -49,7 +49,11 @@ const displayLadderSchema = new Schema<DisplayLadder>({
     name: {
         type: String,
         required: true,
-        validate: uniqueInAdminsAndUser('DisplayLadder', 'name', 'The ladder name must be unique.'),
+        validate: uniqueInAdminsAndUser<DisplayLadder>(
+            'DisplayLadder',
+            'name',
+            'The ladder name must be unique.'
+        ),
     },
     dimension: { type: String, required: true, enum: LadderDimensions },
     system: { type: String, required: true, enum: UnitSystems },

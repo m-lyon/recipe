@@ -1,3 +1,4 @@
+import { Query } from 'mongoose';
 import { GraphQLNonNull } from 'graphql';
 import { ResolverNextRpCb } from 'graphql-compose';
 
@@ -23,7 +24,7 @@ const filterVisibleLadders =
     (): ResolverNextRpCb<unknown, GraphQLContext> => (next) => async (rp) => {
         const user = rp.context.getUser();
         const visible = user ? [{ scope: 'global' }, { owner: user._id }] : [{ scope: 'global' }];
-        rp.beforeQuery = (query) => query.where({ $or: visible });
+        rp.beforeQuery = (query: Query<unknown, DisplayLadder>) => query.where({ $or: visible });
         return next(rp);
     };
 

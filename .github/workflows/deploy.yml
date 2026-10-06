@@ -22,26 +22,16 @@ env:
   PUBLIC_URL: https://recipes.mattlyon.co.uk
 
 jobs:
-  # Required to pass before a PR can merge into main (ruleset, branch must be up to date),
-  # so main is not re-tested on push.
-  test:
+  lint:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    environment: test
-    # API settings, shared with the build job
-    env: &api-test-env
-      MONGODB_URI: ${{ vars.MONGODB_URI }}
-      MONGODB_VERSION: ${{ vars.MONGODB_VERSION }}
-      PORT: ${{ vars.PORT }}
-      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
-      SESSION_URI: ${{ secrets.SESSION_URI }}
-      WHITELISTED_DOMAINS: ${{ secrets.WHITELISTED_DOMAINS }}
     steps:
       - &checkout-code
         name: Checkout code
         uses: actions/checkout@v7
 
-      - name: Setup node
+      - &setup-node-all
+        name: Setup node
         uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
@@ -50,12 +40,6 @@ jobs:
             api/package-lock.json
             client/package-lock.json
             cli/package-lock.json
-
-      - &start-mongodb
-        name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.11.0
-        with:
-          mongodb-version: ${{ vars.MONGODB_VERSION }}
 
       - &install-api-deps
         name: Install API dependencies
@@ -67,9 +51,40 @@ jobs:
         working-directory: ./client
         run: npm ci
 
-      - name: Install CLI dependencies
+      - &install-cli-deps
+        name: Install CLI dependencies
         working-directory: ./cli
         run: npm ci
+
+      # Linting doesn't need the generated GraphQL types, so no API or codegen here
+      - name: Lint API
+        working-directory: ./api
+        run: npm run lint
+
+      - name: Lint client
+        working-directory: ./client
+        run: npm run lint
+
+      - name: Lint CLI
+        working-directory: ./cli
+        run: npm run lint
+
+  test:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    environment: test
+    env:
+      MONGODB_VERSION: ${{ vars.MONGODB_VERSION }}
+    steps:
+      - *checkout-code
+
+      - *setup-node-all
+
+      - *install-api-deps
+
+      - *install-client-deps
+
+      - *install-cli-deps
 
       - name: Create client environment file
         working-directory: ./client
@@ -83,13 +98,6 @@ jobs:
           echo "VITE_INIT_LOAD_NUM = ${{ vars.VITE_INIT_LOAD_NUM }}" >> .env.test.local
           echo "VITE_FETCH_MORE_NUM = ${{ vars.VITE_FETCH_MORE_NUM }}" >> .env.test.local
 
-      - name: Create CLI environment file
-        working-directory: ./cli
-        run: |
-          echo "RECIPE_API_URL = ${{ vars.VITE_GRAPHQL_URL }}" > .env.test.local
-          echo "RECIPE_USERNAME = ${{ vars.TEST_USERNAME }}" >> .env.test.local
-          echo "RECIPE_PASSWORD = ${{ vars.TEST_PASSWORD }}" >> .env.test.local
-
       - name: Load MongoDB binary cache
         id: cache-mongodb-binaries
         uses: actions/cache@v6
@@ -101,38 +109,26 @@ jobs:
         working-directory: ./api
         run: npm run dl_memory
 
-      - &start-api
-        name: Start API (test mode)
+      - name: Check committed GraphQL schema is up to date
         working-directory: ./api
         run: |
-          [ -f dist/src/index.js ] || npm run compile
-          NODE_ENV=test nohup node ./dist/src/index.js > /tmp/api.log 2>&1 &
-          for i in $(seq 1 30); do
-              curl -s -o /dev/null "http://localhost:$PORT/" && exit 0
-              sleep 1
-          done
-          cat /tmp/api.log
-          exit 1
+          npm run print-schema
+          git diff --exit-code -- schema.graphql || {
+              echo "::error::api/schema.graphql is stale. Run 'npm run print-schema' in api/ and commit it."
+              exit 1
+          }
 
       - name: Generate client GraphQL types
         working-directory: ./client
-        run: npm run generate:test
+        run: npm run generate
 
       - name: Generate CLI GraphQL types
         working-directory: ./cli
-        run: npm run generate:test
-
-      - name: Lint client
-        working-directory: ./client
-        run: npm run lint
+        run: npm run generate
 
       - name: Type-check client
         working-directory: ./client
         run: npm run check-types
-
-      - name: Lint CLI
-        working-directory: ./cli
-        run: npm run lint
 
       - name: Run API tests
         working-directory: ./api
@@ -161,8 +157,6 @@ jobs:
   build:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-22.04 # matches the server
-    environment: test
-    env: *api-test-env
     steps:
       - *checkout-code
 
@@ -175,19 +169,14 @@ jobs:
             api/package-lock.json
             client/package-lock.json
 
-      - *start-mongodb
-
       - *install-api-deps
 
       - *install-client-deps
 
-      - *start-api
-
+      # From the committed api/schema.graphql, which the test job checked is up to date
       - name: Generate GraphQL types
         working-directory: ./client
-        env:
-          VITE_GRAPHQL_URL: http://localhost:${{ vars.PORT }}/
-        run: npm run generate:test
+        run: npm run generate
 
       - name: Build client
         working-directory: ./client

@@ -63,9 +63,27 @@ async function seedLegacy() {
         unit(ids.pound, 'pound', 'lb'),
     ]);
     const rules = [
-        { _id: id(), unit: ids.tablespoon, baseUnit: ids.teaspoon, baseUnitThreshold: 3, baseToUnitConversion: 3 },
-        { _id: id(), unit: ids.cup, baseUnit: ids.teaspoon, baseUnitThreshold: 12, baseToUnitConversion: 48 },
-        { _id: id(), unit: ids.dessertspoon, baseUnit: ids.teaspoon, baseUnitThreshold: 2, baseToUnitConversion: 2 },
+        {
+            _id: id(),
+            unit: ids.tablespoon,
+            baseUnit: ids.teaspoon,
+            baseUnitThreshold: 3,
+            baseToUnitConversion: 3,
+        },
+        {
+            _id: id(),
+            unit: ids.cup,
+            baseUnit: ids.teaspoon,
+            baseUnitThreshold: 12,
+            baseToUnitConversion: 48,
+        },
+        {
+            _id: id(),
+            unit: ids.dessertspoon,
+            baseUnit: ids.teaspoon,
+            baseUnitThreshold: 2,
+            baseToUnitConversion: 2,
+        },
     ];
     await db.collection('conversionrules').insertMany(rules);
     await db.collection('unitconversions').insertOne({
@@ -74,9 +92,28 @@ async function seedLegacy() {
         rules: rules.map((rule) => rule._id),
     });
     await db.collection('ingredients').insertMany([
-        { _id: ids.onion, name: 'onion', pluralName: 'onions', isCountable: true, owner: ids.admin },
-        { _id: ids.flour, name: 'flour', pluralName: 'flour', isCountable: false, density: 0.53, owner: ids.admin },
-        { _id: ids.garlic, name: 'garlic', pluralName: 'garlic', isCountable: true, owner: ids.admin },
+        {
+            _id: ids.onion,
+            name: 'onion',
+            pluralName: 'onions',
+            isCountable: true,
+            owner: ids.admin,
+        },
+        {
+            _id: ids.flour,
+            name: 'flour',
+            pluralName: 'flour',
+            isCountable: false,
+            density: 0.53,
+            owner: ids.admin,
+        },
+        {
+            _id: ids.garlic,
+            name: 'garlic',
+            pluralName: 'garlic',
+            isCountable: true,
+            owner: ids.admin,
+        },
         { _id: ids.egg, name: 'egg', pluralName: 'eggs', isCountable: true, owner: ids.admin },
     ]);
     await db.collection('nutritionalinfos').insertMany([
@@ -142,10 +179,14 @@ describe('migrateCanonicalUnits', function () {
 
     it('should rewrite quantified unitless lines to each and leave unquantified ones', async function () {
         const report = await migrateCanonicalUnits(mongoose.connection.db);
-        const each = await mongoose.connection.db.collection('units').findOne({ longSingular: 'each' });
+        const each = await mongoose.connection.db
+            .collection('units')
+            .findOne({ longSingular: 'each' });
         assert.include(each, { dimension: 'count', perCanonical: 1, hidden: true, system: null });
 
-        const recipe = await mongoose.connection.db.collection('recipes').findOne({ _id: ids.recipe });
+        const recipe = await mongoose.connection.db
+            .collection('recipes')
+            .findOne({ _id: ids.recipe });
         const [first, second] = recipe!.ingredientSubsections;
         assert.equal(String(first.ingredients[0].unit), String(each!._id));
         assert.isNull(first.ingredients[1].unit);
@@ -157,7 +198,9 @@ describe('migrateCanonicalUnits', function () {
     it('should turn densities and per-unit macros into measures', async function () {
         const report = await migrateCanonicalUnits(mongoose.connection.db);
         const measures = mongoose.connection.db.collection('ingredientmeasures');
-        const each = await mongoose.connection.db.collection('units').findOne({ longSingular: 'each' });
+        const each = await mongoose.connection.db
+            .collection('units')
+            .findOne({ longSingular: 'each' });
 
         const flour = await measures.findOne({ ingredient: ids.flour });
         assert.include(flour, { grams: 0.53, size: null, prepMethod: null });
@@ -174,10 +217,14 @@ describe('migrateCanonicalUnits', function () {
             report.nutritionalInfosRemoved.map((n) => n.ingredient),
             ['egg']
         );
-        const ingredient = await mongoose.connection.db.collection('ingredients').findOne({ _id: ids.flour });
+        const ingredient = await mongoose.connection.db
+            .collection('ingredients')
+            .findOne({ _id: ids.flour });
         assert.notProperty(ingredient, 'density');
         assert.property(ingredient, 'isCountable', 'isCountable stays as a display flag');
-        const info = await mongoose.connection.db.collection('nutritionalinfos').findOne({ ingredient: ids.onion });
+        const info = await mongoose.connection.db
+            .collection('nutritionalinfos')
+            .findOne({ ingredient: ids.onion });
         assert.notProperty(info, 'perUnit');
     });
 
@@ -213,8 +260,14 @@ describe('migrateCanonicalUnits', function () {
         assert.equal(report.recipeLinesRewritten, 2);
         const gram = await mongoose.connection.db.collection('units').findOne({ _id: ids.gram });
         assert.notProperty(gram, 'dimension');
-        assert.equal(await mongoose.connection.db.collection('ingredientmeasures').countDocuments(), 0);
-        assert.equal(await mongoose.connection.db.collection('unitconversions').countDocuments(), 1);
+        assert.equal(
+            await mongoose.connection.db.collection('ingredientmeasures').countDocuments(),
+            0
+        );
+        assert.equal(
+            await mongoose.connection.db.collection('unitconversions').countDocuments(),
+            1
+        );
     });
 
     it('should change nothing when run a second time', async function () {

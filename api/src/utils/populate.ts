@@ -33,8 +33,8 @@ export async function populatePrepMethods() {
         // Remove all existing prep methods
         await PrepMethod.collection.drop();
 
-        const admin = await User.findOne({ role: 'admin' });
-        const user = await User.findOne({ role: 'user' });
+        const admin = await User.findOne({ role: 'admin' }).orFail();
+        const user = await User.findOne({ role: 'user' }).orFail();
 
         // Create new dummy prep methods
         const dummyPrepMethods = [
@@ -57,8 +57,8 @@ export async function populateUnits() {
         // Remove all existing units
         await Unit.collection.drop();
 
-        const admin = await User.findOne({ role: 'admin' });
-        const user = await User.findOne({ role: 'user' });
+        const admin = await User.findOne({ role: 'admin' }).orFail();
+        const user = await User.findOne({ role: 'user' }).orFail();
 
         // Create new dummy units
         const dummyUnits = [
@@ -169,8 +169,8 @@ export async function populateSizes() {
         // Remove all existing sizes
         await Size.collection.drop();
 
-        const admin = await User.findOne({ role: 'admin' });
-        const user = await User.findOne({ role: 'user' });
+        const admin = await User.findOne({ role: 'admin' }).orFail();
+        const user = await User.findOne({ role: 'user' }).orFail();
 
         // Create new dummy sizes
         const dummySizes = [
@@ -191,8 +191,8 @@ export async function populateIngredients() {
         // Remove all existing ingredients
         await Ingredient.collection.drop();
 
-        const admin = await User.findOne({ role: 'admin' });
-        const user = await User.findOne({ role: 'user' });
+        const admin = await User.findOne({ role: 'admin' }).orFail();
+        const user = await User.findOne({ role: 'user' }).orFail();
 
         const dummyIngredients = [
             { name: 'onion', pluralName: 'onions', isCountable: true, owner: admin._id },
@@ -238,10 +238,11 @@ export async function populateIngredientMeasures() {
         await IngredientMeasure.collection.drop();
 
         const unit = async (longSingular: string) =>
-            (await Unit.findOne({ longSingular }))._id;
-        const ingredient = async (name: string) => (await Ingredient.findOne({ name }))._id;
-        const large = (await Size.findOne({ value: 'large' }))._id;
-        const chopped = (await PrepMethod.findOne({ value: 'chopped' }))._id;
+            (await Unit.findOne({ longSingular }).orFail())._id;
+        const ingredient = async (name: string) =>
+            (await Ingredient.findOne({ name }).orFail())._id;
+        const large = (await Size.findOne({ value: 'large' }).orFail())._id;
+        const chopped = (await PrepMethod.findOne({ value: 'chopped' }).orFail())._id;
 
         const dummyMeasures = [
             { ingredient: await ingredient('onion'), unit: await unit('each'), grams: 110 },
@@ -273,9 +274,8 @@ export async function populateDisplayLadders() {
     try {
         await DisplayLadder.collection.drop();
 
-        const admin = await User.findOne({ role: 'admin' });
-        const unit = async (longSingular: string) =>
-            Unit.findOne({ longSingular }).orFail();
+        const admin = await User.findOne({ role: 'admin' }).orFail();
+        const unit = async (longSingular: string) => Unit.findOne({ longSingular }).orFail();
         const kilogram = await unit('kilogram');
         const gram = await unit('gram');
         const cup = await unit('cup');
@@ -329,8 +329,8 @@ export async function populateRecipes() {
         // Remove all existing recipes
         await Recipe.collection.drop();
 
-        const admin = await User.findOne({ role: 'admin' });
-        const user = await User.findOne({ role: 'user' });
+        const admin = await User.findOne({ role: 'admin' }).orFail();
+        const user = await User.findOne({ role: 'user' }).orFail();
 
         const dummyRecipes = [
             {
@@ -338,32 +338,35 @@ export async function populateRecipes() {
                 titleIdentifier: 'spaghetti-bolognese',
                 subTitle: 'A classic Italian dish',
                 tags: [
-                    (await Tag.findOne({ value: 'lunch' }))._id,
-                    (await Tag.findOne({ value: 'dinner' }))._id,
-                    (await Tag.findOne({ value: 'freezes' }))._id,
+                    (await Tag.findOne({ value: 'lunch' }).orFail())._id,
+                    (await Tag.findOne({ value: 'dinner' }).orFail())._id,
+                    (await Tag.findOne({ value: 'freezes' }).orFail())._id,
                 ],
                 ingredientSubsections: {
                     ingredients: [
                         {
                             quantity: '1',
-                            unit: (await Unit.findOne({ longSingular: 'each' }))._id,
+                            unit: (await Unit.findOne({ longSingular: 'each' }).orFail())._id,
                             size: null,
-                            ingredient: (await Ingredient.findOne({ name: 'onion' }))._id,
-                            prepMethod: (await PrepMethod.findOne({ value: 'chopped' }))._id,
+                            ingredient: (await Ingredient.findOne({ name: 'onion' }).orFail())._id,
+                            prepMethod: (await PrepMethod.findOne({ value: 'chopped' }).orFail())
+                                ._id,
                         },
                         {
                             quantity: '1',
-                            unit: (await Unit.findOne({ shortSingular: 'kg' }))._id,
-                            size: (await Size.findOne({ value: 'medium' }))._id,
-                            ingredient: (await Ingredient.findOne({ name: 'chicken' }))._id,
-                            prepMethod: (await PrepMethod.findOne({ value: 'diced' }))._id,
+                            unit: (await Unit.findOne({ shortSingular: 'kg' }).orFail())._id,
+                            size: (await Size.findOne({ value: 'medium' }).orFail())._id,
+                            ingredient: (await Ingredient.findOne({ name: 'chicken' }).orFail())
+                                ._id,
+                            prepMethod: (await PrepMethod.findOne({ value: 'diced' }).orFail())._id,
                         },
                         {
                             quantity: '400',
-                            unit: (await Unit.findOne({ shortSingular: 'cup' }))._id,
+                            unit: (await Unit.findOne({ shortSingular: 'cup' }).orFail())._id,
                             size: null,
-                            ingredient: (await Ingredient.findOne({ name: 'tomato' }))._id,
-                            prepMethod: (await PrepMethod.findOne({ value: 'chopped' }))._id,
+                            ingredient: (await Ingredient.findOne({ name: 'tomato' }).orFail())._id,
+                            prepMethod: (await PrepMethod.findOne({ value: 'chopped' }).orFail())
+                                ._id,
                         },
                     ],
                 },
@@ -394,10 +397,10 @@ export async function populateRecipes() {
                 pluralTitle: 'Chicken Curry',
                 subTitle: 'A classic Indian dish',
                 tags: [
-                    (await Tag.findOne({ value: 'lunch' }))._id,
-                    (await Tag.findOne({ value: 'dinner' }))._id,
-                    (await Tag.findOne({ value: 'spicy' }))._id,
-                    (await Tag.findOne({ value: 'quick' }))._id,
+                    (await Tag.findOne({ value: 'lunch' }).orFail())._id,
+                    (await Tag.findOne({ value: 'dinner' }).orFail())._id,
+                    (await Tag.findOne({ value: 'spicy' }).orFail())._id,
+                    (await Tag.findOne({ value: 'quick' }).orFail())._id,
                 ],
                 ingredientSubsections: [
                     {
@@ -405,24 +408,31 @@ export async function populateRecipes() {
                         ingredients: [
                             {
                                 quantity: '1/2',
-                                unit: (await Unit.findOne({ longSingular: 'each' }))._id,
+                                unit: (await Unit.findOne({ longSingular: 'each' }).orFail())._id,
                                 size: null,
-                                ingredient: (await Ingredient.findOne({ name: 'onion' }))._id,
-                                prepMethod: (await PrepMethod.findOne({ value: 'sliced' }))._id,
+                                ingredient: (await Ingredient.findOne({ name: 'onion' }).orFail())
+                                    ._id,
+                                prepMethod: (await PrepMethod.findOne({ value: 'sliced' }).orFail())
+                                    ._id,
                             },
                             {
                                 quantity: '1',
-                                unit: (await Unit.findOne({ shortSingular: 'kg' }))._id,
-                                size: (await Size.findOne({ value: 'medium' }))._id,
-                                ingredient: (await Ingredient.findOne({ name: 'chicken' }))._id,
-                                prepMethod: (await PrepMethod.findOne({ value: 'diced' }))._id,
+                                unit: (await Unit.findOne({ shortSingular: 'kg' }).orFail())._id,
+                                size: (await Size.findOne({ value: 'medium' }).orFail())._id,
+                                ingredient: (await Ingredient.findOne({ name: 'chicken' }).orFail())
+                                    ._id,
+                                prepMethod: (await PrepMethod.findOne({ value: 'diced' }).orFail())
+                                    ._id,
                             },
                             {
                                 quantity: '400',
-                                unit: (await Unit.findOne({ shortSingular: 'cup' }))._id,
-                                size: (await Size.findOne({ value: 'small' }))._id,
-                                ingredient: (await Ingredient.findOne({ name: 'tomato' }))._id,
-                                prepMethod: (await PrepMethod.findOne({ value: 'chopped' }))._id,
+                                unit: (await Unit.findOne({ shortSingular: 'cup' }).orFail())._id,
+                                size: (await Size.findOne({ value: 'small' }).orFail())._id,
+                                ingredient: (await Ingredient.findOne({ name: 'tomato' }).orFail())
+                                    ._id,
+                                prepMethod: (
+                                    await PrepMethod.findOne({ value: 'chopped' }).orFail()
+                                )._id,
                             },
                         ],
                     },
@@ -431,9 +441,10 @@ export async function populateRecipes() {
                         ingredients: [
                             {
                                 quantity: '2',
-                                unit: (await Unit.findOne({ shortSingular: 'cup' }))._id,
+                                unit: (await Unit.findOne({ shortSingular: 'cup' }).orFail())._id,
                                 size: null,
-                                ingredient: (await Ingredient.findOne({ name: 'rice' }))._id,
+                                ingredient: (await Ingredient.findOne({ name: 'rice' }).orFail())
+                                    ._id,
                                 prepMethod: null,
                             },
                         ],
@@ -469,9 +480,9 @@ export async function populateRecipes() {
                 titleIdentifier: 'vegetarian-chili',
                 subTitle: 'A hearty and comforting dish',
                 tags: [
-                    (await Tag.findOne({ value: 'lunch' }))._id,
-                    (await Tag.findOne({ value: 'dinner' }))._id,
-                    (await Tag.findOne({ value: 'freezes' }))._id,
+                    (await Tag.findOne({ value: 'lunch' }).orFail())._id,
+                    (await Tag.findOne({ value: 'dinner' }).orFail())._id,
+                    (await Tag.findOne({ value: 'freezes' }).orFail())._id,
                 ],
                 ingredientSubsections: [
                     {
@@ -479,17 +490,23 @@ export async function populateRecipes() {
                         ingredients: [
                             {
                                 quantity: '1',
-                                unit: (await Unit.findOne({ longSingular: 'each' }))._id,
+                                unit: (await Unit.findOne({ longSingular: 'each' }).orFail())._id,
                                 size: null,
-                                ingredient: (await Ingredient.findOne({ name: 'onion' }))._id,
-                                prepMethod: (await PrepMethod.findOne({ value: 'chopped' }))._id,
+                                ingredient: (await Ingredient.findOne({ name: 'onion' }).orFail())
+                                    ._id,
+                                prepMethod: (
+                                    await PrepMethod.findOne({ value: 'chopped' }).orFail()
+                                )._id,
                             },
                             {
                                 quantity: '400',
-                                unit: (await Unit.findOne({ shortSingular: 'cup' }))._id,
+                                unit: (await Unit.findOne({ shortSingular: 'cup' }).orFail())._id,
                                 size: null,
-                                ingredient: (await Ingredient.findOne({ name: 'tomato' }))._id,
-                                prepMethod: (await PrepMethod.findOne({ value: 'chopped' }))._id,
+                                ingredient: (await Ingredient.findOne({ name: 'tomato' }).orFail())
+                                    ._id,
+                                prepMethod: (
+                                    await PrepMethod.findOne({ value: 'chopped' }).orFail()
+                                )._id,
                             },
                         ],
                     },
@@ -538,8 +555,8 @@ export async function populateImages() {
         fs.rmSync(IMAGE_DIR, { recursive: true });
         fs.mkdirSync(IMAGE_DIR);
 
-        const recipe1 = await Recipe.findOne({ titleIdentifier: 'spaghetti-bolognese' });
-        const recipe2 = await Recipe.findOne({ titleIdentifier: 'chicken-curry' });
+        const recipe1 = await Recipe.findOne({ titleIdentifier: 'spaghetti-bolognese' }).orFail();
+        const recipe2 = await Recipe.findOne({ titleIdentifier: 'chicken-curry' }).orFail();
 
         const dummyImages = [
             {

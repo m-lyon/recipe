@@ -12,14 +12,26 @@ export interface UnitMagnitude {
  * teaspoons and 16 tablespoons with no rounding error.
  */
 const MAGNITUDES: Array<[string[], UnitMagnitude]> = [
-    [['mg', 'milligram', 'milligramme'], { dimension: 'mass', perCanonical: 0.001, system: 'metric' }],
+    [
+        ['mg', 'milligram', 'milligramme'],
+        { dimension: 'mass', perCanonical: 0.001, system: 'metric' },
+    ],
     [['g', 'gram', 'gramme'], { dimension: 'mass', perCanonical: 1, system: 'metric' }],
     [['kg', 'kilogram', 'kilogramme'], { dimension: 'mass', perCanonical: 1000, system: 'metric' }],
     [['oz', 'ounce'], { dimension: 'mass', perCanonical: 28.349523125, system: 'us' }],
     [['lb', 'pound'], { dimension: 'mass', perCanonical: 453.59237, system: 'us' }],
-    [['ml', 'millilitre', 'milliliter'], { dimension: 'volume', perCanonical: 1, system: 'metric' }],
-    [['cl', 'centilitre', 'centiliter'], { dimension: 'volume', perCanonical: 10, system: 'metric' }],
-    [['dl', 'decilitre', 'deciliter'], { dimension: 'volume', perCanonical: 100, system: 'metric' }],
+    [
+        ['ml', 'millilitre', 'milliliter'],
+        { dimension: 'volume', perCanonical: 1, system: 'metric' },
+    ],
+    [
+        ['cl', 'centilitre', 'centiliter'],
+        { dimension: 'volume', perCanonical: 10, system: 'metric' },
+    ],
+    [
+        ['dl', 'decilitre', 'deciliter'],
+        { dimension: 'volume', perCanonical: 100, system: 'metric' },
+    ],
     [['l', 'litre', 'liter'], { dimension: 'volume', perCanonical: 1000, system: 'metric' }],
     [['tsp', 'teaspoon'], { dimension: 'volume', perCanonical: 4.92892159375, system: 'us' }],
     [['tbsp', 'tablespoon'], { dimension: 'volume', perCanonical: 14.78676478125, system: 'us' }],

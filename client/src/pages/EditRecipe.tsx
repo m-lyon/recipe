@@ -6,6 +6,7 @@ import { ApolloError, Reference, useMutation, useQuery } from '@apollo/client';
 
 import { ConfirmModal } from '@recipe/common/components';
 import { useUploadImages } from '@recipe/features/images';
+import { useRecipeDraft } from '@recipe/features/editing';
 import { BraisingLoader } from '@recipe/common/components';
 import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { updateRecipeCache } from '@recipe/features/editing';
@@ -60,6 +61,10 @@ export function EditRecipe() {
     const [showConfirmAction, setShowConfirmAction] = useState(false);
     const navigate = useNavigate();
     const { titleIdentifier } = useParams();
+    const { loadDraft, clearDraft } = useRecipeDraft(
+        `edit:${titleIdentifier ?? ''}`,
+        hydratedFor !== null && hydratedFor === (titleIdentifier ?? '')
+    );
     const [saveRecipe, { data: response, loading: recipeLoading, reset: resetSaveRecipe }] =
         useMutation(UPDATE_RECIPE, {
             update(cache, { data }) {
@@ -111,57 +116,68 @@ export function EditRecipe() {
             return;
         }
         setRecipe(recipe);
-        recipeState.setTitle(recipe.title);
-        recipeState.setNumServings(recipe.numServings);
-        recipeState.resetIngredients();
-        recipe.ingredientSubsections.forEach((sub, index) => {
-            recipeState.setIngredientSection(
-                index,
-                sub.ingredients.map((i) => queryIngredientToFinished(i)),
-                sub.name || undefined
-            );
-            if (recipe.ingredientSubsections.length > 1 || recipe.ingredientSubsections[0].name) {
-                recipeState.addIngredientSection();
+        // A draft holds unsaved changes from before the app was closed; it wins over
+        // the server copy, even when that copy is newer (e.g. saved from another device).
+        // Saving then overwrites those changes; leaving the page discards the draft.
+        if (!loadDraft()) {
+            recipeState.setTitle(recipe.title);
+            recipeState.setNumServings(recipe.numServings);
+            recipeState.resetIngredients();
+            recipe.ingredientSubsections.forEach((sub, index) => {
+                recipeState.setIngredientSection(
+                    index,
+                    sub.ingredients.map((i) => queryIngredientToFinished(i)),
+                    sub.name || undefined
+                );
+                if (
+                    recipe.ingredientSubsections.length > 1 ||
+                    recipe.ingredientSubsections[0].name
+                ) {
+                    recipeState.addIngredientSection();
+                }
+            });
+            recipeState.resetInstructions();
+            recipe.instructionSubsections.forEach((sub, index) => {
+                recipeState.setInstructionSection(
+                    index,
+                    [...sub.instructions, ''],
+                    sub.name || undefined
+                );
+                if (
+                    recipe.instructionSubsections.length > 1 ||
+                    recipe.instructionSubsections[0].name
+                ) {
+                    recipeState.addInstructionSection();
+                }
+            });
+            if (recipe.notes) {
+                recipeState.setNotes(recipe.notes);
+            } else {
+                recipeState.setNotes('');
             }
-        });
-        recipeState.resetInstructions();
-        recipe.instructionSubsections.forEach((sub, index) => {
-            recipeState.setInstructionSection(
-                index,
-                [...sub.instructions, ''],
-                sub.name || undefined
+            recipeState.setTags(
+                recipe.tags.map((tag) => {
+                    return {
+                        _id: tag._id,
+                        value: tag.value,
+                        key: tag._id,
+                        isNew: false,
+                    };
+                })
             );
-            if (recipe.instructionSubsections.length > 1 || recipe.instructionSubsections[0].name) {
-                recipeState.addInstructionSection();
+            if (recipe.source) {
+                recipeState.setSource(recipe.source);
+            } else {
+                recipeState.setSource('');
             }
-        });
-        if (recipe.notes) {
-            recipeState.setNotes(recipe.notes);
-        } else {
-            recipeState.setNotes('');
+            if (recipe.isIngredient && recipe.pluralTitle) {
+                recipeState.setAsIngredient();
+                recipeState.setPluralTitle(recipe.pluralTitle);
+            } else {
+                recipeState.resetAsIngredient();
+            }
+            recipeState.setCreateVeganVersion(!!recipe.veganVersion);
         }
-        recipeState.setTags(
-            recipe.tags.map((tag) => {
-                return {
-                    _id: tag._id,
-                    value: tag.value,
-                    key: tag._id,
-                    isNew: false,
-                };
-            })
-        );
-        if (recipe.source) {
-            recipeState.setSource(recipe.source);
-        } else {
-            recipeState.setSource('');
-        }
-        if (recipe.isIngredient && recipe.pluralTitle) {
-            recipeState.setAsIngredient();
-            recipeState.setPluralTitle(recipe.pluralTitle);
-        } else {
-            recipeState.resetAsIngredient();
-        }
-        recipeState.setCreateVeganVersion(!!recipe.veganVersion);
         // Store hydration is complete; images load in below without shifting the
         // content above them, so don't hold up rendering for the fetch.
         setHydratedFor(titleIdentifier ?? '');
@@ -203,6 +219,7 @@ export function EditRecipe() {
                 variables: { id: recipe!._id, recipe: modifiedRecipe },
             });
             savedRecipe = saveResult.data?.recipeUpdateById?.record ?? null;
+            clearDraft();
         } catch (e: unknown) {
             if (
                 e instanceof ApolloError &&

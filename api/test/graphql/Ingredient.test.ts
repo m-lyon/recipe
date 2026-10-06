@@ -1,14 +1,20 @@
 import { assert } from 'chai';
 import mongoose from 'mongoose';
+import type { GraphQLResponse } from '@apollo/server';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { createUser } from '../utils/data.js';
 import { User } from '../../src/models/User.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
+import type { DocId, RecordInput } from '../utils/types.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { createRecipeIngredientData, removeRecipeIngredientData } from './Recipe.test.js';
 
-async function createIngredient(context, user, record) {
+async function createIngredient(
+    context: Mocha.Context,
+    user: User,
+    record: RecordInput<Ingredient>
+) {
     const query = `
     mutation IngredientCreateOne($record: CreateOneIngredientCreateInput!) {
         ingredientCreateOne(record: $record) {
@@ -33,8 +39,8 @@ async function createIngredient(context, user, record) {
     return response;
 }
 
-const parseCreatedIngredient = (response) => {
-    assert.equal(response.body.kind, 'single');
+const parseCreatedIngredient = (response: GraphQLResponse) => {
+    assert(response.body.kind === 'single');
     assert.isUndefined(response.body.singleResult.errors);
     const record = (
         response.body.singleResult.data as {
@@ -66,8 +72,8 @@ describe('ingredientCreateOne', () => {
     });
 
     it('should create an ingredient', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
-        const newRecord = {
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const newRecord: RecordInput<Ingredient> = {
             name: 'chicken',
             pluralName: 'chickens',
             isCountable: true,
@@ -79,7 +85,7 @@ describe('ingredientCreateOne', () => {
     });
 
     it('should create an ingredient with an empty tags list', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const newRecord = { name: 'chicken', pluralName: 'chickens', isCountable: true, tags: [] };
         const response = await createIngredient(this, user, newRecord);
         const record = parseCreatedIngredient(response);
@@ -87,7 +93,7 @@ describe('ingredientCreateOne', () => {
     });
 
     it('should NOT create an ingredient because of non unique name', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const newRecordOne = {
             name: 'chicken',
             pluralName: 'chickens',
@@ -111,11 +117,12 @@ describe('ingredientCreateOne', () => {
     });
 
     it('should NOT create an ingredient because of incorrect tag', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
-        const newRecord = {
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const newRecord: RecordInput<Ingredient> = {
             name: 'chicken',
             pluralName: 'chickens',
             isCountable: true,
+            // @ts-expect-error -- an invalid tag, to test the enum check
             tags: ['fish'],
         };
         const response = await createIngredient(this, user, newRecord);
@@ -149,7 +156,12 @@ describe('ingredientUpdateById', () => {
             });
     });
 
-    async function updateIngredient(context, user, id, record) {
+    async function updateIngredient(
+        context: Mocha.Context,
+        user: User,
+        id: DocId,
+        record: RecordInput<Ingredient>
+    ) {
         const query = `
         mutation IngredientUpdateById($id: MongoID!, $record: UpdateByIdIngredientInput!) {
             ingredientUpdateById(_id: $id, record: $record) {
@@ -173,15 +185,15 @@ describe('ingredientUpdateById', () => {
     }
 
     it('should update an ingredient', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         // Create the ingredients
-        const recordOneVars = {
+        const recordOneVars: RecordInput<Ingredient> = {
             name: 'chicken',
             pluralName: 'chickens',
             isCountable: true,
             tags: ['vegetarian'],
         };
-        const recordTwoVars = {
+        const recordTwoVars: RecordInput<Ingredient> = {
             name: 'beef',
             pluralName: 'beefs',
             isCountable: true,
@@ -203,15 +215,15 @@ describe('ingredientUpdateById', () => {
     });
 
     it('should update an ingredient with an empty tag list', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         // Create the ingredients
-        const recordOneVars = {
+        const recordOneVars: RecordInput<Ingredient> = {
             name: 'chicken',
             pluralName: 'chickens',
             isCountable: true,
             tags: ['vegetarian'],
         };
-        const recordTwoVars = {
+        const recordTwoVars: RecordInput<Ingredient> = {
             name: 'beef',
             pluralName: 'beefs',
             isCountable: true,
@@ -237,7 +249,7 @@ describe('ingredientUpdateById', () => {
     });
 
     it('should NOT update an ingredient with a duplicate name', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         // Create the ingredients
         const recordOneVars = {
             name: 'chicken',
@@ -260,7 +272,7 @@ describe('ingredientUpdateById', () => {
     });
 
     it('should NOT update an ingredient with an invalid tag', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         // Create the ingredients
         const recordOneVars = {
             name: 'chicken',
@@ -275,6 +287,7 @@ describe('ingredientUpdateById', () => {
         // Update the ingredient
         const response = await updateIngredient(this, user, recordOne._id, {
             name: 'chickeny',
+            // @ts-expect-error -- an invalid tag, to test the enum check
             tags: ['beef'],
         });
         assert.equal(response.body.kind, 'single');
@@ -297,7 +310,7 @@ describe('ingredientRemoveById', () => {
 
     afterEach(removeRecipeIngredientData);
 
-    async function deleteIngredient(context, user, id) {
+    async function deleteIngredient(context: Mocha.Context, user: User, id: DocId) {
         const query = `
         mutation IngredientRemoveById($id: MongoID!) {
             ingredientRemoveById(_id: $id) {
@@ -317,7 +330,7 @@ describe('ingredientRemoveById', () => {
     }
 
     it('should delete an ingredient that is not used in recipes', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
 
         // Create a new ingredient that won't be used in recipes
         const unusedIngredient = {
@@ -341,8 +354,8 @@ describe('ingredientRemoveById', () => {
     });
 
     it('should NOT delete an ingredient that is used in recipes', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
-        const ingredient = await Ingredient.findOne({ name: 'chicken' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
 
         // Try to delete the ingredient that's used in recipes - should fail
         const response = await deleteIngredient(this, user, ingredient._id);
