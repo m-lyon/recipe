@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import { after, afterEach, before, beforeEach, describe } from 'mocha';
 
 import { User } from '../../src/models/User.js';
+import { Unit } from '../../src/models/Unit.js';
 import { Recipe } from '../../src/models/Recipe.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
@@ -152,5 +153,59 @@ describe('Quantity Validation', function () {
 
     it('Should allow null quantity', async function () {
         await assertValidQuantity(null);
+    });
+});
+
+describe('Unitless quantities', function () {
+    before(startServer);
+    after(stopServer);
+
+    beforeEach(async function () {
+        const user = await new User({
+            username: 'testuser1',
+            firstName: 'Tester1',
+            lastName: 'McTestFace',
+            role: 'user',
+        }).save();
+        await new Ingredient({
+            name: 'test ingredient',
+            pluralName: 'test ingredients',
+            isCountable: true,
+            owner: user._id,
+            tags: [],
+        }).save();
+        await new Unit({
+            shortSingular: 'ea',
+            shortPlural: 'ea',
+            longSingular: 'each',
+            longPlural: 'each',
+            preferredNumberFormat: 'fraction',
+            owner: user._id,
+            hasSpace: true,
+            unique: true,
+            dimension: 'count',
+            perCanonical: 1,
+            hidden: true,
+        }).save();
+    });
+
+    afterEach(async function () {
+        for (const name of ['users', 'ingredients', 'units', 'recipes']) {
+            await mongoose.connection.collections[name]?.drop();
+        }
+    });
+
+    it('Should store a quantity sent with no unit as each', async function () {
+        const each = await Unit.findOne({ longSingular: 'each' }).orFail();
+        const recipe = await getMockRecipe('2');
+        await recipe.save();
+        const line = recipe.ingredientSubsections[0].ingredients[0];
+        assert.equal(String(line.unit), String(each._id));
+    });
+
+    it('Should keep no unit when there is no quantity', async function () {
+        const recipe = await getMockRecipe(null);
+        await recipe.save();
+        assert.isNotOk(recipe.ingredientSubsections[0].ingredients[0].unit);
     });
 });

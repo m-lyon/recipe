@@ -117,6 +117,15 @@ recipeIngredientSchema.pre('save', async function (this: HydratedDocument<Recipe
     } else {
         this.type = 'recipe';
     }
+    // A quantity with no unit is a count: "2 onions" is 2 each. Saved drafts and older
+    // clients still send no unit, so the hidden each unit is filled in here. Without a
+    // quantity, the line keeps no unit.
+    if (this.quantity != null && this.unit == null) {
+        const each = await Unit.findOne({ dimension: 'count', hidden: true }).select('_id');
+        if (each) {
+            this.unit = each._id;
+        }
+    }
 });
 
 interface IngredientSubsection {
