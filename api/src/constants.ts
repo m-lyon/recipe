@@ -19,7 +19,6 @@ export const SMTP_ADMIN_EMAIL = process.env.SMTP_ADMIN_EMAIL;
 export const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 export const USDA_API_KEY = process.env.USDA_API_KEY ?? '';
 
-
 export function assertRequiredEnv() {
     const requiredEnvVars = TEST
         ? { MONGODB_VERSION }
