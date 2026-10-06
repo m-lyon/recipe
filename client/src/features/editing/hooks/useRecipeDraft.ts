@@ -4,9 +4,7 @@ import { useRecipeStore } from '@recipe/stores';
 import type { RecipeState } from '@recipe/stores';
 import { useInfoToast } from '@recipe/common/hooks';
 
-// The OS can kill an installed PWA in the background, which wipes the in-memory recipe
-// store. Unsaved changes on the create and edit pages are kept in localStorage so that they
-// survive a relaunch. A draft is removed when the user leaves the page or submits it.
+
 const STORAGE_PREFIX = 'recipe:draft:';
 export const DRAFT_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 
