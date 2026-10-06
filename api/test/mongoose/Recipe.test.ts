@@ -87,7 +87,7 @@ describe('Quantity Validation', function () {
         try {
             await recipe.save();
             assert.isFalse(recipe.isNew);
-        } catch (error) {
+        } catch {
             assert.fail(`Quantity '${quantity}' not saved`);
         }
     };

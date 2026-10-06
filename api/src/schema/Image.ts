@@ -97,7 +97,7 @@ ImageTC.addResolver({
             const filepath = path.join(IMAGE_DIR, path.basename(image.origUrl));
             try {
                 fs.unlinkSync(filepath);
-            } catch (err) {
+            } catch {
                 errs.push(image.origUrl);
             }
         }

@@ -282,7 +282,7 @@ describe('Unit Model', function () {
         try {
             await duplicateUnit.save();
             assert.isFalse(duplicateUnit.isNew);
-        } catch (error) {
+        } catch {
             assert.fail('Duplicate unit not saved');
         }
     });

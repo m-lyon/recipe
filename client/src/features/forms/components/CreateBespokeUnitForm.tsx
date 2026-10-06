@@ -95,7 +95,9 @@ export function CreateBespokeUnitForm(props: Props) {
                 isRequired
                 onChange={(e) => {
                     setValue(e.target.value.toLowerCase());
-                    hasError && setHasError(false);
+                    if (hasError) {
+                        setHasError(false);
+                    }
                 }}
             />
             <FormControl isInvalid={hasError}>

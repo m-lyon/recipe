@@ -10,7 +10,8 @@ declare global {
     // Passport's types declare `Express.User` in this namespace, so it can only be extended here
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace Express {
-        // Passport puts the Mongoose user document on the request
+        // Passport puts the Mongoose user document on the request. It must be an interface to merge.
+        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
         interface User extends UserDocument {}
     }
 }
