@@ -1,29 +1,39 @@
 import { Args, Flags } from '@oclif/core';
 
-import { chooseDensity } from '../../lib/density.js';
+import { selectPortion } from '../../lib/portions.js';
 import { resolveIngredient } from '../../lib/resolve.js';
 import { EMPTY, indent, num } from '../../lib/format.js';
 import { USDA_FOOD_ITEM } from '../../graphql/operations.js';
-import { notFound, wouldOverwrite } from '../../lib/errors.js';
+import { UPDATE_NUTRITIONAL_INFO } from '../../graphql/operations.js';
 import { BaseCommand, usdaFlags, writeFlags } from '../../lib/base.js';
-import { assertItemPortion, itemPortions, selectPortion } from '../../lib/portions.js';
-import { UPDATE_INGREDIENT, UPDATE_NUTRITIONAL_INFO } from '../../graphql/operations.js';
-import { formatMacros, missingMacros, perGramFrom, scaleMacros } from '../../lib/macros.js';
+import { notFound, rejected, wouldOverwrite } from '../../lib/errors.js';
+import { formatMacros, missingMacros, perGramFrom } from '../../lib/macros.js';
+import type { Macros, MeasureSummary, NutritionalInfoSummary } from '../../lib/types.js';
 import { CREATE_NUTRITIONAL_INFO, GET_NUTRITIONAL_INFO } from '../../graphql/operations.js';
-import type { Macros, NutritionalInfoSummary, UsdaFoodItem, UsdaPortion } from '../../lib/types.js';
+import { MeasureDraft, describeMeasureKey, suggestFromPortion } from '../../lib/measures.js';
+import { GET_INGREDIENT_MEASURES, GET_MEASURE_COMPONENTS } from '../../graphql/operations.js';
+import type { NamedSummary, UnitSummary, UsdaFoodItem, UsdaPortion } from '../../lib/types.js';
+import { CREATE_INGREDIENT_MEASURE, DELETE_INGREDIENT_MEASURE } from '../../graphql/operations.js';
 
-/** Volume portions on one record should agree; a wider spread is worth saying. */
-const DENSITY_SPREAD_WARNING = 0.02;
+interface PlannedMeasure {
+    /** e.g. "each · large" */
+    key: string;
+    portion: string;
+    draft: MeasureDraft;
+    /** The existing measure with the same key, replaced under --overwrite. */
+    replaces: MeasureSummary | null;
+}
 
 export default class NutritionLink extends BaseCommand {
     static description =
-        'Link a USDA food item to an ingredient, writing perGram and, when a portion of kind ' +
-        'item is named, perUnit.';
+        'Link a USDA food item to an ingredient, writing perGram, and store named USDA ' +
+        'portions as ingredient measures (the weight of one unit of the ingredient).';
 
     static examples = [
         '<%= config.bin %> <%= command.id %> "olive oil" --fdc-id 171413 --dry-run',
         '<%= config.bin %> <%= command.id %> egg --fdc-id 171287 --portion "1 large"',
-        '<%= config.bin %> <%= command.id %> "olive oil" --fdc-id 171413 --set-density',
+        '<%= config.bin %> <%= command.id %> onion --fdc-id 170000 --portion 1 --portion 3',
+        '<%= config.bin %> <%= command.id %> "olive oil" --fdc-id 171413 --all-portions',
     ];
 
     static args = {
@@ -38,21 +48,20 @@ export default class NutritionLink extends BaseCommand {
         }),
         portion: Flags.string({
             description:
-                'Derive perUnit from this portion, named by its description or by its 1-based ' +
-                'index in "usda show". The portion must be of kind item.',
+                'Store this portion as a measure, named by its description or by its 1-based ' +
+                'index in "usda show". Repeat to store several.',
             helpValue: 'LABEL|INDEX',
+            multiple: true,
         }),
-        'set-density': Flags.boolean({
-            description: 'Also write the implied density to Ingredient.density',
+        'all-portions': Flags.boolean({
+            description:
+                'Store every portion that maps to a unit, size and prep method, and skip the rest',
             default: false,
-        }),
-        'allow-ambiguous-density': Flags.boolean({
-            description: 'Permit --set-density from an ambiguous portion',
-            default: false,
-            dependsOn: ['set-density'],
+            exclusive: ['portion'],
         }),
         overwrite: Flags.boolean({
-            description: 'Permit replacing existing nutritional data, or an existing density',
+            description:
+                'Permit replacing existing nutritional data, or a measure with the same key',
             default: false,
         }),
         ...usdaFlags,
@@ -87,21 +96,27 @@ export default class NutritionLink extends BaseCommand {
             );
         }
 
-        const { portion, perUnit } = this.derivePerUnit(
-            flags.portion,
-            portions,
-            perGram,
-            ingredient.isCountable
+        const selected = flags['all-portions']
+            ? portions
+            : (flags.portion ?? []).map((selector) => selectPortion(portions, selector));
+        const components = (await client.request(GET_MEASURE_COMPONENTS)) as unknown as {
+            units: UnitSummary[];
+            sizes: NamedSummary[];
+            prepMethods: NamedSummary[];
+        };
+        const existingMeasures = ((
+            await client.request(GET_INGREDIENT_MEASURES, { ingredientIds: [ingredient._id] })
+        ).ingredientMeasuresByIngredientIds ?? []) as unknown as MeasureSummary[];
+        const measures = this.planMeasures(
+            selected,
+            components,
+            existingMeasures,
+            flags['all-portions'],
+            flags.overwrite
         );
-
-        const density = flags['set-density']
-            ? this.planDensity(
-                  portions,
-                  flags['allow-ambiguous-density'],
-                  ingredient.density ?? null,
-                  flags.overwrite
-              )
-            : null;
+        if (selected.length === 0) {
+            this.warnUnusedPortions(portions, components);
+        }
 
         // Checked before any write, and under --dry-run too, so a dry run reports
         // the conflict rather than describing a write that would be refused.
@@ -112,30 +127,21 @@ export default class NutritionLink extends BaseCommand {
         ).nutritionalInfoByIngredient as unknown as NutritionalInfoSummary | null;
         if (existing && !flags.overwrite) {
             throw wouldOverwrite(
-                `${ingredient.name} already has nutritional data (usdaFdcId ${existing.usdaFdcId ?? EMPTY}, ` +
-                    `linked ${describeCoverage(existing)}). Pass --overwrite to replace it.`,
+                `${ingredient.name} already has nutritional data (usdaFdcId ${existing.usdaFdcId ?? EMPTY}). ` +
+                    'Pass --overwrite to replace it.',
                 existing
             );
         }
 
-        const record = {
-            ingredient: ingredient._id,
-            usdaFdcId: fdcId,
-            perGram,
-            // Explicitly cleared on a replacement, so a perUnit derived from a
-            // different food never survives the new link.
-            perUnit: perUnit ?? null,
-        };
-
-        const plan = {
+        const record = { ingredient: ingredient._id, usdaFdcId: fdcId, perGram };
+        const plan: LinkPlan = {
             dryRun: flags['dry-run'],
-            action: existing ? ('update' as const) : ('create' as const),
+            action: existing ? 'update' : 'create',
             ingredient: { _id: ingredient._id, name: ingredient.name },
             usdaItem: { fdcId: item.fdcId, description: item.description },
-            portion: portion ?? null,
             record,
             previous: existing ?? null,
-            density,
+            measures,
         };
 
         if (flags['dry-run']) {
@@ -153,79 +159,140 @@ export default class NutritionLink extends BaseCommand {
             : (await client.request(CREATE_NUTRITIONAL_INFO, { record })).nutritionalInfoCreateOne
                   ?.record;
 
-        let updatedIngredient = null;
-        if (density) {
-            updatedIngredient = (
-                await client.request(UPDATE_INGREDIENT, {
-                    id: ingredient._id,
-                    record: { density: density.to },
+        const writtenMeasures = [];
+        for (const measure of measures) {
+            if (measure.replaces) {
+                await client.request(DELETE_INGREDIENT_MEASURE, { id: measure.replaces._id });
+            }
+            const created = (
+                await client.request(CREATE_INGREDIENT_MEASURE, {
+                    record: {
+                        ingredient: ingredient._id,
+                        unit: measure.draft.unitId,
+                        size: measure.draft.sizeId,
+                        prepMethod: measure.draft.prepMethodId,
+                        grams: measure.draft.grams,
+                    },
                 })
-            ).ingredientUpdateById?.record;
+            ).ingredientMeasureCreateOne?.record;
+            writtenMeasures.push(created);
         }
 
         this.out(this.renderResult(plan, written as unknown as NutritionalInfoSummary));
-        return { ...plan, nutritionalInfo: written, ingredientUpdated: updatedIngredient };
+        return { ...plan, nutritionalInfo: written, ingredientMeasures: writtenMeasures };
     }
 
-    /** Step 4 and step 5 of the link behaviour. */
-    private derivePerUnit(
-        selector: string | undefined,
+    /** Maps each chosen portion to a measure row, and refuses a conflict or a non-match. */
+    private planMeasures(
         portions: UsdaPortion[],
-        perGram: Macros,
-        isCountable: boolean
-    ): { portion: UsdaPortion | null; perUnit: Macros | null } {
-        if (selector) {
-            const portion = selectPortion(portions, selector);
-            assertItemPortion(portion);
-            if (portion.ambiguous) {
-                this.addWarning(
-                    `Portion "${portion.description}" is flagged ambiguous. Labels such as ` +
-                        '"NLEA serving", "1 lemon yields" and "slice" count like items and are ' +
-                        'not one whole thing. Check the label before trusting perUnit.'
+        components: { units: UnitSummary[]; sizes: NamedSummary[]; prepMethods: NamedSummary[] },
+        existing: MeasureSummary[],
+        skipUnmatched: boolean,
+        overwrite: boolean
+    ): PlannedMeasure[] {
+        const planned: PlannedMeasure[] = [];
+        for (const portion of portions) {
+            const suggestion = suggestFromPortion(
+                portion,
+                components.units,
+                components.sizes,
+                components.prepMethods
+            );
+            if (!suggestion) continue;
+            if (!suggestion.draft) {
+                if (skipUnmatched) {
+                    this.addWarning(`Skipped portion ${suggestion.label}: ${suggestion.reason}.`);
+                    continue;
+                }
+                throw rejected(
+                    `Portion ${suggestion.label} cannot be stored as a measure: ${suggestion.reason}.`,
+                    { portion }
                 );
             }
-            return { portion, perUnit: scaleMacros(perGram, portion.gramWeight) };
+            const draft = suggestion.draft;
+            const sameKey = (m: {
+                unitId: string;
+                sizeId: string | null;
+                prepMethodId: string | null;
+            }) =>
+                m.unitId === draft.unitId &&
+                m.sizeId === draft.sizeId &&
+                m.prepMethodId === draft.prepMethodId;
+            if (planned.some((p) => sameKey(p.draft))) {
+                this.addWarning(
+                    `Skipped portion ${suggestion.label}: same unit, size and prep as another.`
+                );
+                continue;
+            }
+            const replaces =
+                existing.find((m) =>
+                    sameKey({
+                        unitId: m.unit._id,
+                        sizeId: m.size?._id ?? null,
+                        prepMethodId: m.prepMethod?._id ?? null,
+                    })
+                ) ?? null;
+            if (replaces && !overwrite) {
+                throw wouldOverwrite(
+                    `A measure for ${describeMeasureKey(replaces)} already exists ` +
+                        `(${num(replaces.grams)} g). Pass --overwrite to replace it.`,
+                    replaces
+                );
+            }
+            if (portion.ambiguous) {
+                this.addWarning(
+                    `Portion "${portion.description}" is flagged ambiguous. Check the label ` +
+                        'before trusting the weight.'
+                );
+            }
+            const unit = components.units.find((u) => u._id === draft.unitId)!;
+            const size = components.sizes.find((s) => s._id === draft.sizeId);
+            const prep = components.prepMethods.find((p) => p._id === draft.prepMethodId);
+            planned.push({
+                key: [unit.longSingular, size?.value, prep?.value].filter(Boolean).join(' · '),
+                portion: portion.description,
+                draft,
+                replaces,
+            });
         }
-        if (isCountable) {
-            // The two reasons need different fixes, so they get different warnings.
-            const items = itemPortions(portions);
-            this.addWarning(
-                items.length > 0
-                    ? `${items.length} item portion(s) are available (${items
-                          .map((portion) => portion.description)
-                          .join(', ')}) but none was chosen, so perUnit is unset. ` +
-                          `${'This countable ingredient stays uncalculable when used without a unit.'}`
-                    : 'This USDA record offers no item portion, so perUnit is unset and this ' +
-                          'countable ingredient stays uncalculable when used without a unit. ' +
-                          'A retry with --portion cannot help; find another record or enter ' +
-                          'perUnit by hand.'
-            );
-        }
-        return { portion: null, perUnit: null };
+        return planned;
     }
 
-    /** Step 6: density is never written without --set-density. */
-    private planDensity(
+    /** Without a measure, volume and count lines of this ingredient stay uncounted. */
+    private warnUnusedPortions(
         portions: UsdaPortion[],
-        allowAmbiguous: boolean,
-        current: number | null,
-        overwrite: boolean
-    ): { from: number | null; to: number; portion: UsdaPortion } {
-        const choice = chooseDensity(portions, allowAmbiguous);
-        if (current !== null && current !== undefined && !overwrite) {
-            throw wouldOverwrite(
-                `This ingredient already has a density of ${current}. Pass --overwrite to ` +
-                    'replace it.',
-                { density: current }
-            );
-        }
-        if (choice.spread > DENSITY_SPREAD_WARNING) {
+        components: { units: UnitSummary[]; sizes: NamedSummary[]; prepMethods: NamedSummary[] }
+    ): void {
+        const usable = portions.filter(
+            (portion) =>
+                suggestFromPortion(
+                    portion,
+                    components.units,
+                    components.sizes,
+                    components.prepMethods
+                )?.draft
+        );
+        if (usable.length > 0) {
             this.addWarning(
-                `The volume portions on this record imply densities that differ by ` +
-                    `${Math.round(choice.spread * 100)}%. Check "usda show" before trusting it.`
+                `${usable.length} portion(s) can be stored as measures (${usable
+                    .map((portion) => portion.description)
+                    .join(', ')}) but none was chosen. Pass --portion or --all-portions.`
             );
         }
-        return { from: current ?? null, to: choice.density, portion: choice.portion };
+    }
+
+    private renderMeasures(measures: PlannedMeasure[], verb: string): string[] {
+        if (measures.length === 0) return [];
+        return [
+            '',
+            `${verb} IngredientMeasures:`,
+            ...measures.map((measure) =>
+                indent(
+                    `1 ${measure.key} = ${num(measure.draft.grams)} g   (from portion "${measure.portion}")` +
+                        (measure.replaces ? `, replacing ${num(measure.replaces.grams)} g` : '')
+                )
+            ),
+        ];
     }
 
     private renderPlan(plan: LinkPlan): string {
@@ -240,26 +307,10 @@ export default class NutritionLink extends BaseCommand {
             indent(`usdaFdcId   ${plan.record.usdaFdcId}`),
             indent(`perGram     ${formatMacros(plan.record.perGram)}`),
         ];
-        if (plan.record.perUnit) {
-            lines.push(
-                indent(
-                    `perUnit     ${formatMacros(plan.record.perUnit)}   (from portion "${plan.portion?.description}" = ${num(plan.portion?.gramWeight ?? 0)} g)`
-                )
-            );
-        }
         if (plan.previous) {
             lines.push('', 'Previous values:', indent(describePrevious(plan.previous)));
         }
-        if (plan.density) {
-            lines.push(
-                '',
-                'Would update Ingredient.density:',
-                indent(`from  ${plan.density.from ?? '(unset)'}`),
-                indent(
-                    `to    ${num(plan.density.to, 3)}   (from portion "${plan.density.portion.description}" = ${num(plan.density.portion.gramWeight)} g)`
-                )
-            );
-        }
+        lines.push(...this.renderMeasures(plan.measures, 'Would create'));
         return lines.join('\n');
     }
 
@@ -268,18 +319,11 @@ export default class NutritionLink extends BaseCommand {
             `${plan.action === 'create' ? 'Created' : 'Updated'} NutritionalInfo for ${plan.ingredient.name}`,
             indent(`usdaFdcId   ${plan.record.usdaFdcId}`),
             indent(`perGram     ${formatMacros(plan.record.perGram)}`),
-            indent(`perUnit     ${formatMacros(plan.record.perUnit)}`),
         ];
         if (plan.previous) {
             lines.push('', 'Previous values:', indent(describePrevious(plan.previous)));
         }
-        if (plan.density) {
-            lines.push(
-                '',
-                `Set Ingredient.density from ${plan.density.from ?? '(unset)'} to ${num(plan.density.to, 3)}`,
-                indent(`from portion "${plan.density.portion.description}"`)
-            );
-        }
+        lines.push(...this.renderMeasures(plan.measures, 'Created'));
         if (written?._id) {
             lines.push('', `NutritionalInfo id ${written._id}`);
         }
@@ -292,23 +336,14 @@ interface LinkPlan {
     action: 'create' | 'update';
     ingredient: { _id: string; name: string };
     usdaItem: { fdcId: number; description: string };
-    portion: UsdaPortion | null;
-    record: { ingredient: string; usdaFdcId: number; perGram: Macros; perUnit: Macros | null };
+    record: { ingredient: string; usdaFdcId: number; perGram: Macros };
     previous: NutritionalInfoSummary | null;
-    density: { from: number | null; to: number; portion: UsdaPortion } | null;
-}
-
-function describeCoverage(info: NutritionalInfoSummary): string {
-    const parts: string[] = [];
-    if (info.perGram) parts.push('per-gram');
-    if (info.perUnit) parts.push('per-unit');
-    return parts.length === 0 ? 'nothing' : parts.join(' and ');
+    measures: PlannedMeasure[];
 }
 
 function describePrevious(info: NutritionalInfoSummary): string {
     return [
         `usdaFdcId   ${info.usdaFdcId ?? EMPTY}`,
         `perGram     ${formatMacros(info.perGram)}`,
-        `perUnit     ${formatMacros(info.perUnit)}`,
     ].join('\n');
 }

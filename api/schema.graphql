@@ -1,27 +1,20 @@
-type ConversionRule {
-  _id: MongoID!
-  baseToUnitConversion: Float!
-  baseUnit: Unit!
-  baseUnitThreshold: Float!
-  unit: Unit!
-}
-
 """"""
-input CreateOneConversionRuleInput {
-  baseToUnitConversion: Float!
-  baseUnit: MongoID!
-  baseUnitThreshold: Float!
-  unit: MongoID!
+input CreateOneDisplayLadderCreateInput {
+  dimension: EnumDisplayLadderCreateDimension!
+  name: String!
+  scope: EnumDisplayLadderCreateScope!
+  steps: [DisplayLadderStepsInput]!
+  system: EnumDisplayLadderCreateSystem!
 }
 
-type CreateOneConversionRulePayload {
+type CreateOneDisplayLadderPayload {
   """
   Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
   """
   error: ErrorInterface
 
   """Created document"""
-  record: ConversionRule
+  record: DisplayLadder
 
   """Document ID"""
   recordId: MongoID
@@ -29,11 +22,32 @@ type CreateOneConversionRulePayload {
 
 """"""
 input CreateOneIngredientCreateInput {
-  density: Float
   isCountable: Boolean!
   name: String!
   pluralName: String!
   tags: [EnumIngredientCreateTags]!
+}
+
+""""""
+input CreateOneIngredientMeasureInput {
+  grams: Float!
+  ingredient: MongoID!
+  prepMethod: MongoID
+  size: MongoID
+  unit: MongoID!
+}
+
+type CreateOneIngredientMeasurePayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Created document"""
+  record: IngredientMeasure
+
+  """Document ID"""
+  recordId: MongoID
 }
 
 type CreateOneIngredientPayload {
@@ -52,8 +66,7 @@ type CreateOneIngredientPayload {
 """"""
 input CreateOneNutritionalInfoCreateInput {
   ingredient: MongoID!
-  perGram: NutritionalInfoPerGramInput
-  perUnit: NutritionalInfoPerGramInput
+  perGram: NutritionalInfoPerGramInput!
   usdaFdcId: Float
 }
 
@@ -173,33 +186,17 @@ type CreateOneTagPayload {
 }
 
 """"""
-input CreateOneUnitConversionInput {
-  baseUnit: MongoID!
-  rules: [MongoID]!
-}
-
-type CreateOneUnitConversionPayload {
-  """
-  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
-  """
-  error: ErrorInterface
-
-  """Created document"""
-  record: UnitConversion
-
-  """Document ID"""
-  recordId: MongoID
-}
-
-""""""
 input CreateOneUnitCreateInput {
+  dimension: EnumUnitCreateDimension!
   hasSpace: Boolean!
+  hidden: Boolean
   longPlural: String!
   longSingular: String!
-  measureType: EnumUnitCreateMeasureType
+  perCanonical: Float!
   preferredNumberFormat: EnumUnitCreatePreferredNumberFormat!
   shortPlural: String!
   shortSingular: String!
+  system: EnumUnitCreateSystem
   unique: Boolean!
 }
 
@@ -218,6 +215,56 @@ type CreateOneUnitPayload {
 
 scalar Date
 
+type DisplayLadder {
+  _id: MongoID!
+  dimension: EnumDisplayLadderDimension!
+  name: String!
+  owner: MongoID!
+  scope: EnumDisplayLadderScope!
+  steps: [DisplayLadderSteps!]!
+  system: EnumDisplayLadderSystem!
+}
+
+type DisplayLadderSteps {
+  minCanonical: Float!
+  unit: Unit!
+}
+
+input DisplayLadderStepsInput {
+  minCanonical: Float!
+  unit: MongoID!
+}
+
+enum EnumDisplayLadderCreateDimension {
+  mass
+  volume
+}
+
+enum EnumDisplayLadderCreateScope {
+  global
+  user
+}
+
+enum EnumDisplayLadderCreateSystem {
+  metric
+  us
+}
+
+enum EnumDisplayLadderDimension {
+  mass
+  volume
+}
+
+enum EnumDisplayLadderScope {
+  global
+  user
+}
+
+enum EnumDisplayLadderSystem {
+  metric
+  us
+}
+
 enum EnumIngredientCreateTags {
   vegan
   vegetarian
@@ -235,8 +282,8 @@ enum EnumRecipeCalculatedTags {
   vegetarian
 }
 
-enum EnumUnitCreateMeasureType {
-  NULL
+enum EnumUnitCreateDimension {
+  count
   mass
   volume
 }
@@ -246,8 +293,14 @@ enum EnumUnitCreatePreferredNumberFormat {
   fraction
 }
 
-enum EnumUnitMeasureType {
+enum EnumUnitCreateSystem {
   NULL
+  metric
+  us
+}
+
+enum EnumUnitDimension {
+  count
   mass
   volume
 }
@@ -255,6 +308,12 @@ enum EnumUnitMeasureType {
 enum EnumUnitPreferredNumberFormat {
   decimal
   fraction
+}
+
+enum EnumUnitSystem {
+  NULL
+  metric
+  us
 }
 
 enum EnumUserRole {
@@ -399,25 +458,33 @@ input FilterCountRecipe_idOperatorsInput {
 }
 
 """"""
-input FilterFindManyConversionRuleInput {
-  AND: [FilterFindManyConversionRuleInput!]
-  OR: [FilterFindManyConversionRuleInput!]
+input FilterFindManyDisplayLadderInput {
+  AND: [FilterFindManyDisplayLadderInput!]
+  OR: [FilterFindManyDisplayLadderInput!]
   _id: MongoID
 
   """List of *indexed* fields that can be filtered via operators."""
-  _operators: FilterFindManyConversionRuleOperatorsInput
-  baseToUnitConversion: Float
-  baseUnit: MongoID
-  baseUnitThreshold: Float
-  unit: MongoID
+  _operators: FilterFindManyDisplayLadderOperatorsInput
+  dimension: EnumDisplayLadderDimension
+  name: String
+  owner: MongoID
+  scope: EnumDisplayLadderScope
+  steps: [FilterFindManyDisplayLadderStepsInput]
+  system: EnumDisplayLadderSystem
 }
 
 """For performance reason this type contains only *indexed* fields."""
-input FilterFindManyConversionRuleOperatorsInput {
-  _id: FilterFindManyConversionRule_idOperatorsInput
+input FilterFindManyDisplayLadderOperatorsInput {
+  _id: FilterFindManyDisplayLadder_idOperatorsInput
 }
 
-input FilterFindManyConversionRule_idOperatorsInput {
+""""""
+input FilterFindManyDisplayLadderStepsInput {
+  minCanonical: Float
+  unit: MongoID
+}
+
+input FilterFindManyDisplayLadder_idOperatorsInput {
   exists: Boolean
   gt: MongoID
   gte: MongoID
@@ -466,7 +533,6 @@ input FilterFindManyIngredientInput {
 
   """List of *indexed* fields that can be filtered via operators."""
   _operators: FilterFindManyIngredientOperatorsInput
-  density: Float
   isCountable: Boolean
   name: String
   owner: MongoID
@@ -735,34 +801,6 @@ input FilterFindManyTag_idOperatorsInput {
 }
 
 """"""
-input FilterFindManyUnitConversionInput {
-  AND: [FilterFindManyUnitConversionInput!]
-  OR: [FilterFindManyUnitConversionInput!]
-  _id: MongoID
-
-  """List of *indexed* fields that can be filtered via operators."""
-  _operators: FilterFindManyUnitConversionOperatorsInput
-  baseUnit: MongoID
-  rules: [MongoID]
-}
-
-"""For performance reason this type contains only *indexed* fields."""
-input FilterFindManyUnitConversionOperatorsInput {
-  _id: FilterFindManyUnitConversion_idOperatorsInput
-}
-
-input FilterFindManyUnitConversion_idOperatorsInput {
-  exists: Boolean
-  gt: MongoID
-  gte: MongoID
-  in: [MongoID]
-  lt: MongoID
-  lte: MongoID
-  ne: MongoID
-  nin: [MongoID]
-}
-
-""""""
 input FilterFindManyUnitInput {
   AND: [FilterFindManyUnitInput!]
   OR: [FilterFindManyUnitInput!]
@@ -770,14 +808,17 @@ input FilterFindManyUnitInput {
 
   """List of *indexed* fields that can be filtered via operators."""
   _operators: FilterFindManyUnitOperatorsInput
+  dimension: EnumUnitDimension
   hasSpace: Boolean
+  hidden: Boolean
   longPlural: String
   longSingular: String
-  measureType: EnumUnitMeasureType
   owner: MongoID
+  perCanonical: Float
   preferredNumberFormat: EnumUnitPreferredNumberFormat
   shortPlural: String
   shortSingular: String
+  system: EnumUnitSystem
   unique: Boolean
 }
 
@@ -787,36 +828,6 @@ input FilterFindManyUnitOperatorsInput {
 }
 
 input FilterFindManyUnit_idOperatorsInput {
-  exists: Boolean
-  gt: MongoID
-  gte: MongoID
-  in: [MongoID]
-  lt: MongoID
-  lte: MongoID
-  ne: MongoID
-  nin: [MongoID]
-}
-
-""""""
-input FilterFindOneConversionRuleInput {
-  AND: [FilterFindOneConversionRuleInput!]
-  OR: [FilterFindOneConversionRuleInput!]
-  _id: MongoID
-
-  """List of *indexed* fields that can be filtered via operators."""
-  _operators: FilterFindOneConversionRuleOperatorsInput
-  baseToUnitConversion: Float
-  baseUnit: MongoID
-  baseUnitThreshold: Float
-  unit: MongoID
-}
-
-"""For performance reason this type contains only *indexed* fields."""
-input FilterFindOneConversionRuleOperatorsInput {
-  _id: FilterFindOneConversionRule_idOperatorsInput
-}
-
-input FilterFindOneConversionRule_idOperatorsInput {
   exists: Boolean
   gt: MongoID
   gte: MongoID
@@ -865,7 +876,6 @@ input FilterFindOneIngredientInput {
 
   """List of *indexed* fields that can be filtered via operators."""
   _operators: FilterFindOneIngredientOperatorsInput
-  density: Float
   isCountable: Boolean
   name: String
   owner: MongoID
@@ -910,7 +920,6 @@ input FilterFindOneNutritionalInfoInput {
   _operators: FilterFindOneNutritionalInfoOperatorsInput
   ingredient: MongoID
   perGram: FilterFindOneNutritionalInfoPerGramInput
-  perUnit: FilterFindOneNutritionalInfoPerGramInput
   usdaFdcId: Float
 }
 
@@ -922,10 +931,10 @@ input FilterFindOneNutritionalInfoOperatorsInput {
 
 """"""
 input FilterFindOneNutritionalInfoPerGramInput {
-  calories: Float!
-  carbs: Float!
-  fat: Float!
-  protein: Float!
+  calories: Float
+  carbs: Float
+  fat: Float
+  protein: Float
 }
 
 input FilterFindOneNutritionalInfo_idOperatorsInput {
@@ -1179,34 +1188,6 @@ input FilterFindOneTag_idOperatorsInput {
 }
 
 """"""
-input FilterFindOneUnitConversionInput {
-  AND: [FilterFindOneUnitConversionInput!]
-  OR: [FilterFindOneUnitConversionInput!]
-  _id: MongoID
-
-  """List of *indexed* fields that can be filtered via operators."""
-  _operators: FilterFindOneUnitConversionOperatorsInput
-  baseUnit: MongoID
-  rules: [MongoID]
-}
-
-"""For performance reason this type contains only *indexed* fields."""
-input FilterFindOneUnitConversionOperatorsInput {
-  _id: FilterFindOneUnitConversion_idOperatorsInput
-}
-
-input FilterFindOneUnitConversion_idOperatorsInput {
-  exists: Boolean
-  gt: MongoID
-  gte: MongoID
-  in: [MongoID]
-  lt: MongoID
-  lte: MongoID
-  ne: MongoID
-  nin: [MongoID]
-}
-
-""""""
 input FilterFindOneUnitInput {
   AND: [FilterFindOneUnitInput!]
   OR: [FilterFindOneUnitInput!]
@@ -1214,14 +1195,17 @@ input FilterFindOneUnitInput {
 
   """List of *indexed* fields that can be filtered via operators."""
   _operators: FilterFindOneUnitOperatorsInput
+  dimension: EnumUnitDimension
   hasSpace: Boolean
+  hidden: Boolean
   longPlural: String
   longSingular: String
-  measureType: EnumUnitMeasureType
   owner: MongoID
+  perCanonical: Float
   preferredNumberFormat: EnumUnitPreferredNumberFormat
   shortPlural: String
   shortSingular: String
+  system: EnumUnitSystem
   unique: Boolean
 }
 
@@ -1296,12 +1280,20 @@ type ImageUploadPayload {
 
 type Ingredient {
   _id: MongoID!
-  density: Float
   isCountable: Boolean!
   name: String!
   owner: MongoID!
   pluralName: String!
   tags: [EnumIngredientTags]!
+}
+
+type IngredientMeasure {
+  _id: MongoID!
+  grams: Float!
+  ingredient: MongoID!
+  prepMethod: PrepMethod
+  size: Size
+  unit: Unit!
 }
 
 union IngredientOrRecipe = Ingredient | Recipe
@@ -1322,14 +1314,14 @@ The `ID` scalar type represents a unique MongoDB identifier in collection. Mongo
 scalar MongoID
 
 type Mutation {
-  """Create a new conversion rule"""
-  conversionRuleCreateOne(record: CreateOneConversionRuleInput!): CreateOneConversionRulePayload
+  """Create a new display ladder"""
+  displayLadderCreateOne(record: CreateOneDisplayLadderCreateInput!): CreateOneDisplayLadderPayload
 
-  """Remove a conversion rule by its ID"""
-  conversionRuleRemoveById(_id: MongoID!): RemoveByIdConversionRulePayload
+  """Remove a display ladder by its ID"""
+  displayLadderRemoveById(_id: MongoID!): RemoveByIdDisplayLadderPayload
 
-  """Update a conversion rule by its ID"""
-  conversionRuleUpdateById(_id: MongoID!, record: UpdateByIdConversionRuleInput!): UpdateByIdConversionRulePayload
+  """Update a display ladder by its ID"""
+  displayLadderUpdateById(_id: MongoID!, record: UpdateByIdDisplayLadderInput!): UpdateByIdDisplayLadderPayload
 
   """Remove multiple images by their IDs"""
   imageRemoveMany(
@@ -1363,6 +1355,15 @@ type Mutation {
 
   """Create a new ingredient"""
   ingredientCreateOne(record: CreateOneIngredientCreateInput!): CreateOneIngredientPayload
+
+  """Record the weight of one unit of an ingredient"""
+  ingredientMeasureCreateOne(record: CreateOneIngredientMeasureInput!): CreateOneIngredientMeasurePayload
+
+  """Remove an ingredient measure by its ID"""
+  ingredientMeasureRemoveById(_id: MongoID!): RemoveByIdIngredientMeasurePayload
+
+  """Update an ingredient measure by its ID"""
+  ingredientMeasureUpdateById(_id: MongoID!, record: UpdateByIdIngredientMeasureInput!): UpdateByIdIngredientMeasurePayload
 
   """Remove an ingredient by its ID"""
   ingredientRemoveById(_id: MongoID!): RemoveByIdIngredientPayload
@@ -1439,15 +1440,6 @@ type Mutation {
   """Update a tag by its ID"""
   tagUpdateById(_id: MongoID!, record: UpdateByIdTagInput!): UpdateByIdTagPayload
 
-  """Create a new unit conversion"""
-  unitConversionCreateOne(record: CreateOneUnitConversionInput!): CreateOneUnitConversionPayload
-
-  """Remove a unit conversion by its ID"""
-  unitConversionRemoveById(_id: MongoID!): RemoveByIdUnitConversionPayload
-
-  """Update a unit conversion"""
-  unitConversionUpdateById(_id: MongoID!, record: UpdateByIdUnitConversionInput!): UpdateByIdUnitConversionPayload
-
   """Create a new unit"""
   unitCreateOne(record: CreateOneUnitCreateInput!): CreateOneUnitPayload
 
@@ -1461,8 +1453,7 @@ type Mutation {
 type NutritionalInfo {
   _id: MongoID!
   ingredient: MongoID!
-  perGram: NutritionalInfoPerGram
-  perUnit: NutritionalInfoPerGram
+  perGram: NutritionalInfoPerGram!
   usdaFdcId: Float
 }
 
@@ -1488,31 +1479,17 @@ type PrepMethod {
 }
 
 type Query {
-  """Retrieve a conversion rule by its ID"""
-  conversionRuleById(_id: MongoID!): ConversionRule
-
-  """Retrieve multiple conversion rules by their IDs"""
-  conversionRuleByIds(_ids: [MongoID!]!, limit: Int = 100, sort: SortFindByIdsConversionRuleInput): [ConversionRule!]!
-
-  """Retrieve multiple conversion rules"""
-  conversionRuleMany(
-    """Filter by fields"""
-    filter: FilterFindManyConversionRuleInput
-    limit: Int = 100
-    skip: Int
-    sort: SortFindManyConversionRuleInput
-  ): [ConversionRule!]!
-
-  """Retrieve a single conversion rule"""
-  conversionRuleOne(
-    """Filter by fields"""
-    filter: FilterFindOneConversionRuleInput
-    skip: Int
-    sort: SortFindOneConversionRuleInput
-  ): ConversionRule
-
   """Retrieve the currently authenticated user"""
   currentUser: User
+
+  """Retrieve the global display ladders and those of the current user"""
+  displayLadderMany(
+    """Filter by fields"""
+    filter: FilterFindManyDisplayLadderInput
+    limit: Int = 100
+    skip: Int
+    sort: SortFindManyDisplayLadderInput
+  ): [DisplayLadder!]!
   imageById(_id: MongoID!): Image
   imageByIds(_ids: [MongoID!]!, limit: Int = 100, sort: SortFindByIdsImageInput): [Image!]!
   imageMany(
@@ -1552,6 +1529,7 @@ type Query {
     skip: Int
     sort: SortFindManyIngredientInput
   ): [Ingredient!]!
+  ingredientMeasuresByIngredientIds(ingredientIds: [MongoID!]!): [IngredientMeasure!]
 
   """Retrieve a single ingredient"""
   ingredientOne(
@@ -1713,29 +1691,6 @@ type Query {
   """Retrieve multiple units by their IDs"""
   unitByIds(_ids: [MongoID!]!, limit: Int = 100, sort: SortFindByIdsUnitInput): [Unit!]!
 
-  """Retrieve a unit conversion by its ID"""
-  unitConversionById(_id: MongoID!): UnitConversion
-
-  """Retrieve multiple unit conversions by their IDs"""
-  unitConversionByIds(_ids: [MongoID!]!, limit: Int = 100, sort: SortFindByIdsUnitConversionInput): [UnitConversion!]!
-
-  """Retrieve multiple unit conversions"""
-  unitConversionMany(
-    """Filter by fields"""
-    filter: FilterFindManyUnitConversionInput
-    limit: Int = 100
-    skip: Int
-    sort: SortFindManyUnitConversionInput
-  ): [UnitConversion!]!
-
-  """Retrieve a single unit conversion"""
-  unitConversionOne(
-    """Filter by fields"""
-    filter: FilterFindOneUnitConversionInput
-    skip: Int
-    sort: SortFindOneUnitConversionInput
-  ): UnitConversion
-
   """Retrieve multiple units"""
   unitMany(
     """Filter by fields"""
@@ -1835,14 +1790,27 @@ The string representation of JavaScript regexp. You may provide it with flags "/
 """
 scalar RegExpAsString @specifiedBy(url: "http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-262.pdf")
 
-type RemoveByIdConversionRulePayload {
+type RemoveByIdDisplayLadderPayload {
   """
   Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
   """
   error: ErrorInterface
 
   """Removed document"""
-  record: ConversionRule
+  record: DisplayLadder
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+type RemoveByIdIngredientMeasurePayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Removed document"""
+  record: IngredientMeasure
 
   """Document ID"""
   recordId: MongoID
@@ -1926,19 +1894,6 @@ type RemoveByIdTagPayload {
   recordId: MongoID
 }
 
-type RemoveByIdUnitConversionPayload {
-  """
-  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
-  """
-  error: ErrorInterface
-
-  """Removed document"""
-  record: UnitConversion
-
-  """Document ID"""
-  recordId: MongoID
-}
-
 type RemoveByIdUnitPayload {
   """
   Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
@@ -1970,13 +1925,6 @@ type Size {
   owner: MongoID!
   unique: Boolean!
   value: String!
-}
-
-enum SortFindByIdsConversionRuleInput {
-  """Sort by rules threshold in descending order"""
-  THRESHOLD_DESC
-  _ID_ASC
-  _ID_DESC
 }
 
 enum SortFindByIdsImageInput {
@@ -2022,17 +1970,12 @@ enum SortFindByIdsTagInput {
   _ID_DESC
 }
 
-enum SortFindByIdsUnitConversionInput {
-  _ID_ASC
-  _ID_DESC
-}
-
 enum SortFindByIdsUnitInput {
   _ID_ASC
   _ID_DESC
 }
 
-enum SortFindManyConversionRuleInput {
+enum SortFindManyDisplayLadderInput {
   _ID_ASC
   _ID_DESC
 }
@@ -2092,17 +2035,7 @@ enum SortFindManyTagInput {
   _ID_DESC
 }
 
-enum SortFindManyUnitConversionInput {
-  _ID_ASC
-  _ID_DESC
-}
-
 enum SortFindManyUnitInput {
-  _ID_ASC
-  _ID_DESC
-}
-
-enum SortFindOneConversionRuleInput {
   _ID_ASC
   _ID_DESC
 }
@@ -2157,11 +2090,6 @@ enum SortFindOneTagInput {
   _ID_DESC
 }
 
-enum SortFindOneUnitConversionInput {
-  _ID_ASC
-  _ID_DESC
-}
-
 enum SortFindOneUnitInput {
   _ID_ASC
   _ID_DESC
@@ -2179,52 +2107,78 @@ type Tag {
 
 type Unit {
   _id: MongoID!
+  dimension: EnumUnitDimension!
   hasSpace: Boolean!
+  hidden: Boolean!
   longPlural: String!
   longSingular: String!
-  measureType: EnumUnitMeasureType
   owner: MongoID!
+  perCanonical: Float!
   preferredNumberFormat: EnumUnitPreferredNumberFormat!
   shortPlural: String!
   shortSingular: String!
+  system: EnumUnitSystem
   unique: Boolean!
 }
 
-type UnitConversion {
-  _id: MongoID!
-  baseUnit: Unit!
-  rules(limit: Int = 100, sort: SortFindByIdsConversionRuleInput): [ConversionRule!]!
-}
-
 """"""
-input UpdateByIdConversionRuleInput {
-  baseToUnitConversion: Float
-  baseUnit: MongoID
-  baseUnitThreshold: Float
-  unit: MongoID
+input UpdateByIdDisplayLadderInput {
+  dimension: EnumDisplayLadderDimension
+  name: String
+  owner: MongoID
+  scope: EnumDisplayLadderScope
+  steps: [UpdateByIdDisplayLadderStepsInput]
+  system: EnumDisplayLadderSystem
 }
 
-type UpdateByIdConversionRulePayload {
+type UpdateByIdDisplayLadderPayload {
   """
   Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
   """
   error: ErrorInterface
 
   """Updated document"""
-  record: ConversionRule
+  record: DisplayLadder
 
   """Document ID"""
   recordId: MongoID
 }
 
 """"""
+input UpdateByIdDisplayLadderStepsInput {
+  minCanonical: Float
+  unit: MongoID
+}
+
+""""""
 input UpdateByIdIngredientInput {
-  density: Float
   isCountable: Boolean
   name: String
   owner: MongoID
   pluralName: String
   tags: [EnumIngredientTags]
+}
+
+""""""
+input UpdateByIdIngredientMeasureInput {
+  grams: Float
+  ingredient: MongoID
+  prepMethod: MongoID
+  size: MongoID
+  unit: MongoID
+}
+
+type UpdateByIdIngredientMeasurePayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Updated document"""
+  record: IngredientMeasure
+
+  """Document ID"""
+  recordId: MongoID
 }
 
 type UpdateByIdIngredientPayload {
@@ -2244,7 +2198,6 @@ type UpdateByIdIngredientPayload {
 input UpdateByIdNutritionalInfoInput {
   ingredient: MongoID
   perGram: UpdateByIdNutritionalInfoPerGramInput
-  perUnit: UpdateByIdNutritionalInfoPerGramInput
   usdaFdcId: Float
 }
 
@@ -2380,34 +2333,18 @@ type UpdateByIdTagPayload {
 }
 
 """"""
-input UpdateByIdUnitConversionInput {
-  baseUnit: MongoID
-  rules: [MongoID]
-}
-
-type UpdateByIdUnitConversionPayload {
-  """
-  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
-  """
-  error: ErrorInterface
-
-  """Updated document"""
-  record: UnitConversion
-
-  """Document ID"""
-  recordId: MongoID
-}
-
-""""""
 input UpdateByIdUnitInput {
+  dimension: EnumUnitDimension
   hasSpace: Boolean
+  hidden: Boolean
   longPlural: String
   longSingular: String
-  measureType: EnumUnitMeasureType
   owner: MongoID
+  perCanonical: Float
   preferredNumberFormat: EnumUnitPreferredNumberFormat
   shortPlural: String
   shortSingular: String
+  system: EnumUnitSystem
   unique: Boolean
 }
 

@@ -13,15 +13,17 @@ import { ImageMutation, ImageQuery } from './Image.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 import { RecipeMutation, RecipeQuery } from './Recipe.js';
 import { RatingMutation, RatingQuery } from './Rating.js';
+import { DisplayLadder } from '../models/DisplayLadder.js';
 import { SizeMutation, SizeQuery, SizeQueryAdmin } from './Size.js';
 import { UnitMutation, UnitQuery, UnitQueryAdmin } from './Unit.js';
 import { IngredientMutation, IngredientQuery } from './Ingredient.js';
 import { isAdmin, isImageOwnerOrAdmin } from '../middleware/authorisation.js';
 import { isNutritionalInfoOwnerOrAdmin } from '../middleware/authorisation.js';
-import { UnitConversionMutation, UnitConversionQuery } from './UnitConversion.js';
-import { ConversionRuleMutation, ConversionRuleQuery } from './UnitConversion.js';
+import { DisplayLadderMutation, DisplayLadderQuery } from './DisplayLadder.js';
+import { isIngredientMeasureOwnerOrAdmin } from '../middleware/authorisation.js';
 import { isDocumentOwnerOrAdmin, isVerified } from '../middleware/authorisation.js';
 import { NutritionalInfoMutation, NutritionalInfoQuery } from './NutritionalInfo.js';
+import { IngredientMeasureMutation, IngredientMeasureQuery } from './IngredientMeasure.js';
 import { PrepMethodMutation, PrepMethodQuery, PrepMethodQueryAdmin } from './PrepMethod.js';
 
 export const USDA_SEARCH_LIMIT = 60;
@@ -52,8 +54,6 @@ function withMiddleware(
 const isAdminMutations = withMiddleware(
     {
         ...TagMutation,
-        ...UnitConversionMutation,
-        ...ConversionRuleMutation,
     },
     isAdmin()
 );
@@ -89,6 +89,7 @@ const isAuthenticatedMutations = withMiddleware(
         unitCreateOne: UnitMutation.unitCreateOne,
         prepMethodCreateOne: PrepMethodMutation.prepMethodCreateOne,
         ingredientCreateOne: IngredientMutation.ingredientCreateOne,
+        displayLadderCreateOne: DisplayLadderMutation.displayLadderCreateOne,
     },
     isVerified()
 );
@@ -96,6 +97,18 @@ const isNutritionalInfoOwnerOrAdminMutations = withMiddleware(
     NutritionalInfoMutation,
     isVerified(),
     isNutritionalInfoOwnerOrAdmin()
+);
+const isIngredientMeasureOwnerOrAdminMutations = withMiddleware(
+    IngredientMeasureMutation,
+    isVerified(),
+    isIngredientMeasureOwnerOrAdmin()
+);
+const isDisplayLadderOwnerOrAdminMutations = withMiddleware(
+    {
+        displayLadderUpdateById: DisplayLadderMutation.displayLadderUpdateById,
+        displayLadderRemoveById: DisplayLadderMutation.displayLadderRemoveById,
+    },
+    isDocumentOwnerOrAdmin(DisplayLadder)
 );
 const isImageOwnerOrAdminMutations = withMiddleware(
     { imageRemoveMany: ImageMutation.imageRemoveMany },
@@ -152,8 +165,8 @@ schemaComposer.Query.addFields({
     ...RecipeQuery,
     ...RatingQuery,
     ...ImageQuery,
-    ...UnitConversionQuery,
-    ...ConversionRuleQuery,
+    ...DisplayLadderQuery,
+    ...IngredientMeasureQuery,
     ...NutritionalInfoQuery,
     ...usdaQueries,
     ...isAdminQueries,
@@ -168,6 +181,8 @@ schemaComposer.Mutation.addFields({
     ...isIngredientOwnerOrAdminMutations,
     ...isPrepMethodOwnerOrAdminMutations,
     ...isNutritionalInfoOwnerOrAdminMutations,
+    ...isIngredientMeasureOwnerOrAdminMutations,
+    ...isDisplayLadderOwnerOrAdminMutations,
     ...isImageOwnerOrAdminMutations,
 });
 

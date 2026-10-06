@@ -462,7 +462,8 @@ describe('Ingredient Popover Behaviour', () => {
         await user.keyboard('{1}{ }{c}');
         await user.click(screen.getByText('add new ingredient'));
         waitFor(() => expect(screen.queryByText('Add new ingredient')).not.toBeNull());
-        await user.click(screen.getByText('cup'));
+        // The new ingredient form's measure selects also list units and sizes.
+        await user.click(screen.getByText('cup', { selector: 'p.chakra-text' }));
 
         // Expect --------------------------------------------------------------
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup ');
@@ -478,7 +479,8 @@ describe('Ingredient Popover Behaviour', () => {
         await user.keyboard('{1}{ }{s}');
         await user.click(screen.getByText('add new ingredient'));
         waitFor(() => expect(screen.queryByText('Add new ingredient')).not.toBeNull());
-        await user.click(screen.getByText('small'));
+        // The new ingredient form's measure selects also list units and sizes.
+        await user.click(screen.getByText('small', { selector: 'p.chakra-text' }));
 
         // Expect --------------------------------------------------------------
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 small ');

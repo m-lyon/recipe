@@ -23,25 +23,25 @@ describe('Navbar', () => {
         cleanup();
     });
 
-    it('should show unit conversion entries to admins', async () => {
+    it('should show display ladder entries to admins', async () => {
         // Render
         renderComponent([mockCurrentUserAdmin]);
 
         // Expect
         expect((await screen.findAllByLabelText('Create new recipe')).length).toBeGreaterThan(0);
         // One entry each in the desktop and mobile navs
-        expect(screen.queryAllByLabelText('Create new unit conversion rule')).toHaveLength(2);
-        expect(screen.queryAllByLabelText('Edit existing unit conversion')).toHaveLength(2);
+        expect(screen.queryAllByLabelText('Create new display ladder')).toHaveLength(2);
+        expect(screen.queryAllByLabelText('Edit existing display ladder')).toHaveLength(2);
     });
 
-    it('should hide unit conversion entries from non-admins', async () => {
+    it('should hide display ladder entries from non-admins', async () => {
         // Render
         renderComponent([mockCurrentUser]);
 
         // Expect
         expect((await screen.findAllByLabelText('Create new recipe')).length).toBeGreaterThan(0);
-        expect(screen.queryAllByLabelText('Create new unit conversion rule')).toHaveLength(0);
-        expect(screen.queryAllByLabelText('Edit existing unit conversion')).toHaveLength(0);
+        expect(screen.queryAllByLabelText('Create new display ladder')).toHaveLength(0);
+        expect(screen.queryAllByLabelText('Edit existing display ladder')).toHaveLength(0);
         expect(screen.queryAllByLabelText('Edit existing unit')).not.toHaveLength(0);
     });
 });

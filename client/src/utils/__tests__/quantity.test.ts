@@ -27,7 +27,10 @@ describe('changeQuantity', () => {
             shortSingular: 'cup',
             preferredNumberFormat: 'fraction',
             unique: true,
-            measureType: null,
+            dimension: 'volume',
+            perCanonical: 236.5882365,
+            system: 'us',
+            hidden: false,
         };
         const recipeIngredient: RecipeIngredientView = {
             __typename: 'RecipeIngredient',

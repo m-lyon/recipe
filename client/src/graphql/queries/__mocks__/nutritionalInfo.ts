@@ -1,16 +1,24 @@
 import { mockLettuceId } from '@recipe/graphql/__mocks__/ids';
 import { USDA_SEARCH } from '@recipe/graphql/queries/nutritionalInfo';
+import { mockCarrotEachMeasureId } from '@recipe/graphql/__mocks__/ids';
 import { USDA_FOOD_ITEM } from '@recipe/graphql/queries/nutritionalInfo';
 import { mockNutritionalInfoIdApple } from '@recipe/graphql/__mocks__/ids';
 import { mockNutritionalInfoIdCarrot } from '@recipe/graphql/__mocks__/ids';
+import { IngredientMeasureFieldsFragment } from '@recipe/graphql/generated';
+import { GET_RECIPE_NUTRITION } from '@recipe/graphql/queries/nutritionalInfo';
 import { GetNutritionalInfoByIngredientQuery } from '@recipe/graphql/generated';
+import { GET_INGREDIENT_MEASURES } from '@recipe/graphql/queries/nutritionalInfo';
 import { GetNutritionalInfosByIngredientIdsQuery } from '@recipe/graphql/generated';
+import { mockAdminId, mockAppleEachMeasureId } from '@recipe/graphql/__mocks__/ids';
 import { UsdaSearchQuery, UsdaSearchQueryVariables } from '@recipe/graphql/generated';
 import { mockAppleId, mockCarrotId, mockChickenId } from '@recipe/graphql/__mocks__/ids';
 import { GetNutritionalInfoByIngredientQueryVariables } from '@recipe/graphql/generated';
 import { UsdaFoodItemQuery, UsdaFoodItemQueryVariables } from '@recipe/graphql/generated';
 import { GET_NUTRITIONAL_INFO_BY_INGREDIENT } from '@recipe/graphql/queries/nutritionalInfo';
+import { GetIngredientMeasuresQuery, GetRecipeNutritionQuery } from '@recipe/graphql/generated';
 import { GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS } from '@recipe/graphql/queries/nutritionalInfo';
+
+import { mockEach, mockTeaspoon } from './unit';
 
 /** Returns null nutritional info (ingredient has no linked data) */
 const nullResult: GetNutritionalInfoByIngredientQuery = {
@@ -38,54 +46,67 @@ export const mockGetNutritionalInfoByIngredientChicken = {
     result: { data: nullResult },
 };
 
-// ---------- Batch query mocks for Recipe One ----------
-// Recipe One has: apple (×3), carrot (×1) → unique IDs: [apple, carrot].
-// The hook deduplicates and sends both IDs in a single batch query.
+// ---------- Recipe nutrition mocks for Recipe One ----------
+// Recipe One has: apple (×4), carrot (×1) → unique IDs: [apple, carrot].
+// The hook deduplicates and sends both IDs in a single query.
 
-/** Both apple and carrot have nutritional info with perUnit data */
-const recipeBothNutritionResult: GetNutritionalInfosByIngredientIdsQuery = {
+const applePerGram = {
+    __typename: 'NutritionalInfoPerGram' as const,
+    calories: 0.52,
+    protein: 0.003,
+    carbs: 0.138,
+    fat: 0.002,
+};
+const carrotPerGram = {
+    __typename: 'NutritionalInfoPerGram' as const,
+    calories: 0.41,
+    protein: 0.009,
+    carbs: 0.096,
+    fat: 0.002,
+};
+
+/** 1 apple weighs 182 g. */
+export const mockAppleEachMeasure: IngredientMeasureFieldsFragment = {
+    __typename: 'IngredientMeasure',
+    _id: mockAppleEachMeasureId,
+    ingredient: mockAppleId,
+    grams: 182,
+    unit: mockEach,
+    size: null,
+    prepMethod: null,
+};
+/** 1 carrot weighs 61 g. */
+export const mockCarrotEachMeasure: IngredientMeasureFieldsFragment = {
+    __typename: 'IngredientMeasure',
+    _id: mockCarrotEachMeasureId,
+    ingredient: mockCarrotId,
+    grams: 61,
+    unit: mockEach,
+    size: null,
+    prepMethod: null,
+};
+
+/** Both apple and carrot have per-gram macros and an item weight, but no volume weight. */
+const recipeBothNutritionResult: GetRecipeNutritionQuery = {
     __typename: 'Query',
     nutritionalInfosByIngredientIds: [
         {
             __typename: 'NutritionalInfo',
             _id: mockNutritionalInfoIdApple,
             ingredient: mockAppleId,
-            usdaFdcId: 171688,
-            perGram: {
-                __typename: 'NutritionalInfoPerGram',
-                calories: 0.52,
-                protein: 0.003,
-                carbs: 0.138,
-                fat: 0.002,
-            },
-            perUnit: {
-                __typename: 'NutritionalInfoPerGram',
-                calories: 95,
-                protein: 0.5,
-                carbs: 25,
-                fat: 0.3,
-            },
+            perGram: applePerGram,
         },
         {
             __typename: 'NutritionalInfo',
             _id: mockNutritionalInfoIdCarrot,
             ingredient: mockCarrotId,
-            usdaFdcId: 170393,
-            perGram: {
-                __typename: 'NutritionalInfoPerGram',
-                calories: 0.41,
-                protein: 0.009,
-                carbs: 0.096,
-                fat: 0.002,
-            },
-            perUnit: {
-                __typename: 'NutritionalInfoPerGram',
-                calories: 25,
-                protein: 0.6,
-                carbs: 5.8,
-                fat: 0.1,
-            },
+            perGram: carrotPerGram,
         },
+    ],
+    ingredientMeasuresByIngredientIds: [mockAppleEachMeasure, mockCarrotEachMeasure],
+    ingredientByIds: [
+        { __typename: 'Ingredient', _id: mockAppleId, owner: mockAdminId },
+        { __typename: 'Ingredient', _id: mockCarrotId, owner: mockAdminId },
     ],
 };
 
@@ -94,39 +115,71 @@ const recipeBothNutritionResult: GetNutritionalInfosByIngredientIdsQuery = {
  *  useNutritionalInfo — currently [apple, carrot] based on Recipe One's
  *  ingredient list. If the hook's deduplication strategy changes, update here.
  */
-export const mockGetNutritionalInfosForRecipeOne = {
+export const mockGetRecipeNutritionForRecipeOne = {
     request: {
-        query: GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS,
+        query: GET_RECIPE_NUTRITION,
         variables: { ingredientIds: [mockAppleId, mockCarrotId] },
     },
     result: { data: recipeBothNutritionResult },
 };
 
-/** Mock for recipe view: empty result (no ingredients have nutritional data) */
-export const mockGetNutritionalInfosForRecipeOneEmpty = {
+/** After the uncounted-line prompt saves "1 teaspoon of apple = 5 g". */
+export const mockGetRecipeNutritionForRecipeOneWithTeaspoon = {
     request: {
-        query: GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS,
+        query: GET_RECIPE_NUTRITION,
         variables: { ingredientIds: [mockAppleId, mockCarrotId] },
     },
     result: {
         data: {
-            __typename: 'Query',
-            nutritionalInfosByIngredientIds: [],
-        } as GetNutritionalInfosByIngredientIdsQuery,
+            ...recipeBothNutritionResult,
+            ingredientMeasuresByIngredientIds: [
+                ...(recipeBothNutritionResult.ingredientMeasuresByIngredientIds ?? []),
+                {
+                    ...mockAppleEachMeasure,
+                    _id: '60f4d2e5c3d5a0a4f1b9c1c3',
+                    grams: 5,
+                    unit: mockTeaspoon,
+                },
+            ],
+        } satisfies GetRecipeNutritionQuery,
     },
+};
+
+const emptyRecipeNutrition: GetRecipeNutritionQuery = {
+    __typename: 'Query',
+    nutritionalInfosByIngredientIds: [],
+    ingredientMeasuresByIngredientIds: [],
+    ingredientByIds: [],
+};
+
+/** Mock for recipe view: empty result (no ingredients have nutritional data) */
+export const mockGetRecipeNutritionForRecipeOneEmpty = {
+    request: {
+        query: GET_RECIPE_NUTRITION,
+        variables: { ingredientIds: [mockAppleId, mockCarrotId] },
+    },
+    result: { data: emptyRecipeNutrition },
 };
 
 /** Fallback for any page that shows recipe nutrition: no ingredient has nutritional data.
  *  renderPage appends this after the test's own mocks, so a specific mock still wins. */
-export const mockGetNutritionalInfosFallback = {
-    request: { query: GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS },
+export const mockGetRecipeNutritionFallback = {
+    request: { query: GET_RECIPE_NUTRITION },
+    variableMatcher: () => true,
+    maxUsageCount: Number.POSITIVE_INFINITY,
+    result: { data: emptyRecipeNutrition },
+};
+
+/** Fallback for the ingredient form's measures list: no measures recorded. */
+export const mockGetIngredientMeasuresFallback = {
+    request: { query: GET_INGREDIENT_MEASURES },
     variableMatcher: () => true,
     maxUsageCount: Number.POSITIVE_INFINITY,
     result: {
         data: {
             __typename: 'Query',
-            nutritionalInfosByIngredientIds: [],
-        } as GetNutritionalInfosByIngredientIdsQuery,
+            ingredientMeasuresByIngredientIds: [],
+        } satisfies GetIngredientMeasuresQuery,
     },
 };
 
@@ -172,17 +225,6 @@ export const mockGetNutritionalInfosForEditIngredientAfterCarrotDeleted = {
  *  per-gram figures a test asserts on are derived the same way the component derives
  *  them -- no hand-copied floats to drift. */
 export const usdaOnionPer100g = { calories: 40, protein: 1.1, carbs: 9.34, fat: 0.1 };
-
-/** 216 g of olive oil in a US customary cup: the raw quotient the USDA portion implies. */
-export const OLIVE_OIL_CUP_DENSITY = 216 / 236.588;
-/** 160 g of chopped onion in the same cup -- a packing density, hence ambiguous. */
-export const ONION_CUP_DENSITY = 160 / 236.588;
-
-/** Applying a suggestion rounds to 4dp, matching the CLI, so these -- not the raw
- *  quotients above -- are what reaches the form field and the ingredient record. */
-export const round4 = (n: number): number => Math.round(n * 1e4) / 1e4;
-export const OLIVE_OIL_CUP_DENSITY_APPLIED = round4(OLIVE_OIL_CUP_DENSITY);
-export const ONION_CUP_DENSITY_APPLIED = round4(ONION_CUP_DENSITY);
 
 /** The per-100g figures behind mockUsdaSearchChickenBreast, exported so the mutation mock
  *  can derive per-gram values by the same arithmetic UsdaLinkSection uses. */
@@ -407,7 +449,7 @@ const usdaFoodItemOliveOilResult: UsdaFoodItemQuery = {
                 gramWeight: 216,
                 kind: 'VOLUME',
                 millilitres: 236.588,
-                impliedDensity: OLIVE_OIL_CUP_DENSITY,
+                impliedDensity: 216 / 236.588,
                 ambiguous: false,
             },
             {
@@ -576,7 +618,7 @@ const usdaFoodItemOnionResult: UsdaFoodItemQuery = {
                 gramWeight: 160,
                 kind: 'VOLUME',
                 millilitres: 236.588,
-                impliedDensity: ONION_CUP_DENSITY,
+                impliedDensity: 160 / 236.588,
                 ambiguous: true,
             },
         ],

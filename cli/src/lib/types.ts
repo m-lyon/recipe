@@ -18,7 +18,6 @@ export interface IngredientSummary {
     name: string;
     pluralName: string;
     isCountable: boolean;
-    density?: number | null;
     tags?: string[] | null;
 }
 
@@ -27,20 +26,41 @@ export interface NutritionalInfoSummary {
     ingredient: string;
     usdaFdcId?: number | null;
     perGram?: Macros | null;
-    perUnit?: Macros | null;
 }
 
 export interface UnitSummary {
     _id: string;
     shortSingular: string;
-    measureType?: string | null;
+    shortPlural?: string;
+    longSingular: string;
+    longPlural?: string;
+    dimension: 'mass' | 'volume' | 'count';
+    perCanonical: number;
+    system?: 'metric' | 'us' | null;
+    hidden?: boolean;
+}
+
+export interface NamedSummary {
+    _id: string;
+    value: string;
+}
+
+/** The weight of one of `unit` of an ingredient, optionally narrowed by size and prep. */
+export interface MeasureSummary {
+    _id: string;
+    ingredient: string;
+    grams: number;
+    unit: UnitSummary;
+    size?: NamedSummary | null;
+    prepMethod?: NamedSummary | null;
 }
 
 export interface RecipeIngredientSummary {
     _id?: string | null;
     quantity?: string | null;
     unit?: UnitSummary | null;
-    size?: { _id: string; value: string } | null;
+    size?: NamedSummary | null;
+    prepMethod?: NamedSummary | null;
     ingredient:
         | ({ __typename: 'Ingredient' } & IngredientSummary)
         | { __typename: 'Recipe'; _id: string; title: string };

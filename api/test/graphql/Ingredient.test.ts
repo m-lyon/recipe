@@ -337,7 +337,6 @@ describe('ingredientRemoveById', () => {
             name: 'unused-ingredient',
             pluralName: 'unused-ingredients',
             isCountable: true,
-            density: null,
             tags: [],
         };
 

@@ -1,4 +1,57 @@
-import type { UsdaFoodItem } from '../../src/lib/types.js';
+import type { UnitSummary, UsdaFoodItem } from '../../src/lib/types.js';
+
+function unit(_id: string, name: string, extra: Partial<UnitSummary>): UnitSummary {
+    return {
+        __typename: 'Unit',
+        _id,
+        shortSingular: name,
+        shortPlural: name,
+        longSingular: name,
+        longPlural: `${name}s`,
+        dimension: 'count',
+        perCanonical: 1,
+        system: null,
+        hidden: false,
+        ...extra,
+    } as UnitSummary;
+}
+
+export const EACH = unit('unit-each', 'each', { shortSingular: 'ea', hidden: true });
+export const GRAM = unit('unit-g', 'gram', {
+    shortSingular: 'g',
+    dimension: 'mass',
+    system: 'metric',
+});
+export const MILLILITRE = unit('unit-ml', 'millilitre', {
+    shortSingular: 'ml',
+    dimension: 'volume',
+    system: 'metric',
+});
+export const TEASPOON = unit('unit-tsp', 'teaspoon', {
+    shortSingular: 'tsp',
+    dimension: 'volume',
+    perCanonical: 4.92892159375,
+    system: 'us',
+});
+export const TABLESPOON = unit('unit-tbsp', 'tablespoon', {
+    shortSingular: 'tbsp',
+    dimension: 'volume',
+    perCanonical: 14.78676478125,
+    system: 'us',
+});
+export const CUP = unit('unit-cup', 'cup', {
+    dimension: 'volume',
+    perCanonical: 236.5882365,
+    system: 'us',
+});
+export const UNITS = [EACH, GRAM, MILLILITRE, TEASPOON, TABLESPOON, CUP];
+export const LARGE = { _id: 'size-large', value: 'large' };
+export const CHOPPED = { _id: 'prep-chopped', value: 'chopped' };
+export const MEASURE_COMPONENTS = {
+    units: UNITS,
+    sizes: [LARGE],
+    prepMethods: [CHOPPED],
+};
 
 /** Egg, whole, raw, fresh — five item sizes plus an ambiguous cup. */
 export const EGG: UsdaFoodItem = {
@@ -74,7 +127,7 @@ export const EGG: UsdaFoodItem = {
     ],
 };
 
-/** Oil, olive — volume portions only, so no perUnit can be derived. */
+/** Oil, olive — volume portions only, so it has no item portion. */
 export const OLIVE_OIL: UsdaFoodItem = {
     fdcId: 171413,
     description: 'Oil, olive, salad or cooking',
@@ -142,7 +195,7 @@ export const GARLIC: UsdaFoodItem = {
     ],
 };
 
-/** Flour — one ambiguous volume portion, so --set-density needs the override. */
+/** Flour — one volume portion qualified by a prep method. */
 export const FLOUR: UsdaFoodItem = {
     fdcId: 168894,
     description: 'Wheat flour, white, all-purpose',
@@ -173,7 +226,6 @@ export const INGREDIENTS = [
         name: 'egg',
         pluralName: 'eggs',
         isCountable: true,
-        density: null,
         tags: [],
     },
     {
@@ -182,7 +234,6 @@ export const INGREDIENTS = [
         name: 'olive oil',
         pluralName: 'olive oils',
         isCountable: false,
-        density: null,
         tags: [],
     },
     {
@@ -191,7 +242,6 @@ export const INGREDIENTS = [
         name: 'flour',
         pluralName: 'flours',
         isCountable: false,
-        density: 0.6,
         tags: [],
     },
     {
@@ -200,7 +250,6 @@ export const INGREDIENTS = [
         name: 'garlic',
         pluralName: 'garlics',
         isCountable: true,
-        density: null,
         tags: [],
     },
     {
@@ -209,7 +258,6 @@ export const INGREDIENTS = [
         name: 'stock',
         pluralName: 'stocks',
         isCountable: false,
-        density: null,
         tags: [],
     },
     {
@@ -218,7 +266,6 @@ export const INGREDIENTS = [
         name: 'stock',
         pluralName: 'stocks',
         isCountable: false,
-        density: null,
         tags: [],
     },
 ];
@@ -234,12 +281,5 @@ export const EXISTING_EGG_INFO = {
         protein: 0.1256,
         carbs: 0.0072,
         fat: 0.0951,
-    },
-    perUnit: {
-        __typename: 'MacroNutrients',
-        calories: 71.5,
-        protein: 6.28,
-        carbs: 0.36,
-        fat: 4.755,
     },
 };

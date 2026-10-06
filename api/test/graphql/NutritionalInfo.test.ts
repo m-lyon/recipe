@@ -11,7 +11,6 @@ import { User } from '../../src/models/User.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { resetRateLimits } from '../../src/middleware/rateLimit.js';
-import { UnitConversion } from '../../src/models/UnitConversion.js';
 import { MappedPortion, __testables } from '../../src/schema/Usda.js';
 import { createAdmin, createUnverifiedUser, createUser } from '../utils/data.js';
 import { USDA_FOOD_ITEM_LIMIT, USDA_SEARCH_LIMIT } from '../../src/schema/index.js';
@@ -32,7 +31,6 @@ async function seedUserAndIngredient() {
 }
 
 const VALID_PER_GRAM = { calories: 1.65, protein: 0.31, carbs: 0, fat: 0.036 };
-const VALID_PER_UNIT = { calories: 78, protein: 6.3, carbs: 0.6, fat: 5.3 };
 
 // GraphQL operation strings
 const CREATE_MUTATION = `
@@ -43,7 +41,6 @@ const CREATE_MUTATION = `
                 ingredient
                 usdaFdcId
                 perGram { calories protein carbs fat }
-                perUnit { calories protein carbs fat }
             }
         }
     }`;
@@ -54,7 +51,6 @@ const UPDATE_MUTATION = `
             record {
                 _id
                 perGram { calories protein carbs fat }
-                perUnit { calories protein carbs fat }
             }
         }
     }`;
@@ -152,7 +148,6 @@ interface NutritionalInfoRecord {
     ingredient: string;
     usdaFdcId: number | null;
     perGram: MacroNutrients | null;
-    perUnit: MacroNutrients | null;
 }
 
 // Response shapes for the operations above.
@@ -241,31 +236,6 @@ describe('nutritionalInfoCreateOne', function () {
         assert.equal(record.ingredient, ingredient._id.toString());
         assert.equal(record.usdaFdcId, 171077);
         assert.approximately(record.perGram!.calories, 1.65, 0.001);
-        assert.isNull(record.perUnit);
-    });
-
-    it('should create nutritional info with both perGram and perUnit', async function () {
-        const user = await User.findOne({ username: 'testuser1' }).orFail();
-        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
-        const response = await this.apolloServer.executeOperation(
-            {
-                query: CREATE_MUTATION,
-                variables: {
-                    record: {
-                        ingredient: ingredient._id.toString(),
-                        perGram: VALID_PER_GRAM,
-                        perUnit: VALID_PER_UNIT,
-                    },
-                },
-            },
-            makeContext(user)
-        );
-        assert.equal(response.body.kind, 'single');
-        assert.isUndefined(response.body.singleResult.errors);
-        const record = (response.body.singleResult.data as CreateOneData).nutritionalInfoCreateOne
-            .record;
-        assert.approximately(record.perGram!.calories, 1.65, 0.001);
-        assert.approximately(record.perUnit!.calories, 78, 0.001);
     });
 
     it('should NOT create nutritional info as non-owner', async function () {
@@ -316,7 +286,7 @@ describe('nutritionalInfoCreateOne', function () {
         assert.approximately(record.perGram!.calories, 1.65, 0.001);
     });
 
-    it('should NOT create nutritional info with neither perGram nor perUnit', async function () {
+    it('should NOT create nutritional info without perGram', async function () {
         const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
 
@@ -334,10 +304,7 @@ describe('nutritionalInfoCreateOne', function () {
         );
         assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors, 'Validation error expected');
-        assert.include(
-            response.body.singleResult.errors[0].message,
-            'at least one of perGram or perUnit'
-        );
+        assert.include(response.body.singleResult.errors[0].message, 'perGram');
     });
 });
 
@@ -596,7 +563,7 @@ describe('nutritionalInfosByIngredientIds', function () {
         }).save();
         await new NutritionalInfo({
             ingredient: ingredient2._id,
-            perUnit: VALID_PER_UNIT,
+            perGram: VALID_PER_GRAM,
         }).save();
 
         const response = await this.apolloServer.executeOperation(
@@ -873,7 +840,7 @@ describe('usdaFoodItem', function () {
 
         const cup = portionByDescription(portions, '1 cup (4.86 large eggs)');
         assert.isTrue(cup.ambiguous);
-        // VOLUME, so it can never reach the perUnit path and overstate one egg fivefold.
+        // VOLUME, so it can never reach a count measure and overstate one egg fivefold.
         assert.equal(cup.kind, 'VOLUME');
 
         const items = portions.filter((p) => p.kind === 'ITEM');
@@ -966,7 +933,7 @@ describe('usdaFoodItem', function () {
         assert.equal(medium.kind, 'ITEM');
         assert.isFalse(medium.ambiguous);
 
-        // Redundant with perGram, so offered as neither a perUnit nor a density source.
+        // Redundant with perGram, so offered as neither a count measure nor a density source.
         assert.equal(portionByDescription(portions, '1 oz').kind, 'WEIGHT');
     });
 
@@ -1007,7 +974,7 @@ describe('usdaFoodItem', function () {
         assert.equal(result.householdServingFullText, '1 Tbsp');
         assert.equal(portions.length, 1);
         assert.equal(portions[0].gramWeight, 17);
-        // A serving is not necessarily one item, so it is never offered for perUnit.
+        // A serving is not necessarily one item, so it is never offered as a count measure.
         assert.equal(portions[0].kind, 'SERVING');
     });
 
@@ -1058,12 +1025,10 @@ describe('usdaFoodItem', function () {
         assert.isNull(large.impliedDensity);
     });
 
-    it('should derive densities without reading Unit or UnitConversion', async function () {
+    it('should derive densities without reading Unit', async function () {
         const user = await User.findOne({ username: 'testuser1' }).orFail();
-        // This is the state of the production database: populateUnits() creates no
-        // conversions, so a measureType-based lookup would return nothing at all.
+        // Portion parsing works from the USDA text alone, with no units in the database.
         assert.equal(await Unit.countDocuments(), 0);
-        assert.equal(await UnitConversion.countDocuments(), 0);
 
         const result = await fetchItem(this.apolloServer, user, loadFixture('olive-oil-171413'));
 

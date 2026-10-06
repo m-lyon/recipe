@@ -1,49 +1,34 @@
+import { Stack, Text } from '@chakra-ui/react';
 import { useLazyQuery, useMutation } from '@apollo/client';
-import { NumberInputStepper, Stack, Text } from '@chakra-ui/react';
-import { FormControl, FormLabel, NumberDecrementStepper } from '@chakra-ui/react';
-import { HStack, Radio, RadioGroup, SimpleGrid, Skeleton } from '@chakra-ui/react';
-import { NumberIncrementStepper, NumberInput, NumberInputField } from '@chakra-ui/react';
+import { HStack, Radio, RadioGroup, Skeleton } from '@chakra-ui/react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react';
 import { Alert, AlertDescription, AlertIcon, AlertTitle, Box, Button } from '@chakra-ui/react';
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react';
 
 import { MacroNutrients } from '@recipe/utils/nutrition';
-import { UsdaSearchQuery } from '@recipe/graphql/generated';
 import { FloatingLabelInput } from '@recipe/common/components';
 import { USDA_SEARCH } from '@recipe/graphql/queries/nutritionalInfo';
 import { USDA_FOOD_ITEM } from '@recipe/graphql/queries/nutritionalInfo';
+import { UsdaFoodItemQuery, UsdaSearchQuery } from '@recipe/graphql/generated';
 import { CREATE_NUTRITIONAL_INFO } from '@recipe/graphql/mutations/nutritionalInfo';
 import { UPDATE_NUTRITIONAL_INFO } from '@recipe/graphql/mutations/nutritionalInfo';
 import { DELETE_NUTRITIONAL_INFO } from '@recipe/graphql/mutations/nutritionalInfo';
 import { GetNutritionalInfosByIngredientIdsQuery } from '@recipe/graphql/generated';
 
-import { UsdaDensitySuggestion } from './UsdaDensitySuggestion';
-import { UsdaPortion, UsdaPortionPicker } from './UsdaPortionPicker';
-
 export type ExistingNutritionalInfo = NonNullable<
     GetNutritionalInfosByIngredientIdsQuery['nutritionalInfosByIngredientIds']
 >[number];
 
-export interface DensitySuggestion {
-    density: number;
-    /** e.g. "1 cup" */
-    portionDescription: string;
-    /** e.g. 216 */
-    gramWeight: number;
-    ambiguous: boolean;
-}
+export type UsdaPortion = NonNullable<UsdaFoodItemQuery['usdaFoodItem']>['portions'][number];
 
 export interface UsdaLinkSectionProps {
     ingredientId?: string;
     ingredientName?: string;
-    isCountable?: boolean;
-    /** The form's current density, so an already-matching suggestion can be suppressed. */
-    currentDensity?: number;
     disabled?: boolean;
-    /** Called when a chosen portion implies a density for the ingredient. The parent
-     *  form applies it to its own density field, so it saves with the ingredient
-     *  record in both the create and the edit flow. This component never writes
-     *  density itself -- it has no mutation for it. */
-    onDensitySuggested?: (suggestion: DensitySuggestion) => void;
+    /** Called with the linked or selected USDA item's portions, which the measures list
+     *  offers as one-click rows. Empty when there is no item or it has no portions. */
+    onPortionsChange?: (portions: UsdaPortion[]) => void;
+    /** Called with the per-gram macros shown, so measures can show their calories. */
+    onPerGramChange?: (perGram: MacroNutrients | null) => void;
     /** Nutritional info for this ingredient, prefetched by the page alongside the ingredient list. */
     existingNutritionalInfo?: ExistingNutritionalInfo | null;
     /** Called after a link is created or cleared, so the prefetched list can be refreshed. */
@@ -56,8 +41,6 @@ export interface UsdaLinkSectionHandle {
     commitPendingLink: (ingredientId: string) => Promise<void>;
 }
 
-const ZERO_MACROS: MacroNutrients = { calories: 0, protein: 0, carbs: 0, fat: 0 };
-
 type UsdaSearchResultItem = NonNullable<NonNullable<UsdaSearchQuery['usdaSearch']>[number]>;
 
 function round1(n: number | null | undefined): string {
@@ -65,23 +48,14 @@ function round1(n: number | null | undefined): string {
     return n.toFixed(1).replace(/\.0$/, '');
 }
 
-/** The per-unit NumberInputs render at 2dp, so derived values are rounded to match. */
-function round2(n: number): number {
-    return Math.round(n * 100) / 100;
-}
-
-/** A suggestion within this fraction of the form's current density adds nothing. */
-const DENSITY_TOLERANCE = 0.1;
-
 export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSectionProps>(
     function UsdaLinkSection(props, ref) {
         const {
             ingredientId,
             ingredientName,
-            isCountable,
-            currentDensity,
             disabled,
-            onDensitySuggested,
+            onPortionsChange,
+            onPerGramChange,
             existingNutritionalInfo,
             onNutritionalInfoChange,
         } = props;
@@ -93,7 +67,6 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             fdcId: number;
             perGram: MacroNutrients;
         } | null>(null);
-        const [perUnitNutrition, setPerUnitNutrition] = useState<MacroNutrients>(ZERO_MACROS);
         const [existingNutritionalInfoId, setExistingNutritionalInfoId] = useState<string | null>(
             null
         );
@@ -107,10 +80,11 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
         const [linkedFoodName, setLinkedFoodName] = useState<string | null>(null);
         // Portions come from the single-item endpoint only; search results carry none.
         const [portions, setPortions] = useState<UsdaPortion[]>([]);
-        const [selectedPortion, setSelectedPortion] = useState<number | null>(null);
-        /** True while the per-unit fields hold portion-derived values the reader has
-         *  not touched. Editing any field clears it but keeps the value. */
-        const [perUnitDerived, setPerUnitDerived] = useState(false);
+
+        useEffect(() => {
+            onPortionsChange?.(portions);
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [portions]);
 
         // Reset all local UI state whenever the ingredient being edited changes, so a
         // selection/search made for one ingredient doesn't leak into the next one, then
@@ -124,8 +98,6 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             setSearchAttempted(false);
             setLinkedFoodName(null);
             setPortions([]);
-            setSelectedPortion(null);
-            setPerUnitDerived(false);
 
             if (existingNutritionalInfo) {
                 setExistingNutritionalInfoId(existingNutritionalInfo._id);
@@ -148,21 +120,10 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                 } else {
                     setPendingNutrition(null);
                 }
-                setPerUnitNutrition(
-                    existingNutritionalInfo.perUnit
-                        ? {
-                              calories: existingNutritionalInfo.perUnit.calories,
-                              protein: existingNutritionalInfo.perUnit.protein,
-                              carbs: existingNutritionalInfo.perUnit.carbs,
-                              fat: existingNutritionalInfo.perUnit.fat,
-                          }
-                        : ZERO_MACROS
-                );
             } else {
                 setExistingNutritionalInfoId(null);
                 setLinked(false);
                 setPendingNutrition(null);
-                setPerUnitNutrition(ZERO_MACROS);
             }
             // eslint-disable-next-line react-hooks/exhaustive-deps
         }, [ingredientId, existingNutritionalInfo?._id]);
@@ -173,21 +134,18 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             },
         });
 
-        const [fetchFoodItem, { loading: detailLoading, error: detailError }] = useLazyQuery(
-            USDA_FOOD_ITEM,
-            {
-                onCompleted: (data) => {
-                    setPortions(data.usdaFoodItem?.portions ?? []);
-                    if (data.usdaFoodItem?.description) {
-                        setLinkedFoodName(data.usdaFoodItem.description);
-                    }
-                },
-                onError: () => {
-                    // Portion data is an enhancement: perGram is already linkable without it.
-                    setPortions([]);
-                },
-            }
-        );
+        const [fetchFoodItem] = useLazyQuery(USDA_FOOD_ITEM, {
+            onCompleted: (data) => {
+                setPortions(data.usdaFoodItem?.portions ?? []);
+                if (data.usdaFoodItem?.description) {
+                    setLinkedFoodName(data.usdaFoodItem.description);
+                }
+            },
+            onError: () => {
+                // Portion data is an enhancement: perGram is already linkable without it.
+                setPortions([]);
+            },
+        });
 
         const [createNutritionalInfo] = useMutation(CREATE_NUTRITIONAL_INFO, {
             onCompleted: (data) => {
@@ -218,11 +176,8 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             onCompleted: () => {
                 setExistingNutritionalInfoId(null);
                 setPendingNutrition(null);
-                setPerUnitNutrition(ZERO_MACROS);
                 setLinkedFoodName(null);
                 setPortions([]);
-                setSelectedPortion(null);
-                setPerUnitDerived(false);
                 setSelectedFdcId(null);
                 setLinked(false);
                 setSearchInput('');
@@ -247,8 +202,6 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
         const handleSelectResult = (fdcId: number) => {
             setSelectedFdcId(fdcId);
             setPortions([]);
-            setSelectedPortion(null);
-            setPerUnitDerived(false);
             const item = searchResults.find((r) => r.fdcId === fdcId);
             if (!item) return;
             // perGram and the name both come from the cached search result, so the
@@ -266,81 +219,21 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             fetchFoodItem({ variables: { fdcId } });
         };
 
-        const itemPortions = useMemo(
-            () =>
-                portions
-                    .filter((portion) => portion.kind === 'ITEM')
-                    // Ambiguous candidates stay in the list but sort last.
-                    .sort((a, b) => Number(a.ambiguous) - Number(b.ambiguous)),
-            [portions]
-        );
-
-        // Prefer a portion with no qualifier: "cup, chopped" is a packing density.
-        const densitySource = useMemo(() => {
-            const withDensity = portions.filter((portion) => portion.impliedDensity != null);
-            return withDensity.find((portion) => !portion.ambiguous) ?? withDensity[0] ?? null;
-        }, [portions]);
-
-        const suggestedDensity = densitySource?.impliedDensity ?? null;
-        const densityAlreadySet =
-            suggestedDensity != null &&
-            currentDensity != null &&
-            currentDensity > 0 &&
-            Math.abs(currentDensity - suggestedDensity) / suggestedDensity <= DENSITY_TOLERANCE;
-
-        const handleSelectPortion = (portion: UsdaPortion, index: number) => {
-            setSelectedPortion(index);
-            if (!pendingNutrition) return;
-            const grams = portion.gramWeight;
-            setPerUnitNutrition({
-                calories: round2(pendingNutrition.perGram.calories * grams),
-                protein: round2(pendingNutrition.perGram.protein * grams),
-                carbs: round2(pendingNutrition.perGram.carbs * grams),
-                fat: round2(pendingNutrition.perGram.fat * grams),
-            });
-            setPerUnitDerived(true);
-        };
-
-        const handleApplyDensity = () => {
-            if (densitySource == null || densitySource.impliedDensity == null) return;
-            onDensitySuggested?.({
-                // 4dp, matching the CLI's density rounding (cli/src/lib/density.ts) so
-                // both paths persist the same precision for the same portion.
-                density: Math.round(densitySource.impliedDensity * 1e4) / 1e4,
-                portionDescription: densitySource.description,
-                gramWeight: densitySource.gramWeight,
-                ambiguous: densitySource.ambiguous,
-            });
-        };
+        useEffect(() => {
+            onPerGramChange?.(pendingNutrition?.perGram ?? null);
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [pendingNutrition]);
 
         const buildRecord = useCallback(
             (
                 targetIngredientId: string,
                 nutrition: { fdcId: number; perGram: MacroNutrients }
-            ): {
-                ingredient: string;
-                usdaFdcId?: number;
-                perGram: MacroNutrients;
-                perUnit: MacroNutrients | null;
-            } => {
-                const hasPerUnit =
-                    isCountable &&
-                    (perUnitNutrition.calories > 0 ||
-                        perUnitNutrition.protein > 0 ||
-                        perUnitNutrition.carbs > 0 ||
-                        perUnitNutrition.fat > 0);
-
-                // perUnit is always set, explicitly null when there is none: the update
-                // is a partial `doc.set(record)`, so an omitted field would leave a stale
-                // perUnit behind when "Countable" is unchecked. Matches `nutrition link`.
-                return {
-                    ingredient: targetIngredientId,
-                    usdaFdcId: nutrition.fdcId || undefined,
-                    perGram: nutrition.perGram,
-                    perUnit: hasPerUnit ? perUnitNutrition : null,
-                };
-            },
-            [isCountable, perUnitNutrition]
+            ): { ingredient: string; usdaFdcId?: number; perGram: MacroNutrients } => ({
+                ingredient: targetIngredientId,
+                usdaFdcId: nutrition.fdcId || undefined,
+                perGram: nutrition.perGram,
+            }),
+            []
         );
 
         const handleLink = () => {
@@ -397,27 +290,14 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                 deleteNutritionalInfo({ variables: { _id: existingNutritionalInfoId } });
             } else {
                 setPendingNutrition(null);
-                setPerUnitNutrition(ZERO_MACROS);
                 setLinkedFoodName(null);
                 setPortions([]);
-                setSelectedPortion(null);
-                setPerUnitDerived(false);
                 setSelectedFdcId(null);
                 setLinked(false);
                 setSearchInput('');
                 setSearchAttempted(false);
             }
         };
-
-        const setPerUnitField =
-            (field: keyof MacroNutrients) => (_: string, valueAsNumber: number) => {
-                // A manual edit keeps the value but drops the "derived" marker.
-                setPerUnitDerived(false);
-                setPerUnitNutrition((p) => ({
-                    ...p,
-                    [field]: Number.isNaN(valueAsNumber) ? 0 : valueAsNumber,
-                }));
-            };
 
         return (
             <Stack spacing={3}>
@@ -448,14 +328,6 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                             {round1(pendingNutrition.perGram.carbs * 100)}g carbs ·{' '}
                             {round1(pendingNutrition.perGram.fat * 100)}g fat
                         </Text>
-                        {isCountable && (
-                            <Text fontSize='sm' color='gray.500'>
-                                Per unit: {round1(perUnitNutrition.calories)} kcal ·{' '}
-                                {round1(perUnitNutrition.protein)}g protein ·{' '}
-                                {round1(perUnitNutrition.carbs)}g carbs ·{' '}
-                                {round1(perUnitNutrition.fat)}g fat
-                            </Text>
-                        )}
                         <Button
                             size='sm'
                             variant='outline'
@@ -589,107 +461,6 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                             </Box>
                         )}
 
-                        {isCountable && pendingNutrition && (
-                            <UsdaPortionPicker
-                                portions={itemPortions}
-                                selected={selectedPortion}
-                                loading={detailLoading}
-                                disabled={disabled}
-                                onSelect={handleSelectPortion}
-                            />
-                        )}
-
-                        {isCountable && pendingNutrition && (
-                            <Stack spacing={2}>
-                                <Text fontSize='sm' fontWeight={500}>
-                                    Per unit nutritional data{' '}
-                                    {perUnitDerived ? '(from selected portion)' : '(optional)'}
-                                </Text>
-                                <SimpleGrid columns={2} spacing={3}>
-                                    <FormControl isDisabled={disabled}>
-                                        <FormLabel fontSize='sm'>Calories (kcal)</FormLabel>
-                                        <NumberInput
-                                            size='sm'
-                                            value={perUnitNutrition.calories}
-                                            min={0}
-                                            precision={2}
-                                            onChange={setPerUnitField('calories')}
-                                            isDisabled={disabled}
-                                        >
-                                            <NumberInputField
-                                                fontSize='sm'
-                                                aria-label='Per unit calories'
-                                            />
-                                            <NumberInputStepper>
-                                                <NumberIncrementStepper />
-                                                <NumberDecrementStepper />
-                                            </NumberInputStepper>
-                                        </NumberInput>
-                                    </FormControl>
-                                    <FormControl isDisabled={disabled}>
-                                        <FormLabel fontSize='sm'>Protein (g)</FormLabel>
-                                        <NumberInput
-                                            size='sm'
-                                            value={perUnitNutrition.protein}
-                                            min={0}
-                                            precision={2}
-                                            onChange={setPerUnitField('protein')}
-                                            isDisabled={disabled}
-                                        >
-                                            <NumberInputField
-                                                fontSize='sm'
-                                                aria-label='Per unit protein'
-                                            />
-                                            <NumberInputStepper>
-                                                <NumberIncrementStepper />
-                                                <NumberDecrementStepper />
-                                            </NumberInputStepper>
-                                        </NumberInput>
-                                    </FormControl>
-                                    <FormControl isDisabled={disabled}>
-                                        <FormLabel fontSize='sm'>Carbs (g)</FormLabel>
-                                        <NumberInput
-                                            size='sm'
-                                            value={perUnitNutrition.carbs}
-                                            min={0}
-                                            precision={2}
-                                            onChange={setPerUnitField('carbs')}
-                                            isDisabled={disabled}
-                                        >
-                                            <NumberInputField
-                                                fontSize='sm'
-                                                aria-label='Per unit carbs'
-                                            />
-                                            <NumberInputStepper>
-                                                <NumberIncrementStepper />
-                                                <NumberDecrementStepper />
-                                            </NumberInputStepper>
-                                        </NumberInput>
-                                    </FormControl>
-                                    <FormControl isDisabled={disabled}>
-                                        <FormLabel fontSize='sm'>Fat (g)</FormLabel>
-                                        <NumberInput
-                                            size='sm'
-                                            value={perUnitNutrition.fat}
-                                            min={0}
-                                            precision={2}
-                                            onChange={setPerUnitField('fat')}
-                                            isDisabled={disabled}
-                                        >
-                                            <NumberInputField
-                                                fontSize='sm'
-                                                aria-label='Per unit fat'
-                                            />
-                                            <NumberInputStepper>
-                                                <NumberIncrementStepper />
-                                                <NumberDecrementStepper />
-                                            </NumberInputStepper>
-                                        </NumberInput>
-                                    </FormControl>
-                                </SimpleGrid>
-                            </Stack>
-                        )}
-
                         {pendingNutrition && (
                             <HStack spacing={2}>
                                 <Button
@@ -714,27 +485,6 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                         )}
                     </Stack>
                 )}
-
-                {/* Outside the linked/unlinked branch: density belongs to the ingredient,
-                    not the link, so it stays applicable after the link is made. A manual
-                    record (no FDC ID) has no USDA portions to derive one from. */}
-                {pendingNutrition?.fdcId && !detailLoading && !detailError && !densityAlreadySet ? (
-                    densitySource ? (
-                        <UsdaDensitySuggestion
-                            portion={densitySource}
-                            density={densitySource.impliedDensity!}
-                            currentDensity={
-                                currentDensity && currentDensity > 0 ? currentDensity : undefined
-                            }
-                            disabled={disabled}
-                            onApply={handleApplyDensity}
-                        />
-                    ) : (
-                        <Text fontSize='sm' color='gray.500'>
-                            No density suggestion: this USDA item has no volume portion.
-                        </Text>
-                    )
-                ) : null}
             </Stack>
         );
     }

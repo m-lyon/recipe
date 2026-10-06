@@ -8,8 +8,7 @@ export const CREATE_NUTRITIONAL_INFO = gql(`
                 ingredient
                 usdaFdcId
                 perGram { calories protein carbs fat }
-                perUnit { calories protein carbs fat }
-            }
+                }
         }
     }
 `);
@@ -22,8 +21,7 @@ export const UPDATE_NUTRITIONAL_INFO = gql(`
                 ingredient
                 usdaFdcId
                 perGram { calories protein carbs fat }
-                perUnit { calories protein carbs fat }
-            }
+                }
         }
     }
 `);

@@ -94,15 +94,16 @@ export const mockBreakfastTagId = '60f4d2e5c3d5a0a4f1b9c0f8';
 export const mockBrunchTagId = '60f4d2e5c3d5a0a4f1b9c0f9';
 export const mockTagId = '60f4d2e5cgd5a0a4f1b9c0f0';
 
-// Unit Conversion
-export const mockConversionRuleIdOne = '60f4d2e5c4d5a0a4f1b9c0f0';
-export const mockUnitConversionIdOne = '60f4d2e5c3d5a0a4f1b9c0q1';
-export const mockConversionRuleIdTwo = '60f4d2e5c3d5a1a4f1b9c0f1';
-export const mockConversionRuleIdThree = '60f4d2e5c3d5a0a4l1b9c0f2';
-export const mockConversionRuleIdFour = '60f4d2e5c3d5a0a4l1b9c0f3';
-export const mockUnitConversionIdTwo = '60f4d2e5c3d5a0a4f1b9c0q2';
-export const mockUnitConversionIdThree = '60f4d2e5c3d5a0a4f1b9c0q3';
-export const mockConversionRuleIdNew = '60f4d2e5c3d5a0a4l1b9c0f9';
+// Display Ladder
+export const mockMetricMassLadderId = '60f4d2e5c3d5a0a4f1b9c1a1';
+export const mockUsVolumeLadderId = '60f4d2e5c3d5a0a4f1b9c1a2';
+export const mockMetricVolumeLadderId = '60f4d2e5c3d5a0a4f1b9c1a3';
+
+// Ingredient Measure
+export const mockEachId = '60f4d2e5c3d5a0a4f1b9c1b0';
+export const mockAppleEachMeasureId = '60f4d2e5c3d5a0a4f1b9c1b1';
+export const mockCarrotEachMeasureId = '60f4d2e5c3d5a0a4f1b9c1b2';
+export const mockOnionCupMeasureId = '60f4d2e5c3d5a0a4f1b9c1b3';
 
 // NutritionalInfo
 export const mockNutritionalInfoIdApple = '60f4d2e5c3d5a0a4f1b9d0a1';

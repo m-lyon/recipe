@@ -48,7 +48,11 @@ export function CreateBespokeUnitForm(props: Props) {
                 preferredNumberFormat,
                 hasSpace,
                 unique: false,
-                measureType: null,
+                // A bespoke unit (a handful, a knob) reaches grams only through a measure.
+                dimension: 'count',
+                perCanonical: 1,
+                system: null,
+                hidden: false,
             });
             saveUnit({ variables: { record: validated } });
         } catch (e: unknown) {

@@ -1,6 +1,7 @@
 import { validateItemNotInRecipe } from './validation.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { filterIsOwnerOrAdmin } from '../middleware/filters.js';
+import { IngredientMeasure } from '../models/IngredientMeasure.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
 import { Ingredient, IngredientCreateTC, IngredientTC } from '../models/Ingredient.js';
 
@@ -48,6 +49,8 @@ export const IngredientMutation = {
         .setDescription('Remove an ingredient by its ID')
         .wrapResolve((next) => async (rp) => {
             await validateItemNotInRecipe(rp.args._id, 'ingredient');
-            return next(rp);
+            const result = await next(rp);
+            await IngredientMeasure.deleteMany({ ingredient: rp.args._id });
+            return result;
         }),
 };

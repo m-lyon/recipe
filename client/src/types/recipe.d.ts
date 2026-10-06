@@ -1,8 +1,8 @@
+import { GetSizesQuery } from '@recipe/graphql/generated';
+import { CurrentUserQuery } from '@recipe/graphql/generated';
 import { GetRecipeQuery, GetRecipesQuery } from '@recipe/graphql/generated';
 import { EnumIngredientTags, GetTagsQuery } from '@recipe/graphql/generated';
 import { EnumRecipeCalculatedTags, GetUnitsQuery } from '@recipe/graphql/generated';
-import { CurrentUserQuery, GetUnitConversionsQuery } from '@recipe/graphql/generated';
-import { CreateConversionRuleMutation, GetSizesQuery } from '@recipe/graphql/generated';
 import { GetIngredientComponentsQuery, GetIngredientsQuery } from '@recipe/graphql/generated';
 import { EnumUnitPreferredNumberFormat, GetPrepMethodsQuery } from '@recipe/graphql/generated';
 
@@ -377,13 +377,6 @@ declare global {
      * Can be undefined if the query has not been completed.
      */
     type IngredientComponentQuery = IngredientComponents | undefined;
-    /**
-     * Represents a completed create converion rule mutation object.
-     */
-    type CompletedCreateConversionRule = NonNullable<
-        CreateConversionRuleMutation['conversionRuleCreateOne']
-    >;
-
     // - Enums -------------------------------------------------------
 
     /**
@@ -398,14 +391,6 @@ declare global {
      * Represents the tags that are calculated for a recipe.
      */
     type ReservedTags = EnumRecipeCalculatedTags;
-    // - Unit Conversions ---------------------------------------------------------
-
-    /**
-     * Represents a unit conversion object that is returned from the API when a unit
-     * conversion is queried.
-     */
-    type UnitConversion = GetUnitConversionsQuery['unitConversionMany'][number];
-
     // - User Authentication ------------------------------------------------------
 
     /**

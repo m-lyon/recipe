@@ -2,16 +2,19 @@ import { Flags } from '@oclif/core';
 
 import { percent } from '../../lib/format.js';
 import { BaseCommand } from '../../lib/base.js';
+import { measuresByIngredient } from '../../lib/measures.js';
 import { GET_RECIPES_BY_IDS } from '../../graphql/operations.js';
 import { allIngredients, resolveRecipe } from '../../lib/resolve.js';
+import { GET_INGREDIENT_MEASURES } from '../../graphql/operations.js';
 import type { RecipeDetail, RecipeSummary } from '../../lib/types.js';
-import { indexByIngredient, recipeIngredientIds } from '../../lib/nutrition.js';
-import type { IngredientSummary, NutritionalInfoSummary } from '../../lib/types.js';
+import type { MeasureSummary, NutritionalInfoSummary } from '../../lib/types.js';
 import { GET_ALL_RECIPES, GET_NUTRITIONAL_INFOS } from '../../graphql/operations.js';
+import { indexByIngredient, nutritionStatus, recipeIngredientIds } from '../../lib/nutrition.js';
 
 export default class NutritionStatus extends BaseCommand {
     static description =
-        'A coverage report over every ingredient, or over the ingredients of one recipe.';
+        'A coverage report over every recipe row, or over the rows of one recipe. A row counts ' +
+        'as calculable by the same rule "recipes show" uses.';
 
     static examples = [
         '<%= config.bin %> <%= command.id %>',
@@ -34,8 +37,6 @@ export default class NutritionStatus extends BaseCommand {
         if (flags.recipe) {
             const recipe = await resolveRecipe(client, flags.recipe);
             recipes = [recipe];
-            const used = new Set(recipeIngredientIds(recipe));
-            ingredients = ingredients.filter((ingredient) => used.has(ingredient._id));
         } else {
             const summaries = ((await client.request(GET_ALL_RECIPES)).recipeMany ??
                 []) as unknown as RecipeSummary[];
@@ -48,80 +49,92 @@ export default class NutritionStatus extends BaseCommand {
                           })
                       ).recipeByIds ?? []) as unknown as RecipeDetail[]);
         }
+        const used = new Set(recipes.flatMap((recipe) => recipeIngredientIds(recipe)));
+        if (flags.recipe) {
+            ingredients = ingredients.filter((ingredient) => used.has(ingredient._id));
+        }
 
+        const ids = ingredients.map((ingredient) => ingredient._id);
         const infos =
-            ingredients.length === 0
+            ids.length === 0
                 ? []
-                : ((
-                      await client.request(GET_NUTRITIONAL_INFOS, {
-                          ingredientIds: ingredients.map((ingredient) => ingredient._id),
-                      })
-                  ).nutritionalInfosByIngredientIds as unknown as NutritionalInfoSummary[]);
+                : ((await client.request(GET_NUTRITIONAL_INFOS, { ingredientIds: ids }))
+                      .nutritionalInfosByIngredientIds as unknown as NutritionalInfoSummary[]);
+        const measures =
+            ids.length === 0
+                ? []
+                : (((await client.request(GET_INGREDIENT_MEASURES, { ingredientIds: ids }))
+                      .ingredientMeasuresByIngredientIds ?? []) as unknown as MeasureSummary[]);
         const byIngredient = indexByIngredient(infos.filter(Boolean));
-        const volumeUsed = volumeMeasuredIngredients(recipes);
+        const measuresOf = measuresByIngredient(measures);
 
-        const report = this.summarise(ingredients, byIngredient, volumeUsed);
+        const rows = { total: 0, linked: 0, partial: 0, missing: 0 };
+        const missingWeights = new Map<
+            string,
+            { ingredient: string; weight: string; rows: number }
+        >();
+        for (const recipe of recipes) {
+            for (const subsection of recipe.ingredientSubsections) {
+                for (const entry of subsection.ingredients) {
+                    if (entry.ingredient.__typename !== 'Ingredient') continue;
+                    const id = entry.ingredient._id;
+                    const status = nutritionStatus(
+                        entry,
+                        byIngredient.get(id),
+                        measuresOf.get(id) ?? []
+                    );
+                    rows.total++;
+                    if (status.state === 'linked') rows.linked++;
+                    else if (status.state === 'partial') rows.partial++;
+                    else if (status.state === 'missing') rows.missing++;
+                    if (status.missingWeight) {
+                        const gap = missingWeights.get(status.missingWeight) ?? {
+                            ingredient: id,
+                            weight: status.missingWeight,
+                            rows: 0,
+                        };
+                        gap.rows++;
+                        missingWeights.set(status.missingWeight, gap);
+                    }
+                }
+            }
+        }
+        const linkedIngredients = ingredients.filter((ingredient) =>
+            byIngredient.has(ingredient._id)
+        );
+        const gaps = [...missingWeights.values()].sort((a, b) => b.rows - a.rows);
+
         this.out(
             [
-                `Ingredients        ${report.total}`,
-                `  linked           ${report.linked}   (${percent(report.linked, report.total)})`,
-                `  missing          ${report.missing}`,
-                `  countable without per-unit    ${report.countableWithoutPerUnit}`,
-                `  volume-used without density   ${report.volumeUsedWithoutDensity}`,
+                `Recipe rows        ${rows.total}`,
+                `  calculable       ${rows.linked}   (${percent(rows.linked, rows.total)})`,
+                `  partial          ${rows.partial}`,
+                `  missing          ${rows.missing}`,
+                `Ingredients        ${ingredients.length}`,
+                `  linked           ${linkedIngredients.length}   (${percent(linkedIngredients.length, ingredients.length)})`,
+                `  missing          ${ingredients.length - linkedIngredients.length}`,
+                `Missing weights    ${gaps.length}`,
+                ...gaps
+                    .slice(0, 10)
+                    .map(
+                        (gap) => `  ${gap.weight}   (${gap.rows} row${gap.rows === 1 ? '' : 's'})`
+                    ),
             ].join('\n')
         );
-        return { recipe: flags.recipe ?? null, ...report };
-    }
-
-    private summarise(
-        ingredients: IngredientSummary[],
-        byIngredient: Map<string, NutritionalInfoSummary>,
-        volumeUsed: Set<string>
-    ) {
-        const linked = ingredients.filter((ingredient) => byIngredient.has(ingredient._id));
-        const countableWithoutPerUnit = ingredients.filter(
-            (ingredient) => ingredient.isCountable && !byIngredient.get(ingredient._id)?.perUnit
-        );
-        const volumeUsedWithoutDensity = ingredients.filter(
-            (ingredient) => volumeUsed.has(ingredient._id) && !ingredient.density
-        );
         return {
-            total: ingredients.length,
-            linked: linked.length,
-            missing: ingredients.length - linked.length,
-            countableWithoutPerUnit: countableWithoutPerUnit.length,
-            volumeUsedWithoutDensity: volumeUsedWithoutDensity.length,
+            recipe: flags.recipe ?? null,
+            rows,
+            ingredients: {
+                total: ingredients.length,
+                linked: linkedIngredients.length,
+                missing: ingredients.length - linkedIngredients.length,
+            },
             gaps: {
                 missing: ingredients
                     .filter((ingredient) => !byIngredient.has(ingredient._id))
                     .map((ingredient) => ({ _id: ingredient._id, name: ingredient.name })),
-                countableWithoutPerUnit: countableWithoutPerUnit.map((ingredient) => ({
-                    _id: ingredient._id,
-                    name: ingredient.name,
-                })),
-                volumeUsedWithoutDensity: volumeUsedWithoutDensity.map((ingredient) => ({
-                    _id: ingredient._id,
-                    name: ingredient.name,
-                })),
+                missingWeights: gaps,
             },
         };
     }
-}
-
-/** Ingredient ids that some recipe measures with a volume unit. */
-function volumeMeasuredIngredients(recipes: RecipeDetail[]): Set<string> {
-    const ids = new Set<string>();
-    for (const recipe of recipes) {
-        for (const subsection of recipe.ingredientSubsections) {
-            for (const entry of subsection.ingredients) {
-                if (
-                    entry.unit?.measureType === 'volume' &&
-                    entry.ingredient.__typename === 'Ingredient'
-                ) {
-                    ids.add(entry.ingredient._id);
-                }
-            }
-        }
-    }
-    return ids;
 }

@@ -2,7 +2,8 @@ import { Types } from 'mongoose';
 import { GraphQLError } from 'graphql';
 
 import { Recipe } from '../models/Recipe.js';
-import { ConversionRule, UnitConversion } from '../models/UnitConversion.js';
+import { DisplayLadder } from '../models/DisplayLadder.js';
+import { IngredientMeasure } from '../models/IngredientMeasure.js';
 
 export async function validateItemNotInRecipe(
     itemId: Types.ObjectId,
@@ -66,40 +67,34 @@ export async function validateItemNotInRecipe(
     }
 }
 
-export async function validateUnitNotInConversion(unitId: Types.ObjectId) {
-    // Check if unit is used as a base unit in any UnitConversion
-    const conversionsUsingUnitAsBase = await UnitConversion.find({
-        baseUnit: unitId,
-    }).limit(1);
+function itemInUseError(message: string, itemType: string, itemId: Types.ObjectId) {
+    return new GraphQLError(message, {
+        extensions: { code: 'ITEM_IN_USE', itemType, itemId: itemId.toString() },
+    });
+}
 
-    if (conversionsUsingUnitAsBase.length > 0) {
-        throw new GraphQLError(
-            `Cannot delete unit as it is currently being used in existing conversions.`,
-            {
-                extensions: {
-                    code: 'ITEM_IN_USE',
-                    itemType: 'unit',
-                    itemId: unitId.toString(),
-                },
-            }
+/** Blocks deleting a unit, size or prep method that an ingredient measure is keyed on. */
+export async function validateItemNotInMeasure(
+    itemId: Types.ObjectId,
+    itemType: 'unit' | 'size' | 'prepMethod'
+) {
+    const inUse = await IngredientMeasure.exists({ [itemType]: itemId });
+    if (inUse) {
+        throw itemInUseError(
+            `Cannot delete ${itemType} as it is currently being used in ingredient measures.`,
+            itemType,
+            itemId
         );
     }
+}
 
-    // Check if unit is used in any ConversionRule (either as unit or baseUnit)
-    const rulesUsingUnit = await ConversionRule.find({
-        $or: [{ unit: unitId }, { baseUnit: unitId }],
-    }).limit(1);
-
-    if (rulesUsingUnit.length > 0) {
-        throw new GraphQLError(
-            `Cannot delete unit as it is currently being used in existing conversions.`,
-            {
-                extensions: {
-                    code: 'ITEM_IN_USE',
-                    itemType: 'unit',
-                    itemId: unitId.toString(),
-                },
-            }
+export async function validateUnitNotInLadder(unitId: Types.ObjectId) {
+    const inUse = await DisplayLadder.exists({ 'steps.unit': unitId });
+    if (inUse) {
+        throw itemInUseError(
+            'Cannot delete unit as it is currently being used in display ladders.',
+            'unit',
+            unitId
         );
     }
 }
