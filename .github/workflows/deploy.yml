@@ -75,24 +75,12 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     environment: test
-    # API settings, shared with the build job
-    env: &api-test-env
-      MONGODB_URI: ${{ vars.MONGODB_URI }}
+    env:
       MONGODB_VERSION: ${{ vars.MONGODB_VERSION }}
-      PORT: ${{ vars.PORT }}
-      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
-      SESSION_URI: ${{ secrets.SESSION_URI }}
-      WHITELISTED_DOMAINS: ${{ secrets.WHITELISTED_DOMAINS }}
     steps:
       - *checkout-code
 
       - *setup-node-all
-
-      - &start-mongodb
-        name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.11.0
-        with:
-          mongodb-version: ${{ vars.MONGODB_VERSION }}
 
       - *install-api-deps
 
@@ -112,13 +100,6 @@ jobs:
           echo "VITE_INIT_LOAD_NUM = ${{ vars.VITE_INIT_LOAD_NUM }}" >> .env.test.local
           echo "VITE_FETCH_MORE_NUM = ${{ vars.VITE_FETCH_MORE_NUM }}" >> .env.test.local
 
-      - name: Create CLI environment file
-        working-directory: ./cli
-        run: |
-          echo "RECIPE_API_URL = ${{ vars.VITE_GRAPHQL_URL }}" > .env.test.local
-          echo "RECIPE_USERNAME = ${{ vars.TEST_USERNAME }}" >> .env.test.local
-          echo "RECIPE_PASSWORD = ${{ vars.TEST_PASSWORD }}" >> .env.test.local
-
       - name: Load MongoDB binary cache
         id: cache-mongodb-binaries
         uses: actions/cache@v6
@@ -130,26 +111,22 @@ jobs:
         working-directory: ./api
         run: npm run dl_memory
 
-      - &start-api
-        name: Start API (test mode)
+      - name: Check committed GraphQL schema is up to date
         working-directory: ./api
         run: |
-          [ -f dist/src/index.js ] || npm run compile
-          NODE_ENV=test nohup node ./dist/src/index.js > /tmp/api.log 2>&1 &
-          for i in $(seq 1 30); do
-              curl -s -o /dev/null "http://localhost:$PORT/" && exit 0
-              sleep 1
-          done
-          cat /tmp/api.log
-          exit 1
+          npm run print-schema
+          git diff --exit-code -- schema.graphql || {
+              echo "::error::api/schema.graphql is stale. Run 'npm run print-schema' in api/ and commit it."
+              exit 1
+          }
 
       - name: Generate client GraphQL types
         working-directory: ./client
-        run: npm run generate:test
+        run: npm run generate
 
       - name: Generate CLI GraphQL types
         working-directory: ./cli
-        run: npm run generate:test
+        run: npm run generate
 
       - name: Type-check client
         working-directory: ./client
@@ -182,8 +159,6 @@ jobs:
   build:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-22.04 # matches the server
-    environment: test
-    env: *api-test-env
     steps:
       - *checkout-code
 
@@ -196,19 +171,14 @@ jobs:
             api/package-lock.json
             client/package-lock.json
 
-      - *start-mongodb
-
       - *install-api-deps
 
       - *install-client-deps
 
-      - *start-api
-
+      # From the committed api/schema.graphql, which the test job checked is up to date
       - name: Generate GraphQL types
         working-directory: ./client
-        env:
-          VITE_GRAPHQL_URL: http://localhost:${{ vars.PORT }}/
-        run: npm run generate:test
+        run: npm run generate
 
       - name: Build client
         working-directory: ./client

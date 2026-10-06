@@ -1,0 +1,2471 @@
+type ConversionRule {
+  _id: MongoID!
+  baseToUnitConversion: Float!
+  baseUnit: Unit!
+  baseUnitThreshold: Float!
+  unit: Unit!
+}
+
+""""""
+input CreateOneConversionRuleInput {
+  baseToUnitConversion: Float!
+  baseUnit: MongoID!
+  baseUnitThreshold: Float!
+  unit: MongoID!
+}
+
+type CreateOneConversionRulePayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Created document"""
+  record: ConversionRule
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+""""""
+input CreateOneIngredientCreateInput {
+  density: Float
+  isCountable: Boolean!
+  name: String!
+  pluralName: String!
+  tags: [EnumIngredientCreateTags]!
+}
+
+type CreateOneIngredientPayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Created document"""
+  record: Ingredient
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+""""""
+input CreateOneNutritionalInfoCreateInput {
+  ingredient: MongoID!
+  perGram: NutritionalInfoPerGramInput
+  perUnit: NutritionalInfoPerGramInput
+  usdaFdcId: Float
+}
+
+type CreateOneNutritionalInfoPayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Created document"""
+  record: NutritionalInfo
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+""""""
+input CreateOnePrepMethodCreateInput {
+  unique: Boolean!
+  value: String!
+}
+
+type CreateOnePrepMethodPayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Created document"""
+  record: PrepMethod
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+""""""
+input CreateOneRatingCreateInput {
+  recipe: MongoID!
+  value: Float!
+}
+
+type CreateOneRatingPayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Created document"""
+  record: Rating
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+""""""
+input CreateOneRecipeCreateInput {
+  ingredientSubsections: [RecipeIngredientSubsectionsInput]!
+  instructionSubsections: [RecipeInstructionSubsectionsInput]!
+  isIngredient: Boolean!
+  notes: String
+  numServings: Float!
+  pluralTitle: String
+  source: String
+  subTitle: String
+  tags: [MongoID]
+  title: String!
+}
+
+type CreateOneRecipePayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Created document"""
+  record: Recipe
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+""""""
+input CreateOneSizeCreateInput {
+  unique: Boolean!
+  value: String!
+}
+
+type CreateOneSizePayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Created document"""
+  record: Size
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+""""""
+input CreateOneTagInput {
+  value: String!
+}
+
+type CreateOneTagPayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Created document"""
+  record: Tag
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+""""""
+input CreateOneUnitConversionInput {
+  baseUnit: MongoID!
+  rules: [MongoID]!
+}
+
+type CreateOneUnitConversionPayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Created document"""
+  record: UnitConversion
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+""""""
+input CreateOneUnitCreateInput {
+  hasSpace: Boolean!
+  longPlural: String!
+  longSingular: String!
+  measureType: EnumUnitCreateMeasureType
+  preferredNumberFormat: EnumUnitCreatePreferredNumberFormat!
+  shortPlural: String!
+  shortSingular: String!
+  unique: Boolean!
+}
+
+type CreateOneUnitPayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Created document"""
+  record: Unit
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+scalar Date
+
+enum EnumIngredientCreateTags {
+  vegan
+  vegetarian
+}
+
+enum EnumIngredientTags {
+  vegan
+  vegetarian
+}
+
+enum EnumRecipeCalculatedTags {
+  ingredient
+  vegan
+  vegan_version_available
+  vegetarian
+}
+
+enum EnumUnitCreateMeasureType {
+  NULL
+  mass
+  volume
+}
+
+enum EnumUnitCreatePreferredNumberFormat {
+  decimal
+  fraction
+}
+
+enum EnumUnitMeasureType {
+  NULL
+  mass
+  volume
+}
+
+enum EnumUnitPreferredNumberFormat {
+  decimal
+  fraction
+}
+
+enum EnumUserRole {
+  admin
+  unverified
+  user
+}
+
+interface ErrorInterface {
+  """Generic error message"""
+  message: String
+}
+
+input FilterCountRecipeCalculatedTagsOperatorsInput {
+  exists: Boolean
+  gt: EnumRecipeCalculatedTags
+  gte: EnumRecipeCalculatedTags
+  in: [EnumRecipeCalculatedTags]
+  lt: EnumRecipeCalculatedTags
+  lte: EnumRecipeCalculatedTags
+  ne: EnumRecipeCalculatedTags
+  nin: [EnumRecipeCalculatedTags]
+}
+
+""""""
+input FilterCountRecipeIngredientInput {
+  _id: MongoID
+  ingredient: MongoID
+  prepMethod: MongoID
+  quantity: String
+  size: MongoID
+  unit: MongoID
+}
+
+input FilterCountRecipeIngredientSubsectionsIngredientsIngredientOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+input FilterCountRecipeIngredientSubsectionsIngredientsOperatorsInput {
+  ingredient: FilterCountRecipeIngredientSubsectionsIngredientsIngredientOperatorsInput
+}
+
+""""""
+input FilterCountRecipeIngredientSubsectionsInput {
+  _id: MongoID
+  ingredients: [FilterCountRecipeIngredientInput]
+  name: String
+}
+
+input FilterCountRecipeIngredientSubsectionsOperatorsInput {
+  ingredients: FilterCountRecipeIngredientSubsectionsIngredientsOperatorsInput
+}
+
+""""""
+input FilterCountRecipeInput {
+  AND: [FilterCountRecipeInput!]
+  OR: [FilterCountRecipeInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterCountRecipeOperatorsInput
+  archived: Boolean
+  calculatedTags: [EnumRecipeCalculatedTags]
+  createdAt: Date
+  ingredientSubsections: [FilterCountRecipeIngredientSubsectionsInput]
+  instructionSubsections: [FilterCountRecipeInstructionSubsectionsInput]
+  isIngredient: Boolean
+  lastModified: Date
+  notes: String
+  numServings: Float
+  originalRecipe: MongoID
+  owner: MongoID
+  pluralTitle: String
+  source: String
+  subTitle: String
+  tags: [MongoID]
+  title: String
+  titleIdentifier: String
+  veganVersion: MongoID
+}
+
+""""""
+input FilterCountRecipeInstructionSubsectionsInput {
+  _id: MongoID
+  instructions: [String]
+  name: String
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterCountRecipeOperatorsInput {
+  _id: FilterCountRecipe_idOperatorsInput
+  calculatedTags: FilterCountRecipeCalculatedTagsOperatorsInput
+  ingredientSubsections: FilterCountRecipeIngredientSubsectionsOperatorsInput
+  tags: FilterCountRecipeTagsOperatorsInput
+  title: FilterCountRecipeTitleOperatorsInput
+  veganVersion: FilterCountRecipeVeganVersionOperatorsInput
+}
+
+input FilterCountRecipeTagsOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+input FilterCountRecipeTitleOperatorsInput {
+  exists: Boolean
+  gt: String
+  gte: String
+  in: [String]
+  lt: String
+  lte: String
+  ne: String
+  nin: [String]
+  regex: RegExpAsString
+}
+
+input FilterCountRecipeVeganVersionOperatorsInput {
+  exists: Boolean
+}
+
+input FilterCountRecipe_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+""""""
+input FilterFindManyConversionRuleInput {
+  AND: [FilterFindManyConversionRuleInput!]
+  OR: [FilterFindManyConversionRuleInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindManyConversionRuleOperatorsInput
+  baseToUnitConversion: Float
+  baseUnit: MongoID
+  baseUnitThreshold: Float
+  unit: MongoID
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindManyConversionRuleOperatorsInput {
+  _id: FilterFindManyConversionRule_idOperatorsInput
+}
+
+input FilterFindManyConversionRule_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+""""""
+input FilterFindManyImageInput {
+  AND: [FilterFindManyImageInput!]
+  OR: [FilterFindManyImageInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindManyImageOperatorsInput
+  lowresUrl: String
+  note: String
+  origUrl: String
+  recipe: MongoID
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindManyImageOperatorsInput {
+  _id: FilterFindManyImage_idOperatorsInput
+}
+
+input FilterFindManyImage_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+""""""
+input FilterFindManyIngredientInput {
+  AND: [FilterFindManyIngredientInput!]
+  OR: [FilterFindManyIngredientInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindManyIngredientOperatorsInput
+  density: Float
+  isCountable: Boolean
+  name: String
+  owner: MongoID
+  pluralName: String
+  tags: [EnumIngredientTags]
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindManyIngredientOperatorsInput {
+  _id: FilterFindManyIngredient_idOperatorsInput
+}
+
+input FilterFindManyIngredient_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+""""""
+input FilterFindManyPrepMethodInput {
+  AND: [FilterFindManyPrepMethodInput!]
+  OR: [FilterFindManyPrepMethodInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindManyPrepMethodOperatorsInput
+  owner: MongoID
+  unique: Boolean
+  value: String
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindManyPrepMethodOperatorsInput {
+  _id: FilterFindManyPrepMethod_idOperatorsInput
+}
+
+input FilterFindManyPrepMethod_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+""""""
+input FilterFindManyRatingInput {
+  AND: [FilterFindManyRatingInput!]
+  OR: [FilterFindManyRatingInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindManyRatingOperatorsInput
+  owner: MongoID
+  recipe: MongoID
+  value: Float
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindManyRatingOperatorsInput {
+  _id: FilterFindManyRating_idOperatorsInput
+}
+
+input FilterFindManyRating_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+input FilterFindManyRecipeCalculatedTagsOperatorsInput {
+  exists: Boolean
+  gt: EnumRecipeCalculatedTags
+  gte: EnumRecipeCalculatedTags
+  in: [EnumRecipeCalculatedTags]
+  lt: EnumRecipeCalculatedTags
+  lte: EnumRecipeCalculatedTags
+  ne: EnumRecipeCalculatedTags
+  nin: [EnumRecipeCalculatedTags]
+}
+
+""""""
+input FilterFindManyRecipeIngredientInput {
+  _id: MongoID
+  ingredient: MongoID
+  prepMethod: MongoID
+  quantity: String
+  size: MongoID
+  unit: MongoID
+}
+
+input FilterFindManyRecipeIngredientSubsectionsIngredientsIngredientOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+input FilterFindManyRecipeIngredientSubsectionsIngredientsOperatorsInput {
+  ingredient: FilterFindManyRecipeIngredientSubsectionsIngredientsIngredientOperatorsInput
+}
+
+""""""
+input FilterFindManyRecipeIngredientSubsectionsInput {
+  _id: MongoID
+  ingredients: [FilterFindManyRecipeIngredientInput]
+  name: String
+}
+
+input FilterFindManyRecipeIngredientSubsectionsOperatorsInput {
+  ingredients: FilterFindManyRecipeIngredientSubsectionsIngredientsOperatorsInput
+}
+
+""""""
+input FilterFindManyRecipeInput {
+  AND: [FilterFindManyRecipeInput!]
+  OR: [FilterFindManyRecipeInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindManyRecipeOperatorsInput
+  archived: Boolean
+  calculatedTags: [EnumRecipeCalculatedTags]
+  createdAt: Date
+  ingredientSubsections: [FilterFindManyRecipeIngredientSubsectionsInput]
+  instructionSubsections: [FilterFindManyRecipeInstructionSubsectionsInput]
+  isIngredient: Boolean
+  lastModified: Date
+  notes: String
+  numServings: Float
+  originalRecipe: MongoID
+  owner: MongoID
+  pluralTitle: String
+  source: String
+  subTitle: String
+  tags: [MongoID]
+  title: String
+  titleIdentifier: String
+  veganVersion: MongoID
+}
+
+""""""
+input FilterFindManyRecipeInstructionSubsectionsInput {
+  _id: MongoID
+  instructions: [String]
+  name: String
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindManyRecipeOperatorsInput {
+  _id: FilterFindManyRecipe_idOperatorsInput
+  calculatedTags: FilterFindManyRecipeCalculatedTagsOperatorsInput
+  ingredientSubsections: FilterFindManyRecipeIngredientSubsectionsOperatorsInput
+  tags: FilterFindManyRecipeTagsOperatorsInput
+  title: FilterFindManyRecipeTitleOperatorsInput
+  veganVersion: FilterFindManyRecipeVeganVersionOperatorsInput
+}
+
+input FilterFindManyRecipeTagsOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+input FilterFindManyRecipeTitleOperatorsInput {
+  exists: Boolean
+  gt: String
+  gte: String
+  in: [String]
+  lt: String
+  lte: String
+  ne: String
+  nin: [String]
+  regex: RegExpAsString
+}
+
+input FilterFindManyRecipeVeganVersionOperatorsInput {
+  exists: Boolean
+}
+
+input FilterFindManyRecipe_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+""""""
+input FilterFindManySizeInput {
+  AND: [FilterFindManySizeInput!]
+  OR: [FilterFindManySizeInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindManySizeOperatorsInput
+  owner: MongoID
+  unique: Boolean
+  value: String
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindManySizeOperatorsInput {
+  _id: FilterFindManySize_idOperatorsInput
+}
+
+input FilterFindManySize_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+""""""
+input FilterFindManyTagInput {
+  AND: [FilterFindManyTagInput!]
+  OR: [FilterFindManyTagInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindManyTagOperatorsInput
+  value: String
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindManyTagOperatorsInput {
+  _id: FilterFindManyTag_idOperatorsInput
+}
+
+input FilterFindManyTag_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+""""""
+input FilterFindManyUnitConversionInput {
+  AND: [FilterFindManyUnitConversionInput!]
+  OR: [FilterFindManyUnitConversionInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindManyUnitConversionOperatorsInput
+  baseUnit: MongoID
+  rules: [MongoID]
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindManyUnitConversionOperatorsInput {
+  _id: FilterFindManyUnitConversion_idOperatorsInput
+}
+
+input FilterFindManyUnitConversion_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+""""""
+input FilterFindManyUnitInput {
+  AND: [FilterFindManyUnitInput!]
+  OR: [FilterFindManyUnitInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindManyUnitOperatorsInput
+  hasSpace: Boolean
+  longPlural: String
+  longSingular: String
+  measureType: EnumUnitMeasureType
+  owner: MongoID
+  preferredNumberFormat: EnumUnitPreferredNumberFormat
+  shortPlural: String
+  shortSingular: String
+  unique: Boolean
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindManyUnitOperatorsInput {
+  _id: FilterFindManyUnit_idOperatorsInput
+}
+
+input FilterFindManyUnit_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+""""""
+input FilterFindOneConversionRuleInput {
+  AND: [FilterFindOneConversionRuleInput!]
+  OR: [FilterFindOneConversionRuleInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindOneConversionRuleOperatorsInput
+  baseToUnitConversion: Float
+  baseUnit: MongoID
+  baseUnitThreshold: Float
+  unit: MongoID
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindOneConversionRuleOperatorsInput {
+  _id: FilterFindOneConversionRule_idOperatorsInput
+}
+
+input FilterFindOneConversionRule_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+""""""
+input FilterFindOneImageInput {
+  AND: [FilterFindOneImageInput!]
+  OR: [FilterFindOneImageInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindOneImageOperatorsInput
+  lowresUrl: String
+  note: String
+  origUrl: String
+  recipe: MongoID
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindOneImageOperatorsInput {
+  _id: FilterFindOneImage_idOperatorsInput
+}
+
+input FilterFindOneImage_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+""""""
+input FilterFindOneIngredientInput {
+  AND: [FilterFindOneIngredientInput!]
+  OR: [FilterFindOneIngredientInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindOneIngredientOperatorsInput
+  density: Float
+  isCountable: Boolean
+  name: String
+  owner: MongoID
+  pluralName: String
+  tags: [EnumIngredientTags]
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindOneIngredientOperatorsInput {
+  _id: FilterFindOneIngredient_idOperatorsInput
+}
+
+input FilterFindOneIngredient_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+input FilterFindOneNutritionalInfoIngredientOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+""""""
+input FilterFindOneNutritionalInfoInput {
+  AND: [FilterFindOneNutritionalInfoInput!]
+  OR: [FilterFindOneNutritionalInfoInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindOneNutritionalInfoOperatorsInput
+  ingredient: MongoID
+  perGram: FilterFindOneNutritionalInfoPerGramInput
+  perUnit: FilterFindOneNutritionalInfoPerGramInput
+  usdaFdcId: Float
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindOneNutritionalInfoOperatorsInput {
+  _id: FilterFindOneNutritionalInfo_idOperatorsInput
+  ingredient: FilterFindOneNutritionalInfoIngredientOperatorsInput
+}
+
+""""""
+input FilterFindOneNutritionalInfoPerGramInput {
+  calories: Float!
+  carbs: Float!
+  fat: Float!
+  protein: Float!
+}
+
+input FilterFindOneNutritionalInfo_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+""""""
+input FilterFindOnePrepMethodInput {
+  AND: [FilterFindOnePrepMethodInput!]
+  OR: [FilterFindOnePrepMethodInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindOnePrepMethodOperatorsInput
+  owner: MongoID
+  unique: Boolean
+  value: String
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindOnePrepMethodOperatorsInput {
+  _id: FilterFindOnePrepMethod_idOperatorsInput
+}
+
+input FilterFindOnePrepMethod_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+""""""
+input FilterFindOneRatingInput {
+  AND: [FilterFindOneRatingInput!]
+  OR: [FilterFindOneRatingInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindOneRatingOperatorsInput
+  owner: MongoID
+  recipe: MongoID
+  value: Float
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindOneRatingOperatorsInput {
+  _id: FilterFindOneRating_idOperatorsInput
+}
+
+input FilterFindOneRating_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+input FilterFindOneRecipeCalculatedTagsOperatorsInput {
+  exists: Boolean
+  gt: EnumRecipeCalculatedTags
+  gte: EnumRecipeCalculatedTags
+  in: [EnumRecipeCalculatedTags]
+  lt: EnumRecipeCalculatedTags
+  lte: EnumRecipeCalculatedTags
+  ne: EnumRecipeCalculatedTags
+  nin: [EnumRecipeCalculatedTags]
+}
+
+""""""
+input FilterFindOneRecipeIngredientInput {
+  _id: MongoID
+  ingredient: MongoID
+  prepMethod: MongoID
+  quantity: String
+  size: MongoID
+  unit: MongoID
+}
+
+input FilterFindOneRecipeIngredientSubsectionsIngredientsIngredientOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+input FilterFindOneRecipeIngredientSubsectionsIngredientsOperatorsInput {
+  ingredient: FilterFindOneRecipeIngredientSubsectionsIngredientsIngredientOperatorsInput
+}
+
+""""""
+input FilterFindOneRecipeIngredientSubsectionsInput {
+  _id: MongoID
+  ingredients: [FilterFindOneRecipeIngredientInput]
+  name: String
+}
+
+input FilterFindOneRecipeIngredientSubsectionsOperatorsInput {
+  ingredients: FilterFindOneRecipeIngredientSubsectionsIngredientsOperatorsInput
+}
+
+""""""
+input FilterFindOneRecipeInput {
+  AND: [FilterFindOneRecipeInput!]
+  OR: [FilterFindOneRecipeInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindOneRecipeOperatorsInput
+  archived: Boolean
+  calculatedTags: [EnumRecipeCalculatedTags]
+  createdAt: Date
+  ingredientSubsections: [FilterFindOneRecipeIngredientSubsectionsInput]
+  instructionSubsections: [FilterFindOneRecipeInstructionSubsectionsInput]
+  isIngredient: Boolean
+  lastModified: Date
+  notes: String
+  numServings: Float
+  originalRecipe: MongoID
+  owner: MongoID
+  pluralTitle: String
+  source: String
+  subTitle: String
+  tags: [MongoID]
+  title: String
+  titleIdentifier: String
+  veganVersion: MongoID
+}
+
+""""""
+input FilterFindOneRecipeInstructionSubsectionsInput {
+  _id: MongoID
+  instructions: [String]
+  name: String
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindOneRecipeOperatorsInput {
+  _id: FilterFindOneRecipe_idOperatorsInput
+  calculatedTags: FilterFindOneRecipeCalculatedTagsOperatorsInput
+  ingredientSubsections: FilterFindOneRecipeIngredientSubsectionsOperatorsInput
+  tags: FilterFindOneRecipeTagsOperatorsInput
+  title: FilterFindOneRecipeTitleOperatorsInput
+}
+
+input FilterFindOneRecipeTagsOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+input FilterFindOneRecipeTitleOperatorsInput {
+  exists: Boolean
+  gt: String
+  gte: String
+  in: [String]
+  lt: String
+  lte: String
+  ne: String
+  nin: [String]
+  regex: RegExpAsString
+}
+
+input FilterFindOneRecipe_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+""""""
+input FilterFindOneSizeInput {
+  AND: [FilterFindOneSizeInput!]
+  OR: [FilterFindOneSizeInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindOneSizeOperatorsInput
+  owner: MongoID
+  unique: Boolean
+  value: String
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindOneSizeOperatorsInput {
+  _id: FilterFindOneSize_idOperatorsInput
+}
+
+input FilterFindOneSize_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+""""""
+input FilterFindOneTagInput {
+  AND: [FilterFindOneTagInput!]
+  OR: [FilterFindOneTagInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindOneTagOperatorsInput
+  value: String
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindOneTagOperatorsInput {
+  _id: FilterFindOneTag_idOperatorsInput
+}
+
+input FilterFindOneTag_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+""""""
+input FilterFindOneUnitConversionInput {
+  AND: [FilterFindOneUnitConversionInput!]
+  OR: [FilterFindOneUnitConversionInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindOneUnitConversionOperatorsInput
+  baseUnit: MongoID
+  rules: [MongoID]
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindOneUnitConversionOperatorsInput {
+  _id: FilterFindOneUnitConversion_idOperatorsInput
+}
+
+input FilterFindOneUnitConversion_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+""""""
+input FilterFindOneUnitInput {
+  AND: [FilterFindOneUnitInput!]
+  OR: [FilterFindOneUnitInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterFindOneUnitOperatorsInput
+  hasSpace: Boolean
+  longPlural: String
+  longSingular: String
+  measureType: EnumUnitMeasureType
+  owner: MongoID
+  preferredNumberFormat: EnumUnitPreferredNumberFormat
+  shortPlural: String
+  shortSingular: String
+  unique: Boolean
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterFindOneUnitOperatorsInput {
+  _id: FilterFindOneUnit_idOperatorsInput
+}
+
+input FilterFindOneUnit_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+""""""
+input FilterRemoveOneTagInput {
+  AND: [FilterRemoveOneTagInput!]
+  OR: [FilterRemoveOneTagInput!]
+  _id: MongoID
+
+  """List of *indexed* fields that can be filtered via operators."""
+  _operators: FilterRemoveOneTagOperatorsInput
+  value: String
+}
+
+"""For performance reason this type contains only *indexed* fields."""
+input FilterRemoveOneTagOperatorsInput {
+  _id: FilterRemoveOneTag_idOperatorsInput
+}
+
+input FilterRemoveOneTag_idOperatorsInput {
+  exists: Boolean
+  gt: MongoID
+  gte: MongoID
+  in: [MongoID]
+  lt: MongoID
+  lte: MongoID
+  ne: MongoID
+  nin: [MongoID]
+}
+
+type Image {
+  _id: MongoID!
+  lowresUrl: String
+  note: String
+  origUrl: String!
+  recipe: Recipe!
+}
+
+type ImageRemoveManyPayload {
+  """The deleted images."""
+  records: [Image!]
+}
+
+type ImageUploadManyPayload {
+  """The uploaded images."""
+  records: [Image!]
+}
+
+type ImageUploadPayload {
+  """The added image."""
+  record: Image
+
+  """The ID of the added image."""
+  recordId: String
+}
+
+type Ingredient {
+  _id: MongoID!
+  density: Float
+  isCountable: Boolean!
+  name: String!
+  owner: MongoID!
+  pluralName: String!
+  tags: [EnumIngredientTags]!
+}
+
+union IngredientOrRecipe = Ingredient | Recipe
+
+type IngredientSubsection {
+  ingredients: [RecipeIngredient!]!
+  name: String
+}
+
+type InstructionSubsection {
+  instructions: [String!]!
+  name: String
+}
+
+"""
+The `ID` scalar type represents a unique MongoDB identifier in collection. MongoDB by default use 12-byte ObjectId value (https://docs.mongodb.com/manual/reference/bson-types/#objectid). But MongoDB also may accepts string or integer as correct values for _id field.
+"""
+scalar MongoID
+
+type Mutation {
+  """Create a new conversion rule"""
+  conversionRuleCreateOne(record: CreateOneConversionRuleInput!): CreateOneConversionRulePayload
+
+  """Remove a conversion rule by its ID"""
+  conversionRuleRemoveById(_id: MongoID!): RemoveByIdConversionRulePayload
+
+  """Update a conversion rule by its ID"""
+  conversionRuleUpdateById(_id: MongoID!, record: UpdateByIdConversionRuleInput!): UpdateByIdConversionRulePayload
+
+  """Remove multiple images by their IDs"""
+  imageRemoveMany(
+    """Image IDs."""
+    ids: [MongoID!]!
+  ): ImageRemoveManyPayload
+
+  """Upload multiple images"""
+  imageUploadMany(
+    """Recipe ID."""
+    _id: MongoID!
+
+    """Files to store."""
+    files: [Upload!]!
+
+    """Note about the image."""
+    note: String
+  ): ImageUploadManyPayload
+
+  """Upload a single image"""
+  imageUploadOne(
+    """Recipe ID."""
+    _id: MongoID!
+
+    """File to store."""
+    file: Upload!
+
+    """Note about the image."""
+    note: String
+  ): ImageUploadPayload
+
+  """Create a new ingredient"""
+  ingredientCreateOne(record: CreateOneIngredientCreateInput!): CreateOneIngredientPayload
+
+  """Remove an ingredient by its ID"""
+  ingredientRemoveById(_id: MongoID!): RemoveByIdIngredientPayload
+
+  """Update an ingredient by its ID"""
+  ingredientUpdateById(_id: MongoID!, record: UpdateByIdIngredientInput!): UpdateByIdIngredientPayload
+
+  """Login a user"""
+  login(password: String!, username: String!): User
+
+  """Logout a user"""
+  logout: Boolean!
+  nutritionalInfoCreateOne(record: CreateOneNutritionalInfoCreateInput!): CreateOneNutritionalInfoPayload
+
+  """
+  Remove one document: 1) Retrieve one document and remove with hooks via findByIdAndRemove. 2) Return removed document.
+  """
+  nutritionalInfoRemoveById(_id: MongoID!): RemoveByIdNutritionalInfoPayload
+  nutritionalInfoUpdateById(_id: MongoID!, record: UpdateByIdNutritionalInfoInput!): UpdateByIdNutritionalInfoPayload
+
+  """Create a new prep method"""
+  prepMethodCreateOne(record: CreateOnePrepMethodCreateInput!): CreateOnePrepMethodPayload
+
+  """Remove a prep method by its ID"""
+  prepMethodRemoveById(_id: MongoID!): RemoveByIdPrepMethodPayload
+
+  """Update a prep method by its ID"""
+  prepMethodUpdateById(_id: MongoID!, record: UpdateByIdPrepMethodInput!): UpdateByIdPrepMethodPayload
+
+  """Create a new rating"""
+  ratingCreateOne(record: CreateOneRatingCreateInput!): CreateOneRatingPayload
+
+  """Archive a recipe by its ID"""
+  recipeArchiveById(_id: MongoID!): RemoveByIdRecipePayload
+
+  """Create a new recipe"""
+  recipeCreateOne(record: CreateOneRecipeCreateInput!): CreateOneRecipePayload
+  recipeCreateVeganVersion(originalId: MongoID!, recipe: CreateOneRecipeCreateInput!): CreateOneRecipePayload
+
+  """Remove a recipe by its ID"""
+  recipeRemoveById(_id: MongoID!): RemoveByIdRecipePayload
+
+  """Unarchive a recipe by its ID"""
+  recipeUnarchiveById(_id: MongoID!): RemoveByIdRecipePayload
+
+  """Update a recipe by its ID"""
+  recipeUpdateById(_id: MongoID!, record: UpdateByIdRecipeModifyInput!): UpdateByIdRecipePayload
+
+  """Register a new user"""
+  register(firstName: String!, lastName: String!, password: String!, username: String!): User
+
+  """Create a new size"""
+  sizeCreateOne(record: CreateOneSizeCreateInput!): CreateOneSizePayload
+
+  """Remove a size by its ID"""
+  sizeRemoveById(_id: MongoID!): RemoveByIdSizePayload
+
+  """Update a size by its ID"""
+  sizeUpdateById(_id: MongoID!, record: UpdateByIdSizeInput!): UpdateByIdSizePayload
+
+  """Create a new tag"""
+  tagCreateOne(record: CreateOneTagInput!): CreateOneTagPayload
+
+  """Remove a tag by its ID"""
+  tagRemoveById(_id: MongoID!): RemoveByIdTagPayload
+
+  """Remove a single tag"""
+  tagRemoveOne(
+    """Filter by fields"""
+    filter: FilterRemoveOneTagInput
+    sort: SortRemoveOneTagInput
+  ): RemoveOneTagPayload
+
+  """Update a tag by its ID"""
+  tagUpdateById(_id: MongoID!, record: UpdateByIdTagInput!): UpdateByIdTagPayload
+
+  """Create a new unit conversion"""
+  unitConversionCreateOne(record: CreateOneUnitConversionInput!): CreateOneUnitConversionPayload
+
+  """Remove a unit conversion by its ID"""
+  unitConversionRemoveById(_id: MongoID!): RemoveByIdUnitConversionPayload
+
+  """Update a unit conversion"""
+  unitConversionUpdateById(_id: MongoID!, record: UpdateByIdUnitConversionInput!): UpdateByIdUnitConversionPayload
+
+  """Create a new unit"""
+  unitCreateOne(record: CreateOneUnitCreateInput!): CreateOneUnitPayload
+
+  """Remove a unit by its ID"""
+  unitRemoveById(_id: MongoID!): RemoveByIdUnitPayload
+
+  """Update a unit by its ID"""
+  unitUpdateById(_id: MongoID!, record: UpdateByIdUnitInput!): UpdateByIdUnitPayload
+}
+
+type NutritionalInfo {
+  _id: MongoID!
+  ingredient: MongoID!
+  perGram: NutritionalInfoPerGram
+  perUnit: NutritionalInfoPerGram
+  usdaFdcId: Float
+}
+
+type NutritionalInfoPerGram {
+  calories: Float!
+  carbs: Float!
+  fat: Float!
+  protein: Float!
+}
+
+input NutritionalInfoPerGramInput {
+  calories: Float!
+  carbs: Float!
+  fat: Float!
+  protein: Float!
+}
+
+type PrepMethod {
+  _id: MongoID!
+  owner: MongoID!
+  unique: Boolean!
+  value: String!
+}
+
+type Query {
+  """Retrieve a conversion rule by its ID"""
+  conversionRuleById(_id: MongoID!): ConversionRule
+
+  """Retrieve multiple conversion rules by their IDs"""
+  conversionRuleByIds(_ids: [MongoID!]!, limit: Int = 100, sort: SortFindByIdsConversionRuleInput): [ConversionRule!]!
+
+  """Retrieve multiple conversion rules"""
+  conversionRuleMany(
+    """Filter by fields"""
+    filter: FilterFindManyConversionRuleInput
+    limit: Int = 100
+    skip: Int
+    sort: SortFindManyConversionRuleInput
+  ): [ConversionRule!]!
+
+  """Retrieve a single conversion rule"""
+  conversionRuleOne(
+    """Filter by fields"""
+    filter: FilterFindOneConversionRuleInput
+    skip: Int
+    sort: SortFindOneConversionRuleInput
+  ): ConversionRule
+
+  """Retrieve the currently authenticated user"""
+  currentUser: User
+  imageById(_id: MongoID!): Image
+  imageByIds(_ids: [MongoID!]!, limit: Int = 100, sort: SortFindByIdsImageInput): [Image!]!
+  imageMany(
+    """Filter by fields"""
+    filter: FilterFindManyImageInput
+    limit: Int = 100
+    skip: Int
+    sort: SortFindManyImageInput
+  ): [Image!]!
+  imageOne(
+    """Filter by fields"""
+    filter: FilterFindOneImageInput
+    skip: Int
+    sort: SortFindOneImageInput
+  ): Image
+
+  """Retrieve an ingredient by its ID"""
+  ingredientById(_id: MongoID!): Ingredient
+
+  """Retrieve multiple ingredients by their IDs"""
+  ingredientByIds(_ids: [MongoID!]!, limit: Int = 100, sort: SortFindByIdsIngredientInput): [Ingredient!]!
+
+  """Retrieve multiple ingredients"""
+  ingredientMany(
+    """Filter by fields"""
+    filter: FilterFindManyIngredientInput
+    limit: Int = 100
+    skip: Int
+    sort: SortFindManyIngredientInput
+  ): [Ingredient!]!
+
+  """Retrieve all ingredients"""
+  ingredientManyAll(
+    """Filter by fields"""
+    filter: FilterFindManyIngredientInput
+    limit: Int = 100
+    skip: Int
+    sort: SortFindManyIngredientInput
+  ): [Ingredient!]!
+
+  """Retrieve a single ingredient"""
+  ingredientOne(
+    """Filter by fields"""
+    filter: FilterFindOneIngredientInput
+    skip: Int
+    sort: SortFindOneIngredientInput
+  ): Ingredient
+  nutritionalInfoByIngredient(
+    """Filter by fields"""
+    filter: FilterFindOneNutritionalInfoInput
+    skip: Int
+    sort: SortFindOneNutritionalInfoInput
+  ): NutritionalInfo
+  nutritionalInfosByIngredientIds(ingredientIds: [MongoID!]!): [NutritionalInfo]
+
+  """Retrieve a prep method by its ID"""
+  prepMethodById(_id: MongoID!): PrepMethod
+
+  """Retrieve multiple prep methods by their IDs"""
+  prepMethodByIds(_ids: [MongoID!]!, limit: Int = 100, sort: SortFindByIdsPrepMethodInput): [PrepMethod!]!
+
+  """Retrieve multiple prep methods"""
+  prepMethodMany(
+    """Filter by fields"""
+    filter: FilterFindManyPrepMethodInput
+    limit: Int = 100
+    skip: Int
+    sort: SortFindManyPrepMethodInput
+  ): [PrepMethod!]!
+
+  """Retrieve all prep methods"""
+  prepMethodManyAll(
+    """Filter by fields"""
+    filter: FilterFindManyPrepMethodInput
+    limit: Int = 100
+    skip: Int
+    sort: SortFindManyPrepMethodInput
+  ): [PrepMethod!]!
+
+  """Retrieve a single prep method"""
+  prepMethodOne(
+    """Filter by fields"""
+    filter: FilterFindOnePrepMethodInput
+    skip: Int
+    sort: SortFindOnePrepMethodInput
+  ): PrepMethod
+
+  """Retrieve a rating by its ID"""
+  ratingById(_id: MongoID!): Rating
+
+  """Retrieve multiple ratings by their IDs"""
+  ratingByIds(_ids: [MongoID!]!, limit: Int = 100, sort: SortFindByIdsRatingInput): [Rating!]!
+
+  """Retrieve multiple ratings"""
+  ratingMany(
+    """Filter by fields"""
+    filter: FilterFindManyRatingInput
+    limit: Int = 100
+    skip: Int
+    sort: SortFindManyRatingInput
+  ): [Rating!]!
+
+  """Retrieve a single rating"""
+  ratingOne(
+    """Filter by fields"""
+    filter: FilterFindOneRatingInput
+    skip: Int
+    sort: SortFindOneRatingInput
+  ): Rating
+
+  """Get a single recipe by its ID"""
+  recipeById(_id: MongoID!): Recipe
+
+  """Get multiple recipes by their IDs"""
+  recipeByIds(_ids: [MongoID!]!, limit: Int = 100, sort: SortFindByIdsRecipeInput): [Recipe!]!
+
+  """Count the number of recipes"""
+  recipeCount(
+    """Filter by fields"""
+    filter: FilterCountRecipeInput
+  ): Int
+
+  """Get multiple recipes"""
+  recipeMany(
+    """Filter by fields"""
+    filter: FilterFindManyRecipeInput
+    limit: Int = 100
+    skip: Int
+    sort: SortFindManyRecipeInput
+  ): [Recipe!]!
+
+  """Get a single recipe"""
+  recipeOne(
+    """Filter by fields"""
+    filter: FilterFindOneRecipeInput
+    skip: Int
+    sort: SortFindOneRecipeInput
+  ): Recipe
+
+  """Retrieve a size by its ID"""
+  sizeById(_id: MongoID!): Size
+
+  """Retrieve multiple sizes by their IDs"""
+  sizeByIds(_ids: [MongoID!]!, limit: Int = 100, sort: SortFindByIdsSizeInput): [Size!]!
+
+  """Retrieve multiple sizes"""
+  sizeMany(
+    """Filter by fields"""
+    filter: FilterFindManySizeInput
+    limit: Int = 100
+    skip: Int
+    sort: SortFindManySizeInput
+  ): [Size!]!
+
+  """Retrieve all sizes"""
+  sizeManyAll(
+    """Filter by fields"""
+    filter: FilterFindManySizeInput
+    limit: Int = 100
+    skip: Int
+    sort: SortFindManySizeInput
+  ): [Size!]!
+
+  """Retrieve a single size"""
+  sizeOne(
+    """Filter by fields"""
+    filter: FilterFindOneSizeInput
+    skip: Int
+    sort: SortFindOneSizeInput
+  ): Size
+
+  """Retrieve a tag by its ID"""
+  tagById(_id: MongoID!): Tag
+
+  """Retrieve multiple tags by their IDs"""
+  tagByIds(_ids: [MongoID!]!, limit: Int = 100, sort: SortFindByIdsTagInput): [Tag!]!
+
+  """Retrieve multiple tags"""
+  tagMany(
+    """Filter by fields"""
+    filter: FilterFindManyTagInput
+    limit: Int = 100
+    skip: Int
+    sort: SortFindManyTagInput
+  ): [Tag!]!
+
+  """Retrieve a single tag"""
+  tagOne(
+    """Filter by fields"""
+    filter: FilterFindOneTagInput
+    skip: Int
+    sort: SortFindOneTagInput
+  ): Tag
+
+  """Retrieve a unit by its ID"""
+  unitById(_id: MongoID!): Unit
+
+  """Retrieve multiple units by their IDs"""
+  unitByIds(_ids: [MongoID!]!, limit: Int = 100, sort: SortFindByIdsUnitInput): [Unit!]!
+
+  """Retrieve a unit conversion by its ID"""
+  unitConversionById(_id: MongoID!): UnitConversion
+
+  """Retrieve multiple unit conversions by their IDs"""
+  unitConversionByIds(_ids: [MongoID!]!, limit: Int = 100, sort: SortFindByIdsUnitConversionInput): [UnitConversion!]!
+
+  """Retrieve multiple unit conversions"""
+  unitConversionMany(
+    """Filter by fields"""
+    filter: FilterFindManyUnitConversionInput
+    limit: Int = 100
+    skip: Int
+    sort: SortFindManyUnitConversionInput
+  ): [UnitConversion!]!
+
+  """Retrieve a single unit conversion"""
+  unitConversionOne(
+    """Filter by fields"""
+    filter: FilterFindOneUnitConversionInput
+    skip: Int
+    sort: SortFindOneUnitConversionInput
+  ): UnitConversion
+
+  """Retrieve multiple units"""
+  unitMany(
+    """Filter by fields"""
+    filter: FilterFindManyUnitInput
+    limit: Int = 100
+    skip: Int
+    sort: SortFindManyUnitInput
+  ): [Unit!]!
+
+  """Retrieve all units"""
+  unitManyAll(
+    """Filter by fields"""
+    filter: FilterFindManyUnitInput
+    limit: Int = 100
+    skip: Int
+    sort: SortFindManyUnitInput
+  ): [Unit!]!
+
+  """Retrieve a single unit"""
+  unitOne(
+    """Filter by fields"""
+    filter: FilterFindOneUnitInput
+    skip: Int
+    sort: SortFindOneUnitInput
+  ): Unit
+  usdaFoodItem(fdcId: Int!): UsdaFoodItem
+  usdaSearch(pageSize: Int = 20, query: String!): [UsdaFoodItem]
+}
+
+type Rating {
+  _id: MongoID!
+  owner: MongoID!
+  recipe: MongoID!
+  value: Float!
+}
+
+type Recipe {
+  _id: MongoID!
+  archived: Boolean
+  calculatedTags: [String!]!
+  createdAt: Date!
+  images: [Image!]!
+  ingredientSubsections: [IngredientSubsection!]!
+  instructionSubsections: [InstructionSubsection!]!
+  isIngredient: Boolean!
+  lastModified: Date!
+  notes: String
+  numServings: Float!
+  originalRecipe: Recipe
+  owner: MongoID!
+  pluralTitle: String
+  ratings: [Rating!]!
+  source: String
+  subTitle: String
+  tags(limit: Int = 100, sort: SortFindByIdsTagInput): [Tag!]!
+  title: String!
+  titleIdentifier: String!
+  veganVersion: Recipe
+}
+
+type RecipeIngredient {
+  _id: MongoID!
+
+  """
+  Determine if the object is an ingredient or a recipe and return the appropriate type
+  """
+  ingredient: IngredientOrRecipe!
+  prepMethod: PrepMethod
+  quantity: String
+  size: Size
+  unit: Unit
+}
+
+input RecipeIngredientInput {
+  _id: MongoID
+  ingredient: MongoID!
+  prepMethod: MongoID
+  quantity: String
+  size: MongoID
+  unit: MongoID
+}
+
+input RecipeIngredientSubsectionsInput {
+  _id: MongoID
+  ingredients: [RecipeIngredientInput]!
+  name: String
+}
+
+input RecipeInstructionSubsectionsInput {
+  _id: MongoID
+  instructions: [String]!
+  name: String
+}
+
+"""
+The string representation of JavaScript regexp. You may provide it with flags "/^abc.*/i" or without flags like "^abc.*". More info about RegExp characters and flags: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
+"""
+scalar RegExpAsString @specifiedBy(url: "http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-262.pdf")
+
+type RemoveByIdConversionRulePayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Removed document"""
+  record: ConversionRule
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+type RemoveByIdIngredientPayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Removed document"""
+  record: Ingredient
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+type RemoveByIdNutritionalInfoPayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Removed document"""
+  record: NutritionalInfo
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+type RemoveByIdPrepMethodPayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Removed document"""
+  record: PrepMethod
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+type RemoveByIdRecipePayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Removed document"""
+  record: Recipe
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+type RemoveByIdSizePayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Removed document"""
+  record: Size
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+type RemoveByIdTagPayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Removed document"""
+  record: Tag
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+type RemoveByIdUnitConversionPayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Removed document"""
+  record: UnitConversion
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+type RemoveByIdUnitPayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Removed document"""
+  record: Unit
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+type RemoveOneTagPayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Removed document"""
+  record: Tag
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+type Size {
+  _id: MongoID!
+  owner: MongoID!
+  unique: Boolean!
+  value: String!
+}
+
+enum SortFindByIdsConversionRuleInput {
+  """Sort by rules threshold in descending order"""
+  THRESHOLD_DESC
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindByIdsImageInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindByIdsIngredientInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindByIdsPrepMethodInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindByIdsRatingInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindByIdsRecipeInput {
+  CALCULATEDTAGS_ASC
+  CALCULATEDTAGS_DESC
+  INGREDIENTSUBSECTIONS__INGREDIENTS__INGREDIENT_ASC
+  INGREDIENTSUBSECTIONS__INGREDIENTS__INGREDIENT_DESC
+  TAGS_ASC
+  TAGS_DESC
+  TITLE_ASC
+  TITLE_DESC
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindByIdsSizeInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindByIdsTagInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindByIdsUnitConversionInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindByIdsUnitInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindManyConversionRuleInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindManyImageInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindManyIngredientInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindManyPrepMethodInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindManyRatingInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindManyRecipeInput {
+  CALCULATEDTAGS_ASC
+  CALCULATEDTAGS_DESC
+
+  """Sort by creation date in ascending order"""
+  CREATED_ASC
+
+  """Sort by creation date in descending order"""
+  CREATED_DESC
+  INGREDIENTSUBSECTIONS__INGREDIENTS__INGREDIENT_ASC
+  INGREDIENTSUBSECTIONS__INGREDIENTS__INGREDIENT_DESC
+
+  """Sort by last modified date in ascending order"""
+  MODIFIED_ASC
+
+  """Sort by last modified date in descending order"""
+  MODIFIED_DESC
+  TAGS_ASC
+  TAGS_DESC
+  TITLE_ASC
+  TITLE_DESC
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindManySizeInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindManyTagInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindManyUnitConversionInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindManyUnitInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindOneConversionRuleInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindOneImageInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindOneIngredientInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindOneNutritionalInfoInput {
+  INGREDIENT_ASC
+  INGREDIENT_DESC
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindOnePrepMethodInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindOneRatingInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindOneRecipeInput {
+  CALCULATEDTAGS_ASC
+  CALCULATEDTAGS_DESC
+  INGREDIENTSUBSECTIONS__INGREDIENTS__INGREDIENT_ASC
+  INGREDIENTSUBSECTIONS__INGREDIENTS__INGREDIENT_DESC
+  TAGS_ASC
+  TAGS_DESC
+  TITLE_ASC
+  TITLE_DESC
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindOneSizeInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindOneTagInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindOneUnitConversionInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortFindOneUnitInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+enum SortRemoveOneTagInput {
+  _ID_ASC
+  _ID_DESC
+}
+
+type Tag {
+  _id: MongoID!
+  value: String!
+}
+
+type Unit {
+  _id: MongoID!
+  hasSpace: Boolean!
+  longPlural: String!
+  longSingular: String!
+  measureType: EnumUnitMeasureType
+  owner: MongoID!
+  preferredNumberFormat: EnumUnitPreferredNumberFormat!
+  shortPlural: String!
+  shortSingular: String!
+  unique: Boolean!
+}
+
+type UnitConversion {
+  _id: MongoID!
+  baseUnit: Unit!
+  rules(limit: Int = 100, sort: SortFindByIdsConversionRuleInput): [ConversionRule!]!
+}
+
+""""""
+input UpdateByIdConversionRuleInput {
+  baseToUnitConversion: Float
+  baseUnit: MongoID
+  baseUnitThreshold: Float
+  unit: MongoID
+}
+
+type UpdateByIdConversionRulePayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Updated document"""
+  record: ConversionRule
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+""""""
+input UpdateByIdIngredientInput {
+  density: Float
+  isCountable: Boolean
+  name: String
+  owner: MongoID
+  pluralName: String
+  tags: [EnumIngredientTags]
+}
+
+type UpdateByIdIngredientPayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Updated document"""
+  record: Ingredient
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+""""""
+input UpdateByIdNutritionalInfoInput {
+  ingredient: MongoID
+  perGram: UpdateByIdNutritionalInfoPerGramInput
+  perUnit: UpdateByIdNutritionalInfoPerGramInput
+  usdaFdcId: Float
+}
+
+type UpdateByIdNutritionalInfoPayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Updated document"""
+  record: NutritionalInfo
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+""""""
+input UpdateByIdNutritionalInfoPerGramInput {
+  calories: Float
+  carbs: Float
+  fat: Float
+  protein: Float
+}
+
+""""""
+input UpdateByIdPrepMethodInput {
+  owner: MongoID
+  unique: Boolean
+  value: String
+}
+
+type UpdateByIdPrepMethodPayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Updated document"""
+  record: PrepMethod
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+""""""
+input UpdateByIdRecipeIngredientInput {
+  _id: MongoID
+  ingredient: MongoID
+  prepMethod: MongoID
+  quantity: String
+  size: MongoID
+  unit: MongoID
+}
+
+""""""
+input UpdateByIdRecipeIngredientSubsectionsInput {
+  _id: MongoID
+  ingredients: [UpdateByIdRecipeIngredientInput]
+  name: String
+}
+
+""""""
+input UpdateByIdRecipeInstructionSubsectionsInput {
+  _id: MongoID
+  instructions: [String]
+  name: String
+}
+
+""""""
+input UpdateByIdRecipeModifyInput {
+  ingredientSubsections: [UpdateByIdRecipeIngredientSubsectionsInput]
+  instructionSubsections: [UpdateByIdRecipeInstructionSubsectionsInput]
+  isIngredient: Boolean
+  notes: String
+  numServings: Float
+  owner: MongoID
+  pluralTitle: String
+  source: String
+  subTitle: String
+  tags: [MongoID]
+  title: String
+}
+
+type UpdateByIdRecipePayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Updated document"""
+  record: Recipe
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+""""""
+input UpdateByIdSizeInput {
+  owner: MongoID
+  unique: Boolean
+  value: String
+}
+
+type UpdateByIdSizePayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Updated document"""
+  record: Size
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+""""""
+input UpdateByIdTagInput {
+  value: String
+}
+
+type UpdateByIdTagPayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Updated document"""
+  record: Tag
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+""""""
+input UpdateByIdUnitConversionInput {
+  baseUnit: MongoID
+  rules: [MongoID]
+}
+
+type UpdateByIdUnitConversionPayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Updated document"""
+  record: UnitConversion
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+""""""
+input UpdateByIdUnitInput {
+  hasSpace: Boolean
+  longPlural: String
+  longSingular: String
+  measureType: EnumUnitMeasureType
+  owner: MongoID
+  preferredNumberFormat: EnumUnitPreferredNumberFormat
+  shortPlural: String
+  shortSingular: String
+  unique: Boolean
+}
+
+type UpdateByIdUnitPayload {
+  """
+  Error that may occur during operation. If you request this field in GraphQL query, you will receive typed error in payload; otherwise error will be provided in root `errors` field of GraphQL response.
+  """
+  error: ErrorInterface
+
+  """Updated document"""
+  record: Unit
+
+  """Document ID"""
+  recordId: MongoID
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
+type UsdaFoodItem {
+  brandOwner: String
+  caloriesPer100g: Float
+  carbsPer100g: Float
+  dataType: String
+  description: String!
+  fatPer100g: Float
+  fdcId: Int!
+  householdServingFullText: String
+
+  """Named portions with gram weights"""
+  portions: [UsdaFoodPortion!]!
+  proteinPer100g: Float
+  servingSize: Float
+  servingSizeUnit: String
+}
+
+type UsdaFoodPortion {
+  ambiguous: Boolean!
+  amount: Float
+  description: String!
+  gramWeight: Float!
+  impliedDensity: Float
+  kind: UsdaPortionKind!
+  millilitres: Float
+  modifier: String
+}
+
+enum UsdaPortionKind {
+  ITEM
+  SERVING
+  VOLUME
+  WEIGHT
+}
+
+type User {
+  _id: MongoID!
+  firstName: String!
+  lastName: String!
+  role: EnumUserRole!
+  username: String
+}

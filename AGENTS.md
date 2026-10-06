@@ -44,6 +44,7 @@ cli/          # oclif command line tool, talks to the API over GraphQL
 | Compile TS | `npm run compile` |
 | Run tests | `npm test` (compiles first, then runs mocha) |
 | Type check | `npm run check-types` |
+| Write `schema.graphql` | `npm run print-schema` (after any schema change, see below) |
 | Dev server | `npm run dev` |
 | Start server | `NODE_ENV=development node ./dist/src/index.js` |
 
@@ -57,7 +58,7 @@ cli/          # oclif command line tool, talks to the API over GraphQL
 | Run tests | `npm test` (vitest, watch mode) |
 | Run tests once | `npm test -- run` |
 | Type check | `npm run check-types` |
-| Codegen | `npm run generate` (requires running API, see below) |
+| Codegen | `npm run generate` (reads `api/schema.graphql`, see below) |
 | Build | `npm run build` |
 | Dev server | `npm run dev` |
 
@@ -70,7 +71,7 @@ cli/          # oclif command line tool, talks to the API over GraphQL
 | Fix formatting | `npm run lint -- --fix` |
 | Run tests | `npm test` (builds first, then runs mocha) |
 | Type check | `npm run check-types` |
-| Codegen | `npm run generate` (requires running API, see below) |
+| Codegen | `npm run generate` (reads `api/schema.graphql`, see below) |
 | Build | `npm run build` |
 | Put `recipe` on PATH | `npm link` |
 
@@ -122,27 +123,25 @@ cd cli && npm test
 
 ## GraphQL Codegen
 
-The client uses `@graphql-codegen/cli` to generate TypeScript types from the API schema via introspection. **This requires the API to be running.**
+The client and the CLI use `@graphql-codegen/cli` to generate TypeScript types. They read the
+schema from `api/schema.graphql`, which is committed. **Codegen does not need a running API.**
 
 ```bash
-# 1. Start the API (port 4004 for test/dev, or API_PORT in .claude/worktree.env in a worktree)
-cd api && npm install && npm run compile
-NODE_ENV=development node ./dist/src/index.js &
+# 1. After a change to the API schema, write the schema file and commit it
+cd api && npm run print-schema
 
 # 2. Run codegen
 cd client && npm run generate
-```
-
-The CLI does the same, with `cli/codegen.ts` reading `RECIPE_API_URL`:
-
-```bash
 cd cli && npm run generate
 ```
 
+- `print-schema` compiles the API and prints the schema that `api/src/schema/index.ts` builds.
+  It needs no database and no environment variables.
 - Output goes to `client/src/__generated__/` and `cli/src/graphql/__generated__/` (both
   gitignored).
-- After any GraphQL schema change (queries, mutations, fragments), you must re-run codegen.
-- In CI, `npm run generate:test` is used with the API started in test mode.
+- After any GraphQL change, re-run codegen. This includes API schema changes (after
+  `print-schema`) and changes to client or CLI operations (queries, mutations, fragments).
+- In CI, the test job runs `print-schema` and fails if `api/schema.graphql` is not up to date.
 
 ## Code Conventions
 
@@ -285,9 +284,9 @@ Mantine's `[data-checked]` attribute is set on the root element when the checkbo
 GitHub Actions workflow (`.github/workflows/deploy.yml`):
 
 1. **lint job** (pull requests): install, then lint the API, client and CLI. Linting doesn't need the generated GraphQL types, so it skips the API and codegen.
-2. **test job** (pull requests): install, start the API, codegen, type-check the client, then run the API, client and CLI tests.
+2. **test job** (pull requests): install, check that `api/schema.graphql` is up to date, codegen, type-check the client, then run the API, client and CLI tests.
    `main` only accepts PRs whose `lint` and `test` checks both passed on a branch that is up to date with `main` (ruleset), so `main` is not re-tested on push.
-3. **build job** (push to `main`): start the API against a throwaway MongoDB for codegen, build the client and the production API.
+3. **build job** (push to `main`): codegen from `api/schema.graphql`, then build the client and the production API.
 4. **deploy job** (after build): join the tailnet (Tailscale, `tag:ci`), rsync both to the server as `deploy-recipe`, restart `recipe.service`, and health-check. It holds the production secrets but runs no installs or project code. Runtime config lives in `/etc/recipe.env` on the server. See README.
 
 ## Claude Code Worktrees
@@ -303,7 +302,7 @@ may set them up. When it does, the worktree has a `.claude/worktree.env` file:
 ## Common Pitfalls
 
 - **Forgetting codegen**: After changing GraphQL operations (queries, mutations, fragments), run `npm run generate` in `client/` **and in `cli/`**. The `__generated__/` directories are gitignored and must be regenerated. Editing a *fragment* changes every document that uses it, so the operations that embed it go stale too. The CLI transport detects a stale document and says so; the client does not.
-- **Codegen needs a running API**: The codegen config introspects the schema from a live server. Start the API first.
+- **Forgetting `print-schema`**: Codegen reads the committed `api/schema.graphql`, not the live API. After an API schema change, run `npm run print-schema` in `api/` and commit the file, or CI fails.
 - **API tests require compilation**: `npm test` compiles TS to `dist/` then runs mocha on JS files. If you edit `.ts` files, the tests always recompile.
 - **`MockedProvider` consumes each mock once**: Apollo's `MockedProvider` uses each entry in the mocks array exactly once (unless `newData` is used). If a component fires the same query multiple times (e.g. on mount and after navigation), provide the mock twice in the array.
 - **Use `cache.modify` to change cached data** Re-fetches are uncommon, as react-router navigation does NOT trigger requerying of already cached data. When a mutation changes server-side data that is already present in a cached query result, use `cache.modify` to modify in place.

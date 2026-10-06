@@ -18,6 +18,7 @@
     "start:test": "NODE_ENV=test mocha ./dist/test/**/*.test.js",
     "seed": "npm run compile && NODE_ENV=development node ./dist/src/scripts/seedDatabase.js",
     "dl_memory": "npm run compile && NODE_ENV=test node ./dist/test/scripts/downloadMemoryServer.js",
+    "print-schema": "npm run compile && node ./dist/src/scripts/printSchema.js",
     "check-types": "tsc --noEmit"
   },
   "keywords": [],

@@ -40,8 +40,7 @@
     "rm-dist": "rm -rf ./dist",
     "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0",
     "check-types": "tsc --noEmit",
-    "generate": "npm run rm-generated && NODE_ENV=development graphql-codegen",
-    "generate:test": "npm run rm-generated && NODE_ENV=test graphql-codegen",
+    "generate": "npm run rm-generated && graphql-codegen",
     "rm-generated": "[ -d src/graphql/__generated__/ ] && rm -r src/graphql/__generated__/ || true",
     "test": "npm run build && npm run start:test --",
     "start:test": "NODE_ENV=test mocha \"./dist/test/**/*.test.js\""

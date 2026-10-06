@@ -1,3 +1,5 @@
+import '../../src/requireEnv.js';
+
 import { assert } from 'chai';
 import mongoose from 'mongoose';
 import { ApolloServer } from '@apollo/server';
