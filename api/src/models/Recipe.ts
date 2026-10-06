@@ -184,7 +184,7 @@ const recipeSchema: Schema<Recipe> = new Schema<Recipe>({
     titleIdentifier: {
         type: String,
         required: true,
-        validate: unique('Recipe', 'titleIdentifier'),
+        validate: unique<Recipe>('Recipe', 'titleIdentifier'),
     },
     pluralTitle: { type: String },
     subTitle: { type: String },

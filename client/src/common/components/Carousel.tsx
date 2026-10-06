@@ -102,11 +102,15 @@ function Slider(props: SliderProps) {
     const handleFocus = () => setTrackIsActive(true);
     const handleDecrementClick = () => {
         setTrackIsActive(true);
-        !(activeItem === positions.length - positions.length) && setActiveItem((prev) => prev - 1);
+        if (activeItem !== 0) {
+            setActiveItem((prev) => prev - 1);
+        }
     };
     const handleIncrementClick = () => {
         setTrackIsActive(true);
-        !(activeItem === positions.length - 1) && setActiveItem((prev) => prev + 1);
+        if (activeItem !== positions.length - 1) {
+            setActiveItem((prev) => prev + 1);
+        }
     };
 
     return (
@@ -360,7 +364,9 @@ function Item(props: ItemProps) {
     const handleFocus = () => setTrackIsActive(true);
 
     const handleBlur = () => {
-        userDidTab && index + 1 === positions.length && setTrackIsActive(false);
+        if (userDidTab && index + 1 === positions.length) {
+            setTrackIsActive(false);
+        }
         setUserDidTab(false);
     };
 
