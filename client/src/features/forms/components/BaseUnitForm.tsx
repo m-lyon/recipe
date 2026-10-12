@@ -6,6 +6,7 @@ import { MutableRefObject, useCallback, useEffect } from 'react';
 import { Button, ButtonGroup, Checkbox } from '@chakra-ui/react';
 import { FormControl, FormHelperText, HStack, Radio, RadioGroup } from '@chakra-ui/react';
 
+import { useUser } from '@recipe/features/user';
 import { NumberFormat } from '@recipe/graphql/enums';
 import { GET_INGREDIENT_COMPONENTS } from '@recipe/graphql/queries/recipe';
 import { EnumUnitDimension, EnumUnitSystem } from '@recipe/graphql/generated';
@@ -31,6 +32,24 @@ const CANONICAL_NAME: Record<EnumUnitDimension, string> = {
     volume: 'Millilitres',
     count: '',
 };
+const CANONICAL_SYMBOL: Record<EnumUnitDimension, string> = { mass: 'g', volume: 'ml', count: '' };
+const SYSTEM_NAME: Partial<Record<EnumUnitSystem, string>> = { metric: 'metric', us: 'US' };
+
+/** The size of a unit the reader cannot change, as a sentence. */
+function describeSize(data: Partial<ModifyableUnit>, isStandard: boolean): string {
+    const { dimension = 'count', perCanonical, system } = data;
+    if (isStandard) {
+        const size =
+            dimension === 'count' || !perCanonical
+                ? 'a count'
+                : `1 ${data.longSingular} = ${Number(perCanonical.toPrecision(5))} ${CANONICAL_SYMBOL[dimension]}${system ? ` (${SYSTEM_NAME[system]})` : ''}`;
+        return `Standard unit: ${size}.`;
+    }
+    if (dimension === 'count') {
+        return "A count unit, such as a handful or a can. Its weight comes from each ingredient's measures.";
+    }
+    return `1 ${data.longSingular} = ${perCanonical} ${CANONICAL_SYMBOL[dimension]}. Only an admin can change its size.`;
+}
 
 export const unitFormSchema = object({
     shortSingular: string().required('Short singular name is required'),
@@ -65,6 +84,10 @@ export interface BaseUnitFormProps extends StackProps {
 }
 export function BaseUnitForm(props: BaseUnitFormProps) {
     const { fieldRef, initData, disabled, submitForm, onDelete, ...rest } = props;
+    const { isAdmin } = useUser();
+    // Code owns the size of a standard unit, and only an admin sizes a mass or volume unit.
+    const isStandard = Boolean(initData?.standard);
+    const canChangeSize = isAdmin && !isStandard;
     const xfm = useCallback(
         (data: Partial<ModifyableUnit>) => ({
             shortSingular: data.shortSingular,
@@ -174,53 +197,69 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
             >
                 Space after quantity
             </Checkbox>
-            <FormControl isDisabled={disabled} isInvalid={hasError}>
-                <SearchableSelect
-                    label='Dimension'
-                    aria-label='Dimension'
-                    options={DIMENSION_OPTIONS}
-                    value={disabled ? null : (formData.dimension ?? 'count')}
-                    onChange={(val) => handleChange('dimension', val as EnumUnitDimension)}
-                    disabled={disabled}
-                />
-                <FormHelperText>
-                    Mass and volume units convert by size; count units need an ingredient weight
-                </FormHelperText>
-            </FormControl>
-            {formData.dimension && formData.dimension !== 'count' && (
+            {canChangeSize ? (
                 <>
-                    <FloatingLabelInput
-                        label={`${CANONICAL_NAME[formData.dimension]} in one unit`}
-                        id='per-canonical'
-                        value={formData.perCanonical?.toString() ?? ''}
-                        isInvalid={hasError}
-                        isRequired
-                        isDisabled={disabled}
-                        onChange={(e) =>
-                            handleChange('perCanonical', parseFloat(e.target.value) || undefined)
-                        }
-                    />
-                    {sameSize && (
-                        <Text fontSize='sm' color='orange.500' fontWeight='normal'>
-                            This is the same size as {sameSize.longSingular}
-                        </Text>
-                    )}
                     <FormControl isDisabled={disabled} isInvalid={hasError}>
-                        <FormHelperText>System</FormHelperText>
-                        <RadioGroup
-                            onChange={(value) => handleChange('system', value as EnumUnitSystem)}
-                            value={formData.system ?? ''}
-                        >
-                            <HStack spacing='12px'>
-                                <Radio value='metric'>metric</Radio>
-                                <Radio value='us'>US customary</Radio>
-                            </HStack>
-                        </RadioGroup>
+                        <SearchableSelect
+                            label='Dimension'
+                            aria-label='Dimension'
+                            options={DIMENSION_OPTIONS}
+                            value={disabled ? null : (formData.dimension ?? 'count')}
+                            onChange={(val) => handleChange('dimension', val as EnumUnitDimension)}
+                            disabled={disabled}
+                        />
+                        <FormHelperText>
+                            Mass and volume units convert by size; count units need an ingredient
+                            weight
+                        </FormHelperText>
                     </FormControl>
+                    {formData.dimension && formData.dimension !== 'count' && (
+                        <>
+                            <FloatingLabelInput
+                                label={`${CANONICAL_NAME[formData.dimension]} in one unit`}
+                                id='per-canonical'
+                                value={formData.perCanonical?.toString() ?? ''}
+                                isInvalid={hasError}
+                                isRequired
+                                isDisabled={disabled}
+                                onChange={(e) =>
+                                    handleChange(
+                                        'perCanonical',
+                                        parseFloat(e.target.value) || undefined
+                                    )
+                                }
+                            />
+                            {sameSize && (
+                                <Text fontSize='sm' color='orange.500' fontWeight='normal'>
+                                    This is the same size as {sameSize.longSingular}
+                                </Text>
+                            )}
+                            <FormControl isDisabled={disabled} isInvalid={hasError}>
+                                <FormHelperText>System</FormHelperText>
+                                <RadioGroup
+                                    onChange={(value) =>
+                                        handleChange('system', value as EnumUnitSystem)
+                                    }
+                                    value={formData.system ?? ''}
+                                >
+                                    <HStack spacing='12px'>
+                                        <Radio value='metric'>metric</Radio>
+                                        <Radio value='us'>US customary</Radio>
+                                    </HStack>
+                                </RadioGroup>
+                            </FormControl>
+                        </>
+                    )}
                 </>
+            ) : (
+                !disabled && (
+                    <Text fontSize='sm' fontWeight='normal' aria-label='Unit size'>
+                        {describeSize(formData, isStandard)}
+                    </Text>
+                )
             )}
             <Checkbox
-                isDisabled={disabled}
+                isDisabled={disabled || isStandard}
                 onChange={(e) => handleChange('hidden', e.target.checked)}
                 isChecked={formData.hidden ?? false}
             >
@@ -232,7 +271,7 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
                 paddingTop={2}
                 isDisabled={disabled}
             >
-                {onDelete && (
+                {onDelete && !isStandard && (
                     <Button colorScheme='red' onClick={onDelete} aria-label='Delete unit'>
                         Delete
                     </Button>

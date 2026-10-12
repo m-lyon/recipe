@@ -25,6 +25,7 @@ describe('getEditableRecipeIngredientStr', () => {
                     perCanonical: 236.5882365,
                     system: 'us',
                     hidden: false,
+                    standard: null,
                 },
             },
             size: { value: null, data: null },
@@ -90,6 +91,7 @@ describe('getFinishedRecipeIngredientStr', () => {
                 perCanonical: 236.5882365,
                 system: 'us',
                 hidden: false,
+                standard: null,
             },
             size: null,
             ingredient: {

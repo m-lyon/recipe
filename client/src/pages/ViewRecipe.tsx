@@ -39,7 +39,7 @@ export function ViewRecipe() {
                             'ingredients instructions'`,
                 }}
                 gridTemplateRows={{ base: 'repeat(4, auto)', md: '100px auto' }}
-                gridTemplateColumns={{ base: '100%', md: '0.285fr 0.715fr' }}
+                gridTemplateColumns={{ base: '100%', md: 'minmax(20rem, 0.285fr) 0.715fr' }}
                 h='auto'
                 gap='2'
                 pt='2'

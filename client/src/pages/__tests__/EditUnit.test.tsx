@@ -6,6 +6,7 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
+import { mockGetUnitsWithCutting } from '@recipe/graphql/mutations/__mocks__/unit';
 import { MockedResponses, haveValueByLabelText, renderPage } from '@recipe/utils/tests';
 import { mockDeleteUnit, mockUpdateUnit } from '@recipe/graphql/mutations/__mocks__/unit';
 
@@ -14,9 +15,9 @@ import { EditUnit } from '../EditUnit';
 loadErrorMessages();
 loadDevMessages();
 
-const renderComponent = (mocks: MockedResponses = []) => {
+const renderComponent = (mocks: MockedResponses = [], units = mockGetUnits) => {
     const routes = createRoutesFromElements(<Route path='/' element={<EditUnit />} />);
-    return renderPage(routes, [mockGetUnits, mockCurrentUserAdmin, ...mocks]);
+    return renderPage(routes, [units, mockCurrentUserAdmin, ...mocks]);
 };
 
 describe('Edit Unit', () => {
@@ -72,13 +73,13 @@ describe('Edit Unit', () => {
     it('should remove a unit', async () => {
         // Render
         const user = userEvent.setup();
-        renderComponent([mockDeleteUnit]);
+        renderComponent([mockDeleteUnit], mockGetUnitsWithCutting);
 
         // Act
         expect(await screen.findByText('Edit Unit')).not.toBeNull();
         await user.click(screen.getByLabelText('Select unit'));
-        await user.click(await screen.findByRole('option', { name: 'teaspoon' }));
-        expect(screen.getByLabelText('Short singular name')).toHaveProperty('value', 'tsp');
+        await user.click(await screen.findByRole('option', { name: 'cutting' }));
+        expect(screen.getByLabelText('Short singular name')).toHaveProperty('value', 'cut');
         await user.click(screen.getByLabelText('Delete unit'));
         await user.click(screen.getByLabelText('Select unit'));
         await user.click(await screen.findByRole('option', { name: 'gram' }));
@@ -86,7 +87,26 @@ describe('Edit Unit', () => {
         // Expect
         await user.click(screen.getByLabelText('Select unit'));
         expect(await screen.findByRole('option', { name: 'kilogram' })).not.toBeNull();
-        expect(screen.queryByRole('option', { name: 'teaspoon' })).toBeNull();
+        expect(screen.queryByRole('option', { name: 'cutting' })).toBeNull();
         await user.click(screen.getByLabelText('Select unit'));
+    });
+
+    it('should show the size of a standard unit and not offer to delete it', async () => {
+        // Render
+        const user = userEvent.setup();
+        renderComponent();
+
+        // Act
+        expect(await screen.findByText('Edit Unit')).not.toBeNull();
+        await user.click(screen.getByLabelText('Select unit'));
+        await user.click(await screen.findByRole('option', { name: 'teaspoon' }));
+
+        // Expect
+        expect(screen.getByLabelText('Unit size').textContent).toBe(
+            'Standard unit: 1 teaspoon = 4.9289 ml (US).'
+        );
+        expect(screen.queryByLabelText('Dimension')).toBeNull();
+        expect(screen.queryByLabelText('Delete unit')).toBeNull();
+        expect(screen.getByLabelText('Save unit')).not.toBeNull();
     });
 });

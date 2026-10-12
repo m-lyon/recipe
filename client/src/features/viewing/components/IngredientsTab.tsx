@@ -65,12 +65,7 @@ export function IngredientsTab(props: Props) {
 
     return (
         <IngredientsTabLayout
-            Servings={
-                <>
-                    <Servings />
-                    <UnitSystemToggle ml={2} />
-                </>
-            }
+            Servings={<Servings />}
             StarRating={
                 <StarRating
                     rating={getAverageRating(recipe.ratings)}
@@ -86,8 +81,9 @@ export function IngredientsTab(props: Props) {
                         origServings={recipe.numServings}
                         currentServings={currentServings}
                         showWakeLockBtn
-                        uncountedIngredientIds={uncountedIds}
+                        uncountedIngredientIds={loading ? undefined : uncountedIds}
                         dietToggle={dietToggle}
+                        unitToggle={<UnitSystemToggle mr='2' />}
                     />
                     <NutritionalInfoPanel
                         perServing={perServing}

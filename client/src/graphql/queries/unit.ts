@@ -14,6 +14,7 @@ export const UNIT_FIELDS = gql(`
         perCanonical
         system
         hidden
+        standard
     }
 `);
 

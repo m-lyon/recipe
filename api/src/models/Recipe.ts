@@ -5,6 +5,7 @@ import { Document, HydratedDocument, Model, PopulatedDoc, Schema, Types, model }
 import { Size } from './Size.js';
 import { Unit } from './Unit.js';
 import { PrepMethod } from './PrepMethod.js';
+import { EACH_KEY } from '../utils/units.js';
 import { capitalise } from '../utils/string.js';
 import { generateRandomString } from '../utils/random.js';
 import type { Ingredient as IngredientType } from './Ingredient.js';
@@ -121,7 +122,7 @@ recipeIngredientSchema.pre('save', async function (this: HydratedDocument<Recipe
     // clients still send no unit, so the hidden each unit is filled in here. Without a
     // quantity, the line keeps no unit.
     if (this.quantity != null && this.unit == null) {
-        const each = await Unit.findOne({ dimension: 'count', hidden: true }).select('_id');
+        const each = await Unit.findOne({ standard: EACH_KEY }).select('_id');
         if (each) {
             this.unit = each._id;
         }

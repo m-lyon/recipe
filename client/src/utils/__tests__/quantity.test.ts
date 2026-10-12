@@ -31,6 +31,7 @@ describe('changeQuantity', () => {
             perCanonical: 236.5882365,
             system: 'us',
             hidden: false,
+            standard: null,
         };
         const recipeIngredient: RecipeIngredientView = {
             __typename: 'RecipeIngredient',

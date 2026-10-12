@@ -157,7 +157,7 @@ describe('USDA portions as measures from the new ingredient form', () => {
         await user.keyboard('{1}{ }');
         await clickGetByText(screen, user, 'skip unit', 'skip size', 'add new ingredient');
         await user.keyboard('onion');
-        await user.click(screen.getByText(/^Countable/));
+        await user.click(screen.getByText('Use singular form with units'));
 
         // Act -- search USDA and select the record, which fetches its portions
         await user.type(screen.getByLabelText('Search nutritional data'), 'onion');

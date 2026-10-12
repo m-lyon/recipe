@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
 import { GraphQLError } from 'graphql';
 
+import { Unit } from '../models/Unit.js';
 import { Recipe } from '../models/Recipe.js';
 import { DisplayLadder } from '../models/DisplayLadder.js';
 import { IngredientMeasure } from '../models/IngredientMeasure.js';
@@ -96,5 +97,61 @@ export async function validateUnitNotInLadder(unitId: Types.ObjectId) {
             'unit',
             unitId
         );
+    }
+}
+
+/** The fields that define a unit's size. Code owns them on a standard unit. */
+const SIZE_FIELDS = ['dimension', 'perCanonical', 'system', 'hidden', 'standard'] as const;
+type SizeField = (typeof SIZE_FIELDS)[number];
+type UnitSizeFields = Partial<Record<SizeField, unknown>>;
+
+function forbidden(message: string) {
+    return new GraphQLError(message, { extensions: { code: 'FORBIDDEN' } });
+}
+
+/**
+ * Only an admin creates a mass or volume unit: its size changes the nutrition of every
+ * recipe that uses it. Anyone may create a count unit, which reaches grams only through a
+ * weight recorded on the ingredient.
+ */
+export function validateUnitCreate(record: UnitSizeFields, isAdmin: boolean) {
+    if (!isAdmin && record.dimension !== 'count') {
+        throw forbidden(
+            'Only an admin can create a mass or volume unit. Create a count unit, and record its weight on the ingredient.'
+        );
+    }
+}
+
+/**
+ * Blocks a change to the size of a standard unit, whose size is defined in code, and stops
+ * anyone but an admin turning a unit into a mass or volume unit. A record that repeats the
+ * stored values is allowed, so a form may send every field.
+ */
+export async function validateUnitUpdate(
+    unitId: Types.ObjectId,
+    record: UnitSizeFields,
+    isAdmin: boolean
+) {
+    const unit = await Unit.findById(unitId);
+    if (!unit) return;
+    const changed = SIZE_FIELDS.filter(
+        (field) => field in record && String(record[field] ?? null) !== String(unit[field] ?? null)
+    );
+    if (changed.length === 0) return;
+    if (unit.standard || changed.includes('standard')) {
+        throw forbidden(
+            `${unit.longSingular} is a standard unit. Its ${changed.join(', ')} cannot be changed.`
+        );
+    }
+    const dimension = record.dimension ?? unit.dimension;
+    if (!isAdmin && dimension !== 'count') {
+        throw forbidden('Only an admin can change the size of a mass or volume unit.');
+    }
+}
+
+export async function validateUnitNotStandard(unitId: Types.ObjectId) {
+    const unit = await Unit.findById(unitId).select('standard longSingular');
+    if (unit?.standard) {
+        throw forbidden(`Cannot delete ${unit.longSingular}: it is a standard unit.`);
     }
 }

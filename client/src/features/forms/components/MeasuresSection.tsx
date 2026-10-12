@@ -33,6 +33,16 @@ interface Row {
     key: string;
     measureId?: string;
     draft: MeasureDraft;
+    /**
+     * Names from the saved measure. The reader may not see every unit or size in the
+     * component lists (they hold only the reader's and admins' items), so saved rows carry
+     * their own.
+     */
+    saved?: {
+        unit: { longSingular: string; dimension: string; perCanonical: number };
+        size: string | null;
+        prepMethod: string | null;
+    };
 }
 
 function round1(n: number): string {
@@ -89,6 +99,11 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                 sizeId: m.size?._id ?? null,
                 prepMethodId: m.prepMethod?._id ?? null,
                 grams: m.grams,
+            },
+            saved: {
+                unit: m.unit,
+                size: m.size?.value ?? null,
+                prepMethod: m.prepMethod?.value ?? null,
             },
         }));
         const rows = ingredientId ? saved : staged;
@@ -171,14 +186,16 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
         );
         useImperativeHandle(ref, () => ({ commitPendingMeasures }), [commitPendingMeasures]);
 
-        const describe = (draft: MeasureDraft) =>
-            [
-                unitsById.get(draft.unitId)?.longSingular ?? '?',
-                draft.sizeId ? sizesById.get(draft.sizeId) : null,
-                draft.prepMethodId ? prepById.get(draft.prepMethodId) : null,
+        const describe = (row: Row) => {
+            const { draft, saved } = row;
+            return [
+                saved?.unit.longSingular ?? unitsById.get(draft.unitId)?.longSingular ?? '?',
+                saved?.size ?? (draft.sizeId ? sizesById.get(draft.sizeId) : null),
+                saved?.prepMethod ?? (draft.prepMethodId ? prepById.get(draft.prepMethodId) : null),
             ]
                 .filter(Boolean)
                 .join(' · ');
+        };
 
         return (
             <Stack spacing={3} fontWeight='normal'>
@@ -190,15 +207,11 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                     </Text>
                 )}
                 {rows.map((row) => {
-                    const unit = unitsById.get(row.draft.unitId);
+                    const unit = row.saved?.unit ?? unitsById.get(row.draft.unitId);
                     return (
-                        <HStack
-                            key={row.key}
-                            fontSize='sm'
-                            aria-label={`Measure ${describe(row.draft)}`}
-                        >
+                        <HStack key={row.key} fontSize='sm' aria-label={`Measure ${describe(row)}`}>
                             <Text flex={1}>
-                                1 {describe(row.draft)} = {round1(row.draft.grams)} g
+                                1 {describe(row)} = {round1(row.draft.grams)} g
                             </Text>
                             {unit?.dimension === 'volume' && (
                                 <Text color='gray.500'>
@@ -214,7 +227,7 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                                 size='xs'
                                 variant='ghost'
                                 icon={<CloseIcon />}
-                                aria-label={`Remove measure ${describe(row.draft)}`}
+                                aria-label={`Remove measure ${describe(row)}`}
                                 isDisabled={disabled}
                                 onClick={() => handleRemove(row)}
                             />

@@ -1,8 +1,9 @@
 import { ApolloError } from '@apollo/client';
 import { array, boolean, mixed, object, string } from 'yup';
 import { useImperativeHandle, useRef, useState } from 'react';
+import { Stack, StackProps, Tooltip } from '@chakra-ui/react';
 import { MutableRefObject, forwardRef, useCallback, useEffect } from 'react';
-import { Button, ButtonGroup, Checkbox, HStack, Stack, StackProps } from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Checkbox, HStack } from '@chakra-ui/react';
 
 import { IngredientTags } from '@recipe/graphql/enums';
 import { MacroNutrients } from '@recipe/utils/nutrition';
@@ -118,13 +119,21 @@ export const BaseIngredientForm = forwardRef<UsdaLinkSectionHandle, BaseIngredie
                     isDisabled={disabled}
                     onChange={(e) => handleChange('pluralName', e.target.value.toLowerCase())}
                 />
-                <Checkbox
-                    isChecked={formData.isCountable}
-                    onChange={(e) => handleChange('isCountable', e.target.checked)}
-                    isDisabled={disabled}
+                <Tooltip
+                    label='For example, checked: "200 g mushroom", unchecked: "200 g mushrooms".'
+                    hasArrow
+                    openDelay={300}
                 >
-                    Countable (pluralised after a unit: 200 g mushrooms)
-                </Checkbox>
+                    <Box alignSelf='flex-start'>
+                        <Checkbox
+                            isChecked={!formData.isCountable}
+                            onChange={(e) => handleChange('isCountable', !e.target.checked)}
+                            isDisabled={disabled}
+                        >
+                            Use singular form with units
+                        </Checkbox>
+                    </Box>
+                </Tooltip>
                 <HStack mb={2}>
                     <Checkbox
                         isDisabled={disabled}

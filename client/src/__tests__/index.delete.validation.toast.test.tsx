@@ -8,19 +8,19 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { DELETE_UNIT } from '@recipe/graphql/mutations/unit';
 import { DELETE_SIZE } from '@recipe/graphql/mutations/size';
 import { MockedResponses, renderPage } from '@recipe/utils/tests';
-import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockGetSizes } from '@recipe/graphql/queries/__mocks__/size';
 import { DeleteUnitMutationVariables } from '@recipe/graphql/generated';
 import { DeleteSizeMutationVariables } from '@recipe/graphql/generated';
 import { DELETE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 import { mockCarrotId, mockDicedId } from '@recipe/graphql/__mocks__/ids';
 import { DELETE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
-import { mockSmallId, mockTeaspoonId } from '@recipe/graphql/__mocks__/ids';
+import { mockCuttingId, mockSmallId } from '@recipe/graphql/__mocks__/ids';
 import { DeleteIngredientMutationVariables } from '@recipe/graphql/generated';
 import { DeletePrepMethodMutationVariables } from '@recipe/graphql/generated';
 import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockGetPrepMethods } from '@recipe/graphql/queries/__mocks__/prepMethod';
+import { mockGetUnitsWithCutting } from '@recipe/graphql/mutations/__mocks__/unit';
 
 import { EditUnit } from '../pages/EditUnit';
 import { EditSize } from '../pages/EditSize';
@@ -35,7 +35,7 @@ const mockDeleteUnitInUseError = {
     request: {
         query: DELETE_UNIT,
         variables: {
-            id: mockTeaspoonId,
+            id: mockCuttingId,
         } satisfies DeleteUnitMutationVariables,
     },
     error: new GraphQLError(
@@ -106,7 +106,7 @@ describe('Delete Validation Toast Notifications', () => {
 
     const renderEditUnit = (mocks: MockedResponses = []) => {
         const routes = createRoutesFromElements(<Route path='/' element={<EditUnit />} />);
-        return renderPage(routes, [mockGetUnits, mockCurrentUserAdmin, ...mocks]);
+        return renderPage(routes, [mockGetUnitsWithCutting, mockCurrentUserAdmin, ...mocks]);
     };
 
     const renderEditSize = (mocks: MockedResponses = []) => {
@@ -131,7 +131,7 @@ describe('Delete Validation Toast Notifications', () => {
         // Wait for the page to load and select the unit
         expect(await screen.findByText('Edit Unit')).not.toBeNull();
         await user.click(screen.getByLabelText('Select unit'));
-        await user.click(await screen.findByRole('option', { name: 'teaspoon' }));
+        await user.click(await screen.findByRole('option', { name: 'cutting' }));
 
         // Try to delete the unit
         await user.click(screen.getByLabelText('Delete unit'));

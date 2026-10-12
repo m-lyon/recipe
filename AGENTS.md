@@ -46,6 +46,7 @@ cli/          # oclif command line tool, talks to the API over GraphQL
 | Type check | `npm run check-types` |
 | Write `schema.graphql` | `npm run print-schema` (after any schema change, see below) |
 | Dev server | `npm run dev` |
+| Reset the dev database | `npm run seed` (**deletes everything** in `MONGODB_URI`, then loads `src/utils/seedData.ts`) |
 | Start server | `NODE_ENV=development node ./dist/src/index.js` |
 
 ### Client (`cd client/`)
@@ -210,6 +211,22 @@ When adding a new field to a query/mutation, update the corresponding `__mocks__
 3. Custom resolvers added via `TC.addResolver()` in `api/src/schema/<Entity>.ts`.
 4. Authorization applied via `composeResolvers()` in `api/src/schema/index.ts`.
 5. Authorization layers: `isAdmin`, `isVerified`, `isDocumentOwnerOrAdmin(Model)`.
+
+### Standard units
+
+The size of a mass or volume unit is defined in code, not in the database.
+`STANDARD_UNITS` in `api/src/utils/units.ts` lists them (plus the hidden `each` unit), and
+`syncStandardUnits` makes the `units` collection match on every API start: it adopts a unit
+with the same name (keeping its id), corrects its size, and creates missing core units.
+
+- A standard unit carries a `standard` key. Find it by that key (`{ standard: 'each' }`), never
+  by name.
+- The API rejects changes to a standard unit's `dimension`, `perCanonical`, `system`, `hidden`
+  and `standard`, and rejects deleting it. Its names, number format and spacing stay editable.
+- Only admins create or resize mass and volume units. Other users create count units (a
+  handful, a can), which reach grams through an ingredient measure.
+- To add a standard unit, add it to `STANDARD_UNITS`. Mark it `core: false` if it has more than
+  one common size (US and imperial pints), so it is sized when present but never created.
 
 ### Global types (client)
 

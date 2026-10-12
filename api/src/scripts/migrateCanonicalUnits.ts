@@ -2,6 +2,7 @@
  * Migrates unit conversion groups, densities and per-unit macros to canonical units
  * (issue #115). Runs the phases of the issue in order and prints a report of everything it
  * could not carry over. Safe to re-run: every step skips data that is already migrated.
+ * Phase 0 first adopts or creates the standard units defined in utils/units.ts.
  *
  *   npm run compile
  *   MONGODB_URI=mongodb://localhost:27017/recipeProdBackup DRY_RUN=1 \
@@ -16,6 +17,8 @@ import mongoose, { Types, mongo } from 'mongoose';
 
 import { knownMagnitude } from '../utils/units.js';
 import type { UnitDimension, UnitSystem } from '../models/Unit.js';
+import type { StandardUnitReport } from '../utils/standardUnits.js';
+import { describeStandardUnitReport, syncStandardUnits } from '../utils/standardUnits.js';
 
 type Db = mongo.Db;
 type ObjectId = Types.ObjectId;
@@ -61,6 +64,8 @@ interface Magnitude {
 
 export interface MigrationReport {
     dryRun: boolean;
+    /** Phase 0: standard units adopted from existing units, or created. */
+    standardUnits: StandardUnitReport | null;
     unitsAssigned: Array<{ unit: string } & Magnitude>;
     unitsAlreadyAssigned: string[];
     unitsUnassigned: Array<{ unit: string; reason: string }>;
@@ -503,6 +508,7 @@ export async function migrateCanonicalUnits(
     const write = !options.dryRun;
     const report: MigrationReport = {
         dryRun: !write,
+        standardUnits: null,
         unitsAssigned: [],
         unitsAlreadyAssigned: [],
         unitsUnassigned: [],
@@ -522,6 +528,9 @@ export async function migrateCanonicalUnits(
         | ObjectId
         | undefined;
 
+    // Phase 0: standard units first, so their sizes come from code and the later phases
+    // (sizing through conversion groups, default ladders) can build on them.
+    report.standardUnits = await syncStandardUnits(db, { write });
     const state = await assignUnitMagnitudes(db, report, write);
     const each = await ensureEachUnit(db, report, write, admin);
     if (each) {
@@ -539,6 +548,13 @@ function printReport(report: MigrationReport) {
         for (const item of items) console.log(`  - ${format(item)}`);
     };
     console.log(report.dryRun ? 'DRY RUN: nothing was written.' : 'Migration complete.');
+    if (report.standardUnits) {
+        list(
+            'Standard units',
+            describeStandardUnitReport(report.standardUnits, { skipped: true }),
+            (line) => line
+        );
+    }
     list(
         'Units sized',
         report.unitsAssigned,

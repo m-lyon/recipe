@@ -12,7 +12,6 @@ type ReservedIngredientTags = (typeof ReservedIngredientTags)[keyof typeof Reser
 export interface Ingredient extends Document {
     name: string;
     pluralName: string;
-    /** Display only: a countable ingredient is pluralised after a unit, "200 g mushrooms". */
     isCountable: boolean;
     owner: Types.ObjectId;
     tags: ReservedIngredientTags[];

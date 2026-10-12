@@ -818,6 +818,7 @@ input FilterFindManyUnitInput {
   preferredNumberFormat: EnumUnitPreferredNumberFormat
   shortPlural: String
   shortSingular: String
+  standard: String
   system: EnumUnitSystem
   unique: Boolean
 }
@@ -825,6 +826,19 @@ input FilterFindManyUnitInput {
 """For performance reason this type contains only *indexed* fields."""
 input FilterFindManyUnitOperatorsInput {
   _id: FilterFindManyUnit_idOperatorsInput
+  standard: FilterFindManyUnitStandardOperatorsInput
+}
+
+input FilterFindManyUnitStandardOperatorsInput {
+  exists: Boolean
+  gt: String
+  gte: String
+  in: [String]
+  lt: String
+  lte: String
+  ne: String
+  nin: [String]
+  regex: RegExpAsString
 }
 
 input FilterFindManyUnit_idOperatorsInput {
@@ -1205,6 +1219,7 @@ input FilterFindOneUnitInput {
   preferredNumberFormat: EnumUnitPreferredNumberFormat
   shortPlural: String
   shortSingular: String
+  standard: String
   system: EnumUnitSystem
   unique: Boolean
 }
@@ -1212,6 +1227,19 @@ input FilterFindOneUnitInput {
 """For performance reason this type contains only *indexed* fields."""
 input FilterFindOneUnitOperatorsInput {
   _id: FilterFindOneUnit_idOperatorsInput
+  standard: FilterFindOneUnitStandardOperatorsInput
+}
+
+input FilterFindOneUnitStandardOperatorsInput {
+  exists: Boolean
+  gt: String
+  gte: String
+  in: [String]
+  lt: String
+  lte: String
+  ne: String
+  nin: [String]
+  regex: RegExpAsString
 }
 
 input FilterFindOneUnit_idOperatorsInput {
@@ -1971,6 +1999,8 @@ enum SortFindByIdsTagInput {
 }
 
 enum SortFindByIdsUnitInput {
+  STANDARD_ASC
+  STANDARD_DESC
   _ID_ASC
   _ID_DESC
 }
@@ -2036,6 +2066,8 @@ enum SortFindManyTagInput {
 }
 
 enum SortFindManyUnitInput {
+  STANDARD_ASC
+  STANDARD_DESC
   _ID_ASC
   _ID_DESC
 }
@@ -2091,6 +2123,8 @@ enum SortFindOneTagInput {
 }
 
 enum SortFindOneUnitInput {
+  STANDARD_ASC
+  STANDARD_DESC
   _ID_ASC
   _ID_DESC
 }
@@ -2117,6 +2151,7 @@ type Unit {
   preferredNumberFormat: EnumUnitPreferredNumberFormat!
   shortPlural: String!
   shortSingular: String!
+  standard: String
   system: EnumUnitSystem
   unique: Boolean!
 }
@@ -2344,6 +2379,7 @@ input UpdateByIdUnitInput {
   preferredNumberFormat: EnumUnitPreferredNumberFormat
   shortPlural: String
   shortSingular: String
+  standard: String
   system: EnumUnitSystem
   unique: Boolean
 }

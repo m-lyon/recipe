@@ -186,6 +186,7 @@ describe('Unitless quantities', function () {
             dimension: 'count',
             perCanonical: 1,
             hidden: true,
+            standard: 'each',
         }).save();
     });
 

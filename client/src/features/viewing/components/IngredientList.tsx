@@ -56,6 +56,7 @@ export interface IngredientListProps extends BoxProps {
     showWakeLockBtn?: boolean;
     uncountedIngredientIds?: Set<string>;
     dietToggle?: React.ReactNode;
+    unitToggle?: React.ReactNode;
 }
 export function IngredientList(props: IngredientListProps) {
     const {
@@ -65,6 +66,7 @@ export function IngredientList(props: IngredientListProps) {
         showWakeLockBtn,
         uncountedIngredientIds,
         dietToggle,
+        unitToggle,
         ...rest
     } = props;
     const { apply, convert } = useUnitConversion();
@@ -135,6 +137,7 @@ export function IngredientList(props: IngredientListProps) {
                 <Text fontSize='2xl'>{modifiedSubsections[0].name ?? 'Ingredients'}</Text>
                 <Spacer />
                 {dietToggle}
+                {unitToggle}
                 {showWakeLockBtn ? (
                     <Tooltip
                         label={isAwake ? 'Allow screen to sleep' : 'Keep screen awake'}

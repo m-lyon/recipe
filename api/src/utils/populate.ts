@@ -1,625 +1,281 @@
 import fs from 'fs';
 import path from 'path';
 
+import mongoose, { Types } from 'mongoose';
+
 import { Tag } from '../models/Tag.js';
 import { Unit } from '../models/Unit.js';
 import { User } from '../models/User.js';
 import { Size } from '../models/Size.js';
 import { Image } from '../models/Image.js';
 import { IMAGE_DIR } from '../constants.js';
+import { Rating } from '../models/Rating.js';
 import { Recipe } from '../models/Recipe.js';
 import { Ingredient } from '../models/Ingredient.js';
 import { PrepMethod } from '../models/PrepMethod.js';
 import { DisplayLadder } from '../models/DisplayLadder.js';
+import { NutritionalInfo } from '../models/NutritionalInfo.js';
 import { IngredientMeasure } from '../models/IngredientMeasure.js';
+import { describeStandardUnitReport, syncStandardUnits } from './standardUnits.js';
+import { SEED_COUNT_UNITS, SEED_INGREDIENTS, SEED_PREP_METHODS } from './seedData.js';
+import { SEED_RECIPES, SEED_SIZES, SEED_TAGS, SEED_USERS, SeedOwner } from './seedData.js';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+async function owners(): Promise<Record<SeedOwner, Types.ObjectId>> {
+    const admin = await User.findOne({ role: 'admin' }).orFail();
+    const user = await User.findOne({ username: 'matt@gmail.com' }).orFail();
+    return { admin: admin._id, user: user._id };
+}
+
+/** Ids by name, so the data tables can refer to documents by what people call them. */
+async function lookup<T extends { _id: Types.ObjectId }>(
+    docs: Promise<T[]>,
+    key: (doc: T) => string
+): Promise<(name: string) => Types.ObjectId> {
+    const byName = new Map((await docs).map((doc) => [key(doc), doc._id]));
+    return (name: string) => {
+        const id = byName.get(name);
+        if (!id) throw new Error(`Seed data refers to a missing item: ${name}`);
+        return id;
+    };
+}
+
+function slug(title: string) {
+    return title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+}
+
+export async function populateUsers() {
+    await User.deleteMany({});
+    for (const user of SEED_USERS) {
+        await User.register(new User(user), 'password1');
+    }
+    console.log(`Users: ${SEED_USERS.map((u) => `${u.username} (${u.role})`).join(', ')}`);
+}
 
 export async function populateTags() {
-    try {
-        // Remove all existing tags
-        await Tag.collection.drop();
-
-        // Create new dummy records
-        const dummyTags = ['lunch', 'dinner', 'spicy', 'freezes', 'quick'];
-        const createdTags = await Tag.create(dummyTags.map((value) => ({ value })));
-
-        console.log('Dummy tags added:', createdTags);
-    } catch (error) {
-        console.error('Error populating tags:', error);
-    }
+    await Tag.deleteMany({});
+    await Tag.create(SEED_TAGS.map((value) => ({ value })));
+    console.log(`Tags: ${SEED_TAGS.length}`);
 }
 
-export async function populatePrepMethods() {
-    try {
-        // Remove all existing prep methods
-        await PrepMethod.collection.drop();
-
-        const admin = await User.findOne({ role: 'admin' }).orFail();
-        const user = await User.findOne({ role: 'user' }).orFail();
-
-        // Create new dummy prep methods
-        const dummyPrepMethods = [
-            { value: 'sliced', unique: true, owner: admin._id },
-            { value: 'chopped', unique: true, owner: admin._id },
-            { value: 'diced', unique: true, owner: admin._id },
-            { value: 'grated', unique: true, owner: user._id },
-            { value: 'shredded', unique: true, owner: user._id },
-        ];
-        const createdPrepMethods = await PrepMethod.create(dummyPrepMethods);
-
-        console.log('Dummy prep methods added:', createdPrepMethods);
-    } catch (error) {
-        console.error('Error populating prep methods:', error);
-    }
-}
-
+/** Standard units come from code; the seed adds the count units people make up. */
 export async function populateUnits() {
-    try {
-        // Remove all existing units
-        await Unit.collection.drop();
-
-        const admin = await User.findOne({ role: 'admin' }).orFail();
-        const user = await User.findOne({ role: 'user' }).orFail();
-
-        // Create new dummy units
-        const dummyUnits = [
-            {
-                shortSingular: 'kg',
-                shortPlural: 'kg',
-                longSingular: 'kilogram',
-                longPlural: 'kilograms',
-                preferredNumberFormat: 'decimal',
-                hasSpace: true,
-                unique: true,
-                dimension: 'mass',
-                perCanonical: 1000,
-                system: 'metric',
-                owner: admin._id,
-            },
-            {
-                shortSingular: 'ml',
-                shortPlural: 'ml',
-                longSingular: 'millilitre',
-                longPlural: 'millilitres',
-                preferredNumberFormat: 'decimal',
-                hasSpace: true,
-                unique: true,
-                dimension: 'volume',
-                perCanonical: 1,
-                system: 'metric',
-                owner: user._id,
-            },
-            {
-                shortSingular: 'tsp',
-                shortPlural: 'tsp',
-                longSingular: 'teaspoon',
-                longPlural: 'teaspoons',
-                preferredNumberFormat: 'fraction',
-                hasSpace: true,
-                unique: true,
-                dimension: 'volume',
-                perCanonical: 4.92892159375,
-                system: 'us',
-                owner: admin._id,
-            },
-            {
-                shortSingular: 'tbsp',
-                shortPlural: 'tbsp',
-                longSingular: 'tablespoon',
-                longPlural: 'tablespoons',
-                preferredNumberFormat: 'fraction',
-                hasSpace: true,
-                unique: true,
-                dimension: 'volume',
-                perCanonical: 14.78676478125,
-                system: 'us',
-                owner: admin._id,
-            },
-            {
-                shortSingular: 'cup',
-                shortPlural: 'cups',
-                longSingular: 'cup',
-                longPlural: 'cups',
-                preferredNumberFormat: 'fraction',
-                hasSpace: true,
-                unique: true,
-                dimension: 'volume',
-                perCanonical: 236.5882365,
-                system: 'us',
-                owner: user._id,
-            },
-            {
-                shortSingular: 'g',
-                shortPlural: 'g',
-                longSingular: 'gram',
-                longPlural: 'grams',
-                preferredNumberFormat: 'decimal',
-                hasSpace: false,
-                unique: true,
-                dimension: 'mass',
-                perCanonical: 1,
-                system: 'metric',
-                owner: admin._id,
-            },
-            {
-                // Rendered without a name: "2 onions".
-                shortSingular: 'ea',
-                shortPlural: 'ea',
-                longSingular: 'each',
-                longPlural: 'each',
-                preferredNumberFormat: 'fraction',
-                hasSpace: true,
-                unique: true,
-                dimension: 'count',
-                perCanonical: 1,
-                system: null,
-                hidden: true,
-                owner: admin._id,
-            },
-        ];
-        const createdUnits = await Unit.create(dummyUnits);
-
-        console.log('Dummy units added:', createdUnits);
-    } catch (error) {
-        console.error('Error populating units:', error);
+    await Unit.deleteMany({});
+    await Unit.syncIndexes();
+    const report = await syncStandardUnits(mongoose.connection.db);
+    const owner = await owners();
+    await Unit.create(
+        SEED_COUNT_UNITS.map((unit) => ({
+            ...unit,
+            owner: owner[unit.owner],
+            unique: unit.unique ?? true,
+            preferredNumberFormat: 'fraction',
+            hasSpace: true,
+            dimension: 'count',
+            perCanonical: 1,
+            system: null,
+        }))
+    );
+    console.log(`Units: ${report.created.length} standard, ${SEED_COUNT_UNITS.length} count units`);
+    for (const line of describeStandardUnitReport(report).filter((l) => !l.startsWith('created'))) {
+        console.log(`  ${line}`);
     }
 }
 
 export async function populateSizes() {
-    try {
-        // Remove all existing sizes
-        await Size.collection.drop();
+    await Size.deleteMany({});
+    const { admin } = await owners();
+    await Size.create(SEED_SIZES.map((value) => ({ value, unique: true, owner: admin })));
+    console.log(`Sizes: ${SEED_SIZES.length}`);
+}
 
-        const admin = await User.findOne({ role: 'admin' }).orFail();
-        const user = await User.findOne({ role: 'user' }).orFail();
-
-        // Create new dummy sizes
-        const dummySizes = [
-            { value: 'small', unique: true, owner: admin._id },
-            { value: 'medium', unique: true, owner: admin._id },
-            { value: 'large', unique: true, owner: user._id },
-        ];
-        const createdSizes = await Size.create(dummySizes);
-
-        console.log('Dummy sizes added:', createdSizes);
-    } catch (error) {
-        console.error('Error populating sizes:', error);
-    }
+export async function populatePrepMethods() {
+    await PrepMethod.deleteMany({});
+    const { admin } = await owners();
+    await PrepMethod.create(
+        SEED_PREP_METHODS.map((value) => ({ value, unique: true, owner: admin }))
+    );
+    console.log(`Prep methods: ${SEED_PREP_METHODS.length}`);
 }
 
 export async function populateIngredients() {
-    try {
-        // Remove all existing ingredients
-        await Ingredient.collection.drop();
+    await Ingredient.deleteMany({});
+    const owner = await owners();
+    await Ingredient.create(
+        SEED_INGREDIENTS.map((ingredient) => ({
+            name: ingredient.name,
+            pluralName: ingredient.plural ?? ingredient.name,
+            isCountable: ingredient.countable ?? false,
+            tags: ingredient.tags ?? [],
+            owner: owner[ingredient.owner ?? 'admin'],
+        }))
+    );
+    console.log(`Ingredients: ${SEED_INGREDIENTS.length}`);
+}
 
-        const admin = await User.findOne({ role: 'admin' }).orFail();
-        const user = await User.findOne({ role: 'user' }).orFail();
-
-        const dummyIngredients = [
-            { name: 'onion', pluralName: 'onions', isCountable: true, owner: admin._id },
-            {
-                name: 'tomato',
-                isCountable: true,
-                pluralName: 'tomatoes',
-                owner: admin._id,
-                tags: ['vegan', 'vegetarian'],
-            },
-            {
-                name: 'chicken',
-                isCountable: false,
-                pluralName: 'chickens',
-                owner: admin._id,
-                tags: [],
-            },
-            {
-                name: 'beef',
-                isCountable: false,
-                pluralName: 'beef',
-                owner: user._id,
-                tags: [],
-            },
-            {
-                name: 'rice',
-                isCountable: false,
-                pluralName: 'rice',
-                owner: user._id,
-                tags: ['vegan', 'vegetarian'],
-            },
-        ];
-        const createdIngredients = await Ingredient.create(dummyIngredients);
-
-        console.log('Ingredients with prepMethods added:', createdIngredients);
-    } catch (error) {
-        console.error('Error populating ingredients:', error);
-    }
+export async function populateNutritionalInfo() {
+    await NutritionalInfo.deleteMany({});
+    const ingredient = await lookup(Ingredient.find(), (i) => i.name);
+    const withNutrition = SEED_INGREDIENTS.filter((i) => i.per100g);
+    await NutritionalInfo.create(
+        withNutrition.map(({ name, per100g }) => {
+            const [calories, protein, carbs, fat] = per100g!.map((value) => value / 100);
+            return { ingredient: ingredient(name), perGram: { calories, protein, carbs, fat } };
+        })
+    );
+    const without = SEED_INGREDIENTS.filter((i) => !i.per100g).map((i) => i.name);
+    console.log(`Nutritional info: ${withNutrition.length} (none for ${without.join(', ')})`);
 }
 
 export async function populateIngredientMeasures() {
-    try {
-        await IngredientMeasure.collection.drop();
-
-        const unit = async (longSingular: string) =>
-            (await Unit.findOne({ longSingular }).orFail())._id;
-        const ingredient = async (name: string) =>
-            (await Ingredient.findOne({ name }).orFail())._id;
-        const large = (await Size.findOne({ value: 'large' }).orFail())._id;
-        const chopped = (await PrepMethod.findOne({ value: 'chopped' }).orFail())._id;
-
-        const dummyMeasures = [
-            { ingredient: await ingredient('onion'), unit: await unit('each'), grams: 110 },
-            {
-                ingredient: await ingredient('onion'),
-                unit: await unit('each'),
-                size: large,
-                grams: 150,
-            },
-            {
-                ingredient: await ingredient('onion'),
-                unit: await unit('cup'),
-                prepMethod: chopped,
-                grams: 160,
-            },
-            { ingredient: await ingredient('tomato'), unit: await unit('each'), grams: 123 },
-            { ingredient: await ingredient('tomato'), unit: await unit('millilitre'), grams: 0.8 },
-            { ingredient: await ingredient('rice'), unit: await unit('cup'), grams: 185 },
-        ];
-        const createdMeasures = await IngredientMeasure.create(dummyMeasures);
-
-        console.log('Dummy ingredient measures added:', createdMeasures);
-    } catch (error) {
-        console.error('Error populating ingredient measures:', error);
-    }
+    await IngredientMeasure.deleteMany({});
+    const ingredient = await lookup(Ingredient.find(), (i) => i.name);
+    const unit = await lookup(Unit.find(), (u) => u.longSingular);
+    const size = await lookup(Size.find(), (s) => s.value);
+    const prep = await lookup(PrepMethod.find(), (p) => p.value);
+    const measures = SEED_INGREDIENTS.flatMap(({ name, measures = [] }) =>
+        measures.map(([unitName, grams, narrow]) => ({
+            ingredient: ingredient(name),
+            unit: unit(unitName),
+            size: narrow?.size ? size(narrow.size) : null,
+            prepMethod: narrow?.prep ? prep(narrow.prep) : null,
+            grams,
+        }))
+    );
+    await IngredientMeasure.create(measures);
+    console.log(`Ingredient measures: ${measures.length}`);
 }
 
 export async function populateDisplayLadders() {
-    try {
-        await DisplayLadder.collection.drop();
-
-        const admin = await User.findOne({ role: 'admin' }).orFail();
-        const unit = async (longSingular: string) => Unit.findOne({ longSingular }).orFail();
-        const kilogram = await unit('kilogram');
-        const gram = await unit('gram');
-        const cup = await unit('cup');
-        const tablespoon = await unit('tablespoon');
-        const teaspoon = await unit('teaspoon');
-        const millilitre = await unit('millilitre');
-
-        const dummyLadders = [
-            {
-                name: 'metric-mass',
-                dimension: 'mass',
-                system: 'metric',
-                scope: 'global',
-                owner: admin._id,
-                steps: [
-                    { unit: kilogram._id, minCanonical: 1000 },
-                    { unit: gram._id, minCanonical: 0 },
-                ],
-            },
-            {
-                name: 'metric-volume',
-                dimension: 'volume',
-                system: 'metric',
-                scope: 'global',
-                owner: admin._id,
-                steps: [{ unit: millilitre._id, minCanonical: 0 }],
-            },
-            {
-                name: 'us-volume',
-                dimension: 'volume',
-                system: 'us',
-                scope: 'global',
-                owner: admin._id,
-                steps: [
-                    { unit: cup._id, minCanonical: cup.perCanonical / 4 },
-                    { unit: tablespoon._id, minCanonical: tablespoon.perCanonical },
-                    { unit: teaspoon._id, minCanonical: 0 },
-                ],
-            },
-        ];
-        const createdLadders = await DisplayLadder.create(dummyLadders);
-
-        console.log('Dummy display ladders added:', createdLadders);
-    } catch (error) {
-        console.error('Error populating display ladders:', error);
-    }
+    await DisplayLadder.deleteMany({});
+    const { admin } = await owners();
+    const units = await Unit.find({ standard: { $ne: null } });
+    const unit = (key: string) => units.find((u) => u.standard === key)!;
+    const step = (key: string, minCanonical: number) => ({ unit: unit(key)._id, minCanonical });
+    const ladder = (name: string, steps: Array<ReturnType<typeof step>>) => {
+        const [system, dimension] = name.split('-');
+        return { name, system, dimension, scope: 'global', owner: admin, steps };
+    };
+    const ladders = [
+        ladder('metric-mass', [step('kilogram', 1000), step('gram', 0)]),
+        ladder('metric-volume', [step('litre', 1000), step('millilitre', 0)]),
+        ladder('us-mass', [step('pound', unit('pound').perCanonical), step('ounce', 0)]),
+        ladder('us-volume', [
+            step('cup', unit('cup').perCanonical / 4),
+            step('tablespoon', unit('tablespoon').perCanonical),
+            step('teaspoon', 0),
+        ]),
+    ];
+    await DisplayLadder.create(ladders);
+    console.log(`Display ladders: ${ladders.map((l) => l.name).join(', ')}`);
 }
 
 export async function populateRecipes() {
-    try {
-        // Remove all existing recipes
-        await Recipe.collection.drop();
+    await Recipe.deleteMany({});
+    const owner = await owners();
+    const tag = await lookup(Tag.find(), (t) => t.value);
+    const ingredient = await lookup(Ingredient.find(), (i) => i.name);
+    const unit = await lookup(Unit.find(), (u) => u.longSingular);
+    const size = await lookup(Size.find(), (s) => s.value);
+    const prep = await lookup(PrepMethod.find(), (p) => p.value);
+    const recipes = new Map<string, Types.ObjectId>();
+    const now = Date.now();
 
-        const admin = await User.findOne({ role: 'admin' }).orFail();
-        const user = await User.findOne({ role: 'user' }).orFail();
-
-        const dummyRecipes = [
-            {
-                title: 'Spaghetti Bolognese',
-                titleIdentifier: 'spaghetti-bolognese',
-                subTitle: 'A classic Italian dish',
-                tags: [
-                    (await Tag.findOne({ value: 'lunch' }).orFail())._id,
-                    (await Tag.findOne({ value: 'dinner' }).orFail())._id,
-                    (await Tag.findOne({ value: 'freezes' }).orFail())._id,
-                ],
-                ingredientSubsections: {
-                    ingredients: [
-                        {
-                            quantity: '1',
-                            unit: (await Unit.findOne({ longSingular: 'each' }).orFail())._id,
-                            size: null,
-                            ingredient: (await Ingredient.findOne({ name: 'onion' }).orFail())._id,
-                            prepMethod: (await PrepMethod.findOne({ value: 'chopped' }).orFail())
-                                ._id,
-                        },
-                        {
-                            quantity: '1',
-                            unit: (await Unit.findOne({ shortSingular: 'kg' }).orFail())._id,
-                            size: (await Size.findOne({ value: 'medium' }).orFail())._id,
-                            ingredient: (await Ingredient.findOne({ name: 'chicken' }).orFail())
-                                ._id,
-                            prepMethod: (await PrepMethod.findOne({ value: 'diced' }).orFail())._id,
-                        },
-                        {
-                            quantity: '400',
-                            unit: (await Unit.findOne({ shortSingular: 'cup' }).orFail())._id,
-                            size: null,
-                            ingredient: (await Ingredient.findOne({ name: 'tomato' }).orFail())._id,
-                            prepMethod: (await PrepMethod.findOne({ value: 'chopped' }).orFail())
-                                ._id,
-                        },
-                    ],
-                },
-                instructionSubsections: [
-                    {
-                        instructions: [
-                            'Heat a large pot of salted water over high heat. Once boiling, add the spaghetti and cook according to package instructions until al dente. Drain and set aside.',
-                            'In a large skillet or saucepan, heat some olive oil over medium heat. Add the chopped onion, garlic, carrot, and celery. Sauté until softened, about 5-7 minutes.',
-                            'Add the ground beef to the skillet. Break it apart with a spoon and cook until browned, stirring occasionally.',
-                            'Once the beef is browned, add the canned chopped tomatoes, tomato paste, dried oregano, dried basil, dried thyme, and red pepper flakes (if using). Stir well to combine.',
-                            'Reduce the heat to low and let the sauce simmer for about 20-30 minutes, stirring occasionally, until it thickens and the flavors meld together. Season with salt and pepper to taste.',
-                            'Serve the bolognese sauce over the cooked spaghetti. Garnish with grated Parmesan cheese if desired.',
-                            'Enjoy your delicious homemade spaghetti bolognese!',
-                        ],
-                    },
-                ],
-                notes: 'This is a great recipe to make in bulk and freeze.',
-                owner: admin._id,
-                source: 'Me Myself and I',
-                numServings: 4,
-                isIngredient: false,
-                createdAt: '2023-08-01T00:00:00.000Z',
-                lastModified: '2023-08-01T00:00:00.000Z',
-            },
-            {
-                title: 'Chicken Curry',
-                titleIdentifier: 'chicken-curry',
-                pluralTitle: 'Chicken Curry',
-                subTitle: 'A classic Indian dish',
-                tags: [
-                    (await Tag.findOne({ value: 'lunch' }).orFail())._id,
-                    (await Tag.findOne({ value: 'dinner' }).orFail())._id,
-                    (await Tag.findOne({ value: 'spicy' }).orFail())._id,
-                    (await Tag.findOne({ value: 'quick' }).orFail())._id,
-                ],
-                ingredientSubsections: [
-                    {
-                        name: 'Main Ingredients',
-                        ingredients: [
-                            {
-                                quantity: '1/2',
-                                unit: (await Unit.findOne({ longSingular: 'each' }).orFail())._id,
-                                size: null,
-                                ingredient: (await Ingredient.findOne({ name: 'onion' }).orFail())
-                                    ._id,
-                                prepMethod: (await PrepMethod.findOne({ value: 'sliced' }).orFail())
-                                    ._id,
-                            },
-                            {
-                                quantity: '1',
-                                unit: (await Unit.findOne({ shortSingular: 'kg' }).orFail())._id,
-                                size: (await Size.findOne({ value: 'medium' }).orFail())._id,
-                                ingredient: (await Ingredient.findOne({ name: 'chicken' }).orFail())
-                                    ._id,
-                                prepMethod: (await PrepMethod.findOne({ value: 'diced' }).orFail())
-                                    ._id,
-                            },
-                            {
-                                quantity: '400',
-                                unit: (await Unit.findOne({ shortSingular: 'cup' }).orFail())._id,
-                                size: (await Size.findOne({ value: 'small' }).orFail())._id,
-                                ingredient: (await Ingredient.findOne({ name: 'tomato' }).orFail())
-                                    ._id,
-                                prepMethod: (
-                                    await PrepMethod.findOne({ value: 'chopped' }).orFail()
-                                )._id,
-                            },
-                        ],
-                    },
-                    {
-                        name: 'Sides',
-                        ingredients: [
-                            {
-                                quantity: '2',
-                                unit: (await Unit.findOne({ shortSingular: 'cup' }).orFail())._id,
-                                size: null,
-                                ingredient: (await Ingredient.findOne({ name: 'rice' }).orFail())
-                                    ._id,
-                                prepMethod: null,
-                            },
-                        ],
-                    },
-                ],
-                instructionSubsections: [
-                    {
-                        name: 'Main Instructions',
-                        instructions: [
-                            'Start by heating a large skillet or saucepan over medium heat. Add some vegetable oil or ghee.',
-                            'Once the oil is hot, add chopped onions and sauté until they turn translucent, about 5-7 minutes.',
-                            'Add minced garlic, ginger, and any other aromatics like chopped green chilies or curry leaves. Sauté for another 1-2 minutes until fragrant.',
-                            'Next, add your chicken pieces to the skillet. You can use boneless, skinless chicken thighs or breasts cut into bite-sized pieces. Cook until the chicken is browned on all sides, stirring occasionally.',
-                            'Now its time to add your spices. Sprinkle in curry powder, ground cumin, ground coriander, turmeric, and garam masala. Stir well to coat the chicken evenly with the spices.',
-                            'Pour in some coconut milk or chicken broth to create a creamy base for the curry. Stir to combine.',
-                            'Let the curry simmer over low heat for about 20-25 minutes, or until the chicken is fully cooked and tender. Stir occasionally to prevent sticking and ensure all flavors meld together.',
-                            'If you like your curry thicker, you can mix a tablespoon of cornstarch with a splash of water and add it to the curry. Stir well and let it simmer for a few more minutes until thickened.',
-                            'Season the curry with salt and pepper to taste. You can also add a squeeze of fresh lemon or lime juice for brightness, if desired.',
-                            'Serve the chicken curry hot over steamed rice or with naan bread on the side. Garnish with fresh cilantro leaves or a dollop of yogurt, if desired.',
-                            'Enjoy your delicious homemade chicken curry!',
-                        ],
-                    },
-                ],
-                notes: 'This is a great recipe to make in bulk and freeze.',
-                owner: user._id,
-                numServings: 3,
-                isIngredient: true,
-                createdAt: '2023-09-01T00:00:00.000Z',
-                lastModified: '2023-09-01T00:00:00.000Z',
-            },
-            {
-                title: 'Vegetarian Chili',
-                titleIdentifier: 'vegetarian-chili',
-                subTitle: 'A hearty and comforting dish',
-                tags: [
-                    (await Tag.findOne({ value: 'lunch' }).orFail())._id,
-                    (await Tag.findOne({ value: 'dinner' }).orFail())._id,
-                    (await Tag.findOne({ value: 'freezes' }).orFail())._id,
-                ],
-                ingredientSubsections: [
-                    {
-                        name: 'Main Ingredients',
-                        ingredients: [
-                            {
-                                quantity: '1',
-                                unit: (await Unit.findOne({ longSingular: 'each' }).orFail())._id,
-                                size: null,
-                                ingredient: (await Ingredient.findOne({ name: 'onion' }).orFail())
-                                    ._id,
-                                prepMethod: (
-                                    await PrepMethod.findOne({ value: 'chopped' }).orFail()
-                                )._id,
-                            },
-                            {
-                                quantity: '400',
-                                unit: (await Unit.findOne({ shortSingular: 'cup' }).orFail())._id,
-                                size: null,
-                                ingredient: (await Ingredient.findOne({ name: 'tomato' }).orFail())
-                                    ._id,
-                                prepMethod: (
-                                    await PrepMethod.findOne({ value: 'chopped' }).orFail()
-                                )._id,
-                            },
-                        ],
-                    },
-                ],
-                instructionSubsections: [
-                    {
-                        name: 'Main Instructions',
-                        instructions: [
-                            'Heat a large pot or Dutch oven over medium heat. Add a drizzle of olive oil.',
-                            'Once the oil is hot, add the chopped onion, bell pepper, and garlic. Sauté until softened, about 5-7 minutes.',
-                            'Add the diced tomatoes, tomato paste, and vegetable broth to the pot. Stir well to combine.',
-                            'Next, add the drained and rinsed beans, corn, and diced bell pepper to the pot. Stir well to combine.',
-                            'Season the chili with chili powder, cumin, paprika, oregano, and red pepper flakes. Stir well to combine.',
-                        ],
-                    },
-                    {
-                        name: 'Simmer and Serve',
-                        instructions: [
-                            'Bring the chili to a simmer over medium heat. Reduce the heat to low and let it simmer for about 20-30 minutes, stirring occasionally.',
-                            'Serve the vegetarian chili hot with your favorite toppings, such as shredded cheese, sour cream, avocado, or fresh cilantro.',
-                            'Enjoy your delicious homemade vegetarian chili!',
-                        ],
-                    },
-                ],
-                notes: 'This is a great recipe to make in bulk and freeze.',
-                owner: user._id,
-                numServings: 4,
-                isIngredient: false,
-                createdAt: '2023-09-02T00:00:00.000Z',
-                lastModified: '2023-09-02T00:00:00.000Z',
-            },
-        ];
-
-        const createdRecipes = await Recipe.create(dummyRecipes);
-        console.log('Dummy recipes added:', createdRecipes);
-    } catch (error) {
-        console.error('Error populating recipes:', error);
+    // In table order, so a recipe used as an ingredient exists before the recipes using it.
+    for (const seed of SEED_RECIPES) {
+        const date = new Date(now - seed.daysAgo * DAY_MS);
+        const recipe = await Recipe.create({
+            title: seed.title,
+            titleIdentifier: slug(seed.title),
+            pluralTitle: seed.pluralTitle,
+            subTitle: seed.subTitle,
+            tags: seed.tags.map(tag),
+            ingredientSubsections: seed.ingredients.map((subsection) => ({
+                name: subsection.name,
+                ingredients: subsection.lines.map(([quantity, unitName, name, narrow]) => ({
+                    quantity,
+                    unit: unitName ? unit(unitName) : null,
+                    ingredient: recipes.get(name) ?? ingredient(name),
+                    size: narrow?.size ? size(narrow.size) : null,
+                    prepMethod: narrow?.prep ? prep(narrow.prep) : null,
+                })),
+            })),
+            instructionSubsections: seed.instructions.map((subsection) => ({
+                name: subsection.name,
+                instructions: subsection.steps,
+            })),
+            notes: seed.notes,
+            source: seed.source,
+            owner: owner[seed.owner ?? 'admin'],
+            numServings: seed.servings,
+            isIngredient: seed.isIngredient ?? false,
+            archived: seed.archived ?? false,
+            createdAt: date,
+            lastModified: date,
+        });
+        recipes.set(seed.title, recipe._id);
     }
+
+    for (const seed of SEED_RECIPES.filter((r) => r.veganVersionOf)) {
+        const vegan = await Recipe.findById(recipes.get(seed.title)).orFail();
+        const original = await Recipe.findById(recipes.get(seed.veganVersionOf!)).orFail();
+        vegan.originalRecipe = original._id;
+        await vegan.save();
+        original.veganVersion = vegan._id;
+        await original.save();
+    }
+    console.log(`Recipes: ${SEED_RECIPES.length}`);
 }
 
+export async function populateRatings() {
+    await Rating.deleteMany({});
+    const owner = await owners();
+    const recipe = await lookup(Recipe.find(), (r) => r.title);
+    const ratings = SEED_RECIPES.flatMap((seed) =>
+        (seed.ratings ?? []).map(([who, value]) => ({
+            recipe: recipe(seed.title),
+            owner: owner[who],
+            value,
+        }))
+    );
+    await Rating.create(ratings);
+    console.log(`Ratings: ${ratings.length}`);
+}
+
+/** Photos come from picsum.photos, seeded by recipe, so each run gets the same pictures. */
 export async function populateImages() {
-    try {
-        // Remove all existing images
-        await Image.collection.drop();
-        // Remove files from the uploads folder
-        fs.rmSync(IMAGE_DIR, { recursive: true });
-        fs.mkdirSync(IMAGE_DIR);
-
-        const recipe1 = await Recipe.findOne({ titleIdentifier: 'spaghetti-bolognese' }).orFail();
-        const recipe2 = await Recipe.findOne({ titleIdentifier: 'chicken-curry' }).orFail();
-
-        const dummyImages = [
-            {
-                origUrl: 'uploads/images/recipe1_image1.jpeg',
-                recipe: recipe1._id,
-                note: 'A picture of the finished dish',
-            },
-            {
-                origUrl: 'uploads/images/recipe2_image1.jpeg',
-                recipe: recipe2._id,
-                note: 'A picture of the finished dish',
-            },
-            {
-                origUrl: 'uploads/images/recipe2_image2.jpeg',
-                recipe: recipe2._id,
-            },
-        ];
-
-        const createdImages = await Image.create(dummyImages);
-
-        // Download random images to the uploads folder
-        for (const image of createdImages) {
-            const destPath = path.join(IMAGE_DIR, path.basename(image.origUrl));
-            const res = await fetch(`https://picsum.photos/600/400`);
-            const buffer = await res.arrayBuffer();
-            fs.writeFileSync(destPath, Buffer.from(buffer));
+    await Image.deleteMany({});
+    fs.rmSync(IMAGE_DIR, { recursive: true, force: true });
+    fs.mkdirSync(IMAGE_DIR, { recursive: true });
+    const recipe = await lookup(Recipe.find(), (r) => r.title);
+    let saved = 0;
+    for (const seed of SEED_RECIPES.filter((r) => r.images)) {
+        for (let i = 1; i <= seed.images!; i++) {
+            const fileName = `${slug(seed.title)}_${i}.jpeg`;
+            try {
+                const res = await fetch(
+                    `https://picsum.photos/seed/${slug(seed.title)}-${i}/600/400`
+                );
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                fs.writeFileSync(
+                    path.join(IMAGE_DIR, fileName),
+                    Buffer.from(await res.arrayBuffer())
+                );
+            } catch (error) {
+                console.warn(`  Could not download a photo for ${seed.title}: ${error}`);
+                continue;
+            }
+            await Image.create({
+                origUrl: `uploads/images/${fileName}`,
+                recipe: recipe(seed.title),
+                note: i === 1 ? 'The finished dish' : undefined,
+            });
+            saved++;
         }
-        console.log('Dummy images added:', createdImages);
-    } catch (error) {
-        console.error('Error populating images:', error);
     }
-}
-
-export async function populateUsers() {
-    try {
-        // Remove all existing users
-        await User.collection.drop();
-
-        const dummerUserDetails = [
-            {
-                username: 'john@gmail.com',
-                firstName: 'John',
-                lastName: 'Doe',
-                role: 'admin',
-            },
-            {
-                username: 'jane@gmail.com',
-                firstName: 'Jane',
-                lastName: 'Doe',
-                role: 'unverified',
-            },
-            {
-                username: 'matt@gmail.com',
-                firstName: 'Matt',
-                lastName: 'Smith',
-                role: 'user',
-            },
-        ];
-        for (const user of dummerUserDetails) {
-            await User.register(new User(user), 'password1');
-        }
-        console.log('Dummy user added:', dummerUserDetails);
-    } catch (error) {
-        console.error('Error populating users:', error);
-    }
+    console.log(`Images: ${saved}`);
 }

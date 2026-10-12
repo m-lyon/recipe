@@ -230,7 +230,13 @@ describe('migrateCanonicalUnits', function () {
 
     it('should build ladders with thresholds in canonical units', async function () {
         const report = await migrateCanonicalUnits(mongoose.connection.db);
-        assert.sameMembers(report.laddersCreated, ['us-volume', 'metric-mass', 'us-mass']);
+        // Phase 0 creates the litre, so a metric volume ladder can be built as well.
+        assert.sameMembers(report.laddersCreated, [
+            'us-volume',
+            'metric-mass',
+            'metric-volume',
+            'us-mass',
+        ]);
 
         const ladders = mongoose.connection.db.collection('displayladders');
         const usVolume = await ladders.findOne({ name: 'us-volume' });

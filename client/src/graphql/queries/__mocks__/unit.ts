@@ -21,6 +21,7 @@ export const mockTeaspoon: Unit = {
     perCanonical: 4.92892159375,
     system: 'us',
     hidden: false,
+    standard: 'teaspoon',
 };
 export const mockTablespoon: Unit = {
     __typename: 'Unit',
@@ -37,6 +38,7 @@ export const mockTablespoon: Unit = {
     perCanonical: 14.78676478125,
     system: 'us',
     hidden: false,
+    standard: 'tablespoon',
 };
 export const mockGram: Unit = {
     __typename: 'Unit',
@@ -53,6 +55,7 @@ export const mockGram: Unit = {
     perCanonical: 1,
     system: 'metric',
     hidden: false,
+    standard: 'gram',
 };
 export const mockKilogram: Unit = {
     __typename: 'Unit',
@@ -69,6 +72,7 @@ export const mockKilogram: Unit = {
     perCanonical: 1000,
     system: 'metric',
     hidden: false,
+    standard: 'kilogram',
 };
 export const mockOunce: Unit = {
     __typename: 'Unit',
@@ -85,6 +89,7 @@ export const mockOunce: Unit = {
     perCanonical: 28.349523125,
     system: 'us',
     hidden: false,
+    standard: 'ounce',
 };
 export const mockCup: Unit = {
     __typename: 'Unit',
@@ -101,6 +106,7 @@ export const mockCup: Unit = {
     perCanonical: 236.5882365,
     system: 'us',
     hidden: false,
+    standard: 'cup',
 };
 export const mockMilliliter: Unit = {
     __typename: 'Unit',
@@ -117,6 +123,7 @@ export const mockMilliliter: Unit = {
     perCanonical: 1,
     system: 'metric',
     hidden: false,
+    standard: 'millilitre',
 };
 export const mockEach: Unit = {
     __typename: 'Unit',
@@ -133,6 +140,7 @@ export const mockEach: Unit = {
     perCanonical: 1,
     system: null,
     hidden: true,
+    standard: 'each',
 };
 export const mockUnits = [
     mockTeaspoon,
