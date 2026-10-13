@@ -185,6 +185,13 @@ describe('unitCreateOne', function () {
         const record = parseCreatedUnit(await createUnit(this, admin, mockTeaspoon));
         assert.equal(record.longSingular, 'teaspoon');
     });
+
+    it('should NOT create a hidden unit', async function () {
+        const admin = await createAdmin();
+        const response = await createUnit(this, admin, { ...mockHandful, hidden: true });
+        assert.equal(errorMessage(response), 'Only a standard unit can be hidden.');
+        assert.equal(await Unit.countDocuments(), 0);
+    });
 });
 
 describe('unitUpdateById', () => {
@@ -332,6 +339,15 @@ describe('unitUpdateById', () => {
         const unit = parseCreatedUnit(await createUnit(this, admin, mockTeaspoon));
         const response = await updateUnit(this, admin, unit._id, { standard: 'teaspoon' });
         assert.match(errorMessage(response), /is a standard unit/);
+    });
+
+    it('should NOT hide a unit that is not standard', async function () {
+        const admin = await createAdmin();
+        const unit = parseCreatedUnit(await createUnit(this, admin, mockHandful));
+        const response = await updateUnit(this, admin, unit._id, { hidden: true });
+        assert.equal(errorMessage(response), 'Only a standard unit can be hidden.');
+        const stored = await Unit.findById(unit._id).orFail();
+        assert.isFalse(stored.hidden);
     });
 
     it('should NOT let a user turn a count unit into a volume unit', async function () {

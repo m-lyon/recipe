@@ -8,19 +8,18 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { DELETE_UNIT } from '@recipe/graphql/mutations/unit';
 import { DELETE_SIZE } from '@recipe/graphql/mutations/size';
 import { MockedResponses, renderPage } from '@recipe/utils/tests';
-import { mockGetSizes } from '@recipe/graphql/queries/__mocks__/size';
 import { DeleteUnitMutationVariables } from '@recipe/graphql/generated';
 import { DeleteSizeMutationVariables } from '@recipe/graphql/generated';
 import { DELETE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 import { mockCarrotId, mockDicedId } from '@recipe/graphql/__mocks__/ids';
 import { DELETE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 import { mockCuttingId, mockSmallId } from '@recipe/graphql/__mocks__/ids';
+import { mockGetEditableSizes } from '@recipe/graphql/queries/__mocks__/size';
 import { DeleteIngredientMutationVariables } from '@recipe/graphql/generated';
 import { DeletePrepMethodMutationVariables } from '@recipe/graphql/generated';
-import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
-import { mockGetIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
-import { mockGetPrepMethods } from '@recipe/graphql/queries/__mocks__/prepMethod';
-import { mockGetUnitsWithCutting } from '@recipe/graphql/mutations/__mocks__/unit';
+import { mockGetEditableIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
+import { mockGetEditablePrepMethods } from '@recipe/graphql/queries/__mocks__/prepMethod';
+import { mockGetEditableUnitsWithCutting } from '@recipe/graphql/mutations/__mocks__/unit';
 
 import { EditUnit } from '../pages/EditUnit';
 import { EditSize } from '../pages/EditSize';
@@ -106,22 +105,22 @@ describe('Delete Validation Toast Notifications', () => {
 
     const renderEditUnit = (mocks: MockedResponses = []) => {
         const routes = createRoutesFromElements(<Route path='/' element={<EditUnit />} />);
-        return renderPage(routes, [mockGetUnitsWithCutting, mockCurrentUserAdmin, ...mocks]);
+        return renderPage(routes, [mockGetEditableUnitsWithCutting, ...mocks]);
     };
 
     const renderEditSize = (mocks: MockedResponses = []) => {
         const routes = createRoutesFromElements(<Route path='/' element={<EditSize />} />);
-        return renderPage(routes, [mockGetSizes, mockCurrentUserAdmin, ...mocks]);
+        return renderPage(routes, [mockGetEditableSizes, ...mocks]);
     };
 
     const renderEditIngredient = (mocks: MockedResponses = []) => {
         const routes = createRoutesFromElements(<Route path='/' element={<EditIngredient />} />);
-        return renderPage(routes, [mockGetIngredients, mockCurrentUserAdmin, ...mocks]);
+        return renderPage(routes, [mockGetEditableIngredients, ...mocks]);
     };
 
     const renderEditPrepMethod = (mocks: MockedResponses = []) => {
         const routes = createRoutesFromElements(<Route path='/' element={<EditPrepMethod />} />);
-        return renderPage(routes, [mockGetPrepMethods, mockCurrentUserAdmin, ...mocks]);
+        return renderPage(routes, [mockGetEditablePrepMethods, ...mocks]);
     };
 
     it('should show toast notification when unit delete fails due to recipe usage', async () => {

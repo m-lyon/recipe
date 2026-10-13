@@ -1557,6 +1557,15 @@ type Query {
     skip: Int
     sort: SortFindManyIngredientInput
   ): [Ingredient!]!
+
+  """Retrieve the ingredients the current user can edit"""
+  ingredientManyEditable(
+    """Filter by fields"""
+    filter: FilterFindManyIngredientInput
+    limit: Int = 100
+    skip: Int
+    sort: SortFindManyIngredientInput
+  ): [Ingredient!]!
   ingredientMeasuresByIngredientIds(ingredientIds: [MongoID!]!): [IngredientMeasure!]
 
   """Retrieve a single ingredient"""
@@ -1591,6 +1600,15 @@ type Query {
 
   """Retrieve all prep methods"""
   prepMethodManyAll(
+    """Filter by fields"""
+    filter: FilterFindManyPrepMethodInput
+    limit: Int = 100
+    skip: Int
+    sort: SortFindManyPrepMethodInput
+  ): [PrepMethod!]!
+
+  """Retrieve the prep methods the current user can edit"""
+  prepMethodManyEditable(
     """Filter by fields"""
     filter: FilterFindManyPrepMethodInput
     limit: Int = 100
@@ -1682,6 +1700,15 @@ type Query {
     sort: SortFindManySizeInput
   ): [Size!]!
 
+  """Retrieve the sizes the current user can edit"""
+  sizeManyEditable(
+    """Filter by fields"""
+    filter: FilterFindManySizeInput
+    limit: Int = 100
+    skip: Int
+    sort: SortFindManySizeInput
+  ): [Size!]!
+
   """Retrieve a single size"""
   sizeOne(
     """Filter by fields"""
@@ -1730,6 +1757,15 @@ type Query {
 
   """Retrieve all units"""
   unitManyAll(
+    """Filter by fields"""
+    filter: FilterFindManyUnitInput
+    limit: Int = 100
+    skip: Int
+    sort: SortFindManyUnitInput
+  ): [Unit!]!
+
+  """Retrieve the units the current user can edit"""
+  unitManyEditable(
     """Filter by fields"""
     filter: FilterFindManyUnitInput
     limit: Int = 100

@@ -2,7 +2,13 @@ import { UsdaPortion } from '../components/UsdaLinkSection';
 
 type UnitOption = Pick<
     UnitChoice,
-    '_id' | 'shortSingular' | 'shortPlural' | 'longSingular' | 'longPlural' | 'dimension' | 'hidden'
+    | '_id'
+    | 'shortSingular'
+    | 'shortPlural'
+    | 'longSingular'
+    | 'longPlural'
+    | 'dimension'
+    | 'standard'
 >;
 interface NamedOption {
     _id: string;
@@ -118,7 +124,7 @@ export function suggestFromPortion(
             head
         );
         if (size) {
-            const each = units.find((u) => u.dimension === 'count' && u.hidden);
+            const each = units.find((u) => u.standard === 'each');
             if (!each) return { label, reason: 'no each unit' };
             unitId = each._id;
             sizeId = size._id;

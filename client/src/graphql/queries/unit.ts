@@ -19,8 +19,16 @@ export const UNIT_FIELDS = gql(`
 `);
 
 export const GET_UNITS = gql(`
-    query GetUnits($filter: FilterFindManyUnitInput) {
-        unitMany(limit: 5000, filter: $filter) {
+    query GetUnits {
+        unitMany(limit: 5000) {
+            ...UnitFields
+        }
+    }
+`);
+
+export const GET_EDITABLE_UNITS = gql(`
+    query GetEditableUnits {
+        unitManyEditable(limit: 5000) {
             ...UnitFields
         }
     }

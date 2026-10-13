@@ -1,9 +1,9 @@
-import { Stack, Text } from '@chakra-ui/react';
 import { useLazyQuery, useMutation } from '@apollo/client';
+import { Box, Button, Stack, Text } from '@chakra-ui/react';
 import { HStack, Radio, RadioGroup, Skeleton } from '@chakra-ui/react';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react';
-import { Alert, AlertDescription, AlertIcon, AlertTitle, Box, Button } from '@chakra-ui/react';
 
+import { useErrorToast } from '@recipe/common/hooks';
 import { MacroNutrients } from '@recipe/utils/nutrition';
 import { FloatingLabelInput } from '@recipe/common/components';
 import { USDA_SEARCH } from '@recipe/graphql/queries/nutritionalInfo';
@@ -71,7 +71,13 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             null
         );
         const [linked, setLinked] = useState(false);
-        const [mutationError, setMutationError] = useState<string | null>(null);
+        const toast = useErrorToast();
+        const showError = (message: string) =>
+            toast({
+                title: 'Error saving nutritional data',
+                description: message,
+                position: 'top',
+            });
         const [searchResults, setSearchResults] = useState<UsdaSearchResultItem[]>([]);
         /** True once a search has run for the current input, so an empty result list can
          *  be reported as "no matches" instead of rendering nothing. */
@@ -93,7 +99,6 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
         useEffect(() => {
             setSearchInput(ingredientName ?? '');
             setSelectedFdcId(null);
-            setMutationError(null);
             setSearchResults([]);
             setSearchAttempted(false);
             setLinkedFoodName(null);
@@ -152,23 +157,21 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                 const id = data.nutritionalInfoCreateOne?.record?._id;
                 if (id) setExistingNutritionalInfoId(id);
                 setLinked(true);
-                setMutationError(null);
                 onNutritionalInfoChange?.();
             },
             onError: (err) => {
                 setLinked(false);
-                setMutationError(err.message);
+                showError(err.message);
             },
         });
 
         const [updateNutritionalInfo] = useMutation(UPDATE_NUTRITIONAL_INFO, {
             onCompleted: () => {
                 setLinked(true);
-                setMutationError(null);
             },
             onError: (err) => {
                 setLinked(false);
-                setMutationError(err.message);
+                showError(err.message);
             },
         });
 
@@ -182,11 +185,10 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                 setLinked(false);
                 setSearchInput('');
                 setSearchAttempted(false);
-                setMutationError(null);
                 onNutritionalInfoChange?.();
             },
             onError: (err) => {
-                setMutationError(err.message);
+                showError(err.message);
             },
         });
 
@@ -239,8 +241,6 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
         const handleLink = () => {
             if (!pendingNutrition) return;
 
-            setMutationError(null);
-
             if (!ingredientId) {
                 // No ingredient to link against yet (still being created). Stage the
                 // selection locally -- the parent commits it once the ingredient is saved.
@@ -269,9 +269,13 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                 // the user merely previewed, while the edit flow requires the explicit click.
                 if (!linked || !pendingNutrition) return;
                 const record = buildRecord(newIngredientId, pendingNutrition);
-                // `useMutation` with an `onError` option resolves instead of rejecting,
-                // so the failure has to be read off the result for the caller's catch.
-                const result = await createNutritionalInfo({ variables: { record } });
+                // The caller reports the failure, so this call replaces the hook's error toast.
+                // With an `onError` option the mutation resolves instead of rejecting, so the
+                // failure has to be read off the result for the caller's catch.
+                const result = await createNutritionalInfo({
+                    variables: { record },
+                    onError: () => setLinked(false),
+                });
                 if (result.errors?.length) {
                     throw new Error(result.errors[0].message);
                 }
@@ -285,7 +289,6 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
         useImperativeHandle(ref, () => ({ commitPendingLink }), [commitPendingLink]);
 
         const handleClear = () => {
-            setMutationError(null);
             if (existingNutritionalInfoId) {
                 deleteNutritionalInfo({ variables: { _id: existingNutritionalInfoId } });
             } else {
@@ -301,16 +304,6 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
 
         return (
             <Stack spacing={3}>
-                {mutationError && (
-                    <Alert status='error' borderRadius='md'>
-                        <AlertIcon />
-                        <Box>
-                            <AlertTitle>Error saving nutritional data</AlertTitle>
-                            <AlertDescription>{mutationError}</AlertDescription>
-                        </Box>
-                    </Alert>
-                )}
-
                 {linked && pendingNutrition ? (
                     <Stack spacing={2}>
                         <Text fontSize='sm'>

@@ -46,9 +46,9 @@ function describeSize(data: Partial<ModifyableUnit>, isStandard: boolean): strin
         return `Standard unit: ${size}.`;
     }
     if (dimension === 'count') {
-        return "A count unit, such as a handful or a can. Its weight comes from each ingredient's measures.";
+        return '';
     }
-    return `1 ${data.longSingular} = ${perCanonical} ${CANONICAL_SYMBOL[dimension]}. Only an admin can change its size.`;
+    return `1 ${data.longSingular} = ${perCanonical} ${CANONICAL_SYMBOL[dimension]}.`;
 }
 
 export const unitFormSchema = object({
@@ -73,7 +73,6 @@ export const unitFormSchema = object({
             otherwise: (schema) =>
                 schema.required('You must select a system').oneOf(['metric', 'us']),
         }),
-    hidden: boolean(),
 });
 export interface BaseUnitFormProps extends StackProps {
     fieldRef?: MutableRefObject<HTMLInputElement | null>;
@@ -103,7 +102,6 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
             // A count unit never converts to another, so its size is fixed at 1.
             perCanonical: (data.dimension ?? 'count') === 'count' ? 1 : data.perCanonical,
             system: (data.dimension ?? 'count') === 'count' ? null : (data.system ?? null),
-            hidden: data.hidden ?? false,
         }),
         []
     );
@@ -119,6 +117,7 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
             unit.dimension === formData.dimension &&
             unit.perCanonical === formData.perCanonical
     );
+    const sizeDescription = describeSize(formData, isStandard);
 
     useEffect(() => {
         if (disabled) {
@@ -208,10 +207,6 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
                             onChange={(val) => handleChange('dimension', val as EnumUnitDimension)}
                             disabled={disabled}
                         />
-                        <FormHelperText>
-                            Mass and volume units convert by size; count units need an ingredient
-                            weight
-                        </FormHelperText>
                     </FormControl>
                     {formData.dimension && formData.dimension !== 'count' && (
                         <>
@@ -252,19 +247,13 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
                     )}
                 </>
             ) : (
-                !disabled && (
+                !disabled &&
+                sizeDescription && (
                     <Text fontSize='sm' fontWeight='normal' aria-label='Unit size'>
-                        {describeSize(formData, isStandard)}
+                        {sizeDescription}
                     </Text>
                 )
             )}
-            <Checkbox
-                isDisabled={disabled || isStandard}
-                onChange={(e) => handleChange('hidden', e.target.checked)}
-                isChecked={formData.hidden ?? false}
-            >
-                Hide the unit name in recipes
-            </Checkbox>
             <ButtonGroup
                 display='flex'
                 justifyContent='flex-end'

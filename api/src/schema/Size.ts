@@ -1,8 +1,8 @@
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { Size, SizeCreateTC, SizeTC } from '../models/Size.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
-import { filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
 import { validateItemNotInMeasure, validateItemNotInRecipe } from './validation.js';
+import { filterIsEditable, filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
 
 SizeTC.addResolver({
     name: 'updateById',
@@ -31,6 +31,11 @@ export const SizeQuery = {
         .wrapResolve(filterIsOwnerOrAdmin())
         .wrapResolve(filterIsUnique())
         .setDescription('Retrieve multiple sizes'),
+    sizeManyEditable: SizeTC.mongooseResolvers
+        .findMany()
+        .wrapResolve(filterIsEditable())
+        .wrapResolve(filterIsUnique())
+        .setDescription('Retrieve the sizes the current user can edit'),
 };
 
 export const SizeQueryAdmin = {

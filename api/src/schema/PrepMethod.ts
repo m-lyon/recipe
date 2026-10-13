@@ -1,8 +1,8 @@
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
-import { filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
 import { validateItemNotInMeasure, validateItemNotInRecipe } from './validation.js';
 import { PrepMethod, PrepMethodCreateTC, PrepMethodTC } from '../models/PrepMethod.js';
+import { filterIsEditable, filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
 
 PrepMethodTC.addResolver({
     name: 'updateById',
@@ -35,6 +35,11 @@ export const PrepMethodQuery = {
         .wrapResolve(filterIsOwnerOrAdmin())
         .wrapResolve(filterIsUnique())
         .setDescription('Retrieve multiple prep methods'),
+    prepMethodManyEditable: PrepMethodTC.mongooseResolvers
+        .findMany()
+        .wrapResolve(filterIsEditable())
+        .wrapResolve(filterIsUnique())
+        .setDescription('Retrieve the prep methods the current user can edit'),
 };
 
 export const PrepMethodQueryAdmin = {

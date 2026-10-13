@@ -1,8 +1,8 @@
 import { validateItemNotInRecipe } from './validation.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
-import { filterIsOwnerOrAdmin } from '../middleware/filters.js';
 import { IngredientMeasure } from '../models/IngredientMeasure.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
+import { filterIsEditable, filterIsOwnerOrAdmin } from '../middleware/filters.js';
 import { Ingredient, IngredientCreateTC, IngredientTC } from '../models/Ingredient.js';
 
 IngredientTC.addResolver({
@@ -35,6 +35,10 @@ export const IngredientQuery = {
         .findMany()
         .wrapResolve(filterIsOwnerOrAdmin())
         .setDescription('Retrieve multiple ingredients'),
+    ingredientManyEditable: IngredientTC.mongooseResolvers
+        .findMany()
+        .wrapResolve(filterIsEditable())
+        .setDescription('Retrieve the ingredients the current user can edit'),
     ingredientManyAll: IngredientTC.mongooseResolvers
         .findMany()
         .setDescription('Retrieve all ingredients'),

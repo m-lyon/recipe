@@ -3,6 +3,9 @@
 }
 
 .input {
+    /* Chakra's md Input height, so the select lines up with the inputs beside it */
+    height: 40px;
+    min-height: 40px;
     border-color: #e2e8f0;
     color: rgba(0, 0, 0, 0.64);
     font-family:
@@ -36,7 +39,7 @@
     z-index: 1;
     pointer-events: none;
     background-color: white;
-    margin: 6px 12px;
+    margin: 8px 12px;
     padding: 0 4px;
     font-size: 16px;
     line-height: 24px;

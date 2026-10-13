@@ -15,9 +15,9 @@ export const INGREDIENT_FIELDS_FULL = gql(`
     }
 `);
 
-export const GET_INGREDIENTS = gql(`
-    query GetIngredients($filter: FilterFindManyIngredientInput) {
-        ingredientMany(limit: 5000, filter: $filter) {
+export const GET_EDITABLE_INGREDIENTS = gql(`
+    query GetEditableIngredients {
+        ingredientManyEditable(limit: 5000) {
             ...IngredientFieldsFull
         }
     }

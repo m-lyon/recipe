@@ -1,11 +1,12 @@
 import { Unit } from '@recipe/graphql/schema';
 import { ModifyUnitMutation } from '@recipe/graphql/generated';
+import { mockUnits } from '@recipe/graphql/queries/__mocks__/unit';
 import { ModifyUnitMutationVariables } from '@recipe/graphql/generated';
 import { mockAdminId, mockBumpId, mockCuttingId } from '@recipe/graphql/__mocks__/ids';
 import { CREATE_UNIT, DELETE_UNIT, MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
 import { CreateUnitMutation, CreateUnitMutationVariables } from '@recipe/graphql/generated';
 import { DeleteUnitMutation, DeleteUnitMutationVariables } from '@recipe/graphql/generated';
-import { mockGetUnits, mockTeaspoon, mockUnits } from '@recipe/graphql/queries/__mocks__/unit';
+import { mockGetEditableUnits, mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 
 export const mockUnit: Unit = {
     __typename: 'Unit',
@@ -25,9 +26,11 @@ export const mockUnit: Unit = {
     standard: null,
 };
 /** The units list with one unit that is not standard, so it can be edited and deleted. */
-export const mockGetUnitsWithCutting = {
-    ...mockGetUnits,
-    result: { data: { __typename: 'Query' as const, unitMany: [...mockUnits, mockUnit] } },
+export const mockGetEditableUnitsWithCutting = {
+    ...mockGetEditableUnits,
+    result: {
+        data: { __typename: 'Query' as const, unitManyEditable: [...mockUnits, mockUnit] },
+    },
 };
 
 export const mockCreateUnit = {
@@ -45,7 +48,6 @@ export const mockCreateUnit = {
                 dimension: 'count',
                 perCanonical: 1,
                 system: null,
-                hidden: false,
             },
         } satisfies CreateUnitMutationVariables,
     },
@@ -74,7 +76,6 @@ export const mockCreateBespokeUnit = {
                 dimension: 'count',
                 perCanonical: 1,
                 system: null,
-                hidden: false,
             },
         } satisfies CreateUnitMutationVariables,
     },
@@ -119,7 +120,6 @@ export const mockUpdateUnit = {
                 dimension: mockTeaspoon.dimension,
                 perCanonical: mockTeaspoon.perCanonical,
                 system: mockTeaspoon.system,
-                hidden: mockTeaspoon.hidden,
             },
         } satisfies ModifyUnitMutationVariables,
     },

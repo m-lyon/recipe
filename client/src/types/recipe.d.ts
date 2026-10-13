@@ -1,10 +1,12 @@
-import { GetSizesQuery } from '@recipe/graphql/generated';
 import { CurrentUserQuery } from '@recipe/graphql/generated';
+import { GetEditableSizesQuery } from '@recipe/graphql/generated';
+import { GetEditableIngredientsQuery } from '@recipe/graphql/generated';
+import { GetEditablePrepMethodsQuery } from '@recipe/graphql/generated';
+import { GetIngredientComponentsQuery } from '@recipe/graphql/generated';
+import { EnumUnitPreferredNumberFormat } from '@recipe/graphql/generated';
 import { GetRecipeQuery, GetRecipesQuery } from '@recipe/graphql/generated';
 import { EnumIngredientTags, GetTagsQuery } from '@recipe/graphql/generated';
-import { EnumRecipeCalculatedTags, GetUnitsQuery } from '@recipe/graphql/generated';
-import { GetIngredientComponentsQuery, GetIngredientsQuery } from '@recipe/graphql/generated';
-import { EnumUnitPreferredNumberFormat, GetPrepMethodsQuery } from '@recipe/graphql/generated';
+import { EnumRecipeCalculatedTags, GetEditableUnitsQuery } from '@recipe/graphql/generated';
 
 /**
  * Represents the editable value that is used in the recipe ingredient editing flow.
@@ -346,22 +348,22 @@ declare global {
      * Represents the unit document that is returned from the API when a unit is
      * created or modified.
      */
-    type ModifyableUnit = GetUnitsQuery['unitMany'][number];
+    type ModifyableUnit = GetEditableUnitsQuery['unitManyEditable'][number];
     /**
      * Represents the size document that is returned from the API when a size is
      * created or modified.
      */
-    type ModifyableSize = GetSizesQuery['sizeMany'][number];
+    type ModifyableSize = GetEditableSizesQuery['sizeManyEditable'][number];
     /**
      * Represents the ingredient document that is returned from the API when an ingredient
      * is created or modified.
      */
-    type ModifyableIngredient = GetIngredientsQuery['ingredientMany'][number];
+    type ModifyableIngredient = GetEditableIngredientsQuery['ingredientManyEditable'][number];
     /**
      * Represents the prep method document that is returned from the API when a prep
      * method is created or modified.
      */
-    type ModifyablePrepMethod = GetPrepMethodsQuery['prepMethodMany'][number];
+    type ModifyablePrepMethod = GetEditablePrepMethodsQuery['prepMethodManyEditable'][number];
 
     // - Queries and Mutations ----------------------------------------------------
     // ----------------------- GraphQL Query and Mutation Types -------------------

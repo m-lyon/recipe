@@ -2,9 +2,9 @@ import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { Unit, UnitCreateTC, UnitTC } from '../models/Unit.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
 import { validateUnitCreate, validateUnitUpdate } from './validation.js';
-import { filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
 import { validateUnitNotInLadder, validateUnitNotStandard } from './validation.js';
 import { validateItemNotInMeasure, validateItemNotInRecipe } from './validation.js';
+import { filterIsEditable, filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
 
 UnitTC.addResolver({
     name: 'updateById',
@@ -36,6 +36,11 @@ export const UnitQuery = {
         .wrapResolve(filterIsOwnerOrAdmin())
         .wrapResolve(filterIsUnique())
         .setDescription('Retrieve multiple units'),
+    unitManyEditable: UnitTC.mongooseResolvers
+        .findMany()
+        .wrapResolve(filterIsEditable())
+        .wrapResolve(filterIsUnique())
+        .setDescription('Retrieve the units the current user can edit'),
 };
 
 export const UnitQueryAdmin = {

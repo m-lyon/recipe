@@ -12,11 +12,16 @@ function unit(_id: string, name: string, extra: Partial<UnitSummary>): UnitSumma
         perCanonical: 1,
         system: null,
         hidden: false,
+        standard: null,
         ...extra,
     } as UnitSummary;
 }
 
-export const EACH = unit('unit-each', 'each', { shortSingular: 'ea', hidden: true });
+export const EACH = unit('unit-each', 'each', {
+    shortSingular: 'ea',
+    hidden: true,
+    standard: 'each',
+});
 export const GRAM = unit('unit-g', 'gram', {
     shortSingular: 'g',
     dimension: 'mass',

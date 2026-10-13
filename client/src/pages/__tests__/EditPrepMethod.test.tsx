@@ -5,10 +5,9 @@ import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { MockedResponses, renderPage } from '@recipe/utils/tests';
-import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
-import { mockGetPrepMethods } from '@recipe/graphql/queries/__mocks__/prepMethod';
 import { mockUpdatePrepMethod } from '@recipe/graphql/mutations/__mocks__/prepMethod';
 import { mockDeletePrepMethod } from '@recipe/graphql/mutations/__mocks__/prepMethod';
+import { mockGetEditablePrepMethods } from '@recipe/graphql/queries/__mocks__/prepMethod';
 
 import { EditPrepMethod } from '../EditPrepMethod';
 
@@ -17,7 +16,7 @@ loadDevMessages();
 
 const renderComponent = (mocks: MockedResponses = []) => {
     const routes = createRoutesFromElements(<Route path='/' element={<EditPrepMethod />} />);
-    return renderPage(routes, [mockGetPrepMethods, mockCurrentUserAdmin, ...mocks]);
+    return renderPage(routes, [mockGetEditablePrepMethods, ...mocks]);
 };
 
 describe('Edit Prep Method', () => {

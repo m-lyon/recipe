@@ -1,3 +1,4 @@
+import { Modifier } from '@apollo/client/cache';
 import { Reference, useMutation } from '@apollo/client';
 
 import { useErrorToast } from '@recipe/common/hooks';
@@ -26,25 +27,26 @@ export function CreateUnitForm(props: Props) {
         },
         update: (cache, { data }) => {
             if (data?.unitCreateOne?.record) {
-                cache.modify({
-                    fields: {
-                        unitMany(existingRefs = [], { readField }) {
-                            const record = data.unitCreateOne!.record!;
-                            const newRef = cache.writeFragment({
-                                data: record,
-                                fragment: UNIT_FIELDS,
-                                fragmentName: 'UnitFields',
-                            });
-                            if (
-                                existingRefs.some(
-                                    (ref: Reference) => readField('_id', ref) === record._id
-                                )
-                            ) {
-                                return existingRefs;
-                            }
-                            return [...existingRefs, newRef];
-                        },
-                    },
+                const addRecord: Modifier<readonly Reference[]> = (
+                    existingRefs = [],
+                    { readField }
+                ) => {
+                    const record = data.unitCreateOne!.record!;
+                    const newRef = cache.writeFragment({
+                        data: record,
+                        fragment: UNIT_FIELDS,
+                        fragmentName: 'UnitFields',
+                    });
+                    if (
+                        existingRefs.some((ref: Reference) => readField('_id', ref) === record._id)
+                    ) {
+                        return existingRefs;
+                    }
+                    return [...existingRefs, newRef];
+                };
+                // The creator owns the new unit, so it also belongs in the editable list.
+                cache.modify<Record<'unitMany' | 'unitManyEditable', Reference[]>>({
+                    fields: { unitMany: addRecord, unitManyEditable: addRecord },
                 });
             }
         },

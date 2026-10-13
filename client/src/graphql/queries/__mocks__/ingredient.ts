@@ -1,12 +1,11 @@
 import { Ingredient } from '@recipe/graphql/schema';
-import { GetIngredientsQuery } from '@recipe/graphql/generated';
 import { mockTitleTwo } from '@recipe/graphql/__mocks__/common';
 import { mockRecipeIdTwo } from '@recipe/graphql/__mocks__/ids';
-import { GetIngredientsQueryVariables } from '@recipe/graphql/generated';
+import { GetEditableIngredientsQuery } from '@recipe/graphql/generated';
 import { mockAppleId, mockCarrotId, mockChickenId } from '@recipe/graphql/__mocks__/ids';
 import { mockAdminId, mockLettuceId, mockRhubarbPieId } from '@recipe/graphql/__mocks__/ids';
 
-import { GET_INGREDIENTS } from '../ingredient';
+import { GET_EDITABLE_INGREDIENTS } from '../ingredient';
 
 // Ingredients
 export const mockApple: Ingredient = {
@@ -62,15 +61,12 @@ const mockRecipeTwoChoice = {
 };
 export const mockIngredients = [mockApple, mockChicken, mockCarrot, mockLettuce];
 export const mockRecipeFromIngredients = [mockRhurbarbPie, mockRecipeTwoChoice];
-export const mockGetIngredients = {
-    request: {
-        query: GET_INGREDIENTS,
-        variables: { filter: {} } satisfies GetIngredientsQueryVariables,
-    },
+export const mockGetEditableIngredients = {
+    request: { query: GET_EDITABLE_INGREDIENTS },
     result: {
         data: {
             __typename: 'Query',
-            ingredientMany: mockIngredients,
-        } satisfies GetIngredientsQuery,
+            ingredientManyEditable: mockIngredients,
+        } satisfies GetEditableIngredientsQuery,
     },
 };

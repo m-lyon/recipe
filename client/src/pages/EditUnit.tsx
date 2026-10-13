@@ -1,16 +1,16 @@
 import { useState } from 'react';
+import { useQuery } from '@apollo/client';
 import { Box, Heading, VStack } from '@chakra-ui/react';
 
 import { useSuccessToast } from '@recipe/common/hooks';
 import { ModifyUnitForm } from '@recipe/features/forms';
-import { GET_UNITS } from '@recipe/graphql/queries/unit';
 import { SearchableSelect } from '@recipe/common/components';
-import { useEditPermissionRecipeIngredients } from '@recipe/features/recipeIngredient';
+import { GET_EDITABLE_UNITS } from '@recipe/graphql/queries/unit';
 
 export function EditUnit() {
     const toast = useSuccessToast();
     const [currentUnit, setCurrentUnit] = useState<ModifyableUnit>();
-    const { data } = useEditPermissionRecipeIngredients(GET_UNITS);
+    const { data } = useQuery(GET_EDITABLE_UNITS);
 
     return (
         <VStack>
@@ -21,13 +21,15 @@ export function EditUnit() {
                         <SearchableSelect
                             label='Select unit'
                             aria-label='Select unit'
-                            options={(data?.unitMany ?? []).map((unit) => ({
+                            options={(data?.unitManyEditable ?? []).map((unit) => ({
                                 value: unit._id,
                                 label: unit.longSingular,
                             }))}
                             value={currentUnit?._id ?? null}
                             onChange={(id) => {
-                                setCurrentUnit(data?.unitMany.find((unit) => unit._id === id));
+                                setCurrentUnit(
+                                    data?.unitManyEditable.find((unit) => unit._id === id)
+                                );
                             }}
                         />
                         <ModifyUnitForm

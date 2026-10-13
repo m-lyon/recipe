@@ -38,6 +38,8 @@ export interface UnitSummary {
     perCanonical: number;
     system?: 'metric' | 'us' | null;
     hidden?: boolean;
+    /** The key of a standard unit, such as each. Null for other units. */
+    standard?: string | null;
 }
 
 export interface NamedSummary {

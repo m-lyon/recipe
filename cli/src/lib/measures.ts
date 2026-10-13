@@ -176,7 +176,7 @@ export function suggestFromPortion(
             head
         );
         if (size) {
-            const each = units.find((u) => u.dimension === 'count' && u.hidden);
+            const each = units.find((u) => u.standard === 'each');
             if (!each) return { label, reason: 'no each unit' };
             unitId = each._id;
             sizeId = size._id;

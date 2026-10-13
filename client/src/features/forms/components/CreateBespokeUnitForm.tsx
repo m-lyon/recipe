@@ -52,7 +52,6 @@ export function CreateBespokeUnitForm(props: Props) {
                 dimension: 'count',
                 perCanonical: 1,
                 system: null,
-                hidden: false,
             });
             saveUnit({ variables: { record: validated } });
         } catch (e: unknown) {

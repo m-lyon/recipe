@@ -165,7 +165,7 @@ function resolveSkippedUnit(
     if (!item || item.quantity === null || item.unit.data !== null) {
         return;
     }
-    const each = data?.units.find((unit) => unit.hidden && unit.dimension === 'count');
+    const each = data?.units.find((unit) => unit.standard === 'each');
     if (each) {
         item.unit = { value: null, data: each };
     }

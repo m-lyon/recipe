@@ -4,20 +4,19 @@ import { cleanup, screen } from '@testing-library/react';
 import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { mockGetUnits } from '@recipe/graphql/queries/__mocks__/unit';
-import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
-import { mockGetUnitsWithCutting } from '@recipe/graphql/mutations/__mocks__/unit';
+import { mockGetEditableUnits } from '@recipe/graphql/queries/__mocks__/unit';
 import { MockedResponses, haveValueByLabelText, renderPage } from '@recipe/utils/tests';
 import { mockDeleteUnit, mockUpdateUnit } from '@recipe/graphql/mutations/__mocks__/unit';
+import { mockGetEditableUnitsWithCutting } from '@recipe/graphql/mutations/__mocks__/unit';
 
 import { EditUnit } from '../EditUnit';
 
 loadErrorMessages();
 loadDevMessages();
 
-const renderComponent = (mocks: MockedResponses = [], units = mockGetUnits) => {
+const renderComponent = (mocks: MockedResponses = [], units = mockGetEditableUnits) => {
     const routes = createRoutesFromElements(<Route path='/' element={<EditUnit />} />);
-    return renderPage(routes, [units, mockCurrentUserAdmin, ...mocks]);
+    return renderPage(routes, [units, ...mocks]);
 };
 
 describe('Edit Unit', () => {
@@ -73,7 +72,7 @@ describe('Edit Unit', () => {
     it('should remove a unit', async () => {
         // Render
         const user = userEvent.setup();
-        renderComponent([mockDeleteUnit], mockGetUnitsWithCutting);
+        renderComponent([mockDeleteUnit], mockGetEditableUnitsWithCutting);
 
         // Act
         expect(await screen.findByText('Edit Unit')).not.toBeNull();

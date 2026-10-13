@@ -1,13 +1,13 @@
 import { CloseIcon } from '@chakra-ui/icons';
+import { Stack, Text, Wrap } from '@chakra-ui/react';
 import { useMutation, useQuery } from '@apollo/client';
-import { NumberInput, NumberInputField } from '@chakra-ui/react';
-import { forwardRef, useCallback, useImperativeHandle, useMemo, useState } from 'react';
-import { Box, Button, Collapse, HStack, IconButton, Stack, Text, Wrap } from '@chakra-ui/react';
+import { Box, Button, Checkbox, HStack, IconButton, Skeleton } from '@chakra-ui/react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react';
 
 import { useErrorToast } from '@recipe/common/hooks';
 import { MacroNutrients } from '@recipe/utils/nutrition';
-import { SearchableSelect } from '@recipe/common/components';
 import { GET_INGREDIENT_COMPONENTS } from '@recipe/graphql/queries/recipe';
+import { FloatingLabelInput, SearchableSelect } from '@recipe/common/components';
 import { GET_INGREDIENT_MEASURES } from '@recipe/graphql/queries/nutritionalInfo';
 import { CREATE_INGREDIENT_MEASURE } from '@recipe/graphql/mutations/ingredientMeasure';
 import { REMOVE_INGREDIENT_MEASURE } from '@recipe/graphql/mutations/ingredientMeasure';
@@ -63,7 +63,7 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
         const { ingredientId, portions, perGram, disabled } = props;
         const toast = useErrorToast();
         const { data: components } = useQuery(GET_INGREDIENT_COMPONENTS);
-        const { data: measureData } = useQuery(GET_INGREDIENT_MEASURES, {
+        const { data: measureData, loading: measuresLoading } = useQuery(GET_INGREDIENT_MEASURES, {
             variables: { ingredientIds: ingredientId ? [ingredientId] : [] },
             skip: !ingredientId,
         });
@@ -75,10 +75,22 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
         const [prepMethodId, setPrepMethodId] = useState<string | null>(null);
         const [moreSpecific, setMoreSpecific] = useState(false);
 
+        // A half-entered measure belongs to the ingredient it was typed for.
+        useEffect(() => {
+            setQuantity('1');
+            setGrams('');
+            setUnitId(null);
+            setSizeId(null);
+            setPrepMethodId(null);
+            setMoreSpecific(false);
+        }, [ingredientId]);
+
         const refetchQueries = [GET_INGREDIENT_MEASURES, 'GetRecipeNutrition'];
         const onError = (error: Error) =>
             toast({ title: 'Error saving measure', description: error.message, position: 'top' });
-        const [createMeasure] = useMutation(CREATE_INGREDIENT_MEASURE, { refetchQueries });
+        const [createMeasure, { loading: creating }] = useMutation(CREATE_INGREDIENT_MEASURE, {
+            refetchQueries,
+        });
         const [removeMeasure] = useMutation(REMOVE_INGREDIENT_MEASURE, {
             refetchQueries,
             onError,
@@ -186,6 +198,9 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
         );
         useImperativeHandle(ref, () => ({ commitPendingMeasures }), [commitPendingMeasures]);
 
+        // Chakra fades a disabled field to 0.4; plain text has to fade itself to match.
+        const dimmed = disabled ? 0.4 : undefined;
+
         const describe = (row: Row) => {
             const { draft, saved } = row;
             return [
@@ -198,116 +213,177 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
         };
 
         return (
-            <Stack spacing={3} fontWeight='normal'>
-                <Text fontWeight={500}>Measures</Text>
-                {rows.length === 0 && (
-                    <Text fontSize='sm' color='gray.500'>
-                        No measures yet. Volume and count quantities of this ingredient are not
-                        counted until one is added.
+            <Stack spacing={4}>
+                <Text opacity={dimmed}>Measures</Text>
+                {measuresLoading && (
+                    <Stack spacing={3} aria-label='Loading measures'>
+                        <Skeleton height='10px' />
+                        <Skeleton height='10px' />
+                        <Skeleton height='10px' width='40%' />
+                    </Stack>
+                )}
+                {!measuresLoading && rows.length === 0 && (
+                    <Text fontSize='sm' color='gray.500' opacity={dimmed}>
+                        No measures yet. Volume and count quantities of this ingredient do not count
+                        toward nutritional info until a measure is added.
                     </Text>
                 )}
-                {rows.map((row) => {
-                    const unit = row.saved?.unit ?? unitsById.get(row.draft.unitId);
-                    return (
-                        <HStack key={row.key} fontSize='sm' aria-label={`Measure ${describe(row)}`}>
-                            <Text flex={1}>
-                                1 {describe(row)} = {round1(row.draft.grams)} g
-                            </Text>
-                            {unit?.dimension === 'volume' && (
-                                <Text color='gray.500'>
-                                    {(row.draft.grams / unit.perCanonical).toFixed(2)} g/ml
-                                </Text>
-                            )}
-                            {perGram && (
-                                <Text color='gray.500'>
-                                    {Math.round(perGram.calories * row.draft.grams)} kcal
-                                </Text>
-                            )}
-                            <IconButton
-                                size='xs'
-                                variant='ghost'
-                                icon={<CloseIcon />}
-                                aria-label={`Remove measure ${describe(row)}`}
-                                isDisabled={disabled}
-                                onClick={() => handleRemove(row)}
-                            />
-                        </HStack>
-                    );
-                })}
-                <HStack align='flex-end'>
-                    <NumberInput
-                        size='sm'
-                        min={0}
-                        value={quantity}
-                        onChange={setQuantity}
-                        isDisabled={disabled}
-                        maxW='5em'
+                {rows.length > 0 && (
+                    <Stack spacing={2}>
+                        {rows.map((row) => {
+                            const unit = row.saved?.unit ?? unitsById.get(row.draft.unitId);
+                            return (
+                                <HStack
+                                    key={row.key}
+                                    fontSize='sm'
+                                    aria-label={`Measure ${describe(row)}`}
+                                >
+                                    <Text flex={1}>
+                                        1 {describe(row)} = {round1(row.draft.grams)} g
+                                    </Text>
+                                    {unit?.dimension === 'volume' && (
+                                        <Text color='gray.500'>
+                                            {(row.draft.grams / unit.perCanonical).toFixed(2)} g/ml
+                                        </Text>
+                                    )}
+                                    {perGram && (
+                                        <Text color='gray.500'>
+                                            {Math.round(perGram.calories * row.draft.grams)} kcal
+                                        </Text>
+                                    )}
+                                    <IconButton
+                                        size='xs'
+                                        variant='ghost'
+                                        icon={<CloseIcon boxSize={2.5} />}
+                                        aria-label={`Remove measure ${describe(row)}`}
+                                        isDisabled={disabled}
+                                        onClick={() => handleRemove(row)}
+                                    />
+                                </HStack>
+                            );
+                        })}
+                    </Stack>
+                )}
+                {/* One box, so the button reads as adding everything inside it. */}
+                <Stack
+                    as='fieldset'
+                    spacing={4}
+                    border='1px solid'
+                    borderColor={disabled ? 'gray.100' : 'gray.200'}
+                    borderRadius='md'
+                    px={3}
+                    pt={4}
+                    pb={3}
+                >
+                    <Text
+                        as='legend'
+                        px={1}
+                        fontSize='sm'
+                        color='gray.400'
+                        opacity={dimmed}
+                        // Sit the border as low on the text as on the floating input labels.
+                        position='relative'
+                        top='-2px'
                     >
-                        <NumberInputField aria-label='Measure quantity' />
-                    </NumberInput>
-                    <Box flex={1}>
-                        <SearchableSelect
-                            label='Unit'
-                            aria-label='Measure unit'
-                            options={units
-                                .filter((u) => u.dimension !== 'mass')
-                                .map((u) => ({ value: u._id, label: u.longSingular }))}
-                            value={unitId}
-                            onChange={setUnitId}
-                            disabled={disabled}
-                        />
-                    </Box>
-                    <Text fontSize='sm'>=</Text>
-                    <NumberInput
-                        size='sm'
+                        New measure
+                    </Text>
+                    <HStack spacing={2}>
+                        <Box w='6.5em' flexShrink={0}>
+                            <FloatingLabelInput
+                                id='measure-quantity'
+                                label='Quantity'
+                                type='number'
+                                inputMode='decimal'
+                                min={0}
+                                value={quantity}
+                                isInvalid={false}
+                                isDisabled={disabled}
+                                onChange={(e) => setQuantity(e.target.value)}
+                            />
+                        </Box>
+                        <Box flex={1} minW={0}>
+                            <SearchableSelect
+                                label='Unit'
+                                aria-label='Measure unit'
+                                options={units
+                                    .filter((u) => u.dimension !== 'mass')
+                                    .map((u) => ({ value: u._id, label: u.longSingular }))}
+                                value={unitId}
+                                onChange={setUnitId}
+                                disabled={disabled}
+                            />
+                        </Box>
+                    </HStack>
+                    <Checkbox
+                        alignSelf='flex-start'
+                        isChecked={moreSpecific}
+                        isDisabled={disabled}
+                        onChange={(e) => {
+                            setMoreSpecific(e.target.checked);
+                            // A hidden size or prep method must not narrow the next measure.
+                            if (!e.target.checked) {
+                                setSizeId(null);
+                                setPrepMethodId(null);
+                            }
+                        }}
+                    >
+                        Specific size or prep method
+                    </Checkbox>
+                    {moreSpecific && (
+                        <HStack spacing={2}>
+                            <Box flex={1} minW={0}>
+                                <SearchableSelect
+                                    label='Size'
+                                    aria-label='Measure size'
+                                    options={sizes.map((s) => ({ value: s._id, label: s.value }))}
+                                    value={sizeId}
+                                    onChange={setSizeId}
+                                    disabled={disabled}
+                                />
+                            </Box>
+                            <Box flex={1} minW={0}>
+                                <SearchableSelect
+                                    label='Prep'
+                                    aria-label='Measure prep method'
+                                    options={prepMethods.map((p) => ({
+                                        value: p._id,
+                                        label: p.value,
+                                    }))}
+                                    value={prepMethodId}
+                                    onChange={setPrepMethodId}
+                                    disabled={disabled}
+                                />
+                            </Box>
+                        </HStack>
+                    )}
+                    <FloatingLabelInput
+                        id='measure-grams'
+                        label='Grams'
+                        type='number'
+                        inputMode='decimal'
                         min={0}
                         value={grams}
-                        onChange={setGrams}
+                        isInvalid={false}
                         isDisabled={disabled}
-                        maxW='6em'
+                        onChange={(e) => setGrams(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key !== 'Enter') return;
+                            // Add the measure, not save the whole ingredient.
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleAdd();
+                        }}
+                    />
+                    <Button
+                        alignSelf='flex-end'
+                        onClick={handleAdd}
+                        isDisabled={disabled || measuresLoading}
+                        isLoading={creating}
+                        aria-label='Add measure'
                     >
-                        <NumberInputField aria-label='Measure grams' />
-                    </NumberInput>
-                    <Text fontSize='sm'>g</Text>
-                </HStack>
-                <Button
-                    size='xs'
-                    variant='link'
-                    alignSelf='flex-start'
-                    onClick={() => setMoreSpecific((open) => !open)}
-                    isDisabled={disabled}
-                >
-                    more specific…
-                </Button>
-                <Collapse in={moreSpecific} animateOpacity>
-                    <HStack>
-                        <SearchableSelect
-                            label='Size'
-                            aria-label='Measure size'
-                            options={sizes.map((s) => ({ value: s._id, label: s.value }))}
-                            value={sizeId}
-                            onChange={setSizeId}
-                            disabled={disabled}
-                        />
-                        <SearchableSelect
-                            label='Prep method'
-                            aria-label='Measure prep method'
-                            options={prepMethods.map((p) => ({ value: p._id, label: p.value }))}
-                            value={prepMethodId}
-                            onChange={setPrepMethodId}
-                            disabled={disabled}
-                        />
-                    </HStack>
-                </Collapse>
-                <Button
-                    size='sm'
-                    alignSelf='flex-start'
-                    onClick={handleAdd}
-                    isDisabled={disabled}
-                    aria-label='Add measure'
-                >
-                    + Add measure
-                </Button>
+                        Add measure
+                    </Button>
+                </Stack>
                 {suggestions.length > 0 && (
                     <Stack spacing={1}>
                         <Text fontSize='sm' color='gray.600'>

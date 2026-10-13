@@ -1,10 +1,10 @@
 import { Unit } from '@recipe/graphql/schema';
-import { GetUnitsQuery, GetUnitsQueryVariables } from '@recipe/graphql/generated';
+import { GetEditableUnitsQuery, GetUnitsQuery } from '@recipe/graphql/generated';
 import { mockCupId, mockGramId, mockKilogramId } from '@recipe/graphql/__mocks__/ids';
 import { mockEachId, mockMilliliterId, mockOunceId } from '@recipe/graphql/__mocks__/ids';
 import { mockAdminId, mockTablespoonId, mockTeaspoonId } from '@recipe/graphql/__mocks__/ids';
 
-import { GET_UNITS } from '../unit';
+import { GET_EDITABLE_UNITS, GET_UNITS } from '../unit';
 
 export const mockTeaspoon: Unit = {
     __typename: 'Unit',
@@ -153,9 +153,15 @@ export const mockUnits = [
     mockEach,
 ];
 export const mockGetUnits = {
-    request: { query: GET_UNITS, variables: { filter: {} } satisfies GetUnitsQueryVariables },
+    request: { query: GET_UNITS },
     result: { data: { __typename: 'Query', unitMany: mockUnits } satisfies GetUnitsQuery },
 };
-
-// Pages that list every unit query without a filter
-export const mockGetAllUnits = { ...mockGetUnits, request: { query: GET_UNITS } };
+export const mockGetEditableUnits = {
+    request: { query: GET_EDITABLE_UNITS },
+    result: {
+        data: {
+            __typename: 'Query',
+            unitManyEditable: mockUnits,
+        } satisfies GetEditableUnitsQuery,
+    },
+};

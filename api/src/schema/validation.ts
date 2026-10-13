@@ -109,12 +109,18 @@ function forbidden(message: string) {
     return new GraphQLError(message, { extensions: { code: 'FORBIDDEN' } });
 }
 
+/** Only each is hidden: a hidden unit cannot be picked by name in the recipe editor. */
+const HIDDEN_ERROR = 'Only a standard unit can be hidden.';
+
 /**
  * Only an admin creates a mass or volume unit: its size changes the nutrition of every
  * recipe that uses it. Anyone may create a count unit, which reaches grams only through a
- * weight recorded on the ingredient.
+ * weight recorded on the ingredient. Nobody creates a hidden unit: only each is hidden.
  */
 export function validateUnitCreate(record: UnitSizeFields, isAdmin: boolean) {
+    if (record.hidden) {
+        throw forbidden(HIDDEN_ERROR);
+    }
     if (!isAdmin && record.dimension !== 'count') {
         throw forbidden(
             'Only an admin can create a mass or volume unit. Create a count unit, and record its weight on the ingredient.'
@@ -123,8 +129,9 @@ export function validateUnitCreate(record: UnitSizeFields, isAdmin: boolean) {
 }
 
 /**
- * Blocks a change to the size of a standard unit, whose size is defined in code, and stops
- * anyone but an admin turning a unit into a mass or volume unit. A record that repeats the
+ * Blocks a change to the size of a standard unit, whose size is defined in code, stops
+ * anyone hiding a unit that is not standard, and stops anyone but an admin turning a unit
+ * into a mass or volume unit. A record that repeats the
  * stored values is allowed, so a form may send every field.
  */
 export async function validateUnitUpdate(
@@ -142,6 +149,9 @@ export async function validateUnitUpdate(
         throw forbidden(
             `${unit.longSingular} is a standard unit. Its ${changed.join(', ')} cannot be changed.`
         );
+    }
+    if (changed.includes('hidden') && record.hidden) {
+        throw forbidden(HIDDEN_ERROR);
     }
     const dimension = record.dimension ?? unit.dimension;
     if (!isAdmin && dimension !== 'count') {
