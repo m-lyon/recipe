@@ -15,7 +15,7 @@ export function useNutritionalInfo(subsections: IngredientSubsectionView[], numS
         ),
     ];
 
-    const { data, loading, refetch } = useQuery(GET_RECIPE_NUTRITION, {
+    const { data, loading, error, refetch } = useQuery(GET_RECIPE_NUTRITION, {
         variables: { ingredientIds },
         skip: ingredientIds.length === 0,
     });
@@ -39,5 +39,5 @@ export function useNutritionalInfo(subsections: IngredientSubsectionView[], numS
 
     const result = sumRecipeNutrition(subsections, nutritionalInfoMap, measuresMap, numServings);
 
-    return { ...result, owners, loading, refetch };
+    return { ...result, owners, loading, error: error != null, refetch };
 }

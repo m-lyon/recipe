@@ -8,8 +8,10 @@ import { PATH } from '@recipe/constants';
 import { renderPage } from '@recipe/utils/tests';
 import { getMockedImageBlob } from '@recipe/utils/tests';
 import { mockGetTags } from '@recipe/graphql/queries/__mocks__/tag';
+import { mockUnit } from '@recipe/graphql/mutations/__mocks__/unit';
 import { mockGetRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCurrentUserNull } from '@recipe/graphql/queries/__mocks__/user';
+import { mockGetEditableUnits } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockLogin, mockLogout } from '@recipe/graphql/mutations/__mocks__/user';
 import { mockArchiveRecipeTwo } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -80,6 +82,58 @@ describe('Auth Workflow', () => {
         expect(await screen.findByText('Recipes')).not.toBeNull();
         expect(screen.queryByLabelText('Logout')).toBeNull();
         expect(screen.queryByLabelText('Log in or sign up')).not.toBeNull();
+    });
+
+    it('should list the units of the new user after logging in as someone else', async () => {
+        // Render -----------------------------------------------
+        const mockGetEditableUnitsOfUser = {
+            ...mockGetEditableUnits,
+            result: { data: { __typename: 'Query' as const, unitManyEditable: [mockUnit] } },
+        };
+        // Logging in and out refetches the queries on screen, so some mocks are used more
+        // than once. Each limit is the number of times the flow below sends that query.
+        const { router } = renderPage(
+            routes,
+            [
+                mockCurrentUser,
+                mockGetEditableUnitsOfUser,
+                mockLogout,
+                mockCurrentUserNull,
+                mockLogin,
+                mockCurrentUserAdmin,
+                // Refetched at logout while the page is still mounted, then the admin's visit
+                { ...mockGetEditableUnits, maxUsageCount: 2 },
+                // The unit form's query: first visit, refetch at logout, admin's visit
+                { ...mockGetIngredientComponents, maxUsageCount: 3 },
+                // The home page after logout, then the refetch at login
+                { ...mockGetRecipes, maxUsageCount: 2 },
+                { ...mockGetTags, maxUsageCount: 2 },
+                // The search bar: once, or twice when still mounted at the refetch at login
+                { ...mockGetIngredientAndRecipeIngredients, maxUsageCount: 2 },
+            ],
+            [`${PATH.BASE}/edit/unit`]
+        );
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        expect(await screen.findByText('Edit Unit')).not.toBeNull();
+        await user.click(screen.getByLabelText('Select unit'));
+        expect(await screen.findByRole('option', { name: 'cutting' })).not.toBeNull();
+        await user.keyboard('{Escape}');
+        await user.click(screen.getByLabelText('Logout'));
+        await user.click(await screen.findByLabelText('Log in or sign up'));
+        await user.click(await screen.findByLabelText('Email'));
+        await user.keyboard('test@gmail.com');
+        await user.click(screen.getByLabelText('Password'));
+        await user.keyboard('password');
+        await user.click(screen.getByLabelText('Login'));
+        expect(await screen.findByLabelText('Logout')).not.toBeNull();
+        await router.navigate(`${PATH.BASE}/edit/unit`);
+
+        // Expect ------------------------------------------------
+        expect(await screen.findByText('Edit Unit')).not.toBeNull();
+        await user.click(screen.getByLabelText('Select unit'));
+        expect(await screen.findByRole('option', { name: 'teaspoon' })).not.toBeNull();
     });
 });
 

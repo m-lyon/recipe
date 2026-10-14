@@ -20,6 +20,8 @@ interface UseUnitConversionReturnType {
     convert: ConvertToSystem;
     ladders: DisplayLadder[];
     loading: boolean;
+    /** True when the ladders could not be loaded, so nothing is converted. */
+    failed: boolean;
 }
 export function useUnitConversion(): UseUnitConversionReturnType {
     const { data, loading, error } = useQuery(GET_DISPLAY_LADDERS);
@@ -40,5 +42,5 @@ export function useUnitConversion(): UseUnitConversionReturnType {
         return convertToSystem(quantity, unit, preference, ladders);
     };
 
-    return { apply, convert, ladders, loading };
+    return { apply, convert, ladders, loading, failed: error != null };
 }

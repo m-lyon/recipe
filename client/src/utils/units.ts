@@ -155,7 +155,7 @@ const ROUNDING_TOLERANCE = 0.1;
 /**
  * Converts one quantity into another system's ladder, rounded for display. The largest
  * step that the quantity reaches and whose rounded value is within 10% of the exact value
- * wins. When no step rounds well, the smallest step shows the value to 2 significant figures.
+ * wins. When no step rounds well, the smallest step shows it as finely as its format allows.
  */
 function convertPart(
     quantity: string,
@@ -177,7 +177,20 @@ function convertPart(
     }
     const smallest = candidates[candidates.length - 1].unit;
     const exact = canonical / smallest.perCanonical;
-    return { quantity: String(Number(exact.toPrecision(2))), unit: smallest };
+    return { quantity: roundFinely(exact, smallest), unit: smallest };
+}
+
+/**
+ * Rounds a value that no kitchen fraction or 2 significant figures shows well. A fraction
+ * unit still shows a fraction, to the nearest sixteenth and never 0, so it reads like the
+ * lines around it: 0.41 tsp is 3/8 tsp, not 0.41 tsp.
+ */
+function roundFinely(value: number, unit: SizedUnit): string {
+    if (unit.preferredNumberFormat === 'fraction') {
+        const sixteenths = Math.max(1, Math.round(value * 16));
+        return returnQuantityFromFraction(fraction(sixteenths, 16) as Fraction, unit);
+    }
+    return String(Number(value.toPrecision(2)));
 }
 
 export interface SystemConversion {

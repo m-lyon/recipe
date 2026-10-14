@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Button, Stack } from '@chakra-ui/react';
 import { Link, useLocation } from 'react-router-dom';
-import { useMutation, useQuery } from '@apollo/client';
+import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 
 import { PATH } from '@recipe/constants';
 import { useErrorToast } from '@recipe/common/hooks';
@@ -23,6 +23,8 @@ export function UserOptions() {
         },
         onCompleted: () => {
             navigate(PATH.ROOT);
+            // Cached results depend on who is logged in (e.g. the units they can edit).
+            client.resetStore().catch(console.error);
         },
         update: (cache) => {
             cache.writeQuery({
@@ -31,6 +33,7 @@ export function UserOptions() {
             });
         },
     });
+    const client = useApolloClient();
     const navigate = useNavigate();
     const toast = useErrorToast();
 

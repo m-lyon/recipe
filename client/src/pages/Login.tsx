@@ -1,8 +1,8 @@
 import { object, string } from 'yup';
 import { motion } from 'framer-motion';
-import { useMutation } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
 import { FormEvent, useEffect, useState } from 'react';
+import { useApolloClient, useMutation } from '@apollo/client';
 import { Box, Button, FormControl, HStack, Heading, Stack } from '@chakra-ui/react';
 
 import { PATH } from '@recipe/constants';
@@ -21,7 +21,12 @@ export function Login() {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [isSignup, setIsSignup] = useState(false);
+    const client = useApolloClient();
+    // Cached results depend on who is logged in (e.g. the units they can edit), so a new
+    // user must not see them. resetStore also refetches the queries on screen.
+    const resetStore = () => client.resetStore().catch(console.error);
     const [login, { loading: loginLoading }] = useMutation(LOGIN, {
+        onCompleted: resetStore,
         update: (cache, { data }) => {
             if (data?.login) {
                 cache.writeQuery({
@@ -37,6 +42,7 @@ export function Login() {
         },
     });
     const [signup, { loading: SignupLoading }] = useMutation(SIGNUP, {
+        onCompleted: resetStore,
         update: (cache, { data }) => {
             if (data?.register) {
                 cache.writeQuery({

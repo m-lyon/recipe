@@ -125,14 +125,15 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
             .filter((s) => s != null)
             .filter((s) => !s.draft || !rows.some((row) => sameKey(row.draft, s.draft!)));
 
-        const addRow = async (draft: MeasureDraft) => {
+        /** Adds a row, and says whether it was added. */
+        const addRow = async (draft: MeasureDraft): Promise<boolean> => {
             if (rows.some((row) => sameKey(row.draft, draft))) {
                 onError(new Error('A measure for this unit, size and prep method already exists.'));
-                return;
+                return false;
             }
             if (!ingredientId) {
                 setStaged((s) => [...s, { key: crypto.randomUUID(), draft }]);
-                return;
+                return true;
             }
             const result = await createMeasure({
                 variables: {
@@ -148,10 +149,14 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                 onError(error);
                 return null;
             });
-            if (result?.errors?.length) onError(new Error(result.errors[0].message));
+            if (result?.errors?.length) {
+                onError(new Error(result.errors[0].message));
+                return false;
+            }
+            return result != null;
         };
 
-        const handleAdd = () => {
+        const handleAdd = async () => {
             const qty = parseFloat(quantity);
             const weight = parseFloat(grams);
             if (!unitId || !(qty > 0) || !(weight > 0)) {
@@ -159,7 +164,8 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                 return;
             }
             // Entered as written on the packet ("2 tbsp = 27 g"), stored per one unit.
-            addRow({ unitId, sizeId, prepMethodId, grams: weight / qty });
+            // Keep what was typed until it is saved, so a failed save can be retried.
+            if (!(await addRow({ unitId, sizeId, prepMethodId, grams: weight / qty }))) return;
             setQuantity('1');
             setGrams('');
             setSizeId(null);
@@ -198,6 +204,8 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
         );
         useImperativeHandle(ref, () => ({ commitPendingMeasures }), [commitPendingMeasures]);
 
+        // Nothing can be added or removed until the saved measures are known.
+        const inactive = disabled || measuresLoading;
         // Chakra fades a disabled field to 0.4; plain text has to fade itself to match.
         const dimmed = disabled ? 0.4 : undefined;
 
@@ -211,6 +219,9 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                 .filter(Boolean)
                 .join(' · ');
         };
+        // One format for saved rows and USDA suggestions: "1 cup · chopped = 120 g".
+        const describeWithWeight = (row: Row) =>
+            `1 ${describe(row)} = ${round1(row.draft.grams)} g`;
 
         return (
             <Stack spacing={4}>
@@ -222,8 +233,8 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                         <Skeleton height='10px' width='40%' />
                     </Stack>
                 )}
-                {!measuresLoading && rows.length === 0 && (
-                    <Text fontSize='sm' color='gray.500' opacity={dimmed}>
+                {!disabled && !measuresLoading && rows.length === 0 && (
+                    <Text fontSize='sm' color='gray.500' fontWeight='normal'>
                         No measures yet. Volume and count quantities of this ingredient do not count
                         toward nutritional info until a measure is added.
                     </Text>
@@ -236,11 +247,10 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                                 <HStack
                                     key={row.key}
                                     fontSize='sm'
+                                    fontWeight='normal'
                                     aria-label={`Measure ${describe(row)}`}
                                 >
-                                    <Text flex={1}>
-                                        1 {describe(row)} = {round1(row.draft.grams)} g
-                                    </Text>
+                                    <Text flex={1}>{describeWithWeight(row)}</Text>
                                     {unit?.dimension === 'volume' && (
                                         <Text color='gray.500'>
                                             {(row.draft.grams / unit.perCanonical).toFixed(2)} g/ml
@@ -256,7 +266,7 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                                         variant='ghost'
                                         icon={<CloseIcon boxSize={2.5} />}
                                         aria-label={`Remove measure ${describe(row)}`}
-                                        isDisabled={disabled}
+                                        isDisabled={inactive}
                                         onClick={() => handleRemove(row)}
                                     />
                                 </HStack>
@@ -295,9 +305,9 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                                 type='number'
                                 inputMode='decimal'
                                 min={0}
-                                value={quantity}
+                                value={disabled ? '' : quantity}
                                 isInvalid={false}
-                                isDisabled={disabled}
+                                isDisabled={inactive}
                                 onChange={(e) => setQuantity(e.target.value)}
                             />
                         </Box>
@@ -310,14 +320,14 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                                     .map((u) => ({ value: u._id, label: u.longSingular }))}
                                 value={unitId}
                                 onChange={setUnitId}
-                                disabled={disabled}
+                                disabled={inactive}
                             />
                         </Box>
                     </HStack>
                     <Checkbox
                         alignSelf='flex-start'
                         isChecked={moreSpecific}
-                        isDisabled={disabled}
+                        isDisabled={inactive}
                         onChange={(e) => {
                             setMoreSpecific(e.target.checked);
                             // A hidden size or prep method must not narrow the next measure.
@@ -338,7 +348,7 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                                     options={sizes.map((s) => ({ value: s._id, label: s.value }))}
                                     value={sizeId}
                                     onChange={setSizeId}
-                                    disabled={disabled}
+                                    disabled={inactive}
                                 />
                             </Box>
                             <Box flex={1} minW={0}>
@@ -351,7 +361,7 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                                     }))}
                                     value={prepMethodId}
                                     onChange={setPrepMethodId}
-                                    disabled={disabled}
+                                    disabled={inactive}
                                 />
                             </Box>
                         </HStack>
@@ -364,7 +374,7 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                         min={0}
                         value={grams}
                         isInvalid={false}
-                        isDisabled={disabled}
+                        isDisabled={inactive}
                         onChange={(e) => setGrams(e.target.value)}
                         onKeyDown={(e) => {
                             if (e.key !== 'Enter') return;
@@ -377,7 +387,7 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                     <Button
                         alignSelf='flex-end'
                         onClick={handleAdd}
-                        isDisabled={disabled || measuresLoading}
+                        isDisabled={inactive}
                         isLoading={creating}
                         aria-label='Add measure'
                     >
@@ -385,8 +395,8 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                     </Button>
                 </Stack>
                 {suggestions.length > 0 && (
-                    <Stack spacing={1}>
-                        <Text fontSize='sm' color='gray.600'>
+                    <Stack spacing={1} fontWeight='normal'>
+                        <Text fontSize='sm' color='gray.500'>
                             From USDA:
                         </Text>
                         <Wrap>
@@ -396,15 +406,15 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                                         key={index}
                                         size='xs'
                                         variant='outline'
-                                        isDisabled={disabled}
+                                        isDisabled={inactive}
                                         onClick={() => addRow(suggestion.draft!)}
                                         aria-label={`Add USDA measure ${suggestion.label}`}
                                     >
-                                        {suggestion.label} +
+                                        {describeWithWeight({ key: '', draft: suggestion.draft })} +
                                     </Button>
                                 ) : (
                                     <Text key={index} fontSize='xs' color='gray.500'>
-                                        {suggestion.label} — {suggestion.reason}
+                                        {suggestion.label.toLowerCase()} — {suggestion.reason}
                                     </Text>
                                 )
                             )}

@@ -82,6 +82,7 @@ export function SearchableSelect({
                     classNames={{
                         root: classes.root,
                         input: classes.input,
+                        section: classes.section,
                         label: `${classes.label} ${isFloating ? classes.labelFloating : ''}`,
                     }}
                     rightSection={<Combobox.Chevron />}

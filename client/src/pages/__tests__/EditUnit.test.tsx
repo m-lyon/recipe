@@ -4,6 +4,7 @@ import { cleanup, screen } from '@testing-library/react';
 import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
+import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetEditableUnits } from '@recipe/graphql/queries/__mocks__/unit';
 import { MockedResponses, haveValueByLabelText, renderPage } from '@recipe/utils/tests';
 import { mockDeleteUnit, mockUpdateUnit } from '@recipe/graphql/mutations/__mocks__/unit';
@@ -107,5 +108,22 @@ describe('Edit Unit', () => {
         expect(screen.queryByLabelText('Dimension')).toBeNull();
         expect(screen.queryByLabelText('Delete unit')).toBeNull();
         expect(screen.getByLabelText('Save unit')).not.toBeNull();
+    });
+
+    it('should keep a decimal size as it is typed', async () => {
+        // Render
+        const user = userEvent.setup();
+        renderComponent([mockCurrentUserAdmin], mockGetEditableUnitsWithCutting);
+
+        // Act
+        expect(await screen.findByText('Edit Unit')).not.toBeNull();
+        await user.click(screen.getByLabelText('Select unit'));
+        await user.click(await screen.findByRole('option', { name: 'cutting' }));
+        await user.click(await screen.findByLabelText('Dimension'));
+        await user.click(await screen.findByRole('option', { name: 'mass' }));
+        await user.type(screen.getByLabelText('Grams in one unit'), '28.35');
+
+        // Expect
+        haveValueByLabelText(screen, 'Grams in one unit', '28.35');
     });
 });

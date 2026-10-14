@@ -5,6 +5,9 @@ import { Button, Group, NumberInput, Radio, Stack, Text } from '@mantine/core';
 import { UncountedIngredient, describeOneUnit } from '@recipe/utils/nutrition';
 import { CREATE_INGREDIENT_MEASURE } from '@recipe/graphql/mutations/ingredientMeasure';
 
+/** Chakra's teal.500, so the Mantine controls match the rest of the page. */
+const TEAL = '#319795';
+
 interface Option {
     label: string;
     sizeId: string | null;
@@ -104,6 +107,7 @@ export function UncountedIngredientPrompt(props: Props) {
                                 <Radio
                                     key={option.label}
                                     size='xs'
+                                    color={TEAL}
                                     value={String(index)}
                                     label={`"${option.label}"`}
                                 />
@@ -111,7 +115,13 @@ export function UncountedIngredientPrompt(props: Props) {
                         </Group>
                     </Radio.Group>
                 )}
-                <Button size='xs' variant='light' loading={loading} onClick={handleSave}>
+                <Button
+                    size='xs'
+                    variant='light'
+                    color={TEAL}
+                    loading={loading}
+                    onClick={handleSave}
+                >
                     Save
                 </Button>
             </Group>

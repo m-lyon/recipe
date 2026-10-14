@@ -33,6 +33,10 @@ const EMPTY_DRAFT: LadderDraft = {
     steps: [{ unitId: null, from: '0' }],
 };
 
+function withoutUnits(steps: StepDraft[]): StepDraft[] {
+    return steps.map((step) => ({ ...step, unitId: null }));
+}
+
 function toDraft(ladder: DisplayLadder): LadderDraft {
     return {
         name: ladder.name,
@@ -95,6 +99,8 @@ export function DisplayLadders(props: Props) {
         (unit) => unit.dimension === draft.dimension && unit.system === draft.system
     );
     const disabled = mode === 'edit' && !current;
+    // Chakra fades a disabled field to 0.4; plain text has to fade itself to match.
+    const dimmed = disabled ? 0.4 : undefined;
 
     const setStep = (index: number, step: Partial<StepDraft>) =>
         setDraft((d) => ({
@@ -156,15 +162,17 @@ export function DisplayLadders(props: Props) {
                             label='Dimension'
                             aria-label='Dimension'
                             options={[
-                                { value: 'mass', label: 'Mass' },
-                                { value: 'volume', label: 'Volume' },
+                                { value: 'mass', label: 'mass' },
+                                { value: 'volume', label: 'volume' },
                             ]}
-                            value={draft.dimension}
+                            value={disabled ? null : draft.dimension}
                             disabled={disabled}
                             onChange={(value) =>
                                 setDraft((d) => ({
                                     ...d,
                                     dimension: value as EnumDisplayLadderDimension,
+                                    // The units of another dimension no longer apply.
+                                    steps: value === d.dimension ? d.steps : withoutUnits(d.steps),
                                 }))
                             }
                         />
@@ -172,20 +180,22 @@ export function DisplayLadders(props: Props) {
                             label='System'
                             aria-label='System'
                             options={[
-                                { value: 'metric', label: 'Metric' },
+                                { value: 'metric', label: 'metric' },
                                 { value: 'us', label: 'US customary' },
                             ]}
-                            value={draft.system}
+                            value={disabled ? null : draft.system}
                             disabled={disabled}
                             onChange={(value) =>
                                 setDraft((d) => ({
                                     ...d,
                                     system: value as EnumDisplayLadderSystem,
+                                    // The units of another system no longer apply.
+                                    steps: value === d.system ? d.steps : withoutUnits(d.steps),
                                 }))
                             }
                         />
                     </HStack>
-                    <Text fontSize='sm' color='gray.500'>
+                    <Text fontSize='sm' color='gray.500' opacity={dimmed}>
                         A quantity is shown in the largest unit whose threshold it reaches.
                     </Text>
                     {draft.steps.map((step, index) => {
@@ -203,18 +213,19 @@ export function DisplayLadders(props: Props) {
                                     disabled={disabled}
                                     onChange={(value) => setStep(index, { unitId: value })}
                                 />
-                                <Text fontSize='sm'>from</Text>
+                                <Text fontSize='sm' opacity={dimmed}>
+                                    from
+                                </Text>
                                 <NumberInput
-                                    size='sm'
                                     min={0}
-                                    value={step.from}
+                                    value={disabled ? '' : step.from}
                                     isDisabled={disabled}
                                     onChange={(value) => setStep(index, { from: value })}
                                     maxW='6em'
                                 >
                                     <NumberInputField aria-label={`Step ${index + 1} threshold`} />
                                 </NumberInput>
-                                <Text fontSize='sm' minW='4em'>
+                                <Text fontSize='sm' minW='4em' opacity={dimmed}>
                                     {unit?.shortPlural ?? ''}
                                 </Text>
                                 <IconButton

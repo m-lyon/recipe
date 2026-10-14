@@ -2,8 +2,8 @@ import { StackProps } from '@chakra-ui/react';
 import { Stack, Text } from '@chakra-ui/react';
 import { ApolloError, useQuery } from '@apollo/client';
 import { boolean, mixed, number, object, string } from 'yup';
-import { MutableRefObject, useCallback, useEffect } from 'react';
 import { Button, ButtonGroup, Checkbox } from '@chakra-ui/react';
+import { MutableRefObject, useCallback, useEffect, useState } from 'react';
 import { FormControl, FormHelperText, HStack, Radio, RadioGroup } from '@chakra-ui/react';
 
 import { useUser } from '@recipe/features/user';
@@ -23,9 +23,9 @@ export function formatUnitError(error: ApolloError) {
 }
 
 const DIMENSION_OPTIONS = [
-    { value: 'mass', label: 'Mass' },
-    { value: 'volume', label: 'Volume' },
-    { value: 'count', label: 'Count' },
+    { value: 'mass', label: 'mass' },
+    { value: 'volume', label: 'volume' },
+    { value: 'count', label: 'count' },
 ];
 const CANONICAL_NAME: Record<EnumUnitDimension, string> = {
     mass: 'Grams',
@@ -118,6 +118,15 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
             unit.perCanonical === formData.perCanonical
     );
     const sizeDescription = describeSize(formData, isStandard);
+    // The size as typed, so a half-typed "28." or "0.5" is not parsed away mid-entry.
+    const [sizeText, setSizeText] = useState('');
+    useEffect(() => {
+        setSizeText((text) =>
+            (parseFloat(text) || undefined) === formData.perCanonical
+                ? text
+                : (formData.perCanonical?.toString() ?? '')
+        );
+    }, [formData.perCanonical]);
 
     useEffect(() => {
         if (disabled) {
@@ -204,7 +213,16 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
                             aria-label='Dimension'
                             options={DIMENSION_OPTIONS}
                             value={disabled ? null : (formData.dimension ?? 'count')}
-                            onChange={(val) => handleChange('dimension', val as EnumUnitDimension)}
+                            onChange={(val) => {
+                                // A count unit's size of 1 means nothing as grams or millilitres.
+                                if (
+                                    (formData.dimension ?? 'count') === 'count' &&
+                                    val !== 'count'
+                                ) {
+                                    handleChange('perCanonical', undefined);
+                                }
+                                handleChange('dimension', val as EnumUnitDimension);
+                            }}
                             disabled={disabled}
                         />
                     </FormControl>
@@ -213,16 +231,18 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
                             <FloatingLabelInput
                                 label={`${CANONICAL_NAME[formData.dimension]} in one unit`}
                                 id='per-canonical'
-                                value={formData.perCanonical?.toString() ?? ''}
+                                inputMode='decimal'
+                                value={sizeText}
                                 isInvalid={hasError}
                                 isRequired
                                 isDisabled={disabled}
-                                onChange={(e) =>
+                                onChange={(e) => {
+                                    setSizeText(e.target.value);
                                     handleChange(
                                         'perCanonical',
                                         parseFloat(e.target.value) || undefined
-                                    )
-                                }
+                                    );
+                                }}
                             />
                             {sameSize && (
                                 <Text fontSize='sm' color='orange.500' fontWeight='normal'>

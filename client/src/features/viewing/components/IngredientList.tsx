@@ -4,24 +4,11 @@ import { BoxProps, Tooltip, UnorderedList, VStack } from '@chakra-ui/react';
 import { Box, Flex, IconButton, ListItem, Spacer, Text } from '@chakra-ui/react';
 
 import { useWakeLock } from '@recipe/common/hooks';
-import { usePreferencesStore } from '@recipe/stores';
-import { changeQuantity } from '@recipe/utils/quantity';
-import { useUnitConversion } from '@recipe/features/servings';
+import { useDisplayedIngredient } from '@recipe/features/servings';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 
 import { RecipeIngredient } from './RecipeIngredient';
-
-/** A quantity shown in the reader's system: rounded, with the authored line on hover. */
-function ApproximateIngredient(props: { item: RecipeIngredientView; authored: string }) {
-    const { item, authored } = props;
-    return (
-        <Tooltip label={`As written: ${authored}`} hasArrow openDelay={300}>
-            <Box as='span' tabIndex={0} aria-label={`Approximately, as written ${authored}`}>
-                ≈ {getFinishedRecipeIngredientStr(item)}
-            </Box>
-        </Tooltip>
-    );
-}
+import { ApproximateIngredient } from './ApproximateIngredient';
 
 function UncountedIngredientHint() {
     return (
@@ -69,23 +56,11 @@ export function IngredientList(props: IngredientListProps) {
         unitToggle,
         ...rest
     } = props;
-    const { apply, convert } = useUnitConversion();
-    const unitSystem = usePreferencesStore((state) => state.unitSystem);
+    const display = useDisplayedIngredient(currentServings, origServings);
     const { isAwake, toggleWakeLock } = useWakeLock();
 
     const modifiedSubsections = subsections.map((collection) => {
-        const modifiedCollection = collection.ingredients.map((ingredient) => {
-            const scaled = changeQuantity(ingredient, currentServings, origServings, apply);
-            const converted = convert(scaled, unitSystem);
-            const authored = converted.approximate ? getFinishedRecipeIngredientStr(scaled) : null;
-            return {
-                ...scaled,
-                quantity: converted.quantity,
-                unit: converted.unit,
-                authored,
-            };
-        });
-        return { ...collection, ingredients: modifiedCollection };
+        return { ...collection, ingredients: collection.ingredients.map(display) };
     });
 
     const subsectionsList = modifiedSubsections.map((collection, index) => {
@@ -110,6 +85,7 @@ export function IngredientList(props: IngredientListProps) {
                     key={item._id}
                     // ingredient is guaranteed to be a recipe because of the typename check
                     ingredient={item as RecipeIngredientAsRecipeView}
+                    authored={item.authored}
                 />
             );
         });

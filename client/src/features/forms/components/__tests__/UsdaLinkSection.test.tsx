@@ -69,6 +69,43 @@ describe('UsdaLinkSection search', () => {
 
         expect(await screen.findByText(/No matches found/)).not.toBeNull();
     });
+
+    it('should report a failed search as a failure, not as no matches', async () => {
+        const user = userEvent.setup();
+        renderSection([
+            { request: mockUsdaSearchNoMatches.request, error: new Error('USDA is down') },
+        ]);
+
+        await user.type(screen.getByLabelText('Search nutritional data'), 'zzzzz');
+        await user.click(screen.getByLabelText('Search USDA database'));
+
+        expect(await screen.findByText(/The search failed: USDA is down/)).not.toBeNull();
+        expect(screen.queryByText(/No matches found/)).toBeNull();
+    });
+});
+
+describe('UsdaLinkSection unlink', () => {
+    afterEach(() => {
+        cleanup();
+    });
+
+    it('should keep the search and its results after an unlink', async () => {
+        const user = userEvent.setup();
+        // No ingredient yet, so the link is staged and unlinking needs no request.
+        renderSection([mockUsdaSearchChickenBreast, mockUsdaFoodItemChickenBreast], {
+            ingredientId: undefined,
+        });
+        await searchAndSelect(user, 'chicken breast', 'Chicken breast, cooked');
+        await user.click(screen.getByLabelText('Link selected nutritional data'));
+        expect(await screen.findByText(/Linked: chicken breast, cooked/)).not.toBeNull();
+
+        await user.click(screen.getByLabelText('Unlink nutritional data'));
+
+        const input = screen.getByLabelText('Search nutritional data') as HTMLInputElement;
+        expect(input.value).toBe('chicken breast');
+        expect(screen.getByText('Chicken breast, cooked')).not.toBeNull();
+        expect(screen.queryByText(/Linked:/)).toBeNull();
+    });
 });
 
 describe('UsdaLinkSection portions for the measures list', () => {

@@ -108,6 +108,15 @@ describe('convertToSystem', () => {
         });
     });
 
+    it('keeps a fraction unit in fractions when no kitchen fraction rounds well', () => {
+        // 2 ml is 0.41 tsp: 1/3 tsp is 18% off, so it shows to the nearest sixteenth.
+        expect(convertToSystem('2', mockMilliliter, 'us', mockLadders)).toEqual({
+            quantity: '3/8',
+            unit: mockTeaspoon,
+            approximate: true,
+        });
+    });
+
     it('stays as written when the target system has no ladder for the dimension', () => {
         expect(convertToSystem('1', mockKilogram, 'us', mockLadders).approximate).toBe(false);
     });

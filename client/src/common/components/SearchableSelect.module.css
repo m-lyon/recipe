@@ -28,7 +28,8 @@
     cursor: not-allowed;
 }
 
-.root:has(input:disabled) .label {
+.root:has(input:disabled) .label,
+.root:has(input:disabled) .section {
     opacity: 0.4;
 }
 

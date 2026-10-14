@@ -6,11 +6,14 @@ import { GET_RECIPE } from '@recipe/graphql/queries/recipe';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 
 import { RecipeModal } from './RecipeModal';
+import { ApproximateIngredient } from './ApproximateIngredient';
 
 interface Props {
     ingredient: RecipeIngredientAsRecipeView;
+    /** The line as written, when the quantity shown was converted and rounded. */
+    authored?: string | null;
 }
-export function RecipeIngredient({ ingredient }: Props) {
+export function RecipeIngredient({ ingredient, authored }: Props) {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [getRecipe, { data }] = useLazyQuery(GET_RECIPE);
 
@@ -43,7 +46,11 @@ export function RecipeIngredient({ ingredient }: Props) {
                     }}
                     aria-label={`View ${ingredient.ingredient.title}`}
                 >
-                    {getFinishedRecipeIngredientStr(ingredient)}
+                    {authored ? (
+                        <ApproximateIngredient item={ingredient} authored={authored} />
+                    ) : (
+                        getFinishedRecipeIngredientStr(ingredient)
+                    )}
                     <ChevronRightIcon style={{ marginLeft: 5 }} />
                 </Box>
                 <Spacer />

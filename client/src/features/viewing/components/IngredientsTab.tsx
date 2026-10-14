@@ -10,8 +10,8 @@ import { useRecipeStore } from '@recipe/stores';
 import { TagList } from '@recipe/features/tags';
 import { IngredientsTabLayout } from '@recipe/layouts';
 import { useAddRating } from '@recipe/features/rating';
-import { Servings, UnitSystemToggle } from '@recipe/features/servings';
 import { StarRating, getAverageRating } from '@recipe/features/rating';
+import { Servings, UnitSystemToggle, useDisplayedIngredient } from '@recipe/features/servings';
 
 import { Notes } from './Notes';
 import { UsedIn } from './UsedIn';
@@ -28,10 +28,9 @@ export function IngredientsTab(props: Props) {
     const currentServings = useRecipeStore((state) => state.numServings);
     const { isVerified, isAdmin, user } = useUser();
     const { addRatingWithToast } = useAddRating();
-    const { perServing, uncountedIds, uncounted, owners, loading, refetch } = useNutritionalInfo(
-        recipe.ingredientSubsections,
-        recipe.numServings
-    );
+    const { perServing, uncountedIds, uncounted, owners, loading, error, refetch } =
+        useNutritionalInfo(recipe.ingredientSubsections, recipe.numServings);
+    const displayLine = useDisplayedIngredient(currentServings, recipe.numServings);
     const totalIngredients = recipe.ingredientSubsections
         .flatMap((s) => s.ingredients)
         .filter((i) => i.ingredient.__typename === 'Ingredient').length;
@@ -93,8 +92,10 @@ export function IngredientsTab(props: Props) {
                             isVerified && (isAdmin || (!!user && owners.get(id) === user._id))
                         }
                         onMeasureSaved={() => refetch()}
+                        displayLine={displayLine}
                         nothingCounted={nothingCounted}
                         loading={loading}
+                        error={error}
                     />
                 </>
             }

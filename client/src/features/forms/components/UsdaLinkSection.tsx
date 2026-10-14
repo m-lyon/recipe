@@ -48,6 +48,19 @@ function round1(n: number | null | undefined): string {
     return n.toFixed(1).replace(/\.0$/, '');
 }
 
+/** "52 kcal · 0.3 g protein · 14 g carbs · 0.2 g fat per 100 g", from per-100 g values. */
+function formatPer100g(
+    calories: number | null | undefined,
+    protein: number | null | undefined,
+    carbs: number | null | undefined,
+    fat: number | null | undefined
+): string {
+    return (
+        `${round1(calories)} kcal · ${round1(protein)} g protein · ` +
+        `${round1(carbs)} g carbs · ${round1(fat)} g fat per 100 g`
+    );
+}
+
 export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSectionProps>(
     function UsdaLinkSection(props, ref) {
         const {
@@ -82,6 +95,8 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
         /** True once a search has run for the current input, so an empty result list can
          *  be reported as "no matches" instead of rendering nothing. */
         const [searchAttempted, setSearchAttempted] = useState(false);
+        // A failed search is reported as a failure, not as "no matches".
+        const [searchError, setSearchError] = useState<string | null>(null);
         // The linked item's USDA name, shown in place of its FDC ID once known.
         const [linkedFoodName, setLinkedFoodName] = useState<string | null>(null);
         // Portions come from the single-item endpoint only; search results carry none.
@@ -92,15 +107,21 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             // eslint-disable-next-line react-hooks/exhaustive-deps
         }, [portions]);
 
-        // Reset all local UI state whenever the ingredient being edited changes, so a
-        // selection/search made for one ingredient doesn't leak into the next one, then
-        // hydrate from the prefetched nutritional info (if any) for the new ingredient.
-        // Also re-runs if that info arrives after the ingredient switch (e.g. first load).
+        // Reset the search whenever the ingredient being edited changes, so a search made
+        // for one ingredient doesn't leak into the next one. Linking and unlinking leave it.
         useEffect(() => {
             setSearchInput(ingredientName ?? '');
             setSelectedFdcId(null);
             setSearchResults([]);
             setSearchAttempted(false);
+            setSearchError(null);
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [ingredientId]);
+
+        // Hydrate the link from the prefetched nutritional info (if any) for the ingredient.
+        // Also re-runs if that info arrives after the ingredient switch (e.g. first load),
+        // or changes after a link or an unlink.
+        useEffect(() => {
             setLinkedFoodName(null);
             setPortions([]);
 
@@ -137,9 +158,13 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             onCompleted: (data) => {
                 setSearchResults((data.usdaSearch ?? []).filter((r) => r != null));
             },
+            onError: (err) => {
+                setSearchResults([]);
+                setSearchError(err.message);
+            },
         });
 
-        const [fetchFoodItem] = useLazyQuery(USDA_FOOD_ITEM, {
+        const [fetchFoodItem, { loading: foodItemLoading }] = useLazyQuery(USDA_FOOD_ITEM, {
             onCompleted: (data) => {
                 setPortions(data.usdaFoodItem?.portions ?? []);
                 if (data.usdaFoodItem?.description) {
@@ -175,22 +200,19 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             },
         });
 
-        const [deleteNutritionalInfo] = useMutation(DELETE_NUTRITIONAL_INFO, {
-            onCompleted: () => {
-                setExistingNutritionalInfoId(null);
-                setPendingNutrition(null);
-                setLinkedFoodName(null);
-                setPortions([]);
-                setSelectedFdcId(null);
-                setLinked(false);
-                setSearchInput('');
-                setSearchAttempted(false);
-                onNutritionalInfoChange?.();
-            },
-            onError: (err) => {
-                showError(err.message);
-            },
-        });
+        const [deleteNutritionalInfo, { loading: unlinking }] = useMutation(
+            DELETE_NUTRITIONAL_INFO,
+            {
+                onCompleted: () => {
+                    setExistingNutritionalInfoId(null);
+                    clearSelection();
+                    onNutritionalInfoChange?.();
+                },
+                onError: (err) => {
+                    showError(err.message);
+                },
+            }
+        );
 
         const handleSearch = () => {
             // The live input, not a debounced copy: this only fires on an explicit
@@ -198,6 +220,7 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             const query = searchInput.trim();
             if (!query) return;
             setSearchAttempted(true);
+            setSearchError(null);
             runSearch({ variables: { query, pageSize: 20 } });
         };
 
@@ -288,53 +311,73 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
 
         useImperativeHandle(ref, () => ({ commitPendingLink }), [commitPendingLink]);
 
-        const handleClear = () => {
+        /** Drops the selected or linked item. The search and its results stay. */
+        function clearSelection() {
+            setPendingNutrition(null);
+            setLinkedFoodName(null);
+            setPortions([]);
+            setSelectedFdcId(null);
+            setLinked(false);
+        }
+
+        const handleUnlink = () => {
             if (existingNutritionalInfoId) {
                 deleteNutritionalInfo({ variables: { _id: existingNutritionalInfoId } });
             } else {
-                setPendingNutrition(null);
-                setLinkedFoodName(null);
-                setPortions([]);
-                setSelectedFdcId(null);
-                setLinked(false);
-                setSearchInput('');
-                setSearchAttempted(false);
+                // A staged link on an ingredient not yet saved has nothing to delete.
+                clearSelection();
             }
         };
 
+        // Chakra fades a disabled field to 0.4; plain text has to fade itself to match.
+        const dimmed = disabled ? 0.4 : undefined;
+
         return (
-            <Stack spacing={3}>
+            <Stack spacing={4}>
+                <Text opacity={dimmed}>Nutritional data</Text>
                 {linked && pendingNutrition ? (
-                    <Stack spacing={2}>
-                        <Text fontSize='sm'>
-                            Linked:{' '}
-                            {(
-                                linkedFoodName ??
-                                (pendingNutrition.fdcId
-                                    ? `FDC ID ${pendingNutrition.fdcId}`
-                                    : '(manual)')
-                            ).toLowerCase()}
-                        </Text>
+                    <Stack spacing={2} fontWeight='normal'>
+                        {!linkedFoodName && foodItemLoading ? (
+                            <HStack fontSize='sm' spacing={1}>
+                                <Text>Linked:</Text>
+                                <Skeleton
+                                    height='10px'
+                                    width='12em'
+                                    aria-label='Loading linked item name'
+                                />
+                            </HStack>
+                        ) : (
+                            <Text fontSize='sm'>
+                                Linked:{' '}
+                                {linkedFoodName?.toLowerCase() ??
+                                    (pendingNutrition.fdcId
+                                        ? `FDC ID ${pendingNutrition.fdcId}`
+                                        : '(manual)')}
+                            </Text>
+                        )}
                         <Text fontSize='sm' color='gray.500'>
-                            Per 100g: {round1(pendingNutrition.perGram.calories * 100)} kcal ·{' '}
-                            {round1(pendingNutrition.perGram.protein * 100)}g protein ·{' '}
-                            {round1(pendingNutrition.perGram.carbs * 100)}g carbs ·{' '}
-                            {round1(pendingNutrition.perGram.fat * 100)}g fat
+                            {formatPer100g(
+                                pendingNutrition.perGram.calories * 100,
+                                pendingNutrition.perGram.protein * 100,
+                                pendingNutrition.perGram.carbs * 100,
+                                pendingNutrition.perGram.fat * 100
+                            )}
                         </Text>
                         <Button
                             size='sm'
                             variant='outline'
                             colorScheme='red'
                             alignSelf='flex-start'
-                            onClick={handleClear}
+                            onClick={handleUnlink}
                             isDisabled={disabled}
-                            aria-label='Clear nutritional data link'
+                            isLoading={unlinking}
+                            aria-label='Unlink nutritional data'
                         >
-                            Clear
+                            Unlink
                         </Button>
                     </Stack>
                 ) : (
-                    <Stack spacing={4}>
+                    <Stack spacing={4} fontWeight='normal'>
                         <HStack spacing={2} align='flex-end'>
                             <FloatingLabelInput
                                 id='usda-search-input'
@@ -375,11 +418,20 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                             </Stack>
                         )}
 
-                        {!searchLoading && searchAttempted && searchResults.length === 0 && (
-                            <Text fontSize='sm' color='gray.600'>
-                                No matches found. Try a different search term.
+                        {!searchLoading && searchError && (
+                            <Text fontSize='sm' color='red.500'>
+                                The search failed: {searchError}
                             </Text>
                         )}
+
+                        {!searchLoading &&
+                            !searchError &&
+                            searchAttempted &&
+                            searchResults.length === 0 && (
+                                <Text fontSize='sm' color='gray.500'>
+                                    No matches found. Try a different search term.
+                                </Text>
+                            )}
 
                         {!searchLoading && searchResults.length > 0 && (
                             <Box
@@ -439,11 +491,12 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                                                             textTransform='lowercase'
                                                             wordBreak='break-word'
                                                         >
-                                                            {round1(item.caloriesPer100g)} kcal ·{' '}
-                                                            {round1(item.proteinPer100g)}g protein ·{' '}
-                                                            {round1(item.carbsPer100g)}g carbs ·{' '}
-                                                            {round1(item.fatPer100g)}g fat (per
-                                                            100g)
+                                                            {formatPer100g(
+                                                                item.caloriesPer100g,
+                                                                item.proteinPer100g,
+                                                                item.carbsPer100g,
+                                                                item.fatPer100g
+                                                            )}
                                                         </Text>
                                                     </Stack>
                                                 </HStack>
@@ -468,7 +521,7 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                                     size='sm'
                                     variant='outline'
                                     colorScheme='red'
-                                    onClick={handleClear}
+                                    onClick={clearSelection}
                                     isDisabled={disabled}
                                     aria-label='Clear nutritional data selection'
                                 >
