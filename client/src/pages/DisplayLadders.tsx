@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CloseIcon } from '@chakra-ui/icons';
 import { useMutation, useQuery } from '@apollo/client';
+import { InputGroup, InputRightElement } from '@chakra-ui/react';
 import { NumberInput, NumberInputField, Text, VStack } from '@chakra-ui/react';
 import { Box, Button, ButtonGroup, HStack, Heading, IconButton } from '@chakra-ui/react';
 
@@ -216,18 +217,29 @@ export function DisplayLadders(props: Props) {
                                 <Text fontSize='sm' opacity={dimmed}>
                                     from
                                 </Text>
-                                <NumberInput
-                                    min={0}
-                                    value={disabled ? '' : step.from}
-                                    isDisabled={disabled}
-                                    onChange={(value) => setStep(index, { from: value })}
-                                    maxW='6em'
-                                >
-                                    <NumberInputField aria-label={`Step ${index + 1} threshold`} />
-                                </NumberInput>
-                                <Text fontSize='sm' minW='4em' opacity={dimmed}>
-                                    {unit?.shortPlural ?? ''}
-                                </Text>
+                                {/* The unit sits inside the field, so the step stays on one line
+                                    at phone width and the number reads with its unit. */}
+                                <InputGroup w='6.5em' flexShrink={0}>
+                                    <NumberInput
+                                        min={0}
+                                        value={disabled ? '' : step.from}
+                                        isDisabled={disabled}
+                                        onChange={(value) => setStep(index, { from: value })}
+                                    >
+                                        <NumberInputField
+                                            pr='3.25em'
+                                            aria-label={`Step ${index + 1} threshold`}
+                                        />
+                                    </NumberInput>
+                                    <InputRightElement
+                                        w='auto'
+                                        pr={3}
+                                        pointerEvents='none'
+                                        opacity={dimmed}
+                                    >
+                                        <Text fontSize='sm'>{unit?.shortPlural ?? ''}</Text>
+                                    </InputRightElement>
+                                </InputGroup>
                                 <IconButton
                                     size='xs'
                                     aria-label={`Remove step ${index + 1}`}
