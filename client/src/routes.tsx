@@ -37,7 +37,12 @@ export const routes = createRoutesFromElements(
                 />
                 <Route path='unit' element={<CreateUnit />} />
                 <Route element={<RequireAdmin />}>
-                    <Route path='display-ladder' element={<DisplayLadders mode='create' />} />
+                    {/* Keyed by mode: both routes render DisplayLadders in the same place,
+                        so without a key the ladder chosen in edit carries over to create. */}
+                    <Route
+                        path='display-ladder'
+                        element={<DisplayLadders key='create' mode='create' />}
+                    />
                 </Route>
                 <Route path='size' element={<CreateSize />} />
                 <Route path='ingredient' element={<CreateIngredient />} />
@@ -49,7 +54,10 @@ export const routes = createRoutesFromElements(
                 <Route path='ingredient' element={<EditIngredient />} />
                 <Route path='prep-method' element={<EditPrepMethod />} />
                 <Route element={<RequireAdmin />}>
-                    <Route path='display-ladder' element={<DisplayLadders mode='edit' />} />
+                    <Route
+                        path='display-ladder'
+                        element={<DisplayLadders key='edit' mode='edit' />}
+                    />
                 </Route>
                 <Route path='recipe/:titleIdentifier' element={<EditRecipe />} />
             </Route>
