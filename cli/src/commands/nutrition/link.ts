@@ -198,7 +198,14 @@ export default class NutritionLink extends BaseCommand {
                 components.sizes,
                 components.prepMethods
             );
-            if (!suggestion) continue;
+            if (!suggestion) {
+                if (skipUnmatched) continue;
+                throw rejected(
+                    `Portion ${portion.description} is a weight, already covered by perGram, ` +
+                        'and is not stored as a measure.',
+                    { portion }
+                );
+            }
             if (!suggestion.draft) {
                 if (skipUnmatched) {
                     this.addWarning(`Skipped portion ${suggestion.label}: ${suggestion.reason}.`);

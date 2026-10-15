@@ -164,15 +164,19 @@ async function assignUnitMagnitudes(db: Db, report: MigrationReport, write: bool
     for (const unit of units) {
         const id = String(unit._id);
         if (assigned.has(id)) continue;
-        if (unit.measureType === 'mass' || unit.measureType === 'volume') {
+        if (unit.measureType === 'mass' || unit.measureType === 'volume' || inGroup.has(id)) {
+            // Stored as a count unit so the API can still load it; an owner resizes it later.
             report.unitsUnassigned.push({
                 unit: unit.longSingular,
-                reason: `${unit.measureType} unit with no known size and no sized conversion group`,
+                reason: inGroup.has(id)
+                    ? 'in a conversion group with no unit of known size'
+                    : `${unit.measureType} unit with no known size and no sized conversion group`,
             });
-        } else if (inGroup.has(id)) {
-            report.unitsUnassigned.push({
-                unit: unit.longSingular,
-                reason: 'in a conversion group with no unit of known size',
+            assigned.set(id, {
+                dimension: 'count',
+                perCanonical: 1,
+                system: null,
+                source: 'no known size, stored as count',
             });
         } else {
             // A unit with no measure type is a pinch, a clove or a can: it reaches grams
@@ -207,7 +211,11 @@ async function assignUnitMagnitudes(db: Db, report: MigrationReport, write: bool
 /** Phase 3a: the `each` unit that replaces a quantity with no unit. */
 async function ensureEachUnit(db: Db, report: MigrationReport, write: boolean, admin?: ObjectId) {
     const fields = { dimension: 'count', perCanonical: 1, system: null, hidden: true };
-    const existing = await db.collection<LegacyUnit>('units').findOne({ longSingular: 'each' });
+    // Phase 0 has written the standard key, except in a dry run.
+    const units = db.collection<LegacyUnit>('units');
+    const existing =
+        (await units.findOne({ standard: 'each' })) ??
+        (write ? null : await units.findOne({ longSingular: 'each' }));
     if (existing) {
         report.eachUnit = 'updated';
         if (write) {

@@ -167,6 +167,8 @@ describe('migrateCanonicalUnits', function () {
         const clove = await units.findOne({ _id: ids.clove });
         assert.include(clove, { dimension: 'count', perCanonical: 1, system: null });
         assert.notProperty(clove, 'measureType');
+        const scoop = await units.findOne({ _id: ids.mystery });
+        assert.include(scoop, { dimension: 'count', perCanonical: 1, system: null });
 
         assert.deepEqual(report.unitsAssumedCount, ['clove']);
         assert.deepEqual(report.unitsUnassigned, [
@@ -280,10 +282,7 @@ describe('migrateCanonicalUnits', function () {
         await migrateCanonicalUnits(mongoose.connection.db);
         const report = await migrateCanonicalUnits(mongoose.connection.db);
         assert.lengthOf(report.unitsAssigned, 0);
-        assert.deepEqual(
-            report.unitsUnassigned.map((u) => u.unit),
-            ['scoop']
-        );
+        assert.lengthOf(report.unitsUnassigned, 0);
         assert.equal(report.eachUnit, 'updated');
         assert.equal(report.recipeLinesRewritten, 0);
         assert.equal(report.densityMeasuresCreated, 0);
