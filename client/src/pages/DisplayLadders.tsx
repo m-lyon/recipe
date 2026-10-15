@@ -134,9 +134,9 @@ export function DisplayLadders(props: Props) {
 
     return (
         <VStack>
-            <Box maxW='32em' mx='auto' mt={32} borderWidth='1px' borderRadius='lg' p={8}>
+            <Box w='100%' maxW='32em' mx='auto' mt={32} borderWidth='1px' borderRadius='lg' p={8}>
                 <Heading pb={6}>{mode === 'create' ? 'Create' : 'Edit'} Display Ladder</Heading>
-                <VStack spacing={6} alignItems='stretch'>
+                <VStack spacing={6} alignItems='stretch' color='blackAlpha.700'>
                     {mode === 'edit' && (
                         <SearchableSelect
                             label='Select display ladder'

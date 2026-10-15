@@ -20,10 +20,10 @@ export function CreateSize() {
 
     return (
         <VStack>
-            <Box maxW='32em' mx='auto' mt={32} borderWidth='1px' borderRadius='lg' p={8}>
+            <Box w='100%' maxW='32em' mx='auto' mt={32} borderWidth='1px' borderRadius='lg' p={8}>
                 <Heading pb={6}>Create Size</Heading>
                 <form>
-                    <VStack mt={0} spacing={8}>
+                    <VStack mt={0} spacing={8} alignItems='stretch'>
                         <CreateSizeForm handleComplete={handleComplete} />
                     </VStack>
                 </form>

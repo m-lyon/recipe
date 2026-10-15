@@ -171,7 +171,7 @@ describe('IngredientsTab nutritional info integration', () => {
 
         expect(await screen.findByText('Nutritional Info (per serving)')).not.toBeNull();
         // 1000g × 1.65 kcal/g = 1650 total, ÷ 4 servings = 412.5 → rounded to 413
-        expect(await screen.findByText('413 kcal')).not.toBeNull();
+        expect(await screen.findByText('413')).not.toBeNull();
     });
 
     it('keeps per-serving macros fixed when the servings control is moved', async () => {
@@ -242,7 +242,7 @@ describe('IngredientsTab nutritional info integration', () => {
             mockGetNutritionalInfos,
         ]);
 
-        expect(await screen.findByText('413 kcal')).not.toBeNull();
+        expect(await screen.findByText('413')).not.toBeNull();
 
         // Act -- the ingredient quantities scale with the control, so the per-serving
         // figure must not move: 5 servings of 1.25 kg is still 413 kcal per serving.
@@ -250,7 +250,7 @@ describe('IngredientsTab nutritional info integration', () => {
 
         // Expect
         expect(await screen.findByText('1.25kg chicken')).not.toBeNull();
-        expect(screen.queryByText('413 kcal')).not.toBeNull();
+        expect(screen.queryByText('413')).not.toBeNull();
     });
 
     it('shows the empty state when the recipe contains only sub-recipes', async () => {
@@ -293,6 +293,6 @@ describe('IngredientsTab nutritional info integration', () => {
         ]);
 
         expect(await screen.findByText(/not available/i)).not.toBeNull();
-        expect(screen.queryByText('0 kcal')).toBeNull();
+        expect(screen.queryByText('Calories')).toBeNull();
     });
 });

@@ -105,7 +105,7 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
         }),
         []
     );
-    const { formData, hasError, handleSubmit, handleChange, setData } =
+    const { formData, isInvalid, handleSubmit, handleChange, setData } =
         useFormLogic<ModifyableUnit>(unitFormSchema, xfm, initData || {}, submitForm, 'unit');
     const { setIsFocused } = useKeyboardSubmit(handleSubmit);
     const { data: components } = useQuery(GET_INGREDIENT_COMPONENTS);
@@ -118,6 +118,8 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
             unit.perCanonical === formData.perCanonical
     );
     const sizeDescription = describeSize(formData, isStandard);
+    // Chakra fades a disabled field to 0.4; helper text has to fade itself to match.
+    const dimmed = disabled ? 0.4 : undefined;
     // The size as typed, so a half-typed "28." or "0.5" is not parsed away mid-entry.
     const [sizeText, setSizeText] = useState('');
     useEffect(() => {
@@ -155,7 +157,7 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
                 id='short-singular-name'
                 label='Short singular name'
                 value={formData.shortSingular || ''}
-                isInvalid={hasError}
+                isInvalid={isInvalid('shortSingular')}
                 isRequired
                 isDisabled={disabled}
                 onChange={(e) => handleChange('shortSingular', e.target.value.toLowerCase())}
@@ -164,7 +166,8 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
                 label='Short plural name'
                 id='short-plural-name'
                 value={formData.shortPlural || ''}
-                isInvalid={hasError}
+                // An empty plural takes the singular, so it is only wrong when the singular is.
+                isInvalid={isInvalid('shortPlural') && !isInvalid('shortSingular')}
                 isDisabled={disabled}
                 onChange={(e) => handleChange('shortPlural', e.target.value.toLowerCase())}
             />
@@ -174,7 +177,7 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
                 value={formData.longSingular || ''}
                 isRequired
                 isDisabled={disabled}
-                isInvalid={hasError}
+                isInvalid={isInvalid('longSingular')}
                 onChange={(e) => handleChange('longSingular', e.target.value.toLowerCase())}
             />
             <FloatingLabelInput
@@ -182,11 +185,11 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
                 id='long-plural-name'
                 value={formData.longPlural || ''}
                 isDisabled={disabled}
-                isInvalid={hasError}
+                isInvalid={isInvalid('longPlural') && !isInvalid('longSingular')}
                 onChange={(e) => handleChange('longPlural', e.target.value.toLowerCase())}
             />
-            <FormControl isDisabled={disabled} isInvalid={hasError}>
-                <FormHelperText>Preferred number format</FormHelperText>
+            <FormControl isDisabled={disabled} isInvalid={isInvalid('preferredNumberFormat')}>
+                <FormHelperText opacity={dimmed}>Preferred number format</FormHelperText>
                 <RadioGroup
                     onChange={(value) => handleChange('preferredNumberFormat', value)}
                     value={formData.preferredNumberFormat}
@@ -199,7 +202,7 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
             </FormControl>
             <Checkbox
                 isDisabled={disabled}
-                isInvalid={hasError}
+                isInvalid={isInvalid('hasSpace')}
                 onChange={(e) => handleChange('hasSpace', e.target.checked)}
                 isChecked={formData.hasSpace}
             >
@@ -207,7 +210,7 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
             </Checkbox>
             {canChangeSize ? (
                 <>
-                    <FormControl isDisabled={disabled} isInvalid={hasError}>
+                    <FormControl isDisabled={disabled} isInvalid={isInvalid('dimension')}>
                         <SearchableSelect
                             label='Dimension'
                             aria-label='Dimension'
@@ -224,6 +227,7 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
                                 handleChange('dimension', val as EnumUnitDimension);
                             }}
                             disabled={disabled}
+                            invalid={isInvalid('dimension')}
                         />
                     </FormControl>
                     {formData.dimension && formData.dimension !== 'count' && (
@@ -233,7 +237,7 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
                                 id='per-canonical'
                                 inputMode='decimal'
                                 value={sizeText}
-                                isInvalid={hasError}
+                                isInvalid={isInvalid('perCanonical')}
                                 isRequired
                                 isDisabled={disabled}
                                 onChange={(e) => {
@@ -249,8 +253,8 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
                                     This is the same size as {sameSize.longSingular}
                                 </Text>
                             )}
-                            <FormControl isDisabled={disabled} isInvalid={hasError}>
-                                <FormHelperText>System</FormHelperText>
+                            <FormControl isDisabled={disabled} isInvalid={isInvalid('system')}>
+                                <FormHelperText opacity={dimmed}>System</FormHelperText>
                                 <RadioGroup
                                     onChange={(value) =>
                                         handleChange('system', value as EnumUnitSystem)

@@ -3,7 +3,6 @@ import { Box, Button, Stack, Text } from '@chakra-ui/react';
 import { HStack, Radio, RadioGroup, Skeleton } from '@chakra-ui/react';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react';
 
-import { useErrorToast } from '@recipe/common/hooks';
 import { MacroNutrients } from '@recipe/utils/nutrition';
 import { FloatingLabelInput } from '@recipe/common/components';
 import { USDA_SEARCH } from '@recipe/graphql/queries/nutritionalInfo';
@@ -31,14 +30,14 @@ export interface UsdaLinkSectionProps {
     onPerGramChange?: (perGram: MacroNutrients | null) => void;
     /** Nutritional info for this ingredient, prefetched by the page alongside the ingredient list. */
     existingNutritionalInfo?: ExistingNutritionalInfo | null;
-    /** Called after a link is created or cleared, so the prefetched list can be refreshed. */
+    /** Called after a link is saved or removed, so the prefetched list can be refreshed. */
     onNutritionalInfoChange?: () => void;
 }
 
-/** Imperative handle so a parent that creates a brand new ingredient can commit
- *  nutritional data staged before the ingredient existed, once it has a real id. */
+/** Linking and unlinking are staged; the parent saves them with the ingredient, once it has
+ *  an id. Throws when the change could not be saved. */
 export interface UsdaLinkSectionHandle {
-    commitPendingLink: (ingredientId: string) => Promise<void>;
+    commitChanges: (ingredientId: string) => Promise<void>;
 }
 
 type UsdaSearchResultItem = NonNullable<NonNullable<UsdaSearchQuery['usdaSearch']>[number]>;
@@ -84,13 +83,6 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             null
         );
         const [linked, setLinked] = useState(false);
-        const toast = useErrorToast();
-        const showError = (message: string) =>
-            toast({
-                title: 'Error saving nutritional data',
-                description: message,
-                position: 'top',
-            });
         const [searchResults, setSearchResults] = useState<UsdaSearchResultItem[]>([]);
         /** True once a search has run for the current input, so an empty result list can
          *  be reported as "no matches" instead of rendering nothing. */
@@ -177,42 +169,10 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             },
         });
 
-        const [createNutritionalInfo] = useMutation(CREATE_NUTRITIONAL_INFO, {
-            onCompleted: (data) => {
-                const id = data.nutritionalInfoCreateOne?.record?._id;
-                if (id) setExistingNutritionalInfoId(id);
-                setLinked(true);
-                onNutritionalInfoChange?.();
-            },
-            onError: (err) => {
-                setLinked(false);
-                showError(err.message);
-            },
-        });
-
-        const [updateNutritionalInfo] = useMutation(UPDATE_NUTRITIONAL_INFO, {
-            onCompleted: () => {
-                setLinked(true);
-            },
-            onError: (err) => {
-                setLinked(false);
-                showError(err.message);
-            },
-        });
-
-        const [deleteNutritionalInfo, { loading: unlinking }] = useMutation(
-            DELETE_NUTRITIONAL_INFO,
-            {
-                onCompleted: () => {
-                    setExistingNutritionalInfoId(null);
-                    clearSelection();
-                    onNutritionalInfoChange?.();
-                },
-                onError: (err) => {
-                    showError(err.message);
-                },
-            }
-        );
+        // Run only by commitChanges, which reports a failure to the caller.
+        const [createNutritionalInfo] = useMutation(CREATE_NUTRITIONAL_INFO);
+        const [updateNutritionalInfo] = useMutation(UPDATE_NUTRITIONAL_INFO);
+        const [deleteNutritionalInfo] = useMutation(DELETE_NUTRITIONAL_INFO);
 
         const handleSearch = () => {
             // The live input, not a debounced copy: this only fires on an explicit
@@ -261,55 +221,68 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             []
         );
 
+        // Staged: the link is saved with the ingredient, like every other field.
         const handleLink = () => {
-            if (!pendingNutrition) return;
-
-            if (!ingredientId) {
-                // No ingredient to link against yet (still being created). Stage the
-                // selection locally -- the parent commits it once the ingredient is saved.
-                setLinked(true);
-                return;
-            }
-
-            const record = buildRecord(ingredientId, pendingNutrition);
-
-            if (existingNutritionalInfoId) {
-                updateNutritionalInfo({
-                    variables: { _id: existingNutritionalInfoId, record },
-                });
-            } else {
-                createNutritionalInfo({ variables: { record } });
-            }
-            // Note: setLinked(true) is called inside the onCompleted callbacks,
-            // not here, so the linked state only changes on confirmed success.
+            if (pendingNutrition) setLinked(true);
         };
 
-        const commitPendingLink = useCallback(
-            async (newIngredientId: string) => {
+        const commitChanges = useCallback(
+            async (targetIngredientId: string) => {
                 // `linked` -- not `pendingNutrition` -- is the user's confirmation: selecting
                 // a search result stages macros for display, but only "Link selected item"
-                // means they want it saved. Without this the create flow would persist a link
-                // the user merely previewed, while the edit flow requires the explicit click.
-                if (!linked || !pendingNutrition) return;
-                const record = buildRecord(newIngredientId, pendingNutrition);
-                // The caller reports the failure, so this call replaces the hook's error toast.
-                // With an `onError` option the mutation resolves instead of rejecting, so the
-                // failure has to be read off the result for the caller's catch.
-                const result = await createNutritionalInfo({
-                    variables: { record },
-                    onError: () => setLinked(false),
-                });
+                // means they want it saved.
+                const wanted = linked && pendingNutrition ? pendingNutrition : null;
+                const saved = existingNutritionalInfo?.perGram
+                    ? {
+                          fdcId: existingNutritionalInfo.usdaFdcId ?? 0,
+                          perGram: existingNutritionalInfo.perGram,
+                      }
+                    : null;
+                const unchanged =
+                    wanted && saved
+                        ? wanted.fdcId === saved.fdcId &&
+                          (['calories', 'protein', 'carbs', 'fat'] as const).every(
+                              (key) => wanted.perGram[key] === saved.perGram[key]
+                          )
+                        : !wanted && !existingNutritionalInfoId;
+                if (unchanged) return;
+
+                let result;
+                if (wanted && existingNutritionalInfoId) {
+                    result = await updateNutritionalInfo({
+                        variables: {
+                            _id: existingNutritionalInfoId,
+                            record: buildRecord(targetIngredientId, wanted),
+                        },
+                    });
+                } else if (wanted) {
+                    result = await createNutritionalInfo({
+                        variables: { record: buildRecord(targetIngredientId, wanted) },
+                    });
+                } else {
+                    result = await deleteNutritionalInfo({
+                        variables: { _id: existingNutritionalInfoId! },
+                    });
+                }
                 if (result.errors?.length) {
                     throw new Error(result.errors[0].message);
                 }
-                if (!result.data?.nutritionalInfoCreateOne?.record) {
-                    throw new Error('The nutritional data link was not saved.');
-                }
+                onNutritionalInfoChange?.();
             },
-            [linked, pendingNutrition, buildRecord, createNutritionalInfo]
+            [
+                linked,
+                pendingNutrition,
+                existingNutritionalInfo,
+                existingNutritionalInfoId,
+                buildRecord,
+                createNutritionalInfo,
+                updateNutritionalInfo,
+                deleteNutritionalInfo,
+                onNutritionalInfoChange,
+            ]
         );
 
-        useImperativeHandle(ref, () => ({ commitPendingLink }), [commitPendingLink]);
+        useImperativeHandle(ref, () => ({ commitChanges }), [commitChanges]);
 
         /** Drops the selected or linked item. The search and its results stay. */
         function clearSelection() {
@@ -320,14 +293,8 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             setLinked(false);
         }
 
-        const handleUnlink = () => {
-            if (existingNutritionalInfoId) {
-                deleteNutritionalInfo({ variables: { _id: existingNutritionalInfoId } });
-            } else {
-                // A staged link on an ingredient not yet saved has nothing to delete.
-                clearSelection();
-            }
-        };
+        // Staged: the saved link is removed only when the ingredient is saved.
+        const handleUnlink = clearSelection;
 
         // Chakra fades a disabled field to 0.4; plain text has to fade itself to match.
         const dimmed = disabled ? 0.4 : undefined;
@@ -348,11 +315,11 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                             </HStack>
                         ) : (
                             <Text fontSize='sm'>
-                                Linked:{' '}
-                                {linkedFoodName?.toLowerCase() ??
-                                    (pendingNutrition.fdcId
-                                        ? `FDC ID ${pendingNutrition.fdcId}`
-                                        : '(manual)')}
+                                {linkedFoodName
+                                    ? `Linked: ${linkedFoodName.toLowerCase()}`
+                                    : pendingNutrition.fdcId
+                                      ? `Linked: FDC ID ${pendingNutrition.fdcId}`
+                                      : 'Entered manually'}
                             </Text>
                         )}
                         <Text fontSize='sm' color='gray.500'>
@@ -370,7 +337,6 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                             alignSelf='flex-start'
                             onClick={handleUnlink}
                             isDisabled={disabled}
-                            isLoading={unlinking}
                             aria-label='Unlink nutritional data'
                         >
                             Unlink

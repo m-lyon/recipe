@@ -203,6 +203,31 @@ export const mockGetNutritionalInfosForEditIngredient = {
     },
 };
 
+/** Carrot has nutritional data entered by hand: per-gram values, no USDA item. */
+export const mockGetNutritionalInfosForEditIngredientCarrotLinked = {
+    request: mockGetNutritionalInfosForEditIngredient.request,
+    result: {
+        data: {
+            __typename: 'Query',
+            nutritionalInfosByIngredientIds: [
+                {
+                    __typename: 'NutritionalInfo',
+                    _id: mockNutritionalInfoIdCarrot,
+                    ingredient: mockCarrotId,
+                    usdaFdcId: null,
+                    perGram: {
+                        __typename: 'NutritionalInfoPerGram',
+                        calories: 0.41,
+                        protein: 0.009,
+                        carbs: 0.096,
+                        fat: 0.002,
+                    },
+                },
+            ],
+        } satisfies GetNutritionalInfosByIngredientIdsQuery,
+    },
+};
+
 /** After carrot is deleted, the ingredient list (and so the batch query's variables) shrinks. */
 export const mockGetNutritionalInfosForEditIngredientAfterCarrotDeleted = {
     request: {

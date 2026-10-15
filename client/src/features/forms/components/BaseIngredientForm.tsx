@@ -79,11 +79,11 @@ export const BaseIngredientForm = forwardRef<UsdaLinkSectionHandle, BaseIngredie
         const measuresRef = useRef<MeasuresSectionHandle>(null);
         const [portions, setPortions] = useState<UsdaPortion[]>([]);
         const [perGram, setPerGram] = useState<MacroNutrients | null>(null);
-        // A new ingredient stages its nutrition link and measures until it has an id.
+        // The nutrition link and measures are staged, and saved once the ingredient is.
         useImperativeHandle(ref, () => ({
-            commitPendingLink: async (newIngredientId: string) => {
-                await usdaLinkRef.current?.commitPendingLink(newIngredientId);
-                await measuresRef.current?.commitPendingMeasures(newIngredientId);
+            commitChanges: async (savedIngredientId: string) => {
+                await usdaLinkRef.current?.commitChanges(savedIngredientId);
+                await measuresRef.current?.commitChanges(savedIngredientId);
             },
         }));
         useEffect(() => {

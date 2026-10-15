@@ -10,7 +10,9 @@ import { MockedResponses, haveValueByLabelText, renderPage } from '@recipe/utils
 import { mockGetEditableIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockUsdaSearchChickenBreast } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { mockUsdaFoodItemChickenBreast } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
+import { mockDeleteNutritionalInfoCarrot } from '@recipe/graphql/mutations/__mocks__/nutritionalInfo';
 import { mockGetNutritionalInfosForEditIngredient } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
+import { mockGetNutritionalInfosForEditIngredientCarrotLinked } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { mockGetNutritionalInfosForEditIngredientAfterCarrotDeleted } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 
 import { EditIngredient } from '../EditIngredient';
@@ -79,6 +81,39 @@ describe('Edit Ingredient', () => {
         // Expect
         haveValueByLabelText(screen, 'Name', 'carrot');
         haveValueByLabelText(screen, 'Plural name', 'carrots');
+    });
+
+    it('should remove the nutritional data link only when the ingredient is saved', async () => {
+        // Render -- carrot starts with hand-entered data; the refetch after Save has none
+        const user = userEvent.setup();
+        const deleted = vi.fn(() => mockDeleteNutritionalInfoCarrot.result);
+        const routes = createRoutesFromElements(<Route path='/' element={<EditIngredient />} />);
+        renderPage(routes, [
+            mockGetEditableIngredients,
+            mockGetNutritionalInfosForEditIngredientCarrotLinked,
+            mockGetNutritionalInfosForEditIngredient,
+            mockUpdateIngredient,
+            { ...mockDeleteNutritionalInfoCarrot, result: deleted },
+        ]);
+
+        // Act -- unlink
+        expect(await screen.findByText('Edit Ingredient')).not.toBeNull();
+        await user.click(screen.getByLabelText('Select ingredient'));
+        await user.click(await screen.findByRole('option', { name: 'carrot' }));
+        expect(await screen.findByText('Entered manually')).not.toBeNull();
+        await user.click(screen.getByLabelText('Unlink nutritional data'));
+
+        // Expect -- the link is gone from the form, but nothing is deleted yet
+        expect(screen.getByLabelText('Search nutritional data')).not.toBeNull();
+        expect(deleted).not.toHaveBeenCalled();
+
+        // Act -- save
+        await user.click(screen.getByLabelText('Plural name'));
+        await user.keyboard('{Backspace}z');
+        await user.click(screen.getByLabelText('Save ingredient'));
+
+        // Expect
+        await waitFor(() => expect(deleted).toHaveBeenCalledTimes(1));
     });
 
     it('should remove an ingredient', async () => {

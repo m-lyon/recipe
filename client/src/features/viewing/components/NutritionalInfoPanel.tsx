@@ -72,7 +72,7 @@ export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
                                 <Text size='xs' c='dimmed'>
                                     Calories
                                 </Text>
-                                <Text fw={500}>{Math.round(perServing.calories)} kcal</Text>
+                                <Text fw={500}>{Math.round(perServing.calories)}</Text>
                             </Box>
                             <Box>
                                 <Text size='xs' c='dimmed'>

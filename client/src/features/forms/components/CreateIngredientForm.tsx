@@ -25,7 +25,7 @@ export function CreateIngredientForm(props: Props) {
         onCompleted: (data) => {
             const newIngredientId = data.ingredientCreateOne?.record?._id;
             if (newIngredientId) {
-                usdaLinkRef.current?.commitPendingLink(newIngredientId).catch((err) => {
+                usdaLinkRef.current?.commitChanges(newIngredientId).catch((err) => {
                     toast({
                         title: 'Ingredient saved, but nutritional data link failed',
                         description: err instanceof Error ? err.message : String(err),

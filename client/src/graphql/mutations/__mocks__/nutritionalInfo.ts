@@ -1,6 +1,9 @@
 import { CreateNutritionalInfoMutation } from '@recipe/graphql/generated';
+import { DeleteNutritionalInfoMutation } from '@recipe/graphql/generated';
+import { mockNutritionalInfoIdCarrot } from '@recipe/graphql/__mocks__/ids';
 import { CreateNutritionalInfoMutationVariables } from '@recipe/graphql/generated';
 import { CREATE_NUTRITIONAL_INFO } from '@recipe/graphql/mutations/nutritionalInfo';
+import { DELETE_NUTRITIONAL_INFO } from '@recipe/graphql/mutations/nutritionalInfo';
 import { usdaOnionPer100g } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { mockBeefId, mockNutritionalInfoIdBeef } from '@recipe/graphql/__mocks__/ids';
 import { mockNutritionalInfoIdOnion, mockOnionId } from '@recipe/graphql/__mocks__/ids';
@@ -25,7 +28,7 @@ const onionPerGram = {
 
 /** Fired when USDA nutritional data is staged (via search + "Link selected item") while
  *  creating a brand new "beef" ingredient, then committed once the ingredient is saved --
- *  see UsdaLinkSection's commitPendingLink and CreateIngredientForm. Values derived from
+ *  see UsdaLinkSection's commitChanges and CreateIngredientForm. Values derived from
  *  mockUsdaSearchChickenBreast's per-100g figures, divided down to per-gram. */
 export const mockCreateNutritionalInfoBeef = {
     request: {
@@ -84,5 +87,22 @@ export const mockCreateNutritionalInfoOnion = {
                 },
             },
         } satisfies CreateNutritionalInfoMutation,
+    },
+};
+
+/** Removes carrot's hand-entered nutritional data, once the ingredient is saved. */
+export const mockDeleteNutritionalInfoCarrot = {
+    request: {
+        query: DELETE_NUTRITIONAL_INFO,
+        variables: { _id: mockNutritionalInfoIdCarrot },
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            nutritionalInfoRemoveById: {
+                __typename: 'RemoveByIdNutritionalInfoPayload',
+                recordId: mockNutritionalInfoIdCarrot,
+            },
+        } satisfies DeleteNutritionalInfoMutation,
     },
 };

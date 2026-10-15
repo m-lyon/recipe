@@ -665,6 +665,22 @@ describe('usdaSearch', function () {
         assert.include(url, 'pageSize=1', 'pageSize must be clamped to at least 1');
     });
 
+    it('should explain a USDA request that timed out', async function () {
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        // What fetch rejects with when the request timer aborts it.
+        stub(global, 'fetch').rejects(new DOMException('This operation was aborted', 'AbortError'));
+
+        const response = await this.apolloServer.executeOperation(
+            { query: USDA_SEARCH, variables: { query: 'chicken' } },
+            makeContext(user)
+        );
+        assert.equal(response.body.kind, 'single');
+        assert.equal(
+            response.body.singleResult.errors?.[0].message,
+            'The USDA service took too long to respond. Try again.'
+        );
+    });
+
     it('should fail for unauthenticated user', async function () {
         const fetchStub = stub(global, 'fetch');
 

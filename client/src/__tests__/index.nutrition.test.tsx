@@ -44,7 +44,7 @@ describe('NutritionalInfoPanel integration', () => {
 
         // Expect ------------------------------------------------
         expect(await screen.findByText('Nutritional Info (per serving)')).not.toBeNull();
-        expect(await screen.findByText('57 kcal')).not.toBeNull();
+        expect(await screen.findByText('57')).not.toBeNull();
         // protein (0.549 + 1.177) / 4 = 0.43, carbs (5.856 + 54.144) / 4 = 15,
         // fat (0.122 + 0.785) / 4 = 0.23
         expect(screen.getByText('0.4 g')).not.toBeNull();
@@ -79,7 +79,7 @@ describe('NutritionalInfoPanel integration', () => {
         ]);
         const user = userEvent.setup();
         await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        expect(await screen.findByText('57 kcal')).not.toBeNull();
+        expect(await screen.findByText('57')).not.toBeNull();
 
         // Act -- the least specific option is the default, so one answer covers most lines
         const prompt = await screen.findByText('How much does 1 teaspoon of diced apple weigh?');
@@ -93,7 +93,7 @@ describe('NutritionalInfoPanel integration', () => {
         //   1 tsp apple   = 5 g        × 0.52 = 2.6 cal
         //   1/3 cup apple = 16 tsp = 80 g × 0.52 = 41.6 cal
         // (229.03 + 2.6 + 41.6) / 4 = 68.3 → "68 kcal", and nothing is left uncounted.
-        expect(await screen.findByText('68 kcal')).not.toBeNull();
+        expect(await screen.findByText('68')).not.toBeNull();
         expect(screen.queryByText(/not counted/i)).toBeNull();
     });
 
@@ -120,7 +120,7 @@ describe('NutritionalInfoPanel integration', () => {
         // Panel starts open
         const toggle = await screen.findByRole('button', { name: /nutritional info/i });
         expect(toggle.getAttribute('aria-expanded')).toBe('true');
-        expect(await screen.findByText('57 kcal')).not.toBeNull();
+        expect(await screen.findByText('57')).not.toBeNull();
 
         // Collapse
         await user.click(toggle);
@@ -129,7 +129,7 @@ describe('NutritionalInfoPanel integration', () => {
         // Expand again
         await user.click(toggle);
         expect(toggle.getAttribute('aria-expanded')).toBe('true');
-        expect(await screen.findByText('57 kcal')).not.toBeNull();
+        expect(await screen.findByText('57')).not.toBeNull();
     });
 });
 

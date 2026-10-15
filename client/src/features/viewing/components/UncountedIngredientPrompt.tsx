@@ -96,9 +96,20 @@ export function UncountedIngredientPrompt(props: Props) {
                     w={90}
                     min={0}
                     value={grams}
-                    onChange={setGrams}
+                    onChange={(value) => {
+                        setGrams(value);
+                        setError(null);
+                    }}
                     aria-label={`Grams in 1 ${full}`}
-                    suffix=' g'
+                    // A fixed unit, not a suffix: it shows while the field is empty, and a
+                    // long number cannot push it out of view.
+                    hideControls
+                    rightSection={
+                        <Text size='xs' c='dimmed'>
+                            g
+                        </Text>
+                    }
+                    rightSectionPointerEvents='none'
                 />
                 {options.length > 1 && (
                     <Radio.Group value={choice} onChange={setChoice}>

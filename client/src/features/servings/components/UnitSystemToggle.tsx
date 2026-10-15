@@ -24,11 +24,8 @@ export function UnitSystemToggle(props: Omit<IconButtonProps, 'aria-label'>) {
         0,
         OPTIONS.findIndex((option) => option.value === unitSystem)
     );
-    const current = OPTIONS[index];
     const next = OPTIONS[(index + 1) % OPTIONS.length];
-    const label = failed
-        ? 'Unit conversion is not available'
-        : `Showing quantities: ${current.label}. Switch to ${next.label}`;
+    const label = failed ? 'Unit conversion is not available' : `Switch to ${next.label}`;
     return (
         <Tooltip label={label} openDelay={500}>
             <IconButton

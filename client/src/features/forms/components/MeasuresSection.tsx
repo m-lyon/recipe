@@ -24,9 +24,10 @@ export interface MeasuresSectionProps {
     disabled?: boolean;
 }
 
-/** Saves rows staged before the ingredient existed, once it has a real id. */
+/** Added and removed rows are staged; the parent saves them with the ingredient, once it
+ *  has an id. Throws when a change could not be saved. */
 export interface MeasuresSectionHandle {
-    commitPendingMeasures: (ingredientId: string) => Promise<void>;
+    commitChanges: (ingredientId: string) => Promise<void>;
 }
 
 interface Row {
@@ -68,6 +69,10 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
             skip: !ingredientId,
         });
         const [staged, setStaged] = useState<Row[]>([]);
+        // Saved measures the reader removed, deleted only when the ingredient is saved.
+        const [removed, setRemoved] = useState<ReadonlySet<string>>(new Set());
+        // Set by a rejected "Add measure", so the fields at fault show as invalid.
+        const [showInvalid, setShowInvalid] = useState(false);
         const [quantity, setQuantity] = useState('1');
         const [grams, setGrams] = useState('');
         const [unitId, setUnitId] = useState<string | null>(null);
@@ -75,26 +80,29 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
         const [prepMethodId, setPrepMethodId] = useState<string | null>(null);
         const [moreSpecific, setMoreSpecific] = useState(false);
 
-        // A half-entered measure belongs to the ingredient it was typed for.
-        useEffect(() => {
+        const resetNewMeasure = () => {
             setQuantity('1');
             setGrams('');
             setUnitId(null);
             setSizeId(null);
             setPrepMethodId(null);
             setMoreSpecific(false);
+            setShowInvalid(false);
+        };
+
+        // A half-entered or unsaved measure belongs to the ingredient it was made for.
+        useEffect(() => {
+            resetNewMeasure();
+            setStaged([]);
+            setRemoved(new Set());
         }, [ingredientId]);
 
         const refetchQueries = [GET_INGREDIENT_MEASURES, 'GetRecipeNutrition'];
         const onError = (error: Error) =>
             toast({ title: 'Error saving measure', description: error.message, position: 'top' });
-        const [createMeasure, { loading: creating }] = useMutation(CREATE_INGREDIENT_MEASURE, {
-            refetchQueries,
-        });
-        const [removeMeasure] = useMutation(REMOVE_INGREDIENT_MEASURE, {
-            refetchQueries,
-            onError,
-        });
+        // Run only by commitChanges, which reports a failure to the caller.
+        const [createMeasure] = useMutation(CREATE_INGREDIENT_MEASURE, { refetchQueries });
+        const [removeMeasure] = useMutation(REMOVE_INGREDIENT_MEASURE, { refetchQueries });
 
         const units = useMemo(() => components?.units ?? [], [components]);
         const sizes = useMemo(() => components?.sizes ?? [], [components]);
@@ -118,75 +126,75 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                 prepMethod: m.prepMethod?.value ?? null,
             },
         }));
-        const rows = ingredientId ? saved : staged;
+        const rows = [...saved.filter((row) => !removed.has(row.measureId!)), ...staged];
 
         const suggestions = portions
             .map((portion) => suggestFromPortion(portion, units, sizes, prepMethods))
             .filter((s) => s != null)
             .filter((s) => !s.draft || !rows.some((row) => sameKey(row.draft, s.draft!)));
 
-        /** Adds a row, and says whether it was added. */
-        const addRow = async (draft: MeasureDraft): Promise<boolean> => {
+        /** Stages a row, and says whether it was added. */
+        const addRow = (draft: MeasureDraft): boolean => {
             if (rows.some((row) => sameKey(row.draft, draft))) {
                 onError(new Error('A measure for this unit, size and prep method already exists.'));
                 return false;
             }
-            if (!ingredientId) {
-                setStaged((s) => [...s, { key: crypto.randomUUID(), draft }]);
+            // Removing a saved row and adding it back keeps the saved one.
+            const restored = saved.find(
+                (row) => removed.has(row.measureId!) && sameKey(row.draft, draft)
+            );
+            if (restored && restored.draft.grams === draft.grams) {
+                setRemoved((r) => new Set([...r].filter((id) => id !== restored.measureId)));
                 return true;
             }
-            const result = await createMeasure({
-                variables: {
-                    record: {
-                        ingredient: ingredientId,
-                        unit: draft.unitId,
-                        size: draft.sizeId,
-                        prepMethod: draft.prepMethodId,
-                        grams: draft.grams,
-                    },
-                },
-            }).catch((error: Error) => {
-                onError(error);
-                return null;
-            });
-            if (result?.errors?.length) {
-                onError(new Error(result.errors[0].message));
-                return false;
-            }
-            return result != null;
+            setStaged((s) => [...s, { key: crypto.randomUUID(), draft }]);
+            return true;
         };
 
-        const handleAdd = async () => {
-            const qty = parseFloat(quantity);
-            const weight = parseFloat(grams);
+        const qty = parseFloat(quantity);
+        const weight = parseFloat(grams);
+        const invalid = {
+            quantity: showInvalid && !(qty > 0),
+            unit: showInvalid && !unitId,
+            grams: showInvalid && !(weight > 0),
+        };
+
+        const handleAdd = () => {
             if (!unitId || !(qty > 0) || !(weight > 0)) {
+                setShowInvalid(true);
                 onError(new Error('Enter a quantity, a unit and a weight greater than 0.'));
                 return;
             }
             // Entered as written on the packet ("2 tbsp = 27 g"), stored per one unit.
-            // Keep what was typed until it is saved, so a failed save can be retried.
-            if (!(await addRow({ unitId, sizeId, prepMethodId, grams: weight / qty }))) return;
-            setQuantity('1');
-            setGrams('');
-            setSizeId(null);
-            setPrepMethodId(null);
+            // Keep what was typed when it is rejected, so it can be corrected.
+            if (!addRow({ unitId, sizeId, prepMethodId, grams: weight / qty })) return;
+            resetNewMeasure();
         };
 
         const handleRemove = (row: Row) => {
             if (row.measureId) {
-                removeMeasure({ variables: { id: row.measureId } });
+                setRemoved((r) => new Set(r).add(row.measureId!));
             } else {
                 setStaged((s) => s.filter((r) => r.key !== row.key));
             }
         };
 
-        const commitPendingMeasures = useCallback(
-            async (newIngredientId: string) => {
+        const commitChanges = useCallback(
+            async (targetIngredientId: string) => {
+                // Removals first, so a row removed and added again with a new weight
+                // does not collide with the saved one.
+                for (const measureId of removed) {
+                    const result = await removeMeasure({ variables: { id: measureId } });
+                    if (result.errors?.length) {
+                        throw new Error(result.errors[0].message);
+                    }
+                }
+                setRemoved(new Set());
                 for (const row of staged) {
                     const result = await createMeasure({
                         variables: {
                             record: {
-                                ingredient: newIngredientId,
+                                ingredient: targetIngredientId,
                                 unit: row.draft.unitId,
                                 size: row.draft.sizeId,
                                 prepMethod: row.draft.prepMethodId,
@@ -197,12 +205,12 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                     if (result.errors?.length) {
                         throw new Error(result.errors[0].message);
                     }
+                    setStaged((s) => s.filter((r) => r.key !== row.key));
                 }
-                setStaged([]);
             },
-            [staged, createMeasure]
+            [removed, staged, createMeasure, removeMeasure]
         );
-        useImperativeHandle(ref, () => ({ commitPendingMeasures }), [commitPendingMeasures]);
+        useImperativeHandle(ref, () => ({ commitChanges }), [commitChanges]);
 
         // Nothing can be added or removed until the saved measures are known.
         const inactive = disabled || measuresLoading;
@@ -306,9 +314,12 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                                 inputMode='decimal'
                                 min={0}
                                 value={disabled ? '' : quantity}
-                                isInvalid={false}
+                                isInvalid={invalid.quantity}
                                 isDisabled={inactive}
-                                onChange={(e) => setQuantity(e.target.value)}
+                                onChange={(e) => {
+                                    setQuantity(e.target.value);
+                                    setShowInvalid(false);
+                                }}
                             />
                         </Box>
                         <Box flex={1} minW={0}>
@@ -319,8 +330,12 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                                     .filter((u) => u.dimension !== 'mass')
                                     .map((u) => ({ value: u._id, label: u.longSingular }))}
                                 value={unitId}
-                                onChange={setUnitId}
+                                onChange={(value) => {
+                                    setUnitId(value);
+                                    setShowInvalid(false);
+                                }}
                                 disabled={inactive}
+                                invalid={invalid.unit}
                             />
                         </Box>
                     </HStack>
@@ -373,9 +388,12 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                         inputMode='decimal'
                         min={0}
                         value={grams}
-                        isInvalid={false}
+                        isInvalid={invalid.grams}
                         isDisabled={inactive}
-                        onChange={(e) => setGrams(e.target.value)}
+                        onChange={(e) => {
+                            setGrams(e.target.value);
+                            setShowInvalid(false);
+                        }}
                         onKeyDown={(e) => {
                             if (e.key !== 'Enter') return;
                             // Add the measure, not save the whole ingredient.
@@ -388,7 +406,6 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                         alignSelf='flex-end'
                         onClick={handleAdd}
                         isDisabled={inactive}
-                        isLoading={creating}
                         aria-label='Add measure'
                     >
                         Add measure
@@ -399,26 +416,37 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                         <Text fontSize='sm' color='gray.500'>
                             From USDA:
                         </Text>
+                        {/* Chips on one row, notes on their own lines, so a note never
+                            reads as describing the chip beside it. */}
                         <Wrap>
-                            {suggestions.map((suggestion, index) =>
-                                suggestion.draft ? (
-                                    <Button
-                                        key={index}
-                                        size='xs'
-                                        variant='outline'
-                                        isDisabled={inactive}
-                                        onClick={() => addRow(suggestion.draft!)}
-                                        aria-label={`Add USDA measure ${suggestion.label}`}
-                                    >
-                                        {describeWithWeight({ key: '', draft: suggestion.draft })} +
-                                    </Button>
-                                ) : (
+                            {suggestions.map(
+                                (suggestion, index) =>
+                                    suggestion.draft && (
+                                        <Button
+                                            key={index}
+                                            size='xs'
+                                            variant='outline'
+                                            isDisabled={inactive}
+                                            onClick={() => addRow(suggestion.draft!)}
+                                            aria-label={`Add USDA measure ${suggestion.label}`}
+                                        >
+                                            {describeWithWeight({
+                                                key: '',
+                                                draft: suggestion.draft,
+                                            })}{' '}
+                                            +
+                                        </Button>
+                                    )
+                            )}
+                        </Wrap>
+                        {suggestions.map(
+                            (suggestion, index) =>
+                                !suggestion.draft && (
                                     <Text key={index} fontSize='xs' color='gray.500'>
                                         {suggestion.label.toLowerCase()} — {suggestion.reason}
                                     </Text>
                                 )
-                            )}
-                        </Wrap>
+                        )}
                     </Stack>
                 )}
             </Stack>

@@ -19,6 +19,8 @@ interface Props {
     placeholder?: string;
     label?: string;
     disabled?: boolean;
+    /** Shows the field as invalid, as Chakra's isInvalid does. */
+    invalid?: boolean;
     'aria-label'?: string;
 }
 
@@ -29,6 +31,7 @@ export function SearchableSelect({
     placeholder,
     label,
     disabled,
+    invalid,
     'aria-label': ariaLabel,
 }: Props) {
     const combobox = useCombobox({
@@ -109,6 +112,8 @@ export function SearchableSelect({
                         setSearch(options.find((opt) => opt.value === value)?.label ?? '');
                     }}
                     disabled={disabled}
+                    error={invalid}
+                    aria-invalid={invalid}
                     aria-label={ariaLabel}
                 />
             </Combobox.Target>

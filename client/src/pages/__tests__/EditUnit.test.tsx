@@ -70,6 +70,27 @@ describe('Edit Unit', () => {
         haveValueByLabelText(screen, 'Long plural name', 'teaspoons');
     });
 
+    it('should mark only the field that failed validation', async () => {
+        // Render
+        const user = userEvent.setup();
+        renderComponent();
+
+        // Act
+        expect(await screen.findByText('Edit Unit')).not.toBeNull();
+        await user.click(screen.getByLabelText('Select unit'));
+        await user.click(await screen.findByRole('option', { name: 'teaspoon' }));
+        await user.clear(screen.getByLabelText('Long singular name'));
+        await user.click(screen.getByLabelText('Save unit'));
+
+        // Expect
+        const invalid = (label: string) =>
+            screen.getByLabelText(label).getAttribute('aria-invalid');
+        expect(invalid('Long singular name')).toBe('true');
+        expect(invalid('Long plural name')).toBeNull();
+        expect(invalid('Short singular name')).toBeNull();
+        expect(invalid('Short plural name')).toBeNull();
+    });
+
     it('should remove a unit', async () => {
         // Render
         const user = userEvent.setup();
