@@ -60,6 +60,11 @@ export function UncountedIngredientPrompt(props: Props) {
     const [grams, setGrams] = useState<number | string>('');
     const [error, setError] = useState<string | null>(null);
     const [createMeasure, { loading }] = useMutation(CREATE_INGREDIENT_MEASURE, {
+        // Evict the cached measure lists, so the ingredient page does not show a stale one.
+        update: (cache) => {
+            cache.evict({ id: 'ROOT_QUERY', fieldName: 'ingredientMeasuresByIngredientIds' });
+            cache.gc();
+        },
         onCompleted: () => {
             setError(null);
             onSaved();

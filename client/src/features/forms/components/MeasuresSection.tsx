@@ -1,6 +1,6 @@
 import { CloseIcon } from '@chakra-ui/icons';
 import { Stack, Text, Wrap } from '@chakra-ui/react';
-import { useMutation, useQuery } from '@apollo/client';
+import { ApolloCache, useMutation, useQuery } from '@apollo/client';
 import { Box, Button, Checkbox, HStack, IconButton, Skeleton } from '@chakra-ui/react';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react';
 
@@ -97,12 +97,16 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
             setRemoved(new Set());
         }, [ingredientId]);
 
-        const refetchQueries = [GET_INGREDIENT_MEASURES, 'GetRecipeNutrition'];
+        // Measure lists are root fields, not normalized; evict them so every page refetches.
+        const update = (cache: ApolloCache<unknown>) => {
+            cache.evict({ id: 'ROOT_QUERY', fieldName: 'ingredientMeasuresByIngredientIds' });
+            cache.gc();
+        };
         const onError = (error: Error) =>
             toast({ title: 'Error saving measure', description: error.message, position: 'top' });
         // Run only by commitChanges, which reports a failure to the caller.
-        const [createMeasure] = useMutation(CREATE_INGREDIENT_MEASURE, { refetchQueries });
-        const [removeMeasure] = useMutation(REMOVE_INGREDIENT_MEASURE, { refetchQueries });
+        const [createMeasure] = useMutation(CREATE_INGREDIENT_MEASURE, { update });
+        const [removeMeasure] = useMutation(REMOVE_INGREDIENT_MEASURE, { update });
 
         const units = useMemo(() => components?.units ?? [], [components]);
         const sizes = useMemo(() => components?.sizes ?? [], [components]);
@@ -188,8 +192,12 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                     if (result.errors?.length) {
                         throw new Error(result.errors[0].message);
                     }
+                    setRemoved((r) => {
+                        const next = new Set(r);
+                        next.delete(measureId);
+                        return next;
+                    });
                 }
-                setRemoved(new Set());
                 for (const row of staged) {
                     const result = await createMeasure({
                         variables: {
