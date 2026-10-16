@@ -46,29 +46,26 @@ function specificityOptions(item: RecipeIngredientView): Option[] {
 
 interface Props {
     uncounted: UncountedIngredient;
-    onSaved: () => void;
 }
 /**
  * Turns an uncounted recipe line into a measure: the line already carries the unit, size
  * and prep method, so the only questions are the weight and how specific to save it.
  */
 export function UncountedIngredientPrompt(props: Props) {
-    const { uncounted, onSaved } = props;
+    const { uncounted } = props;
     const { item } = uncounted;
     const options = specificityOptions(item);
     const [choice, setChoice] = useState('0');
     const [grams, setGrams] = useState<number | string>('');
     const [error, setError] = useState<string | null>(null);
     const [createMeasure, { loading }] = useMutation(CREATE_INGREDIENT_MEASURE, {
-        // Evict the cached measure lists, so the ingredient page does not show a stale one.
+        // Evict the cached measure lists: the nutrition query on screen refetches, and the
+        // ingredient page does not show a stale one.
         update: (cache) => {
             cache.evict({ id: 'ROOT_QUERY', fieldName: 'ingredientMeasuresByIngredientIds' });
             cache.gc();
         },
-        onCompleted: () => {
-            setError(null);
-            onSaved();
-        },
+        onCompleted: () => setError(null),
         onError: (err) => setError(err.message),
     });
     const full = options[options.length - 1].label;

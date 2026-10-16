@@ -15,8 +15,6 @@ interface NutritionalInfoPanelProps {
     uncounted?: UncountedIngredient[];
     /** True when the reader may add a measure to the ingredient. */
     canEditIngredient?: (ingredientId: string) => boolean;
-    /** Called after a measure is saved from the panel, to recalculate. */
-    onMeasureSaved?: () => void;
     /** Shows a line as the ingredient list does: scaled, and in the reader's units. */
     displayLine?: (item: RecipeIngredientView) => DisplayedIngredient;
     /** True when no ingredient contributed to the totals (none countable, or none present). */
@@ -32,7 +30,7 @@ function round1(n: number): string {
 
 export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
     const { perServing, uncountedIds, uncounted = [], nothingCounted, loading, error } = props;
-    const { canEditIngredient = () => false, onMeasureSaved = () => {} } = props;
+    const { canEditIngredient = () => false } = props;
     const { displayLine = (item) => ({ ...item, authored: null }) } = props;
     const [open, setOpen] = useState(true);
 
@@ -116,10 +114,7 @@ export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
                                     </Text>
                                     {line.missingMeasure &&
                                         canEditIngredient(line.item.ingredient._id) && (
-                                            <UncountedIngredientPrompt
-                                                uncounted={line}
-                                                onSaved={onMeasureSaved}
-                                            />
+                                            <UncountedIngredientPrompt uncounted={line} />
                                         )}
                                 </Box>
                             );

@@ -28,8 +28,10 @@ export function IngredientsTab(props: Props) {
     const currentServings = useRecipeStore((state) => state.numServings);
     const { isVerified, isAdmin, user } = useUser();
     const { addRatingWithToast } = useAddRating();
-    const { perServing, uncountedIds, uncounted, owners, loading, error, refetch } =
-        useNutritionalInfo(recipe.ingredientSubsections, recipe.numServings);
+    const { perServing, uncountedIds, uncounted, owners, loading, error } = useNutritionalInfo(
+        recipe.ingredientSubsections,
+        recipe.numServings
+    );
     const displayLine = useDisplayedIngredient(currentServings, recipe.numServings);
     const totalIngredients = recipe.ingredientSubsections
         .flatMap((s) => s.ingredients)
@@ -91,7 +93,6 @@ export function IngredientsTab(props: Props) {
                         canEditIngredient={(id) =>
                             isVerified && (isAdmin || (!!user && owners.get(id) === user._id))
                         }
-                        onMeasureSaved={() => refetch()}
                         displayLine={displayLine}
                         nothingCounted={nothingCounted}
                         loading={loading}
