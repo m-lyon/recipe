@@ -27,7 +27,7 @@ export function CreateIngredientForm(props: Props) {
             if (newIngredientId) {
                 usdaLinkRef.current?.commitChanges(newIngredientId).catch((err) => {
                     toast({
-                        title: 'Ingredient saved, but nutritional data link failed',
+                        title: 'Ingredient saved, but nutritional data link or measures failed',
                         description: err instanceof Error ? err.message : String(err),
                         position: 'top',
                     });

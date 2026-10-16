@@ -363,7 +363,7 @@ describe('Create new Ingredient', () => {
         await waitFor(() => expect(linkCalls.length).toBe(1));
         expect(linkCalls[0].record.ingredient).toBe(mockBeefId);
         expect(linkCalls[0].record.usdaFdcId).toBe(171077);
-        expect(screen.queryByText('Ingredient saved, but nutritional data link failed')).toBeNull();
+        expect(screen.queryByText('Ingredient saved, but nutritional data link or measures failed')).toBeNull();
     });
 
     it('should not link USDA data that was previewed but never confirmed', async () => {

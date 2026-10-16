@@ -82,8 +82,11 @@ export const BaseIngredientForm = forwardRef<UsdaLinkSectionHandle, BaseIngredie
         // The nutrition link and measures are staged, and saved once the ingredient is.
         useImperativeHandle(ref, () => ({
             commitChanges: async (savedIngredientId: string) => {
-                await usdaLinkRef.current?.commitChanges(savedIngredientId);
-                await measuresRef.current?.commitChanges(savedIngredientId);
+                // Read both handles first: the form may unmount while the link is saved.
+                const usdaLink = usdaLinkRef.current;
+                const measures = measuresRef.current;
+                await usdaLink?.commitChanges(savedIngredientId);
+                await measures?.commitChanges(savedIngredientId);
             },
         }));
         useEffect(() => {

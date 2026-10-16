@@ -498,10 +498,9 @@ async function dropLegacyData(db: Db, report: MigrationReport, write: boolean) {
     await db
         .collection('nutritionalinfos')
         .deleteMany({ _id: { $in: withoutPerGram.map((i) => i._id) } });
-    // An unsized unit keeps its measure type, so a re-run still reports it as unsized.
-    await db
-        .collection('units')
-        .updateMany({ dimension: { $exists: true } }, { $unset: { measureType: '' } });
+    // Unsized units are written as count units, so this run's report is the only list of
+    // units an owner should resize.
+    await db.collection('units').updateMany({}, { $unset: { measureType: '' } });
     await db.collection('ingredients').updateMany({}, { $unset: { density: '' } });
     await db.collection('nutritionalinfos').updateMany({}, { $unset: { perUnit: '' } });
     for (const name of report.collectionsDropped) {
