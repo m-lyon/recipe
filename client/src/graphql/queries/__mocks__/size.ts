@@ -9,21 +9,21 @@ export const mockSmall: Size = {
     _id: mockSmallId,
     value: 'small',
     unique: true,
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
 };
 export const mockMedium: Size = {
     __typename: 'Size',
     _id: mockMediumId,
     value: 'medium',
     unique: true,
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
 };
 export const mockLarge: Size = {
     __typename: 'Size',
     _id: mockLargeId,
     value: 'large',
     unique: true,
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
 };
 export const mockSizes = [mockSmall, mockMedium, mockLarge];
 

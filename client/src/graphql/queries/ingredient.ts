@@ -19,6 +19,11 @@ export const GET_EDITABLE_INGREDIENTS = gql(`
     query GetEditableIngredients {
         ingredientManyEditable(limit: 5000) {
             ...IngredientFieldsFull
+            owner {
+                _id
+                firstName
+                lastName
+            }
         }
     }
 `);

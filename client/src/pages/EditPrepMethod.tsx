@@ -9,7 +9,7 @@ import { GET_EDITABLE_PREP_METHODS } from '@recipe/graphql/queries/prepMethod';
 
 export function EditPrepMethod() {
     const toast = useSuccessToast();
-    const [currentPrepMethod, setCurrentPrepMethod] = useState<ModifyablePrepMethod>();
+    const [currentPrepMethod, setCurrentPrepMethod] = useState<ModifyablePrepMethodWithOwner>();
     const { data } = useQuery(GET_EDITABLE_PREP_METHODS);
 
     return (
@@ -35,6 +35,7 @@ export function EditPrepMethod() {
                         <ModifyPrepMethodForm
                             prepMethodId={currentPrepMethod?._id}
                             initData={currentPrepMethod}
+                            owner={currentPrepMethod?.owner}
                             disabled={!currentPrepMethod}
                             handleComplete={() => {
                                 toast({

@@ -24,6 +24,21 @@ describe('Edit Prep Method', () => {
         cleanup();
     });
 
+    it('should show the owner of the selected prep method', async () => {
+        // Render
+        const user = userEvent.setup();
+        renderComponent();
+
+        // Act
+        expect(await screen.findByText('Edit Prep Method')).not.toBeNull();
+        expect(screen.queryByText(/^Owner:/)).toBeNull();
+        await user.click(screen.getByLabelText('Select prep method'));
+        await user.click(await screen.findByRole('option', { name: 'diced' }));
+
+        // Expect
+        expect(screen.getByText('Owner: Mock User')).not.toBeNull();
+    });
+
     it('should update a prep method', async () => {
         // Render
         const user = userEvent.setup();

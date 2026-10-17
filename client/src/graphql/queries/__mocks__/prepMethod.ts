@@ -10,28 +10,28 @@ export const mockChopped: PrepMethod = {
     _id: mockChoppedId,
     value: 'chopped',
     unique: true,
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
 };
 export const mockDiced: PrepMethod = {
     __typename: 'PrepMethod',
     _id: mockDicedId,
     value: 'diced',
     unique: true,
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
 };
 export const mockSliced: PrepMethod = {
     __typename: 'PrepMethod',
     _id: mockSlicedId,
     value: 'sliced',
     unique: true,
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
 };
 export const mockWhole: PrepMethod = {
     __typename: 'PrepMethod',
     _id: mockWholeId,
     value: 'whole',
     unique: true,
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
 };
 export const mockPrepMethods = [mockChopped, mockDiced, mockSliced, mockWhole];
 export const mockGetEditablePrepMethods = {

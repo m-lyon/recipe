@@ -18,7 +18,7 @@ export const mockUnit: Unit = {
     preferredNumberFormat: 'decimal',
     hasSpace: true,
     unique: true,
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
     dimension: 'count',
     perCanonical: 1,
     system: null,

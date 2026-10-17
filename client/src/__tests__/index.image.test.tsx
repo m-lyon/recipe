@@ -33,7 +33,7 @@ describe('Update Image Workflow', () => {
 
         // Act --------------------------------------------------
         await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        user.upload(screen.getByLabelText('Upload image'), mockImageFileOne);
+        await user.upload(screen.getByLabelText('Upload image'), mockImageFileOne);
         await user.click(screen.getByLabelText('Save recipe'));
 
         // Expect ------------------------------------------------

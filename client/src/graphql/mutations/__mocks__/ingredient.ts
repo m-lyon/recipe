@@ -16,7 +16,7 @@ export const mockBeef: Ingredient = {
     name: 'beef',
     pluralName: 'beef',
     isCountable: false,
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
     tags: [],
 };
 export const mockCreateIngredient = {
@@ -47,7 +47,7 @@ export const mockOnion: Ingredient = {
     name: 'onion',
     pluralName: 'onion',
     isCountable: true,
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
     tags: [],
 };
 

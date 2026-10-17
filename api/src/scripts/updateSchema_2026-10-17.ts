@@ -6,7 +6,7 @@
  *
  *   npm run compile
  *   MONGODB_URI=mongodb://localhost:27017/recipeProdBackup DRY_RUN=1 \
- *       node ./dist/src/scripts/migrateCanonicalUnits.js
+ *       node ./dist/src/scripts/updateSchema_2026-10-17.js
  *
  * Run it against a backup first. Without DRY_RUN it writes, and the final phase drops the
  * unitconversions and conversionrules collections.

@@ -3,6 +3,7 @@ import { GraphQLNonNull } from 'graphql';
 import { ResolverNextRpCb } from 'graphql-compose';
 
 import { UnitTC } from '../models/Unit.js';
+import { OwnerTC } from '../models/User.js';
 import { GraphQLContext } from '../types.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { notAuthorised } from '../middleware/authorisation.js';
@@ -34,6 +35,12 @@ DisplayLadderCreateTC.addResolver({
     type: DisplayLadderTC.mongooseResolvers.createOne().getType(),
     args: DisplayLadderCreateTC.mongooseResolvers.createOne().getArgs(),
     resolve: createOneResolver(DisplayLadder, DisplayLadderCreateTC),
+});
+
+DisplayLadderTC.addRelation('owner', {
+    resolver: () => OwnerTC.getResolver('findById'),
+    prepareArgs: { _id: (source) => source.owner },
+    projection: { owner: true },
 });
 
 DisplayLadderTC.addResolver({

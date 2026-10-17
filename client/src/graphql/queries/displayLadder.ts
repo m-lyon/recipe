@@ -7,7 +7,11 @@ export const DISPLAY_LADDER_FIELDS = gql(`
         dimension
         system
         scope
-        owner
+        owner {
+            _id
+            firstName
+            lastName
+        }
         steps {
             minCanonical
             unit {

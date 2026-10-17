@@ -146,28 +146,32 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             // eslint-disable-next-line react-hooks/exhaustive-deps
         }, [ingredientId, existingNutritionalInfo?._id]);
 
-        const [runSearch, { loading: searchLoading }] = useLazyQuery(USDA_SEARCH, {
-            onCompleted: (data) => {
-                setSearchResults((data.usdaSearch ?? []).filter((r) => r != null));
-            },
-            onError: (err) => {
+        // Results are handled from the promise each call returns, which resolves with `data`
+        // or `error`: the hooks' onCompleted and onError options are deprecated.
+        const [runSearchQuery, { loading: searchLoading }] = useLazyQuery(USDA_SEARCH);
+        const runSearch = async (options: Parameters<typeof runSearchQuery>[0]) => {
+            const { data, error } = await runSearchQuery(options);
+            if (error) {
                 setSearchResults([]);
-                setSearchError(err.message);
-            },
-        });
+                setSearchError(error.message);
+                return;
+            }
+            setSearchResults((data?.usdaSearch ?? []).filter((r) => r != null));
+        };
 
-        const [fetchFoodItem, { loading: foodItemLoading }] = useLazyQuery(USDA_FOOD_ITEM, {
-            onCompleted: (data) => {
-                setPortions(data.usdaFoodItem?.portions ?? []);
-                if (data.usdaFoodItem?.description) {
-                    setLinkedFoodName(data.usdaFoodItem.description);
-                }
-            },
-            onError: () => {
+        const [fetchFoodItemQuery, { loading: foodItemLoading }] = useLazyQuery(USDA_FOOD_ITEM);
+        const fetchFoodItem = async (options: Parameters<typeof fetchFoodItemQuery>[0]) => {
+            const { data, error } = await fetchFoodItemQuery(options);
+            if (error) {
                 // Portion data is an enhancement: perGram is already linkable without it.
                 setPortions([]);
-            },
-        });
+                return;
+            }
+            setPortions(data?.usdaFoodItem?.portions ?? []);
+            if (data?.usdaFoodItem?.description) {
+                setLinkedFoodName(data.usdaFoodItem.description);
+            }
+        };
 
         // Run only by commitChanges, which reports a failure to the caller.
         const [createNutritionalInfo] = useMutation(CREATE_NUTRITIONAL_INFO);

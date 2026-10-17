@@ -12,7 +12,7 @@ import { GET_DISPLAY_LADDERS } from '@recipe/graphql/queries/displayLadder';
 import { CREATE_DISPLAY_LADDER } from '@recipe/graphql/mutations/displayLadder';
 import { REMOVE_DISPLAY_LADDER } from '@recipe/graphql/mutations/displayLadder';
 import { UPDATE_DISPLAY_LADDER } from '@recipe/graphql/mutations/displayLadder';
-import { FloatingLabelInput, SearchableSelect } from '@recipe/common/components';
+import { FloatingLabelInput, OwnerText, SearchableSelect } from '@recipe/common/components';
 import { EnumDisplayLadderDimension, EnumDisplayLadderSystem } from '@recipe/graphql/generated';
 
 interface StepDraft {
@@ -270,6 +270,7 @@ export function DisplayLadders(props: Props) {
                         Add step
                     </Button>
                     <ButtonGroup display='flex' justifyContent='flex-end' isDisabled={disabled}>
+                        <OwnerText owner={current?.owner} />
                         {current && (
                             <Button
                                 colorScheme='red'

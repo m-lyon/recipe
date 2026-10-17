@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Stack } from '@chakra-ui/react';
 import { Link, useLocation } from 'react-router-dom';
@@ -9,12 +10,8 @@ import { LOGOUT } from '@recipe/graphql/mutations/user';
 import { CURRENT_USER } from '@recipe/graphql/queries/user';
 
 export function UserOptions() {
-    const { data, loading } = useQuery(CURRENT_USER, {
+    const { data, loading, error } = useQuery(CURRENT_USER, {
         pollInterval: 1000 * 60 * 5,
-        onError: (err) => {
-            console.log(err);
-            toast({ title: 'An error occurred.', description: err.message });
-        },
     });
     const [logout] = useMutation(LOGOUT, {
         onError: (err) => {
@@ -36,6 +33,14 @@ export function UserOptions() {
     const client = useApolloClient();
     const navigate = useNavigate();
     const toast = useErrorToast();
+
+    // An effect, not the query's onError option, which Apollo has deprecated.
+    useEffect(() => {
+        if (!error) return;
+        console.log(error);
+        toast({ title: 'An error occurred.', description: error.message });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [error]);
 
     if (loading) {
         return <LoginOptions isLoading={true} />;

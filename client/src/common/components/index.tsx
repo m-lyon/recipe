@@ -1,3 +1,5 @@
+export { OwnerText } from './OwnerText';
+export type { Owner } from './OwnerText';
 export { AnimatedLink } from './AnimatedLink';
 export { DropdownItem } from './DropdownItem';
 export { EditableText } from './EditableText';

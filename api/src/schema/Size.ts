@@ -1,8 +1,15 @@
+import { OwnerTC } from '../models/User.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { Size, SizeCreateTC, SizeTC } from '../models/Size.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
 import { validateItemNotInMeasure, validateItemNotInRecipe } from './validation.js';
 import { filterIsEditable, filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
+
+SizeTC.addRelation('owner', {
+    resolver: () => OwnerTC.getResolver('findById'),
+    prepareArgs: { _id: (source) => source.owner },
+    projection: { owner: true },
+});
 
 SizeTC.addResolver({
     name: 'updateById',

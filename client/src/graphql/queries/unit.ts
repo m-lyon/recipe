@@ -30,6 +30,11 @@ export const GET_EDITABLE_UNITS = gql(`
     query GetEditableUnits {
         unitManyEditable(limit: 5000) {
             ...UnitFields
+            owner {
+                _id
+                firstName
+                lastName
+            }
         }
     }
 `);

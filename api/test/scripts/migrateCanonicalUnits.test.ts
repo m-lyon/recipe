@@ -3,7 +3,7 @@ import mongoose, { Types } from 'mongoose';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { startServer, stopServer } from '../utils/mongodb.js';
-import { migrateCanonicalUnits } from '../../src/scripts/migrateCanonicalUnits.js';
+import { migrateCanonicalUnits } from '../../src/scripts/updateSchema_2026-10-17.js';
 
 const id = () => new Types.ObjectId();
 

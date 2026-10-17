@@ -9,7 +9,7 @@ import { GET_EDITABLE_SIZES } from '@recipe/graphql/queries/size';
 
 export function EditSize() {
     const toast = useSuccessToast();
-    const [currentSize, setCurrentSize] = useState<ModifyableSize>();
+    const [currentSize, setCurrentSize] = useState<ModifyableSizeWithOwner>();
     const { data } = useQuery(GET_EDITABLE_SIZES);
 
     return (
@@ -35,6 +35,7 @@ export function EditSize() {
                         <ModifySizeForm
                             sizeId={currentSize?._id}
                             initData={currentSize}
+                            owner={currentSize?.owner}
                             disabled={!currentSize}
                             handleComplete={() => {
                                 toast({

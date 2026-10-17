@@ -12,6 +12,11 @@ export const GET_EDITABLE_PREP_METHODS = gql(`
     query GetEditablePrepMethods {
         prepMethodManyEditable(limit: 5000) {
             ...PrepMethodFields
+            owner {
+                _id
+                firstName
+                lastName
+            }
         }
     }
 `);

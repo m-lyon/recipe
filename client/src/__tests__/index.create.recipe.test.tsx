@@ -125,7 +125,7 @@ describe('Create Recipe Workflow', () => {
         await user.keyboard('{2}{ }');
         await clickFindByText(screen, user, 'teaspoons', 'apples', 'diced');
         // --- Add Image -----------------------------------------
-        user.upload(screen.getByLabelText('Upload image'), mockImageFileNew);
+        await user.upload(screen.getByLabelText('Upload image'), mockImageFileNew);
         // --- Add Rating ----------------------------------------
         const starContainer = screen.getByRole('rating').querySelector('.react-simple-star-rating');
         const svgStar = screen.getAllByLabelText('Select star rating')[3];
@@ -202,7 +202,7 @@ describe('Create Recipe Workflow', () => {
         await user.keyboard('{2}{ }');
         await clickFindByText(screen, user, 'teaspoons', 'apples', 'diced');
         // --- Add Image -----------------------------------------
-        user.upload(screen.getByLabelText('Upload image'), mockImageFileNew);
+        await user.upload(screen.getByLabelText('Upload image'), mockImageFileNew);
         // --- Add Rating ----------------------------------------
         const starContainer = screen.getByRole('rating').querySelector('.react-simple-star-rating');
         const svgStar = screen.getAllByLabelText('Select star rating')[3];

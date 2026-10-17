@@ -343,27 +343,35 @@ declare global {
 
     // - Modifyables --------------------------------------------------------------
     // ------------- Types for the Edit RecipeIngredient Component pages ----------
+    // A ...WithOwner type is a document as an edit page lists it. The Modifyable types
+    // leave out the owner, which the forms do not edit.
 
+    type ModifyableUnitWithOwner = GetEditableUnitsQuery['unitManyEditable'][number];
+    type ModifyableSizeWithOwner = GetEditableSizesQuery['sizeManyEditable'][number];
+    type ModifyableIngredientWithOwner =
+        GetEditableIngredientsQuery['ingredientManyEditable'][number];
+    type ModifyablePrepMethodWithOwner =
+        GetEditablePrepMethodsQuery['prepMethodManyEditable'][number];
     /**
      * Represents the unit document that is returned from the API when a unit is
      * created or modified.
      */
-    type ModifyableUnit = GetEditableUnitsQuery['unitManyEditable'][number];
+    type ModifyableUnit = Omit<ModifyableUnitWithOwner, 'owner'>;
     /**
      * Represents the size document that is returned from the API when a size is
      * created or modified.
      */
-    type ModifyableSize = GetEditableSizesQuery['sizeManyEditable'][number];
+    type ModifyableSize = Omit<ModifyableSizeWithOwner, 'owner'>;
     /**
      * Represents the ingredient document that is returned from the API when an ingredient
      * is created or modified.
      */
-    type ModifyableIngredient = GetEditableIngredientsQuery['ingredientManyEditable'][number];
+    type ModifyableIngredient = Omit<ModifyableIngredientWithOwner, 'owner'>;
     /**
      * Represents the prep method document that is returned from the API when a prep
      * method is created or modified.
      */
-    type ModifyablePrepMethod = GetEditablePrepMethodsQuery['prepMethodManyEditable'][number];
+    type ModifyablePrepMethod = Omit<ModifyablePrepMethodWithOwner, 'owner'>;
 
     // - Queries and Mutations ----------------------------------------------------
     // ----------------------- GraphQL Query and Mutation Types -------------------

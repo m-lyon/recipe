@@ -1,3 +1,4 @@
+import { OwnerTC } from '../models/User.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { Unit, UnitCreateTC, UnitTC } from '../models/Unit.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
@@ -5,6 +6,12 @@ import { validateUnitCreate, validateUnitUpdate } from './validation.js';
 import { validateUnitNotInLadder, validateUnitNotStandard } from './validation.js';
 import { validateItemNotInMeasure, validateItemNotInRecipe } from './validation.js';
 import { filterIsEditable, filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
+
+UnitTC.addRelation('owner', {
+    resolver: () => OwnerTC.getResolver('findById'),
+    prepareArgs: { _id: (source) => source.owner },
+    projection: { owner: true },
+});
 
 UnitTC.addResolver({
     name: 'updateById',

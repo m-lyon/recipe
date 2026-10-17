@@ -8,9 +8,10 @@ import { FormControl, FormHelperText, HStack, Radio, RadioGroup } from '@chakra-
 
 import { useUser } from '@recipe/features/user';
 import { NumberFormat } from '@recipe/graphql/enums';
+import type { Owner } from '@recipe/common/components';
 import { GET_INGREDIENT_COMPONENTS } from '@recipe/graphql/queries/recipe';
 import { EnumUnitDimension, EnumUnitSystem } from '@recipe/graphql/generated';
-import { FloatingLabelInput, SearchableSelect } from '@recipe/common/components';
+import { FloatingLabelInput, OwnerText, SearchableSelect } from '@recipe/common/components';
 
 import { useFormLogic } from '../hooks/useFormLogic';
 import { useKeyboardSubmit } from '../hooks/useKeyboardSubmit';
@@ -80,9 +81,10 @@ export interface BaseUnitFormProps extends StackProps {
     disabled?: boolean;
     submitForm: (data: ModifyableUnit) => void;
     onDelete?: () => void;
+    owner?: Owner | null;
 }
 export function BaseUnitForm(props: BaseUnitFormProps) {
-    const { fieldRef, initData, disabled, submitForm, onDelete, ...rest } = props;
+    const { fieldRef, initData, disabled, submitForm, onDelete, owner, ...rest } = props;
     const { isAdmin } = useUser();
     // Code owns the size of a standard unit, and only an admin sizes a mass or volume unit.
     const isStandard = Boolean(initData?.standard);
@@ -284,6 +286,7 @@ export function BaseUnitForm(props: BaseUnitFormProps) {
                 paddingTop={2}
                 isDisabled={disabled}
             >
+                <OwnerText owner={owner} />
                 {onDelete && !isStandard && (
                     <Button colorScheme='red' onClick={onDelete} aria-label='Delete unit'>
                         Delete

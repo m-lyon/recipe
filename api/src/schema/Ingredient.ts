@@ -1,9 +1,16 @@
+import { OwnerTC } from '../models/User.js';
 import { validateItemNotInRecipe } from './validation.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { IngredientMeasure } from '../models/IngredientMeasure.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
 import { filterIsEditable, filterIsOwnerOrAdmin } from '../middleware/filters.js';
 import { Ingredient, IngredientCreateTC, IngredientTC } from '../models/Ingredient.js';
+
+IngredientTC.addRelation('owner', {
+    resolver: () => OwnerTC.getResolver('findById'),
+    prepareArgs: { _id: (source) => source.owner },
+    projection: { owner: true },
+});
 
 IngredientTC.addResolver({
     name: 'updateById',

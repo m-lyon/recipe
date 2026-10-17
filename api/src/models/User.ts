@@ -18,3 +18,10 @@ userSchema.plugin(passportLocalMongoose);
 
 export const User = model<User>('User', userSchema);
 export const UserTC = composeMongoose(User, { removeFields: ['salt', 'hash'] });
+
+/** The public part of a user, for the owner of a document: no username (an email) or role. */
+export const OwnerTC = composeMongoose(User, {
+    name: 'Owner',
+    onlyFields: ['_id', 'firstName', 'lastName'],
+});
+OwnerTC.makeFieldNullable(['firstName', 'lastName']);

@@ -3,7 +3,8 @@ import { boolean, object, string } from 'yup';
 import { MutableRefObject, useCallback, useEffect } from 'react';
 import { Button, ButtonGroup, Stack, StackProps } from '@chakra-ui/react';
 
-import { FloatingLabelInput } from '@recipe/common/components';
+import type { Owner } from '@recipe/common/components';
+import { FloatingLabelInput, OwnerText } from '@recipe/common/components';
 
 import { useFormLogic } from '../hooks/useFormLogic';
 import { useKeyboardSubmit } from '../hooks/useKeyboardSubmit';
@@ -26,9 +27,10 @@ export interface BasePrepMethodFormProps extends StackProps {
     disabled?: boolean;
     submitForm: (data: ModifyablePrepMethod) => void;
     onDelete?: () => void;
+    owner?: Owner | null;
 }
 export function BasePrepMethodForm(props: BasePrepMethodFormProps) {
-    const { fieldRef, initData, disabled, submitForm, onDelete, ...rest } = props;
+    const { fieldRef, initData, disabled, submitForm, onDelete, owner, ...rest } = props;
     const xfm = useCallback(
         (data: Partial<ModifyablePrepMethod>) => ({ value: data.value, unique: true }),
         []
@@ -72,6 +74,7 @@ export function BasePrepMethodForm(props: BasePrepMethodFormProps) {
                 paddingTop={2}
                 isDisabled={disabled}
             >
+                <OwnerText owner={owner} />
                 {onDelete && (
                     <Button colorScheme='red' onClick={onDelete} aria-label='Delete prep method'>
                         Delete

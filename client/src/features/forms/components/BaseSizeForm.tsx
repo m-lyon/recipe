@@ -3,7 +3,8 @@ import { boolean, object, string } from 'yup';
 import { MutableRefObject, useCallback, useEffect } from 'react';
 import { Button, ButtonGroup, Stack, StackProps } from '@chakra-ui/react';
 
-import { FloatingLabelInput } from '@recipe/common/components';
+import type { Owner } from '@recipe/common/components';
+import { FloatingLabelInput, OwnerText } from '@recipe/common/components';
 
 import { useFormLogic } from '../hooks/useFormLogic';
 import { useKeyboardSubmit } from '../hooks/useKeyboardSubmit';
@@ -21,6 +22,7 @@ export interface BaseSizeFormProps extends StackProps {
     disabled?: boolean;
     submitForm: (data: ModifyableSize) => void;
     onDelete?: () => void;
+    owner?: Owner | null;
 }
 const formSchema = object({
     value: string().required('Size is required'),
@@ -28,7 +30,7 @@ const formSchema = object({
 });
 
 export function BaseSizeForm(props: BaseSizeFormProps) {
-    const { fieldRef, initData, disabled, submitForm, onDelete, ...rest } = props;
+    const { fieldRef, initData, disabled, submitForm, onDelete, owner, ...rest } = props;
     const xfm = useCallback(
         (data: Partial<ModifyableSize>) => ({ value: data.value, unique: true }),
         []
@@ -61,6 +63,7 @@ export function BaseSizeForm(props: BaseSizeFormProps) {
                 onChange={(e) => handleChange('value', e.target.value.toLowerCase())}
             />
             <ButtonGroup display='flex' justifyContent='flex-end' isDisabled={disabled}>
+                <OwnerText owner={owner} />
                 {onDelete && (
                     <Button colorScheme='red' onClick={onDelete} aria-label='Delete size'>
                         Delete

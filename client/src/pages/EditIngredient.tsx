@@ -10,7 +10,7 @@ import { GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS } from '@recipe/graphql/queries
 
 export function EditIngredient() {
     const toast = useSuccessToast();
-    const [currentIngredient, setCurrentIngredient] = useState<ModifyableIngredient>();
+    const [currentIngredient, setCurrentIngredient] = useState<ModifyableIngredientWithOwner>();
     const { data } = useQuery(GET_EDITABLE_INGREDIENTS);
 
     // Fetch nutritional info for every ingredient up front, alongside the ingredient list
@@ -50,6 +50,7 @@ export function EditIngredient() {
                         <ModifyIngredientForm
                             ingredientId={currentIngredient?._id}
                             initData={currentIngredient}
+                            owner={currentIngredient?.owner}
                             disabled={!currentIngredient}
                             existingNutritionalInfo={existingNutritionalInfo}
                             onNutritionalInfoChange={() => refetchNutritionalInfo()}

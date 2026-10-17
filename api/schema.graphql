@@ -219,7 +219,9 @@ type DisplayLadder {
   _id: MongoID!
   dimension: EnumDisplayLadderDimension!
   name: String!
-  owner: MongoID!
+
+  """The owner of the document. Only the owner and admins see the name."""
+  owner: Owner!
   scope: EnumDisplayLadderScope!
   steps: [DisplayLadderSteps!]!
   system: EnumDisplayLadderSystem!
@@ -1310,7 +1312,9 @@ type Ingredient {
   _id: MongoID!
   isCountable: Boolean!
   name: String!
-  owner: MongoID!
+
+  """The owner of the document. Only the owner and admins see the name."""
+  owner: Owner!
   pluralName: String!
   tags: [EnumIngredientTags]!
 }
@@ -1499,9 +1503,17 @@ input NutritionalInfoPerGramInput {
   protein: Float!
 }
 
+type Owner {
+  _id: MongoID!
+  firstName: String
+  lastName: String
+}
+
 type PrepMethod {
   _id: MongoID!
-  owner: MongoID!
+
+  """The owner of the document. Only the owner and admins see the name."""
+  owner: Owner!
   unique: Boolean!
   value: String!
 }
@@ -1986,7 +1998,9 @@ type RemoveOneTagPayload {
 
 type Size {
   _id: MongoID!
-  owner: MongoID!
+
+  """The owner of the document. Only the owner and admins see the name."""
+  owner: Owner!
   unique: Boolean!
   value: String!
 }
@@ -2182,7 +2196,9 @@ type Unit {
   hidden: Boolean!
   longPlural: String!
   longSingular: String!
-  owner: MongoID!
+
+  """The owner of the document. Only the owner and admins see the name."""
+  owner: Owner!
   perCanonical: Float!
   preferredNumberFormat: EnumUnitPreferredNumberFormat!
   shortPlural: String!

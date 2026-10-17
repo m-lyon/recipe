@@ -35,6 +35,7 @@ describe('Display Ladders', () => {
         await waitFor(() =>
             expect(screen.getByLabelText('Name')).toHaveProperty('value', 'metric-mass')
         );
+        expect(screen.getByText('Owner: Mock User')).not.toBeNull();
         await act(() => router.navigate(`${PATH.BASE}/create/display-ladder`));
 
         // Expect
@@ -42,5 +43,6 @@ describe('Display Ladders', () => {
         expect(screen.getByLabelText('Name')).toHaveProperty('value', '');
         expect(screen.getAllByLabelText(/^Step \d+ unit$/)).toHaveLength(1);
         expect(screen.queryByLabelText('Delete display ladder')).toBeNull();
+        expect(screen.queryByText(/^Owner:/)).toBeNull();
     });
 });

@@ -34,7 +34,7 @@ export function useNutritionalInfo(subsections: IngredientSubsectionView[], numS
         );
     }
     const owners = new Map(
-        (data?.ingredientByIds ?? []).map((ingredient) => [ingredient._id, ingredient.owner])
+        (data?.ingredientByIds ?? []).map((ingredient) => [ingredient._id, ingredient.owner._id])
     );
 
     const result = sumRecipeNutrition(subsections, nutritionalInfoMap, measuresMap, numServings);

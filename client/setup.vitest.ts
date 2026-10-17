@@ -1,4 +1,5 @@
 import { afterEach, vi } from 'vitest';
+import { configure } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 vi.mock('zustand');
 vi.mock('lottie-react', () => ({ default: () => null }));
@@ -9,6 +10,9 @@ vi.mock('lottie-react', () => ({ default: () => null }));
 if ('happyDOM' in window) {
     delete (Element.prototype as Partial<Element>).animate;
 }
+
+// Longer timeout to guard against flaky tests
+configure({ asyncUtilTimeout: 3000 });
 
 // Drafts and the last route persist in localStorage; keep each test independent.
 afterEach(() => {

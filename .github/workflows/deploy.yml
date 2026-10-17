@@ -107,7 +107,7 @@ jobs:
 
       - name: Download MongoDB Memory Server
         working-directory: ./api
-        run: npm run dl_memory
+        run: npm run dl-memory
 
       - name: Check committed GraphQL schema is up to date
         working-directory: ./api

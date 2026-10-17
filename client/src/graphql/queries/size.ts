@@ -12,6 +12,11 @@ export const GET_EDITABLE_SIZES = gql(`
     query GetEditableSizes {
         sizeManyEditable(limit: 5000) {
             ...SizeFields
+            owner {
+                _id
+                firstName
+                lastName
+            }
         }
     }
 `);

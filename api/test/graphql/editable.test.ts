@@ -175,6 +175,57 @@ specs.forEach((spec) => {
             assert.equal(result.errors?.[0].message, 'You are not authenticated!');
         });
 
+        async function owners(context: Mocha.Context, asUser: User, ids: string[]) {
+            const byIds = spec.field.replace('ManyEditable', 'ByIds');
+            const query = `
+            query OwnerNames($ids: [MongoID!]!) {
+                ${byIds}(_ids: $ids) {
+                    _id
+                    owner {
+                        _id
+                        firstName
+                        lastName
+                    }
+                }
+            }`;
+            const response = await context.apolloServer.executeOperation(
+                { query, variables: { ids } },
+                { contextValue: { isAuthenticated: () => true, getUser: () => asUser } }
+            );
+            assert(response.body.kind === 'single');
+            const result = response.body.singleResult;
+            assert.isUndefined(result.errors);
+            type Doc = {
+                _id: string;
+                owner: { _id: string; firstName: string | null; lastName: string | null };
+            };
+            const data = result.data as Record<string, Doc[]>;
+            return Object.fromEntries(
+                data[byIds].map(({ _id, owner }) => [
+                    _id,
+                    [owner._id, owner.firstName, owner.lastName],
+                ])
+            );
+        }
+
+        it('should show the owner name to the owner', async function () {
+            const result = await owners(this, user, [userDocId]);
+            assert.deepEqual(result, { [userDocId]: [user.id, 'Tester1', 'McTestFace'] });
+        });
+
+        it('should show every owner name to an admin', async function () {
+            const result = await owners(this, admin, [userDocId, otherUserDocId]);
+            assert.deepEqual(result, {
+                [userDocId]: [user.id, 'Tester1', 'McTestFace'],
+                [otherUserDocId]: [otherUser.id, 'Tester4', 'McTestFace'],
+            });
+        });
+
+        it('should show only the owner id to another user', async function () {
+            const result = await owners(this, user, [otherUserDocId]);
+            assert.deepEqual(result, { [otherUserDocId]: [otherUser.id, null, null] });
+        });
+
         if (spec.hidesThrowaway) {
             it('should NOT list throwaway documents', async function () {
                 await spec.create('userthrowaway', user, false);

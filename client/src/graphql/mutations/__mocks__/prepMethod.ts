@@ -15,7 +15,7 @@ export const mockPipped: PrepMethod = {
     __typename: 'PrepMethod',
     value: 'pipped',
     unique: true,
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
 };
 export const mockCreatePrepMethod = {
     request: {

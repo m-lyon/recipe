@@ -14,7 +14,7 @@ export const mockApple: Ingredient = {
     name: 'apple',
     pluralName: 'apples',
     isCountable: true,
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
     tags: ['vegan', 'vegetarian'],
 };
 export const mockChicken: Ingredient = {
@@ -23,7 +23,7 @@ export const mockChicken: Ingredient = {
     name: 'chicken',
     pluralName: 'chickens',
     isCountable: false,
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
     tags: [],
 };
 export const mockCarrot: Ingredient = {
@@ -32,7 +32,7 @@ export const mockCarrot: Ingredient = {
     name: 'carrot',
     pluralName: 'carrots',
     isCountable: true,
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
     tags: ['vegan', 'vegetarian'],
 };
 export const mockLettuce: Ingredient = {
@@ -41,7 +41,7 @@ export const mockLettuce: Ingredient = {
     name: 'iceberg lettuce',
     pluralName: 'iceberg lettuces',
     isCountable: false,
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
     tags: ['vegan', 'vegetarian'],
 };
 // Recipes

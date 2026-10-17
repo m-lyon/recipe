@@ -9,7 +9,7 @@ import { GET_EDITABLE_UNITS } from '@recipe/graphql/queries/unit';
 
 export function EditUnit() {
     const toast = useSuccessToast();
-    const [currentUnit, setCurrentUnit] = useState<ModifyableUnit>();
+    const [currentUnit, setCurrentUnit] = useState<ModifyableUnitWithOwner>();
     const { data } = useQuery(GET_EDITABLE_UNITS);
 
     return (
@@ -35,6 +35,7 @@ export function EditUnit() {
                         <ModifyUnitForm
                             unitId={currentUnit?._id}
                             initData={currentUnit}
+                            owner={currentUnit?.owner}
                             disabled={!currentUnit}
                             handleComplete={() => {
                                 toast({

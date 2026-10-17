@@ -5,7 +5,9 @@ import { useMinimumLoading } from '@recipe/common/hooks';
 
 describe('useMinimumLoading', () => {
     beforeEach(() => {
-        vi.useFakeTimers();
+        // Fake only what the hook uses. By default Vitest also fakes process.hrtime, which
+        // breaks its own hook timing: afterEach then reports a timeout.
+        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
     });
 
     afterEach(() => {

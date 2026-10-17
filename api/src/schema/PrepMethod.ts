@@ -1,8 +1,15 @@
+import { OwnerTC } from '../models/User.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
 import { validateItemNotInMeasure, validateItemNotInRecipe } from './validation.js';
 import { PrepMethod, PrepMethodCreateTC, PrepMethodTC } from '../models/PrepMethod.js';
 import { filterIsEditable, filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
+
+PrepMethodTC.addRelation('owner', {
+    resolver: () => OwnerTC.getResolver('findById'),
+    prepareArgs: { _id: (source) => source.owner },
+    projection: { owner: true },
+});
 
 PrepMethodTC.addResolver({
     name: 'updateById',

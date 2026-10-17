@@ -105,8 +105,16 @@ const recipeBothNutritionResult: GetRecipeNutritionQuery = {
     ],
     ingredientMeasuresByIngredientIds: [mockAppleEachMeasure, mockCarrotEachMeasure],
     ingredientByIds: [
-        { __typename: 'Ingredient', _id: mockAppleId, owner: mockAdminId },
-        { __typename: 'Ingredient', _id: mockCarrotId, owner: mockAdminId },
+        {
+            __typename: 'Ingredient',
+            _id: mockAppleId,
+            owner: { __typename: 'Owner', _id: mockAdminId },
+        },
+        {
+            __typename: 'Ingredient',
+            _id: mockCarrotId,
+            owner: { __typename: 'Owner', _id: mockAdminId },
+        },
     ],
 };
 

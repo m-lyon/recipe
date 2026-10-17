@@ -50,7 +50,9 @@ export const GET_RECIPE_NUTRITION = gql(`
         }
         ingredientByIds(_ids: $ingredientIds) {
             _id
-            owner
+            owner {
+                _id
+            }
         }
     }
 `);

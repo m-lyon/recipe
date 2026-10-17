@@ -16,7 +16,7 @@ export const mockMetricMassLadder: Ladder = {
     dimension: 'mass',
     system: 'metric',
     scope: 'global',
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
     steps: [
         { __typename: 'DisplayLadderSteps', minCanonical: 1000, unit: mockKilogram },
         { __typename: 'DisplayLadderSteps', minCanonical: 0, unit: mockGram },
@@ -30,7 +30,7 @@ export const mockUsVolumeLadder: Ladder = {
     dimension: 'volume',
     system: 'us',
     scope: 'global',
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
     steps: [
         { __typename: 'DisplayLadderSteps', minCanonical: 59.147059125, unit: mockCup },
         { __typename: 'DisplayLadderSteps', minCanonical: 14.78676478125, unit: mockTablespoon },
@@ -44,7 +44,7 @@ export const mockMetricVolumeLadder: Ladder = {
     dimension: 'volume',
     system: 'metric',
     scope: 'global',
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
     steps: [{ __typename: 'DisplayLadderSteps', minCanonical: 0, unit: mockMilliliter }],
 };
 export const mockLadders = [mockMetricMassLadder, mockUsVolumeLadder, mockMetricVolumeLadder];

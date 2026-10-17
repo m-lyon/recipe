@@ -6,8 +6,9 @@ import { MutableRefObject, forwardRef, useCallback, useEffect } from 'react';
 import { Box, Button, ButtonGroup, Checkbox, HStack } from '@chakra-ui/react';
 
 import { IngredientTags } from '@recipe/graphql/enums';
+import type { Owner } from '@recipe/common/components';
 import { MacroNutrients } from '@recipe/utils/nutrition';
-import { FloatingLabelInput } from '@recipe/common/components';
+import { FloatingLabelInput, OwnerText } from '@recipe/common/components';
 
 import { useFormLogic } from '../hooks/useFormLogic';
 import { UsdaLinkSectionHandle } from './UsdaLinkSection';
@@ -39,6 +40,8 @@ export interface BaseIngredientFormProps extends StackProps {
     disabled?: boolean;
     submitForm: (data: ModifyableIngredient) => void;
     onDelete?: () => void;
+    /** The owner, shown beside the buttons. */
+    owner?: Owner | null;
     /** Nutritional info for this ingredient, prefetched by the page alongside the ingredient list. */
     existingNutritionalInfo?: ExistingNutritionalInfo | null;
     /** Called after a link is created or cleared, so the prefetched list can be refreshed. */
@@ -53,6 +56,7 @@ export const BaseIngredientForm = forwardRef<UsdaLinkSectionHandle, BaseIngredie
             disabled,
             submitForm,
             onDelete,
+            owner,
             existingNutritionalInfo,
             onNutritionalInfoChange,
             ...rest
@@ -183,6 +187,7 @@ export const BaseIngredientForm = forwardRef<UsdaLinkSectionHandle, BaseIngredie
                     disabled={disabled}
                 />
                 <ButtonGroup display='flex' justifyContent='flex-end' isDisabled={disabled}>
+                    <OwnerText owner={owner} />
                     {onDelete && (
                         <Button colorScheme='red' onClick={onDelete} aria-label='Delete ingredient'>
                             Delete
