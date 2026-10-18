@@ -133,36 +133,42 @@ interface IngredientSubsection {
     name?: string;
     ingredients: RecipeIngredientType[];
 }
-const ingredientSubsection: Schema<IngredientSubsection> = new Schema<IngredientSubsection>({
-    name: { type: String },
-    ingredients: {
-        type: [recipeIngredientSchema],
-        required: true,
-        validate: {
-            validator: function (ingredients: RecipeIngredientType[]) {
-                return ingredients.length > 0;
+const ingredientSubsection: Schema<IngredientSubsection> = new Schema<IngredientSubsection>(
+    {
+        name: { type: String },
+        ingredients: {
+            type: [recipeIngredientSchema],
+            required: true,
+            validate: {
+                validator: function (ingredients: RecipeIngredientType[]) {
+                    return ingredients.length > 0;
+                },
+                message: 'At least one ingredient is required.',
             },
-            message: 'At least one ingredient is required.',
         },
     },
-});
+    { _id: false }
+);
 interface InstructionSubsection {
     name?: string;
     instructions: string[];
 }
-const instructionSubsection = new Schema({
-    name: { type: String },
-    instructions: {
-        type: [String],
-        required: true,
-        validate: {
-            validator: function (instructions: string[]) {
-                return instructions.length > 0;
+const instructionSubsection = new Schema(
+    {
+        name: { type: String },
+        instructions: {
+            type: [String],
+            required: true,
+            validate: {
+                validator: function (instructions: string[]) {
+                    return instructions.length > 0;
+                },
+                message: 'At least one instruction is required.',
             },
-            message: 'At least one instruction is required.',
         },
     },
-});
+    { _id: false }
+);
 
 export interface Recipe extends Document {
     title: string;

@@ -16,12 +16,6 @@ export const filterIsOwnerOrAdmin =
         return next(rp);
     };
 
-/**
- * Limits a query to the documents the current user can edit, matching
- * isDocumentOwnerOrAdmin: an admin edits every document, and anyone else edits only
- * their own. The owner set here replaces any owner in the client filter, so a client
- * cannot widen the list.
- */
 export const filterIsEditable =
     (): ResolverNextRpCb<unknown, GraphQLContext> => (next) => async (rp) => {
         const user = rp.context.getUser();
@@ -35,6 +29,8 @@ export const filterIsEditable =
     };
 
 /**
+ * Filters unique items.
+ *
  * Hides throwaway units, sizes and prep methods (unique: false). The "use X as
  * unit/size/prep method" option creates these for a single recipe, so they are not shared
  * across recipes and are not listed or edited. To change one, the user deletes it and

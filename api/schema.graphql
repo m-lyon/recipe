@@ -367,7 +367,6 @@ input FilterCountRecipeIngredientSubsectionsIngredientsOperatorsInput {
 
 """"""
 input FilterCountRecipeIngredientSubsectionsInput {
-  _id: MongoID
   ingredients: [FilterCountRecipeIngredientInput]
   name: String
 }
@@ -406,7 +405,6 @@ input FilterCountRecipeInput {
 
 """"""
 input FilterCountRecipeInstructionSubsectionsInput {
-  _id: MongoID
   instructions: [String]
   name: String
 }
@@ -654,7 +652,6 @@ input FilterFindManyRecipeIngredientSubsectionsIngredientsOperatorsInput {
 
 """"""
 input FilterFindManyRecipeIngredientSubsectionsInput {
-  _id: MongoID
   ingredients: [FilterFindManyRecipeIngredientInput]
   name: String
 }
@@ -693,7 +690,6 @@ input FilterFindManyRecipeInput {
 
 """"""
 input FilterFindManyRecipeInstructionSubsectionsInput {
-  _id: MongoID
   instructions: [String]
   name: String
 }
@@ -1060,7 +1056,6 @@ input FilterFindOneRecipeIngredientSubsectionsIngredientsOperatorsInput {
 
 """"""
 input FilterFindOneRecipeIngredientSubsectionsInput {
-  _id: MongoID
   ingredients: [FilterFindOneRecipeIngredientInput]
   name: String
 }
@@ -1099,7 +1094,6 @@ input FilterFindOneRecipeInput {
 
 """"""
 input FilterFindOneRecipeInstructionSubsectionsInput {
-  _id: MongoID
   instructions: [String]
   name: String
 }
@@ -1850,13 +1844,11 @@ input RecipeIngredientInput {
 }
 
 input RecipeIngredientSubsectionsInput {
-  _id: MongoID
   ingredients: [RecipeIngredientInput]!
   name: String
 }
 
 input RecipeInstructionSubsectionsInput {
-  _id: MongoID
   instructions: [String]!
   name: String
 }
@@ -2341,14 +2333,12 @@ input UpdateByIdRecipeIngredientInput {
 
 """"""
 input UpdateByIdRecipeIngredientSubsectionsInput {
-  _id: MongoID
   ingredients: [UpdateByIdRecipeIngredientInput]
   name: String
 }
 
 """"""
 input UpdateByIdRecipeInstructionSubsectionsInput {
-  _id: MongoID
   instructions: [String]
   name: String
 }

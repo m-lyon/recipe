@@ -67,8 +67,7 @@ export const isDocumentOwnerOrAdmin =
 
 type DocumentWithIngredient = Document & { ingredient: Types.ObjectId };
 /**
- * NutritionalInfo and IngredientMeasure have no owner of their own; they are owned through
- * their ingredient. Checks the ingredient of the existing record (update/remove) and of the
+ * Checks the ingredient of the existing record (update/remove) and of the
  * incoming record (create/update), so an update cannot reassign a record to an ingredient
  * the user does not own.
  */
