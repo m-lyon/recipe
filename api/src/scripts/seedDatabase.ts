@@ -7,7 +7,6 @@ import { populateRatings, populateRecipes, populateTags } from '../utils/populat
 import { populateIngredientMeasures, populatePrepMethods } from '../utils/populate.js';
 import { populateDisplayLadders, populateImages, populateUsers } from '../utils/populate.js';
 
-/** Replaces the development database with the data in utils/seedData.ts. */
 async function populateData() {
     await mongoose.connection.asPromise();
     console.log(`Seeding ${mongoose.connection.name}`);

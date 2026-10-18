@@ -74,7 +74,8 @@ function itemInUseError(message: string, itemType: string, itemId: Types.ObjectI
     });
 }
 
-/** Blocks deleting a unit, size or prep method that an ingredient measure is keyed on. */
+/** Blocks deleting a unit, size or prep method that is used as an identifier for an
+ * ingredient measure */
 export async function validateItemNotInMeasure(
     itemId: Types.ObjectId,
     itemType: 'unit' | 'size' | 'prepMethod'
@@ -131,8 +132,8 @@ export function validateUnitCreate(record: UnitSizeFields, isAdmin: boolean) {
 /**
  * Blocks a change to the size of a standard unit, whose size is defined in code, stops
  * anyone hiding a unit that is not standard, and stops anyone but an admin turning a unit
- * into a mass or volume unit. A record that repeats the
- * stored values is allowed, so a form may send every field.
+ * into a mass or volume unit. A record that repeats the stored values is allowed, so
+ * a form may send every field.
  */
 export async function validateUnitUpdate(
     unitId: Types.ObjectId,

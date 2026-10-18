@@ -39,7 +39,6 @@ const corsOptions: CorsOptions = {
     credentials: true,
 };
 await apolloServer.start();
-// Code owns the size of standard units, so a change to the registry applies on deploy.
 try {
     await mongoose.connection.asPromise();
     const report = await syncStandardUnits(mongoose.connection.db);

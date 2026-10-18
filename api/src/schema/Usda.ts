@@ -377,8 +377,6 @@ async function usdaFetchJson(url: string): Promise<Record<string, unknown>> {
         }
         return (await res.json()) as Record<string, unknown>;
     } catch (err) {
-        // The timer is the only thing that aborts, and the abort's own message ("This
-        // operation was aborted") means nothing to the person searching.
         if (err instanceof Error && err.name === 'AbortError') {
             throw new GraphQLError('The USDA service took too long to respond. Try again.');
         }
