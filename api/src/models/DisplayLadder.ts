@@ -19,7 +19,7 @@ export interface DisplayLadderStep {
 /**
  * Display policy for one dimension within one system: which unit a quantity is shown in.
  * Steps are kept in descending order of `minCanonical`, and the first step whose threshold
- * is at or below the quantity wins.
+ * is at or below the quantity is selected.
  */
 export interface DisplayLadder extends Document {
     name: string;

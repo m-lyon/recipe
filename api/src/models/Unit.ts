@@ -9,10 +9,6 @@ export type UnitDimension = (typeof UnitDimensions)[number];
 export const UnitSystems = ['metric', 'us'] as const;
 export type UnitSystem = (typeof UnitSystems)[number];
 
-/**
- * The unit each dimension's `perCanonical` is measured in: gram, millilitre and each. A
- * count unit is never converted to another count unit, so its factor is always 1.
- */
 export interface Unit extends Document {
     shortSingular: string;
     shortPlural: string;

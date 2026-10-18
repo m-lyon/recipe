@@ -11,7 +11,6 @@ export interface MacroNutrients {
 export interface NutritionalInfo extends Document {
     ingredient: Types.ObjectId;
     usdaFdcId?: number;
-    // Every quantity is resolved to grams first, through IngredientMeasure where needed.
     perGram: MacroNutrients;
 }
 
@@ -30,7 +29,7 @@ const nutritionalInfoSchema = new Schema<NutritionalInfo>({
         type: Schema.Types.ObjectId,
         required: true,
         ref: 'Ingredient',
-        unique: true, // one document per ingredient
+        unique: true,
     },
     usdaFdcId: { type: Number },
     perGram: { type: macroNutrientsSchema, required: true },
