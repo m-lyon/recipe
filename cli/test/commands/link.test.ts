@@ -128,6 +128,61 @@ describe('nutrition link', () => {
         ]);
     });
 
+    it('stores --default-portion as a measure with no size, beside the sized one', async () => {
+        api = baseApi(EGG);
+        api.install();
+        await runCommand(
+            [
+                'nutrition',
+                'link',
+                'egg',
+                '--fdc-id',
+                '171287',
+                '--portion',
+                '"1 large"',
+                '--default-portion',
+                '"1 large"',
+            ],
+            ROOT
+        );
+        expect(measureRecords()).to.deep.equal([
+            { ingredient: 'ing-egg', unit: EACH._id, size: LARGE._id, prepMethod: null, grams: 50 },
+            { ingredient: 'ing-egg', unit: EACH._id, size: null, prepMethod: null, grams: 50 },
+        ]);
+    });
+
+    it('refuses --default-portion for a portion with no size, and exits 6', async () => {
+        api = baseApi(OLIVE_OIL);
+        api.install();
+        const { error } = await runCommand(
+            ['nutrition', 'link', '"olive oil"', '--fdc-id', '171413', '--default-portion', '1'],
+            ROOT
+        );
+        expect(error?.oclif?.exit).to.equal(ExitCode.REJECTED);
+        expect(error?.message).to.contain('has no size');
+        expect(api.operations.filter((name) => MUTATIONS.includes(name))).to.deep.equal([]);
+    });
+
+    it('exits 5 when a measure with no size already exists for --default-portion', async () => {
+        const existingMeasure = {
+            __typename: 'IngredientMeasure',
+            _id: 'meas-old',
+            ingredient: 'ing-egg',
+            grams: 48,
+            unit: EACH,
+            size: null,
+            prepMethod: null,
+        };
+        api = baseApi(EGG, null, [existingMeasure]);
+        api.install();
+        const { error } = await runCommand(
+            ['nutrition', 'link', 'egg', '--fdc-id', '171287', '--default-portion', '"1 large"'],
+            ROOT
+        );
+        expect(error?.oclif?.exit).to.equal(ExitCode.WOULD_OVERWRITE);
+        expect(api.operations.filter((name) => MUTATIONS.includes(name))).to.deep.equal([]);
+    });
+
     it('stores several portions named by index', async () => {
         api = baseApi(OLIVE_OIL);
         api.install();

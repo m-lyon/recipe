@@ -69,6 +69,9 @@ A linked ingredient has `perGram` macros. A recipe line reaches grams by its uni
 - When several sizes exist — egg spans 38 g to 63 g, onion 70 g to 150 g — store the sizes the
   recipes use, or the one a recipe writer would mean, usually medium or large. **State which
   you picked.**
+- A sized measure (`each · medium`) never prices a line with no size (`1 banana`). For a
+  counted ingredient, also pass `--default-portion` with the medium portion, or the size a
+  recipe writer would mean. It stores that weight as `each` with no size.
 - A measure with the same unit, size and prep method as an existing one exits 5. Report it.
 
 ## The USDA cache
