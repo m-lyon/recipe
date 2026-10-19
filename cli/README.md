@@ -69,6 +69,7 @@ The cookie cache lives at `~/.cache/recipe-cli/session-<hash of RECIPE_API_URL>`
 | `recipe usda search <query>` | USDA search; values are per 100 g, portions are empty |
 | `recipe usda show <fdcId>` | macros and the **portion table**; judge a candidate here |
 | `recipe nutrition link <ingredient> --fdc-id <n>` | the core command: `perGram`, plus measures from `--portion` and `--default-portion` |
+| `recipe nutrition measure <ingredient> --unit <u> --grams <n>` | stores a weight you supply, for a unit no USDA portion carries (a scoop) |
 | `recipe nutrition unlink <ingredient>` | removes the `NutritionalInfo`; measures stay |
 | `recipe nutrition status` | calculable recipe rows, and the missing weights |
 

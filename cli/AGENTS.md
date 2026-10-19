@@ -72,6 +72,8 @@ A linked ingredient has `perGram` macros. A recipe line reaches grams by its uni
 - A sized measure (`each · medium`) never prices a line with no size (`1 banana`). For a
   counted ingredient, also pass `--default-portion` with the medium portion, or the size a
   recipe writer would mean. It stores that weight as `each` with no size.
+- `nutrition measure` stores a weight that the **operator** supplies, from a label or a scale,
+  such as `--unit scoop --grams 30`. Use it only with a weight the operator gave you.
 - A measure with the same unit, size and prep method as an existing one exits 5. Report it.
 
 ## The USDA cache
