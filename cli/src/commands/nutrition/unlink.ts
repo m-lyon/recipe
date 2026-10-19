@@ -9,8 +9,7 @@ import type { NutritionalInfoSummary } from '../../lib/types.js';
 import { DELETE_NUTRITIONAL_INFO, GET_NUTRITIONAL_INFO } from '../../graphql/operations.js';
 
 export default class NutritionUnlink extends BaseCommand {
-    static description =
-        "Remove an ingredient's NutritionalInfo. Ingredient.density is left alone.";
+    static description = "Remove an ingredient's NutritionalInfo. Its measures are left alone.";
 
     static examples = [
         '<%= config.bin %> <%= command.id %> "olive oil" --dry-run',
@@ -40,7 +39,6 @@ export default class NutritionUnlink extends BaseCommand {
         const removed = [
             `usdaFdcId   ${existing.usdaFdcId ?? EMPTY}`,
             `perGram     ${formatMacros(existing.perGram)}`,
-            `perUnit     ${formatMacros(existing.perUnit)}`,
         ].join('\n');
 
         if (flags['dry-run']) {

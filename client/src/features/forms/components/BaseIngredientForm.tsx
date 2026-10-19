@@ -1,16 +1,21 @@
 import { ApolloError } from '@apollo/client';
-import { array, boolean, mixed, number, object, string } from 'yup';
+import { array, boolean, mixed, object, string } from 'yup';
+import { useImperativeHandle, useRef, useState } from 'react';
+import { Stack, StackProps, Tooltip } from '@chakra-ui/react';
 import { MutableRefObject, forwardRef, useCallback, useEffect } from 'react';
-import { Button, ButtonGroup, Checkbox, HStack, Stack, StackProps } from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Checkbox, HStack } from '@chakra-ui/react';
 
 import { IngredientTags } from '@recipe/graphql/enums';
-import { FloatingLabelInput } from '@recipe/common/components';
+import type { Owner } from '@recipe/common/components';
+import { MacroNutrients } from '@recipe/utils/nutrition';
+import { FloatingLabelInput, OwnerText } from '@recipe/common/components';
 
-import { UsdaLinkSection } from './UsdaLinkSection';
 import { useFormLogic } from '../hooks/useFormLogic';
 import { UsdaLinkSectionHandle } from './UsdaLinkSection';
 import { ExistingNutritionalInfo } from './UsdaLinkSection';
 import { useKeyboardSubmit } from '../hooks/useKeyboardSubmit';
+import { UsdaLinkSection, UsdaPortion } from './UsdaLinkSection';
+import { MeasuresSection, MeasuresSectionHandle } from './MeasuresSection';
 
 export function formatIngredientError(error: ApolloError) {
     if (error.message.startsWith('E11000')) {
@@ -23,7 +28,6 @@ const formSchema = object({
     name: string().required('Name is required'),
     pluralName: string().required(),
     isCountable: boolean().required(),
-    density: number(),
     tags: array()
         .required()
         .of(mixed<IngredientTags>().required().oneOf(Object.values(IngredientTags), 'Invalid tag')),
@@ -36,13 +40,15 @@ export interface BaseIngredientFormProps extends StackProps {
     disabled?: boolean;
     submitForm: (data: ModifyableIngredient) => void;
     onDelete?: () => void;
+    /** The owner, shown beside the buttons. */
+    owner?: Owner | null;
     /** Nutritional info for this ingredient, prefetched by the page alongside the ingredient list. */
     existingNutritionalInfo?: ExistingNutritionalInfo | null;
     /** Called after a link is created or cleared, so the prefetched list can be refreshed. */
     onNutritionalInfoChange?: () => void;
 }
 export const BaseIngredientForm = forwardRef<UsdaLinkSectionHandle, BaseIngredientFormProps>(
-    function BaseIngredientForm(props, usdaLinkRef) {
+    function BaseIngredientForm(props, ref) {
         const {
             fieldRef,
             initData,
@@ -50,6 +56,7 @@ export const BaseIngredientForm = forwardRef<UsdaLinkSectionHandle, BaseIngredie
             disabled,
             submitForm,
             onDelete,
+            owner,
             existingNutritionalInfo,
             onNutritionalInfoChange,
             ...rest
@@ -59,7 +66,6 @@ export const BaseIngredientForm = forwardRef<UsdaLinkSectionHandle, BaseIngredie
                 name: data.name,
                 pluralName: data.pluralName || data.name,
                 tags: data.tags || [],
-                density: data.density || undefined,
                 isCountable: data.isCountable || false,
             }),
             []
@@ -73,6 +79,20 @@ export const BaseIngredientForm = forwardRef<UsdaLinkSectionHandle, BaseIngredie
                 'ingredient'
             );
         const { setIsFocused } = useKeyboardSubmit(handleSubmit);
+        const usdaLinkRef = useRef<UsdaLinkSectionHandle>(null);
+        const measuresRef = useRef<MeasuresSectionHandle>(null);
+        const [portions, setPortions] = useState<UsdaPortion[]>([]);
+        const [perGram, setPerGram] = useState<MacroNutrients | null>(null);
+        // The nutrition link and measures are staged, and saved once the ingredient is.
+        useImperativeHandle(ref, () => ({
+            commitChanges: async (savedIngredientId: string) => {
+                // Read both handles first: the form may unmount while the link is saved.
+                const usdaLink = usdaLinkRef.current;
+                const measures = measuresRef.current;
+                await usdaLink?.commitChanges(savedIngredientId);
+                await measures?.commitChanges(savedIngredientId);
+            },
+        }));
         useEffect(() => {
             if (disabled) {
                 setData({ name: '', pluralName: '', isCountable: false, tags: [] });
@@ -106,23 +126,21 @@ export const BaseIngredientForm = forwardRef<UsdaLinkSectionHandle, BaseIngredie
                     isDisabled={disabled}
                     onChange={(e) => handleChange('pluralName', e.target.value.toLowerCase())}
                 />
-                <FloatingLabelInput
-                    label='Density (g/ml)'
-                    id='density'
-                    value={formData.density?.toString() || ''}
-                    isInvalid={hasError}
-                    isDisabled={disabled}
-                    onChange={(e) =>
-                        handleChange('density', parseFloat(e.target.value) || undefined)
-                    }
-                />
-                <Checkbox
-                    isChecked={formData.isCountable}
-                    onChange={(e) => handleChange('isCountable', e.target.checked)}
-                    isDisabled={disabled}
+                <Tooltip
+                    label='For example, checked: "200 g mushroom", unchecked: "200 g mushrooms".'
+                    hasArrow
+                    openDelay={300}
                 >
-                    Countable
-                </Checkbox>
+                    <Box alignSelf='flex-start'>
+                        <Checkbox
+                            isChecked={!formData.isCountable}
+                            onChange={(e) => handleChange('isCountable', !e.target.checked)}
+                            isDisabled={disabled}
+                        >
+                            Use singular form with units
+                        </Checkbox>
+                    </Box>
+                </Tooltip>
                 <HStack mb={2}>
                     <Checkbox
                         isDisabled={disabled}
@@ -155,14 +173,21 @@ export const BaseIngredientForm = forwardRef<UsdaLinkSectionHandle, BaseIngredie
                     ref={usdaLinkRef}
                     ingredientId={ingredientId}
                     ingredientName={initData?.name}
-                    isCountable={formData.isCountable}
-                    currentDensity={formData.density ?? undefined}
-                    onDensitySuggested={({ density }) => handleChange('density', density)}
                     disabled={disabled}
                     existingNutritionalInfo={existingNutritionalInfo}
                     onNutritionalInfoChange={onNutritionalInfoChange}
+                    onPortionsChange={setPortions}
+                    onPerGramChange={setPerGram}
+                />
+                <MeasuresSection
+                    ref={measuresRef}
+                    ingredientId={ingredientId}
+                    portions={portions}
+                    perGram={perGram}
+                    disabled={disabled}
                 />
                 <ButtonGroup display='flex' justifyContent='flex-end' isDisabled={disabled}>
+                    <OwnerText owner={owner} />
                     {onDelete && (
                         <Button colorScheme='red' onClick={onDelete} aria-label='Delete ingredient'>
                             Delete

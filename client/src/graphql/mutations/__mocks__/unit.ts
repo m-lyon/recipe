@@ -1,11 +1,12 @@
 import { Unit } from '@recipe/graphql/schema';
 import { ModifyUnitMutation } from '@recipe/graphql/generated';
-import { mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
+import { mockUnits } from '@recipe/graphql/queries/__mocks__/unit';
 import { ModifyUnitMutationVariables } from '@recipe/graphql/generated';
 import { mockAdminId, mockBumpId, mockCuttingId } from '@recipe/graphql/__mocks__/ids';
 import { CREATE_UNIT, DELETE_UNIT, MODIFY_UNIT } from '@recipe/graphql/mutations/unit';
 import { CreateUnitMutation, CreateUnitMutationVariables } from '@recipe/graphql/generated';
 import { DeleteUnitMutation, DeleteUnitMutationVariables } from '@recipe/graphql/generated';
+import { mockGetEditableUnits, mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
 
 export const mockUnit: Unit = {
     __typename: 'Unit',
@@ -17,8 +18,19 @@ export const mockUnit: Unit = {
     preferredNumberFormat: 'decimal',
     hasSpace: true,
     unique: true,
-    owner: mockAdminId,
-    measureType: null,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
+    dimension: 'count',
+    perCanonical: 1,
+    system: null,
+    hidden: false,
+    standard: null,
+};
+/** The units list with one unit that is not standard, so it can be edited and deleted. */
+export const mockGetEditableUnitsWithCutting = {
+    ...mockGetEditableUnits,
+    result: {
+        data: { __typename: 'Query' as const, unitManyEditable: [...mockUnits, mockUnit] },
+    },
 };
 
 export const mockCreateUnit = {
@@ -33,7 +45,9 @@ export const mockCreateUnit = {
                 preferredNumberFormat: 'decimal',
                 unique: mockTeaspoon.unique,
                 hasSpace: true,
-                measureType: null,
+                dimension: 'count',
+                perCanonical: 1,
+                system: null,
             },
         } satisfies CreateUnitMutationVariables,
     },
@@ -59,7 +73,9 @@ export const mockCreateBespokeUnit = {
                 preferredNumberFormat: 'decimal',
                 unique: false,
                 hasSpace: true,
-                measureType: null,
+                dimension: 'count',
+                perCanonical: 1,
+                system: null,
             },
         } satisfies CreateUnitMutationVariables,
     },
@@ -78,7 +94,11 @@ export const mockCreateBespokeUnit = {
                     preferredNumberFormat: 'decimal',
                     hasSpace: true,
                     unique: false,
-                    measureType: null,
+                    dimension: 'count',
+                    perCanonical: 1,
+                    system: null,
+                    hidden: false,
+                    standard: null,
                 },
             },
         } satisfies CreateUnitMutation,
@@ -97,7 +117,9 @@ export const mockUpdateUnit = {
                 preferredNumberFormat: mockTeaspoon.preferredNumberFormat,
                 unique: mockTeaspoon.unique,
                 hasSpace: mockTeaspoon.hasSpace,
-                measureType: mockTeaspoon.measureType,
+                dimension: mockTeaspoon.dimension,
+                perCanonical: mockTeaspoon.perCanonical,
+                system: mockTeaspoon.system,
             },
         } satisfies ModifyUnitMutationVariables,
     },
@@ -118,7 +140,7 @@ export const mockDeleteUnit = {
     request: {
         query: DELETE_UNIT,
         variables: {
-            id: mockTeaspoon._id,
+            id: mockUnit._id,
         } satisfies DeleteUnitMutationVariables,
     },
     result: {
@@ -126,7 +148,7 @@ export const mockDeleteUnit = {
             __typename: 'Mutation',
             unitRemoveById: {
                 __typename: 'RemoveByIdUnitPayload',
-                recordId: mockTeaspoon._id,
+                recordId: mockUnit._id,
             },
         } satisfies DeleteUnitMutation,
     },

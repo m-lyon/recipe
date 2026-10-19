@@ -1,8 +1,17 @@
+import { OwnerTC } from '../models/User.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { Unit, UnitCreateTC, UnitTC } from '../models/Unit.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
-import { filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
-import { validateItemNotInRecipe, validateUnitNotInConversion } from './validation.js';
+import { validateUnitCreate, validateUnitUpdate } from './validation.js';
+import { validateUnitNotInLadder, validateUnitNotStandard } from './validation.js';
+import { validateItemNotInMeasure, validateItemNotInRecipe } from './validation.js';
+import { filterIsEditable, filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
+
+UnitTC.addRelation('owner', {
+    resolver: () => OwnerTC.getResolver('findById'),
+    prepareArgs: { _id: (source) => source.owner },
+    projection: { owner: true },
+});
 
 UnitTC.addResolver({
     name: 'updateById',
@@ -20,6 +29,9 @@ UnitCreateTC.addResolver({
     resolve: createOneResolver(Unit, UnitCreateTC),
 });
 
+// Mongoose fills in the default, so a stored unit always has a value.
+UnitTC.extendField('hidden', { type: 'Boolean!' });
+
 export const UnitQuery = {
     unitById: UnitTC.mongooseResolvers.findById().setDescription('Retrieve a unit by its ID'),
     unitByIds: UnitTC.mongooseResolvers
@@ -31,6 +43,11 @@ export const UnitQuery = {
         .wrapResolve(filterIsOwnerOrAdmin())
         .wrapResolve(filterIsUnique())
         .setDescription('Retrieve multiple units'),
+    unitManyEditable: UnitTC.mongooseResolvers
+        .findMany()
+        .wrapResolve(filterIsEditable())
+        .wrapResolve(filterIsUnique())
+        .setDescription('Retrieve the units the current user can edit'),
 };
 
 export const UnitQueryAdmin = {
@@ -38,14 +55,28 @@ export const UnitQueryAdmin = {
 };
 
 export const UnitMutation = {
-    unitCreateOne: UnitCreateTC.getResolver('createOne').wrapResolve(setRecordOwnerAsUser()),
-    unitUpdateById: UnitTC.getResolver('updateById'),
+    unitCreateOne: UnitCreateTC.getResolver('createOne')
+        .wrapResolve(setRecordOwnerAsUser())
+        .wrapResolve((next) => (rp) => {
+            validateUnitCreate(rp.args.record, rp.context.getUser()?.role === 'admin');
+            return next(rp);
+        }),
+    unitUpdateById: UnitTC.getResolver('updateById').wrapResolve((next) => async (rp) => {
+        await validateUnitUpdate(
+            rp.args._id,
+            rp.args.record,
+            rp.context.getUser()?.role === 'admin'
+        );
+        return next(rp);
+    }),
     unitRemoveById: UnitTC.mongooseResolvers
         .removeById()
         .setDescription('Remove a unit by its ID')
         .wrapResolve((next) => async (rp) => {
+            await validateUnitNotStandard(rp.args._id);
             await validateItemNotInRecipe(rp.args._id, 'unit');
-            await validateUnitNotInConversion(rp.args._id);
+            await validateItemNotInMeasure(rp.args._id, 'unit');
+            await validateUnitNotInLadder(rp.args._id);
             return next(rp);
         }),
 };

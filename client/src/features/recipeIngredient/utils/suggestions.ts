@@ -48,7 +48,11 @@ const sortPrepMethods = (
     }).map((item) => ({ value: item }));
 };
 const unitSuggestions = (data: IngredientComponentQuery, value: string): UnitSuggestion[] => {
-    const items = sortUnits(data?.units ?? [], value);
+    // A hidden unit (each) is chosen by "skip unit", so it is not offered by name.
+    const items = sortUnits(
+        (data?.units ?? []).filter((unit) => !unit.hidden),
+        value
+    );
     const sizes = sortSizes(data?.sizes ?? [], value);
     const ingredients = sortIngredients(data?.ingredients ?? [], data?.recipes ?? [], value);
     items.push(...[...sizes, ...ingredients]);

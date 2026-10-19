@@ -1,5 +1,7 @@
 import { Fraction, fraction } from 'mathjs';
 
+import { IngredientMeasureFieldsFragment } from '@recipe/graphql/generated';
+
 import { isFraction, isRange } from './number';
 
 export interface MacroNutrients {
@@ -10,8 +12,7 @@ export interface MacroNutrients {
 }
 
 export interface NutritionalInfoData {
-    perGram?: MacroNutrients | null;
-    perUnit?: MacroNutrients | null;
+    perGram: MacroNutrients;
 }
 
 export interface CalculatedIngredientNutrition {
@@ -19,6 +20,8 @@ export interface CalculatedIngredientNutrition {
     macros: MacroNutrients;
     /** Human-readable explanation when not calculable */
     reason?: string;
+    /** True when the line failed only because no measure matched it. */
+    missingMeasure?: boolean;
 }
 
 const ZERO_MACROS: MacroNutrients = { calories: 0, protein: 0, carbs: 0, fat: 0 };
@@ -60,84 +63,108 @@ export function quantityToFloat(quantity: string): number {
     return parseFloat(quantity);
 }
 
-/**
- * The accepted `longSingular` spellings of the base unit each mass conversion group must
- * be anchored to. Unit names are user-entered free text, and the seeded data uses British
- * spellings (`api/src/utils/populate.ts`), so both spellings are matched case-insensitively.
- */
-const MASS_BASE_UNIT_NAMES = ['gram', 'gramme'];
-/** The accepted `longSingular` spellings of the volume conversion group's base unit. */
-const VOLUME_BASE_UNIT_NAMES = ['millilitre', 'milliliter'];
+export type IngredientMeasureData = IngredientMeasureFieldsFragment;
 
-/**
- * Convert a quantity in a given unit to the given base unit using the UnitConversion data.
- *
- * The unit may be the group's base unit itself -- a ConversionRule cannot convert a unit
- * to itself (see `api/src/models/UnitConversion.ts`), so the base unit never appears in
- * `rules` and its conversion factor is 1. This mirrors `useUnitConversion.apply`.
- *
- * The group is matched on the identity of its base unit, not just its measureType: a mass
- * group based on ounces, or a volume group based on teaspoons, would otherwise yield
- * ounces/teaspoons fed straight into per-gram macros.
- *
- * Returns null when the unit is not part of a conversion group with that base unit.
- */
-function convertToBaseUnit(
-    quantity: number,
-    unit: NonNullable<UnitView>,
-    unitConversions: UnitConversion[],
-    baseUnitNames: string[]
-): number | null {
-    const uc = unitConversions.find(
-        (conv) =>
-            baseUnitNames.includes(conv.baseUnit.longSingular.toLowerCase()) &&
-            (conv.baseUnit._id === unit._id ||
-                conv.rules.some((rule) => rule.unit._id === unit._id))
-    );
-    if (!uc) return null;
-    const rule = uc.rules.find((r) => r.unit._id === unit._id);
-    return quantity * (rule ? rule.baseToUnitConversion : 1);
+/** The key of a measure lookup: the recipe line's unit, size and prep method. */
+export interface MeasureKey {
+    unit: IngredientMeasureData['unit'];
+    sizeId: string | null;
+    prepMethodId: string | null;
+}
+
+/** Grams in one of the key's unit, and the measure row that supplied it. */
+export interface FoundMeasure {
+    gramsPerUnit: number;
+    measure: IngredientMeasureData;
+}
+
+function specificity(measure: IngredientMeasureData): number {
+    return (measure.size ? 1 : 0) + (measure.prepMethod ? 1 : 0);
 }
 
 /**
- * Convert a quantity in a given unit to grams using the UnitConversion data.
- * Returns null if the unit is not part of a gram-based UnitConversion group.
+ * The most specific measure that matches a recipe line:
+ *  1. exact (unit, size, prep)
+ *  2. drop prep (unit, size)
+ *  3. drop size (unit)
+ *  4. volume only: the least specific volume row, rescaled by perCanonical
+ * An exact unit match beats rescaling, so an ingredient may carry several volume rows.
  */
-function convertToGrams(
-    quantity: number,
-    unit: NonNullable<UnitView>,
-    unitConversions: UnitConversion[]
-): number | null {
-    return convertToBaseUnit(quantity, unit, unitConversions, MASS_BASE_UNIT_NAMES);
+export function findMeasure(
+    measures: IngredientMeasureData[],
+    key: MeasureKey
+): FoundMeasure | null {
+    const forUnit = measures.filter((m) => m.unit._id === key.unit._id);
+    const sizeId = (m: IngredientMeasureData) => m.size?._id ?? null;
+    const prepId = (m: IngredientMeasureData) => m.prepMethod?._id ?? null;
+    const match =
+        forUnit.find((m) => sizeId(m) === key.sizeId && prepId(m) === key.prepMethodId) ??
+        forUnit.find((m) => sizeId(m) === key.sizeId && prepId(m) === null) ??
+        forUnit.find((m) => sizeId(m) === null && prepId(m) === null);
+    if (match) {
+        return { gramsPerUnit: match.grams, measure: match };
+    }
+    if (key.unit.dimension !== 'volume') {
+        return null;
+    }
+    const volume = measures
+        .filter((m) => m.unit.dimension === 'volume')
+        .sort((a, b) => specificity(a) - specificity(b))[0];
+    if (!volume) {
+        return null;
+    }
+    const gramsPerMl = volume.grams / volume.unit.perCanonical;
+    return { gramsPerUnit: gramsPerMl * key.unit.perCanonical, measure: volume };
 }
 
+/** "1 cup of honey", "1 large onion": the thing whose weight is missing. */
+export function describeOneUnit(
+    unit: Pick<IngredientMeasureData['unit'], 'longSingular' | 'hidden'>,
+    ingredientName: string,
+    sizeName?: string | null,
+    prepMethodName?: string | null
+): string {
+    const unitStr = unit.hidden ? '' : `${unit.longSingular} of `;
+    const sizeStr = sizeName ? `${sizeName} ` : '';
+    const prepStr = prepMethodName ? `${prepMethodName} ` : '';
+    return `1 ${unitStr}${sizeStr}${prepStr}${ingredientName}`;
+}
+
+export type GramsResult = { grams: number } | { grams: null; reason: string };
+
 /**
- * Convert a quantity in a given unit to millilitres using the UnitConversion data.
- * Returns null if the unit is not part of a millilitre-based UnitConversion group.
+ * Resolves a quantity to grams. Mass converts directly; volume and count go through the
+ * ingredient's measures. A missing measure is the only reason a quantity fails.
  */
-function convertToMl(
-    quantity: number,
-    unit: NonNullable<UnitView>,
-    unitConversions: UnitConversion[]
-): number | null {
-    return convertToBaseUnit(quantity, unit, unitConversions, VOLUME_BASE_UNIT_NAMES);
+export function grams(
+    qty: number,
+    key: MeasureKey,
+    measures: IngredientMeasureData[],
+    labels: { ingredientName: string; sizeName?: string | null }
+): GramsResult {
+    if (key.unit.dimension === 'mass') {
+        return { grams: qty * key.unit.perCanonical };
+    }
+    const found = findMeasure(measures, key);
+    if (!found) {
+        const one = describeOneUnit(key.unit, labels.ingredientName, labels.sizeName);
+        return { grams: null, reason: `No weight recorded for ${one}` };
+    }
+    return { grams: qty * found.gramsPerUnit };
 }
 
 /**
  * Calculate the nutritional contribution of a single recipe ingredient.
  *
- * Pipeline selection (matches the backend notification logic):
- *  - no quantity           → not calculable
- *  - no nutritional data   → not calculable
- *  - no unit + perUnit     → quantity × perUnit
- *  - mass unit + perGram   → convertToGrams(quantity, unit) × perGram
- *  - volume unit + density + perGram → convertToMl → × density → × perGram
- *  - anything else         → not calculable
+ * Every quantity reaches grams before it meets a macro:
+ *  - no quantity          → not calculable
+ *  - no nutritional data  → not calculable
+ *  - grams(quantity, unit, measures) × perGram, or not calculable when no measure matches
  */
 export function calculateIngredientNutrition(
     recipeIngredient: RecipeIngredientView,
     nutritionalInfo: NutritionalInfoData | null | undefined,
-    unitConversions: UnitConversion[]
+    measures: IngredientMeasureData[]
 ): CalculatedIngredientNutrition {
     if (!recipeIngredient.quantity) {
         return { calculable: false, macros: { ...ZERO_MACROS }, reason: 'No quantity' };
@@ -145,7 +172,6 @@ export function calculateIngredientNutrition(
     if (!nutritionalInfo) {
         return { calculable: false, macros: { ...ZERO_MACROS }, reason: 'No nutritional data' };
     }
-
     const qty = quantityToFloat(recipeIngredient.quantity);
     if (isNaN(qty)) {
         return {
@@ -155,67 +181,36 @@ export function calculateIngredientNutrition(
         };
     }
     const unit = recipeIngredient.unit;
-
-    // Case 1: No unit → countable ingredient
     if (!unit) {
-        if (!nutritionalInfo.perUnit) {
-            return {
-                calculable: false,
-                macros: { ...ZERO_MACROS },
-                reason: 'No per-unit nutritional data',
-            };
-        }
-        return { calculable: true, macros: scaleMacros(nutritionalInfo.perUnit, qty) };
+        return { calculable: false, macros: { ...ZERO_MACROS }, reason: 'No unit' };
     }
-
-    if (!nutritionalInfo.perGram) {
+    const ingredient = recipeIngredient.ingredient;
+    const ingredientName = ingredient.__typename === 'Ingredient' ? ingredient.name : '';
+    const key: MeasureKey = {
+        unit,
+        sizeId: recipeIngredient.size?._id ?? null,
+        prepMethodId: recipeIngredient.prepMethod?._id ?? null,
+    };
+    const result = grams(qty, key, measures, {
+        ingredientName,
+        sizeName: recipeIngredient.size?.value,
+    });
+    if (result.grams === null) {
         return {
             calculable: false,
             macros: { ...ZERO_MACROS },
-            reason: 'No per-gram nutritional data',
+            reason: result.reason,
+            missingMeasure: true,
         };
     }
+    return { calculable: true, macros: scaleMacros(nutritionalInfo.perGram, result.grams) };
+}
 
-    // Case 2: Mass unit
-    if (unit.measureType === 'mass') {
-        const grams = convertToGrams(qty, unit, unitConversions);
-        if (grams === null) {
-            return {
-                calculable: false,
-                macros: { ...ZERO_MACROS },
-                reason: 'Cannot convert unit to grams',
-            };
-        }
-        return { calculable: true, macros: scaleMacros(nutritionalInfo.perGram, grams) };
-    }
-
-    // Case 3: Volume unit
-    if (unit.measureType === 'volume') {
-        const ml = convertToMl(qty, unit, unitConversions);
-        if (ml === null) {
-            return {
-                calculable: false,
-                macros: { ...ZERO_MACROS },
-                reason: 'Cannot convert unit to ml',
-            };
-        }
-        const ingredient = recipeIngredient.ingredient;
-        if (ingredient.__typename !== 'Ingredient' || !ingredient.density) {
-            return {
-                calculable: false,
-                macros: { ...ZERO_MACROS },
-                reason: 'No density set for volume-measured ingredient',
-            };
-        }
-        const grams = ml * ingredient.density;
-        return { calculable: true, macros: scaleMacros(nutritionalInfo.perGram, grams) };
-    }
-
-    return {
-        calculable: false,
-        macros: { ...ZERO_MACROS },
-        reason: `Unit "${unit.shortSingular}" has no measure type set`,
-    };
+export interface UncountedIngredient {
+    item: RecipeIngredientView;
+    reason: string;
+    /** True when recording a measure would let the line be counted. */
+    missingMeasure: boolean;
 }
 
 /**
@@ -223,19 +218,24 @@ export function calculateIngredientNutrition(
  *
  * @param subsections - The ingredient subsections from the recipe.
  * @param nutritionalInfoMap - Map from ingredient _id to its NutritionalInfoData (or null if absent).
- * @param unitConversions - The raw unit conversion data from the API.
+ * @param measuresMap - Map from ingredient _id to its measures.
  * @param numServings - The current number of servings (used to compute per-serving values).
- * @returns total macros for the whole recipe, per-serving macros, and a set of recipe ingredient
- *          _ids that could not be included in the calculation.
+ * @returns total macros for the whole recipe, per-serving macros, and the recipe ingredients
+ *          that could not be included in the calculation.
  */
 export function sumRecipeNutrition(
     subsections: IngredientSubsectionView[],
     nutritionalInfoMap: Map<string, NutritionalInfoData | null>,
-    unitConversions: UnitConversion[],
+    measuresMap: Map<string, IngredientMeasureData[]>,
     numServings: number
-): { total: MacroNutrients; perServing: MacroNutrients; uncountedIds: Set<string> } {
+): {
+    total: MacroNutrients;
+    perServing: MacroNutrients;
+    uncountedIds: Set<string>;
+    uncounted: UncountedIngredient[];
+} {
     let total: MacroNutrients = { ...ZERO_MACROS };
-    const uncountedIds = new Set<string>();
+    const uncounted: UncountedIngredient[] = [];
 
     for (const subsection of subsections) {
         for (const item of subsection.ingredients) {
@@ -244,11 +244,16 @@ export function sumRecipeNutrition(
                 continue;
             }
             const info = nutritionalInfoMap.get(item.ingredient._id) ?? null;
-            const result = calculateIngredientNutrition(item, info, unitConversions);
+            const measures = measuresMap.get(item.ingredient._id) ?? [];
+            const result = calculateIngredientNutrition(item, info, measures);
             if (result.calculable) {
                 total = addMacros(total, result.macros);
             } else {
-                uncountedIds.add(item._id);
+                uncounted.push({
+                    item,
+                    reason: result.reason ?? 'Not calculable',
+                    missingMeasure: Boolean(result.missingMeasure),
+                });
             }
         }
     }
@@ -261,5 +266,10 @@ export function sumRecipeNutrition(
         fat: total.fat / divisor,
     };
 
-    return { total, perServing, uncountedIds };
+    return {
+        total,
+        perServing,
+        uncountedIds: new Set(uncounted.map((u) => u.item._id)),
+        uncounted,
+    };
 }

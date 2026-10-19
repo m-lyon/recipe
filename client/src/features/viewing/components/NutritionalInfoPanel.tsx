@@ -2,14 +2,22 @@ import { useState } from 'react';
 import { TbAlertTriangle, TbChevronDown, TbChevronUp } from 'react-icons/tb';
 import { Box, Collapse, Group, SimpleGrid, Skeleton, Text, UnstyledButton } from '@mantine/core';
 
-import { MacroNutrients } from '@recipe/utils/nutrition';
+import { DisplayedIngredient } from '@recipe/features/servings';
+import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
+import { MacroNutrients, UncountedIngredient } from '@recipe/utils/nutrition';
+
+import { UncountedIngredientPrompt } from './UncountedIngredientPrompt';
 
 interface NutritionalInfoPanelProps {
     perServing: MacroNutrients;
     uncountedIds: Set<string>;
+    uncounted?: UncountedIngredient[];
+    canEditIngredient?: (ingredientId: string) => boolean;
+    displayLine?: (item: RecipeIngredientView) => DisplayedIngredient;
     /** True when no ingredient contributed to the totals (none countable, or none present). */
     nothingCounted: boolean;
     loading: boolean;
+    error?: boolean;
 }
 
 function round1(n: number): string {
@@ -17,7 +25,9 @@ function round1(n: number): string {
 }
 
 export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
-    const { perServing, uncountedIds, nothingCounted, loading } = props;
+    const { perServing, uncountedIds, uncounted = [], nothingCounted, loading, error } = props;
+    const { canEditIngredient = () => false } = props;
+    const { displayLine = (item) => ({ ...item, authored: null }) } = props;
     const [open, setOpen] = useState(true);
 
     return (
@@ -41,6 +51,10 @@ export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
                         <Skeleton height={10} />
                         <Skeleton height={10} width='70%' />
                     </SimpleGrid>
+                ) : error ? (
+                    <Text c='dimmed' mt='xs'>
+                        Nutritional info could not be loaded.
+                    </Text>
                 ) : nothingCounted ? (
                     <Text c='dimmed' mt='xs'>
                         Nutritional info not available for this recipe yet.
@@ -52,7 +66,7 @@ export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
                                 <Text size='xs' c='dimmed'>
                                     Calories
                                 </Text>
-                                <Text fw={500}>{Math.round(perServing.calories)} kcal</Text>
+                                <Text fw={500}>{Math.round(perServing.calories)}</Text>
                             </Box>
                             <Box>
                                 <Text size='xs' c='dimmed'>
@@ -78,10 +92,29 @@ export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
                                 <TbAlertTriangle color='orange' />
                                 <Text size='sm' c='dimmed'>
                                     Not counted: {uncountedIds.size} ingredient
-                                    {uncountedIds.size !== 1 ? 's' : ''} could not be included
+                                    {uncountedIds.size !== 1 ? 's' : ''}
                                 </Text>
                             </Group>
                         )}
+                        {uncounted.map((line) => {
+                            const shown = displayLine(line.item);
+                            return (
+                                <Box key={line.item._id} mt='xs' ml='lg'>
+                                    <Text size='sm'>
+                                        {shown.authored ? '≈ ' : ''}
+                                        {getFinishedRecipeIngredientStr(shown).trim()}
+                                        <Text span size='sm' c='dimmed'>
+                                            {' '}
+                                            — {line.reason.toLowerCase()}
+                                        </Text>
+                                    </Text>
+                                    {line.missingMeasure &&
+                                        canEditIngredient(line.item.ingredient._id) && (
+                                            <UncountedIngredientPrompt uncounted={line} />
+                                        )}
+                                </Box>
+                            );
+                        })}
                     </>
                 )}
             </Collapse>

@@ -46,6 +46,7 @@ cli/          # oclif command line tool, talks to the API over GraphQL
 | Type check | `npm run check-types` |
 | Write `schema.graphql` | `npm run print-schema` (after any schema change, see below) |
 | Dev server | `npm run dev` |
+| Reset the dev database | `npm run seed` (**deletes everything** in `MONGODB_URI`, then loads `src/utils/seedData.ts`) |
 | Start server | `NODE_ENV=development node ./dist/src/index.js` |
 
 ### Client (`cd client/`)
@@ -211,6 +212,22 @@ When adding a new field to a query/mutation, update the corresponding `__mocks__
 4. Authorization applied via `composeResolvers()` in `api/src/schema/index.ts`.
 5. Authorization layers: `isAdmin`, `isVerified`, `isDocumentOwnerOrAdmin(Model)`.
 
+### Standard units
+
+The size of a mass or volume unit is defined in code, not in the database.
+`STANDARD_UNITS` in `api/src/utils/units.ts` lists them (plus the hidden `each` unit), and
+`syncStandardUnits` makes the `units` collection match on every API start: it adopts a unit
+with the same name (keeping its id), corrects its size, and creates missing core units.
+
+- A standard unit carries a `standard` key. Find it by that key (`{ standard: 'each' }`), never
+  by name.
+- The API rejects changes to a standard unit's `dimension`, `perCanonical`, `system`, `hidden`
+  and `standard`, and rejects deleting it. Its names, number format and spacing stay editable.
+- Only admins create or resize mass and volume units. Other users create count units (a
+  handful, a can), which reach grams through an ingredient measure.
+- To add a standard unit, add it to `STANDARD_UNITS`. Mark it `core: false` if it has more than
+  one common size (US and imperial pints), so it is sized when present but never created.
+
 ### Global types (client)
 
 `client/src/types/recipe.d.ts` declares global TypeScript types derived from generated GraphQL types. These are available without imports (e.g., `RecipePreview`, `RecipeView`, `EditableRecipeIngredient`).
@@ -305,4 +322,13 @@ may set them up. When it does, the worktree has a `.claude/worktree.env` file:
 - **Forgetting `print-schema`**: Codegen reads the committed `api/schema.graphql`, not the live API. After an API schema change, run `npm run print-schema` in `api/` and commit the file, or CI fails.
 - **API tests require compilation**: `npm test` compiles TS to `dist/` then runs mocha on JS files. If you edit `.ts` files, the tests always recompile.
 - **`MockedProvider` consumes each mock once**: Apollo's `MockedProvider` uses each entry in the mocks array exactly once (unless `newData` is used). If a component fires the same query multiple times (e.g. on mount and after navigation), provide the mock twice in the array.
+- **Client tests must not write to stderr**: A `No more mocked responses for the query` warning
+  (often followed by `` [ApolloLink] `onError` is deprecated ``) means a mock is missing or does
+  not match. The warning can appear under the next test in the same file. Vitest hides the
+  console output of passing tests when it detects an AI agent, so agents must run
+  `npm test -- run --reporter=default` to see these warnings. Fix it with the exact
+  mock the test needs (for example the correct user for `CurrentUser`), and add it only as many
+  times as the test sends that query. Do not add catch-all mocks, large `maxUsageCount` values or
+  shared mocks that a test does not use: unused mocks fail silently, so generous mocks hide
+  regressions.
 - **Use `cache.modify` to change cached data** Re-fetches are uncommon, as react-router navigation does NOT trigger requerying of already cached data. When a mutation changes server-side data that is already present in a cached query result, use `cache.modify` to modify in place.

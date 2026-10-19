@@ -1,10 +1,10 @@
 import { Unit } from '@recipe/graphql/schema';
-import { mockMilliliterId, mockOunceId } from '@recipe/graphql/__mocks__/ids';
-import { GetUnitsQuery, GetUnitsQueryVariables } from '@recipe/graphql/generated';
+import { GetEditableUnitsQuery, GetUnitsQuery } from '@recipe/graphql/generated';
 import { mockCupId, mockGramId, mockKilogramId } from '@recipe/graphql/__mocks__/ids';
+import { mockEachId, mockMilliliterId, mockOunceId } from '@recipe/graphql/__mocks__/ids';
 import { mockAdminId, mockTablespoonId, mockTeaspoonId } from '@recipe/graphql/__mocks__/ids';
 
-import { GET_UNITS } from '../unit';
+import { GET_EDITABLE_UNITS, GET_UNITS } from '../unit';
 
 export const mockTeaspoon: Unit = {
     __typename: 'Unit',
@@ -14,10 +14,14 @@ export const mockTeaspoon: Unit = {
     longSingular: 'teaspoon',
     longPlural: 'teaspoons',
     preferredNumberFormat: 'fraction',
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
     unique: true,
     hasSpace: true,
-    measureType: null,
+    dimension: 'volume',
+    perCanonical: 4.92892159375,
+    system: 'us',
+    hidden: false,
+    standard: 'teaspoon',
 };
 export const mockTablespoon: Unit = {
     __typename: 'Unit',
@@ -27,10 +31,14 @@ export const mockTablespoon: Unit = {
     longSingular: 'tablespoon',
     longPlural: 'tablespoons',
     preferredNumberFormat: 'fraction',
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
     unique: true,
     hasSpace: true,
-    measureType: null,
+    dimension: 'volume',
+    perCanonical: 14.78676478125,
+    system: 'us',
+    hidden: false,
+    standard: 'tablespoon',
 };
 export const mockGram: Unit = {
     __typename: 'Unit',
@@ -40,10 +48,14 @@ export const mockGram: Unit = {
     longSingular: 'gram',
     longPlural: 'grams',
     preferredNumberFormat: 'decimal',
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
     unique: true,
     hasSpace: false,
-    measureType: 'mass',
+    dimension: 'mass',
+    perCanonical: 1,
+    system: 'metric',
+    hidden: false,
+    standard: 'gram',
 };
 export const mockKilogram: Unit = {
     __typename: 'Unit',
@@ -53,10 +65,14 @@ export const mockKilogram: Unit = {
     longSingular: 'kilogram',
     longPlural: 'kilograms',
     preferredNumberFormat: 'decimal',
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
     unique: true,
     hasSpace: false,
-    measureType: 'mass',
+    dimension: 'mass',
+    perCanonical: 1000,
+    system: 'metric',
+    hidden: false,
+    standard: 'kilogram',
 };
 export const mockOunce: Unit = {
     __typename: 'Unit',
@@ -66,10 +82,14 @@ export const mockOunce: Unit = {
     longSingular: 'ounce',
     longPlural: 'ounces',
     preferredNumberFormat: 'decimal',
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
     unique: true,
     hasSpace: true,
-    measureType: 'mass',
+    dimension: 'mass',
+    perCanonical: 28.349523125,
+    system: 'us',
+    hidden: false,
+    standard: 'ounce',
 };
 export const mockCup: Unit = {
     __typename: 'Unit',
@@ -79,10 +99,14 @@ export const mockCup: Unit = {
     longSingular: 'cup',
     longPlural: 'cups',
     preferredNumberFormat: 'fraction',
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
     unique: true,
     hasSpace: true,
-    measureType: 'volume',
+    dimension: 'volume',
+    perCanonical: 236.5882365,
+    system: 'us',
+    hidden: false,
+    standard: 'cup',
 };
 export const mockMilliliter: Unit = {
     __typename: 'Unit',
@@ -92,10 +116,31 @@ export const mockMilliliter: Unit = {
     longSingular: 'millilitre',
     longPlural: 'millilitres',
     preferredNumberFormat: 'decimal',
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
     unique: true,
     hasSpace: false,
-    measureType: 'volume',
+    dimension: 'volume',
+    perCanonical: 1,
+    system: 'metric',
+    hidden: false,
+    standard: 'millilitre',
+};
+export const mockEach: Unit = {
+    __typename: 'Unit',
+    _id: mockEachId,
+    shortSingular: 'ea',
+    shortPlural: 'ea',
+    longSingular: 'each',
+    longPlural: 'each',
+    preferredNumberFormat: 'fraction',
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
+    unique: true,
+    hasSpace: true,
+    dimension: 'count',
+    perCanonical: 1,
+    system: null,
+    hidden: true,
+    standard: 'each',
 };
 export const mockUnits = [
     mockTeaspoon,
@@ -105,11 +150,18 @@ export const mockUnits = [
     mockOunce,
     mockCup,
     mockMilliliter,
+    mockEach,
 ];
 export const mockGetUnits = {
-    request: { query: GET_UNITS, variables: { filter: {} } satisfies GetUnitsQueryVariables },
+    request: { query: GET_UNITS },
     result: { data: { __typename: 'Query', unitMany: mockUnits } satisfies GetUnitsQuery },
 };
-
-// Pages that list every unit query without a filter
-export const mockGetAllUnits = { ...mockGetUnits, request: { query: GET_UNITS } };
+export const mockGetEditableUnits = {
+    request: { query: GET_EDITABLE_UNITS },
+    result: {
+        data: {
+            __typename: 'Query',
+            unitManyEditable: mockUnits,
+        } satisfies GetEditableUnitsQuery,
+    },
+};

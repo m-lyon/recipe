@@ -11,8 +11,7 @@ export interface MacroNutrients {
 export interface NutritionalInfo extends Document {
     ingredient: Types.ObjectId;
     usdaFdcId?: number;
-    perGram?: MacroNutrients; // mass-based or volume-based (via density)
-    perUnit?: MacroNutrients; // countable, e.g. 1 egg
+    perGram: MacroNutrients;
 }
 
 const macroNutrientsSchema = new Schema<MacroNutrients>(
@@ -30,18 +29,10 @@ const nutritionalInfoSchema = new Schema<NutritionalInfo>({
         type: Schema.Types.ObjectId,
         required: true,
         ref: 'Ingredient',
-        unique: true, // one document per ingredient
+        unique: true,
     },
     usdaFdcId: { type: Number },
-    perGram: { type: macroNutrientsSchema, required: false },
-    perUnit: { type: macroNutrientsSchema, required: false },
-});
-
-// At least one of perGram or perUnit must be present
-nutritionalInfoSchema.pre('validate', function () {
-    if (!this.perGram && !this.perUnit) {
-        this.invalidate('perGram', 'NutritionalInfo must have at least one of perGram or perUnit.');
-    }
+    perGram: { type: macroNutrientsSchema, required: true },
 });
 
 export const NutritionalInfo = model<NutritionalInfo>('NutritionalInfo', nutritionalInfoSchema);

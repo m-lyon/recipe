@@ -6,8 +6,8 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { renderPage } from '@recipe/utils/tests';
 import { mockGetRecipe } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
+import { mockGetDisplayLadders } from '@recipe/graphql/queries/__mocks__/displayLadder';
 import { mockLinkedRecipesForRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
 
 import { ViewRecipe } from '../ViewRecipe';
 
@@ -18,7 +18,7 @@ const renderComponent = () => {
     const routes = createRoutesFromElements(<Route path='/' element={<ViewRecipe />} />);
     return renderPage(routes, [
         mockGetRecipe,
-        mockGetUnitConversions,
+        mockGetDisplayLadders,
         mockCurrentUserAdmin,
         mockLinkedRecipesForRecipeTwo,
     ]);

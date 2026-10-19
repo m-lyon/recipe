@@ -1,7 +1,8 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Stack } from '@chakra-ui/react';
 import { Link, useLocation } from 'react-router-dom';
-import { useMutation, useQuery } from '@apollo/client';
+import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 
 import { PATH } from '@recipe/constants';
 import { useErrorToast } from '@recipe/common/hooks';
@@ -9,12 +10,8 @@ import { LOGOUT } from '@recipe/graphql/mutations/user';
 import { CURRENT_USER } from '@recipe/graphql/queries/user';
 
 export function UserOptions() {
-    const { data, loading } = useQuery(CURRENT_USER, {
+    const { data, loading, error } = useQuery(CURRENT_USER, {
         pollInterval: 1000 * 60 * 5,
-        onError: (err) => {
-            console.log(err);
-            toast({ title: 'An error occurred.', description: err.message });
-        },
     });
     const [logout] = useMutation(LOGOUT, {
         onError: (err) => {
@@ -23,6 +20,8 @@ export function UserOptions() {
         },
         onCompleted: () => {
             navigate(PATH.ROOT);
+            // Cached results depend on who is logged in (e.g. the units they can edit).
+            client.resetStore().catch(console.error);
         },
         update: (cache) => {
             cache.writeQuery({
@@ -31,8 +30,16 @@ export function UserOptions() {
             });
         },
     });
+    const client = useApolloClient();
     const navigate = useNavigate();
     const toast = useErrorToast();
+
+    useEffect(() => {
+        if (!error) return;
+        console.log(error);
+        toast({ title: 'An error occurred.', description: error.message });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [error]);
 
     if (loading) {
         return <LoginOptions isLoading={true} />;

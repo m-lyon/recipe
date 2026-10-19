@@ -1,8 +1,15 @@
-import { validateItemNotInRecipe } from './validation.js';
+import { OwnerTC } from '../models/User.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { Size, SizeCreateTC, SizeTC } from '../models/Size.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
-import { filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
+import { validateItemNotInMeasure, validateItemNotInRecipe } from './validation.js';
+import { filterIsEditable, filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
+
+SizeTC.addRelation('owner', {
+    resolver: () => OwnerTC.getResolver('findById'),
+    prepareArgs: { _id: (source) => source.owner },
+    projection: { owner: true },
+});
 
 SizeTC.addResolver({
     name: 'updateById',
@@ -31,6 +38,11 @@ export const SizeQuery = {
         .wrapResolve(filterIsOwnerOrAdmin())
         .wrapResolve(filterIsUnique())
         .setDescription('Retrieve multiple sizes'),
+    sizeManyEditable: SizeTC.mongooseResolvers
+        .findMany()
+        .wrapResolve(filterIsEditable())
+        .wrapResolve(filterIsUnique())
+        .setDescription('Retrieve the sizes the current user can edit'),
 };
 
 export const SizeQueryAdmin = {
@@ -46,6 +58,7 @@ export const SizeMutation = {
         .setDescription('Remove a size by its ID')
         .wrapResolve((next) => async (rp) => {
             await validateItemNotInRecipe(rp.args._id, 'size');
+            await validateItemNotInMeasure(rp.args._id, 'size');
             return next(rp);
         }),
 };

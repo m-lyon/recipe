@@ -1,11 +1,13 @@
 import { Flags } from '@oclif/core';
 
 import { BaseCommand } from '../../lib/base.js';
-import { EMPTY, num, renderTable } from '../../lib/format.js';
-import type { NutritionalInfoSummary } from '../../lib/types.js';
+import { renderTable } from '../../lib/format.js';
+import { measuresByIngredient } from '../../lib/measures.js';
 import { GET_NUTRITIONAL_INFOS } from '../../graphql/operations.js';
 import { allIngredients, resolveRecipe } from '../../lib/resolve.js';
+import { GET_INGREDIENT_MEASURES } from '../../graphql/operations.js';
 import { indexByIngredient, recipeIngredientIds } from '../../lib/nutrition.js';
+import type { MeasureSummary, NutritionalInfoSummary } from '../../lib/types.js';
 
 export default class IngredientsList extends BaseCommand {
     static description =
@@ -53,6 +55,15 @@ export default class IngredientsList extends BaseCommand {
                       })
                   ).nutritionalInfosByIngredientIds as unknown as NutritionalInfoSummary[]);
         const byIngredient = indexByIngredient(infos.filter(Boolean));
+        const measures =
+            ingredients.length === 0
+                ? []
+                : (((
+                      await client.request(GET_INGREDIENT_MEASURES, {
+                          ingredientIds: ingredients.map((ingredient) => ingredient._id),
+                      })
+                  ).ingredientMeasuresByIngredientIds ?? []) as unknown as MeasureSummary[]);
+        const measuresOf = measuresByIngredient(measures);
 
         const all = ingredients.map((ingredient) => {
             const info = byIngredient.get(ingredient._id);
@@ -61,11 +72,10 @@ export default class IngredientsList extends BaseCommand {
                 name: ingredient.name,
                 pluralName: ingredient.pluralName,
                 isCountable: ingredient.isCountable,
-                density: ingredient.density ?? null,
                 nutrition: info ? 'linked' : 'missing',
                 usdaFdcId: info?.usdaFdcId ?? null,
                 hasPerGram: Boolean(info?.perGram),
-                hasPerUnit: Boolean(info?.perUnit),
+                measures: measuresOf.get(ingredient._id)?.length ?? 0,
             };
         });
         const filtered = flags['missing-nutrition']
@@ -75,12 +85,12 @@ export default class IngredientsList extends BaseCommand {
 
         this.out(
             renderTable(
-                ['ID', 'NAME', 'COUNTABLE', 'DENSITY', 'NUTRITION'],
+                ['ID', 'NAME', 'COUNTABLE', 'MEASURES', 'NUTRITION'],
                 page.map((ingredient) => [
                     ingredient._id,
                     ingredient.name,
                     ingredient.isCountable ? 'yes' : 'no',
-                    ingredient.density === null ? EMPTY : num(ingredient.density, 3),
+                    String(ingredient.measures),
                     ingredient.nutrition,
                 ])
             )

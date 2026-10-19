@@ -40,7 +40,7 @@ function getEditableUnitStr(item: EditableRecipeIngredient): string {
     }
 }
 function getFinishedUnitStr(quantity: FinishedQuantity, unit: FinishedUnit): string {
-    if (unit === null) {
+    if (unit === null || unit.hidden) {
         return '';
     }
     return `${unit.hasSpace ? ' ' : ''}${unitDisplayValue(quantity, unit, true)}`;
@@ -115,9 +115,10 @@ export function ingredientDisplayValue(
     unit: FinishedUnit,
     ingredient: FinishedIngredient
 ): string {
+    const unnamedUnit = unit === null || unit.hidden;
     const plural =
-        (isPlural(quantity) && unit === null) ||
-        (ingredient.__typename === 'Ingredient' && ingredient.isCountable && unit !== null);
+        (isPlural(quantity) && unnamedUnit) ||
+        (ingredient.__typename === 'Ingredient' && ingredient.isCountable && !unnamedUnit);
     if (ingredient.__typename === 'Ingredient') {
         return plural ? ingredient.pluralName : ingredient.name;
     } else if (ingredient.__typename === 'Recipe') {

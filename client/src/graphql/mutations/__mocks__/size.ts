@@ -13,7 +13,7 @@ export const mockExtraLarge: Size = {
     __typename: 'Size',
     value: 'extra large',
     unique: true,
-    owner: mockAdminId,
+    owner: { __typename: 'Owner', _id: mockAdminId, firstName: 'Mock', lastName: 'User' },
 };
 export const mockCreateSize = {
     request: {

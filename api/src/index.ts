@@ -1,6 +1,5 @@
 import 'dotenv-flow/config';
 import './requireEnv.js';
-import './utils/database.js';
 import './strategies/GraphQLLocalStrategy.js';
 
 import cors, { CorsOptions } from 'cors';
@@ -15,9 +14,11 @@ import { expressMiddleware } from '@as-integrations/express4';
 import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 
+import mongoose from './utils/database.js';
 import { schema } from './schema/index.js';
 import { uploadRouter } from './routes/uploads.js';
 import { createHttpServer } from './utils/server.js';
+import { describeStandardUnitReport, syncStandardUnits } from './utils/standardUnits.js';
 import { DELAY, HOST, PORT, SESSION_SECRET, SESSION_URI, WHITELIST } from './constants.js';
 
 console.log('Node version:', process.version);
@@ -38,6 +39,15 @@ const corsOptions: CorsOptions = {
     credentials: true,
 };
 await apolloServer.start();
+try {
+    await mongoose.connection.asPromise();
+    const report = await syncStandardUnits(mongoose.connection.db);
+    for (const line of describeStandardUnitReport(report)) {
+        console.log('Standard units:', line);
+    }
+} catch (error) {
+    console.error('Could not sync standard units:', error);
+}
 app.use(
     session({
         store: MongoStore.create({ mongoUrl: SESSION_URI }),

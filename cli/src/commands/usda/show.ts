@@ -3,9 +3,9 @@ import { Args } from '@oclif/core';
 import { notFound } from '../../lib/errors.js';
 import { num, text } from '../../lib/format.js';
 import type { UsdaFoodItem } from '../../lib/types.js';
+import { renderPortions } from '../../lib/portions.js';
 import { BaseCommand, usdaFlags } from '../../lib/base.js';
 import { USDA_FOOD_ITEM } from '../../graphql/operations.js';
-import { itemPortions, renderPortions } from '../../lib/portions.js';
 
 export default class UsdaShow extends BaseCommand {
     static description =
@@ -55,7 +55,7 @@ export default class UsdaShow extends BaseCommand {
         return {
             ...item,
             portions,
-            itemPortionCount: itemPortions(portions).length,
+            itemPortionCount: portions.filter((portion) => portion.kind === 'ITEM').length,
             fromCache: client.usdaCacheHit,
         };
     }

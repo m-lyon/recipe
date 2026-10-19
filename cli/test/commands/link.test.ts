@@ -5,12 +5,18 @@ import { ExitCode } from '../../src/lib/errors.js';
 import { OLIVE_OIL } from '../helpers/fixtures.js';
 import { SessionCache } from '../../src/lib/session.js';
 import { FakeApi, LOGIN_OK } from '../helpers/fakeApi.js';
-import { EGG, EXISTING_EGG_INFO, FLOUR, GARLIC, INGREDIENTS } from '../helpers/fixtures.js';
+import { CUP, LARGE, MEASURE_COMPONENTS } from '../helpers/fixtures.js';
 import { ROOT, cleanTestEnvironment, sessionFile, useTestEnvironment } from '../helpers/env.js';
+import { EACH, EGG, EXISTING_EGG_INFO, FLOUR, GARLIC, INGREDIENTS } from '../helpers/fixtures.js';
 
-const MUTATIONS = ['CliCreateNutritionalInfo', 'CliUpdateNutritionalInfo', 'CliUpdateIngredient'];
+const MUTATIONS = [
+    'CliCreateNutritionalInfo',
+    'CliUpdateNutritionalInfo',
+    'CliCreateIngredientMeasure',
+    'CliDeleteIngredientMeasure',
+];
 
-function baseApi(item = EGG, existing: unknown = null): FakeApi {
+function baseApi(item = EGG, existing: unknown = null, measures: unknown[] = []): FakeApi {
     return new FakeApi({
         CliLogin: LOGIN_OK,
         CliGetAllIngredients: { data: { ingredientManyAll: INGREDIENTS } },
@@ -38,12 +44,21 @@ function baseApi(item = EGG, existing: unknown = null): FakeApi {
                 },
             },
         }),
-        CliUpdateIngredient: (variables) => ({
+        CliGetMeasureComponents: { data: MEASURE_COMPONENTS },
+        CliGetIngredientMeasures: { data: { ingredientMeasuresByIngredientIds: measures } },
+        CliCreateIngredientMeasure: (variables) => ({
             data: {
-                ingredientUpdateById: {
-                    record: { ...INGREDIENTS[1], ...(variables.record as object) },
+                ingredientMeasureCreateOne: {
+                    record: {
+                        __typename: 'IngredientMeasure',
+                        _id: 'meas-1',
+                        ...(variables.record as object),
+                    },
                 },
             },
+        }),
+        CliDeleteIngredientMeasure: (variables) => ({
+            data: { ingredientMeasureRemoveById: { recordId: variables.id } },
         }),
     });
 }
@@ -57,7 +72,7 @@ function json<T = Record<string, unknown>>(
     error: {
         code: string;
         message: string;
-        existing: { usdaFdcId: number; perUnit: { calories: number } };
+        existing: { usdaFdcId: number; grams?: number };
     };
     warnings: string[];
 } {
@@ -77,7 +92,13 @@ describe('nutrition link', () => {
         process.exitCode = 0;
     });
 
-    it('writes perGram from the per-100 g values', async () => {
+    function measureRecords(): Array<Record<string, unknown>> {
+        return api.requests
+            .filter((r) => r.operation === 'CliCreateIngredientMeasure')
+            .map((r) => r.variables.record as Record<string, unknown>);
+    }
+
+    it('writes perGram from the per-100 g values, and nothing else', async () => {
         api = baseApi(OLIVE_OIL);
         api.install();
         const { stdout } = await runCommand(
@@ -86,53 +107,63 @@ describe('nutrition link', () => {
         );
         const record = api.requests.find((r) => r.operation === 'CliCreateNutritionalInfo')
             ?.variables.record as Record<string, unknown>;
-        expect(record.perGram).to.deep.equal({ calories: 8.84, protein: 0, carbs: 0, fat: 1 });
-        expect(record.usdaFdcId).to.equal(171413);
+        expect(record).to.deep.equal({
+            ingredient: 'ing-oil',
+            usdaFdcId: 171413,
+            perGram: { calories: 8.84, protein: 0, carbs: 0, fat: 1 },
+        });
+        expect(measureRecords()).to.deep.equal([]);
         expect(json(stdout).ok).to.equal(true);
     });
 
-    it('derives perUnit from a portion named by its description', async () => {
+    it('stores a portion named by its description as an each + size measure', async () => {
         api = baseApi(EGG);
         api.install();
         await runCommand(
             ['nutrition', 'link', 'egg', '--fdc-id', '171287', '--portion', '"1 large"', '--json'],
             ROOT
         );
-        const record = api.requests.find((r) => r.operation === 'CliCreateNutritionalInfo')
-            ?.variables.record as Record<string, unknown>;
-        expect(record.perUnit).to.deep.equal({
-            calories: 71.5,
-            protein: 6.28,
-            carbs: 0.36,
-            fat: 4.755,
-        });
+        expect(measureRecords()).to.deep.equal([
+            { ingredient: 'ing-egg', unit: EACH._id, size: LARGE._id, prepMethod: null, grams: 50 },
+        ]);
     });
 
-    it('derives perUnit from a portion named by its index', async () => {
-        api = baseApi(EGG);
+    it('stores several portions named by index', async () => {
+        api = baseApi(OLIVE_OIL);
         api.install();
         await runCommand(
-            ['nutrition', 'link', 'egg', '--fdc-id', '171287', '--portion', '3', '--json'],
+            [
+                'nutrition',
+                'link',
+                '"olive oil"',
+                '--fdc-id',
+                '171413',
+                '--portion',
+                '1',
+                '--portion',
+                '2',
+            ],
             ROOT
         );
-        const record = api.requests.find((r) => r.operation === 'CliCreateNutritionalInfo')
-            ?.variables.record as { perUnit: { calories: number } };
-        // Portion 3 is "1 jumbo", 63 g.
-        expect(record.perUnit.calories).to.equal(90.09);
+        // Portion 1 is "1 tablespoon" (13.5 g), portion 2 is "1 cup" (216 g).
+        expect(measureRecords().map((r) => r.grams)).to.deep.equal([13.5, 216]);
+        expect(measureRecords()[1].unit).to.equal(CUP._id);
     });
 
-    it('refuses a volume portion, exits 6 and sends no mutation', async () => {
+    it('stores every mappable portion with --all-portions and warns about the rest', async () => {
         api = baseApi(EGG);
         api.install();
-        const { error } = await runCommand(
-            ['nutrition', 'link', 'egg', '--fdc-id', '171287', '--portion', '6'],
+        const { stdout } = await runCommand(
+            ['nutrition', 'link', 'egg', '--fdc-id', '171287', '--all-portions', '--json'],
             ROOT
         );
-        expect(error?.oclif?.exit).to.equal(ExitCode.REJECTED);
-        expect(api.operations.filter((name) => MUTATIONS.includes(name))).to.deep.equal([]);
+        // Only "1 large" maps: the other sizes are not sizes in this database, and the
+        // cup is qualified by "(4.86 large eggs)".
+        expect(measureRecords().map((r) => r.grams)).to.deep.equal([50]);
+        expect(json(stdout).warnings.join(' ')).to.contain('Skipped portion 1 jumbo');
     });
 
-    it("refuses garlic's RACC serving portion, exits 6 and sends no mutation", async () => {
+    it('refuses a portion that maps to nothing, exits 6 and sends no mutation', async () => {
         api = baseApi(GARLIC);
         api.install();
         const { error } = await runCommand(
@@ -140,10 +171,29 @@ describe('nutrition link', () => {
             ROOT
         );
         expect(error?.oclif?.exit).to.equal(ExitCode.REJECTED);
+        expect(error?.message).to.contain('a serving size, not one unit');
         expect(api.operations.filter((name) => MUTATIONS.includes(name))).to.deep.equal([]);
     });
 
-    it('warns that portions exist but none was chosen, for a countable ingredient', async () => {
+    it('stores "cup, chopped" as a cup + prep method measure', async () => {
+        api = baseApi(FLOUR);
+        api.install();
+        await runCommand(
+            ['nutrition', 'link', 'flour', '--fdc-id', '168894', '--portion', '1'],
+            ROOT
+        );
+        expect(measureRecords()).to.deep.equal([
+            {
+                ingredient: 'ing-flour',
+                unit: CUP._id,
+                size: null,
+                prepMethod: 'prep-chopped',
+                grams: 125,
+            },
+        ]);
+    });
+
+    it('warns that storable portions exist but none was chosen', async () => {
         api = baseApi(EGG);
         api.install();
         const { stdout } = await runCommand(
@@ -151,18 +201,6 @@ describe('nutrition link', () => {
             ROOT
         );
         expect(json(stdout).warnings.join(' ')).to.contain('none was chosen');
-    });
-
-    it('warns differently when the record offers no item portion at all', async () => {
-        api = baseApi(GARLIC);
-        api.install();
-        const { stdout } = await runCommand(
-            ['nutrition', 'link', 'garlic', '--fdc-id', '1104647', '--json'],
-            ROOT
-        );
-        const warning = json(stdout).warnings.join(' ');
-        expect(warning).to.contain('no item portion');
-        expect(warning).to.contain('cannot help');
     });
 
     it('sends no mutation under --dry-run', async () => {
@@ -185,14 +223,16 @@ describe('nutrition link', () => {
         expect(api.operations.filter((name) => MUTATIONS.includes(name))).to.deep.equal([]);
         expect(api.countOf('CliUsdaFoodItem')).to.equal(1);
         expect(api.countOf('CliGetNutritionalInfo')).to.equal(1);
-        expect(json<{ dryRun: boolean }>(stdout).data.dryRun).to.equal(true);
+        const data = json<{ dryRun: boolean; measures: Array<{ key: string }> }>(stdout).data;
+        expect(data.dryRun).to.equal(true);
+        expect(data.measures.map((m) => m.key)).to.deep.equal(['each · large']);
     });
 
     it('exits 5 and sends no mutation when data already exists', async () => {
         api = baseApi(EGG, EXISTING_EGG_INFO);
         api.install();
         const { error } = await runCommand(
-            ['nutrition', 'link', 'egg', '--fdc-id', '171287', '--portion', '"1 medium"'],
+            ['nutrition', 'link', 'egg', '--fdc-id', '171287', '--portion', '"1 large"'],
             ROOT
         );
         expect(error?.oclif?.exit).to.equal(ExitCode.WOULD_OVERWRITE);
@@ -220,11 +260,40 @@ describe('nutrition link', () => {
         expect(payload.ok).to.equal(false);
         expect(payload.error.code).to.equal('WOULD_OVERWRITE');
         expect(payload.error.existing.usdaFdcId).to.equal(171287);
-        expect(payload.error.existing.perUnit.calories).to.equal(71.5);
     });
 
-    it('replaces the record with --overwrite and reports the previous values', async () => {
-        api = baseApi(EGG, EXISTING_EGG_INFO);
+    it('exits 5 for a measure with the same key, before any write', async () => {
+        const existingMeasure = {
+            __typename: 'IngredientMeasure',
+            _id: 'meas-old',
+            ingredient: 'ing-egg',
+            grams: 57,
+            unit: EACH,
+            size: LARGE,
+            prepMethod: null,
+        };
+        api = baseApi(EGG, null, [existingMeasure]);
+        api.install();
+        const { error } = await runCommand(
+            ['nutrition', 'link', 'egg', '--fdc-id', '171287', '--portion', '"1 large"'],
+            ROOT
+        );
+        expect(error?.oclif?.exit).to.equal(ExitCode.WOULD_OVERWRITE);
+        expect(error?.message).to.contain('each · large');
+        expect(api.operations.filter((name) => MUTATIONS.includes(name))).to.deep.equal([]);
+    });
+
+    it('replaces the record and a same-key measure with --overwrite', async () => {
+        const existingMeasure = {
+            __typename: 'IngredientMeasure',
+            _id: 'meas-old',
+            ingredient: 'ing-egg',
+            grams: 57,
+            unit: EACH,
+            size: LARGE,
+            prepMethod: null,
+        };
+        api = baseApi(EGG, EXISTING_EGG_INFO, [existingMeasure]);
         api.install();
         const { stdout } = await runCommand(
             [
@@ -234,74 +303,21 @@ describe('nutrition link', () => {
                 '--fdc-id',
                 '171287',
                 '--portion',
-                '"1 medium"',
+                '"1 large"',
                 '--overwrite',
             ],
             ROOT
         );
         expect(api.countOf('CliUpdateNutritionalInfo')).to.equal(1);
         expect(api.countOf('CliCreateNutritionalInfo')).to.equal(0);
+        expect(
+            api.requests.find((r) => r.operation === 'CliDeleteIngredientMeasure')?.variables
+        ).to.deep.equal({
+            id: 'meas-old',
+        });
+        expect(api.countOf('CliCreateIngredientMeasure')).to.equal(1);
         expect(stdout).to.contain('Previous values');
-        expect(stdout).to.contain('71.5');
-    });
-
-    it('needs no flag for a first link', async () => {
-        api = baseApi(EGG);
-        api.install();
-        await runCommand(
-            ['nutrition', 'link', 'egg', '--fdc-id', '171287', '--portion', '"1 large"'],
-            ROOT
-        );
-        expect(api.countOf('CliCreateNutritionalInfo')).to.equal(1);
-    });
-
-    it('writes the density with --set-density', async () => {
-        api = baseApi(OLIVE_OIL);
-        api.install();
-        await runCommand(
-            ['nutrition', 'link', '"olive oil"', '--fdc-id', '171413', '--set-density'],
-            ROOT
-        );
-        const record = api.requests.find((r) => r.operation === 'CliUpdateIngredient')?.variables
-            .record as Record<string, number>;
-        expect(record.density).to.be.closeTo(0.913, 0.001);
-    });
-
-    it('refuses --set-density from an ambiguous portion, and sends no mutation', async () => {
-        api = baseApi(FLOUR);
-        api.install();
-        const { error } = await runCommand(
-            ['nutrition', 'link', 'flour', '--fdc-id', '168894', '--set-density'],
-            ROOT
-        );
-        expect(error?.oclif?.exit).to.equal(ExitCode.REJECTED);
-        expect(api.operations.filter((name) => MUTATIONS.includes(name))).to.deep.equal([]);
-    });
-
-    it('exits 5 for --set-density against an existing density', async () => {
-        api = baseApi(FLOUR);
-        api.install();
-        const { error } = await runCommand(
-            [
-                'nutrition',
-                'link',
-                'flour',
-                '--fdc-id',
-                '168894',
-                '--set-density',
-                '--allow-ambiguous-density',
-            ],
-            ROOT
-        );
-        expect(error?.oclif?.exit).to.equal(ExitCode.WOULD_OVERWRITE);
-        expect(api.operations.filter((name) => MUTATIONS.includes(name))).to.deep.equal([]);
-    });
-
-    it('never writes a density without --set-density', async () => {
-        api = baseApi(OLIVE_OIL);
-        api.install();
-        await runCommand(['nutrition', 'link', '"olive oil"', '--fdc-id', '171413'], ROOT);
-        expect(api.countOf('CliUpdateIngredient')).to.equal(0);
+        expect(stdout).to.contain('replacing 57.0 g');
     });
 
     it('exits 4 for an ambiguous ingredient name, before any USDA call', async () => {

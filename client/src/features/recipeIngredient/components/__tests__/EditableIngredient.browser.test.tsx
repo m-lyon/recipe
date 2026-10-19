@@ -7,7 +7,7 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { renderBrowserPage } from '@recipe/utils/browserTests';
 import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockGetUnitConversions } from '@recipe/graphql/queries/__mocks__/unitConversion';
+import { mockGetDisplayLadders } from '@recipe/graphql/queries/__mocks__/displayLadder';
 
 import { EditableIngredient } from '../EditableIngredient';
 
@@ -25,7 +25,7 @@ describe('Dropdown Action Keyboard', () => {
             createRoutesFromElements(
                 <Route path='/' element={<EditableIngredient section={0} />} />
             ),
-            [mockGetIngredientComponents, mockGetUnitConversions]
+            [mockGetIngredientComponents, mockGetDisplayLadders]
         );
 
         // Act

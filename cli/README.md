@@ -68,9 +68,9 @@ The cookie cache lives at `~/.cache/recipe-cli/session-<hash of RECIPE_API_URL>`
 | `recipe ingredients show <name\|id>` | one ingredient in full, and the recipes using it |
 | `recipe usda search <query>` | USDA search; values are per 100 g, portions are empty |
 | `recipe usda show <fdcId>` | macros and the **portion table**; judge a candidate here |
-| `recipe nutrition link <ingredient> --fdc-id <n>` | the core command |
-| `recipe nutrition unlink <ingredient>` | removes the `NutritionalInfo` |
-| `recipe nutrition status` | a coverage report |
+| `recipe nutrition link <ingredient> --fdc-id <n>` | the core command: `perGram`, plus measures from `--portion` |
+| `recipe nutrition unlink <ingredient>` | removes the `NutritionalInfo`; measures stay |
+| `recipe nutrition status` | calculable recipe rows, and the missing weights |
 
 Run `recipe <topic> <command> --help` for the flags.
 
@@ -92,7 +92,7 @@ On failure:
 
 **`--dry-run`** is accepted by every write command. It resolves everything, prints the exact mutation variables that would be sent, and sends nothing.
 
-**`--overwrite`** guards existing data. `nutrition link` refuses to replace an existing `NutritionalInfo`, and refuses to replace an existing `Ingredient.density`, unless the flag is present. It exits 5 and names what is there now.
+**`--overwrite`** guards existing data. `nutrition link` refuses to replace an existing `NutritionalInfo`, or an ingredient measure with the same unit, size and prep method, unless the flag is present. It exits 5 and names what is there now.
 
 `--overwrite` is required for a **replacement**. Its presence in a command line is itself a signal that something is being changed rather than filled in.
 
@@ -106,7 +106,7 @@ On failure:
 | 3 | not authenticated, or insufficient role |
 | 4 | not found, or an ambiguous identifier |
 | 5 | refused: existing data would be replaced, and `--overwrite` was not given |
-| 6 | the write was rejected: a non-item portion, a bad argument, or server validation |
+| 6 | the write was rejected: a portion with no matching unit, a bad argument, or server validation |
 
 GraphQL errors are mapped by their `extensions.code`: `UNAUTHENTICATED` and `FORBIDDEN` → 3, `NOT_FOUND` → 4, `BAD_USER_INPUT` and `GRAPHQL_VALIDATION_FAILED` → 6.
 

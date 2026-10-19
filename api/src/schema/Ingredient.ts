@@ -1,8 +1,16 @@
+import { OwnerTC } from '../models/User.js';
 import { validateItemNotInRecipe } from './validation.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
-import { filterIsOwnerOrAdmin } from '../middleware/filters.js';
+import { IngredientMeasure } from '../models/IngredientMeasure.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
+import { filterIsEditable, filterIsOwnerOrAdmin } from '../middleware/filters.js';
 import { Ingredient, IngredientCreateTC, IngredientTC } from '../models/Ingredient.js';
+
+IngredientTC.addRelation('owner', {
+    resolver: () => OwnerTC.getResolver('findById'),
+    prepareArgs: { _id: (source) => source.owner },
+    projection: { owner: true },
+});
 
 IngredientTC.addResolver({
     name: 'updateById',
@@ -34,6 +42,10 @@ export const IngredientQuery = {
         .findMany()
         .wrapResolve(filterIsOwnerOrAdmin())
         .setDescription('Retrieve multiple ingredients'),
+    ingredientManyEditable: IngredientTC.mongooseResolvers
+        .findMany()
+        .wrapResolve(filterIsEditable())
+        .setDescription('Retrieve the ingredients the current user can edit'),
     ingredientManyAll: IngredientTC.mongooseResolvers
         .findMany()
         .setDescription('Retrieve all ingredients'),
@@ -48,6 +60,8 @@ export const IngredientMutation = {
         .setDescription('Remove an ingredient by its ID')
         .wrapResolve((next) => async (rp) => {
             await validateItemNotInRecipe(rp.args._id, 'ingredient');
-            return next(rp);
+            const result = await next(rp);
+            await IngredientMeasure.deleteMany({ ingredient: rp.args._id });
+            return result;
         }),
 };

@@ -8,10 +8,15 @@ export const SIZE_FIELDS = gql(`
     }
 `);
 
-export const GET_SIZES = gql(`
-    query GetSizes($filter: FilterFindManySizeInput) {
-        sizeMany(limit: 5000, filter: $filter) {
+export const GET_EDITABLE_SIZES = gql(`
+    query GetEditableSizes {
+        sizeManyEditable(limit: 5000) {
             ...SizeFields
+            owner {
+                _id
+                firstName
+                lastName
+            }
         }
     }
 `);

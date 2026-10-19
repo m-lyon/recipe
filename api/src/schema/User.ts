@@ -1,7 +1,25 @@
+import { Types } from 'mongoose';
+
 import { ResolveParams } from '../types.js';
 import { sendEmail } from '../utils/email.js';
-import { User, UserTC } from '../models/User.js';
+import { OwnerTC, User, UserTC } from '../models/User.js';
 import { SMTP_ADMIN_EMAIL, SMTP_FROM_DOMAIN, TEST } from '../constants.js';
+
+const ownerLoader = OwnerTC.mongooseResolvers.dataLoader();
+OwnerTC.addResolver({
+    name: 'findById',
+    description: 'The owner of the document. Only the owner and admins see the name.',
+    type: OwnerTC.NonNull,
+    args: { _id: 'MongoID!' },
+    resolve: (rp: ResolveParams<{ _id: Types.ObjectId }>) => {
+        const user = rp.context.getUser();
+        if (!user || (user.role !== 'admin' && !user._id.equals(rp.args._id))) {
+            return { _id: rp.args._id };
+        }
+        // The data loader fetches each owner once per request, not once per document.
+        return ownerLoader.resolve(rp);
+    },
+});
 
 UserTC.addResolver({
     name: 'currentUser',

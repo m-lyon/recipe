@@ -5,6 +5,7 @@ import { Document, HydratedDocument, Model, PopulatedDoc, Schema, Types, model }
 import { Size } from './Size.js';
 import { Unit } from './Unit.js';
 import { PrepMethod } from './PrepMethod.js';
+import { EACH_KEY } from '../utils/units.js';
 import { capitalise } from '../utils/string.js';
 import { generateRandomString } from '../utils/random.js';
 import type { Ingredient as IngredientType } from './Ingredient.js';
@@ -117,42 +118,55 @@ recipeIngredientSchema.pre('save', async function (this: HydratedDocument<Recipe
     } else {
         this.type = 'recipe';
     }
+    // Coerce empty unit into 'each' if quantity is present
+    if (this.quantity != null && this.unit == null) {
+        const each = await Unit.findOne({ standard: EACH_KEY }).select('_id');
+        if (each) {
+            this.unit = each._id;
+        }
+    }
 });
 
 interface IngredientSubsection {
     name?: string;
     ingredients: RecipeIngredientType[];
 }
-const ingredientSubsection: Schema<IngredientSubsection> = new Schema<IngredientSubsection>({
-    name: { type: String },
-    ingredients: {
-        type: [recipeIngredientSchema],
-        required: true,
-        validate: {
-            validator: function (ingredients: RecipeIngredientType[]) {
-                return ingredients.length > 0;
+const ingredientSubsection: Schema<IngredientSubsection> = new Schema<IngredientSubsection>(
+    {
+        name: { type: String },
+        ingredients: {
+            type: [recipeIngredientSchema],
+            required: true,
+            validate: {
+                validator: function (ingredients: RecipeIngredientType[]) {
+                    return ingredients.length > 0;
+                },
+                message: 'At least one ingredient is required.',
             },
-            message: 'At least one ingredient is required.',
         },
     },
-});
+    { _id: false }
+);
 interface InstructionSubsection {
     name?: string;
     instructions: string[];
 }
-const instructionSubsection = new Schema({
-    name: { type: String },
-    instructions: {
-        type: [String],
-        required: true,
-        validate: {
-            validator: function (instructions: string[]) {
-                return instructions.length > 0;
+const instructionSubsection = new Schema(
+    {
+        name: { type: String },
+        instructions: {
+            type: [String],
+            required: true,
+            validate: {
+                validator: function (instructions: string[]) {
+                    return instructions.length > 0;
+                },
+                message: 'At least one instruction is required.',
             },
-            message: 'At least one instruction is required.',
         },
     },
-});
+    { _id: false }
+);
 
 export interface Recipe extends Document {
     title: string;

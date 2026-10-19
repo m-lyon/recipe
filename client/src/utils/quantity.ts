@@ -1,6 +1,6 @@
 import { Fraction, fraction, multiply } from 'mathjs';
 
-import { UnitConversionArgs } from '@recipe/features/servings';
+import type { UnitConversionArgs } from '@recipe/features/servings';
 
 import { isRange } from './number';
 
@@ -33,14 +33,16 @@ function calculateQuantity(
     return returnQuantityFromFraction(result, unit);
 }
 
-export function returnQuantityFromFraction(num: Fraction, unit: FinishedUnit): string {
+type FormattedUnit = Pick<NonNullable<FinishedUnit>, 'preferredNumberFormat'> | null;
+
+export function returnQuantityFromFraction(num: Fraction, unit: FormattedUnit): string {
     if (unit == null || unit.preferredNumberFormat === 'fraction') {
         return num.d === 1 ? num.n.toString() : `${num.n}/${num.d}`;
     }
     return (num.n / num.d).toString();
 }
 
-export function returnQuantityFromFloat(num: number, unit: FinishedUnit): string {
+export function returnQuantityFromFloat(num: number, unit: FormattedUnit): string {
     if (unit == null || unit.preferredNumberFormat === 'fraction') {
         const fract = fraction(num);
         return fract.d === 1 ? fract.n.toString() : `${fract.n}/${fract.d}`;

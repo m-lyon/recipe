@@ -17,11 +17,10 @@ import { CreateUnit } from './pages/CreateUnit';
 import { CreateRecipe } from './pages/CreateRecipe';
 import { EditIngredient } from './pages/EditIngredient';
 import { EditPrepMethod } from './pages/EditPrepMethod';
+import { DisplayLadders } from './pages/DisplayLadders';
 import { CreateIngredient } from './pages/CreateIngredient';
 import { CreatePrepMethod } from './pages/CreatePrepMethod';
 import { CreateVeganRecipe } from './pages/CreateVeganRecipe';
-import { EditUnitConversion } from './pages/EditUnitConversion';
-import { CreateUnitConversion } from './pages/CreateUnitConversion';
 
 export const routes = createRoutesFromElements(
     <Route path={PATH.ROOT} errorElement={<ErrorBoundary />}>
@@ -38,7 +37,12 @@ export const routes = createRoutesFromElements(
                 />
                 <Route path='unit' element={<CreateUnit />} />
                 <Route element={<RequireAdmin />}>
-                    <Route path='unit-conversion' element={<CreateUnitConversion />} />
+                    {/* Keyed by mode: both routes render DisplayLadders in the same place,
+                        so without a key the ladder chosen in edit carries over to create. */}
+                    <Route
+                        path='display-ladder'
+                        element={<DisplayLadders key='create' mode='create' />}
+                    />
                 </Route>
                 <Route path='size' element={<CreateSize />} />
                 <Route path='ingredient' element={<CreateIngredient />} />
@@ -50,7 +54,10 @@ export const routes = createRoutesFromElements(
                 <Route path='ingredient' element={<EditIngredient />} />
                 <Route path='prep-method' element={<EditPrepMethod />} />
                 <Route element={<RequireAdmin />}>
-                    <Route path='unit-conversion' element={<EditUnitConversion />} />
+                    <Route
+                        path='display-ladder'
+                        element={<DisplayLadders key='edit' mode='edit' />}
+                    />
                 </Route>
                 <Route path='recipe/:titleIdentifier' element={<EditRecipe />} />
             </Route>

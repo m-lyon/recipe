@@ -29,8 +29,8 @@ import { mockAdminId, mockRecipeIngredientIdTen, mockUserId } from '@recipe/grap
 import { mockRhurbarbPie } from './ingredient';
 import { mockDiced, mockPrepMethods } from './prepMethod';
 import { mockMedium, mockSizes, mockSmall } from './size';
-import { mockCup, mockOunce, mockTeaspoon, mockUnits } from './unit';
 import { mockDinnerTag, mockFreezableTag, mockLunchTag } from './tag';
+import { mockCup, mockEach, mockOunce, mockTeaspoon, mockUnits } from './unit';
 import { mockRatingNewOne, mockRatingOne, mockRatingThree, mockRatingTwo } from './rating';
 import { mockApple, mockCarrot, mockIngredients, mockRecipeFromIngredients } from './ingredient';
 
@@ -113,7 +113,7 @@ export const mockRecipeOne: CompletedRecipeView = {
                     __typename: 'RecipeIngredient',
                     _id: mockRecipeIngredientIdTwo,
                     quantity: '1',
-                    unit: null,
+                    unit: mockEach,
                     size: mockSmall,
                     ingredient: mockCarrot,
                     prepMethod: mockDiced,
@@ -123,7 +123,7 @@ export const mockRecipeOne: CompletedRecipeView = {
                     __typename: 'RecipeIngredient',
                     _id: mockRecipeIngredientIdThree,
                     quantity: '2',
-                    unit: null,
+                    unit: mockEach,
                     size: null,
                     ingredient: mockApple,
                     prepMethod: mockDiced,
@@ -220,7 +220,7 @@ export const mockRecipeThree: CompletedRecipeView = {
                     __typename: 'RecipeIngredient',
                     _id: mockRecipeIngredientIdTwo,
                     quantity: '1',
-                    unit: null,
+                    unit: mockEach,
                     size: mockSmall,
                     ingredient: mockApple,
                     prepMethod: mockDiced,
@@ -230,7 +230,7 @@ export const mockRecipeThree: CompletedRecipeView = {
                     __typename: 'RecipeIngredient',
                     _id: mockRecipeIngredientIdThree,
                     quantity: '2',
-                    unit: null,
+                    unit: mockEach,
                     size: null,
                     ingredient: mockApple,
                     prepMethod: mockDiced,

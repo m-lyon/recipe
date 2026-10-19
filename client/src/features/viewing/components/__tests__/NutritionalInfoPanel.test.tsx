@@ -52,7 +52,7 @@ describe('NutritionalInfoPanel', () => {
             />
         );
         renderPage(routes, []);
-        expect(screen.queryByText('825 kcal')).not.toBeNull();
+        expect(screen.queryByText('825')).not.toBeNull();
     });
 
     it('renders skeleton placeholders while loading', () => {
@@ -71,7 +71,7 @@ describe('NutritionalInfoPanel', () => {
         );
         renderPage(routes, []);
         // Skeletons are rendered; the macros text should not be visible
-        expect(screen.queryByText('kcal')).toBeNull();
+        expect(screen.queryByText('Calories')).toBeNull();
     });
 
     it('shows uncounted notice when some ingredients have no nutritional data', () => {

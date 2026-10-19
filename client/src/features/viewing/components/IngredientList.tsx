@@ -4,11 +4,11 @@ import { BoxProps, Tooltip, UnorderedList, VStack } from '@chakra-ui/react';
 import { Box, Flex, IconButton, ListItem, Spacer, Text } from '@chakra-ui/react';
 
 import { useWakeLock } from '@recipe/common/hooks';
-import { changeQuantity } from '@recipe/utils/quantity';
-import { useUnitConversion } from '@recipe/features/servings';
+import { useDisplayedIngredient } from '@recipe/features/servings';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 
 import { RecipeIngredient } from './RecipeIngredient';
+import { ApproximateIngredient } from './ApproximateIngredient';
 
 function UncountedIngredientHint() {
     return (
@@ -43,6 +43,7 @@ export interface IngredientListProps extends BoxProps {
     showWakeLockBtn?: boolean;
     uncountedIngredientIds?: Set<string>;
     dietToggle?: React.ReactNode;
+    unitToggle?: React.ReactNode;
 }
 export function IngredientList(props: IngredientListProps) {
     const {
@@ -52,16 +53,14 @@ export function IngredientList(props: IngredientListProps) {
         showWakeLockBtn,
         uncountedIngredientIds,
         dietToggle,
+        unitToggle,
         ...rest
     } = props;
-    const { apply } = useUnitConversion();
+    const display = useDisplayedIngredient(currentServings, origServings);
     const { isAwake, toggleWakeLock } = useWakeLock();
 
     const modifiedSubsections = subsections.map((collection) => {
-        const modifiedCollection = collection.ingredients.map((ingredient) => {
-            return changeQuantity(ingredient, currentServings, origServings, apply);
-        });
-        return { ...collection, ingredients: modifiedCollection };
+        return { ...collection, ingredients: collection.ingredients.map(display) };
     });
 
     const subsectionsList = modifiedSubsections.map((collection, index) => {
@@ -72,7 +71,11 @@ export function IngredientList(props: IngredientListProps) {
                         key={item._id}
                         aria-label={`Ingredient #${i + 1} in subsection ${index + 1}`}
                     >
-                        {getFinishedRecipeIngredientStr(item)}
+                        {item.authored ? (
+                            <ApproximateIngredient item={item} authored={item.authored} />
+                        ) : (
+                            getFinishedRecipeIngredientStr(item)
+                        )}
                         {uncountedIngredientIds?.has(item._id) && <UncountedIngredientHint />}
                     </ListItem>
                 );
@@ -82,6 +85,7 @@ export function IngredientList(props: IngredientListProps) {
                     key={item._id}
                     // ingredient is guaranteed to be a recipe because of the typename check
                     ingredient={item as RecipeIngredientAsRecipeView}
+                    authored={item.authored}
                 />
             );
         });
@@ -109,6 +113,7 @@ export function IngredientList(props: IngredientListProps) {
                 <Text fontSize='2xl'>{modifiedSubsections[0].name ?? 'Ingredients'}</Text>
                 <Spacer />
                 {dietToggle}
+                {unitToggle}
                 {showWakeLockBtn ? (
                     <Tooltip
                         label={isAwake ? 'Allow screen to sleep' : 'Keep screen awake'}

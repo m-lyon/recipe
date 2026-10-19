@@ -1,7 +1,13 @@
 import { Document, Schema, Types, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 
+import { STANDARD_UNIT_KEYS } from '../utils/units.js';
 import { ownerExists, uniqueInAdminsAndUser } from './validation.js';
+
+export const UnitDimensions = ['mass', 'volume', 'count'] as const;
+export type UnitDimension = (typeof UnitDimensions)[number];
+export const UnitSystems = ['metric', 'us'] as const;
+export type UnitSystem = (typeof UnitSystems)[number];
 
 export interface Unit extends Document {
     shortSingular: string;
@@ -12,7 +18,12 @@ export interface Unit extends Document {
     owner: Types.ObjectId;
     hasSpace: boolean;
     unique: boolean;
-    measureType?: 'mass' | 'volume' | null;
+    dimension: UnitDimension;
+    perCanonical: number;
+    system: UnitSystem | null;
+    hidden: boolean;
+    /** The key of a standard unit, whose size is defined in code. Null for other units. */
+    standard: string | null;
 }
 
 const unitSchema = new Schema<Unit>({
@@ -60,18 +71,58 @@ const unitSchema = new Schema<Unit>({
     owner: { type: Schema.Types.ObjectId, required: true, ref: 'User', validate: ownerExists() },
     hasSpace: { type: Boolean, required: true },
     unique: { type: Boolean, required: true },
-    measureType: {
+    dimension: { type: String, required: true, enum: UnitDimensions },
+    perCanonical: {
+        type: Number,
+        required: true,
+        validate: [
+            {
+                validator: (value: number) => value > 0,
+                message: 'The size of a unit must be greater than 0.',
+            },
+            {
+                validator: function (this: Unit, value: number) {
+                    return this.dimension !== 'count' || value === 1;
+                },
+                message: 'A count unit must have a size of 1.',
+            },
+        ],
+    },
+    system: {
         type: String,
-        // `null` is a valid "not set" value the client sends explicitly; Mongoose's
-        // enum validator only exempts `undefined`, so it must be listed here too.
-        enum: ['mass', 'volume', null],
-        required: false,
+        // `null` is listed because Mongoose's enum validator only exempts `undefined`.
+        enum: [...UnitSystems, null],
+        default: null,
+        validate: {
+            validator: function (this: Unit, value: UnitSystem | null) {
+                if (this.dimension === 'count') {
+                    return value == null;
+                }
+                return value != null;
+            },
+            message: 'A mass or volume unit needs a system, and a count unit must not have one.',
+        },
+    },
+    hidden: { type: Boolean, default: false },
+    standard: {
+        type: String,
+        default: null,
+        validate: {
+            validator: (value: string | null) =>
+                value == null || STANDARD_UNIT_KEYS.includes(value),
+            message: 'Unknown standard unit.',
+        },
     },
 });
+unitSchema.index(
+    { standard: 1 },
+    { unique: true, partialFilterExpression: { standard: { $type: 'string' } } }
+);
 
 export const Unit = model<Unit>('Unit', unitSchema);
 export const UnitTC = composeMongoose(Unit);
 export const UnitCreateTC = composeMongoose(Unit, {
-    removeFields: ['owner'],
+    // Only syncStandardUnits marks a unit as standard.
+    removeFields: ['owner', 'standard'],
     name: 'UnitCreate',
 });

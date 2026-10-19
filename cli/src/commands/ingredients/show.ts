@@ -2,8 +2,11 @@ import { Args } from '@oclif/core';
 
 import { BaseCommand } from '../../lib/base.js';
 import { resolveIngredient } from '../../lib/resolve.js';
+import type { MeasureSummary } from '../../lib/types.js';
+import { describeMeasureKey } from '../../lib/measures.js';
 import { recipeIngredientIds } from '../../lib/nutrition.js';
 import { GET_RECIPES_BY_IDS } from '../../graphql/operations.js';
+import { GET_INGREDIENT_MEASURES } from '../../graphql/operations.js';
 import { EMPTY, indent, num, renderTable, text } from '../../lib/format.js';
 import { GET_ALL_RECIPES, GET_NUTRITIONAL_INFO } from '../../graphql/operations.js';
 import type { NutritionalInfoSummary, RecipeDetail, RecipeSummary } from '../../lib/types.js';
@@ -30,6 +33,10 @@ export default class IngredientsShow extends BaseCommand {
         const info = (await client.request(GET_NUTRITIONAL_INFO, { ingredientId: ingredient._id }))
             .nutritionalInfoByIngredient as unknown as NutritionalInfoSummary | null;
 
+        const measures = ((
+            await client.request(GET_INGREDIENT_MEASURES, { ingredientIds: [ingredient._id] })
+        ).ingredientMeasuresByIngredientIds ?? []) as unknown as MeasureSummary[];
+
         const summaries = ((await client.request(GET_ALL_RECIPES)).recipeMany ??
             []) as unknown as RecipeSummary[];
         const detailed =
@@ -48,8 +55,8 @@ export default class IngredientsShow extends BaseCommand {
                 titleIdentifier: recipe.titleIdentifier,
             }));
 
-        this.out(this.render(ingredient, info, usedBy));
-        return { ingredient, nutritionalInfo: info ?? null, usedBy };
+        this.out(this.render(ingredient, info, measures, usedBy));
+        return { ingredient, nutritionalInfo: info ?? null, ingredientMeasures: measures, usedBy };
     }
 
     private render(
@@ -58,10 +65,10 @@ export default class IngredientsShow extends BaseCommand {
             name: string;
             pluralName: string;
             isCountable: boolean;
-            density?: number | null;
             tags?: string[] | null;
         },
         info: NutritionalInfoSummary | null,
+        measures: MeasureSummary[],
         usedBy: Array<{ title: string; titleIdentifier: string }>
     ): string {
         const lines = [
@@ -69,7 +76,6 @@ export default class IngredientsShow extends BaseCommand {
             '',
             `Plural       ${ingredient.pluralName}`,
             `Countable    ${ingredient.isCountable ? 'yes' : 'no'}`,
-            `Density      ${ingredient.density === null || ingredient.density === undefined ? EMPTY : num(ingredient.density, 3)}`,
             `Tags         ${ingredient.tags && ingredient.tags.length > 0 ? ingredient.tags.join(', ') : EMPTY}`,
             '',
             'NUTRITION',
@@ -77,12 +83,25 @@ export default class IngredientsShow extends BaseCommand {
         if (info) {
             lines.push(
                 indent(`usdaFdcId   ${text(info.usdaFdcId ? String(info.usdaFdcId) : null)}`),
-                indent(`perGram     ${macros(info.perGram)}`),
-                indent(`perUnit     ${macros(info.perUnit)}`)
+                indent(`perGram     ${macros(info.perGram)}`)
             );
         } else {
             lines.push(indent('No nutritional data'));
         }
+        lines.push('', 'MEASURES');
+        lines.push(
+            measures.length === 0
+                ? indent('No measures')
+                : indent(
+                      renderTable(
+                          ['ONE', 'GRAMS'],
+                          measures.map((measure) => [
+                              describeMeasureKey(measure),
+                              num(measure.grams),
+                          ])
+                      )
+                  )
+        );
         lines.push('', 'USED BY');
         lines.push(
             usedBy.length === 0

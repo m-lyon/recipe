@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { useMutation } from '@apollo/client';
 
 import { useErrorToast } from '@recipe/common/hooks';
@@ -7,6 +8,7 @@ import { MODIFY_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 import { INGREDIENT_FIELDS_FULL } from '@recipe/graphql/queries/ingredient';
 
 import { BaseIngredientForm } from './BaseIngredientForm';
+import { UsdaLinkSectionHandle } from './UsdaLinkSection';
 import { formatIngredientError } from './BaseIngredientForm';
 import { BaseIngredientFormProps } from './BaseIngredientForm';
 
@@ -19,9 +21,23 @@ interface Props extends Omit<BaseIngredientFormProps, 'submitForm'> {
 export function ModifyIngredientForm(props: Props) {
     const { handleComplete, onDelete, ingredientId, ...rest } = props;
     const toast = useErrorToast();
+    const formRef = useRef<UsdaLinkSectionHandle>(null);
 
     const [modifyIngredient] = useMutation(MODIFY_INGREDIENT, {
-        onCompleted: handleComplete,
+        onCompleted: async (data) => {
+            // The nutrition link and measures are staged until the ingredient is saved.
+            try {
+                await formRef.current?.commitChanges(ingredientId!);
+            } catch (err) {
+                toast({
+                    title: 'Ingredient saved, but nutritional data or measures failed',
+                    description: err instanceof Error ? err.message : String(err),
+                    position: 'top',
+                });
+                return;
+            }
+            handleComplete(data);
+        },
         onError: (error) => {
             toast({
                 title: 'Error modifying ingredient',
@@ -70,6 +86,7 @@ export function ModifyIngredientForm(props: Props) {
     return (
         <BaseIngredientForm
             {...rest}
+            ref={formRef}
             ingredientId={ingredientId}
             submitForm={handleSubmit}
             onDelete={handleDelete}

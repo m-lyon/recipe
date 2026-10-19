@@ -23,7 +23,7 @@ export function IngredientsTabLayout(props: Props) {
                 </Flex>
                 {IngredientList}
             </VStack>
-            <Spacer />
+            <Spacer minH='20px' />
             <VStack spacing='24px' align='left'>
                 {UsedIn}
                 {Notes}

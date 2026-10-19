@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { mockMilliliter, mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
-import { mockUnitConversionOne } from '@recipe/graphql/queries/__mocks__/unitConversion';
-import { mockUnitConversionTwo } from '@recipe/graphql/queries/__mocks__/unitConversion';
-import { mockCup, mockGram, mockKilogram } from '@recipe/graphql/queries/__mocks__/unit';
-import { mockUnitConversionVolume } from '@recipe/graphql/queries/__mocks__/unitConversion';
+import { mockLarge } from '@recipe/graphql/queries/__mocks__/size';
+import { mockChopped } from '@recipe/graphql/queries/__mocks__/prepMethod';
+import { mockEach, mockMilliliter, mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
+import { mockCup, mockGram, mockKilogram, mockOunce } from '@recipe/graphql/queries/__mocks__/unit';
 
-import { MacroNutrients, NutritionalInfoData, addMacros } from '../nutrition';
-import { calculateIngredientNutrition, quantityToFloat, sumRecipeNutrition } from '../nutrition';
+import { IngredientMeasureData, grams, quantityToFloat } from '../nutrition';
+import { calculateIngredientNutrition, sumRecipeNutrition } from '../nutrition';
+import { MacroNutrients, NutritionalInfoData, addMacros, findMeasure } from '../nutrition';
 
 // ---------------------------------------------------------------------------
 // quantityToFloat
@@ -58,212 +58,197 @@ describe('addMacros', () => {
 // Test helpers
 // ---------------------------------------------------------------------------
 
+const large = { __typename: 'Size' as const, _id: mockLarge._id, value: 'large' };
+const chopped = { __typename: 'PrepMethod' as const, _id: mockChopped._id, value: 'chopped' };
+
 function makeIngredient(overrides: Partial<RecipeIngredientView> = {}): RecipeIngredientView {
     return {
         __typename: 'RecipeIngredient',
         _id: 'ri-1',
         quantity: '2',
-        unit: null,
+        unit: mockEach,
+        size: null,
+        prepMethod: null,
         ingredient: {
             __typename: 'Ingredient',
             _id: 'ing-1',
-            name: 'Test ingredient',
-            density: null,
+            name: 'onion',
         },
         ...overrides,
     } as unknown as RecipeIngredientView;
 }
 
-const perUnitMacros: MacroNutrients = { calories: 100, protein: 10, carbs: 5, fat: 3 };
-const perGramMacros: MacroNutrients = { calories: 4, protein: 0.1, carbs: 0.8, fat: 0.05 };
+function measure(
+    unit: IngredientMeasureData['unit'],
+    gramsPerUnit: number,
+    extra: Partial<IngredientMeasureData> = {}
+): IngredientMeasureData {
+    return {
+        __typename: 'IngredientMeasure',
+        _id: `m-${unit._id}-${gramsPerUnit}`,
+        ingredient: 'ing-1',
+        grams: gramsPerUnit,
+        unit,
+        size: null,
+        prepMethod: null,
+        ...extra,
+    };
+}
 
-const nutritionPerUnit: NutritionalInfoData = { perUnit: perUnitMacros };
+const perGramMacros: MacroNutrients = { calories: 4, protein: 0.1, carbs: 0.8, fat: 0.05 };
 const nutritionPerGram: NutritionalInfoData = { perGram: perGramMacros };
+
+// ---------------------------------------------------------------------------
+// findMeasure
+// ---------------------------------------------------------------------------
+describe('findMeasure', () => {
+    const each = measure(mockEach, 110);
+    const eachLarge = measure(mockEach, 150, { size: large });
+    const cupChopped = measure(mockCup, 160, { prepMethod: chopped });
+    const cup = measure(mockCup, 125);
+    const measures = [each, eachLarge, cupChopped, cup];
+
+    it('prefers the exact (unit, size, prep) row', () => {
+        const key = { unit: mockCup, sizeId: null, prepMethodId: mockChopped._id };
+        expect(findMeasure(measures, key)?.measure).toBe(cupChopped);
+    });
+
+    it('drops the prep method when no row has it', () => {
+        const key = { unit: mockEach, sizeId: mockLarge._id, prepMethodId: mockChopped._id };
+        expect(findMeasure(measures, key)?.measure).toBe(eachLarge);
+    });
+
+    it('drops the size when no row has it', () => {
+        const key = { unit: mockEach, sizeId: 'unknown-size', prepMethodId: null };
+        expect(findMeasure(measures, key)?.measure).toBe(each);
+    });
+
+    it('rescales the least specific volume row for another volume unit', () => {
+        // 125 g per cup is 0.5283 g/ml, so a teaspoon weighs 125 / 48 g.
+        const key = { unit: mockTeaspoon, sizeId: null, prepMethodId: null };
+        const found = findMeasure(measures, key);
+        expect(found?.measure).toBe(cup);
+        expect(found?.gramsPerUnit).toBeCloseTo(125 / 48, 6);
+    });
+
+    it('prefers an exact unit match over rescaling', () => {
+        const cupRow = measure(mockCup, 1);
+        const key = { unit: mockMilliliter, sizeId: null, prepMethodId: null };
+        expect(findMeasure([measure(mockMilliliter, 0.9), cupRow], key)?.gramsPerUnit).toBe(0.9);
+    });
+
+    it('never rescales between count units', () => {
+        const clove = { ...mockEach, _id: 'clove', hidden: false, longSingular: 'clove' };
+        expect(findMeasure([each], { unit: clove, sizeId: null, prepMethodId: null })).toBeNull();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// grams
+// ---------------------------------------------------------------------------
+describe('grams', () => {
+    const labels = { ingredientName: 'honey' };
+    const none = { sizeId: null, prepMethodId: null };
+
+    it('converts a mass unit by its size alone', () => {
+        expect(grams(2, { unit: mockKilogram, ...none }, [], labels)).toEqual({ grams: 2000 });
+        expect(grams(1, { unit: mockOunce, ...none }, [], labels).grams).toBeCloseTo(28.3495, 4);
+    });
+
+    it('converts a volume unit through a volume measure', () => {
+        const result = grams(
+            1,
+            { unit: mockCup, ...none },
+            [measure(mockMilliliter, 1.42)],
+            labels
+        );
+        expect(result.grams).toBeCloseTo(236.5882365 * 1.42, 6);
+    });
+
+    it('converts a count unit through its measure', () => {
+        expect(grams(3, { unit: mockEach, ...none }, [measure(mockEach, 110)], labels)).toEqual({
+            grams: 330,
+        });
+    });
+
+    it('names the record to add when no measure matches', () => {
+        expect(grams(1, { unit: mockCup, ...none }, [], labels)).toEqual({
+            grams: null,
+            reason: 'No weight recorded for 1 cup of honey',
+        });
+        expect(grams(1, { unit: mockEach, ...none }, [], { ...labels, sizeName: 'large' })).toEqual(
+            {
+                grams: null,
+                reason: 'No weight recorded for 1 large honey',
+            }
+        );
+    });
+});
 
 // ---------------------------------------------------------------------------
 // calculateIngredientNutrition
 // ---------------------------------------------------------------------------
 describe('calculateIngredientNutrition', () => {
-    const unitConversions: UnitConversion[] = [mockUnitConversionOne, mockUnitConversionTwo];
-
     it('returns not-calculable when quantity is missing', () => {
-        const ri = makeIngredient({ quantity: null });
-        const result = calculateIngredientNutrition(ri, nutritionPerUnit, unitConversions);
-        expect(result.calculable).toBe(false);
+        const result = calculateIngredientNutrition(
+            makeIngredient({ quantity: null }),
+            nutritionPerGram,
+            []
+        );
+        expect(result).toMatchObject({ calculable: false, reason: 'No quantity' });
     });
 
     it('returns not-calculable when quantity cannot be parsed (NaN guard)', () => {
-        const ri = makeIngredient({ quantity: 'abc' });
-        const result = calculateIngredientNutrition(ri, nutritionPerUnit, unitConversions);
-        expect(result.calculable).toBe(false);
-        expect(result.reason).toContain('parse');
+        const result = calculateIngredientNutrition(
+            makeIngredient({ quantity: 'abc' }),
+            nutritionPerGram,
+            []
+        );
+        expect(result).toMatchObject({ calculable: false, reason: 'Could not parse quantity' });
     });
 
     it('returns not-calculable when nutritional info is null', () => {
-        const ri = makeIngredient({ quantity: '1' });
-        const result = calculateIngredientNutrition(ri, null, unitConversions);
-        expect(result.calculable).toBe(false);
+        const result = calculateIngredientNutrition(makeIngredient(), null, []);
+        expect(result).toMatchObject({ calculable: false, reason: 'No nutritional data' });
     });
 
-    it('calculates per-unit for a unitless ingredient', () => {
-        const ri = makeIngredient({ quantity: '3', unit: null });
-        const result = calculateIngredientNutrition(ri, nutritionPerUnit, unitConversions);
-        expect(result.calculable).toBe(true);
-        expect(result.macros.calories).toBeCloseTo(300);
-        expect(result.macros.protein).toBeCloseTo(30);
-    });
-
-    it('returns not-calculable for unitless ingredient with no perUnit data', () => {
-        const ri = makeIngredient({ quantity: '3', unit: null });
-        const result = calculateIngredientNutrition(ri, nutritionPerGram, unitConversions);
-        expect(result.calculable).toBe(false);
-    });
-
-    it('calculates grams for an ingredient measured in the base unit itself', () => {
-        // Gram is mockUnitConversionOne's base unit, so it never appears in `rules`
-        // (a ConversionRule cannot convert a unit to itself). Its factor is 1.
-        const ri = makeIngredient({ quantity: '100', unit: mockGram as unknown as UnitView });
-        const result = calculateIngredientNutrition(ri, nutritionPerGram, unitConversions);
-        expect(result.calculable).toBe(true);
-        expect(result.macros.calories).toBeCloseTo(perGramMacros.calories * 100);
-        expect(result.macros.protein).toBeCloseTo(perGramMacros.protein * 100);
-    });
-
-    it('calculates millilitres for an ingredient measured in the volume base unit itself', () => {
-        // 250 ml × density 0.8 g/ml = 200 g
-        const ri = makeIngredient({
-            quantity: '250',
-            unit: mockMilliliter as unknown as UnitView,
-            ingredient: {
-                __typename: 'Ingredient',
-                _id: 'ing-1',
-                name: 'Olive oil',
-                density: 0.8,
-            } as unknown as RecipeIngredientView['ingredient'],
-        });
-        const result = calculateIngredientNutrition(ri, nutritionPerGram, [
-            mockUnitConversionOne,
-            mockUnitConversionVolume,
+    it('prices a counted ingredient through its item weight', () => {
+        const result = calculateIngredientNutrition(makeIngredient(), nutritionPerGram, [
+            measure(mockEach, 110),
         ]);
         expect(result.calculable).toBe(true);
-        expect(result.macros.calories).toBeCloseTo(perGramMacros.calories * 200);
+        expect(result.macros.calories).toBeCloseTo(880);
     });
 
-    it('calculates grams for a non-base mass unit ingredient', () => {
-        const ri = makeIngredient({ quantity: '1', unit: mockKilogram as unknown as UnitView });
-        const result = calculateIngredientNutrition(ri, nutritionPerGram, unitConversions);
-        expect(result.calculable).toBe(true);
-        // 1 kg = 1000 g (baseToUnitConversion for kg = 1000)
-        expect(result.macros.calories).toBeCloseTo(perGramMacros.calories * 1000);
+    it('prices a sized line through the sized measure', () => {
+        const result = calculateIngredientNutrition(
+            makeIngredient({ quantity: '1', size: large } as Partial<RecipeIngredientView>),
+            nutritionPerGram,
+            [measure(mockEach, 110), measure(mockEach, 150, { size: large })]
+        );
+        expect(result.macros.calories).toBeCloseTo(600);
     });
 
-    it('returns not-calculable for mass unit with no perGram data', () => {
-        const ri = makeIngredient({ quantity: '1', unit: mockKilogram as unknown as UnitView });
-        const result = calculateIngredientNutrition(ri, nutritionPerUnit, unitConversions);
-        expect(result.calculable).toBe(false);
+    it('prices a mass unit with no measures at all', () => {
+        const result = calculateIngredientNutrition(
+            makeIngredient({ quantity: '250', unit: mockGram }),
+            nutritionPerGram,
+            []
+        );
+        expect(result.macros.calories).toBeCloseTo(1000);
     });
 
-    it('rejects a volume unit whose only conversion group is not millilitre-based', () => {
-        // mockUnitConversionTwo holds a cup rule, but its base unit is the teaspoon.
-        // Multiplying by 48 would yield teaspoons fed straight into per-gram macros,
-        // so the group is not eligible and the ingredient is reported as uncounted.
-        const ri = makeIngredient({
-            quantity: '1',
-            unit: mockCup as unknown as UnitView,
-            ingredient: {
-                __typename: 'Ingredient',
-                _id: 'ing-1',
-                name: 'Water',
-                density: 1,
-            } as unknown as RecipeIngredientView['ingredient'],
+    it('marks a line with no matching measure as fixable', () => {
+        const result = calculateIngredientNutrition(
+            makeIngredient({ quantity: '1', unit: mockCup }),
+            nutritionPerGram,
+            []
+        );
+        expect(result).toMatchObject({
+            calculable: false,
+            reason: 'No weight recorded for 1 cup of onion',
+            missingMeasure: true,
         });
-        const result = calculateIngredientNutrition(ri, nutritionPerGram, unitConversions);
-        expect(result.calculable).toBe(false);
-        expect(result.reason).toContain('Cannot convert');
-    });
-
-    it('calculates via density for a volume unit when a proper volume base unit is present', () => {
-        // mockUnitConversionVolume: baseUnit=mockMilliliter (measureType: 'volume')
-        // mockConversionRuleFour: cup → 240 ml (baseToUnitConversion=240)
-        // 2 cups × 240 ml/cup = 480 ml; density = 0.5 g/ml → 240 g
-        const ri = makeIngredient({
-            quantity: '2',
-            unit: mockCup as unknown as UnitView,
-            ingredient: {
-                __typename: 'Ingredient',
-                _id: 'ing-1',
-                name: 'Honey',
-                density: 0.5,
-            } as unknown as RecipeIngredientView['ingredient'],
-        });
-        const volumeConversions: UnitConversion[] = [
-            mockUnitConversionOne,
-            mockUnitConversionVolume,
-        ];
-        const result = calculateIngredientNutrition(ri, nutritionPerGram, volumeConversions);
-        expect(result.calculable).toBe(true);
-        // 2 cups × 240 ml/cup × 0.5 g/ml = 240 g
-        expect(result.macros.calories).toBeCloseTo(perGramMacros.calories * 240);
-    });
-
-    it('accepts either spelling of the volume base unit', () => {
-        // Unit names are user-entered: the seeded data uses 'millilitre', but an
-        // admin-created unit may well be named 'milliliter'. Both must match the group.
-        const americanMl = { ...mockMilliliter, longSingular: 'milliliter' };
-        const conversions: UnitConversion[] = [
-            { ...mockUnitConversionVolume, baseUnit: americanMl } as UnitConversion,
-        ];
-        const ri = makeIngredient({
-            quantity: '2',
-            unit: mockCup as unknown as UnitView,
-            ingredient: {
-                __typename: 'Ingredient',
-                _id: 'ing-1',
-                name: 'Honey',
-                density: 0.5,
-            } as unknown as RecipeIngredientView['ingredient'],
-        });
-        const result = calculateIngredientNutrition(ri, nutritionPerGram, conversions);
-        expect(result.calculable).toBe(true);
-        expect(result.macros.calories).toBeCloseTo(perGramMacros.calories * 240);
-    });
-
-    it('returns not-calculable for volume unit without density', () => {
-        const ri = makeIngredient({
-            quantity: '1',
-            unit: mockCup as unknown as UnitView,
-            ingredient: {
-                __typename: 'Ingredient',
-                _id: 'ing-1',
-                name: 'Flour',
-                density: null,
-            } as unknown as RecipeIngredientView['ingredient'],
-        });
-        const result = calculateIngredientNutrition(ri, nutritionPerGram, unitConversions);
-        expect(result.calculable).toBe(false);
-    });
-
-    it('returns not-calculable for unit with no measureType', () => {
-        const ri = makeIngredient({ quantity: '1', unit: mockTeaspoon as unknown as UnitView });
-        const result = calculateIngredientNutrition(ri, nutritionPerGram, unitConversions);
-        expect(result.calculable).toBe(false);
-        expect(result.reason).toContain('tsp');
-    });
-
-    it('does not mutate ZERO_MACROS on non-calculable result', () => {
-        const ri = makeIngredient({ quantity: null });
-        const r1 = calculateIngredientNutrition(ri, nutritionPerUnit, []);
-        const r2 = calculateIngredientNutrition(ri, nutritionPerUnit, []);
-        // If ZERO_MACROS is returned by reference both times they would be the same object,
-        // meaning mutating r1.macros would affect r2.macros. Ensure they are different objects.
-        expect(r1.macros).not.toBe(r2.macros);
-    });
-
-    it('handles mixed-number quantity like "1 1/2"', () => {
-        const ri = makeIngredient({ quantity: '1 1/2', unit: null });
-        const result = calculateIngredientNutrition(ri, nutritionPerUnit, []);
-        expect(result.calculable).toBe(true);
-        expect(result.macros.calories).toBeCloseTo(perUnitMacros.calories * 1.5);
     });
 });
 
@@ -271,69 +256,40 @@ describe('calculateIngredientNutrition', () => {
 // sumRecipeNutrition
 // ---------------------------------------------------------------------------
 describe('sumRecipeNutrition', () => {
-    function makeSubsection(items: RecipeIngredientView[]): IngredientSubsectionView {
-        return {
-            __typename: 'IngredientSubsection',
-            _id: 'ss-1',
-            name: null,
-            ingredients: items,
-        } as unknown as IngredientSubsectionView;
-    }
+    const subsection = {
+        __typename: 'IngredientSubsection',
+        name: null,
+        ingredients: [
+            makeIngredient({ _id: 'ri-1', quantity: '1' }),
+            makeIngredient({ _id: 'ri-2', quantity: '1', unit: mockCup }),
+            makeIngredient({ _id: 'ri-3', quantity: '100', unit: mockGram }),
+        ],
+    } as unknown as IngredientSubsectionView;
 
-    const ri1 = makeIngredient({ _id: 'ri-1', quantity: '2', unit: null });
-    const ri2 = makeIngredient({ _id: 'ri-2', quantity: '3', unit: null });
-    const infoMap = new Map<string, NutritionalInfoData | null>([['ing-1', nutritionPerUnit]]);
-
-    it('sums calculable ingredients and excludes uncountable ones', () => {
-        // ri1 has ingredientId ing-1 (has info), ri2 also has ing-1 (has info)
-        const subsections = [makeSubsection([ri1, ri2])];
-        const result = sumRecipeNutrition(subsections, infoMap, [], 2);
-        // ri1: 2 units × 100 cal = 200; ri2: 3 × 100 = 300 → total = 500
-        expect(result.total.calories).toBeCloseTo(500);
-        expect(result.perServing.calories).toBeCloseTo(250);
-        expect(result.uncountedIds.size).toBe(0);
-    });
-
-    it('adds uncountable ingredient ids to uncountedIds', () => {
-        const riNoInfo = makeIngredient({
-            _id: 'ri-3',
-            quantity: '1',
-            unit: null,
-            ingredient: {
-                __typename: 'Ingredient',
-                _id: 'ing-no-info',
-                name: 'Unknown ingredient',
-                density: null,
-            } as unknown as RecipeIngredientView['ingredient'],
+    it('sums counted lines and lists uncounted ones with their reasons', () => {
+        const result = sumRecipeNutrition(
+            [subsection],
+            new Map([['ing-1', nutritionPerGram]]),
+            new Map([['ing-1', [measure(mockEach, 110)]]]),
+            2
+        );
+        // (110 g + 100 g) × 4 kcal/g = 840 kcal, over 2 servings
+        expect(result.total.calories).toBeCloseTo(840);
+        expect(result.perServing.calories).toBeCloseTo(420);
+        expect([...result.uncountedIds]).toEqual(['ri-2']);
+        expect(result.uncounted[0]).toMatchObject({
+            reason: 'No weight recorded for 1 cup of onion',
+            missingMeasure: true,
         });
-        const subsections = [makeSubsection([ri1, riNoInfo])];
-        const result = sumRecipeNutrition(subsections, infoMap, [], 1);
-        expect(result.uncountedIds.has('ri-3')).toBe(true);
-        expect(result.total.calories).toBeCloseTo(200);
     });
 
-    it('silently corrects numServings=0 to 1', () => {
-        const subsections = [makeSubsection([ri1])];
-        const result = sumRecipeNutrition(subsections, infoMap, [], 0);
-        // total = 200, divisor = 1 (not 0)
-        expect(result.perServing.calories).toBeCloseTo(200);
-    });
-
-    it('skips nested-recipe ingredients', () => {
-        const nestedRi: RecipeIngredientView = {
-            __typename: 'RecipeIngredient',
-            _id: 'ri-nested',
-            quantity: '1',
-            unit: null,
-            ingredient: {
-                __typename: 'Recipe',
-                _id: 'rec-1',
-                name: 'Nested',
-            },
-        } as unknown as RecipeIngredientView;
-        const subsections = [makeSubsection([nestedRi])];
-        const result = sumRecipeNutrition(subsections, infoMap, [], 1);
-        expect(result.total.calories).toBe(0);
-        expect(result.uncountedIds.size).toBe(0);
+    it('uses one serving when the serving count is not positive', () => {
+        const result = sumRecipeNutrition(
+            [subsection],
+            new Map([['ing-1', nutritionPerGram]]),
+            new Map([['ing-1', [measure(mockEach, 110)]]]),
+            0
+        );
+        expect(result.perServing.calories).toBeCloseTo(840);
     });
 });

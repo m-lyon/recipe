@@ -1,3 +1,4 @@
+import { Modifier } from '@apollo/client/cache';
 import { Reference, useMutation } from '@apollo/client';
 
 import { useErrorToast } from '@recipe/common/hooks';
@@ -26,25 +27,26 @@ export function CreateSizeForm(props: Props) {
         },
         update: (cache, { data }) => {
             if (data?.sizeCreateOne?.record) {
-                cache.modify({
-                    fields: {
-                        sizeMany(existingRefs = [], { readField }) {
-                            const record = data.sizeCreateOne!.record!;
-                            const newRef = cache.writeFragment({
-                                data: record,
-                                fragment: SIZE_FIELDS,
-                                fragmentName: 'SizeFields',
-                            });
-                            if (
-                                existingRefs.some(
-                                    (ref: Reference) => readField('_id', ref) === record._id
-                                )
-                            ) {
-                                return existingRefs;
-                            }
-                            return [...existingRefs, newRef];
-                        },
-                    },
+                const addRecord: Modifier<readonly Reference[]> = (
+                    existingRefs = [],
+                    { readField }
+                ) => {
+                    const record = data.sizeCreateOne!.record!;
+                    const newRef = cache.writeFragment({
+                        data: record,
+                        fragment: SIZE_FIELDS,
+                        fragmentName: 'SizeFields',
+                    });
+                    if (
+                        existingRefs.some((ref: Reference) => readField('_id', ref) === record._id)
+                    ) {
+                        return existingRefs;
+                    }
+                    return [...existingRefs, newRef];
+                };
+                // The creator owns the new size, so it also belongs in the editable list.
+                cache.modify<Record<'sizeMany' | 'sizeManyEditable', Reference[]>>({
+                    fields: { sizeMany: addRecord, sizeManyEditable: addRecord },
                 });
             }
         },

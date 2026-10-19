@@ -8,10 +8,15 @@ export const PREP_METHOD_FIELDS = gql(`
     }
 `);
 
-export const GET_PREP_METHODS = gql(`
-    query GetPrepMethods($filter: FilterFindManyPrepMethodInput) {
-        prepMethodMany(limit: 5000, filter: $filter) {
+export const GET_EDITABLE_PREP_METHODS = gql(`
+    query GetEditablePrepMethods {
+        prepMethodManyEditable(limit: 5000) {
             ...PrepMethodFields
+            owner {
+                _id
+                firstName
+                lastName
+            }
         }
     }
 `);

@@ -18,3 +18,8 @@ userSchema.plugin(passportLocalMongoose);
 
 export const User = model<User>('User', userSchema);
 export const UserTC = composeMongoose(User, { removeFields: ['salt', 'hash'] });
+export const OwnerTC = composeMongoose(User, {
+    name: 'Owner',
+    onlyFields: ['_id', 'firstName', 'lastName'],
+});
+OwnerTC.makeFieldNullable(['firstName', 'lastName']);

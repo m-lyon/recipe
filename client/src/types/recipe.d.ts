@@ -1,10 +1,12 @@
+import { CurrentUserQuery } from '@recipe/graphql/generated';
+import { GetEditableSizesQuery } from '@recipe/graphql/generated';
+import { GetEditableIngredientsQuery } from '@recipe/graphql/generated';
+import { GetEditablePrepMethodsQuery } from '@recipe/graphql/generated';
+import { GetIngredientComponentsQuery } from '@recipe/graphql/generated';
+import { EnumUnitPreferredNumberFormat } from '@recipe/graphql/generated';
 import { GetRecipeQuery, GetRecipesQuery } from '@recipe/graphql/generated';
 import { EnumIngredientTags, GetTagsQuery } from '@recipe/graphql/generated';
-import { EnumRecipeCalculatedTags, GetUnitsQuery } from '@recipe/graphql/generated';
-import { CurrentUserQuery, GetUnitConversionsQuery } from '@recipe/graphql/generated';
-import { CreateConversionRuleMutation, GetSizesQuery } from '@recipe/graphql/generated';
-import { GetIngredientComponentsQuery, GetIngredientsQuery } from '@recipe/graphql/generated';
-import { EnumUnitPreferredNumberFormat, GetPrepMethodsQuery } from '@recipe/graphql/generated';
+import { EnumRecipeCalculatedTags, GetEditableUnitsQuery } from '@recipe/graphql/generated';
 
 /**
  * Represents the editable value that is used in the recipe ingredient editing flow.
@@ -341,27 +343,35 @@ declare global {
 
     // - Modifyables --------------------------------------------------------------
     // ------------- Types for the Edit RecipeIngredient Component pages ----------
+    // A ...WithOwner type is a document as an edit page lists it. The Modifyable types
+    // leave out the owner, which the forms do not edit.
 
+    type ModifyableUnitWithOwner = GetEditableUnitsQuery['unitManyEditable'][number];
+    type ModifyableSizeWithOwner = GetEditableSizesQuery['sizeManyEditable'][number];
+    type ModifyableIngredientWithOwner =
+        GetEditableIngredientsQuery['ingredientManyEditable'][number];
+    type ModifyablePrepMethodWithOwner =
+        GetEditablePrepMethodsQuery['prepMethodManyEditable'][number];
     /**
      * Represents the unit document that is returned from the API when a unit is
      * created or modified.
      */
-    type ModifyableUnit = GetUnitsQuery['unitMany'][number];
+    type ModifyableUnit = Omit<ModifyableUnitWithOwner, 'owner'>;
     /**
      * Represents the size document that is returned from the API when a size is
      * created or modified.
      */
-    type ModifyableSize = GetSizesQuery['sizeMany'][number];
+    type ModifyableSize = Omit<ModifyableSizeWithOwner, 'owner'>;
     /**
      * Represents the ingredient document that is returned from the API when an ingredient
      * is created or modified.
      */
-    type ModifyableIngredient = GetIngredientsQuery['ingredientMany'][number];
+    type ModifyableIngredient = Omit<ModifyableIngredientWithOwner, 'owner'>;
     /**
      * Represents the prep method document that is returned from the API when a prep
      * method is created or modified.
      */
-    type ModifyablePrepMethod = GetPrepMethodsQuery['prepMethodMany'][number];
+    type ModifyablePrepMethod = Omit<ModifyablePrepMethodWithOwner, 'owner'>;
 
     // - Queries and Mutations ----------------------------------------------------
     // ----------------------- GraphQL Query and Mutation Types -------------------
@@ -377,13 +387,6 @@ declare global {
      * Can be undefined if the query has not been completed.
      */
     type IngredientComponentQuery = IngredientComponents | undefined;
-    /**
-     * Represents a completed create converion rule mutation object.
-     */
-    type CompletedCreateConversionRule = NonNullable<
-        CreateConversionRuleMutation['conversionRuleCreateOne']
-    >;
-
     // - Enums -------------------------------------------------------
 
     /**
@@ -398,14 +401,6 @@ declare global {
      * Represents the tags that are calculated for a recipe.
      */
     type ReservedTags = EnumRecipeCalculatedTags;
-    // - Unit Conversions ---------------------------------------------------------
-
-    /**
-     * Represents a unit conversion object that is returned from the API when a unit
-     * conversion is queried.
-     */
-    type UnitConversion = GetUnitConversionsQuery['unitConversionMany'][number];
-
     // - User Authentication ------------------------------------------------------
 
     /**

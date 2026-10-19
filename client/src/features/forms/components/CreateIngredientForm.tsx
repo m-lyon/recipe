@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { Modifier } from '@apollo/client/cache';
 import { Reference, useMutation } from '@apollo/client';
 
 import { useErrorToast } from '@recipe/common/hooks';
@@ -24,9 +25,9 @@ export function CreateIngredientForm(props: Props) {
         onCompleted: (data) => {
             const newIngredientId = data.ingredientCreateOne?.record?._id;
             if (newIngredientId) {
-                usdaLinkRef.current?.commitPendingLink(newIngredientId).catch((err) => {
+                usdaLinkRef.current?.commitChanges(newIngredientId).catch((err) => {
                     toast({
-                        title: 'Ingredient saved, but nutritional data link failed',
+                        title: 'Ingredient saved, but nutritional data link or measures failed',
                         description: err instanceof Error ? err.message : String(err),
                         position: 'top',
                     });
@@ -43,25 +44,26 @@ export function CreateIngredientForm(props: Props) {
         },
         update: (cache, { data }) => {
             if (data?.ingredientCreateOne?.record) {
-                cache.modify({
-                    fields: {
-                        ingredientMany(existingRefs = [], { readField }) {
-                            const record = data.ingredientCreateOne!.record!;
-                            const newRef = cache.writeFragment({
-                                data: record,
-                                fragment: INGREDIENT_FIELDS_FULL,
-                                fragmentName: 'IngredientFieldsFull',
-                            });
-                            if (
-                                existingRefs.some(
-                                    (ref: Reference) => readField('_id', ref) === record._id
-                                )
-                            ) {
-                                return existingRefs;
-                            }
-                            return [...existingRefs, newRef];
-                        },
-                    },
+                const addRecord: Modifier<readonly Reference[]> = (
+                    existingRefs = [],
+                    { readField }
+                ) => {
+                    const record = data.ingredientCreateOne!.record!;
+                    const newRef = cache.writeFragment({
+                        data: record,
+                        fragment: INGREDIENT_FIELDS_FULL,
+                        fragmentName: 'IngredientFieldsFull',
+                    });
+                    if (
+                        existingRefs.some((ref: Reference) => readField('_id', ref) === record._id)
+                    ) {
+                        return existingRefs;
+                    }
+                    return [...existingRefs, newRef];
+                };
+                // The creator owns the new ingredient, so it also belongs in the editable list.
+                cache.modify<Record<'ingredientMany' | 'ingredientManyEditable', Reference[]>>({
+                    fields: { ingredientMany: addRecord, ingredientManyEditable: addRecord },
                 });
             }
         },

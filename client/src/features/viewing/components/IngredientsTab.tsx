@@ -8,10 +8,10 @@ import { PATH } from '@recipe/constants';
 import { useUser } from '@recipe/features/user';
 import { useRecipeStore } from '@recipe/stores';
 import { TagList } from '@recipe/features/tags';
-import { Servings } from '@recipe/features/servings';
 import { IngredientsTabLayout } from '@recipe/layouts';
 import { useAddRating } from '@recipe/features/rating';
 import { StarRating, getAverageRating } from '@recipe/features/rating';
+import { Servings, UnitSystemToggle, useDisplayedIngredient } from '@recipe/features/servings';
 
 import { Notes } from './Notes';
 import { UsedIn } from './UsedIn';
@@ -26,12 +26,13 @@ export function IngredientsTab(props: Props) {
     const { recipe } = props;
     const setNumServings = useRecipeStore((state) => state.setNumServings);
     const currentServings = useRecipeStore((state) => state.numServings);
-    const { isVerified } = useUser();
+    const { isVerified, isAdmin, user } = useUser();
     const { addRatingWithToast } = useAddRating();
-    const { perServing, uncountedIds, loading } = useNutritionalInfo(
+    const { perServing, uncountedIds, uncounted, owners, loading, error } = useNutritionalInfo(
         recipe.ingredientSubsections,
         recipe.numServings
     );
+    const displayLine = useDisplayedIngredient(currentServings, recipe.numServings);
     const totalIngredients = recipe.ingredientSubsections
         .flatMap((s) => s.ingredients)
         .filter((i) => i.ingredient.__typename === 'Ingredient').length;
@@ -81,14 +82,21 @@ export function IngredientsTab(props: Props) {
                         origServings={recipe.numServings}
                         currentServings={currentServings}
                         showWakeLockBtn
-                        uncountedIngredientIds={uncountedIds}
+                        uncountedIngredientIds={loading ? undefined : uncountedIds}
                         dietToggle={dietToggle}
+                        unitToggle={<UnitSystemToggle mr='2' />}
                     />
                     <NutritionalInfoPanel
                         perServing={perServing}
                         uncountedIds={uncountedIds}
+                        uncounted={uncounted}
+                        canEditIngredient={(id) =>
+                            isVerified && (isAdmin || (!!user && owners.get(id) === user._id))
+                        }
+                        displayLine={displayLine}
                         nothingCounted={nothingCounted}
                         loading={loading}
+                        error={error}
                     />
                 </>
             }

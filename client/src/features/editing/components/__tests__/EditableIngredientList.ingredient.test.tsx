@@ -363,7 +363,9 @@ describe('Create new Ingredient', () => {
         await waitFor(() => expect(linkCalls.length).toBe(1));
         expect(linkCalls[0].record.ingredient).toBe(mockBeefId);
         expect(linkCalls[0].record.usdaFdcId).toBe(171077);
-        expect(screen.queryByText('Ingredient saved, but nutritional data link failed')).toBeNull();
+        expect(
+            screen.queryByText('Ingredient saved, but nutritional data link or measures failed')
+        ).toBeNull();
     });
 
     it('should not link USDA data that was previewed but never confirmed', async () => {
@@ -462,7 +464,8 @@ describe('Ingredient Popover Behaviour', () => {
         await user.keyboard('{1}{ }{c}');
         await user.click(screen.getByText('add new ingredient'));
         waitFor(() => expect(screen.queryByText('Add new ingredient')).not.toBeNull());
-        await user.click(screen.getByText('cup'));
+        // The new ingredient form's measure selects also list units and sizes.
+        await user.click(screen.getByText('cup', { selector: 'p.chakra-text' }));
 
         // Expect --------------------------------------------------------------
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 cup ');
@@ -478,7 +481,8 @@ describe('Ingredient Popover Behaviour', () => {
         await user.keyboard('{1}{ }{s}');
         await user.click(screen.getByText('add new ingredient'));
         waitFor(() => expect(screen.queryByText('Add new ingredient')).not.toBeNull());
-        await user.click(screen.getByText('small'));
+        // The new ingredient form's measure selects also list units and sizes.
+        await user.click(screen.getByText('small', { selector: 'p.chakra-text' }));
 
         // Expect --------------------------------------------------------------
         haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 small ');

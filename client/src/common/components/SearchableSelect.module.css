@@ -3,6 +3,10 @@
 }
 
 .input {
+    /* Chakra's md Input height and padding, so the select lines up with the inputs beside it */
+    height: 40px;
+    min-height: 40px;
+    --input-padding-inline-start: 16px;
     border-color: #e2e8f0;
     color: rgba(0, 0, 0, 0.64);
     font-family:
@@ -15,6 +19,13 @@
     border-color: #cbd5e0;
 }
 
+/* Chakra's invalid Input: red border, but the text keeps its colour */
+.input[data-error] {
+    border-color: #e53e3e;
+    box-shadow: 0 0 0 1px #e53e3e;
+    color: rgba(0, 0, 0, 0.64);
+}
+
 /* Match Chakra's disabled Input: no grey fill, just faded (opacity 0.4) */
 .root .input:disabled,
 .root .input[data-disabled] {
@@ -25,7 +36,8 @@
     cursor: not-allowed;
 }
 
-.root:has(input:disabled) .label {
+.root:has(input:disabled) .label,
+.root:has(input:disabled) .section {
     opacity: 0.4;
 }
 
@@ -36,7 +48,7 @@
     z-index: 1;
     pointer-events: none;
     background-color: white;
-    margin: 6px 12px;
+    margin: 8px 12px;
     padding: 0 4px;
     font-size: 16px;
     line-height: 24px;

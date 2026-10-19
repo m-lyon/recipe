@@ -1,10 +1,11 @@
-import type { NutritionalInfoSummary, RecipeIngredientSummary } from './types.js';
+import { describeOneUnit, findMeasure } from './measures.js';
+import type { MeasureSummary, NutritionalInfoSummary, RecipeIngredientSummary } from './types.js';
 
 /**
  * Nutrition state of one recipe ingredient.
  *
- * `linked`  the record covers how this recipe measures the ingredient.
- * `partial` a NutritionalInfo exists but does not cover this measurement.
+ * `linked`  the line resolves to grams and has per-gram macros: it is calculable.
+ * `partial` a NutritionalInfo exists but the line cannot reach grams.
  * `missing` no NutritionalInfo at all.
  * `recipe`  the entry is a sub-recipe, which is not linkable.
  */
@@ -13,6 +14,8 @@ export type NutritionState = 'linked' | 'partial' | 'missing' | 'recipe';
 export interface NutritionStatus {
     state: NutritionState;
     reason: string;
+    /** "1 cup of honey" when a measure would make the line calculable. */
+    missingWeight?: string;
 }
 
 /**
@@ -21,7 +24,8 @@ export interface NutritionStatus {
  */
 export function nutritionStatus(
     recipeIngredient: RecipeIngredientSummary,
-    info: NutritionalInfoSummary | null | undefined
+    info: NutritionalInfoSummary | null | undefined,
+    measures: MeasureSummary[] = []
 ): NutritionStatus {
     const ingredient = recipeIngredient.ingredient;
     if (ingredient.__typename !== 'Ingredient') {
@@ -34,26 +38,23 @@ export function nutritionStatus(
         return { state: 'missing', reason: 'No nutritional data' };
     }
     const unit = recipeIngredient.unit;
-    // Case 1: no unit means a countable ingredient, which needs perUnit.
     if (!unit) {
-        return info.perUnit
-            ? { state: 'linked', reason: '' }
-            : { state: 'partial', reason: 'No per-unit nutritional data' };
+        return { state: 'partial', reason: 'No unit' };
     }
-    if (!info.perGram) {
-        return { state: 'partial', reason: 'No per-gram nutritional data' };
-    }
-    // Case 2: a mass unit needs perGram only.
-    if (unit.measureType === 'mass') {
+    // Mass converts by the unit's size alone; volume and count need a measure.
+    if (unit.dimension === 'mass') {
         return { state: 'linked', reason: '' };
     }
-    // Case 3: a volume unit needs perGram and the ingredient's density.
-    if (unit.measureType === 'volume') {
-        return ingredient.density
-            ? { state: 'linked', reason: '' }
-            : { state: 'partial', reason: 'No density set for volume-measured ingredient' };
+    const found = findMeasure(measures, {
+        unit,
+        sizeId: recipeIngredient.size?._id ?? null,
+        prepMethodId: recipeIngredient.prepMethod?._id ?? null,
+    });
+    if (found) {
+        return { state: 'linked', reason: '' };
     }
-    return { state: 'partial', reason: `Unit "${unit.shortSingular}" has no measure type set` };
+    const one = describeOneUnit(unit, ingredient.name, recipeIngredient.size?.value);
+    return { state: 'partial', reason: `No weight recorded for ${one}`, missingWeight: one };
 }
 
 /** Indexes nutritional info records by ingredient id. */

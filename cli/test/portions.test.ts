@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 
 import { ExitCode } from '../src/lib/errors.js';
+import { EGG, GARLIC } from './helpers/fixtures.js';
 import { selectPortion } from '../src/lib/portions.js';
-import { EGG, GARLIC, OLIVE_OIL } from './helpers/fixtures.js';
-import { assertItemPortion, itemPortions, renderPortions } from '../src/lib/portions.js';
+import { renderPortions } from '../src/lib/portions.js';
 
 function thrown(fn: () => unknown): { exitCode: number; errorCode: string; message: string } {
     try {
@@ -15,11 +15,6 @@ function thrown(fn: () => unknown): { exitCode: number; errorCode: string; messa
 }
 
 describe('portions', () => {
-    it('counts only item portions', () => {
-        expect(itemPortions(EGG.portions!)).to.have.length(5);
-        expect(itemPortions(OLIVE_OIL.portions!)).to.have.length(0);
-    });
-
     it('selects by 1-based index, matching the printed table', () => {
         expect(selectPortion(EGG.portions!, '3').description).to.equal('1 jumbo');
     });
@@ -43,28 +38,15 @@ describe('portions', () => {
         expect(error.errorCode).to.equal('AMBIGUOUS');
     });
 
-    it('refuses a volume portion, which would overstate one egg fivefold', () => {
-        const cup = selectPortion(EGG.portions!, '1 cup (4.86 large eggs)');
-        const error = thrown(() => assertItemPortion(cup));
-        expect(error.exitCode).to.equal(ExitCode.REJECTED);
-        expect(error.message).to.contain('volume');
-    });
-
-    it("refuses a serving portion, which is garlic's 85 g RACC", () => {
-        const error = thrown(() => assertItemPortion(GARLIC.portions![0]));
-        expect(error.exitCode).to.equal(ExitCode.REJECTED);
-        expect(error.message).to.contain('serving');
-    });
-
     it('prints a KIND column and the item-portion footer', () => {
         const table = renderPortions(EGG.portions!);
         expect(table).to.contain('KIND');
         expect(table).to.contain('item');
         expect(table).to.contain('ambiguous');
-        expect(table).to.contain('5 item portions');
+        expect(table).to.contain('6 item or volume portions');
     });
 
-    it('says plainly when a record has no item portions', () => {
-        expect(renderPortions(OLIVE_OIL.portions!)).to.contain('No item portions');
+    it('says plainly when a record has nothing to store as a measure', () => {
+        expect(renderPortions(GARLIC.portions!)).to.contain('No item or volume portions');
     });
 });
