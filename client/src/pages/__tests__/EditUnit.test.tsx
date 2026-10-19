@@ -6,6 +6,7 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { mockGetEditableUnits } from '@recipe/graphql/queries/__mocks__/unit';
+import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
 import { MockedResponses, haveValueByLabelText, renderPage } from '@recipe/utils/tests';
 import { mockDeleteUnit, mockUpdateUnit } from '@recipe/graphql/mutations/__mocks__/unit';
 import { mockGetEditableUnitsWithCutting } from '@recipe/graphql/mutations/__mocks__/unit';
@@ -17,7 +18,7 @@ loadDevMessages();
 
 const renderComponent = (mocks: MockedResponses = [], units = mockGetEditableUnits) => {
     const routes = createRoutesFromElements(<Route path='/' element={<EditUnit />} />);
-    return renderPage(routes, [units, ...mocks]);
+    return renderPage(routes, [units, mockCurrentUserAdmin, mockGetIngredientComponents, ...mocks]);
 };
 
 describe('Edit Unit', () => {
@@ -134,7 +135,7 @@ describe('Edit Unit', () => {
     it('should keep a decimal size as it is typed', async () => {
         // Render
         const user = userEvent.setup();
-        renderComponent([mockCurrentUserAdmin], mockGetEditableUnitsWithCutting);
+        renderComponent([], mockGetEditableUnitsWithCutting);
 
         // Act
         expect(await screen.findByText('Edit Unit')).not.toBeNull();

@@ -5,6 +5,7 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { nullByText } from '@recipe/utils/tests';
 import { mockBumpId } from '@recipe/graphql/__mocks__/ids';
+import { mockCurrentUser } from '@recipe/graphql/queries/__mocks__/user';
 import { mockDeleteBespokeUnit } from '@recipe/graphql/mutations/__mocks__/unit';
 import { clickFindByText, haveValueByLabelText, notNullByText } from '@recipe/utils/tests';
 import { mockCreateBespokeUnit, mockCreateUnit } from '@recipe/graphql/mutations/__mocks__/unit';
@@ -128,7 +129,7 @@ describe('Unit Keyboard', () => {
     it('should open up the new unit popover', async () => {
         const user = userEvent.setup();
         // Render
-        renderComponent();
+        renderComponent([mockCurrentUser]);
 
         // Act
         await user.click(screen.getByText('Enter ingredient'));
@@ -263,7 +264,7 @@ describe('Unit Click', () => {
     it('should open up the new unit popover', async () => {
         const user = userEvent.setup();
         // Render
-        renderComponent();
+        renderComponent([mockCurrentUser]);
 
         // Act
         await user.click(screen.getByText('Enter ingredient'));
@@ -296,7 +297,7 @@ describe('Create new Unit', () => {
     it('should create a new unit', async () => {
         const user = userEvent.setup();
         // Render
-        renderComponent([mockCreateUnit]);
+        renderComponent([mockCurrentUser, mockCreateUnit]);
 
         // Act
         await user.click(screen.getByText('Enter ingredient'));
@@ -331,7 +332,7 @@ describe('Unit Popover Behaviour', () => {
     it('should reset new unit form after close', async () => {
         const user = userEvent.setup();
         // Render
-        renderComponent();
+        renderComponent([mockCurrentUser]);
 
         // Act
         await user.click(screen.getByText('Enter ingredient'));
@@ -348,7 +349,7 @@ describe('Unit Popover Behaviour', () => {
     it('should reset state and close unit popover when clicked outside', async () => {
         const user = userEvent.setup();
         // Render
-        renderComponent();
+        renderComponent([mockCurrentUser]);
 
         // Act
         await user.click(screen.getByText('Enter ingredient'));
@@ -366,7 +367,7 @@ describe('Unit Popover Behaviour', () => {
     it('should close new unit popover if bespoke unit is selected', async () => {
         const user = userEvent.setup();
         // Render
-        renderComponent();
+        renderComponent([mockCurrentUser]);
 
         // Act
         await user.click(screen.getByText('Enter ingredient'));
@@ -382,7 +383,7 @@ describe('Unit Popover Behaviour', () => {
     it('should close new unit popover if existing unit is selected', async () => {
         const user = userEvent.setup();
         // Render
-        renderComponent();
+        renderComponent([mockCurrentUser]);
 
         // Act
         await user.click(screen.getByText('Enter ingredient'));
@@ -398,7 +399,7 @@ describe('Unit Popover Behaviour', () => {
     it('should close new unit popover if existing size is selected', async () => {
         const user = userEvent.setup();
         // Render
-        renderComponent();
+        renderComponent([mockCurrentUser]);
 
         // Act
         await user.click(screen.getByText('Enter ingredient'));
@@ -414,7 +415,7 @@ describe('Unit Popover Behaviour', () => {
     it('should close new unit popover if existing ingredient is selected', async () => {
         const user = userEvent.setup();
         // Render
-        renderComponent();
+        renderComponent([mockCurrentUser]);
 
         // Act
         await user.click(screen.getByText('Enter ingredient'));
@@ -430,7 +431,7 @@ describe('Unit Popover Behaviour', () => {
     it('should close new unit popover if skip unit is selected', async () => {
         const user = userEvent.setup();
         // Render
-        renderComponent();
+        renderComponent([mockCurrentUser]);
 
         // Act
         await user.click(screen.getByText('Enter ingredient'));
@@ -448,7 +449,7 @@ describe('Unit Popover Behaviour', () => {
     it('should close new unit popover if state is moved back to quantity', async () => {
         const user = userEvent.setup();
         // Render
-        renderComponent();
+        renderComponent([mockCurrentUser]);
 
         // Act
         await user.click(screen.getByText('Enter ingredient'));
@@ -544,7 +545,7 @@ describe('Bespoke Unit', () => {
     it('should close bespoke unit popover if new unit is selected', async () => {
         const user = userEvent.setup();
         // Render
-        renderComponent([mockCreateUnit]);
+        renderComponent([mockCurrentUser, mockCreateUnit]);
 
         // Act
         await user.click(screen.getByText('Enter ingredient'));

@@ -6,6 +6,7 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { mockUpdateIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
 import { mockDeleteIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
+import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
 import { MockedResponses, haveValueByLabelText, renderPage } from '@recipe/utils/tests';
 import { mockGetEditableIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockUsdaSearchChickenBreast } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
@@ -25,6 +26,7 @@ const renderComponent = (mocks: MockedResponses = []) => {
     return renderPage(routes, [
         mockGetEditableIngredients,
         mockGetNutritionalInfosForEditIngredient,
+        mockGetIngredientComponents,
         ...mocks,
     ]);
 };
@@ -92,6 +94,7 @@ describe('Edit Ingredient', () => {
             mockGetEditableIngredients,
             mockGetNutritionalInfosForEditIngredientCarrotLinked,
             mockGetNutritionalInfosForEditIngredient,
+            mockGetIngredientComponents,
             mockUpdateIngredient,
             { ...mockDeleteNutritionalInfoCarrot, result: deleted },
         ]);

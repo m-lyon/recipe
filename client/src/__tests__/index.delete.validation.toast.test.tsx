@@ -15,11 +15,14 @@ import { mockCarrotId, mockDicedId } from '@recipe/graphql/__mocks__/ids';
 import { DELETE_PREP_METHOD } from '@recipe/graphql/mutations/prepMethod';
 import { mockCuttingId, mockSmallId } from '@recipe/graphql/__mocks__/ids';
 import { mockGetEditableSizes } from '@recipe/graphql/queries/__mocks__/size';
+import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { DeleteIngredientMutationVariables } from '@recipe/graphql/generated';
 import { DeletePrepMethodMutationVariables } from '@recipe/graphql/generated';
+import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetEditableIngredients } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockGetEditablePrepMethods } from '@recipe/graphql/queries/__mocks__/prepMethod';
 import { mockGetEditableUnitsWithCutting } from '@recipe/graphql/mutations/__mocks__/unit';
+import { mockGetNutritionalInfosForEditIngredient } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 
 import { EditUnit } from '../pages/EditUnit';
 import { EditSize } from '../pages/EditSize';
@@ -105,7 +108,12 @@ describe('Delete Validation Toast Notifications', () => {
 
     const renderEditUnit = (mocks: MockedResponses = []) => {
         const routes = createRoutesFromElements(<Route path='/' element={<EditUnit />} />);
-        return renderPage(routes, [mockGetEditableUnitsWithCutting, ...mocks]);
+        return renderPage(routes, [
+            mockGetEditableUnitsWithCutting,
+            mockCurrentUserAdmin,
+            mockGetIngredientComponents,
+            ...mocks,
+        ]);
     };
 
     const renderEditSize = (mocks: MockedResponses = []) => {
@@ -115,7 +123,12 @@ describe('Delete Validation Toast Notifications', () => {
 
     const renderEditIngredient = (mocks: MockedResponses = []) => {
         const routes = createRoutesFromElements(<Route path='/' element={<EditIngredient />} />);
-        return renderPage(routes, [mockGetEditableIngredients, ...mocks]);
+        return renderPage(routes, [
+            mockGetEditableIngredients,
+            mockGetNutritionalInfosForEditIngredient,
+            mockGetIngredientComponents,
+            ...mocks,
+        ]);
     };
 
     const renderEditPrepMethod = (mocks: MockedResponses = []) => {

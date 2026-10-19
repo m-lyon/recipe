@@ -322,4 +322,13 @@ may set them up. When it does, the worktree has a `.claude/worktree.env` file:
 - **Forgetting `print-schema`**: Codegen reads the committed `api/schema.graphql`, not the live API. After an API schema change, run `npm run print-schema` in `api/` and commit the file, or CI fails.
 - **API tests require compilation**: `npm test` compiles TS to `dist/` then runs mocha on JS files. If you edit `.ts` files, the tests always recompile.
 - **`MockedProvider` consumes each mock once**: Apollo's `MockedProvider` uses each entry in the mocks array exactly once (unless `newData` is used). If a component fires the same query multiple times (e.g. on mount and after navigation), provide the mock twice in the array.
+- **Client tests must not write to stderr**: A `No more mocked responses for the query` warning
+  (often followed by `` [ApolloLink] `onError` is deprecated ``) means a mock is missing or does
+  not match. The warning can appear under the next test in the same file. Vitest hides the
+  console output of passing tests when it detects an AI agent, so agents must run
+  `npm test -- run --reporter=default` to see these warnings. Fix it with the exact
+  mock the test needs (for example the correct user for `CurrentUser`), and add it only as many
+  times as the test sends that query. Do not add catch-all mocks, large `maxUsageCount` values or
+  shared mocks that a test does not use: unused mocks fail silently, so generous mocks hide
+  regressions.
 - **Use `cache.modify` to change cached data** Re-fetches are uncommon, as react-router navigation does NOT trigger requerying of already cached data. When a mutation changes server-side data that is already present in a cached query result, use `cache.modify` to modify in place.

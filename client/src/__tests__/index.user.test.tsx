@@ -45,7 +45,15 @@ describe('Auth Workflow', () => {
 
     it('should log in', async () => {
         // Render -----------------------------------------------
-        renderComponent([mockCurrentUserNull, mockLogin]);
+        renderComponent([
+            mockCurrentUserNull,
+            mockLogin,
+            // Logging in refetches the queries on screen
+            mockCurrentUserAdmin,
+            mockGetRecipes,
+            mockGetTags,
+            mockGetIngredientAndRecipeIngredients,
+        ]);
         const user = userEvent.setup();
 
         // Act --------------------------------------------------
@@ -70,6 +78,13 @@ describe('Auth Workflow', () => {
             mockGetRecipeOne,
             mockGetDisplayLadders,
             mockLogout,
+            // Logging out refetches the queries on screen
+            mockCurrentUserNull,
+            mockGetRecipeOne,
+            mockGetDisplayLadders,
+            mockGetRecipes,
+            mockGetTags,
+            mockGetIngredientAndRecipeIngredients,
         ]);
         const user = userEvent.setup();
 
