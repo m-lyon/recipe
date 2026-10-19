@@ -14,13 +14,10 @@ export type ConvertToSystem = (
     preference: UnitSystemPreference
 ) => UnitConversionArgs & Pick<SystemConversion, 'approximate'>;
 interface UseUnitConversionReturnType {
-    /** Ladders a quantity within its authored unit's system: 1500 g becomes 1.5 kg. */
     apply: ApplyUnitConversion;
-    /** Shows a quantity in the reader's chosen system, rounded and marked approximate. */
     convert: ConvertToSystem;
     ladders: DisplayLadder[];
     loading: boolean;
-    /** True when the ladders could not be loaded, so nothing is converted. */
     failed: boolean;
 }
 export function useUnitConversion(): UseUnitConversionReturnType {

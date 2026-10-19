@@ -5,7 +5,7 @@ import { Button, Group, NumberInput, Radio, Stack, Text } from '@mantine/core';
 import { UncountedIngredient, describeOneUnit } from '@recipe/utils/nutrition';
 import { CREATE_INGREDIENT_MEASURE } from '@recipe/graphql/mutations/ingredientMeasure';
 
-/** Chakra's teal.500, so the Mantine controls match the rest of the page. */
+/** Chakra's teal.500 */
 const TEAL = '#319795';
 
 interface Option {

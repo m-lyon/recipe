@@ -11,16 +11,12 @@ import { UncountedIngredientPrompt } from './UncountedIngredientPrompt';
 interface NutritionalInfoPanelProps {
     perServing: MacroNutrients;
     uncountedIds: Set<string>;
-    /** The uncounted lines with the reason each one was left out. */
     uncounted?: UncountedIngredient[];
-    /** True when the reader may add a measure to the ingredient. */
     canEditIngredient?: (ingredientId: string) => boolean;
-    /** Shows a line as the ingredient list does: scaled, and in the reader's units. */
     displayLine?: (item: RecipeIngredientView) => DisplayedIngredient;
     /** True when no ingredient contributed to the totals (none countable, or none present). */
     nothingCounted: boolean;
     loading: boolean;
-    /** True when the nutritional data could not be loaded. */
     error?: boolean;
 }
 

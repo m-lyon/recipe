@@ -2,7 +2,7 @@ import { Box, Tooltip } from '@chakra-ui/react';
 
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 
-/** A quantity shown in the reader's system: rounded, with the authored line on hover. */
+/** A quantity shown in the reader's system: rounded, with the original line on hover. */
 export function ApproximateIngredient(props: { item: RecipeIngredientView; authored: string }) {
     const { item, authored } = props;
     return (

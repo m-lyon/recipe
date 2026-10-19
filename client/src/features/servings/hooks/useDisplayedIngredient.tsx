@@ -5,13 +5,12 @@ import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 import { useUnitConversion } from './useUnitConversion';
 
 export type DisplayedIngredient<T extends RecipeIngredientView = RecipeIngredientView> = T & {
-    /** The line as written, when the quantity shown was converted and rounded. */
     authored: string | null;
 };
 
 /**
  * Shows a recipe line as the reader sees it: scaled to the current servings, then converted
- * to the reader's unit system. Every place that shows a line uses this, so they agree.
+ * to the reader's unit system.
  */
 export function useDisplayedIngredient(currentServings: number, origServings: number) {
     const { apply, convert } = useUnitConversion();

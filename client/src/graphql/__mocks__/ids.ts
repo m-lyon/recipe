@@ -104,6 +104,8 @@ export const mockEachId = '60f4d2e5c3d5a0a4f1b9c1b0';
 export const mockAppleEachMeasureId = '60f4d2e5c3d5a0a4f1b9c1b1';
 export const mockCarrotEachMeasureId = '60f4d2e5c3d5a0a4f1b9c1b2';
 export const mockOnionCupMeasureId = '60f4d2e5c3d5a0a4f1b9c1b3';
+export const mockOnionLargeMeasureId = '60f4d2e5c3d5a0a4f1b9c1c1';
+export const mockAppleTeaspoonMeasureId = '60f4d2e5c3d5a0a4f1b9c1c3';
 
 // NutritionalInfo
 export const mockNutritionalInfoIdApple = '60f4d2e5c3d5a0a4f1b9d0a1';

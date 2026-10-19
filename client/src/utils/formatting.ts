@@ -40,7 +40,6 @@ function getEditableUnitStr(item: EditableRecipeIngredient): string {
     }
 }
 function getFinishedUnitStr(quantity: FinishedQuantity, unit: FinishedUnit): string {
-    // A hidden unit (each) is rendered without a name: "2 onions".
     if (unit === null || unit.hidden) {
         return '';
     }

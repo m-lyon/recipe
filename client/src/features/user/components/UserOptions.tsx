@@ -34,7 +34,6 @@ export function UserOptions() {
     const navigate = useNavigate();
     const toast = useErrorToast();
 
-    // An effect, not the query's onError option, which Apollo has deprecated.
     useEffect(() => {
         if (!error) return;
         console.log(error);

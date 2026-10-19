@@ -4,6 +4,7 @@ import { CreateIngredientMeasureMutationVariables } from '@recipe/graphql/genera
 import { CREATE_INGREDIENT_MEASURE } from '@recipe/graphql/mutations/ingredientMeasure';
 import { mockAppleId, mockChoppedId, mockLargeId } from '@recipe/graphql/__mocks__/ids';
 import { mockCup, mockEach, mockTeaspoon } from '@recipe/graphql/queries/__mocks__/unit';
+import { mockAppleTeaspoonMeasureId, mockOnionLargeMeasureId } from '@recipe/graphql/__mocks__/ids';
 
 type Record = CreateIngredientMeasureMutationVariables['record'];
 
@@ -41,7 +42,7 @@ function createMeasureMock(
 
 /** "1 large (150 g)" from USDA: each + size large. */
 export const mockCreateMeasureOnionLarge = createMeasureMock(
-    '60f4d2e5c3d5a0a4f1b9c1c1',
+    mockOnionLargeMeasureId,
     {
         ingredient: mockOnionId,
         unit: mockEach._id,
@@ -71,7 +72,7 @@ export const mockCreateMeasureOnionCupChopped = createMeasureMock(
 
 /** Saved from the uncounted-line prompt: 1 teaspoon of apple weighs 5 g. */
 export const mockCreateMeasureAppleTeaspoon = createMeasureMock(
-    '60f4d2e5c3d5a0a4f1b9c1c3',
+    mockAppleTeaspoonMeasureId,
     { ingredient: mockAppleId, unit: mockTeaspoon._id, size: null, prepMethod: null, grams: 5 },
     mockTeaspoon,
     null,

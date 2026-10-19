@@ -1,4 +1,3 @@
-import { mockLettuceId } from '@recipe/graphql/__mocks__/ids';
 import { USDA_SEARCH } from '@recipe/graphql/queries/nutritionalInfo';
 import { mockCarrotEachMeasureId } from '@recipe/graphql/__mocks__/ids';
 import { USDA_FOOD_ITEM } from '@recipe/graphql/queries/nutritionalInfo';
@@ -13,6 +12,7 @@ import { mockAdminId, mockAppleEachMeasureId } from '@recipe/graphql/__mocks__/i
 import { UsdaSearchQuery, UsdaSearchQueryVariables } from '@recipe/graphql/generated';
 import { mockAppleId, mockCarrotId, mockChickenId } from '@recipe/graphql/__mocks__/ids';
 import { GetNutritionalInfoByIngredientQueryVariables } from '@recipe/graphql/generated';
+import { mockAppleTeaspoonMeasureId, mockLettuceId } from '@recipe/graphql/__mocks__/ids';
 import { UsdaFoodItemQuery, UsdaFoodItemQueryVariables } from '@recipe/graphql/generated';
 import { GET_NUTRITIONAL_INFO_BY_INGREDIENT } from '@recipe/graphql/queries/nutritionalInfo';
 import { GetIngredientMeasuresQuery, GetRecipeNutritionQuery } from '@recipe/graphql/generated';
@@ -144,7 +144,7 @@ export const mockGetRecipeNutritionForRecipeOneWithTeaspoon = {
                 ...(recipeBothNutritionResult.ingredientMeasuresByIngredientIds ?? []),
                 {
                     ...mockAppleEachMeasure,
-                    _id: '60f4d2e5c3d5a0a4f1b9c1c3',
+                    _id: mockAppleTeaspoonMeasureId,
                     grams: 5,
                     unit: mockTeaspoon,
                 },
