@@ -173,7 +173,7 @@ type UsdaSearchData = {
     > & { brandOwner: string | null; portions: MappedPortion[] })[];
 };
 
-function makeContext(user: unknown) {
+function makeContext(user: User | null) {
     return {
         contextValue: {
             isAuthenticated: () => !!user,
@@ -778,7 +778,7 @@ describe('usdaFoodItem', function () {
     /** Stubs fetch with `item` and runs usdaFoodItem, returning the resolved item. */
     async function fetchItem(
         server: ApolloServer,
-        user: unknown,
+        user: User,
         item: Record<string, unknown>
     ): Promise<UsdaFoodItem> {
         stub(global, 'fetch').resolves({ ok: true, json: async () => item } as Response);

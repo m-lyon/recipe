@@ -9,7 +9,7 @@ See [AGENTS.md](AGENTS.md) for the agent-facing workflow and the judgement rules
 ```bash
 cd cli
 npm install
-# The API must be running: codegen introspects its schema.
+# Codegen reads the committed ../api/schema.graphql
 npm run generate
 npm run build
 npm link            # puts `recipe` on your PATH
@@ -27,7 +27,7 @@ cli/.env.production.local      the live API — see the warning below
 
 | Variable | Required | Meaning |
 | --- | --- | --- |
-| `RECIPE_API_URL` | yes | GraphQL endpoint; also read by `codegen.ts` |
+| `RECIPE_API_URL` | yes | GraphQL endpoint |
 | `RECIPE_USERNAME` | yes | account the CLI authenticates as |
 | `RECIPE_PASSWORD` | yes | its password |
 | `RECIPE_SESSION_FILE` | no | override the session cache path |
@@ -141,13 +141,13 @@ as USDA updates its index.
 ## Develop
 
 ```bash
-npm run generate     # requires a running API
+npm run generate     # reads ../api/schema.graphql
 npm run lint
 npm run build
 npm test             # builds, then runs mocha
 npm run check-types
 ```
 
-Tests stub `global.fetch` with canned GraphQL responses, so they need neither an API nor a database. They do need `src/graphql/__generated__/`, which is what `npm run generate:test` produces in CI.
+Tests stub `global.fetch` with canned GraphQL responses, so they need neither an API nor a database. They do need `src/graphql/__generated__/`, which is what `npm run generate` produces.
 
 **Forgetting codegen is the common pitfall.** The generated `gql()` returns an empty document for a source string it has never seen. The transport detects that and tells you to run `npm run generate` rather than sending a malformed query.

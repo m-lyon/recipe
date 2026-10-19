@@ -3,6 +3,12 @@ import { GraphQLLocalStrategy } from 'graphql-passport';
 
 import { User } from '../models/User.js';
 
-passport.use(new GraphQLLocalStrategy(User.authenticate()));
+const authenticate = User.authenticate();
+
+passport.use(
+    new GraphQLLocalStrategy((username, password, done) =>
+        authenticate(username as string, password as string, done)
+    )
+);
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());

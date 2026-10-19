@@ -1,4 +1,3 @@
-import 'dotenv-flow/config';
 import { CodegenConfig } from '@graphql-codegen/cli';
 
 const typesConfig = {
@@ -19,7 +18,8 @@ const typesConfig = {
 };
 
 const config: CodegenConfig = {
-    schema: process.env.VITE_GRAPHQL_URL,
+    // Written by `npm run print-schema` in api/
+    schema: '../api/schema.graphql',
     documents: ['src/**/*.tsx', 'src/**/*.ts'],
     generates: {
         './src/__generated__/': {

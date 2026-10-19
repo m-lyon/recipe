@@ -22,7 +22,7 @@ const ingredientSchema = new Schema<Ingredient>({
         type: String,
         required: true,
         set: (value: string) => value.toLowerCase(),
-        validate: uniqueInAdminsAndUser(
+        validate: uniqueInAdminsAndUser<Ingredient>(
             'Ingredient',
             'name',
             'The ingredient name must be unique.'
@@ -32,7 +32,7 @@ const ingredientSchema = new Schema<Ingredient>({
         type: String,
         required: true,
         set: (value: string) => value.toLowerCase(),
-        validate: uniqueInAdminsAndUser(
+        validate: uniqueInAdminsAndUser<Ingredient>(
             'Ingredient',
             'pluralName',
             'The plural ingredient name must be unique.'

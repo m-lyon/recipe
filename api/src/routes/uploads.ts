@@ -27,7 +27,7 @@ uploadRouter.get('/images/:fname', async (req, res) => {
         const { stream, contentType } = await loadImage(fpath, quality, width, height, save);
         res.setHeader('Content-Type', contentType);
         stream.pipe(res);
-    } catch (error) {
+    } catch {
         res.status(500).send('Failed to load image.');
     }
 });

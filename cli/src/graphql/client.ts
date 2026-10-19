@@ -28,8 +28,7 @@ function isUsdaRateLimit(message: string): boolean {
 function assertGenerated<T>(document: T): T {
     if (!document || (document as { kind?: string }).kind !== 'Document') {
         throw runtime(
-            'The generated GraphQL documents are stale or missing. Run "npm run generate" in cli/ ' +
-                'against a running API.'
+            'The generated GraphQL documents are stale or missing. Run "npm run generate" in cli/.'
         );
     }
     return document;

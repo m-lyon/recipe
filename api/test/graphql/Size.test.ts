@@ -1,14 +1,17 @@
 import { assert } from 'chai';
 import mongoose from 'mongoose';
+import type { GraphQLResponse } from '@apollo/server';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { createUser } from '../utils/data.js';
 import { User } from '../../src/models/User.js';
 import { Recipe } from '../../src/models/Recipe.js';
+import type { Size } from '../../src/models/Size.js';
+import type { DocId, RecordInput } from '../utils/types.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { createRecipeIngredientData, removeRecipeIngredientData } from './Recipe.test.js';
 
-async function createSize(context, user, record) {
+async function createSize(context: Mocha.Context, user: User, record: RecordInput<Size>) {
     const query = `
     mutation SizeCreateOne($record: CreateOneSizeCreateInput!) {
         sizeCreateOne(record: $record) {
@@ -36,8 +39,8 @@ async function createSize(context, user, record) {
 const mockSmall = { value: 'small', unique: true };
 const mockLarge = { value: 'large', unique: true };
 
-const parseCreatedSize = (response) => {
-    assert.equal(response.body.kind, 'single');
+const parseCreatedSize = (response: GraphQLResponse) => {
+    assert(response.body.kind === 'single');
     assert.isUndefined(response.body.singleResult.errors);
     const record = (
         response.body.singleResult.data as {
@@ -69,14 +72,14 @@ describe('sizeCreateOne', function () {
     });
 
     it('should create a size', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         const response = await createSize(this, user, mockSmall);
         const record = parseCreatedSize(response);
         assert.equal(record.value, 'small');
     });
 
     it('should NOT create a size, duplicate data', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         await createSize(this, user, mockSmall);
         const response = await createSize(this, user, mockSmall);
         assert.equal(response.body.kind, 'single');
@@ -88,7 +91,7 @@ describe('sizeCreateOne', function () {
     });
 
     it('should create a size, duplicate data with unique set to false', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         await createSize(this, user, { ...mockSmall, unique: false });
         const newRecord = { ...mockSmall, unique: false };
         const response = await createSize(this, user, newRecord);
@@ -97,7 +100,7 @@ describe('sizeCreateOne', function () {
     });
 
     it('should NOT create a size, owner does not exist', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         await User.deleteOne({ username: 'testuser1' });
         const deletedUser = await User.findOne({ username: 'testuser1' });
         assert.isNull(deletedUser);
@@ -128,7 +131,12 @@ describe('sizeUpdateById', () => {
             });
     });
 
-    async function updateSize(context, user, id, record) {
+    async function updateSize(
+        context: Mocha.Context,
+        user: User,
+        id: DocId,
+        record: RecordInput<Size>
+    ) {
         const query = `
         mutation SizeUpdateById($id: MongoID!, $record: UpdateByIdSizeInput!) {
             sizeUpdateById(_id: $id, record: $record) {
@@ -150,8 +158,8 @@ describe('sizeUpdateById', () => {
         return response;
     }
 
-    const parseUpdatedSize = (response) => {
-        assert.equal(response.body.kind, 'single');
+    const parseUpdatedSize = (response: GraphQLResponse) => {
+        assert(response.body.kind === 'single');
         assert.isUndefined(response.body.singleResult.errors);
         const record = (
             response.body.singleResult.data as {
@@ -162,7 +170,7 @@ describe('sizeUpdateById', () => {
     };
 
     it('should update a size', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         // Create the ingredients
         const recordOneResponse = await createSize(this, user, mockSmall);
         const recordOne = parseCreatedSize(recordOneResponse);
@@ -174,7 +182,7 @@ describe('sizeUpdateById', () => {
     });
 
     it('should NOT update a size, duplicate data', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         // Create the ingredients
         const recordOneResponse = await createSize(this, user, mockSmall);
         const recordOne = parseCreatedSize(recordOneResponse);
@@ -190,7 +198,7 @@ describe('sizeUpdateById', () => {
     });
 
     it('should update a size, duplicate data with unique set to false', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         // Create the ingredients
         const recordOneResponse = await createSize(this, user, { ...mockSmall, unique: false });
         const recordOne = parseCreatedSize(recordOneResponse);
@@ -202,7 +210,7 @@ describe('sizeUpdateById', () => {
     });
 
     it('should NOT update a size, owner does not exist', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
         // Create the ingredients
         const recordOneResponse = await createSize(this, user, mockSmall);
         const recordOne = parseCreatedSize(recordOneResponse);
@@ -231,7 +239,7 @@ describe('sizeRemoveById', () => {
 
     afterEach(removeRecipeIngredientData);
 
-    async function deleteSize(context, user, id) {
+    async function deleteSize(context: Mocha.Context, user: User, id: DocId) {
         const query = `
         mutation SizeRemoveById($id: MongoID!) {
             sizeRemoveById(_id: $id) {
@@ -251,7 +259,7 @@ describe('sizeRemoveById', () => {
     }
 
     it('should delete a size that is not used in recipes', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
 
         // Create a new size that won't be used in recipes
         const unusedSize = {
@@ -271,7 +279,7 @@ describe('sizeRemoveById', () => {
     });
 
     it('should NOT delete a size that is used in recipes', async function () {
-        const user = await User.findOne({ username: 'testuser1' });
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
 
         // Find the recipe and get the size that's used in one of its ingredients
         const recipe = await Recipe.findOne({ title: 'Bimibap' });

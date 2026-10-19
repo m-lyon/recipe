@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 // Returns true when the app is running as an installed / standalone PWA.
-function getIsStandalone(): boolean {
+export function getIsStandalone(): boolean {
     if (typeof window === 'undefined') {
         return false;
     }

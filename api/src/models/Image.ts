@@ -26,7 +26,7 @@ const imageSchema = new Schema<Image>({
 
 export async function saveImageToDb(
     filepath: Promise<string>,
-    recipe: Types.ObjectId,
+    recipe: Types.ObjectId | string,
     note?: string
 ) {
     const fname = path.basename(await filepath);

@@ -1,4 +1,5 @@
 import 'dotenv-flow/config';
+import './requireEnv.js';
 import './utils/database.js';
 import './strategies/GraphQLLocalStrategy.js';
 
@@ -40,7 +41,7 @@ await apolloServer.start();
 app.use(
     session({
         store: MongoStore.create({ mongoUrl: SESSION_URI }),
-        secret: SESSION_SECRET!, // Non-null assertion since we check this in constants.ts
+        secret: SESSION_SECRET!, // Non-null assertion since requireEnv.ts checks it
         resave: false,
         saveUninitialized: false,
     })
