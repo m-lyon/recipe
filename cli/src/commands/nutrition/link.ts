@@ -15,6 +15,12 @@ import { GET_INGREDIENT_MEASURES, GET_MEASURE_COMPONENTS } from '../../graphql/o
 import type { NamedSummary, UnitSummary, UsdaFoodItem, UsdaPortion } from '../../lib/types.js';
 import { CREATE_INGREDIENT_MEASURE, DELETE_INGREDIENT_MEASURE } from '../../graphql/operations.js';
 
+interface SelectedPortion {
+    portion: UsdaPortion;
+    /** From --default-portion: stored without its size. */
+    unsized: boolean;
+}
+
 interface PlannedMeasure {
     /** e.g. "each · large" */
     key: string;
@@ -34,6 +40,7 @@ export default class NutritionLink extends BaseCommand {
         '<%= config.bin %> <%= command.id %> egg --fdc-id 171287 --portion "1 large"',
         '<%= config.bin %> <%= command.id %> onion --fdc-id 170000 --portion 1 --portion 3',
         '<%= config.bin %> <%= command.id %> "olive oil" --fdc-id 171413 --all-portions',
+        '<%= config.bin %> <%= command.id %> banana --fdc-id 173944 --portion 5 --default-portion 5',
     ];
 
     static args = {
@@ -58,6 +65,12 @@ export default class NutritionLink extends BaseCommand {
                 'Store every portion that maps to a unit, size and prep method, and skip the rest',
             default: false,
             exclusive: ['portion'],
+        }),
+        'default-portion': Flags.string({
+            description:
+                'Store this sized item portion as a measure with no size, so that recipe lines ' +
+                'with no size use its weight. Named like --portion.',
+            helpValue: 'LABEL|INDEX',
         }),
         overwrite: Flags.boolean({
             description:
@@ -96,9 +109,17 @@ export default class NutritionLink extends BaseCommand {
             );
         }
 
-        const selected = flags['all-portions']
-            ? portions
-            : (flags.portion ?? []).map((selector) => selectPortion(portions, selector));
+        const selected: SelectedPortion[] = (
+            flags['all-portions']
+                ? portions
+                : (flags.portion ?? []).map((selector) => selectPortion(portions, selector))
+        ).map((portion) => ({ portion, unsized: false }));
+        if (flags['default-portion']) {
+            selected.push({
+                portion: selectPortion(portions, flags['default-portion']),
+                unsized: true,
+            });
+        }
         const components = (await client.request(GET_MEASURE_COMPONENTS)) as unknown as {
             units: UnitSummary[];
             sizes: NamedSummary[];
@@ -184,14 +205,14 @@ export default class NutritionLink extends BaseCommand {
 
     /** Maps each chosen portion to a measure row, and refuses a conflict or a non-match. */
     private planMeasures(
-        portions: UsdaPortion[],
+        portions: SelectedPortion[],
         components: { units: UnitSummary[]; sizes: NamedSummary[]; prepMethods: NamedSummary[] },
         existing: MeasureSummary[],
         skipUnmatched: boolean,
         overwrite: boolean
     ): PlannedMeasure[] {
         const planned: PlannedMeasure[] = [];
-        for (const portion of portions) {
+        for (const { portion, unsized } of portions) {
             const suggestion = suggestFromPortion(
                 portion,
                 components.units,
@@ -216,7 +237,15 @@ export default class NutritionLink extends BaseCommand {
                     { portion }
                 );
             }
-            const draft = suggestion.draft;
+            if (unsized && !suggestion.draft.sizeId) {
+                throw rejected(
+                    `Portion ${suggestion.label} has no size, so --default-portion does not ` +
+                        'apply. Pass it to --portion instead.',
+                    { portion }
+                );
+            }
+            // The default size: lines with no size match only a measure with no size.
+            const draft = unsized ? { ...suggestion.draft, sizeId: null } : suggestion.draft;
             const sameKey = (m: {
                 unitId: string;
                 sizeId: string | null;
