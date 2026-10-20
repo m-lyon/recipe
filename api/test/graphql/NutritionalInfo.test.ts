@@ -738,6 +738,39 @@ describe('nutritional info source', function () {
         assert.equal(record.source, 'openFoodFacts');
         assert.isNull(record.usdaFdcId);
     });
+
+    it('should relink an Open Food Facts record to USDA from a USDA ID alone', async function () {
+        // The web editor sends only usdaFdcId when it relinks.
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
+        const info = await new NutritionalInfo({
+            ingredient: ingredient._id,
+            source: 'openFoodFacts',
+            offBarcode: '5010338301255',
+            sourceName: "Al'fez Pearl Couscous",
+            perGram: VALID_PER_GRAM,
+        }).save();
+
+        const response = await this.apolloServer.executeOperation(
+            {
+                query: UPDATE_WITH_SOURCE,
+                variables: {
+                    id: info._id.toString(),
+                    record: { ingredient: ingredient._id.toString(), usdaFdcId: 171077 },
+                },
+            },
+            makeContext(user)
+        );
+        if (response.body.kind !== 'single') assert.fail('Expected a single result');
+        const { data, errors } = response.body.singleResult;
+        assert.isUndefined(errors);
+        const record = (data as { nutritionalInfoUpdateById: { record: SourceRecord } })
+            .nutritionalInfoUpdateById.record;
+        assert.equal(record.source, 'usda');
+        assert.equal(record.usdaFdcId, 171077);
+        assert.isNull(record.offBarcode);
+        assert.isNull(record.sourceName);
+    });
 });
 
 // ---------- USDA proxy tests (mock fetch) ----------

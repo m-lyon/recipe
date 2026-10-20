@@ -62,6 +62,18 @@ nutritionalInfoSchema.pre('validate', function () {
     if (!this.source) {
         this.source = impliedSource(this);
     }
+    // The web editor relinks to USDA by sending only usdaFdcId, so that update switches the
+    // record to USDA and drops the old source's barcode and name.
+    if (
+        !this.isNew &&
+        this.usdaFdcId != null &&
+        this.isModified('usdaFdcId') &&
+        !this.isModified('source')
+    ) {
+        this.source = 'usda';
+        this.offBarcode = null;
+        if (!this.isModified('sourceName')) this.sourceName = null;
+    }
     // Each source carries its own ID and no other, so a record never names two sources.
     const has = { usda: this.usdaFdcId != null, openFoodFacts: this.offBarcode != null };
     if (this.source === 'usda' && !has.usda) {
