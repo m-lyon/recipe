@@ -189,7 +189,7 @@ export function mapProduct(product: Record<string, unknown>): OpenFoodFactsProdu
 
 /** GTIN-8, UPC-A, EAN-13 and GTIN-14 are all digits. The check digit is not enforced:
  *  Open Food Facts also holds store and internal codes that fail it. */
-function isBarcode(value: string): boolean {
+export function isBarcode(value: string): boolean {
     return /^\d{8,14}$/.test(value);
 }
 
@@ -214,6 +214,10 @@ class TtlCache<T> {
         if (this.entries.size > CACHE_MAX_ENTRIES) {
             this.entries.delete(this.entries.keys().next().value!);
         }
+    }
+
+    delete(key: string): void {
+        this.entries.delete(key);
     }
 
     clear(): void {
@@ -354,6 +358,11 @@ export const OpenFoodFactsQuery = {
         },
     }),
 };
+
+/** Drops a product from the cache, so the next read fetches what was just written. */
+export function forgetOpenFoodFactsProduct(barcode: string): void {
+    productCache.delete(barcode);
+}
 
 /** Test hook: empties the caches and the server-wide request windows. */
 export function resetOpenFoodFacts(): void {

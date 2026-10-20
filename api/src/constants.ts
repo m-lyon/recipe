@@ -26,6 +26,23 @@ export const OPEN_FOOD_FACTS_SEARCH_URL =
 export const OPEN_FOOD_FACTS_CONTACT =
     process.env.OPEN_FOOD_FACTS_CONTACT ?? SMTP_ADMIN_EMAIL ?? 'unknown';
 
+/**
+ * Where contributions go, and the app account they are sent as. Read when called, not at
+ * import, so a test can switch it.
+ *
+ * Contributions write to a public database, so they go to staging unless production is set
+ * on purpose. Staging and production have separate accounts. Without the user, the
+ * password and the salt, contributions are turned off.
+ */
+export function openFoodFactsWriteConfig() {
+    return {
+        url: process.env.OPEN_FOOD_FACTS_WRITE_URL ?? 'https://world.openfoodfacts.net',
+        userId: process.env.OPEN_FOOD_FACTS_USER_ID,
+        password: process.env.OPEN_FOOD_FACTS_PASSWORD,
+        appUuidSalt: process.env.OPEN_FOOD_FACTS_APP_UUID_SALT,
+    };
+}
+
 export function assertRequiredEnv() {
     const requiredEnvVars = TEST
         ? { MONGODB_VERSION }
