@@ -1,5 +1,6 @@
 import { CreateNutritionalInfoMutation } from '@recipe/graphql/generated';
 import { DeleteNutritionalInfoMutation } from '@recipe/graphql/generated';
+import { EnumNutritionalInfoCreateSource } from '@recipe/graphql/generated';
 import { mockNutritionalInfoIdCarrot } from '@recipe/graphql/__mocks__/ids';
 import { CreateNutritionalInfoMutationVariables } from '@recipe/graphql/generated';
 import { CREATE_NUTRITIONAL_INFO } from '@recipe/graphql/mutations/nutritionalInfo';
@@ -36,7 +37,10 @@ export const mockCreateNutritionalInfoBeef = {
         variables: {
             record: {
                 ingredient: mockBeefId,
+                source: EnumNutritionalInfoCreateSource.Usda,
                 usdaFdcId: 171077,
+                openFoodFactsBarcode: null,
+                sourceName: 'Chicken breast, cooked',
                 perGram: chickenBreastPerGram,
             },
         } satisfies CreateNutritionalInfoMutationVariables,
@@ -68,7 +72,10 @@ export const mockCreateNutritionalInfoOnion = {
         variables: {
             record: {
                 ingredient: mockOnionId,
+                source: EnumNutritionalInfoCreateSource.Usda,
                 usdaFdcId: 170000,
+                openFoodFactsBarcode: null,
+                sourceName: 'Onions, raw',
                 perGram: onionPerGram,
             },
         } satisfies CreateNutritionalInfoMutationVariables,

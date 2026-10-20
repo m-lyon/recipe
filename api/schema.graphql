@@ -66,7 +66,10 @@ type CreateOneIngredientPayload {
 """"""
 input CreateOneNutritionalInfoCreateInput {
   ingredient: MongoID!
+  openFoodFactsBarcode: String
   perGram: NutritionalInfoPerGramInput!
+  source: EnumNutritionalInfoCreateSource!
+  sourceName: String
   usdaFdcId: Float
 }
 
@@ -275,6 +278,18 @@ enum EnumIngredientCreateTags {
 enum EnumIngredientTags {
   vegan
   vegetarian
+}
+
+enum EnumNutritionalInfoCreateSource {
+  manual
+  openFoodFacts
+  usda
+}
+
+enum EnumNutritionalInfoSource {
+  manual
+  openFoodFacts
+  usda
 }
 
 enum EnumRecipeCalculatedTags {
@@ -931,7 +946,10 @@ input FilterFindOneNutritionalInfoInput {
   """List of *indexed* fields that can be filtered via operators."""
   _operators: FilterFindOneNutritionalInfoOperatorsInput
   ingredient: MongoID
+  openFoodFactsBarcode: String
   perGram: FilterFindOneNutritionalInfoPerGramInput
+  source: EnumNutritionalInfoSource
+  sourceName: String
   usdaFdcId: Float
 }
 
@@ -1479,7 +1497,10 @@ type Mutation {
 type NutritionalInfo {
   _id: MongoID!
   ingredient: MongoID!
+  openFoodFactsBarcode: String
   perGram: NutritionalInfoPerGram!
+  source: EnumNutritionalInfoSource!
+  sourceName: String
   usdaFdcId: Float
 }
 
@@ -1495,6 +1516,23 @@ input NutritionalInfoPerGramInput {
   carbs: Float!
   fat: Float!
   protein: Float!
+}
+
+type OpenFoodFactsProduct {
+  barcode: String!
+  brands: String
+  caloriesPer100g: Float
+  carbsPer100g: Float
+  countries: [String!]!
+  fatPer100g: Float
+  name: String
+
+  """Portions from the serving size and from a multipack quantity"""
+  portions: [UsdaFoodPortion!]!
+  proteinPer100g: Float
+  quantity: String
+  servingSize: String
+  warnings: [String!]!
 }
 
 type Owner {
@@ -1588,6 +1626,8 @@ type Query {
     sort: SortFindOneNutritionalInfoInput
   ): NutritionalInfo
   nutritionalInfosByIngredientIds(ingredientIds: [MongoID!]!): [NutritionalInfo]
+  openFoodFactsProduct(barcode: String!): OpenFoodFactsProduct
+  openFoodFactsSearch(pageSize: Int = 20, query: String!, ukOnly: Boolean = true): [OpenFoodFactsProduct!]!
 
   """Retrieve a prep method by its ID"""
   prepMethodById(_id: MongoID!): PrepMethod
@@ -2276,7 +2316,10 @@ type UpdateByIdIngredientPayload {
 """"""
 input UpdateByIdNutritionalInfoInput {
   ingredient: MongoID
+  openFoodFactsBarcode: String
   perGram: UpdateByIdNutritionalInfoPerGramInput
+  source: EnumNutritionalInfoSource
+  sourceName: String
   usdaFdcId: Float
 }
 

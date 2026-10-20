@@ -14,6 +14,9 @@ declare global {
             SMTP_ADMIN_EMAIL?: string;
             SENDGRID_API_KEY?: string;
             USDA_API_KEY?: string;
+            OPEN_FOOD_FACTS_API_URL?: string;
+            OPEN_FOOD_FACTS_SEARCH_URL?: string;
+            OPEN_FOOD_FACTS_CONTACT?: string;
         }
     }
 }

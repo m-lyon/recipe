@@ -8,9 +8,15 @@ export interface MacroNutrients {
     fat: number; // g
 }
 
+export const NUTRITION_SOURCES = ['usda', 'openFoodFacts', 'manual'] as const;
+export type NutritionSource = (typeof NUTRITION_SOURCES)[number];
+
 export interface NutritionalInfo extends Document {
     ingredient: Types.ObjectId;
-    usdaFdcId?: number;
+    source: NutritionSource;
+    usdaFdcId?: number | null;
+    openFoodFactsBarcode?: string | null;
+    sourceName?: string | null;
     perGram: MacroNutrients;
 }
 
@@ -31,8 +37,34 @@ const nutritionalInfoSchema = new Schema<NutritionalInfo>({
         ref: 'Ingredient',
         unique: true,
     },
+    source: { type: String, enum: NUTRITION_SOURCES, required: true },
     usdaFdcId: { type: Number },
+    openFoodFactsBarcode: { type: String, match: /^\d{8,14}$/ },
+    sourceName: { type: String, trim: true },
     perGram: { type: macroNutrientsSchema, required: true },
+});
+
+nutritionalInfoSchema.pre('validate', function () {
+    // Each source carries its own ID and no other, so a record never names two sources.
+    const has = { usda: this.usdaFdcId != null, openFoodFacts: this.openFoodFactsBarcode != null };
+    if (this.source === 'usda' && !has.usda) {
+        this.invalidate('usdaFdcId', 'A USDA source needs usdaFdcId');
+    }
+    if (this.source === 'openFoodFacts' && !has.openFoodFacts) {
+        this.invalidate(
+            'openFoodFactsBarcode',
+            'An Open Food Facts source needs openFoodFactsBarcode'
+        );
+    }
+    if (this.source !== 'usda' && has.usda) {
+        this.invalidate('usdaFdcId', `A ${this.source} source cannot carry usdaFdcId`);
+    }
+    if (this.source !== 'openFoodFacts' && has.openFoodFacts) {
+        this.invalidate(
+            'openFoodFactsBarcode',
+            `A ${this.source} source cannot carry openFoodFactsBarcode`
+        );
+    }
 });
 
 export const NutritionalInfo = model<NutritionalInfo>('NutritionalInfo', nutritionalInfoSchema);

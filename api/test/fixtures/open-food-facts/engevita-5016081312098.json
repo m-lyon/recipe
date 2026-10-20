@@ -1,0 +1,33 @@
+{
+  "code": "5016081312098",
+  "errors": [],
+  "product": {
+    "brands": "Marigold",
+    "code": "5016081312098",
+    "countries_tags": [
+      "en:portugal",
+      "en:united-kingdom"
+    ],
+    "nutriments": {
+      "carbohydrates_100g": 19,
+      "energy-kcal_100g": 349,
+      "fat_100g": 5,
+      "fiber_100g": 20,
+      "proteins_100g": 47,
+      "salt_100g": 0.24,
+      "sugars_100g": 1
+    },
+    "product_name": "Vegan Engevita Nutritional Yeast Flakes",
+    "product_quantity": 100,
+    "quantity": "100 g",
+    "serving_quantity": 5,
+    "serving_size": "5 g"
+  },
+  "result": {
+    "id": "product_found",
+    "lc_name": "Product found",
+    "name": "Product found"
+  },
+  "status": "success",
+  "warnings": []
+}

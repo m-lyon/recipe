@@ -1,8 +1,9 @@
 import { Args } from '@oclif/core';
 
+import { indent } from '../../lib/format.js';
 import { notFound } from '../../lib/errors.js';
 import { formatMacros } from '../../lib/macros.js';
-import { EMPTY, indent } from '../../lib/format.js';
+import { describeSource } from '../../lib/sources.js';
 import { resolveIngredient } from '../../lib/resolve.js';
 import { BaseCommand, writeFlags } from '../../lib/base.js';
 import type { NutritionalInfoSummary } from '../../lib/types.js';
@@ -37,7 +38,7 @@ export default class NutritionUnlink extends BaseCommand {
         }
 
         const removed = [
-            `usdaFdcId   ${existing.usdaFdcId ?? EMPTY}`,
+            `source      ${describeSource(existing)}`,
             `perGram     ${formatMacros(existing.perGram)}`,
         ].join('\n');
 

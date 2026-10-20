@@ -5,16 +5,16 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'no
 import { expect } from 'chai';
 
 import { EGG } from './helpers/fixtures.js';
-import { CACHE_TTL_MS, UsdaCache, fingerprint } from '../src/lib/usdaCache.js';
+import { CACHE_TTL_MS, RecordCache, fingerprint } from '../src/lib/recordCache.js';
 
-describe('USDA disk cache', () => {
+describe('record disk cache', () => {
     let directory: string;
-    let cache: UsdaCache;
+    let cache: RecordCache;
     const key = fingerprint('query UsdaFoodItem { ... }');
 
     beforeEach(() => {
         directory = mkdtempSync(join(tmpdir(), 'recipe-cli-usda-'));
-        cache = new UsdaCache(directory);
+        cache = new RecordCache(directory);
     });
     afterEach(() => {
         rmSync(directory, { force: true, recursive: true });
@@ -43,7 +43,7 @@ describe('USDA disk cache', () => {
     });
 
     it('treats an entry past its TTL as a miss', () => {
-        const expiring = new UsdaCache(directory, -1);
+        const expiring = new RecordCache(directory, -1);
         expiring.write(171287, key, { usdaFoodItem: EGG });
         expect(expiring.read(171287, key)).to.equal(null);
         // The default TTL is long, because USDA records are effectively static.
@@ -60,7 +60,7 @@ describe('USDA disk cache', () => {
         // A regular file where a parent directory is expected: mkdir gives ENOTDIR.
         const blocker = join(directory, 'blocker');
         writeFileSync(blocker, 'not a directory');
-        const unwritable = new UsdaCache(join(blocker, 'usda'));
+        const unwritable = new RecordCache(join(blocker, 'usda'));
         expect(() => unwritable.write(1, key, {})).to.not.throw();
         expect(unwritable.read(1, key)).to.equal(null);
     });
@@ -69,6 +69,14 @@ describe('USDA disk cache', () => {
         cache.write(171287, key, { usdaFoodItem: EGG });
         const raw = JSON.parse(readFileSync(cache.file(171287, key), 'utf8'));
         expect(raw.fetchedAt).to.be.a('number');
-        expect(raw.fdcId).to.equal(171287);
+        expect(raw.id).to.equal('171287');
+    });
+
+    it('keys an Open Food Facts barcode, keeping its leading zero', () => {
+        cache.write('0633148100013', key, { openFoodFactsProduct: { barcode: '0633148100013' } });
+        expect(cache.read('0633148100013', key)).to.deep.equal({
+            openFoodFactsProduct: { barcode: '0633148100013' },
+        });
+        expect(cache.read('633148100013', key)).to.equal(null);
     });
 });

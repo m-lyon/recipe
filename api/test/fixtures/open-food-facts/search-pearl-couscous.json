@@ -1,0 +1,102 @@
+{
+  "hits": [
+    {
+      "code": "5010338301255",
+      "brands": [
+        "Al'fez"
+      ],
+      "quantity": "200g",
+      "countries_tags": [
+        "en:united-kingdom"
+      ],
+      "nutriments": {
+        "carbohydrates_100g": 72,
+        "energy-kcal_100g": 363,
+        "fat_100g": 1.5,
+        "fiber_100g": 2.2,
+        "proteins_100g": 12,
+        "salt_100g": 0.03,
+        "sugars_100g": 2.6
+      },
+      "product_name": "Pearl couscous"
+    },
+    {
+      "code": "5017601035435",
+      "brands": [
+        "Suma"
+      ],
+      "countries_tags": [
+        "en:united-kingdom"
+      ],
+      "nutriments": {
+        "fat_100g": 1.5,
+        "sugars_100g": 2.6,
+        "proteins_100g": 12,
+        "fiber_100g": 2.2,
+        "energy-kcal_100g": 344,
+        "carbohydrates_100g": 72
+      },
+      "product_name": "Pearl Couscous"
+    },
+    {
+      "code": "0816416025106",
+      "brands": [
+        "365 Whole Foods"
+      ],
+      "countries_tags": [
+        "en:united-kingdom"
+      ],
+      "nutriments": {
+        "carbohydrates_100g": 69,
+        "energy-kcal_100g": 349,
+        "fat_100g": 1.4,
+        "fiber_100g": 3.2,
+        "proteins_100g": 12,
+        "salt_100g": 2.36,
+        "sugars_100g": 4.6
+      },
+      "product_name": "Pearled Couscous"
+    },
+    {
+      "code": "5034444115018",
+      "quantity": "250 g",
+      "countries_tags": [
+        "en:united-kingdom"
+      ],
+      "nutriments": {
+        "proteins_100g": 3.8,
+        "salt_100g": 0,
+        "fat_100g": 0.5,
+        "energy-kcal_100g": 114,
+        "sugars_100g": 0.16,
+        "carbohydrates_100g": 23
+      },
+      "product_name": "Pearl couscous"
+    },
+    {
+      "code": "01892406",
+      "brands": [
+        "Sainsbury's"
+      ],
+      "quantity": "110g",
+      "countries_tags": [
+        "en:united-kingdom"
+      ],
+      "nutriments": {
+        "carbohydrates_100g": 27.5,
+        "fat_100g": 0.7,
+        "fiber_100g": 1.9,
+        "proteins_100g": 4.8,
+        "salt_100g": 0.29,
+        "sugars_100g": 1.4
+      },
+      "product_name": "Coriander & Lemon Couscous"
+    }
+  ],
+  "count": 243,
+  "page": 1,
+  "page_size": 5,
+  "page_count": 49,
+  "is_count_exact": true,
+  "timed_out": false
+}

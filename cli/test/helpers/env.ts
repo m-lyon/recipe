@@ -16,6 +16,7 @@ export function useTestEnvironment(): void {
     process.env.RECIPE_PASSWORD = 'secret';
     process.env.RECIPE_SESSION_FILE = join(directory, 'session');
     process.env.RECIPE_USDA_CACHE_DIR = join(directory, 'usda');
+    process.env.RECIPE_OPEN_FOOD_FACTS_CACHE_DIR = join(directory, 'open-food-facts');
 }
 
 export function sessionFile(): string {
@@ -24,6 +25,10 @@ export function sessionFile(): string {
 
 export function usdaCacheDir(): string {
     return process.env.RECIPE_USDA_CACHE_DIR!;
+}
+
+export function openFoodFactsCacheDir(): string {
+    return process.env.RECIPE_OPEN_FOOD_FACTS_CACHE_DIR!;
 }
 
 export function cleanTestEnvironment(): void {

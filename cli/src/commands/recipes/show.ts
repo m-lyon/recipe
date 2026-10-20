@@ -2,6 +2,7 @@ import { Args } from '@oclif/core';
 
 import { BaseCommand } from '../../lib/base.js';
 import { resolveRecipe } from '../../lib/resolve.js';
+import { describeSource } from '../../lib/sources.js';
 import { measuresByIngredient } from '../../lib/measures.js';
 import { GET_NUTRITIONAL_INFOS } from '../../graphql/operations.js';
 import { GET_INGREDIENT_MEASURES } from '../../graphql/operations.js';
@@ -67,16 +68,19 @@ export default class RecipesShow extends BaseCommand {
                     unit: entry.unit && !entry.unit.hidden ? entry.unit.shortSingular : null,
                     nutrition: status.state,
                     reason: status.reason,
+                    source: info ? describeSource(info) : null,
                     usdaFdcId: info?.usdaFdcId ?? null,
+                    openFoodFactsBarcode: info?.openFoodFactsBarcode ?? null,
                 };
             });
             const table = renderTable(
-                ['QUANTITY', 'UNIT', 'INGREDIENT', 'NUTRITION', 'REASON'],
+                ['QUANTITY', 'UNIT', 'INGREDIENT', 'NUTRITION', 'SOURCE', 'REASON'],
                 entries.map((entry) => [
                     text(entry.quantity),
                     text(entry.unit),
                     entry.type === 'recipe' ? `${entry.name} (sub-recipe)` : entry.name,
                     entry.nutrition,
+                    text(entry.source),
                     entry.reason === '' ? EMPTY : entry.reason,
                 ])
             );

@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 
 import { nutritionStatus } from '../src/lib/nutrition.js';
+import { KNORR_POTS, LITRE } from './helpers/fixtures.js';
 import type { RecipeIngredientSummary } from '../src/lib/types.js';
 import { findMeasure, suggestFromPortion } from '../src/lib/measures.js';
 import type { MeasureSummary, NutritionalInfoSummary } from '../src/lib/types.js';
@@ -123,5 +124,32 @@ describe('suggestFromPortion', () => {
         expect(suggestFromPortion(GARLIC.portions![0], units, sizes, [])?.reason).to.equal(
             'a serving size, not one unit'
         );
+    });
+    it('reads the US spelling "liter" as the litre unit', () => {
+        const liter = {
+            description: '1 liter',
+            amount: 1,
+            modifier: 'liter',
+            gramWeight: 1000,
+            kind: 'VOLUME' as const,
+            millilitres: 1000,
+            impliedDensity: 1,
+            ambiguous: false,
+        };
+        expect(suggestFromPortion(liter, [...units, LITRE], sizes, [])?.draft).to.deep.equal({
+            unitId: LITRE._id,
+            sizeId: null,
+            prepMethodId: null,
+            grams: 1000,
+        });
+    });
+
+    it('maps an Open Food Facts multipack item to each', () => {
+        expect(suggestFromPortion(KNORR_POTS.portions![0], units, sizes, [])?.draft).to.deep.equal({
+            unitId: EACH._id,
+            sizeId: null,
+            prepMethodId: null,
+            grams: 24,
+        });
     });
 });

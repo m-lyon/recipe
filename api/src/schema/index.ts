@@ -11,6 +11,7 @@ import { Ingredient } from '../models/Ingredient.js';
 import { PrepMethod } from '../models/PrepMethod.js';
 import { ImageMutation, ImageQuery } from './Image.js';
 import { rateLimit } from '../middleware/rateLimit.js';
+import { OpenFoodFactsQuery } from './OpenFoodFacts.js';
 import { RecipeMutation, RecipeQuery } from './Recipe.js';
 import { RatingMutation, RatingQuery } from './Rating.js';
 import { DisplayLadder } from '../models/DisplayLadder.js';
@@ -30,6 +31,10 @@ export const USDA_SEARCH_LIMIT = 60;
 export const USDA_SEARCH_WINDOW_MS = 60 * 60 * 1000;
 export const USDA_FOOD_ITEM_LIMIT = 300;
 export const USDA_FOOD_ITEM_WINDOW_MS = 60 * 60 * 1000;
+export const OPEN_FOOD_FACTS_SEARCH_LIMIT = 60;
+export const OPEN_FOOD_FACTS_SEARCH_WINDOW_MS = 60 * 60 * 1000;
+export const OPEN_FOOD_FACTS_PRODUCT_LIMIT = 300;
+export const OPEN_FOOD_FACTS_PRODUCT_WINDOW_MS = 60 * 60 * 1000;
 
 type Middleware = ResolverNextRpCb<unknown, GraphQLContext>;
 
@@ -78,6 +83,28 @@ const usdaQueries = {
         { usdaFoodItem: UsdaQuery.usdaFoodItem },
         isVerified(),
         rateLimit('usdaFoodItem', USDA_FOOD_ITEM_LIMIT, USDA_FOOD_ITEM_WINDOW_MS)
+    ),
+};
+// Open Food Facts limits requests per server IP address. The resolvers also hold the
+// whole server below that limit; these per-user caps stop one account from spending it.
+const openFoodFactsQueries = {
+    ...withMiddleware(
+        { openFoodFactsSearch: OpenFoodFactsQuery.openFoodFactsSearch },
+        isVerified(),
+        rateLimit(
+            'openFoodFactsSearch',
+            OPEN_FOOD_FACTS_SEARCH_LIMIT,
+            OPEN_FOOD_FACTS_SEARCH_WINDOW_MS
+        )
+    ),
+    ...withMiddleware(
+        { openFoodFactsProduct: OpenFoodFactsQuery.openFoodFactsProduct },
+        isVerified(),
+        rateLimit(
+            'openFoodFactsProduct',
+            OPEN_FOOD_FACTS_PRODUCT_LIMIT,
+            OPEN_FOOD_FACTS_PRODUCT_WINDOW_MS
+        )
     ),
 };
 const isAuthenticatedMutations = withMiddleware(
@@ -169,6 +196,7 @@ schemaComposer.Query.addFields({
     ...IngredientMeasureQuery,
     ...NutritionalInfoQuery,
     ...usdaQueries,
+    ...openFoodFactsQueries,
     ...isAdminQueries,
 });
 schemaComposer.Mutation.addFields({

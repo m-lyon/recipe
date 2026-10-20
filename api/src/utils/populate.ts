@@ -124,7 +124,11 @@ export async function populateNutritionalInfo() {
     await NutritionalInfo.create(
         withNutrition.map(({ name, per100g }) => {
             const [calories, protein, carbs, fat] = per100g!.map((value) => value / 100);
-            return { ingredient: ingredient(name), perGram: { calories, protein, carbs, fat } };
+            return {
+                ingredient: ingredient(name),
+                source: 'manual',
+                perGram: { calories, protein, carbs, fat },
+            };
         })
     );
     const without = SEED_INGREDIENTS.filter((i) => !i.per100g).map((i) => i.name);

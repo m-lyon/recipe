@@ -4,7 +4,7 @@ import { CliError } from './errors.js';
 import { loadConfig } from '../constants.js';
 import { ApiClient } from '../graphql/client.js';
 import { SessionCache, defaultSessionFile } from './session.js';
-import { UsdaCache, defaultUsdaCacheDir } from './usdaCache.js';
+import { RecordCache, defaultCacheDir } from './recordCache.js';
 
 /**
  * Every command extends this.
@@ -33,7 +33,10 @@ export abstract class BaseCommand extends Command {
             const config = loadConfig(urlOverride);
             const sessionFile = config.sessionFile ?? defaultSessionFile(config.url);
             this.client = new ApiClient(config, new SessionCache(sessionFile), {
-                usdaCache: new UsdaCache(config.usdaCacheDir ?? defaultUsdaCacheDir()),
+                usdaCache: new RecordCache(config.usdaCacheDir ?? defaultCacheDir('usda')),
+                openFoodFactsCache: new RecordCache(
+                    config.openFoodFactsCacheDir ?? defaultCacheDir('openFoodFacts')
+                ),
             });
         }
         return this.client;
@@ -71,10 +74,10 @@ export abstract class BaseCommand extends Command {
     }
 }
 
-/** Shared by the commands that read a USDA food item. */
+/** Shared by the commands that read a USDA food item or an Open Food Facts product. */
 export const usdaFlags = {
     refresh: Flags.boolean({
-        description: 'Ignore the cached USDA record and fetch it again',
+        description: 'Ignore the cached record and fetch it again',
         default: false,
     }),
 };

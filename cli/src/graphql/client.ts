@@ -3,8 +3,8 @@ import type { TypedDocumentNode } from '@graphql-typed-document-node/core';
 
 import { LOGIN } from './operations.js';
 import type { Config } from '../constants.js';
-import { UsdaCache, fingerprint } from '../lib/usdaCache.js';
 import { SessionCache, extractSessionCookie } from '../lib/session.js';
+import { CachedSource, RecordCache, fingerprint } from '../lib/recordCache.js';
 import { CliError, fromGraphQLCode, notAuthenticated, runtime } from '../lib/errors.js';
 
 interface GraphQLResponse<T> {
@@ -47,7 +47,9 @@ export interface ApiClientOptions {
     /** Shortened in tests so the backoff does not slow the suite. */
     rateLimitDelayMs?: number;
     /** On-disk cache for usdaFoodItem responses. Omit to cache in memory only. */
-    usdaCache?: UsdaCache;
+    usdaCache?: RecordCache;
+    /** On-disk cache for openFoodFactsProduct responses. Omit to cache in memory only. */
+    openFoodFactsCache?: RecordCache;
 }
 
 /**
@@ -63,16 +65,19 @@ export class ApiClient {
     readonly session: SessionCache;
     /** Requests actually put on the wire. Asserted on by the transport tests. */
     requestCount = 0;
-    /** Whether the last cachedFoodItem call was served from a cache (memory or disk). */
-    usdaCacheHit = false;
+    /** Whether the last cached read was served from a cache (memory or disk). */
+    cacheHit = false;
 
     /** True when this process started with a cookie on disk. */
     readonly hadCachedSession: boolean;
 
     private cookie: string | null = null;
     private readonly rateLimitDelayMs: number;
-    private readonly foodItemCache = new Map<number, unknown>();
-    private readonly usdaCache?: UsdaCache;
+    private readonly memory = {
+        usda: new Map<string, unknown>(),
+        openFoodFacts: new Map<string, unknown>(),
+    };
+    private readonly disk: { usda?: RecordCache; openFoodFacts?: RecordCache };
 
     constructor(config: Config, session: SessionCache, options: ApiClientOptions = {}) {
         this.config = config;
@@ -80,7 +85,7 @@ export class ApiClient {
         this.cookie = session.read();
         this.hadCachedSession = this.cookie !== null;
         this.rateLimitDelayMs = options.rateLimitDelayMs ?? USDA_RATE_LIMIT_BASE_DELAY_MS;
-        this.usdaCache = options.usdaCache;
+        this.disk = { usda: options.usdaCache, openFoodFacts: options.openFoodFactsCache };
     }
 
     async request<TResult, TVars>(
@@ -135,26 +140,50 @@ export class ApiClient {
         variables: TVars,
         options: { refresh?: boolean } = {}
     ): Promise<TResult> {
-        const hit = this.foodItemCache.get(fdcId);
+        return this.cachedRecord('usda', String(fdcId), document, variables, options);
+    }
+
+    /**
+     * An Open Food Facts product, cached as a USDA food item is. The server's
+     * Open Food Facts limit is per minute and shared by every user.
+     */
+    async cachedOpenFoodFactsProduct<TResult, TVars>(
+        barcode: string,
+        document: TypedDocumentNode<TResult, TVars>,
+        variables: TVars,
+        options: { refresh?: boolean } = {}
+    ): Promise<TResult> {
+        return this.cachedRecord('openFoodFacts', barcode, document, variables, options);
+    }
+
+    private async cachedRecord<TResult, TVars>(
+        source: CachedSource,
+        id: string,
+        document: TypedDocumentNode<TResult, TVars>,
+        variables: TVars,
+        options: { refresh?: boolean }
+    ): Promise<TResult> {
+        const memory = this.memory[source];
+        const hit = memory.get(id);
         if (hit !== undefined && !options.refresh) {
-            this.usdaCacheHit = true;
+            this.cacheHit = true;
             return hit as TResult;
         }
 
         const key = fingerprint(print(assertGenerated(document)));
         if (!options.refresh) {
-            const cached = this.usdaCache?.read<TResult>(fdcId, key);
+            const cached = this.disk[source]?.read<TResult>(id, key);
             if (cached !== null && cached !== undefined) {
-                this.foodItemCache.set(fdcId, cached);
-                this.usdaCacheHit = true;
+                memory.set(id, cached);
+                this.cacheHit = true;
                 return cached;
             }
         }
 
         const result = await this.request(document, variables);
-        this.foodItemCache.set(fdcId, result);
-        this.usdaCache?.write(fdcId, key, result);
-        this.usdaCacheHit = false;
+        memory.set(id, result);
+        this.disk[source]?.write(id, key, result);
+        this.cacheHit = false;
         return result;
     }
 

@@ -4,35 +4,44 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 
 /**
- * USDA records are effectively static, but the API's mapping of them is not.
- * An entry older than this is re-fetched, so a resolver change cannot leave a
- * wrong value on disk indefinitely.
+ * USDA and Open Food Facts records change rarely, but the API's mapping of them
+ * does change. An entry older than this is re-fetched, so a resolver change
+ * cannot leave a wrong value on disk indefinitely.
  */
 export const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
+/** The sources whose records are cached, one directory each. */
+export type CachedSource = 'usda' | 'openFoodFacts';
+
 interface CacheEntry {
     fetchedAt: number;
-    fdcId: number;
+    id: string;
     result: unknown;
 }
 
-export function defaultUsdaCacheDir(): string {
-    return join(homedir(), '.cache', 'recipe-cli', 'usda');
+const CACHE_DIRECTORY: Record<CachedSource, string> = {
+    usda: 'usda',
+    openFoodFacts: 'open-food-facts',
+};
+
+export function defaultCacheDir(source: CachedSource): string {
+    return join(homedir(), '.cache', 'recipe-cli', CACHE_DIRECTORY[source]);
 }
 
 /**
- * `usdaFoodItem` responses on disk, keyed by fdcId.
+ * Food records on disk, keyed by their id in the source: a USDA fdcId or an
+ * Open Food Facts barcode.
  *
- * USDA calls pass through the API and consume the server's key quota, and the
- * in-process cache does not survive between commands. Without this, `usda show`
- * followed by a dry run and then a write costs three upstream calls for one
- * food.
+ * Reads pass through the API and spend limits that the whole server shares,
+ * and the in-process cache does not survive between commands. Without this,
+ * `usda show` followed by a dry run and then a write costs three upstream calls
+ * for one food.
  *
  * The key carries a hash of the GraphQL document, so editing the operation
  * invalidates every entry it wrote. The data is public, so the files are not
  * given restrictive permissions.
  */
-export class UsdaCache {
+export class RecordCache {
     readonly directory: string;
 
     private readonly ttlMs: number;
@@ -43,12 +52,12 @@ export class UsdaCache {
     }
 
     /** Returns the cached result, or null on a miss, a stale entry or an unreadable file. */
-    read<TResult>(fdcId: number, fingerprint: string): TResult | null {
+    read<TResult>(id: string | number, fingerprint: string): TResult | null {
         try {
             const entry = JSON.parse(
-                readFileSync(this.file(fdcId, fingerprint), 'utf8')
+                readFileSync(this.file(id, fingerprint), 'utf8')
             ) as CacheEntry;
-            if (entry.fdcId !== fdcId) return null;
+            if (entry.id !== String(id)) return null;
             if (Date.now() - entry.fetchedAt > this.ttlMs) return null;
             return entry.result as TResult;
         } catch {
@@ -57,18 +66,18 @@ export class UsdaCache {
         }
     }
 
-    write(fdcId: number, fingerprint: string, result: unknown): void {
+    write(id: string | number, fingerprint: string, result: unknown): void {
         try {
             mkdirSync(this.directory, { recursive: true, mode: 0o700 });
-            const entry: CacheEntry = { fetchedAt: Date.now(), fdcId, result };
-            writeFileSync(this.file(fdcId, fingerprint), JSON.stringify(entry), 'utf8');
+            const entry: CacheEntry = { fetchedAt: Date.now(), id: String(id), result };
+            writeFileSync(this.file(id, fingerprint), JSON.stringify(entry), 'utf8');
         } catch {
             // A cache that cannot be written costs a round trip, nothing more.
         }
     }
 
-    file(fdcId: number, fingerprint: string): string {
-        return join(this.directory, `${fdcId}-${fingerprint}.json`);
+    file(id: string | number, fingerprint: string): string {
+        return join(this.directory, `${id}-${fingerprint}.json`);
     }
 }
 

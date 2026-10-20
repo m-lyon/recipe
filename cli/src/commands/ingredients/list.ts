@@ -73,7 +73,9 @@ export default class IngredientsList extends BaseCommand {
                 pluralName: ingredient.pluralName,
                 isCountable: ingredient.isCountable,
                 nutrition: info ? 'linked' : 'missing',
+                source: info?.source ?? null,
                 usdaFdcId: info?.usdaFdcId ?? null,
+                openFoodFactsBarcode: info?.openFoodFactsBarcode ?? null,
                 hasPerGram: Boolean(info?.perGram),
                 measures: measuresOf.get(ingredient._id)?.length ?? 0,
             };

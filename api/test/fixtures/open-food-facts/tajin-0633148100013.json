@@ -1,0 +1,39 @@
+{
+  "code": "0633148100013",
+  "errors": [],
+  "product": {
+    "brands": "PRODUCTOS TAJIN S.A. DE C.V.",
+    "code": "0633148100013",
+    "countries_tags": [
+      "en:australia",
+      "en:colombia",
+      "en:france",
+      "en:mexico",
+      "en:spain",
+      "en:united-kingdom",
+      "en:united-states",
+      "en:world"
+    ],
+    "nutriments": {
+      "carbohydrates_100g": 38,
+      "energy-kcal_100g": 190,
+      "fat_100g": 2.5,
+      "fiber_100g": 9.2,
+      "proteins_100g": 4,
+      "salt_100g": 48.5,
+      "sugars_100g": 0
+    },
+    "product_name": "",
+    "product_quantity": 142,
+    "quantity": "142g",
+    "serving_quantity": 1,
+    "serving_size": "0.25 tsp (1 g)"
+  },
+  "result": {
+    "id": "product_found",
+    "lc_name": "Product found",
+    "name": "Product found"
+  },
+  "status": "success",
+  "warnings": []
+}
