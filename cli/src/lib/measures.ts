@@ -86,7 +86,7 @@ function normalise(text: string): string {
     return text.trim().toLowerCase().replace(/\.$/, '');
 }
 
-function matchUnit(units: UnitSummary[], name: string): UnitSummary | undefined {
+export function matchUnit(units: UnitSummary[], name: string): UnitSummary | undefined {
     const target = normalise(name);
     const names = (unit: UnitSummary) =>
         [unit.shortSingular, unit.shortPlural, unit.longSingular, unit.longPlural]
@@ -113,7 +113,7 @@ function sizeWithin(sizes: NamedSummary[], text: string): NamedSummary | undefin
     });
 }
 
-function matchNamed(options: NamedSummary[], name: string): NamedSummary | undefined {
+export function matchNamed(options: NamedSummary[], name: string): NamedSummary | undefined {
     const target = normalise(name);
     return options.find((option) => normalise(option.value) === target);
 }
