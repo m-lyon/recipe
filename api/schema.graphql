@@ -1497,6 +1497,23 @@ input NutritionalInfoPerGramInput {
   protein: Float!
 }
 
+type OffProduct {
+  barcode: String!
+  brands: String
+  caloriesPer100g: Float
+  carbsPer100g: Float
+  countries: [String!]!
+  fatPer100g: Float
+  name: String
+
+  """Portions from the serving size and from a multipack quantity"""
+  portions: [UsdaFoodPortion!]!
+  proteinPer100g: Float
+  quantity: String
+  servingSize: String
+  warnings: [String!]!
+}
+
 type Owner {
   _id: MongoID!
   firstName: String
@@ -1588,6 +1605,8 @@ type Query {
     sort: SortFindOneNutritionalInfoInput
   ): NutritionalInfo
   nutritionalInfosByIngredientIds(ingredientIds: [MongoID!]!): [NutritionalInfo]
+  offProduct(barcode: String!): OffProduct
+  offSearch(pageSize: Int = 20, query: String!, ukOnly: Boolean = true): [OffProduct!]!
 
   """Retrieve a prep method by its ID"""
   prepMethodById(_id: MongoID!): PrepMethod

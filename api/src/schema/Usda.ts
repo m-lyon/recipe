@@ -67,7 +67,7 @@ schemaComposer.createEnumTC({
     },
 });
 
-const UsdaFoodPortionTC = schemaComposer.createObjectTC({
+export const UsdaFoodPortionTC = schemaComposer.createObjectTC({
     name: 'UsdaFoodPortion',
     fields: {
         // Human-readable label, e.g. "1 large" or "1 cup"
@@ -241,7 +241,7 @@ function asString(value: unknown): string | null {
     return typeof value === 'string' && value.length > 0 ? value : null;
 }
 
-function buildPortion(
+export function buildPortion(
     amount: number | null,
     modifier: string | null,
     portionDescription: string | null,

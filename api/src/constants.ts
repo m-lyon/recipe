@@ -18,6 +18,11 @@ export const SMTP_FROM_DOMAIN = process.env.SMTP_FROM_DOMAIN;
 export const SMTP_ADMIN_EMAIL = process.env.SMTP_ADMIN_EMAIL;
 export const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 export const USDA_API_KEY = process.env.USDA_API_KEY ?? '';
+// Reads use the production host: they are harmless, and staging holds few products.
+export const OFF_API_URL = process.env.OFF_API_URL ?? 'https://world.openfoodfacts.org';
+export const OFF_SEARCH_URL = process.env.OFF_SEARCH_URL ?? 'https://search.openfoodfacts.org';
+// Open Food Facts asks for a contact address in the User-Agent.
+export const OFF_CONTACT = process.env.OFF_CONTACT ?? SMTP_ADMIN_EMAIL ?? 'unknown';
 
 export function assertRequiredEnv() {
     const requiredEnvVars = TEST
