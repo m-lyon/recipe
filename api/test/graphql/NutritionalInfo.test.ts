@@ -222,6 +222,7 @@ describe('nutritionalInfoCreateOne', function () {
                 variables: {
                     record: {
                         ingredient: ingredient._id.toString(),
+                        source: 'usda',
                         usdaFdcId: 171077,
                         perGram: VALID_PER_GRAM,
                     },
@@ -252,6 +253,7 @@ describe('nutritionalInfoCreateOne', function () {
                 variables: {
                     record: {
                         ingredient: ingredient._id.toString(),
+                        source: 'manual',
                         perGram: VALID_PER_GRAM,
                     },
                 },
@@ -273,6 +275,7 @@ describe('nutritionalInfoCreateOne', function () {
                 variables: {
                     record: {
                         ingredient: ingredient._id.toString(),
+                        source: 'manual',
                         perGram: VALID_PER_GRAM,
                     },
                 },
@@ -296,6 +299,7 @@ describe('nutritionalInfoCreateOne', function () {
                 variables: {
                     record: {
                         ingredient: ingredient._id.toString(),
+                        source: 'usda',
                         usdaFdcId: 171077,
                     },
                 },
@@ -321,6 +325,7 @@ describe('nutritionalInfoUpdateById', function () {
         // Seed a NutritionalInfo document directly
         const ni = await new NutritionalInfo({
             ingredient: ingredient._id,
+            source: 'manual',
             perGram: VALID_PER_GRAM,
         }).save();
 
@@ -357,6 +362,7 @@ describe('nutritionalInfoUpdateById', function () {
 
         const ni = await new NutritionalInfo({
             ingredient: ownIngredient._id,
+            source: 'manual',
             perGram: VALID_PER_GRAM,
         }).save();
 
@@ -382,6 +388,7 @@ describe('nutritionalInfoUpdateById', function () {
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const ni = await new NutritionalInfo({
             ingredient: ingredient._id,
+            source: 'manual',
             perGram: VALID_PER_GRAM,
         }).save();
 
@@ -409,6 +416,7 @@ describe('nutritionalInfoUpdateById', function () {
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const ni = await new NutritionalInfo({
             ingredient: ingredient._id,
+            source: 'manual',
             perGram: VALID_PER_GRAM,
         }).save();
 
@@ -442,6 +450,7 @@ describe('nutritionalInfoRemoveById', function () {
 
         const ni = await new NutritionalInfo({
             ingredient: ingredient._id,
+            source: 'manual',
             perGram: VALID_PER_GRAM,
         }).save();
 
@@ -467,6 +476,7 @@ describe('nutritionalInfoRemoveById', function () {
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const ni = await new NutritionalInfo({
             ingredient: ingredient._id,
+            source: 'manual',
             perGram: VALID_PER_GRAM,
         }).save();
 
@@ -503,6 +513,7 @@ describe('nutritionalInfoByIngredient', function () {
 
         await new NutritionalInfo({
             ingredient: ingredient._id,
+            source: 'manual',
             perGram: VALID_PER_GRAM,
         }).save();
 
@@ -559,10 +570,12 @@ describe('nutritionalInfosByIngredientIds', function () {
 
         await new NutritionalInfo({
             ingredient: ingredient1._id,
+            source: 'manual',
             perGram: VALID_PER_GRAM,
         }).save();
         await new NutritionalInfo({
             ingredient: ingredient2._id,
+            source: 'manual',
             perGram: VALID_PER_GRAM,
         }).save();
 
@@ -646,17 +659,25 @@ describe('nutritional info source', function () {
         return { record, error: errors?.[0].message };
     }
 
-    it('should take usda from a USDA ID when no source is given', async function () {
-        // The client before Open Food Facts sends no source.
-        const { record, error } = await create(this.apolloServer, { usdaFdcId: 171077 });
+    it('should save a USDA source with its USDA ID', async function () {
+        const { record, error } = await create(this.apolloServer, {
+            source: 'usda',
+            usdaFdcId: 171077,
+        });
         assert.isUndefined(error);
         assert.equal(record!.source, 'usda');
+        assert.equal(record!.usdaFdcId, 171077);
     });
 
-    it('should take manual when no source and no ID are given', async function () {
-        const { record, error } = await create(this.apolloServer, {});
+    it('should save a manual source with no ID', async function () {
+        const { record, error } = await create(this.apolloServer, { source: 'manual' });
         assert.isUndefined(error);
         assert.equal(record!.source, 'manual');
+    });
+
+    it('should refuse a record with no source', async function () {
+        const { error } = await create(this.apolloServer, { usdaFdcId: 171077 });
+        assert.include(error, 'source');
     });
 
     it('should save an Open Food Facts source with its barcode and name', async function () {
@@ -709,6 +730,7 @@ describe('nutritional info source', function () {
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const info = await new NutritionalInfo({
             ingredient: ingredient._id,
+            source: 'usda',
             usdaFdcId: 171077,
             perGram: VALID_PER_GRAM,
         }).save();
@@ -739,8 +761,7 @@ describe('nutritional info source', function () {
         assert.isNull(record.usdaFdcId);
     });
 
-    it('should relink an Open Food Facts record to USDA from a USDA ID alone', async function () {
-        // The web editor sends only usdaFdcId when it relinks.
+    it('should relink an Open Food Facts record to USDA when the update names the source', async function () {
         const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const info = await new NutritionalInfo({
@@ -751,25 +772,32 @@ describe('nutritional info source', function () {
             perGram: VALID_PER_GRAM,
         }).save();
 
-        const response = await this.apolloServer.executeOperation(
-            {
-                query: UPDATE_WITH_SOURCE,
-                variables: {
-                    id: info._id.toString(),
-                    record: { ingredient: ingredient._id.toString(), usdaFdcId: 171077 },
-                },
-            },
-            makeContext(user)
-        );
-        if (response.body.kind !== 'single') assert.fail('Expected a single result');
-        const { data, errors } = response.body.singleResult;
-        assert.isUndefined(errors);
-        const record = (data as { nutritionalInfoUpdateById: { record: SourceRecord } })
+        const relink = async (record: Record<string, unknown>) => {
+            const response = await this.apolloServer.executeOperation(
+                { query: UPDATE_WITH_SOURCE, variables: { id: info._id.toString(), record } },
+                makeContext(user)
+            );
+            if (response.body.kind !== 'single') assert.fail('Expected a single result');
+            return response.body.singleResult;
+        };
+
+        // A USDA ID alone leaves the record naming two sources.
+        const idOnly = await relink({ usdaFdcId: 171077 });
+        assert.include(idOnly.errors?.[0].message, 'cannot carry usdaFdcId');
+
+        const named = await relink({
+            source: 'usda',
+            usdaFdcId: 171077,
+            offBarcode: null,
+            sourceName: 'Chicken, broilers or fryers',
+        });
+        assert.isUndefined(named.errors);
+        const record = (named.data as { nutritionalInfoUpdateById: { record: SourceRecord } })
             .nutritionalInfoUpdateById.record;
         assert.equal(record.source, 'usda');
         assert.equal(record.usdaFdcId, 171077);
         assert.isNull(record.offBarcode);
-        assert.isNull(record.sourceName);
+        assert.equal(record.sourceName, 'Chicken, broilers or fryers');
     });
 });
 

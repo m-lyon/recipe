@@ -7,7 +7,9 @@ import { MacroNutrients } from '@recipe/utils/nutrition';
 import { FloatingLabelInput } from '@recipe/common/components';
 import { USDA_SEARCH } from '@recipe/graphql/queries/nutritionalInfo';
 import { USDA_FOOD_ITEM } from '@recipe/graphql/queries/nutritionalInfo';
+import { EnumNutritionalInfoCreateSource } from '@recipe/graphql/generated';
 import { UsdaFoodItemQuery, UsdaSearchQuery } from '@recipe/graphql/generated';
+import { CreateOneNutritionalInfoCreateInput } from '@recipe/graphql/generated';
 import { CREATE_NUTRITIONAL_INFO } from '@recipe/graphql/mutations/nutritionalInfo';
 import { UPDATE_NUTRITIONAL_INFO } from '@recipe/graphql/mutations/nutritionalInfo';
 import { DELETE_NUTRITIONAL_INFO } from '@recipe/graphql/mutations/nutritionalInfo';
@@ -213,13 +215,21 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             // eslint-disable-next-line react-hooks/exhaustive-deps
         }, [pendingNutrition]);
 
+        // The record names its source, and clears the other source's id, so a relink from
+        // an Open Food Facts product to a USDA food leaves no barcode behind.
         const buildRecord = useCallback(
             (
                 targetIngredientId: string,
-                nutrition: { fdcId: number; perGram: MacroNutrients }
-            ): { ingredient: string; usdaFdcId?: number; perGram: MacroNutrients } => ({
+                nutrition: { fdcId: number; perGram: MacroNutrients },
+                name: string | null
+            ): CreateOneNutritionalInfoCreateInput => ({
                 ingredient: targetIngredientId,
-                usdaFdcId: nutrition.fdcId || undefined,
+                source: nutrition.fdcId
+                    ? EnumNutritionalInfoCreateSource.Usda
+                    : EnumNutritionalInfoCreateSource.Manual,
+                usdaFdcId: nutrition.fdcId || null,
+                offBarcode: null,
+                sourceName: nutrition.fdcId ? name : null,
                 perGram: nutrition.perGram,
             }),
             []
@@ -256,12 +266,14 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                     result = await updateNutritionalInfo({
                         variables: {
                             _id: existingNutritionalInfoId,
-                            record: buildRecord(targetIngredientId, wanted),
+                            record: buildRecord(targetIngredientId, wanted, linkedFoodName),
                         },
                     });
                 } else if (wanted) {
                     result = await createNutritionalInfo({
-                        variables: { record: buildRecord(targetIngredientId, wanted) },
+                        variables: {
+                            record: buildRecord(targetIngredientId, wanted, linkedFoodName),
+                        },
                     });
                 } else {
                     result = await deleteNutritionalInfo({
@@ -279,6 +291,7 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                 existingNutritionalInfo,
                 existingNutritionalInfoId,
                 buildRecord,
+                linkedFoodName,
                 createNutritionalInfo,
                 updateNutritionalInfo,
                 deleteNutritionalInfo,

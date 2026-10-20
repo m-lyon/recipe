@@ -68,7 +68,7 @@ input CreateOneNutritionalInfoCreateInput {
   ingredient: MongoID!
   offBarcode: String
   perGram: NutritionalInfoPerGramInput!
-  source: EnumNutritionalInfoCreateSource
+  source: EnumNutritionalInfoCreateSource!
   sourceName: String
   usdaFdcId: Float
 }
@@ -1499,7 +1499,7 @@ type NutritionalInfo {
   ingredient: MongoID!
   offBarcode: String
   perGram: NutritionalInfoPerGram!
-  source: EnumNutritionalInfoSource
+  source: EnumNutritionalInfoSource!
   sourceName: String
   usdaFdcId: Float
 }

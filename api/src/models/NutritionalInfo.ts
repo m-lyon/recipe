@@ -22,16 +22,6 @@ export interface NutritionalInfo extends Document {
     perGram: MacroNutrients;
 }
 
-/** The source that a record's IDs imply, for a record saved without one. */
-export function impliedSource(record: {
-    usdaFdcId?: number | null;
-    offBarcode?: string | null;
-}): NutritionSource {
-    if (record.usdaFdcId != null) return 'usda';
-    if (record.offBarcode != null) return 'openFoodFacts';
-    return 'manual';
-}
-
 const macroNutrientsSchema = new Schema<MacroNutrients>(
     {
         calories: { type: Number, required: true, min: 0 },
@@ -49,9 +39,7 @@ const nutritionalInfoSchema = new Schema<NutritionalInfo>({
         ref: 'Ingredient',
         unique: true,
     },
-    // Not required in the schema: a record saved without it, such as one from a client
-    // that predates it, takes the source its IDs imply. See the validate hook.
-    source: { type: String, enum: NUTRITION_SOURCES },
+    source: { type: String, enum: NUTRITION_SOURCES, required: true },
     usdaFdcId: { type: Number },
     offBarcode: { type: String, match: /^\d{8,14}$/ },
     sourceName: { type: String, trim: true },
@@ -59,21 +47,6 @@ const nutritionalInfoSchema = new Schema<NutritionalInfo>({
 });
 
 nutritionalInfoSchema.pre('validate', function () {
-    if (!this.source) {
-        this.source = impliedSource(this);
-    }
-    // The web editor relinks to USDA by sending only usdaFdcId, so that update switches the
-    // record to USDA and drops the old source's barcode and name.
-    if (
-        !this.isNew &&
-        this.usdaFdcId != null &&
-        this.isModified('usdaFdcId') &&
-        !this.isModified('source')
-    ) {
-        this.source = 'usda';
-        this.offBarcode = null;
-        if (!this.isModified('sourceName')) this.sourceName = null;
-    }
     // Each source carries its own ID and no other, so a record never names two sources.
     const has = { usda: this.usdaFdcId != null, openFoodFacts: this.offBarcode != null };
     if (this.source === 'usda' && !has.usda) {
