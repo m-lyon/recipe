@@ -1,4 +1,4 @@
-import type { OffProduct, UnitSummary, UsdaFoodItem } from '../../src/lib/types.js';
+import type { OpenFoodFactsProduct, UnitSummary, UsdaFoodItem } from '../../src/lib/types.js';
 
 function unit(_id: string, name: string, extra: Partial<UnitSummary>): UnitSummary {
     return {
@@ -296,7 +296,7 @@ export const EXISTING_EGG_INFO = {
 };
 
 /** Al'fez Pearl Couscous — a UK product with no serving and no multipack. */
-export const PEARL_COUSCOUS: OffProduct = {
+export const PEARL_COUSCOUS: OpenFoodFactsProduct = {
     barcode: '5010338301255',
     name: 'Pearl Couscous',
     brands: "Al'fez",
@@ -312,7 +312,7 @@ export const PEARL_COUSCOUS: OffProduct = {
 };
 
 /** Knorr stock pots — a multipack whose one item is a portion. Its code fails the check digit. */
-export const KNORR_POTS: OffProduct = {
+export const KNORR_POTS: OpenFoodFactsProduct = {
     barcode: '11213606',
     name: 'marmite de bouillon',
     brands: 'Knorr',

@@ -1,14 +1,14 @@
 import { Args, Flags } from '@oclif/core';
 
 import { BaseCommand } from '../../lib/base.js';
-import type { OffProduct } from '../../lib/types.js';
-import { OFF_SEARCH } from '../../graphql/operations.js';
 import { num, renderTable, text } from '../../lib/format.js';
+import type { OpenFoodFactsProduct } from '../../lib/types.js';
+import { OPEN_FOOD_FACTS_SEARCH } from '../../graphql/operations.js';
 
 /** The resolver caps the page size at this value. */
 const MAX_PAGE_SIZE = 50;
 
-export default class OffSearch extends BaseCommand {
+export default class OpenFoodFactsSearch extends BaseCommand {
     static description =
         'Search Open Food Facts by name, for UK products unless --all-countries is given. ' +
         'Values are per 100 g. Prefer a barcode: name search is imprecise, and the server ' +
@@ -35,12 +35,13 @@ export default class OffSearch extends BaseCommand {
     };
 
     async run(): Promise<unknown> {
-        const { args, flags } = await this.parse(OffSearch);
+        const { args, flags } = await this.parse(OpenFoodFactsSearch);
         const client = this.api(flags.url);
         const pageSize = Math.min(flags['page-size'], MAX_PAGE_SIZE);
         const ukOnly = !flags['all-countries'];
-        const results = ((await client.request(OFF_SEARCH, { query: args.query, pageSize, ukOnly }))
-            .offSearch ?? []) as unknown as OffProduct[];
+        const results = ((
+            await client.request(OPEN_FOOD_FACTS_SEARCH, { query: args.query, pageSize, ukOnly })
+        ).openFoodFactsSearch ?? []) as unknown as OpenFoodFactsProduct[];
 
         this.out(
             renderTable(

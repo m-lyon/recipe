@@ -228,7 +228,7 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
                     ? EnumNutritionalInfoCreateSource.Usda
                     : EnumNutritionalInfoCreateSource.Manual,
                 usdaFdcId: nutrition.fdcId || null,
-                offBarcode: null,
+                openFoodFactsBarcode: null,
                 sourceName: nutrition.fdcId ? name : null,
                 perGram: nutrition.perGram,
             }),

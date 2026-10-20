@@ -1,12 +1,13 @@
 import { GraphQLError } from 'graphql';
 import { schemaComposer } from 'graphql-compose';
 
+import { OPEN_FOOD_FACTS_SEARCH_URL } from '../constants.js';
 import { MappedPortion, UsdaFoodPortionTC, buildPortion } from './Usda.js';
-import { OFF_API_URL, OFF_CONTACT, OFF_SEARCH_URL } from '../constants.js';
+import { OPEN_FOOD_FACTS_API_URL, OPEN_FOOD_FACTS_CONTACT } from '../constants.js';
 
-const OFF_REQUEST_TIMEOUT_MS = 10_000;
-const OFF_MAX_PAGE_SIZE = 50;
-const OFF_UK_TAG = 'en:united-kingdom';
+const OPEN_FOOD_FACTS_REQUEST_TIMEOUT_MS = 10_000;
+const OPEN_FOOD_FACTS_MAX_PAGE_SIZE = 50;
+const OPEN_FOOD_FACTS_UK_TAG = 'en:united-kingdom';
 
 /** The product fields the resolvers map. Asking for fewer keeps responses small. */
 const PRODUCT_FIELDS = [
@@ -26,8 +27,8 @@ const PRODUCT_FIELDS = [
  * minute. Every user's request leaves from this server's one address, and going over the
  * limit can get the address banned, so the server holds itself below both.
  */
-export const OFF_PRODUCT_PER_MINUTE = 12;
-export const OFF_SEARCH_PER_MINUTE = 8;
+export const OPEN_FOOD_FACTS_PRODUCT_PER_MINUTE = 12;
+export const OPEN_FOOD_FACTS_SEARCH_PER_MINUTE = 8;
 const MINUTE_MS = 60_000;
 
 /** A product rarely changes, so a found product is kept for a day. */
@@ -41,7 +42,7 @@ const CACHE_MAX_ENTRIES = 500;
 const KCAL_TOLERANCE_ABSOLUTE = 20;
 const KCAL_TOLERANCE_RELATIVE = 0.2;
 
-export interface OffProduct {
+export interface OpenFoodFactsProduct {
     barcode: string;
     name: string | null;
     brands: string | null;
@@ -56,8 +57,8 @@ export interface OffProduct {
     portions: MappedPortion[];
 }
 
-const OffProductTC = schemaComposer.createObjectTC({
-    name: 'OffProduct',
+const OpenFoodFactsProductTC = schemaComposer.createObjectTC({
+    name: 'OpenFoodFactsProduct',
     fields: {
         barcode: 'String!',
         name: 'String',
@@ -159,7 +160,7 @@ function multipackPortion(product: Record<string, unknown>): MappedPortion | nul
     return buildPortion(1, null, `1 each (pack of ${quantity})`, null, grams, false);
 }
 
-export function mapProduct(product: Record<string, unknown>): OffProduct {
+export function mapProduct(product: Record<string, unknown>): OpenFoodFactsProduct {
     const nutriments = (product['nutriments'] as Record<string, unknown>) ?? {};
     const kcal = asNumber(nutriments['energy-kcal_100g']);
     const protein = asNumber(nutriments['proteins_100g']);
@@ -220,8 +221,8 @@ class TtlCache<T> {
     }
 }
 
-const productCache = new TtlCache<OffProduct>(PRODUCT_CACHE_TTL_MS);
-const searchCache = new TtlCache<OffProduct[]>(SEARCH_CACHE_TTL_MS);
+const productCache = new TtlCache<OpenFoodFactsProduct>(PRODUCT_CACHE_TTL_MS);
+const searchCache = new TtlCache<OpenFoodFactsProduct[]>(SEARCH_CACHE_TTL_MS);
 const sent: Record<'product' | 'search', number[]> = { product: [], search: [] };
 
 /** Records an upstream request, or refuses it when the server-wide minute is spent. */
@@ -245,15 +246,15 @@ function spendUpstream(kind: 'product' | 'search', limit: number): void {
  * As in usdaFetchJson, the abort timer covers the body read too. A 404 is returned to
  * the caller, which reads it as "not found".
  */
-async function offFetchJson(
+async function openFoodFactsFetchJson(
     url: string
 ): Promise<{ status: number; json: Record<string, unknown> }> {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), OFF_REQUEST_TIMEOUT_MS);
+    const timer = setTimeout(() => controller.abort(), OPEN_FOOD_FACTS_REQUEST_TIMEOUT_MS);
     try {
         const res = await fetch(url, {
             // Open Food Facts asks every client to name itself and give a contact.
-            headers: { 'User-Agent': `recipe/1.0 (${OFF_CONTACT})` },
+            headers: { 'User-Agent': `recipe/1.0 (${OPEN_FOOD_FACTS_CONTACT})` },
             signal: controller.signal,
         });
         if (!res.ok && res.status !== 404) {
@@ -281,9 +282,9 @@ function requireUser(context: { getUser: () => unknown }): void {
 }
 
 export const OpenFoodFactsQuery = {
-    offProduct: schemaComposer.createResolver({
-        name: 'offProduct',
-        type: OffProductTC,
+    openFoodFactsProduct: schemaComposer.createResolver({
+        name: 'openFoodFactsProduct',
+        type: OpenFoodFactsProductTC,
         args: { barcode: 'String!' },
         resolve: async ({ args, context }) => {
             requireUser(context);
@@ -296,9 +297,9 @@ export const OpenFoodFactsQuery = {
             const cached = productCache.get(barcode);
             if (cached) return cached;
 
-            spendUpstream('product', OFF_PRODUCT_PER_MINUTE);
-            const url = `${OFF_API_URL}/api/v3/product/${barcode}?fields=${PRODUCT_FIELDS}`;
-            const { status, json } = await offFetchJson(url);
+            spendUpstream('product', OPEN_FOOD_FACTS_PRODUCT_PER_MINUTE);
+            const url = `${OPEN_FOOD_FACTS_API_URL}/api/v3/product/${barcode}?fields=${PRODUCT_FIELDS}`;
+            const { status, json } = await openFoodFactsFetchJson(url);
             const product = json['product'] as Record<string, unknown> | undefined;
             if (status === 404 || !product) {
                 throw new GraphQLError(`No Open Food Facts product with barcode ${barcode}`, {
@@ -310,9 +311,9 @@ export const OpenFoodFactsQuery = {
             return mapped;
         },
     }),
-    offSearch: schemaComposer.createResolver({
-        name: 'offSearch',
-        type: OffProductTC.NonNull.List.NonNull,
+    openFoodFactsSearch: schemaComposer.createResolver({
+        name: 'openFoodFactsSearch',
+        type: OpenFoodFactsProductTC.NonNull.List.NonNull,
         args: {
             query: 'String!',
             pageSize: { type: 'Int', defaultValue: 20 },
@@ -329,21 +330,23 @@ export const OpenFoodFactsQuery = {
             }
             const pageSize = Math.min(
                 Math.max((args.pageSize as number) ?? 20, 1),
-                OFF_MAX_PAGE_SIZE
+                OPEN_FOOD_FACTS_MAX_PAGE_SIZE
             );
             const ukOnly = args.ukOnly !== false;
             const key = JSON.stringify([query.toLowerCase(), pageSize, ukOnly]);
             const cached = searchCache.get(key);
             if (cached) return cached;
 
-            spendUpstream('search', OFF_SEARCH_PER_MINUTE);
+            spendUpstream('search', OPEN_FOOD_FACTS_SEARCH_PER_MINUTE);
             const params = new URLSearchParams({
                 // The search service takes a Lucene query; a quoted tag filters by country.
-                q: ukOnly ? `${query} countries_tags:"${OFF_UK_TAG}"` : query,
+                q: ukOnly ? `${query} countries_tags:"${OPEN_FOOD_FACTS_UK_TAG}"` : query,
                 page_size: String(pageSize),
                 fields: PRODUCT_FIELDS,
             });
-            const { json } = await offFetchJson(`${OFF_SEARCH_URL}/search?${params}`);
+            const { json } = await openFoodFactsFetchJson(
+                `${OPEN_FOOD_FACTS_SEARCH_URL}/search?${params}`
+            );
             const hits = (json['hits'] as Array<Record<string, unknown>>) ?? [];
             const mapped = hits.filter((hit) => hit['code']).map(mapProduct);
             searchCache.set(key, mapped);

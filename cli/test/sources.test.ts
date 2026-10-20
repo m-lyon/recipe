@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 
-import { describeSource, hasValidCheckDigit, offProductName } from '../src/lib/sources.js';
+import { openFoodFactsProductName } from '../src/lib/sources.js';
+import { describeSource, hasValidCheckDigit } from '../src/lib/sources.js';
 
 describe('sources', () => {
     it('accepts a barcode whose check digit matches', () => {
@@ -19,19 +20,19 @@ describe('sources', () => {
     });
 
     it('names a product by brand and name, or by barcode', () => {
-        expect(offProductName({ barcode: '1', brands: "Al'fez", name: 'Pearl Couscous' })).to.equal(
-            "Al'fez · Pearl Couscous"
-        );
-        expect(offProductName({ barcode: '0633148100013', brands: null, name: null })).to.equal(
-            '0633148100013'
-        );
+        expect(
+            openFoodFactsProductName({ barcode: '1', brands: "Al'fez", name: 'Pearl Couscous' })
+        ).to.equal("Al'fez · Pearl Couscous");
+        expect(
+            openFoodFactsProductName({ barcode: '0633148100013', brands: null, name: null })
+        ).to.equal('0633148100013');
     });
 
     it('describes each source, and a record from before the source field', () => {
         expect(describeSource({ source: 'usda', usdaFdcId: 171413 })).to.equal('USDA 171413');
-        expect(describeSource({ source: 'openFoodFacts', offBarcode: '5010338301255' })).to.equal(
-            'Open Food Facts 5010338301255'
-        );
+        expect(
+            describeSource({ source: 'openFoodFacts', openFoodFactsBarcode: '5010338301255' })
+        ).to.equal('Open Food Facts 5010338301255');
         expect(describeSource({ source: 'manual' })).to.equal('manual');
         expect(describeSource({ usdaFdcId: 171287 })).to.equal('USDA 171287');
         expect(describeSource({})).to.equal('manual');

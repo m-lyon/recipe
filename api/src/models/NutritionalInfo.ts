@@ -16,7 +16,7 @@ export interface NutritionalInfo extends Document {
     ingredient: Types.ObjectId;
     source: NutritionSource;
     usdaFdcId?: number | null;
-    offBarcode?: string | null;
+    openFoodFactsBarcode?: string | null;
     // The product or food name when linked, so a display needs no request to the source.
     sourceName?: string | null;
     perGram: MacroNutrients;
@@ -41,25 +41,31 @@ const nutritionalInfoSchema = new Schema<NutritionalInfo>({
     },
     source: { type: String, enum: NUTRITION_SOURCES, required: true },
     usdaFdcId: { type: Number },
-    offBarcode: { type: String, match: /^\d{8,14}$/ },
+    openFoodFactsBarcode: { type: String, match: /^\d{8,14}$/ },
     sourceName: { type: String, trim: true },
     perGram: { type: macroNutrientsSchema, required: true },
 });
 
 nutritionalInfoSchema.pre('validate', function () {
     // Each source carries its own ID and no other, so a record never names two sources.
-    const has = { usda: this.usdaFdcId != null, openFoodFacts: this.offBarcode != null };
+    const has = { usda: this.usdaFdcId != null, openFoodFacts: this.openFoodFactsBarcode != null };
     if (this.source === 'usda' && !has.usda) {
         this.invalidate('usdaFdcId', 'A USDA source needs usdaFdcId');
     }
     if (this.source === 'openFoodFacts' && !has.openFoodFacts) {
-        this.invalidate('offBarcode', 'An Open Food Facts source needs offBarcode');
+        this.invalidate(
+            'openFoodFactsBarcode',
+            'An Open Food Facts source needs openFoodFactsBarcode'
+        );
     }
     if (this.source !== 'usda' && has.usda) {
         this.invalidate('usdaFdcId', `A ${this.source} source cannot carry usdaFdcId`);
     }
     if (this.source !== 'openFoodFacts' && has.openFoodFacts) {
-        this.invalidate('offBarcode', `A ${this.source} source cannot carry offBarcode`);
+        this.invalidate(
+            'openFoodFactsBarcode',
+            `A ${this.source} source cannot carry openFoodFactsBarcode`
+        );
     }
 });
 

@@ -66,7 +66,7 @@ type CreateOneIngredientPayload {
 """"""
 input CreateOneNutritionalInfoCreateInput {
   ingredient: MongoID!
-  offBarcode: String
+  openFoodFactsBarcode: String
   perGram: NutritionalInfoPerGramInput!
   source: EnumNutritionalInfoCreateSource!
   sourceName: String
@@ -946,7 +946,7 @@ input FilterFindOneNutritionalInfoInput {
   """List of *indexed* fields that can be filtered via operators."""
   _operators: FilterFindOneNutritionalInfoOperatorsInput
   ingredient: MongoID
-  offBarcode: String
+  openFoodFactsBarcode: String
   perGram: FilterFindOneNutritionalInfoPerGramInput
   source: EnumNutritionalInfoSource
   sourceName: String
@@ -1497,7 +1497,7 @@ type Mutation {
 type NutritionalInfo {
   _id: MongoID!
   ingredient: MongoID!
-  offBarcode: String
+  openFoodFactsBarcode: String
   perGram: NutritionalInfoPerGram!
   source: EnumNutritionalInfoSource!
   sourceName: String
@@ -1518,7 +1518,7 @@ input NutritionalInfoPerGramInput {
   protein: Float!
 }
 
-type OffProduct {
+type OpenFoodFactsProduct {
   barcode: String!
   brands: String
   caloriesPer100g: Float
@@ -1626,8 +1626,8 @@ type Query {
     sort: SortFindOneNutritionalInfoInput
   ): NutritionalInfo
   nutritionalInfosByIngredientIds(ingredientIds: [MongoID!]!): [NutritionalInfo]
-  offProduct(barcode: String!): OffProduct
-  offSearch(pageSize: Int = 20, query: String!, ukOnly: Boolean = true): [OffProduct!]!
+  openFoodFactsProduct(barcode: String!): OpenFoodFactsProduct
+  openFoodFactsSearch(pageSize: Int = 20, query: String!, ukOnly: Boolean = true): [OpenFoodFactsProduct!]!
 
   """Retrieve a prep method by its ID"""
   prepMethodById(_id: MongoID!): PrepMethod
@@ -2316,7 +2316,7 @@ type UpdateByIdIngredientPayload {
 """"""
 input UpdateByIdNutritionalInfoInput {
   ingredient: MongoID
-  offBarcode: String
+  openFoodFactsBarcode: String
   perGram: UpdateByIdNutritionalInfoPerGramInput
   source: EnumNutritionalInfoSource
   sourceName: String

@@ -31,10 +31,10 @@ export const USDA_SEARCH_LIMIT = 60;
 export const USDA_SEARCH_WINDOW_MS = 60 * 60 * 1000;
 export const USDA_FOOD_ITEM_LIMIT = 300;
 export const USDA_FOOD_ITEM_WINDOW_MS = 60 * 60 * 1000;
-export const OFF_SEARCH_LIMIT = 60;
-export const OFF_SEARCH_WINDOW_MS = 60 * 60 * 1000;
-export const OFF_PRODUCT_LIMIT = 300;
-export const OFF_PRODUCT_WINDOW_MS = 60 * 60 * 1000;
+export const OPEN_FOOD_FACTS_SEARCH_LIMIT = 60;
+export const OPEN_FOOD_FACTS_SEARCH_WINDOW_MS = 60 * 60 * 1000;
+export const OPEN_FOOD_FACTS_PRODUCT_LIMIT = 300;
+export const OPEN_FOOD_FACTS_PRODUCT_WINDOW_MS = 60 * 60 * 1000;
 
 type Middleware = ResolverNextRpCb<unknown, GraphQLContext>;
 
@@ -87,16 +87,24 @@ const usdaQueries = {
 };
 // Open Food Facts limits requests per server IP address. The resolvers also hold the
 // whole server below that limit; these per-user caps stop one account from spending it.
-const offQueries = {
+const openFoodFactsQueries = {
     ...withMiddleware(
-        { offSearch: OpenFoodFactsQuery.offSearch },
+        { openFoodFactsSearch: OpenFoodFactsQuery.openFoodFactsSearch },
         isVerified(),
-        rateLimit('offSearch', OFF_SEARCH_LIMIT, OFF_SEARCH_WINDOW_MS)
+        rateLimit(
+            'openFoodFactsSearch',
+            OPEN_FOOD_FACTS_SEARCH_LIMIT,
+            OPEN_FOOD_FACTS_SEARCH_WINDOW_MS
+        )
     ),
     ...withMiddleware(
-        { offProduct: OpenFoodFactsQuery.offProduct },
+        { openFoodFactsProduct: OpenFoodFactsQuery.openFoodFactsProduct },
         isVerified(),
-        rateLimit('offProduct', OFF_PRODUCT_LIMIT, OFF_PRODUCT_WINDOW_MS)
+        rateLimit(
+            'openFoodFactsProduct',
+            OPEN_FOOD_FACTS_PRODUCT_LIMIT,
+            OPEN_FOOD_FACTS_PRODUCT_WINDOW_MS
+        )
     ),
 };
 const isAuthenticatedMutations = withMiddleware(
@@ -188,7 +196,7 @@ schemaComposer.Query.addFields({
     ...IngredientMeasureQuery,
     ...NutritionalInfoQuery,
     ...usdaQueries,
-    ...offQueries,
+    ...openFoodFactsQueries,
     ...isAdminQueries,
 });
 schemaComposer.Mutation.addFields({

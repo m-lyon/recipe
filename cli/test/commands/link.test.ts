@@ -111,7 +111,7 @@ describe('nutrition link', () => {
             ingredient: 'ing-oil',
             source: 'usda',
             usdaFdcId: 171413,
-            offBarcode: null,
+            openFoodFactsBarcode: null,
             sourceName: 'Oil, olive, salad or cooking',
             perGram: { calories: 8.84, protein: 0, carbs: 0, fat: 1 },
         });

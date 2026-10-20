@@ -38,14 +38,14 @@ seitan, a pack of pearl couscous), link the Open Food Facts product by its barco
 1. The operator sends photos (barcode, nutrition label, front of pack) or the digits.
 2. Decode a barcode photo:   zbarimg --quiet --raw <photo>
    If zbarimg finds nothing, read the digits printed under the bars.
-3. recipe off show <barcode> --json                     product, macros, portions
+3. recipe open-food-facts show <barcode> --json                     product, macros, portions
 4. Compare the per-100 g values with the label photo.
 5. recipe nutrition link <id> --barcode <code> \
      [--portion <n>]... --dry-run                       plan
 6. review, then re-run step 5 without --dry-run
 ```
 
-- **Prefer a barcode to a name search.** `off search` is imprecise and the server allows
+- **Prefer a barcode to a name search.** `open-food-facts search` is imprecise and the server allows
   8 searches a minute. Use it only when the operator has no barcode, and confirm the pick.
 - **Check the label.** Volunteers enter this data. When a label photo is available, compare
   kcal, protein, carbs and fat per 100 g. A value that differs is a stop-and-report
@@ -54,7 +54,7 @@ seitan, a pack of pearl couscous), link the Open Food Facts product by its barco
   macros do not explain.
 - A check-digit warning usually means a misread digit. Re-read the photo before you look
   the code up.
-- Check the brand and the pack size in `off show` against the photo. Two products often
+- Check the brand and the pack size in `open-food-facts show` against the photo. Two products often
   share a name.
 - A multipack ("8×24 g") gives a `1 each` portion of one item. A serving is not always one
   item: a Knorr stock pot record gives a 28 g serving for a 24 g pot, so it is flagged
@@ -112,13 +112,13 @@ A linked ingredient has `perGram` macros. A recipe line reaches grams by its uni
 
 ## The USDA and Open Food Facts caches
 
-`usdaFoodItem` and `offProduct` responses are cached on disk, so re-reading a record you already fetched is
+`usdaFoodItem` and `openFoodFactsProduct` responses are cached on disk, so re-reading a record you already fetched is
 free and does not touch the quota. Fetch a candidate as often as you find useful.
 
-- Repeating `usda show <fdcId>` or `off show <barcode>` costs nothing after the first call.
+- Repeating `usda show <fdcId>` or `open-food-facts show <barcode>` costs nothing after the first call.
 - A dry run and the write that follows reuse the record `usda show` fetched.
 - Pass `--refresh` only when you have reason to think the record changed.
-- `usda search` and `off search` are not cached by the CLI, so do not repeat a search you
+- `usda search` and `open-food-facts search` are not cached by the CLI, so do not repeat a search you
   have already run. Keep the results in your own working notes.
 
 The USDA quota is 1000 requests per hour for the whole server. Budget roughly one upstream call

@@ -70,7 +70,7 @@ export default class RecipesShow extends BaseCommand {
                     reason: status.reason,
                     source: info ? describeSource(info) : null,
                     usdaFdcId: info?.usdaFdcId ?? null,
-                    offBarcode: info?.offBarcode ?? null,
+                    openFoodFactsBarcode: info?.openFoodFactsBarcode ?? null,
                 };
             });
             const table = renderTable(

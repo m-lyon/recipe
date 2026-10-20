@@ -1,5 +1,5 @@
 import { EMPTY } from './format.js';
-import type { NutritionalInfoSummary, OffProduct } from './types.js';
+import type { NutritionalInfoSummary, OpenFoodFactsProduct } from './types.js';
 
 export const UK_COUNTRY_TAG = 'en:united-kingdom';
 
@@ -21,21 +21,23 @@ export function hasValidCheckDigit(barcode: string): boolean {
 }
 
 /** "Al'fez · Pearl Couscous", or the barcode alone when the product has no name. */
-export function offProductName(product: Pick<OffProduct, 'barcode' | 'name' | 'brands'>): string {
+export function openFoodFactsProductName(
+    product: Pick<OpenFoodFactsProduct, 'barcode' | 'name' | 'brands'>
+): string {
     const parts = [product.brands, product.name].filter((part): part is string => Boolean(part));
     return parts.length > 0 ? parts.join(' · ') : product.barcode;
 }
 
-export function isUkProduct(product: Pick<OffProduct, 'countries'>): boolean {
+export function isUkProduct(product: Pick<OpenFoodFactsProduct, 'countries'>): boolean {
     return product.countries.includes(UK_COUNTRY_TAG);
 }
 
 /** "USDA 171413", "Open Food Facts 5010338301255" or "manual": where the values came from. */
 export function describeSource(
-    info: Pick<NutritionalInfoSummary, 'source' | 'usdaFdcId' | 'offBarcode'>
+    info: Pick<NutritionalInfoSummary, 'source' | 'usdaFdcId' | 'openFoodFactsBarcode'>
 ): string {
-    if (info.source === 'openFoodFacts' || (!info.source && info.offBarcode)) {
-        return `Open Food Facts ${info.offBarcode ?? EMPTY}`;
+    if (info.source === 'openFoodFacts' || (!info.source && info.openFoodFactsBarcode)) {
+        return `Open Food Facts ${info.openFoodFactsBarcode ?? EMPTY}`;
     }
     if (info.source === 'usda' || (!info.source && info.usdaFdcId)) {
         return `USDA ${info.usdaFdcId ?? EMPTY}`;

@@ -6,11 +6,11 @@ import { runCommand } from '@oclif/test';
 import { ExitCode } from '../../src/lib/errors.js';
 import { useTestEnvironment } from '../helpers/env.js';
 import { SessionCache } from '../../src/lib/session.js';
-import type { OffProduct } from '../../src/lib/types.js';
 import { FakeApi, LOGIN_OK } from '../helpers/fakeApi.js';
+import type { OpenFoodFactsProduct } from '../../src/lib/types.js';
 import { EACH, INGREDIENTS, MEASURE_COMPONENTS } from '../helpers/fixtures.js';
 import { EXISTING_EGG_INFO, KNORR_POTS, PEARL_COUSCOUS } from '../helpers/fixtures.js';
-import { ROOT, cleanTestEnvironment, offCacheDir, sessionFile } from '../helpers/env.js';
+import { ROOT, cleanTestEnvironment, openFoodFactsCacheDir, sessionFile } from '../helpers/env.js';
 
 const MUTATIONS = [
     'CliCreateNutritionalInfo',
@@ -19,16 +19,23 @@ const MUTATIONS = [
     'CliDeleteIngredientMeasure',
 ];
 
-function offProduct(product: OffProduct | null) {
-    return { data: { offProduct: product && { __typename: 'OffProduct', ...product } } };
+function openFoodFactsProduct(product: OpenFoodFactsProduct | null) {
+    return {
+        data: {
+            openFoodFactsProduct: product && { __typename: 'OpenFoodFactsProduct', ...product },
+        },
+    };
 }
 
-function baseApi(product: OffProduct | null = PEARL_COUSCOUS, existing: unknown = null): FakeApi {
+function baseApi(
+    product: OpenFoodFactsProduct | null = PEARL_COUSCOUS,
+    existing: unknown = null
+): FakeApi {
     return new FakeApi({
         CliLogin: LOGIN_OK,
         CliGetAllIngredients: { data: { ingredientManyAll: INGREDIENTS } },
-        CliOffProduct: offProduct(product),
-        CliOffSearch: { data: { offSearch: [PEARL_COUSCOUS, KNORR_POTS] } },
+        CliOpenFoodFactsProduct: openFoodFactsProduct(product),
+        CliOpenFoodFactsSearch: { data: { openFoodFactsSearch: [PEARL_COUSCOUS, KNORR_POTS] } },
         CliGetNutritionalInfo: { data: { nutritionalInfoByIngredient: existing } },
         CliCreateNutritionalInfo: (variables) => ({
             data: {
@@ -62,7 +69,7 @@ function json<T = Record<string, unknown>>(
     return JSON.parse(stdout);
 }
 
-describe('off commands', () => {
+describe('open-food-facts commands', () => {
     let api: FakeApi;
 
     beforeEach(() => {
@@ -75,32 +82,38 @@ describe('off commands', () => {
         process.exitCode = 0;
     });
 
-    describe('off show', () => {
+    describe('open-food-facts show', () => {
         it('shows the product, its macros and its pack', async () => {
             api = baseApi();
             api.install();
-            const { stdout } = await runCommand(['off', 'show', '5010338301255'], ROOT);
+            const { stdout } = await runCommand(['open-food-facts', 'show', '5010338301255'], ROOT);
             expect(stdout).to.contain("Al'fez · Pearl Couscous (5010338301255)");
             expect(stdout).to.contain('Per 100 g: 362.0 kcal');
             expect(stdout).to.contain('Pack: 200g');
             expect(stdout).to.contain('Sold in the UK: yes');
-            expect(api.operations).to.deep.equal(['CliOffProduct']);
+            expect(api.operations).to.deep.equal(['CliOpenFoodFactsProduct']);
         });
 
         it('reads a product once, then from the disk cache', async () => {
             api = baseApi();
             api.install();
-            await runCommand(['off', 'show', '5010338301255', '--json'], ROOT);
-            const { stdout } = await runCommand(['off', 'show', '5010338301255', '--json'], ROOT);
-            expect(api.countOf('CliOffProduct')).to.equal(1);
+            await runCommand(['open-food-facts', 'show', '5010338301255', '--json'], ROOT);
+            const { stdout } = await runCommand(
+                ['open-food-facts', 'show', '5010338301255', '--json'],
+                ROOT
+            );
+            expect(api.countOf('CliOpenFoodFactsProduct')).to.equal(1);
             expect(json<{ fromCache: boolean }>(stdout).data.fromCache).to.equal(true);
-            expect(readdirSync(offCacheDir())).to.have.lengthOf(1);
+            expect(readdirSync(openFoodFactsCacheDir())).to.have.lengthOf(1);
         });
 
         it('warns about a check digit that fails, and still looks the code up', async () => {
             api = baseApi(KNORR_POTS);
             api.install();
-            const { stdout } = await runCommand(['off', 'show', '11213606', '--json'], ROOT);
+            const { stdout } = await runCommand(
+                ['open-food-facts', 'show', '11213606', '--json'],
+                ROOT
+            );
             const payload = json(stdout);
             expect(payload.ok).to.equal(true);
             expect(payload.warnings.join(' ')).to.contain('fails the barcode check digit');
@@ -109,26 +122,32 @@ describe('off commands', () => {
         it('passes on the data warnings that the API reports', async () => {
             api = baseApi({ ...PEARL_COUSCOUS, warnings: ['No value for kcal'] });
             api.install();
-            const { stdout } = await runCommand(['off', 'show', '5010338301255', '--json'], ROOT);
+            const { stdout } = await runCommand(
+                ['open-food-facts', 'show', '5010338301255', '--json'],
+                ROOT
+            );
             expect(json(stdout).warnings).to.deep.equal(['No value for kcal']);
         });
 
         it('exits 4 for an unknown barcode', async () => {
             api = baseApi();
-            api.on('CliOffProduct', {
+            api.on('CliOpenFoodFactsProduct', {
                 errors: [{ message: 'No product', extensions: { code: 'NOT_FOUND' } }],
             });
             api.install();
-            const { error } = await runCommand(['off', 'show', '5000000000000'], ROOT);
+            const { error } = await runCommand(['open-food-facts', 'show', '5000000000000'], ROOT);
             expect(error?.oclif?.exit).to.equal(ExitCode.NOT_FOUND);
         });
     });
 
-    describe('off search', () => {
+    describe('open-food-facts search', () => {
         it('searches UK products by default', async () => {
             api = baseApi();
             api.install();
-            const { stdout } = await runCommand(['off', 'search', '"pearl couscous"'], ROOT);
+            const { stdout } = await runCommand(
+                ['open-food-facts', 'search', '"pearl couscous"'],
+                ROOT
+            );
             expect(api.requests[0].variables).to.deep.equal({
                 query: 'pearl couscous',
                 pageSize: 20,
@@ -142,7 +161,7 @@ describe('off commands', () => {
             api = baseApi();
             api.install();
             await runCommand(
-                ['off', 'search', 'couscous', '--all-countries', '--page-size', '500'],
+                ['open-food-facts', 'search', 'couscous', '--all-countries', '--page-size', '500'],
                 ROOT
             );
             expect(api.requests[0].variables).to.deep.equal({
@@ -171,7 +190,7 @@ describe('off commands', () => {
                 ingredient: 'ing-oil',
                 source: 'openFoodFacts',
                 usdaFdcId: null,
-                offBarcode: '5010338301255',
+                openFoodFactsBarcode: '5010338301255',
                 sourceName: "Al'fez · Pearl Couscous",
                 perGram: { calories: 3.62, protein: 0.12, carbs: 0.72, fat: 0.015 },
             });
@@ -207,7 +226,7 @@ describe('off commands', () => {
             expect(nutritionRecord()).to.include({
                 source: 'openFoodFacts',
                 usdaFdcId: null,
-                offBarcode: '5010338301255',
+                openFoodFactsBarcode: '5010338301255',
             });
             expect(stdout).to.contain('Previous values');
             expect(stdout).to.contain('USDA 171287');

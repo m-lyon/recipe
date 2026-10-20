@@ -11,7 +11,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 export const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 /** The sources whose records are cached, one directory each. */
-export type CachedSource = 'usda' | 'off';
+export type CachedSource = 'usda' | 'openFoodFacts';
 
 interface CacheEntry {
     fetchedAt: number;
@@ -19,8 +19,13 @@ interface CacheEntry {
     result: unknown;
 }
 
+const CACHE_DIRECTORY: Record<CachedSource, string> = {
+    usda: 'usda',
+    openFoodFacts: 'open-food-facts',
+};
+
 export function defaultCacheDir(source: CachedSource): string {
-    return join(homedir(), '.cache', 'recipe-cli', source);
+    return join(homedir(), '.cache', 'recipe-cli', CACHE_DIRECTORY[source]);
 }
 
 /**

@@ -30,7 +30,7 @@
       "usda": {
         "description": "Search USDA FoodData Central and inspect a food item"
       },
-      "off": {
+      "open-food-facts": {
         "description": "Search Open Food Facts and inspect a product by barcode"
       },
       "nutrition": {

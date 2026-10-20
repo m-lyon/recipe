@@ -602,7 +602,7 @@ const SOURCE_FIELDS = `
                 _id
                 source
                 usdaFdcId
-                offBarcode
+                openFoodFactsBarcode
                 sourceName`;
 
 const CREATE_WITH_SOURCE = `
@@ -625,7 +625,7 @@ interface SourceRecord {
     _id: string;
     source: string | null;
     usdaFdcId: number | null;
-    offBarcode: string | null;
+    openFoodFactsBarcode: string | null;
     sourceName: string | null;
 }
 
@@ -683,19 +683,19 @@ describe('nutritional info source', function () {
     it('should save an Open Food Facts source with its barcode and name', async function () {
         const { record, error } = await create(this.apolloServer, {
             source: 'openFoodFacts',
-            offBarcode: '5010338301255',
+            openFoodFactsBarcode: '5010338301255',
             sourceName: "Al'fez Pearl Couscous",
         });
         assert.isUndefined(error);
         assert.equal(record!.source, 'openFoodFacts');
-        assert.equal(record!.offBarcode, '5010338301255');
+        assert.equal(record!.openFoodFactsBarcode, '5010338301255');
         assert.equal(record!.sourceName, "Al'fez Pearl Couscous");
         assert.isNull(record!.usdaFdcId);
     });
 
     it('should refuse an Open Food Facts source with no barcode', async function () {
         const { error } = await create(this.apolloServer, { source: 'openFoodFacts' });
-        assert.include(error, 'An Open Food Facts source needs offBarcode');
+        assert.include(error, 'An Open Food Facts source needs openFoodFactsBarcode');
     });
 
     it('should refuse a USDA source with no USDA ID', async function () {
@@ -707,9 +707,9 @@ describe('nutritional info source', function () {
         const { error } = await create(this.apolloServer, {
             source: 'usda',
             usdaFdcId: 171077,
-            offBarcode: '5010338301255',
+            openFoodFactsBarcode: '5010338301255',
         });
-        assert.include(error, 'A usda source cannot carry offBarcode');
+        assert.include(error, 'A usda source cannot carry openFoodFactsBarcode');
     });
 
     it('should refuse a manual record that carries an ID', async function () {
@@ -720,9 +720,9 @@ describe('nutritional info source', function () {
     it('should refuse a barcode that is not 8 to 14 digits', async function () {
         const { error } = await create(this.apolloServer, {
             source: 'openFoodFacts',
-            offBarcode: '50103383O1255',
+            openFoodFactsBarcode: '50103383O1255',
         });
-        assert.include(error, 'offBarcode');
+        assert.include(error, 'openFoodFactsBarcode');
     });
 
     it('should switch a USDA record to Open Food Facts when the USDA ID is cleared', async function () {
@@ -746,12 +746,15 @@ describe('nutritional info source', function () {
         };
 
         // The old ID stays unless the update clears it, and then the record names two sources.
-        const kept = await switchTo({ source: 'openFoodFacts', offBarcode: '5010338301255' });
+        const kept = await switchTo({
+            source: 'openFoodFacts',
+            openFoodFactsBarcode: '5010338301255',
+        });
         assert.include(kept.errors?.[0].message, 'cannot carry usdaFdcId');
 
         const cleared = await switchTo({
             source: 'openFoodFacts',
-            offBarcode: '5010338301255',
+            openFoodFactsBarcode: '5010338301255',
             usdaFdcId: null,
         });
         assert.isUndefined(cleared.errors);
@@ -767,7 +770,7 @@ describe('nutritional info source', function () {
         const info = await new NutritionalInfo({
             ingredient: ingredient._id,
             source: 'openFoodFacts',
-            offBarcode: '5010338301255',
+            openFoodFactsBarcode: '5010338301255',
             sourceName: "Al'fez Pearl Couscous",
             perGram: VALID_PER_GRAM,
         }).save();
@@ -788,7 +791,7 @@ describe('nutritional info source', function () {
         const named = await relink({
             source: 'usda',
             usdaFdcId: 171077,
-            offBarcode: null,
+            openFoodFactsBarcode: null,
             sourceName: 'Chicken, broilers or fryers',
         });
         assert.isUndefined(named.errors);
@@ -796,7 +799,7 @@ describe('nutritional info source', function () {
             .nutritionalInfoUpdateById.record;
         assert.equal(record.source, 'usda');
         assert.equal(record.usdaFdcId, 171077);
-        assert.isNull(record.offBarcode);
+        assert.isNull(record.openFoodFactsBarcode);
         assert.equal(record.sourceName, 'Chicken, broilers or fryers');
     });
 });

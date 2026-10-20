@@ -11,7 +11,7 @@ const ids = {
     usda: new Types.ObjectId(),
     manual: new Types.ObjectId(),
     nullId: new Types.ObjectId(),
-    off: new Types.ObjectId(),
+    openFoodFacts: new Types.ObjectId(),
 };
 
 async function sourceOf(_id: Types.ObjectId) {
@@ -28,10 +28,10 @@ describe('migrateNutritionSources', function () {
             { _id: ids.manual, ingredient: new Types.ObjectId(), perGram },
             { _id: ids.nullId, ingredient: new Types.ObjectId(), usdaFdcId: null, perGram },
             {
-                _id: ids.off,
+                _id: ids.openFoodFacts,
                 ingredient: new Types.ObjectId(),
                 source: 'openFoodFacts',
-                offBarcode: '5010338301255',
+                openFoodFactsBarcode: '5010338301255',
                 perGram,
             },
         ]);
@@ -47,7 +47,7 @@ describe('migrateNutritionSources', function () {
         assert.equal(await sourceOf(ids.usda), 'usda');
         assert.equal(await sourceOf(ids.manual), 'manual');
         assert.equal(await sourceOf(ids.nullId), 'manual');
-        assert.equal(await sourceOf(ids.off), 'openFoodFacts');
+        assert.equal(await sourceOf(ids.openFoodFacts), 'openFoodFacts');
 
         // A second run finds nothing to do.
         assert.deepEqual(await migrateNutritionSources(mongoose.connection.db), {

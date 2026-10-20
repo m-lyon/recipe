@@ -7,16 +7,16 @@ import { resolveIngredient } from '../../lib/resolve.js';
 import { UPDATE_NUTRITIONAL_INFO } from '../../graphql/operations.js';
 import { BaseCommand, usdaFlags, writeFlags } from '../../lib/base.js';
 import { notFound, rejected, wouldOverwrite } from '../../lib/errors.js';
-import { OFF_PRODUCT, USDA_FOOD_ITEM } from '../../graphql/operations.js';
 import { formatMacros, missingMacros, perGramFrom } from '../../lib/macros.js';
-import type { NutritionSource, OffProduct, Per100g } from '../../lib/types.js';
+import { OPEN_FOOD_FACTS_PRODUCT, USDA_FOOD_ITEM } from '../../graphql/operations.js';
+import type { NutritionSource, OpenFoodFactsProduct, Per100g } from '../../lib/types.js';
 import type { Macros, MeasureSummary, NutritionalInfoSummary } from '../../lib/types.js';
-import { describeSource, hasValidCheckDigit, offProductName } from '../../lib/sources.js';
 import { CREATE_NUTRITIONAL_INFO, GET_NUTRITIONAL_INFO } from '../../graphql/operations.js';
 import { MeasureDraft, describeMeasureKey, suggestFromPortion } from '../../lib/measures.js';
 import { GET_INGREDIENT_MEASURES, GET_MEASURE_COMPONENTS } from '../../graphql/operations.js';
 import type { NamedSummary, UnitSummary, UsdaFoodItem, UsdaPortion } from '../../lib/types.js';
 import { CREATE_INGREDIENT_MEASURE, DELETE_INGREDIENT_MEASURE } from '../../graphql/operations.js';
+import { describeSource, hasValidCheckDigit, openFoodFactsProductName } from '../../lib/sources.js';
 
 /** The record a link copies its values from, whichever source it is in. */
 interface SourceRecord {
@@ -26,7 +26,7 @@ interface SourceRecord {
     per100g: Per100g;
     portions: UsdaPortion[];
     /** Each source carries its own id and clears the other's, so an update can switch. */
-    ids: { usdaFdcId: number | null; offBarcode: string | null };
+    ids: { usdaFdcId: number | null; openFoodFactsBarcode: string | null };
 }
 
 interface SelectedPortion {
@@ -77,7 +77,7 @@ export default class NutritionLink extends BaseCommand {
         portion: Flags.string({
             description:
                 'Store this portion as a measure, named by its description or by its 1-based ' +
-                'index in "usda show" or "off show". Repeat to store several.',
+                'index in "usda show" or "open-food-facts show". Repeat to store several.',
             helpValue: 'LABEL|INDEX',
             multiple: true,
         }),
@@ -237,7 +237,7 @@ export default class NutritionLink extends BaseCommand {
             description: item.description,
             per100g: item,
             portions: item.portions ?? [],
-            ids: { usdaFdcId: item.fdcId, offBarcode: null },
+            ids: { usdaFdcId: item.fdcId, openFoodFactsBarcode: null },
         };
     }
 
@@ -250,8 +250,13 @@ export default class NutritionLink extends BaseCommand {
             this.addWarning(`${barcode} fails the barcode check digit. Check for a misread digit.`);
         }
         const product = (
-            await client.cachedOffProduct(barcode, OFF_PRODUCT, { barcode }, { refresh })
-        ).offProduct as unknown as OffProduct | null;
+            await client.cachedOpenFoodFactsProduct(
+                barcode,
+                OPEN_FOOD_FACTS_PRODUCT,
+                { barcode },
+                { refresh }
+            )
+        ).openFoodFactsProduct as unknown as OpenFoodFactsProduct | null;
         if (!product) {
             throw notFound(`No Open Food Facts product with barcode ${barcode}.`);
         }
@@ -263,10 +268,10 @@ export default class NutritionLink extends BaseCommand {
         return {
             source: 'openFoodFacts',
             id: product.barcode,
-            description: offProductName(product),
+            description: openFoodFactsProductName(product),
             per100g: product,
             portions: product.portions ?? [],
-            ids: { usdaFdcId: null, offBarcode: product.barcode },
+            ids: { usdaFdcId: null, openFoodFactsBarcode: product.barcode },
         };
     }
 
@@ -443,7 +448,7 @@ interface LinkPlan {
         ingredient: string;
         source: SourceRecord['source'];
         usdaFdcId: number | null;
-        offBarcode: string | null;
+        openFoodFactsBarcode: string | null;
         sourceName: string;
         perGram: Macros;
     };

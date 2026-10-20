@@ -28,7 +28,7 @@ export interface NutritionalInfoSummary {
     ingredient: string;
     source?: NutritionSource | null;
     usdaFdcId?: number | null;
-    offBarcode?: string | null;
+    openFoodFactsBarcode?: string | null;
     /** The food or product name, stored when the link was made. */
     sourceName?: string | null;
     perGram?: Macros | null;
@@ -116,7 +116,7 @@ export interface Per100g {
     fatPer100g?: number | null;
 }
 
-export interface OffProduct extends Per100g {
+export interface OpenFoodFactsProduct extends Per100g {
     barcode: string;
     name?: string | null;
     brands?: string | null;

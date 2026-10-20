@@ -34,7 +34,9 @@ export abstract class BaseCommand extends Command {
             const sessionFile = config.sessionFile ?? defaultSessionFile(config.url);
             this.client = new ApiClient(config, new SessionCache(sessionFile), {
                 usdaCache: new RecordCache(config.usdaCacheDir ?? defaultCacheDir('usda')),
-                offCache: new RecordCache(config.offCacheDir ?? defaultCacheDir('off')),
+                openFoodFactsCache: new RecordCache(
+                    config.openFoodFactsCacheDir ?? defaultCacheDir('openFoodFacts')
+                ),
             });
         }
         return this.client;

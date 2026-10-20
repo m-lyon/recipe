@@ -75,7 +75,7 @@ export default class IngredientsList extends BaseCommand {
                 nutrition: info ? 'linked' : 'missing',
                 source: info?.source ?? null,
                 usdaFdcId: info?.usdaFdcId ?? null,
-                offBarcode: info?.offBarcode ?? null,
+                openFoodFactsBarcode: info?.openFoodFactsBarcode ?? null,
                 hasPerGram: Boolean(info?.perGram),
                 measures: measuresOf.get(ingredient._id)?.length ?? 0,
             };

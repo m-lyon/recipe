@@ -48,8 +48,8 @@ export interface ApiClientOptions {
     rateLimitDelayMs?: number;
     /** On-disk cache for usdaFoodItem responses. Omit to cache in memory only. */
     usdaCache?: RecordCache;
-    /** On-disk cache for offProduct responses. Omit to cache in memory only. */
-    offCache?: RecordCache;
+    /** On-disk cache for openFoodFactsProduct responses. Omit to cache in memory only. */
+    openFoodFactsCache?: RecordCache;
 }
 
 /**
@@ -73,8 +73,11 @@ export class ApiClient {
 
     private cookie: string | null = null;
     private readonly rateLimitDelayMs: number;
-    private readonly memory = { usda: new Map<string, unknown>(), off: new Map<string, unknown>() };
-    private readonly disk: { usda?: RecordCache; off?: RecordCache };
+    private readonly memory = {
+        usda: new Map<string, unknown>(),
+        openFoodFacts: new Map<string, unknown>(),
+    };
+    private readonly disk: { usda?: RecordCache; openFoodFacts?: RecordCache };
 
     constructor(config: Config, session: SessionCache, options: ApiClientOptions = {}) {
         this.config = config;
@@ -82,7 +85,7 @@ export class ApiClient {
         this.cookie = session.read();
         this.hadCachedSession = this.cookie !== null;
         this.rateLimitDelayMs = options.rateLimitDelayMs ?? USDA_RATE_LIMIT_BASE_DELAY_MS;
-        this.disk = { usda: options.usdaCache, off: options.offCache };
+        this.disk = { usda: options.usdaCache, openFoodFacts: options.openFoodFactsCache };
     }
 
     async request<TResult, TVars>(
@@ -144,13 +147,13 @@ export class ApiClient {
      * An Open Food Facts product, cached as a USDA food item is. The server's
      * Open Food Facts limit is per minute and shared by every user.
      */
-    async cachedOffProduct<TResult, TVars>(
+    async cachedOpenFoodFactsProduct<TResult, TVars>(
         barcode: string,
         document: TypedDocumentNode<TResult, TVars>,
         variables: TVars,
         options: { refresh?: boolean } = {}
     ): Promise<TResult> {
-        return this.cachedRecord('off', barcode, document, variables, options);
+        return this.cachedRecord('openFoodFacts', barcode, document, variables, options);
     }
 
     private async cachedRecord<TResult, TVars>(

@@ -78,7 +78,7 @@ export const NUTRITIONAL_INFO_FIELDS = gql(`
         ingredient
         source
         usdaFdcId
-        offBarcode
+        openFoodFactsBarcode
         sourceName
         perGram {
             calories
@@ -231,8 +231,8 @@ export const USDA_FOOD_ITEM = gql(`
     }
 `);
 
-export const OFF_PRODUCT_FIELDS = gql(`
-    fragment CliOffProductFields on OffProduct {
+export const OPEN_FOOD_FACTS_PRODUCT_FIELDS = gql(`
+    fragment CliOpenFoodFactsProductFields on OpenFoodFactsProduct {
         barcode
         name
         brands
@@ -247,18 +247,18 @@ export const OFF_PRODUCT_FIELDS = gql(`
     }
 `);
 
-export const OFF_SEARCH = gql(`
-    query CliOffSearch($query: String!, $pageSize: Int, $ukOnly: Boolean) {
-        offSearch(query: $query, pageSize: $pageSize, ukOnly: $ukOnly) {
-            ...CliOffProductFields
+export const OPEN_FOOD_FACTS_SEARCH = gql(`
+    query CliOpenFoodFactsSearch($query: String!, $pageSize: Int, $ukOnly: Boolean) {
+        openFoodFactsSearch(query: $query, pageSize: $pageSize, ukOnly: $ukOnly) {
+            ...CliOpenFoodFactsProductFields
         }
     }
 `);
 
-export const OFF_PRODUCT = gql(`
-    query CliOffProduct($barcode: String!) {
-        offProduct(barcode: $barcode) {
-            ...CliOffProductFields
+export const OPEN_FOOD_FACTS_PRODUCT = gql(`
+    query CliOpenFoodFactsProduct($barcode: String!) {
+        openFoodFactsProduct(barcode: $barcode) {
+            ...CliOpenFoodFactsProductFields
             portions {
                 description
                 amount

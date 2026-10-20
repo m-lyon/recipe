@@ -32,7 +32,7 @@ cli/.env.production.local      the live API — see the warning below
 | `RECIPE_PASSWORD` | yes | its password |
 | `RECIPE_SESSION_FILE` | no | override the session cache path |
 | `RECIPE_USDA_CACHE_DIR` | no | override the USDA record cache directory |
-| `RECIPE_OFF_CACHE_DIR` | no | override the Open Food Facts product cache directory |
+| `RECIPE_OPEN_FOOD_FACTS_CACHE_DIR` | no | override the Open Food Facts product cache directory |
 
 ```text
 cli/.env.development.local
@@ -69,8 +69,8 @@ The cookie cache lives at `~/.cache/recipe-cli/session-<hash of RECIPE_API_URL>`
 | `recipe ingredients show <name\|id>` | one ingredient in full, and the recipes using it |
 | `recipe usda search <query>` | USDA search; values are per 100 g, portions are empty |
 | `recipe usda show <fdcId>` | macros and the **portion table**; judge a candidate here |
-| `recipe off search <query>` | Open Food Facts search, UK products unless `--all-countries`; values are per 100 g |
-| `recipe off show <barcode>` | one product: macros, pack size, serving, data warnings and the **portion table** |
+| `recipe open-food-facts search <query>` | Open Food Facts search, UK products unless `--all-countries`; values are per 100 g |
+| `recipe open-food-facts show <barcode>` | one product: macros, pack size, serving, data warnings and the **portion table** |
 | `recipe nutrition link <ingredient> --fdc-id <n>` | the core command: `perGram`, plus measures from `--portion` and `--default-portion` |
 | `recipe nutrition link <ingredient> --barcode <code>` | the same, from an Open Food Facts product |
 | `recipe nutrition measure <ingredient> --unit <u> --grams <n>` | stores a weight you supply, for a unit no USDA portion carries (a scoop) |
@@ -149,11 +149,11 @@ Open Food Facts limits reads per IP address, and every CLI request reaches it th
 API server. The server holds itself below 12 product reads and 8 searches per minute, and
 answers `RATE_LIMITED` above that.
 
-- `offProduct` responses are cached like USDA records, keyed by barcode:
-  `~/.cache/recipe-cli/off/<barcode>-<hash of the query>.json`. Override the directory with
-  `RECIPE_OFF_CACHE_DIR`. `off show` and `nutrition link --barcode` accept `--refresh`.
-- `off search` is not cached by the CLI. The server caches a search for an hour.
-- Volunteers enter the data. `off show` and `nutrition link` pass on the server's data
+- `openFoodFactsProduct` responses are cached like USDA records, keyed by barcode:
+  `~/.cache/recipe-cli/open-food-facts/<barcode>-<hash of the query>.json`. Override the directory with
+  `RECIPE_OPEN_FOOD_FACTS_CACHE_DIR`. `open-food-facts show` and `nutrition link --barcode` accept `--refresh`.
+- `open-food-facts search` is not cached by the CLI. The server caches a search for an hour.
+- Volunteers enter the data. `open-food-facts show` and `nutrition link` pass on the server's data
   warnings: a missing macro, or kcal that the macros do not explain.
 - A barcode whose check digit fails gives a warning, not an error. Open Food Facts also holds
   store codes that fail it.

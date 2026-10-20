@@ -11,8 +11,9 @@ import { MappedPortion } from '../../src/schema/Usda.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { resetRateLimits } from '../../src/middleware/rateLimit.js';
 import { createUnverifiedUser, createUser } from '../utils/data.js';
-import { OFF_PRODUCT_PER_MINUTE, mapProduct } from '../../src/schema/OpenFoodFacts.js';
-import { OFF_SEARCH_PER_MINUTE, resetOpenFoodFacts } from '../../src/schema/OpenFoodFacts.js';
+import { resetOpenFoodFacts } from '../../src/schema/OpenFoodFacts.js';
+import { OPEN_FOOD_FACTS_SEARCH_PER_MINUTE } from '../../src/schema/OpenFoodFacts.js';
+import { OPEN_FOOD_FACTS_PRODUCT_PER_MINUTE, mapProduct } from '../../src/schema/OpenFoodFacts.js';
 
 const PRODUCT_FIELDS = `
             barcode
@@ -35,21 +36,21 @@ const PRODUCT_FIELDS = `
                 ambiguous
             }`;
 
-const OFF_PRODUCT = `
-    query OffProduct($barcode: String!) {
-        offProduct(barcode: $barcode) {
+const OPEN_FOOD_FACTS_PRODUCT = `
+    query OpenFoodFactsProduct($barcode: String!) {
+        openFoodFactsProduct(barcode: $barcode) {
 ${PRODUCT_FIELDS}
         }
     }`;
 
-const OFF_SEARCH = `
-    query OffSearch($query: String!, $pageSize: Int, $ukOnly: Boolean) {
-        offSearch(query: $query, pageSize: $pageSize, ukOnly: $ukOnly) {
+const OPEN_FOOD_FACTS_SEARCH = `
+    query OpenFoodFactsSearch($query: String!, $pageSize: Int, $ukOnly: Boolean) {
+        openFoodFactsSearch(query: $query, pageSize: $pageSize, ukOnly: $ukOnly) {
 ${PRODUCT_FIELDS}
         }
     }`;
 
-interface OffProductResult {
+interface OpenFoodFactsProductResult {
     barcode: string;
     name: string | null;
     brands: string | null;
@@ -70,7 +71,7 @@ interface OffProductResult {
 /** Fixtures are trimmed real Open Food Facts responses. They live in the source tree,
  *  not in dist/, so resolve them relative to the compiled test's own URL. */
 function loadFixture(name: string): Record<string, unknown> {
-    const url = new URL(`../../../test/fixtures/off/${name}.json`, import.meta.url);
+    const url = new URL(`../../../test/fixtures/open-food-facts/${name}.json`, import.meta.url);
     return JSON.parse(readFileSync(url, 'utf-8'));
 }
 
@@ -221,7 +222,7 @@ describe('Open Food Facts product mapping', function () {
 
 // ---------- resolvers (mock fetch) ----------
 
-describe('offProduct', function () {
+describe('openFoodFactsProduct', function () {
     before(startServer);
     after(stopServer);
     beforeEach(async function () {
@@ -241,13 +242,14 @@ describe('offProduct', function () {
         );
 
         const response = await this.apolloServer.executeOperation(
-            { query: OFF_PRODUCT, variables: { barcode: '5010338301255' } },
+            { query: OPEN_FOOD_FACTS_PRODUCT, variables: { barcode: '5010338301255' } },
             makeContext(user)
         );
         assert.equal(response.body.kind, 'single');
         assert.isUndefined(response.body.singleResult.errors);
-        const product = (response.body.singleResult.data as { offProduct: OffProductResult })
-            .offProduct;
+        const product = (
+            response.body.singleResult.data as { openFoodFactsProduct: OpenFoodFactsProductResult }
+        ).openFoodFactsProduct;
         assert.equal(product.name, 'Pearl Couscous');
         assert.equal(product.caloriesPer100g, 362);
 
@@ -265,7 +267,7 @@ describe('offProduct', function () {
 
         for (let i = 0; i < 2; i++) {
             const response = await this.apolloServer.executeOperation(
-                { query: OFF_PRODUCT, variables: { barcode: '5010338301255' } },
+                { query: OPEN_FOOD_FACTS_PRODUCT, variables: { barcode: '5010338301255' } },
                 makeContext(user)
             );
             assert.equal(response.body.kind, 'single');
@@ -288,7 +290,7 @@ describe('offProduct', function () {
         );
 
         const response = await this.apolloServer.executeOperation(
-            { query: OFF_PRODUCT, variables: { barcode: '5000000000000' } },
+            { query: OPEN_FOOD_FACTS_PRODUCT, variables: { barcode: '5000000000000' } },
             makeContext(user)
         );
         assert.equal(response.body.kind, 'single');
@@ -301,7 +303,7 @@ describe('offProduct', function () {
 
         for (const barcode of ['12345', 'abc5010338301255', '501033830125x', '../search']) {
             const response = await this.apolloServer.executeOperation(
-                { query: OFF_PRODUCT, variables: { barcode } },
+                { query: OPEN_FOOD_FACTS_PRODUCT, variables: { barcode } },
                 makeContext(user)
             );
             assert.equal(response.body.kind, 'single');
@@ -324,7 +326,7 @@ describe('offProduct', function () {
         } as Response);
 
         const response = await this.apolloServer.executeOperation(
-            { query: OFF_PRODUCT, variables: { barcode: '5010338301255' } },
+            { query: OPEN_FOOD_FACTS_PRODUCT, variables: { barcode: '5010338301255' } },
             makeContext(user)
         );
         assert.equal(response.body.kind, 'single');
@@ -339,7 +341,7 @@ describe('offProduct', function () {
         stub(global, 'fetch').rejects(new DOMException('This operation was aborted', 'AbortError'));
 
         const response = await this.apolloServer.executeOperation(
-            { query: OFF_PRODUCT, variables: { barcode: '5010338301255' } },
+            { query: OPEN_FOOD_FACTS_PRODUCT, variables: { barcode: '5010338301255' } },
             makeContext(user)
         );
         assert.equal(response.body.kind, 'single');
@@ -353,7 +355,7 @@ describe('offProduct', function () {
         const fetchStub = stub(global, 'fetch');
 
         const response = await this.apolloServer.executeOperation(
-            { query: OFF_PRODUCT, variables: { barcode: '5010338301255' } },
+            { query: OPEN_FOOD_FACTS_PRODUCT, variables: { barcode: '5010338301255' } },
             makeContext(null)
         );
         assert.equal(response.body.kind, 'single');
@@ -366,7 +368,7 @@ describe('offProduct', function () {
         const fetchStub = stub(global, 'fetch');
 
         const response = await this.apolloServer.executeOperation(
-            { query: OFF_PRODUCT, variables: { barcode: '5010338301255' } },
+            { query: OPEN_FOOD_FACTS_PRODUCT, variables: { barcode: '5010338301255' } },
             makeContext(unverified)
         );
         assert.equal(response.body.kind, 'single');
@@ -382,9 +384,12 @@ describe('offProduct', function () {
 
         let limited: { extensions?: { code?: unknown } } | undefined;
         // Distinct barcodes, so that the cache does not answer.
-        for (let i = 0; i <= OFF_PRODUCT_PER_MINUTE; i++) {
+        for (let i = 0; i <= OPEN_FOOD_FACTS_PRODUCT_PER_MINUTE; i++) {
             const response = await this.apolloServer.executeOperation(
-                { query: OFF_PRODUCT, variables: { barcode: String(50103383000000 + i) } },
+                {
+                    query: OPEN_FOOD_FACTS_PRODUCT,
+                    variables: { barcode: String(50103383000000 + i) },
+                },
                 makeContext(user)
             );
             assert.equal(response.body.kind, 'single');
@@ -395,11 +400,11 @@ describe('offProduct', function () {
         }
         assert.isDefined(limited, 'The server should stop within the minute');
         assert.equal(limited!.extensions!.code, 'RATE_LIMITED');
-        assert.equal(fetchStub.callCount, OFF_PRODUCT_PER_MINUTE);
+        assert.equal(fetchStub.callCount, OPEN_FOOD_FACTS_PRODUCT_PER_MINUTE);
     });
 });
 
-describe('offSearch', function () {
+describe('openFoodFactsSearch', function () {
     before(startServer);
     after(stopServer);
     beforeEach(async function () {
@@ -412,11 +417,11 @@ describe('offSearch', function () {
         dropUsers(done);
     });
 
-    /** Runs offSearch and returns its single result. */
+    /** Runs openFoodFactsSearch and returns its single result. */
     async function search(server: ApolloServer, variables: Record<string, unknown>) {
         const user = await User.findOne({ username: 'testuser1' }).orFail();
         const response = await server.executeOperation(
-            { query: OFF_SEARCH, variables },
+            { query: OPEN_FOOD_FACTS_SEARCH, variables },
             makeContext(user)
         );
         if (response.body.kind !== 'single') {
@@ -432,7 +437,8 @@ describe('offSearch', function () {
 
         const result = await search(this.apolloServer, { query: 'pearl couscous' });
         assert.isUndefined(result.errors);
-        const hits = (result.data as { offSearch: OffProductResult[] }).offSearch;
+        const hits = (result.data as { openFoodFactsSearch: OpenFoodFactsProductResult[] })
+            .openFoodFactsSearch;
         assert.lengthOf(hits, 5);
         assert.equal(hits[0].barcode, '5010338301255');
         assert.equal(hits[0].brands, "Al'fez");
@@ -477,12 +483,12 @@ describe('offSearch', function () {
         const fetchStub = stub(global, 'fetch').resolves(respond({ hits: [] }));
 
         let code: unknown;
-        for (let i = 0; i <= OFF_SEARCH_PER_MINUTE; i++) {
+        for (let i = 0; i <= OPEN_FOOD_FACTS_SEARCH_PER_MINUTE; i++) {
             const result = await search(this.apolloServer, { query: `couscous ${i}` });
             code = result.errors?.[0].extensions?.code;
             if (code) break;
         }
         assert.equal(code, 'RATE_LIMITED');
-        assert.equal(fetchStub.callCount, OFF_SEARCH_PER_MINUTE);
+        assert.equal(fetchStub.callCount, OPEN_FOOD_FACTS_SEARCH_PER_MINUTE);
     });
 });

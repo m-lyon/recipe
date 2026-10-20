@@ -73,9 +73,9 @@ describe('record disk cache', () => {
     });
 
     it('keys an Open Food Facts barcode, keeping its leading zero', () => {
-        cache.write('0633148100013', key, { offProduct: { barcode: '0633148100013' } });
+        cache.write('0633148100013', key, { openFoodFactsProduct: { barcode: '0633148100013' } });
         expect(cache.read('0633148100013', key)).to.deep.equal({
-            offProduct: { barcode: '0633148100013' },
+            openFoodFactsProduct: { barcode: '0633148100013' },
         });
         expect(cache.read('633148100013', key)).to.equal(null);
     });
