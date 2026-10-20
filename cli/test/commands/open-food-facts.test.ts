@@ -280,4 +280,115 @@ describe('open-food-facts commands', () => {
             expect(api.requests).to.deep.equal([]);
         });
     });
+
+    describe('nutrition link --label-per-100g', () => {
+        /** A stub record with no values, as Knorr's roasted garlic pot was. */
+        const STUB: OpenFoodFactsProduct = {
+            ...KNORR_POTS,
+            caloriesPer100g: null,
+            proteinPer100g: null,
+            carbsPer100g: null,
+            fatPer100g: null,
+            warnings: ['No value for kcal, protein, carbs, fat'],
+        };
+
+        it('writes the label values, and keeps the barcode and the portions', async () => {
+            api = baseApi(STUB);
+            api.install();
+            const { stdout } = await runCommand(
+                [
+                    'nutrition',
+                    'link',
+                    '"olive oil"',
+                    '--barcode',
+                    '11213606',
+                    '--label-per-100g',
+                    '69,3.8,12,0.5',
+                    '--portion',
+                    '1',
+                    '--json',
+                ],
+                ROOT
+            );
+            const payload = json(stdout);
+            const record = api.requests.find((r) => r.operation === 'CliCreateNutritionalInfo')
+                ?.variables.record as Record<string, unknown>;
+            expect(record).to.include({
+                source: 'openFoodFacts',
+                openFoodFactsBarcode: '11213606',
+            });
+            expect(record.perGram).to.deep.equal({
+                calories: 0.69,
+                protein: 0.038,
+                carbs: 0.12,
+                fat: 0.005,
+            });
+            expect(api.countOf('CliCreateIngredientMeasure')).to.equal(1);
+            // The record's data warnings and missing macros no longer apply.
+            expect(payload.warnings.join(' ')).to.not.contain('No value');
+            expect(payload.warnings.join(' ')).to.not.contain('written as zero');
+        });
+
+        it('shows the label beside the record in a dry run, and marks each difference', async () => {
+            api = baseApi();
+            api.install();
+            const { stdout } = await runCommand(
+                [
+                    'nutrition',
+                    'link',
+                    '"olive oil"',
+                    '--barcode',
+                    '5010338301255',
+                    '--label-per-100g',
+                    '362,12,70,1.5',
+                    '--dry-run',
+                ],
+                ROOT
+            );
+            expect(stdout).to.contain('Per 100 g from the label, replacing the record:');
+            expect(stdout).to.match(/carbs\s+70\.0\s+72\.0\s+← differs/);
+            expect(stdout).to.not.match(/kcal\s+362\.0\s+362\.0\s+← differs/);
+            expect(api.operations.filter((name) => MUTATIONS.includes(name))).to.deep.equal([]);
+        });
+
+        it('warns when the label kcal does not match its macros', async () => {
+            api = baseApi();
+            api.install();
+            const { stdout } = await runCommand(
+                [
+                    'nutrition',
+                    'link',
+                    '"olive oil"',
+                    '--barcode',
+                    '5010338301255',
+                    '--label-per-100g',
+                    // Fat typed as 15 instead of 1.5.
+                    '362,12,72,15',
+                    '--dry-run',
+                    '--json',
+                ],
+                ROOT
+            );
+            expect(json(stdout).warnings.join(' ')).to.contain('Check the order of the values');
+        });
+
+        it('refuses values that are not four numbers, before any request', async () => {
+            api = baseApi();
+            api.install();
+            const { error } = await runCommand(
+                [
+                    'nutrition',
+                    'link',
+                    '"olive oil"',
+                    '--barcode',
+                    '5010338301255',
+                    '--label-per-100g',
+                    '362,12,72',
+                ],
+                ROOT
+            );
+            expect(error?.oclif?.exit).to.equal(ExitCode.REJECTED);
+            expect(api.requests).to.deep.equal([]);
+        });
+    });
 });

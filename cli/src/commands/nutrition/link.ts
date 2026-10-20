@@ -5,6 +5,7 @@ import { ApiClient } from '../../graphql/client.js';
 import { selectPortion } from '../../lib/portions.js';
 import { resolveIngredient } from '../../lib/resolve.js';
 import { UPDATE_NUTRITIONAL_INFO } from '../../graphql/operations.js';
+import { kcalMismatch, parseLabelPer100g } from '../../lib/macros.js';
 import { BaseCommand, usdaFlags, writeFlags } from '../../lib/base.js';
 import { notFound, rejected, wouldOverwrite } from '../../lib/errors.js';
 import { formatMacros, missingMacros, perGramFrom } from '../../lib/macros.js';
@@ -93,6 +94,13 @@ export default class NutritionLink extends BaseCommand {
                 'with no size use its weight. Named like --portion.',
             helpValue: 'LABEL|INDEX',
         }),
+        'label-per-100g': Flags.string({
+            description:
+                "Write these values per 100 g from the pack label instead of the record's, " +
+                'when the record is wrong or has none. The link and its portions still come ' +
+                'from the record.',
+            helpValue: 'KCAL,PROTEIN,CARBS,FAT',
+        }),
         overwrite: Flags.boolean({
             description:
                 'Permit replacing existing nutritional data, or a measure with the same key',
@@ -106,14 +114,32 @@ export default class NutritionLink extends BaseCommand {
         const { args, flags } = await this.parse(NutritionLink);
         const client = this.api(flags.url);
 
+        // Checked before any request, so a typo costs nothing.
+        const label = flags['label-per-100g'] ? parseLabelPer100g(flags['label-per-100g']) : null;
+        if (flags['label-per-100g'] && !label) {
+            throw rejected(
+                `--label-per-100g takes four numbers, "kcal,protein,carbs,fat", not ` +
+                    `"${flags['label-per-100g']}".`
+            );
+        }
+        const labelMismatch = label ? kcalMismatch(label) : null;
+        if (labelMismatch) {
+            this.addWarning(`Label values: ${labelMismatch}. Check the order of the values.`);
+        }
+
         const { ingredient } = await resolveIngredient(client, args.ingredient);
         const item = flags.barcode
-            ? await this.fetchOffProduct(client, flags.barcode.trim(), flags.refresh)
+            ? await this.fetchOpenFoodFactsProduct(
+                  client,
+                  flags.barcode.trim(),
+                  flags.refresh,
+                  Boolean(label)
+              )
             : await this.fetchUsdaItem(client, flags['fdc-id']!, flags.refresh);
         const portions = item.portions;
 
-        const perGram = perGramFrom(item.per100g);
-        const absent = missingMacros(item.per100g);
+        const perGram = perGramFrom(label ?? item.per100g);
+        const absent = label ? [] : missingMacros(item.per100g);
         if (absent.length > 0) {
             this.addWarning(
                 `${describeSource(item.ids)} carries no value for ${absent.join(', ')}; ` +
@@ -179,6 +205,7 @@ export default class NutritionLink extends BaseCommand {
             ingredient: { _id: ingredient._id, name: ingredient.name },
             item: { source: item.source, id: item.id, description: item.description },
             record,
+            label: label && { values: label, record: item.per100g },
             previous: existing ?? null,
             measures,
         };
@@ -241,10 +268,11 @@ export default class NutritionLink extends BaseCommand {
         };
     }
 
-    private async fetchOffProduct(
+    private async fetchOpenFoodFactsProduct(
         client: ApiClient,
         barcode: string,
-        refresh: boolean
+        refresh: boolean,
+        labelGiven: boolean
     ): Promise<SourceRecord> {
         if (!hasValidCheckDigit(barcode)) {
             this.addWarning(`${barcode} fails the barcode check digit. Check for a misread digit.`);
@@ -261,9 +289,12 @@ export default class NutritionLink extends BaseCommand {
             throw notFound(`No Open Food Facts product with barcode ${barcode}.`);
         }
         // Volunteers enter this data: a missing macro or kcal the macros do not explain
-        // is worth a look at the label before the link is trusted.
-        for (const warning of product.warnings) {
-            this.addWarning(`Open Food Facts ${barcode}: ${warning}.`);
+        // is worth a look at the label before the link is trusted. Label values replace
+        // the record's, so its data warnings no longer apply.
+        if (!labelGiven) {
+            for (const warning of product.warnings) {
+                this.addWarning(`Open Food Facts ${barcode}: ${warning}.`);
+            }
         }
         return {
             source: 'openFoodFacts',
@@ -415,6 +446,9 @@ export default class NutritionLink extends BaseCommand {
             indent(`source      ${describeSource(plan.record)}`),
             indent(`perGram     ${formatMacros(plan.record.perGram)}`),
         ];
+        if (plan.label) {
+            lines.push('', ...renderLabel(plan.label));
+        }
         if (plan.previous) {
             lines.push('', 'Previous values:', indent(describePrevious(plan.previous)));
         }
@@ -428,6 +462,9 @@ export default class NutritionLink extends BaseCommand {
             indent(`source      ${describeSource(plan.record)}`),
             indent(`perGram     ${formatMacros(plan.record.perGram)}`),
         ];
+        if (plan.label) {
+            lines.push('', ...renderLabel(plan.label));
+        }
         if (plan.previous) {
             lines.push('', 'Previous values:', indent(describePrevious(plan.previous)));
         }
@@ -452,6 +489,8 @@ interface LinkPlan {
         sourceName: string;
         perGram: Macros;
     };
+    /** Values from the pack label, which replace the record's. */
+    label: { values: Per100g; record: Per100g } | null;
     previous: NutritionalInfoSummary | null;
     measures: PlannedMeasure[];
 }
@@ -461,4 +500,27 @@ function describePrevious(info: NutritionalInfoSummary): string {
         `source      ${describeSource(info)}`,
         `perGram     ${formatMacros(info.perGram)}`,
     ].join('\n');
+}
+
+const LABEL_ROWS: Array<[string, keyof Per100g]> = [
+    ['kcal', 'caloriesPer100g'],
+    ['protein', 'proteinPer100g'],
+    ['carbs', 'carbsPer100g'],
+    ['fat', 'fatPer100g'],
+];
+
+/** The label values beside the record's, with each difference marked. */
+function renderLabel(label: { values: Per100g; record: Per100g }): string[] {
+    return [
+        'Per 100 g from the label, replacing the record:',
+        indent('          LABEL     RECORD'),
+        ...LABEL_ROWS.map(([name, key]) => {
+            const ours = label.values[key];
+            const theirs = label.record[key];
+            const changed = ours !== theirs ? '   ← differs' : '';
+            return indent(
+                `${name.padEnd(8)}  ${num(ours).padEnd(8)}  ${num(theirs).padEnd(6)}${changed}`
+            );
+        }),
+    ];
 }
