@@ -6,27 +6,10 @@
  * Run it against production BEFORE the API that requires `source` is deployed. The API
  * before it ignores the field, but the one after it cannot read a record without it.
  *
- * From a checkout of the branch that adds this script, in api/:
- *
- *   1. Back up the database, for example:
- *        mongodump --uri "<production MONGODB_URI>" --out ./backup-2026-10-20
- *
- *   2. Compile:
  *        npm run compile
- *
- *   3. Dry run. It counts the records it would change and writes nothing:
  *        MONGODB_URI="<production MONGODB_URI>" DRY_RUN=1 \
  *            node ./dist/src/scripts/updateSchema_2026-10-20.js
  *
- *   4. Run it:
- *        MONGODB_URI="<production MONGODB_URI>" \
- *            node ./dist/src/scripts/updateSchema_2026-10-20.js
- *
- *   5. Run the dry run again. It reports 0 for both sources when every record has one.
- *
- *   6. Deploy the API.
- *
- * The production MONGODB_URI is in /etc/recipe.env on the server.
  */
 import { pathToFileURL } from 'url';
 

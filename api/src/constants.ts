@@ -18,7 +18,6 @@ export const SMTP_FROM_DOMAIN = process.env.SMTP_FROM_DOMAIN;
 export const SMTP_ADMIN_EMAIL = process.env.SMTP_ADMIN_EMAIL;
 export const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 export const USDA_API_KEY = process.env.USDA_API_KEY ?? '';
-// Reads use the production host: they are harmless, and staging holds few products.
 export const OPEN_FOOD_FACTS_API_URL =
     process.env.OPEN_FOOD_FACTS_API_URL ?? 'https://world.openfoodfacts.org';
 export const OPEN_FOOD_FACTS_SEARCH_URL =

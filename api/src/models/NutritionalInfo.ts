@@ -8,7 +8,6 @@ export interface MacroNutrients {
     fat: number; // g
 }
 
-/** Where the values came from. Each source except `manual` carries its own record ID. */
 export const NUTRITION_SOURCES = ['usda', 'openFoodFacts', 'manual'] as const;
 export type NutritionSource = (typeof NUTRITION_SOURCES)[number];
 
@@ -17,7 +16,6 @@ export interface NutritionalInfo extends Document {
     source: NutritionSource;
     usdaFdcId?: number | null;
     openFoodFactsBarcode?: string | null;
-    // The product or food name when linked, so a display needs no request to the source.
     sourceName?: string | null;
     perGram: MacroNutrients;
 }

@@ -215,8 +215,6 @@ export const UsdaLinkSection = forwardRef<UsdaLinkSectionHandle, UsdaLinkSection
             // eslint-disable-next-line react-hooks/exhaustive-deps
         }, [pendingNutrition]);
 
-        // The record names its source, and clears the other source's id, so a relink from
-        // an Open Food Facts product to a USDA food leaves no barcode behind.
         const buildRecord = useCallback(
             (
                 targetIngredientId: string,
