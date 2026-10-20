@@ -1,6 +1,7 @@
 # AGENTS.md — recipe-cli
 
-Guidance for an AI agent using the `recipe` CLI to link USDA food items to ingredients.
+Guidance for an AI agent using the `recipe` CLI to link nutritional data to ingredients: USDA
+food items for generic foods, and Open Food Facts products for branded ones.
 
 Read [README.md](README.md) for installation, configuration and the full command reference.
 This document is the workflow and the judgement rules.
@@ -27,6 +28,39 @@ entered by hand.
 
 `recipe ingredients list --missing-nutrition --json` is the entry point for a run across the
 whole database rather than one recipe.
+
+## Branded products: Open Food Facts
+
+USDA's branded data is US-only. For a branded product the operator buys (a stock pot, a
+seitan, a pack of pearl couscous), link the Open Food Facts product by its barcode instead.
+
+```text
+1. The operator sends photos (barcode, nutrition label, front of pack) or the digits.
+2. Decode a barcode photo:   zbarimg --quiet --raw <photo>
+   If zbarimg finds nothing, read the digits printed under the bars.
+3. recipe off show <barcode> --json                     product, macros, portions
+4. Compare the per-100 g values with the label photo.
+5. recipe nutrition link <id> --barcode <code> \
+     [--portion <n>]... --dry-run                       plan
+6. review, then re-run step 5 without --dry-run
+```
+
+- **Prefer a barcode to a name search.** `off search` is imprecise and the server allows
+  8 searches a minute. Use it only when the operator has no barcode, and confirm the pick.
+- **Check the label.** Volunteers enter this data. When a label photo is available, compare
+  kcal, protein, carbs and fat per 100 g. A value that differs is a stop-and-report
+  condition: tell the operator what differs, and do not link it.
+- **A data warning is a stop-and-report condition** too: a missing macro, or kcal that the
+  macros do not explain.
+- A check-digit warning usually means a misread digit. Re-read the photo before you look
+  the code up.
+- Check the brand and the pack size in `off show` against the photo. Two products often
+  share a name.
+- A multipack ("8×24 g") gives a `1 each` portion of one item. A serving is not always one
+  item: a Knorr stock pot record gives a 28 g serving for a 24 g pot, so it is flagged
+  ambiguous. Prefer the multipack portion, or a weight from the label, read by the operator.
+- When a product is missing from Open Food Facts, say so. Do not fall back to a USDA
+  branded record for a UK product without asking.
 
 ## Judgement rules
 
@@ -76,19 +110,20 @@ A linked ingredient has `perGram` macros. A recipe line reaches grams by its uni
   such as `--unit scoop --grams 30`. Use it only with a weight the operator gave you.
 - A measure with the same unit, size and prep method as an existing one exits 5. Report it.
 
-## The USDA cache
+## The USDA and Open Food Facts caches
 
-`usdaFoodItem` responses are cached on disk, so re-reading a record you already fetched is
+`usdaFoodItem` and `offProduct` responses are cached on disk, so re-reading a record you already fetched is
 free and does not touch the quota. Fetch a candidate as often as you find useful.
 
-- Repeating `usda show <fdcId>` costs nothing after the first call.
+- Repeating `usda show <fdcId>` or `off show <barcode>` costs nothing after the first call.
 - A dry run and the write that follows reuse the record `usda show` fetched.
 - Pass `--refresh` only when you have reason to think the record changed.
-- `usda search` is not cached, so do not repeat a search you have already run. Keep its
-  results in your own working notes.
+- `usda search` and `off search` are not cached by the CLI, so do not repeat a search you
+  have already run. Keep the results in your own working notes.
 
-The quota is 1000 requests per hour for the whole server. Budget roughly one upstream call
-per ingredient, plus one per search.
+The USDA quota is 1000 requests per hour for the whole server. Budget roughly one upstream call
+per ingredient, plus one per search. Open Food Facts allows the server 12 product reads and
+8 searches per minute; a `RATE_LIMITED` error says how long to wait.
 
 ## Reading the output
 
@@ -101,7 +136,8 @@ never parse the tables.
 ```
 
 `warnings` is where the CLI tells you something is incomplete but not wrong — storable
-portions that were not chosen, a portion flagged ambiguous, a USDA record missing a macro. Report them; do not discard them.
+portions that were not chosen, a portion flagged ambiguous, a record missing a macro, an Open
+Food Facts data warning. Report them; do not discard them.
 
 ## Exit codes worth branching on
 

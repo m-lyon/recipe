@@ -21,10 +21,16 @@ export interface IngredientSummary {
     tags?: string[] | null;
 }
 
+export type NutritionSource = 'usda' | 'openFoodFacts' | 'manual';
+
 export interface NutritionalInfoSummary {
     _id: string;
     ingredient: string;
+    source?: NutritionSource | null;
     usdaFdcId?: number | null;
+    offBarcode?: string | null;
+    /** The food or product name, stored when the link was made. */
+    sourceName?: string | null;
     perGram?: Macros | null;
 }
 
@@ -100,6 +106,26 @@ export interface UsdaPortion {
     millilitres?: number | null;
     impliedDensity?: number | null;
     ambiguous: boolean;
+}
+
+/** Macros per 100 g, as both sources report them. */
+export interface Per100g {
+    caloriesPer100g?: number | null;
+    proteinPer100g?: number | null;
+    carbsPer100g?: number | null;
+    fatPer100g?: number | null;
+}
+
+export interface OffProduct extends Per100g {
+    barcode: string;
+    name?: string | null;
+    brands?: string | null;
+    quantity?: string | null;
+    servingSize?: string | null;
+    countries: string[];
+    /** Data problems: a missing macro, or kcal that the macros do not explain. */
+    warnings: string[];
+    portions?: UsdaPortion[];
 }
 
 export interface UsdaFoodItem {

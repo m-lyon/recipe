@@ -1,4 +1,4 @@
-import type { UnitSummary, UsdaFoodItem } from '../../src/lib/types.js';
+import type { OffProduct, UnitSummary, UsdaFoodItem } from '../../src/lib/types.js';
 
 function unit(_id: string, name: string, extra: Partial<UnitSummary>): UnitSummary {
     return {
@@ -48,6 +48,12 @@ export const CUP = unit('unit-cup', 'cup', {
     dimension: 'volume',
     perCanonical: 236.5882365,
     system: 'us',
+});
+export const LITRE = unit('unit-l', 'litre', {
+    shortSingular: 'l',
+    dimension: 'volume',
+    perCanonical: 1000,
+    system: 'metric',
 });
 export const UNITS = [EACH, GRAM, MILLILITRE, TEASPOON, TABLESPOON, CUP];
 export const LARGE = { _id: 'size-large', value: 'large' };
@@ -287,4 +293,47 @@ export const EXISTING_EGG_INFO = {
         carbs: 0.0072,
         fat: 0.0951,
     },
+};
+
+/** Al'fez Pearl Couscous — a UK product with no serving and no multipack. */
+export const PEARL_COUSCOUS: OffProduct = {
+    barcode: '5010338301255',
+    name: 'Pearl Couscous',
+    brands: "Al'fez",
+    quantity: '200g',
+    servingSize: null,
+    countries: ['en:united-kingdom'],
+    caloriesPer100g: 362,
+    proteinPer100g: 12,
+    carbsPer100g: 72,
+    fatPer100g: 1.5,
+    warnings: [],
+    portions: [],
+};
+
+/** Knorr stock pots — a multipack whose one item is a portion. Its code fails the check digit. */
+export const KNORR_POTS: OffProduct = {
+    barcode: '11213606',
+    name: 'marmite de bouillon',
+    brands: 'Knorr',
+    quantity: '8×24 g',
+    servingSize: '28g',
+    countries: ['en:france'],
+    caloriesPer100g: 107,
+    proteinPer100g: 2.3,
+    carbsPer100g: 8.1,
+    fatPer100g: 7.1,
+    warnings: [],
+    portions: [
+        {
+            description: '1 each (pack of 8×24 g)',
+            amount: 1,
+            modifier: null,
+            gramWeight: 24,
+            kind: 'ITEM',
+            millilitres: null,
+            impliedDensity: null,
+            ambiguous: true,
+        },
+    ],
 };

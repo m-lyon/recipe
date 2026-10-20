@@ -76,7 +76,10 @@ export const NUTRITIONAL_INFO_FIELDS = gql(`
     fragment CliNutritionalInfoFields on NutritionalInfo {
         _id
         ingredient
+        source
         usdaFdcId
+        offBarcode
+        sourceName
         perGram {
             calories
             protein
@@ -214,6 +217,48 @@ export const USDA_FOOD_ITEM = gql(`
             servingSize
             servingSizeUnit
             householdServingFullText
+            portions {
+                description
+                amount
+                modifier
+                gramWeight
+                kind
+                millilitres
+                impliedDensity
+                ambiguous
+            }
+        }
+    }
+`);
+
+export const OFF_PRODUCT_FIELDS = gql(`
+    fragment CliOffProductFields on OffProduct {
+        barcode
+        name
+        brands
+        quantity
+        servingSize
+        countries
+        caloriesPer100g
+        proteinPer100g
+        carbsPer100g
+        fatPer100g
+        warnings
+    }
+`);
+
+export const OFF_SEARCH = gql(`
+    query CliOffSearch($query: String!, $pageSize: Int, $ukOnly: Boolean) {
+        offSearch(query: $query, pageSize: $pageSize, ukOnly: $ukOnly) {
+            ...CliOffProductFields
+        }
+    }
+`);
+
+export const OFF_PRODUCT = gql(`
+    query CliOffProduct($barcode: String!) {
+        offProduct(barcode: $barcode) {
+            ...CliOffProductFields
             portions {
                 description
                 amount

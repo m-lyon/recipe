@@ -56,7 +56,7 @@ export default class UsdaShow extends BaseCommand {
             ...item,
             portions,
             itemPortionCount: portions.filter((portion) => portion.kind === 'ITEM').length,
-            fromCache: client.usdaCacheHit,
+            fromCache: client.cacheHit,
         };
     }
 }

@@ -109,7 +109,10 @@ describe('nutrition link', () => {
             ?.variables.record as Record<string, unknown>;
         expect(record).to.deep.equal({
             ingredient: 'ing-oil',
+            source: 'usda',
             usdaFdcId: 171413,
+            offBarcode: null,
+            sourceName: 'Oil, olive, salad or cooking',
             perGram: { calories: 8.84, protein: 0, carbs: 0, fat: 1 },
         });
         expect(measureRecords()).to.deep.equal([]);

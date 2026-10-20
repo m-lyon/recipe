@@ -1,4 +1,4 @@
-import type { Macros, UsdaFoodItem } from './types.js';
+import type { Macros, Per100g } from './types.js';
 
 /** Rounds away floating point noise without losing usable precision. */
 export function round(value: number, decimals = 6): number {
@@ -7,7 +7,7 @@ export function round(value: number, decimals = 6): number {
 }
 
 /** Per-gram macros are the per-100 g values divided by 100. */
-export function perGramFrom(item: UsdaFoodItem): Macros {
+export function perGramFrom(item: Per100g): Macros {
     return {
         calories: round((item.caloriesPer100g ?? 0) / 100),
         protein: round((item.proteinPer100g ?? 0) / 100),
@@ -16,8 +16,8 @@ export function perGramFrom(item: UsdaFoodItem): Macros {
     };
 }
 
-/** Names the macros the USDA record does not carry, so a zero is never silent. */
-export function missingMacros(item: UsdaFoodItem): string[] {
+/** Names the macros the record does not carry, so a zero is never silent. */
+export function missingMacros(item: Per100g): string[] {
     const missing: string[] = [];
     if (item.caloriesPer100g === null || item.caloriesPer100g === undefined)
         missing.push('calories');

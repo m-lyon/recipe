@@ -1,19 +1,33 @@
 import { Args, Flags } from '@oclif/core';
 
+import { indent, num } from '../../lib/format.js';
+import { ApiClient } from '../../graphql/client.js';
 import { selectPortion } from '../../lib/portions.js';
 import { resolveIngredient } from '../../lib/resolve.js';
-import { EMPTY, indent, num } from '../../lib/format.js';
-import { USDA_FOOD_ITEM } from '../../graphql/operations.js';
 import { UPDATE_NUTRITIONAL_INFO } from '../../graphql/operations.js';
 import { BaseCommand, usdaFlags, writeFlags } from '../../lib/base.js';
 import { notFound, rejected, wouldOverwrite } from '../../lib/errors.js';
+import { OFF_PRODUCT, USDA_FOOD_ITEM } from '../../graphql/operations.js';
 import { formatMacros, missingMacros, perGramFrom } from '../../lib/macros.js';
+import type { NutritionSource, OffProduct, Per100g } from '../../lib/types.js';
 import type { Macros, MeasureSummary, NutritionalInfoSummary } from '../../lib/types.js';
+import { describeSource, hasValidCheckDigit, offProductName } from '../../lib/sources.js';
 import { CREATE_NUTRITIONAL_INFO, GET_NUTRITIONAL_INFO } from '../../graphql/operations.js';
 import { MeasureDraft, describeMeasureKey, suggestFromPortion } from '../../lib/measures.js';
 import { GET_INGREDIENT_MEASURES, GET_MEASURE_COMPONENTS } from '../../graphql/operations.js';
 import type { NamedSummary, UnitSummary, UsdaFoodItem, UsdaPortion } from '../../lib/types.js';
 import { CREATE_INGREDIENT_MEASURE, DELETE_INGREDIENT_MEASURE } from '../../graphql/operations.js';
+
+/** The record a link copies its values from, whichever source it is in. */
+interface SourceRecord {
+    source: Exclude<NutritionSource, 'manual'>;
+    id: string;
+    description: string;
+    per100g: Per100g;
+    portions: UsdaPortion[];
+    /** Each source carries its own id and clears the other's, so an update can switch. */
+    ids: { usdaFdcId: number | null; offBarcode: string | null };
+}
 
 interface SelectedPortion {
     portion: UsdaPortion;
@@ -32,8 +46,9 @@ interface PlannedMeasure {
 
 export default class NutritionLink extends BaseCommand {
     static description =
-        'Link a USDA food item to an ingredient, writing perGram, and store named USDA ' +
-        'portions as ingredient measures (the weight of one unit of the ingredient).';
+        'Link a USDA food item or an Open Food Facts product to an ingredient, writing ' +
+        'perGram, and store its named portions as ingredient measures (the weight of one ' +
+        'unit of the ingredient).';
 
     static examples = [
         '<%= config.bin %> <%= command.id %> "olive oil" --fdc-id 171413 --dry-run',
@@ -41,6 +56,7 @@ export default class NutritionLink extends BaseCommand {
         '<%= config.bin %> <%= command.id %> onion --fdc-id 170000 --portion 1 --portion 3',
         '<%= config.bin %> <%= command.id %> "olive oil" --fdc-id 171413 --all-portions',
         '<%= config.bin %> <%= command.id %> banana --fdc-id 173944 --portion 5 --default-portion 5',
+        '<%= config.bin %> <%= command.id %> "pearl couscous" --barcode 5010338301255 --dry-run',
     ];
 
     static args = {
@@ -50,13 +66,18 @@ export default class NutritionLink extends BaseCommand {
     static flags = {
         'fdc-id': Flags.integer({
             description: 'The USDA item to link',
-            required: true,
             helpValue: 'N',
+            exactlyOne: ['fdc-id', 'barcode'],
+        }),
+        barcode: Flags.string({
+            description: 'The Open Food Facts product to link, by its barcode',
+            helpValue: 'DIGITS',
+            exactlyOne: ['fdc-id', 'barcode'],
         }),
         portion: Flags.string({
             description:
                 'Store this portion as a measure, named by its description or by its 1-based ' +
-                'index in "usda show". Repeat to store several.',
+                'index in "usda show" or "off show". Repeat to store several.',
             helpValue: 'LABEL|INDEX',
             multiple: true,
         }),
@@ -84,27 +105,18 @@ export default class NutritionLink extends BaseCommand {
     async run(): Promise<unknown> {
         const { args, flags } = await this.parse(NutritionLink);
         const client = this.api(flags.url);
-        const fdcId = flags['fdc-id'];
 
         const { ingredient } = await resolveIngredient(client, args.ingredient);
-        const item = (
-            await client.cachedFoodItem(
-                fdcId,
-                USDA_FOOD_ITEM,
-                { fdcId },
-                { refresh: flags.refresh }
-            )
-        ).usdaFoodItem as unknown as UsdaFoodItem | null;
-        if (!item) {
-            throw notFound(`No USDA food item with fdcId ${fdcId}.`);
-        }
-        const portions = item.portions ?? [];
+        const item = flags.barcode
+            ? await this.fetchOffProduct(client, flags.barcode.trim(), flags.refresh)
+            : await this.fetchUsdaItem(client, flags['fdc-id']!, flags.refresh);
+        const portions = item.portions;
 
-        const perGram = perGramFrom(item);
-        const absent = missingMacros(item);
+        const perGram = perGramFrom(item.per100g);
+        const absent = missingMacros(item.per100g);
         if (absent.length > 0) {
             this.addWarning(
-                `USDA record ${fdcId} carries no value for ${absent.join(', ')}; ` +
+                `${describeSource(item.ids)} carries no value for ${absent.join(', ')}; ` +
                     'those macros are written as zero.'
             );
         }
@@ -148,18 +160,24 @@ export default class NutritionLink extends BaseCommand {
         ).nutritionalInfoByIngredient as unknown as NutritionalInfoSummary | null;
         if (existing && !flags.overwrite) {
             throw wouldOverwrite(
-                `${ingredient.name} already has nutritional data (usdaFdcId ${existing.usdaFdcId ?? EMPTY}). ` +
+                `${ingredient.name} already has nutritional data (${describeSource(existing)}). ` +
                     'Pass --overwrite to replace it.',
                 existing
             );
         }
 
-        const record = { ingredient: ingredient._id, usdaFdcId: fdcId, perGram };
+        const record = {
+            ingredient: ingredient._id,
+            source: item.source,
+            ...item.ids,
+            sourceName: item.description,
+            perGram,
+        };
         const plan: LinkPlan = {
             dryRun: flags['dry-run'],
             action: existing ? 'update' : 'create',
             ingredient: { _id: ingredient._id, name: ingredient.name },
-            usdaItem: { fdcId: item.fdcId, description: item.description },
+            item: { source: item.source, id: item.id, description: item.description },
             record,
             previous: existing ?? null,
             measures,
@@ -201,6 +219,55 @@ export default class NutritionLink extends BaseCommand {
 
         this.out(this.renderResult(plan, written as unknown as NutritionalInfoSummary));
         return { ...plan, nutritionalInfo: written, ingredientMeasures: writtenMeasures };
+    }
+
+    private async fetchUsdaItem(
+        client: ApiClient,
+        fdcId: number,
+        refresh: boolean
+    ): Promise<SourceRecord> {
+        const item = (await client.cachedFoodItem(fdcId, USDA_FOOD_ITEM, { fdcId }, { refresh }))
+            .usdaFoodItem as unknown as UsdaFoodItem | null;
+        if (!item) {
+            throw notFound(`No USDA food item with fdcId ${fdcId}.`);
+        }
+        return {
+            source: 'usda',
+            id: String(item.fdcId),
+            description: item.description,
+            per100g: item,
+            portions: item.portions ?? [],
+            ids: { usdaFdcId: item.fdcId, offBarcode: null },
+        };
+    }
+
+    private async fetchOffProduct(
+        client: ApiClient,
+        barcode: string,
+        refresh: boolean
+    ): Promise<SourceRecord> {
+        if (!hasValidCheckDigit(barcode)) {
+            this.addWarning(`${barcode} fails the barcode check digit. Check for a misread digit.`);
+        }
+        const product = (
+            await client.cachedOffProduct(barcode, OFF_PRODUCT, { barcode }, { refresh })
+        ).offProduct as unknown as OffProduct | null;
+        if (!product) {
+            throw notFound(`No Open Food Facts product with barcode ${barcode}.`);
+        }
+        // Volunteers enter this data: a missing macro or kcal the macros do not explain
+        // is worth a look at the label before the link is trusted.
+        for (const warning of product.warnings) {
+            this.addWarning(`Open Food Facts ${barcode}: ${warning}.`);
+        }
+        return {
+            source: 'openFoodFacts',
+            id: product.barcode,
+            description: offProductName(product),
+            per100g: product,
+            portions: product.portions ?? [],
+            ids: { usdaFdcId: null, offBarcode: product.barcode },
+        };
     }
 
     /** Maps each chosen portion to a measure row, and refuses a conflict or a non-match. */
@@ -336,11 +403,11 @@ export default class NutritionLink extends BaseCommand {
             'DRY RUN — nothing was sent.',
             '',
             `Ingredient   ${plan.ingredient.name} (${plan.ingredient._id})`,
-            `USDA item    ${plan.usdaItem.description} (${plan.usdaItem.fdcId})`,
+            `Source       ${describeSource(plan.record)}  ·  ${plan.item.description}`,
             '',
             `Would ${plan.action} NutritionalInfo:`,
             indent(`ingredient  ${plan.record.ingredient}`),
-            indent(`usdaFdcId   ${plan.record.usdaFdcId}`),
+            indent(`source      ${describeSource(plan.record)}`),
             indent(`perGram     ${formatMacros(plan.record.perGram)}`),
         ];
         if (plan.previous) {
@@ -353,7 +420,7 @@ export default class NutritionLink extends BaseCommand {
     private renderResult(plan: LinkPlan, written: NutritionalInfoSummary | null): string {
         const lines = [
             `${plan.action === 'create' ? 'Created' : 'Updated'} NutritionalInfo for ${plan.ingredient.name}`,
-            indent(`usdaFdcId   ${plan.record.usdaFdcId}`),
+            indent(`source      ${describeSource(plan.record)}`),
             indent(`perGram     ${formatMacros(plan.record.perGram)}`),
         ];
         if (plan.previous) {
@@ -371,15 +438,22 @@ interface LinkPlan {
     dryRun: boolean;
     action: 'create' | 'update';
     ingredient: { _id: string; name: string };
-    usdaItem: { fdcId: number; description: string };
-    record: { ingredient: string; usdaFdcId: number; perGram: Macros };
+    item: { source: SourceRecord['source']; id: string; description: string };
+    record: {
+        ingredient: string;
+        source: SourceRecord['source'];
+        usdaFdcId: number | null;
+        offBarcode: string | null;
+        sourceName: string;
+        perGram: Macros;
+    };
     previous: NutritionalInfoSummary | null;
     measures: PlannedMeasure[];
 }
 
 function describePrevious(info: NutritionalInfoSummary): string {
     return [
-        `usdaFdcId   ${info.usdaFdcId ?? EMPTY}`,
+        `source      ${describeSource(info)}`,
         `perGram     ${formatMacros(info.perGram)}`,
     ].join('\n');
 }

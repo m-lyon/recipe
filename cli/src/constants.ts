@@ -35,6 +35,7 @@ export const RECIPE_USERNAME = process.env.RECIPE_USERNAME;
 export const RECIPE_PASSWORD = process.env.RECIPE_PASSWORD;
 export const RECIPE_SESSION_FILE = process.env.RECIPE_SESSION_FILE;
 export const RECIPE_USDA_CACHE_DIR = process.env.RECIPE_USDA_CACHE_DIR;
+export const RECIPE_OFF_CACHE_DIR = process.env.RECIPE_OFF_CACHE_DIR;
 
 export interface Config {
     url: string;
@@ -42,6 +43,7 @@ export interface Config {
     password: string;
     sessionFile?: string;
     usdaCacheDir?: string;
+    offCacheDir?: string;
     nodeEnv: string;
 }
 
@@ -75,6 +77,7 @@ export function loadConfig(urlOverride?: string): Config {
         password: password!,
         sessionFile: process.env.RECIPE_SESSION_FILE,
         usdaCacheDir: process.env.RECIPE_USDA_CACHE_DIR,
+        offCacheDir: process.env.RECIPE_OFF_CACHE_DIR,
         nodeEnv: NODE_ENV,
     };
 }

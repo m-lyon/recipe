@@ -1,6 +1,7 @@
 import { Args } from '@oclif/core';
 
 import { BaseCommand } from '../../lib/base.js';
+import { describeSource } from '../../lib/sources.js';
 import { resolveIngredient } from '../../lib/resolve.js';
 import type { MeasureSummary } from '../../lib/types.js';
 import { describeMeasureKey } from '../../lib/measures.js';
@@ -82,7 +83,8 @@ export default class IngredientsShow extends BaseCommand {
         ];
         if (info) {
             lines.push(
-                indent(`usdaFdcId   ${text(info.usdaFdcId ? String(info.usdaFdcId) : null)}`),
+                indent(`source      ${describeSource(info)}`),
+                indent(`name        ${text(info.sourceName)}`),
                 indent(`perGram     ${macros(info.perGram)}`)
             );
         } else {

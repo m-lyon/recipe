@@ -86,8 +86,13 @@ function normalise(text: string): string {
     return text.trim().toLowerCase().replace(/\.$/, '');
 }
 
+/** US spellings in USDA and Open Food Facts labels: "liter" is the litre unit. */
+function britishSpelling(name: string): string {
+    return name.replace(/(\w*)liter(s?)\b/g, '$1litre$2');
+}
+
 export function matchUnit(units: UnitSummary[], name: string): UnitSummary | undefined {
-    const target = normalise(name);
+    const target = britishSpelling(normalise(name));
     const names = (unit: UnitSummary) =>
         [unit.shortSingular, unit.shortPlural, unit.longSingular, unit.longPlural]
             .filter((n): n is string => Boolean(n))

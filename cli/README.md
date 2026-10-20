@@ -1,6 +1,6 @@
 # recipe-cli
 
-A command line tool for querying and modifying the recipe database. Its first use case is linking USDA food items to existing ingredients in bulk.
+A command line tool for querying and modifying the recipe database. Its first use case is linking nutritional data to existing ingredients in bulk: USDA food items for generic foods, and Open Food Facts products for branded ones.
 
 See [AGENTS.md](AGENTS.md) for the agent-facing workflow and the judgement rules.
 
@@ -32,6 +32,7 @@ cli/.env.production.local      the live API — see the warning below
 | `RECIPE_PASSWORD` | yes | its password |
 | `RECIPE_SESSION_FILE` | no | override the session cache path |
 | `RECIPE_USDA_CACHE_DIR` | no | override the USDA record cache directory |
+| `RECIPE_OFF_CACHE_DIR` | no | override the Open Food Facts product cache directory |
 
 ```text
 cli/.env.development.local
@@ -68,7 +69,10 @@ The cookie cache lives at `~/.cache/recipe-cli/session-<hash of RECIPE_API_URL>`
 | `recipe ingredients show <name\|id>` | one ingredient in full, and the recipes using it |
 | `recipe usda search <query>` | USDA search; values are per 100 g, portions are empty |
 | `recipe usda show <fdcId>` | macros and the **portion table**; judge a candidate here |
+| `recipe off search <query>` | Open Food Facts search, UK products unless `--all-countries`; values are per 100 g |
+| `recipe off show <barcode>` | one product: macros, pack size, serving, data warnings and the **portion table** |
 | `recipe nutrition link <ingredient> --fdc-id <n>` | the core command: `perGram`, plus measures from `--portion` and `--default-portion` |
+| `recipe nutrition link <ingredient> --barcode <code>` | the same, from an Open Food Facts product |
 | `recipe nutrition measure <ingredient> --unit <u> --grams <n>` | stores a weight you supply, for a unit no USDA portion carries (a scoop) |
 | `recipe nutrition unlink <ingredient>` | removes the `NutritionalInfo`; measures stay |
 | `recipe nutrition status` | calculable recipe rows, and the missing weights |
@@ -113,7 +117,7 @@ GraphQL errors are mapped by their `extensions.code`: `UNAUTHENTICATED` and `FOR
 
 Code 5 is raised by the CLI itself, before any mutation is sent, so an agent can tell "you need a flag" apart from "the server said no" and retry only the first.
 
-## Rate limiting and the USDA cache
+## Rate limiting and the record caches
 
 USDA calls pass through the API and consume the server's key quota — 1000 requests per hour on a production key.
 
@@ -138,6 +142,21 @@ the cache they cost one upstream call instead of three.
 
 `usda search` results are **not** cached. Search is cheap to repeat and its results change
 as USDA updates its index.
+
+### Open Food Facts
+
+Open Food Facts limits reads per IP address, and every CLI request reaches it through the
+API server. The server holds itself below 12 product reads and 8 searches per minute, and
+answers `RATE_LIMITED` above that.
+
+- `offProduct` responses are cached like USDA records, keyed by barcode:
+  `~/.cache/recipe-cli/off/<barcode>-<hash of the query>.json`. Override the directory with
+  `RECIPE_OFF_CACHE_DIR`. `off show` and `nutrition link --barcode` accept `--refresh`.
+- `off search` is not cached by the CLI. The server caches a search for an hour.
+- Volunteers enter the data. `off show` and `nutrition link` pass on the server's data
+  warnings: a missing macro, or kcal that the macros do not explain.
+- A barcode whose check digit fails gives a warning, not an error. Open Food Facts also holds
+  store codes that fail it.
 
 ## Develop
 
