@@ -583,6 +583,163 @@ describe('nutritionalInfosByIngredientIds', function () {
     });
 });
 
+// ---------- nutrition source ----------
+
+const SOURCE_FIELDS = `
+                _id
+                source
+                usdaFdcId
+                offBarcode
+                sourceName`;
+
+const CREATE_WITH_SOURCE = `
+    mutation NutritionalInfoCreateOne($record: CreateOneNutritionalInfoCreateInput!) {
+        nutritionalInfoCreateOne(record: $record) {
+            record {${SOURCE_FIELDS}
+            }
+        }
+    }`;
+
+const UPDATE_WITH_SOURCE = `
+    mutation NutritionalInfoUpdateById($id: MongoID!, $record: UpdateByIdNutritionalInfoInput!) {
+        nutritionalInfoUpdateById(_id: $id, record: $record) {
+            record {${SOURCE_FIELDS}
+            }
+        }
+    }`;
+
+interface SourceRecord {
+    _id: string;
+    source: string | null;
+    usdaFdcId: number | null;
+    offBarcode: string | null;
+    sourceName: string | null;
+}
+
+describe('nutritional info source', function () {
+    before(startServer);
+    after(stopServer);
+    beforeEach(seedUserAndIngredient);
+    afterEach(dropCollections);
+
+    /** Creates a record as the ingredient owner. Returns the record, or the first error. */
+    async function create(server: ApolloServer, fields: Record<string, unknown>) {
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
+        const response = await server.executeOperation(
+            {
+                query: CREATE_WITH_SOURCE,
+                variables: {
+                    record: {
+                        ingredient: ingredient._id.toString(),
+                        perGram: VALID_PER_GRAM,
+                        ...fields,
+                    },
+                },
+            },
+            makeContext(user)
+        );
+        if (response.body.kind !== 'single') assert.fail('Expected a single result');
+        const { data, errors } = response.body.singleResult;
+        const record = (data as { nutritionalInfoCreateOne: { record: SourceRecord } } | null)
+            ?.nutritionalInfoCreateOne?.record;
+        return { record, error: errors?.[0].message };
+    }
+
+    it('should take usda from a USDA ID when no source is given', async function () {
+        // The client before Open Food Facts sends no source.
+        const { record, error } = await create(this.apolloServer, { usdaFdcId: 171077 });
+        assert.isUndefined(error);
+        assert.equal(record!.source, 'usda');
+    });
+
+    it('should take manual when no source and no ID are given', async function () {
+        const { record, error } = await create(this.apolloServer, {});
+        assert.isUndefined(error);
+        assert.equal(record!.source, 'manual');
+    });
+
+    it('should save an Open Food Facts source with its barcode and name', async function () {
+        const { record, error } = await create(this.apolloServer, {
+            source: 'openFoodFacts',
+            offBarcode: '5010338301255',
+            sourceName: "Al'fez Pearl Couscous",
+        });
+        assert.isUndefined(error);
+        assert.equal(record!.source, 'openFoodFacts');
+        assert.equal(record!.offBarcode, '5010338301255');
+        assert.equal(record!.sourceName, "Al'fez Pearl Couscous");
+        assert.isNull(record!.usdaFdcId);
+    });
+
+    it('should refuse an Open Food Facts source with no barcode', async function () {
+        const { error } = await create(this.apolloServer, { source: 'openFoodFacts' });
+        assert.include(error, 'An Open Food Facts source needs offBarcode');
+    });
+
+    it('should refuse a USDA source with no USDA ID', async function () {
+        const { error } = await create(this.apolloServer, { source: 'usda' });
+        assert.include(error, 'A USDA source needs usdaFdcId');
+    });
+
+    it('should refuse a record that names two sources', async function () {
+        const { error } = await create(this.apolloServer, {
+            source: 'usda',
+            usdaFdcId: 171077,
+            offBarcode: '5010338301255',
+        });
+        assert.include(error, 'A usda source cannot carry offBarcode');
+    });
+
+    it('should refuse a manual record that carries an ID', async function () {
+        const { error } = await create(this.apolloServer, { source: 'manual', usdaFdcId: 1 });
+        assert.include(error, 'A manual source cannot carry usdaFdcId');
+    });
+
+    it('should refuse a barcode that is not 8 to 14 digits', async function () {
+        const { error } = await create(this.apolloServer, {
+            source: 'openFoodFacts',
+            offBarcode: '50103383O1255',
+        });
+        assert.include(error, 'offBarcode');
+    });
+
+    it('should switch a USDA record to Open Food Facts when the USDA ID is cleared', async function () {
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
+        const info = await new NutritionalInfo({
+            ingredient: ingredient._id,
+            usdaFdcId: 171077,
+            perGram: VALID_PER_GRAM,
+        }).save();
+        assert.equal(info.source, 'usda');
+
+        const switchTo = async (record: Record<string, unknown>) => {
+            const response = await this.apolloServer.executeOperation(
+                { query: UPDATE_WITH_SOURCE, variables: { id: info._id.toString(), record } },
+                makeContext(user)
+            );
+            assert.equal(response.body.kind, 'single');
+            return response.body.singleResult;
+        };
+
+        // The old ID stays unless the update clears it, and then the record names two sources.
+        const kept = await switchTo({ source: 'openFoodFacts', offBarcode: '5010338301255' });
+        assert.include(kept.errors?.[0].message, 'cannot carry usdaFdcId');
+
+        const cleared = await switchTo({
+            source: 'openFoodFacts',
+            offBarcode: '5010338301255',
+            usdaFdcId: null,
+        });
+        assert.isUndefined(cleared.errors);
+        const record = (cleared.data as { nutritionalInfoUpdateById: { record: SourceRecord } })
+            .nutritionalInfoUpdateById.record;
+        assert.equal(record.source, 'openFoodFacts');
+        assert.isNull(record.usdaFdcId);
+    });
+});
+
 // ---------- USDA proxy tests (mock fetch) ----------
 
 describe('usdaSearch', function () {

@@ -18,6 +18,7 @@ import mongoose from './utils/database.js';
 import { schema } from './schema/index.js';
 import { uploadRouter } from './routes/uploads.js';
 import { createHttpServer } from './utils/server.js';
+import { syncNutritionSources } from './utils/nutritionSources.js';
 import { describeStandardUnitReport, syncStandardUnits } from './utils/standardUnits.js';
 import { DELAY, HOST, PORT, SESSION_SECRET, SESSION_URI, WHITELIST } from './constants.js';
 
@@ -47,6 +48,14 @@ try {
     }
 } catch (error) {
     console.error('Could not sync standard units:', error);
+}
+try {
+    const sources = await syncNutritionSources(mongoose.connection.db);
+    if (sources.usda + sources.manual > 0) {
+        console.log(`Nutrition sources: set ${sources.usda} to usda, ${sources.manual} to manual`);
+    }
+} catch (error) {
+    console.error('Could not sync nutrition sources:', error);
 }
 app.use(
     session({

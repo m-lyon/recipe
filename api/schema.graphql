@@ -66,7 +66,10 @@ type CreateOneIngredientPayload {
 """"""
 input CreateOneNutritionalInfoCreateInput {
   ingredient: MongoID!
+  offBarcode: String
   perGram: NutritionalInfoPerGramInput!
+  source: EnumNutritionalInfoCreateSource
+  sourceName: String
   usdaFdcId: Float
 }
 
@@ -275,6 +278,18 @@ enum EnumIngredientCreateTags {
 enum EnumIngredientTags {
   vegan
   vegetarian
+}
+
+enum EnumNutritionalInfoCreateSource {
+  manual
+  openFoodFacts
+  usda
+}
+
+enum EnumNutritionalInfoSource {
+  manual
+  openFoodFacts
+  usda
 }
 
 enum EnumRecipeCalculatedTags {
@@ -931,7 +946,10 @@ input FilterFindOneNutritionalInfoInput {
   """List of *indexed* fields that can be filtered via operators."""
   _operators: FilterFindOneNutritionalInfoOperatorsInput
   ingredient: MongoID
+  offBarcode: String
   perGram: FilterFindOneNutritionalInfoPerGramInput
+  source: EnumNutritionalInfoSource
+  sourceName: String
   usdaFdcId: Float
 }
 
@@ -1479,7 +1497,10 @@ type Mutation {
 type NutritionalInfo {
   _id: MongoID!
   ingredient: MongoID!
+  offBarcode: String
   perGram: NutritionalInfoPerGram!
+  source: EnumNutritionalInfoSource
+  sourceName: String
   usdaFdcId: Float
 }
 
@@ -2295,7 +2316,10 @@ type UpdateByIdIngredientPayload {
 """"""
 input UpdateByIdNutritionalInfoInput {
   ingredient: MongoID
+  offBarcode: String
   perGram: UpdateByIdNutritionalInfoPerGramInput
+  source: EnumNutritionalInfoSource
+  sourceName: String
   usdaFdcId: Float
 }
 
