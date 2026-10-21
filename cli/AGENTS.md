@@ -20,6 +20,8 @@ This document is the workflow and the judgement rules.
 4. review the planned writes
 5. re-run step 3 without --dry-run
 6. recipe nutrition status --recipe <identifier>         confirm calculable rows
+7. recipe nutrition <identifier>                         the totals, including recipes
+                                                         used as ingredients
 
 Exit code 5 means the ingredient already has data. Do NOT add --overwrite on your
 own. Report it and let the operator decide, because that data may have been
@@ -28,6 +30,11 @@ entered by hand.
 
 `recipe ingredients list --missing-nutrition --json` is the entry point for a run across the
 whole database rather than one recipe.
+
+A line that uses another recipe counts through that recipe's **yield**: "300 g Pearl Couscous"
+needs Pearl Couscous to record how much one batch makes, in grams. `recipe nutrition` names a
+missing yield (`NO_YIELD`). A yield is set in the recipe editor; the CLI does not set it. Report
+it to the operator.
 
 ## Branded products: Open Food Facts
 

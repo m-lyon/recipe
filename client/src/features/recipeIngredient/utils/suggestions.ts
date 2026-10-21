@@ -90,9 +90,13 @@ const sizeSuggestions = (data: IngredientComponentQuery, value: string): SizeSug
 
 const ingredientSuggestions = (
     data: IngredientComponentQuery,
-    value: string
+    value: string,
+    sized: boolean
 ): IngredientSuggestion[] => {
-    const items = sortIngredients(data?.ingredients ?? [], data?.recipes ?? [], value);
+    // A recipe's yield has no size, so "1 large pizza dough" means nothing: once a size is
+    // chosen, only ingredients are offered.
+    const recipes = sized ? [] : (data?.recipes ?? []);
+    const items = sortIngredients(data?.ingredients ?? [], recipes, value);
     items.push({ value: 'add new ingredient', colour: 'gray.400' });
     return items;
 };
@@ -124,7 +128,7 @@ export const getSuggestions = (
         case 'size':
             return sizeSuggestions(data, strValue);
         case 'ingredient':
-            return ingredientSuggestions(data, strValue);
+            return ingredientSuggestions(data, strValue, Boolean(item.size.data));
         case 'prepMethod':
             return prepMethodSuggestions(data, strValue);
         default:

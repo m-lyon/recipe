@@ -1,9 +1,13 @@
+import { mockLettuceId } from '@recipe/graphql/__mocks__/ids';
 import { USDA_SEARCH } from '@recipe/graphql/queries/nutritionalInfo';
 import { mockCarrotEachMeasureId } from '@recipe/graphql/__mocks__/ids';
 import { USDA_FOOD_ITEM } from '@recipe/graphql/queries/nutritionalInfo';
-import { mockNutritionalInfoIdApple } from '@recipe/graphql/__mocks__/ids';
+import { mockRecipeIngredientIdTwo } from '@recipe/graphql/__mocks__/ids';
+import { mockRecipeIngredientIdFour } from '@recipe/graphql/__mocks__/ids';
+import { mockRecipeIngredientIdFive } from '@recipe/graphql/__mocks__/ids';
 import { mockNutritionalInfoIdCarrot } from '@recipe/graphql/__mocks__/ids';
 import { IngredientMeasureFieldsFragment } from '@recipe/graphql/generated';
+import { mockRecipeIngredientIdThree } from '@recipe/graphql/__mocks__/ids';
 import { GET_RECIPE_NUTRITION } from '@recipe/graphql/queries/nutritionalInfo';
 import { GetNutritionalInfoByIngredientQuery } from '@recipe/graphql/generated';
 import { GET_INGREDIENT_MEASURES } from '@recipe/graphql/queries/nutritionalInfo';
@@ -12,13 +16,14 @@ import { mockAdminId, mockAppleEachMeasureId } from '@recipe/graphql/__mocks__/i
 import { UsdaSearchQuery, UsdaSearchQueryVariables } from '@recipe/graphql/generated';
 import { mockAppleId, mockCarrotId, mockChickenId } from '@recipe/graphql/__mocks__/ids';
 import { GetNutritionalInfoByIngredientQueryVariables } from '@recipe/graphql/generated';
-import { mockAppleTeaspoonMeasureId, mockLettuceId } from '@recipe/graphql/__mocks__/ids';
 import { UsdaFoodItemQuery, UsdaFoodItemQueryVariables } from '@recipe/graphql/generated';
+import { mockRecipeIdOne, mockRecipeIngredientIdOne } from '@recipe/graphql/__mocks__/ids';
+import { GetRecipeNutritionQueryVariables, UncountedCode } from '@recipe/graphql/generated';
 import { GET_NUTRITIONAL_INFO_BY_INGREDIENT } from '@recipe/graphql/queries/nutritionalInfo';
 import { GetIngredientMeasuresQuery, GetRecipeNutritionQuery } from '@recipe/graphql/generated';
 import { GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS } from '@recipe/graphql/queries/nutritionalInfo';
 
-import { mockEach, mockTeaspoon } from './unit';
+import { mockCup, mockEach, mockOunce, mockTeaspoon } from './unit';
 
 /** Returns null nutritional info (ingredient has no linked data) */
 const nullResult: GetNutritionalInfoByIngredientQuery = {
@@ -86,96 +91,183 @@ export const mockCarrotEachMeasure: IngredientMeasureFieldsFragment = {
     prepMethod: null,
 };
 
-/** Both apple and carrot have per-gram macros and an item weight, but no volume weight. */
-const recipeBothNutritionResult: GetRecipeNutritionQuery = {
-    __typename: 'Query',
-    nutritionalInfosByIngredientIds: [
-        {
-            __typename: 'NutritionalInfo',
-            _id: mockNutritionalInfoIdApple,
-            ingredient: mockAppleId,
-            perGram: applePerGram,
+// ---------- Recipe.nutrition for Recipe One, as the API calculates it ----------
+// Recipe One's lines (4 servings):
+//   1 tsp diced apple       → no volume weight for apple → uncounted
+//   1 small diced carrot    → 1 carrot = 61 g
+//   2 diced apples          → 1 apple = 182 g
+//   1/3 cup medium apple    → no volume weight for apple → uncounted
+//   1 oz apple              → a mass unit, converted directly
+
+type Macros = {
+    __typename: 'Macros';
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+};
+const ZERO: Macros = { __typename: 'Macros', calories: 0, protein: 0, carbs: 0, fat: 0 };
+
+function macrosOf(perGram: typeof applePerGram, grams: number): Macros {
+    return {
+        __typename: 'Macros',
+        calories: perGram.calories * grams,
+        protein: perGram.protein * grams,
+        carbs: perGram.carbs * grams,
+        fat: perGram.fat * grams,
+    };
+}
+
+function sum(lines: Array<{ macros: Macros }>): Macros {
+    return lines.reduce(
+        (total, line) => ({
+            __typename: 'Macros',
+            calories: total.calories + line.macros.calories,
+            protein: total.protein + line.macros.protein,
+            carbs: total.carbs + line.macros.carbs,
+            fat: total.fat + line.macros.fat,
+        }),
+        ZERO
+    );
+}
+
+function counted(recipeIngredient: string, macros: Macros) {
+    return {
+        __typename: 'LineNutrition' as const,
+        recipeIngredient,
+        status: 'COUNTED' as const,
+        macros,
+        reason: null,
+        childUncounted: null,
+        childRecipe: null,
+    };
+}
+
+function uncounted(recipeIngredient: string, code: UncountedCode, message: string) {
+    return {
+        __typename: 'LineNutrition' as const,
+        recipeIngredient,
+        status: 'UNCOUNTED' as const,
+        macros: ZERO,
+        reason: { __typename: 'UncountedReason' as const, code, message },
+        childUncounted: null,
+        childRecipe: null,
+    };
+}
+
+const recipeOneOwners: GetRecipeNutritionQuery['ingredientByIds'] = [
+    {
+        __typename: 'Ingredient',
+        _id: mockAppleId,
+        owner: { __typename: 'Owner', _id: mockAdminId },
+    },
+    {
+        __typename: 'Ingredient',
+        _id: mockCarrotId,
+        owner: { __typename: 'Owner', _id: mockAdminId },
+    },
+];
+
+function recipeOneNutrition(lines: ReturnType<typeof counted | typeof uncounted>[]) {
+    return {
+        __typename: 'Query',
+        recipeById: {
+            __typename: 'Recipe',
+            _id: mockRecipeIdOne,
+            nutrition: { __typename: 'RecipeNutrition', total: sum(lines), lines },
         },
-        {
-            __typename: 'NutritionalInfo',
-            _id: mockNutritionalInfoIdCarrot,
-            ingredient: mockCarrotId,
-            perGram: carrotPerGram,
-        },
-    ],
-    ingredientMeasuresByIngredientIds: [mockAppleEachMeasure, mockCarrotEachMeasure],
-    ingredientByIds: [
-        {
-            __typename: 'Ingredient',
-            _id: mockAppleId,
-            owner: { __typename: 'Owner', _id: mockAdminId },
-        },
-        {
-            __typename: 'Ingredient',
-            _id: mockCarrotId,
-            owner: { __typename: 'Owner', _id: mockAdminId },
-        },
-    ],
+        ingredientByIds: recipeOneOwners,
+    } satisfies GetRecipeNutritionQuery;
+}
+
+const recipeOneVariables: GetRecipeNutritionQueryVariables = {
+    recipeId: mockRecipeIdOne,
+    ingredientIds: [mockAppleId, mockCarrotId],
 };
 
-/** Mock for recipe view: both ingredients have nutritional data.
- *  NOTE: ingredientIds order must match the Set iteration order produced by
- *  useNutritionalInfo — currently [apple, carrot] based on Recipe One's
- *  ingredient list. If the hook's deduplication strategy changes, update here.
- */
+const carrotLine = counted(mockRecipeIngredientIdTwo, macrosOf(carrotPerGram, 61));
+const twoApplesLine = counted(mockRecipeIngredientIdThree, macrosOf(applePerGram, 2 * 182));
+const ounceAppleLine = counted(
+    mockRecipeIngredientIdFive,
+    macrosOf(applePerGram, mockOunce.perCanonical)
+);
+
+/** Apple and carrot have per-gram macros and an item weight, but no volume weight. */
 export const mockGetRecipeNutritionForRecipeOne = {
-    request: {
-        query: GET_RECIPE_NUTRITION,
-        variables: { ingredientIds: [mockAppleId, mockCarrotId] },
-    },
-    result: { data: recipeBothNutritionResult },
-};
-
-/** After the uncounted-line prompt saves "1 teaspoon of apple = 5 g". */
-export const mockGetRecipeNutritionForRecipeOneWithTeaspoon = {
-    request: {
-        query: GET_RECIPE_NUTRITION,
-        variables: { ingredientIds: [mockAppleId, mockCarrotId] },
-    },
+    request: { query: GET_RECIPE_NUTRITION, variables: recipeOneVariables },
     result: {
-        data: {
-            ...recipeBothNutritionResult,
-            ingredientMeasuresByIngredientIds: [
-                ...(recipeBothNutritionResult.ingredientMeasuresByIngredientIds ?? []),
-                {
-                    ...mockAppleEachMeasure,
-                    _id: mockAppleTeaspoonMeasureId,
-                    grams: 5,
-                    unit: mockTeaspoon,
-                },
-            ],
-        } satisfies GetRecipeNutritionQuery,
+        data: recipeOneNutrition([
+            uncounted(
+                mockRecipeIngredientIdOne,
+                'NO_MEASURE',
+                'No weight recorded for 1 teaspoon of apple'
+            ),
+            carrotLine,
+            twoApplesLine,
+            uncounted(
+                mockRecipeIngredientIdFour,
+                'NO_MEASURE',
+                'No weight recorded for 1 cup of medium apple'
+            ),
+            ounceAppleLine,
+        ]),
     },
 };
 
-const emptyRecipeNutrition: GetRecipeNutritionQuery = {
-    __typename: 'Query',
-    nutritionalInfosByIngredientIds: [],
-    ingredientMeasuresByIngredientIds: [],
-    ingredientByIds: [],
+/** After the uncounted-line prompt saves "1 teaspoon of apple = 5 g": a volume row is a
+ *  density, so it prices the cup line too. */
+export const mockGetRecipeNutritionForRecipeOneWithTeaspoon = {
+    request: { query: GET_RECIPE_NUTRITION, variables: recipeOneVariables },
+    result: {
+        data: recipeOneNutrition([
+            counted(mockRecipeIngredientIdOne, macrosOf(applePerGram, 5)),
+            carrotLine,
+            twoApplesLine,
+            counted(
+                mockRecipeIngredientIdFour,
+                macrosOf(
+                    applePerGram,
+                    (((1 / 3) * mockCup.perCanonical) / mockTeaspoon.perCanonical) * 5
+                )
+            ),
+            ounceAppleLine,
+        ]),
+    },
 };
 
-/** Mock for recipe view: empty result (no ingredients have nutritional data) */
+/** No ingredient in Recipe One has nutritional data. */
 export const mockGetRecipeNutritionForRecipeOneEmpty = {
-    request: {
-        query: GET_RECIPE_NUTRITION,
-        variables: { ingredientIds: [mockAppleId, mockCarrotId] },
+    request: { query: GET_RECIPE_NUTRITION, variables: recipeOneVariables },
+    result: {
+        data: recipeOneNutrition(
+            [
+                [mockRecipeIngredientIdOne, 'apple'],
+                [mockRecipeIngredientIdTwo, 'carrot'],
+                [mockRecipeIngredientIdThree, 'apple'],
+                [mockRecipeIngredientIdFour, 'apple'],
+                [mockRecipeIngredientIdFive, 'apple'],
+            ].map(([id, name]) => uncounted(id, 'NO_NUTRITION', `No nutritional data for ${name}`))
+        ),
     },
-    result: { data: emptyRecipeNutrition },
 };
 
-/** Fallback for any page that shows recipe nutrition: no ingredient has nutritional data.
- *  renderPage appends this after the test's own mocks, so a specific mock still wins. */
+/** Fallback for any page that shows recipe nutrition: nothing counted. renderPage appends
+ *  this after the test's own mocks, so a specific mock still wins. */
 export const mockGetRecipeNutritionFallback = {
     request: { query: GET_RECIPE_NUTRITION },
     variableMatcher: () => true,
     maxUsageCount: Number.POSITIVE_INFINITY,
-    result: { data: emptyRecipeNutrition },
+    result: (variables: GetRecipeNutritionQueryVariables) => ({
+        data: {
+            __typename: 'Query',
+            recipeById: {
+                __typename: 'Recipe',
+                _id: variables.recipeId,
+                nutrition: { __typename: 'RecipeNutrition', total: ZERO, lines: [] },
+            },
+            ingredientByIds: [],
+        } satisfies GetRecipeNutritionQuery,
+    }),
 };
 
 /** Fallback for the ingredient form's measures list: no measures recorded. */

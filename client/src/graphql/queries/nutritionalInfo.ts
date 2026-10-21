@@ -39,14 +39,20 @@ export const GET_INGREDIENT_MEASURES = gql(`
 `);
 
 export const GET_RECIPE_NUTRITION = gql(`
-    query GetRecipeNutrition($ingredientIds: [MongoID!]!) {
-        nutritionalInfosByIngredientIds(ingredientIds: $ingredientIds) {
+    query GetRecipeNutrition($recipeId: MongoID!, $ingredientIds: [MongoID!]!) {
+        recipeById(_id: $recipeId) {
             _id
-            ingredient
-            perGram { calories protein carbs fat }
-        }
-        ingredientMeasuresByIngredientIds(ingredientIds: $ingredientIds) {
-            ...IngredientMeasureFields
+            nutrition {
+                total { calories protein carbs fat }
+                lines {
+                    recipeIngredient
+                    status
+                    macros { calories protein carbs fat }
+                    reason { code message }
+                    childUncounted
+                    childRecipe
+                }
+            }
         }
         ingredientByIds(_ids: $ingredientIds) {
             _id

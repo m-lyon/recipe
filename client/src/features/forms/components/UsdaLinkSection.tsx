@@ -3,7 +3,7 @@ import { Box, Button, Stack, Text } from '@chakra-ui/react';
 import { HStack, Radio, RadioGroup, Skeleton } from '@chakra-ui/react';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react';
 
-import { MacroNutrients } from '@recipe/utils/nutrition';
+import { MacroNutrients } from '@recipe/utils/macros';
 import { FloatingLabelInput } from '@recipe/common/components';
 import { USDA_SEARCH } from '@recipe/graphql/queries/nutritionalInfo';
 import { USDA_FOOD_ITEM } from '@recipe/graphql/queries/nutritionalInfo';

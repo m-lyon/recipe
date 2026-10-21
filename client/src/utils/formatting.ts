@@ -10,7 +10,7 @@ function getEditableQuantityStr(item: EditableRecipeIngredient): string {
     }
     return getFinishedQuantityStr(item.quantity);
 }
-function getFinishedQuantityStr(quantity: FinishedQuantity): string {
+export function getFinishedQuantityStr(quantity: FinishedQuantity): string {
     if (quantity === null) {
         return '';
     }
