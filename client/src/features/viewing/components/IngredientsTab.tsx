@@ -99,7 +99,9 @@ export function IngredientsTab(props: Props) {
                         canEditIngredient={(id) =>
                             isVerified && (isAdmin || (!!user && owners.get(id) === user._id))
                         }
-                        canEditRecipes={isVerified}
+                        canEditRecipe={(owner) =>
+                            isVerified && (isAdmin || (!!user && owner === user._id))
+                        }
                         displayLine={displayLine}
                         nothingCounted={nutrition.nothingCounted}
                         loading={loading}

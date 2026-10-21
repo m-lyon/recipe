@@ -97,6 +97,7 @@ export const RECIPE_FIELDS_FULL = gql(`
                         title
                         pluralTitle
                         titleIdentifier
+                        owner
                         originalRecipe {
                             _id
                         }

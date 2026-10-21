@@ -812,6 +812,21 @@ describe('recipeUpdateById', () => {
         );
     });
 
+    it('should NOT unmark a recipe as an ingredient while another recipe uses it', async function () {
+        const recipeIngredient = await Recipe.findOne({ title: 'Bimibap' }).orFail();
+        const user = await User.findById(recipeIngredient.owner).orFail();
+        const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' }).orFail();
+        await new Recipe(getDefaultRecipe(user, recipeIngredient, unit, prepMethod)).save();
+        const response = await updateRecipe(this, user, recipeIngredient._id, {
+            isIngredient: false,
+        });
+        assert(response.body.kind === 'single');
+        assert.equal(response.body.singleResult.errors?.[0].extensions?.code, 'ITEM_IN_USE');
+        const doc = await Recipe.findById(recipeIngredient._id).orFail();
+        assert.isTrue(doc.isIngredient);
+    });
+
     it('should NOT allow recipeUpdateById to set vegan relationship fields directly', async function () {
         const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Ingredient.findOne({ name: 'tomato' }).orFail();

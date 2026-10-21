@@ -466,6 +466,13 @@ export const RecipeMutation = {
             );
         }
 
+        if (rp.args.record.isIngredient === false) {
+            const existing = await Recipe.findById(rp.args._id, { isIngredient: 1 });
+            if (existing?.isIngredient) {
+                await validateItemNotInRecipe(existing._id, 'recipe', 'unmark as an ingredient');
+            }
+        }
+
         if (rp.args.record.title) {
             // Fetch existing recipe to get the current suffix
             const existingRecipe = await Recipe.findById(rp.args._id);

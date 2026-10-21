@@ -19,8 +19,8 @@ interface NutritionalInfoPanelProps {
     /** Lines that use a recipe with some lines of its own not counted. */
     partial?: PartialIngredient[];
     canEditIngredient?: (ingredientId: string) => boolean;
-    /** Whether the viewer may edit recipes, to offer adding a missing yield. */
-    canEditRecipes?: boolean;
+    /** Whether the viewer may edit a recipe with this owner, to offer adding a missing yield. */
+    canEditRecipe?: (ownerId: string) => boolean;
     displayLine?: (item: RecipeIngredientView) => DisplayedIngredient;
     /** True when no ingredient contributed to the totals (none countable, or none present). */
     nothingCounted: boolean;
@@ -47,7 +47,7 @@ function recipeLink(item: RecipeIngredientView, action: 'view' | 'edit'): string
 
 export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
     const { perServing, uncountedIds, uncounted = [], nothingCounted, loading, error } = props;
-    const { partial = [], canEditIngredient = () => false, canEditRecipes = false } = props;
+    const { partial = [], canEditIngredient = () => false, canEditRecipe = () => false } = props;
     const { displayLine = (item) => ({ ...item, authored: null }) } = props;
     const [open, setOpen] = useState(true);
 
@@ -138,15 +138,17 @@ export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
                                         canEditIngredient(line.item.ingredient._id) && (
                                             <UncountedIngredientPrompt uncounted={line} />
                                         )}
-                                    {line.code === 'NO_YIELD' && canEditRecipes && (
-                                        <Anchor
-                                            component={Link}
-                                            to={recipeLink(line.item, 'edit') ?? ''}
-                                            size='sm'
-                                        >
-                                            Add a yield
-                                        </Anchor>
-                                    )}
+                                    {line.code === 'NO_YIELD' &&
+                                        line.item.ingredient.__typename === 'Recipe' &&
+                                        canEditRecipe(line.item.ingredient.owner) && (
+                                            <Anchor
+                                                component={Link}
+                                                to={recipeLink(line.item, 'edit') ?? ''}
+                                                size='sm'
+                                            >
+                                                Add a yield
+                                            </Anchor>
+                                        )}
                                 </Box>
                             );
                         })}

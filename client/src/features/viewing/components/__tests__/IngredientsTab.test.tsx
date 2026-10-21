@@ -8,15 +8,15 @@ import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 import { renderPage } from '@recipe/utils/tests';
 import { GetRecipeNutritionQuery } from '@recipe/graphql/generated';
 import { mockRecipeOne } from '@recipe/graphql/queries/__mocks__/recipe';
-import { mockRecipeIngredientIdOne } from '@recipe/graphql/__mocks__/ids';
-import { mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 import { mockRecipeIngredientIdSixteen } from '@recipe/graphql/__mocks__/ids';
 import { GET_RECIPE_NUTRITION } from '@recipe/graphql/queries/nutritionalInfo';
 import { mockGram, mockKilogram } from '@recipe/graphql/queries/__mocks__/unit';
+import { mockAdminId, mockRecipeIngredientIdOne } from '@recipe/graphql/__mocks__/ids';
 import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockGetDisplayLadders } from '@recipe/graphql/queries/__mocks__/displayLadder';
 import { mockChicken, mockRhurbarbPie } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockChickenId, mockRecipeIngredientIdFifteen } from '@recipe/graphql/__mocks__/ids';
+import { mockCurrentUser, mockCurrentUserAdmin } from '@recipe/graphql/queries/__mocks__/user';
 
 import { IngredientsTab } from '../IngredientsTab';
 
@@ -167,13 +167,14 @@ const pieRecipeLine = {
     quantity: '200',
     unit: mockGram,
     size: null,
-    ingredient: { ...mockRhurbarbPie, titleIdentifier: 'rhubarb-pie-abcde' },
+    ingredient: { ...mockRhurbarbPie, titleIdentifier: 'rhubarb-pie-abcde', owner: mockAdminId },
     prepMethod: null,
 };
 
 function renderTab(
     lines: (typeof chickenRecipeLine | typeof pieRecipeLine)[],
-    mocks: MockedResponse[]
+    mocks: MockedResponse[],
+    currentUser: MockedResponse = mockCurrentUserAdmin
 ) {
     const MockIngredientsTab = () => {
         const props = {
@@ -191,7 +192,7 @@ function renderTab(
     return renderPage(routes, [
         mockGetIngredientComponents,
         mockGetDisplayLadders,
-        mockCurrentUserAdmin,
+        currentUser,
         ...mocks,
     ]);
 }
@@ -276,6 +277,30 @@ describe('IngredientsTab nutritional info integration', () => {
         expect(screen.getByRole('link', { name: 'Add a yield' }).getAttribute('href')).toMatch(
             /\/edit\/recipe\/rhubarb-pie-abcde$/
         );
+    });
+
+    it('does not offer to add a yield to a recipe the user cannot edit', async () => {
+        const pieLine = {
+            __typename: 'LineNutrition' as const,
+            recipeIngredient: mockRecipeIngredientIdSixteen,
+            status: 'UNCOUNTED' as const,
+            macros: macros(0),
+            reason: {
+                __typename: 'UncountedReason' as const,
+                code: 'NO_YIELD' as const,
+                message: 'No yield recorded for rhubarb pie',
+            },
+            childUncounted: null,
+            childRecipe: mockRhurbarbPie._id,
+        };
+        renderTab(
+            [chickenRecipeLine, pieRecipeLine],
+            [nutritionMock([chickenLine, pieLine], [mockChickenId])],
+            mockCurrentUser
+        );
+
+        expect(await screen.findByText(/no yield recorded for rhubarb pie/)).not.toBeNull();
+        expect(screen.queryByRole('link', { name: 'Add a yield' })).toBeNull();
     });
 
     it('shows the empty state when nothing is counted', async () => {
