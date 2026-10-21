@@ -225,6 +225,8 @@ export const OpenFoodFactsMutation = {
                         `Open Food Facts did not save the product: ${String(json['status_verbose'] ?? 'no reason given')}`
                     );
                 }
+                // Forget it now, in case the photo upload below fails.
+                forgetOpenFoodFactsProduct(contribution.barcode);
             }
             if (photoBase64) {
                 const json = await send(`${url}/api/v3/product/${contribution.barcode}/images`, {

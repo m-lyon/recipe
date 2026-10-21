@@ -132,15 +132,19 @@ export default class OpenFoodFactsContribute extends BaseCommand {
             return plan;
         }
 
-        const result = (
-            await client.request(
-                OPEN_FOOD_FACTS_CONTRIBUTE,
-                { input, labelPhoto: null },
-                { files: photo ? { labelPhoto: photo } : undefined }
-            )
-        ).openFoodFactsContribute;
-        // The next read must fetch what was just written.
-        client.forgetOpenFoodFactsProduct(barcode);
+        let result;
+        try {
+            result = (
+                await client.request(
+                    OPEN_FOOD_FACTS_CONTRIBUTE,
+                    { input, labelPhoto: null },
+                    { files: photo ? { labelPhoto: photo } : undefined }
+                )
+            ).openFoodFactsContribute;
+        } finally {
+            // The next read must fetch what was just written, even after a partial failure.
+            client.forgetOpenFoodFactsProduct(barcode);
+        }
         const staging = result.host.endsWith('openfoodfacts.net');
         if (staging) {
             this.addWarning(
