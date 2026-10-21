@@ -3,7 +3,7 @@ import { readFileSync, statSync } from 'node:fs';
 
 import { Args, Flags } from '@oclif/core';
 
-import { indent, num, text } from '../../lib/format.js';
+import { indent, text } from '../../lib/format.js';
 import { CliError, rejected } from '../../lib/errors.js';
 import type { UploadFile } from '../../graphql/client.js';
 import { BaseCommand, writeFlags } from '../../lib/base.js';
@@ -212,7 +212,8 @@ function describeChanges(
     add('pack', current?.quantity, input.quantity);
     if (label) {
         for (const [name, key] of MACROS) {
-            add(name, current ? num(current[key]) : null, num(label[key]));
+            // Unrounded, so the plan shows exactly what is sent.
+            add(name, current?.[key]?.toString(), String(label[key]));
         }
     }
     return changes;

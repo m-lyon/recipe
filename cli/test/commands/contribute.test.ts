@@ -85,8 +85,8 @@ describe('open-food-facts contribute', () => {
             ROOT
         );
         expect(stdout).to.contain("Product   Al'fez · Pearl Couscous (5010338301255)");
-        expect(stdout).to.match(/carbs\s+72\.0\s+70\.0\s+← changes/);
-        expect(stdout).to.not.match(/kcal\s+362\.0\s+362\.0\s+← changes/);
+        expect(stdout).to.match(/carbs\s+72\s+70\s+← changes/);
+        expect(stdout).to.not.match(/kcal\s+362\s+362\s+← changes/);
         expect(stdout).to.contain('Label photo: label.jpg (10 bytes)');
         expect(contributions()).to.deep.equal([]);
     });
