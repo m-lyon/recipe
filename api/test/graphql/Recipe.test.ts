@@ -1583,6 +1583,8 @@ describe('recipeArchiveById', () => {
     it('should NOT archive an original recipe if its linked vegan version is used as an ingredient', async function () {
         const user = await User.findOne({ username: 'testuser1' }).orFail();
         const { original, vegan } = await createLinkedOriginalAndVegan(user, { archived: false });
+        // Only a recipe marked as an ingredient can be used in another recipe.
+        await Recipe.updateOne({ _id: vegan._id }, { isIngredient: true });
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
         const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
         const prepMethod = await PrepMethod.findOne({ value: 'chopped' }).orFail();

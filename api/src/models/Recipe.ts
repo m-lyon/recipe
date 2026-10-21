@@ -12,7 +12,8 @@ import type { Ingredient as IngredientType } from './Ingredient.js';
 import { Ingredient, ReservedIngredientTags } from './Ingredient.js';
 import { ownerExists, tagsExist, unique, uniqueRecipeTitleInAdminsAndUser } from './validation.js';
 
-const quantityRegex = /^((\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*)(-(\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*))?)$/;
+export const quantityRegex =
+    /^((\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*)(-(\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*))?)$/;
 const ReservedRecipeTags = {
     Ingredient: 'ingredient',
     VeganVersionAvailable: 'vegan version available',
@@ -168,6 +169,45 @@ const instructionSubsection = new Schema(
     { _id: false }
 );
 
+/**
+ * How much one batch makes, as measures of the whole batch: "2 each" and "900 g" for two
+ * pizza bases. A recipe line that uses this recipe is priced through the row in its own
+ * dimension, so a yield matters only when the recipe is an ingredient.
+ */
+export interface RecipeYield {
+    quantity: string;
+    unit: Types.ObjectId;
+}
+const recipeYieldSchema = new Schema<RecipeYield>(
+    {
+        quantity: {
+            type: String,
+            required: true,
+            validate: {
+                validator: (quantity: string) => quantityRegex.test(quantity),
+                message: 'Invalid yield quantity format',
+            },
+        },
+        unit: { type: Schema.Types.ObjectId, ref: 'Unit', required: true },
+    },
+    { _id: false }
+);
+
+/** Every unit exists, and no two rows share a dimension: two mass rows would disagree. */
+async function validYieldUnits(rows?: RecipeYield[]): Promise<boolean> {
+    if (!rows || rows.length === 0) return true;
+    const ids = rows.map((row) => String(row.unit));
+    const units = await Unit.find({ _id: { $in: ids } }).select('dimension');
+    const dimensionOf = new Map(units.map((unit) => [String(unit._id), unit.dimension]));
+    if (ids.some((id) => !dimensionOf.has(id))) {
+        throw new GraphQLError('Yield unit does not exist.', {
+            extensions: { code: 'BAD_USER_INPUT' },
+        });
+    }
+    const dimensions = ids.map((id) => dimensionOf.get(id));
+    return new Set(dimensions).size === dimensions.length;
+}
+
 export interface Recipe extends Document {
     title: string;
     titleIdentifier: string;
@@ -181,6 +221,7 @@ export interface Recipe extends Document {
     owner: Types.ObjectId;
     source?: string;
     numServings: number;
+    yield?: RecipeYield[];
     isIngredient: boolean;
     archived: boolean;
     createdAt: Date;
@@ -272,6 +313,14 @@ const recipeSchema: Schema<Recipe> = new Schema<Recipe>({
     owner: { type: Schema.Types.ObjectId, required: true, ref: 'User', validate: ownerExists() },
     source: { type: String },
     numServings: { type: Number, required: true },
+    yield: {
+        type: [recipeYieldSchema],
+        default: undefined,
+        validate: {
+            validator: validYieldUnits,
+            message: 'A yield has at most one row per dimension.',
+        },
+    },
     isIngredient: { type: Boolean, required: true },
     archived: { type: Boolean, default: false },
     createdAt: { type: Date, required: true },
@@ -282,7 +331,74 @@ const recipeSchema: Schema<Recipe> = new Schema<Recipe>({
 
 recipeSchema.index({ 'ingredientSubsections.ingredients.ingredient': 1 });
 
+/** The ids of the ingredients and recipes a recipe's lines use. */
+function lineIngredientIds(subsections: IngredientSubsection[]): Types.ObjectId[] {
+    return subsections.flatMap((subsection) =>
+        subsection.ingredients.map(
+            (line) => (line.ingredient as { _id?: Types.ObjectId })?._id ?? line.ingredient
+        )
+    ) as Types.ObjectId[];
+}
+
+function lineError(message: string, code: string): GraphQLError {
+    return new GraphQLError(message, { extensions: { code } });
+}
+
+/**
+ * Checks the lines that use other recipes:
+ *  - a recipe line has no size, because a yield has no size to match it against;
+ *  - a used recipe is marked as an ingredient;
+ *  - no chain of recipe lines leads back to this recipe, so a nutrition calculation ends.
+ * The chain is walked breadth-first, one query per level.
+ */
+async function validateRecipeLines(recipe: HydratedDocument<Recipe>): Promise<void> {
+    const ids = lineIngredientIds(recipe.ingredientSubsections);
+    const used = await Recipe.find({ _id: { $in: ids } }).select('title isIngredient');
+    if (used.length === 0) return;
+    const usedById = new Map(used.map((child) => [String(child._id), child]));
+    for (const subsection of recipe.ingredientSubsections) {
+        for (const line of subsection.ingredients) {
+            const child = usedById.get(String(lineIngredientIds([{ ingredients: [line] }])[0]));
+            if (!child) continue;
+            if (line.size != null) {
+                throw lineError(
+                    `A recipe line cannot have a size: "${child.title}" is a recipe.`,
+                    'RECIPE_INGREDIENT_SIZE'
+                );
+            }
+            if (!child.isIngredient) {
+                throw lineError(
+                    `"${child.title}" is not marked as an ingredient, so no recipe can use it.`,
+                    'RECIPE_INGREDIENT_NOT_INGREDIENT'
+                );
+            }
+        }
+    }
+    const self = String(recipe._id);
+    const visited = new Set<string>();
+    let frontier = used.map((child) => String(child._id));
+    while (frontier.length > 0) {
+        if (frontier.includes(self)) {
+            throw lineError(
+                `"${recipe.title}" cannot use a recipe that uses it, directly or through others.`,
+                'RECIPE_INGREDIENT_CYCLE'
+            );
+        }
+        frontier.forEach((id) => visited.add(id));
+        const level = await Recipe.find({ _id: { $in: frontier } }).select(
+            'ingredientSubsections.ingredients.ingredient'
+        );
+        const next = await Recipe.find({
+            _id: { $in: level.flatMap((child) => lineIngredientIds(child.ingredientSubsections)) },
+        }).select('_id');
+        frontier = next.map((child) => String(child._id)).filter((id) => !visited.has(id));
+    }
+}
+
 recipeSchema.pre('save', async function (this: HydratedDocument<Recipe>) {
+    if (this.isNew || this.isModified('ingredientSubsections')) {
+        await validateRecipeLines(this);
+    }
     const calculatedTags: ReservedTags[] = [];
     await this.populate('ingredientSubsections.ingredients.ingredient');
     if (this.isIngredient) {
