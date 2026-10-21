@@ -49,9 +49,15 @@ seitan, a pack of pearl couscous), link the Open Food Facts product by its barco
   8 searches a minute. Use it only when the operator has no barcode, and confirm the pick.
 - **Check the label.** Volunteers enter this data. When a label photo is available, compare
   kcal, protein, carbs and fat per 100 g. A value that differs is a stop-and-report
-  condition: tell the operator what differs, and do not link it.
+  condition: tell the operator what differs, and do not link it as it is.
 - **A data warning is a stop-and-report condition** too: a missing macro, or kcal that the
   macros do not explain.
+- **When the operator approves, link with the label values.** `--label-per-100g
+  kcal,protein,carbs,fat` writes the values read from the label photo in place of the
+  record's. The barcode and the portions still come from the record. Read the four values
+  from the photo yourself and quote them to the operator; never type values you have not
+  seen. The dry run shows the label beside the record and marks each difference. A
+  re-link without the flag replaces the label values with the record's.
 - A check-digit warning usually means a misread digit. Re-read the photo before you look
   the code up.
 - Check the brand and the pack size in `open-food-facts show` against the photo. Two products often

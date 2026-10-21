@@ -73,6 +73,7 @@ The cookie cache lives at `~/.cache/recipe-cli/session-<hash of RECIPE_API_URL>`
 | `recipe open-food-facts show <barcode>` | one product: macros, pack size, serving, data warnings and the **portion table** |
 | `recipe nutrition link <ingredient> --fdc-id <n>` | the core command: `perGram`, plus measures from `--portion` and `--default-portion` |
 | `recipe nutrition link <ingredient> --barcode <code>` | the same, from an Open Food Facts product |
+| `recipe nutrition link ... --label-per-100g <kcal,p,c,f>` | link the record, but write the values from the pack label: for a record that is wrong or has none |
 | `recipe nutrition measure <ingredient> --unit <u> --grams <n>` | stores a weight you supply, for a unit no USDA portion carries (a scoop) |
 | `recipe nutrition unlink <ingredient>` | removes the `NutritionalInfo`; measures stay |
 | `recipe nutrition status` | calculable recipe rows, and the missing weights |
