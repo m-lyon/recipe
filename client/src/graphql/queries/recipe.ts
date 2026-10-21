@@ -96,6 +96,7 @@ export const RECIPE_FIELDS_FULL = gql(`
                         _id
                         title
                         pluralTitle
+                        titleIdentifier
                         originalRecipe {
                             _id
                         }
@@ -111,6 +112,12 @@ export const RECIPE_FIELDS_FULL = gql(`
         }
         source
         notes
+        yield {
+            quantity
+            unit {
+                ...UnitFields
+            }
+        }
     }
 `);
 

@@ -14,6 +14,8 @@ const DRAFT_FIELDS = [
     'pluralTitle',
     'isIngredient',
     'numServings',
+    'yieldRows',
+    'hadYield',
     'createVeganVersion',
     'editableTag',
     'finishedTags',

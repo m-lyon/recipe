@@ -248,6 +248,7 @@ describe('ViewRecipe - recipe ingredient vegan suffix', () => {
                                 _id: 'mock-recipe-ingredient-vegan-copy',
                                 title: 'Mock Stock',
                                 pluralTitle: null,
+                                titleIdentifier: 'mock-stock-vegan',
                                 originalRecipe: {
                                     __typename: 'Recipe' as const,
                                     _id: 'mock-recipe-ingredient-original',

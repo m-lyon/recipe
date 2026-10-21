@@ -14,6 +14,7 @@ import { StarRating, getAverageRating } from '@recipe/features/rating';
 import { Servings, UnitSystemToggle, useDisplayedIngredient } from '@recipe/features/servings';
 
 import { Notes } from './Notes';
+import { Yield } from './Yield';
 import { UsedIn } from './UsedIn';
 import { IngredientList } from './IngredientList';
 import { NutritionalInfoPanel } from './NutritionalInfoPanel';
@@ -28,16 +29,9 @@ export function IngredientsTab(props: Props) {
     const currentServings = useRecipeStore((state) => state.numServings);
     const { isVerified, isAdmin, user } = useUser();
     const { addRatingWithToast } = useAddRating();
-    const { perServing, uncountedIds, uncounted, owners, loading, error } = useNutritionalInfo(
-        recipe.ingredientSubsections,
-        recipe.numServings
-    );
+    const nutrition = useNutritionalInfo(recipe);
+    const { perServing, uncountedIds, uncounted, partial, owners, loading, error } = nutrition;
     const displayLine = useDisplayedIngredient(currentServings, recipe.numServings);
-    const totalIngredients = recipe.ingredientSubsections
-        .flatMap((s) => s.ingredients)
-        .filter((i) => i.ingredient.__typename === 'Ingredient').length;
-    const nothingCounted =
-        !loading && (totalIngredients === 0 || totalIngredients === uncountedIds.size);
     useEffect(() => {
         setNumServings(recipe.numServings);
     }, [recipe.numServings, setNumServings]);
@@ -75,6 +69,17 @@ export function IngredientsTab(props: Props) {
                     colour='rgba(0, 0, 0, 0.64)'
                 />
             }
+            Yield={
+                recipe.yield?.length ? (
+                    <Yield
+                        rows={recipe.yield}
+                        title={recipe.title}
+                        pluralTitle={recipe.pluralTitle}
+                        currentServings={currentServings}
+                        origServings={recipe.numServings}
+                    />
+                ) : undefined
+            }
             IngredientList={
                 <>
                     <IngredientList
@@ -90,11 +95,13 @@ export function IngredientsTab(props: Props) {
                         perServing={perServing}
                         uncountedIds={uncountedIds}
                         uncounted={uncounted}
+                        partial={partial}
                         canEditIngredient={(id) =>
                             isVerified && (isAdmin || (!!user && owners.get(id) === user._id))
                         }
+                        canEditRecipes={isVerified}
                         displayLine={displayLine}
-                        nothingCounted={nothingCounted}
+                        nothingCounted={nutrition.nothingCounted}
                         loading={loading}
                         error={error}
                     />

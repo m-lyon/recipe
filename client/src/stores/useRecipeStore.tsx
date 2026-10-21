@@ -3,6 +3,7 @@ import { StateCreator, create } from 'zustand';
 import { TagsSlice, createTagsSlice } from './createTagsSlice';
 import { TitleSlice, createTitleSlice } from './createTitleSlice';
 import { NotesSlice, createNotesSlice } from './createNotesSlice';
+import { YieldSlice, createYieldSlice } from './createYieldSlice';
 import { SourceSlice, createSourceSlice } from './createSourceSlice';
 import { NumServingsSlice, createNumServingsSlice } from './createNumServingsSlice';
 import { AsIngredientSlice, createAsIngredientSlice } from './createAsIngredientSlice';
@@ -19,6 +20,7 @@ type PartialRecipeState = NotesSlice &
     TagsSlice &
     AsIngredientSlice &
     NumServingsSlice &
+    YieldSlice &
     InstructionSectionsSlice &
     IngredientSectionsSlice &
     VeganVersionSlice;
@@ -31,6 +33,7 @@ const createSharedSlice: StateCreator<PartialRecipeState, [], [], SharedSlice> =
         get().resetSource();
         get().resetAsIngredient();
         get().resetNumServings();
+        get().resetYield();
         get().resetTags();
         get().resetInstructions();
         get().resetIngredients();
@@ -44,6 +47,7 @@ export const useRecipeStore = create<RecipeState>()((...a) => ({
     ...createTitleSlice(...a),
     ...createAsIngredientSlice(...a),
     ...createNumServingsSlice(...a),
+    ...createYieldSlice(...a),
     ...createTagsSlice(...a),
     ...createInstructionsSlice(...a),
     ...createIngredientsSlice(...a),

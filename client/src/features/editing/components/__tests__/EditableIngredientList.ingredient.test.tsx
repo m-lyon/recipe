@@ -94,6 +94,20 @@ describe('Ingredient Keyboard', () => {
         await notNullByText(screen, 'apples', 'carrots', 'chicken');
         await notNullByText(screen, 'iceberg lettuce', 'rhubarb pie');
     });
+    it('should not offer recipes once a size is chosen', async () => {
+        const user = userEvent.setup();
+        // Render
+        renderComponent();
+
+        // Act -- a recipe's yield has no size, so "1 cup large rhubarb pie" means nothing
+        await user.click(screen.getByText('Enter ingredient'));
+        await user.keyboard('{1}{ }');
+        await clickGetByText(screen, user, 'cup', 'large');
+
+        // Expect
+        await notNullByText(screen, 'apples', 'chicken');
+        expect(screen.queryByText('rhubarb pie')).toBeNull();
+    });
     it('should display add new ingredient', async () => {
         const user = userEvent.setup();
         // Render
