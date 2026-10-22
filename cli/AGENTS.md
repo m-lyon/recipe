@@ -83,6 +83,14 @@ USDA API, recorded in `spec-usda-portions.md`.
 - Prefer Foundation and SR Legacy over Branded for generic ingredients. The `TYPE` column in
   `usda search` and the heading of `usda show` carry the data type.
 - Match the preparation state: raw against raw, cooked against cooked.
+- **Search many times.** USDA search quality is poor: one query often returns the wrong food, or
+  only branded records. For each ingredient, run about 20 queries with different wording
+  before you accept a record or give up. Vary the form of the name: singular and plural,
+  "peppers, <name>, dried" (the SR Legacy style), the generic parent food, a close variety,
+  and with or without the state (raw, dried, cooked). Run them one at a time. Compare the
+  Foundation and SR Legacy hits across all the queries, and keep your notes. If no query
+  finds a specific record, say so and name the closest generic record. Do not link a close
+  variety without asking.
 
 ### Choosing portions
 
@@ -127,8 +135,8 @@ free and does not touch the quota. Fetch a candidate as often as you find useful
 - `usda search` and `open-food-facts search` are not cached by the CLI, so do not repeat a search you
   have already run. Keep the results in your own working notes.
 
-The USDA quota is 1000 requests per hour for the whole server. Budget roughly one upstream call
-per ingredient, plus one per search. Open Food Facts allows the server 12 product reads and
+The USDA quota is 1000 requests per hour for the whole server. Budget about 20 searches and one
+record fetch per ingredient (see "Search many times"). Open Food Facts allows the server 12 product reads and
 8 searches per minute; a `RATE_LIMITED` error says how long to wait.
 
 ## Reading the output
