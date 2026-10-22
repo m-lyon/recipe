@@ -4,10 +4,17 @@ import { User } from '../models/User.js';
 import { GraphQLContext } from '../types.js';
 import { unauthenticated } from './authorisation.js';
 
-export const filterIsOwnerOrAdmin =
+/**
+ * Verified users see every user's items, so that recipes can be written with anything in
+ * the database. Anyone else sees the admins' items, plus their own.
+ */
+export const filterIsVisible =
     (): ResolverNextRpCb<unknown, GraphQLContext> => (next) => async (rp) => {
-        const admins = await User.find({ role: 'admin' });
         const user = rp.context.getUser();
+        if (user && user.role !== 'unverified') {
+            return next(rp);
+        }
+        const admins = await User.find({ role: 'admin' });
         const authUsers = user ? [user, ...admins] : admins;
         rp.args.filter = {
             ...rp.args.filter,

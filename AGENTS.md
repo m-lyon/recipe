@@ -212,6 +212,11 @@ When adding a new field to a query/mutation, update the corresponding `__mocks__
 4. Authorization applied via `composeResolvers()` in `api/src/schema/index.ts`.
 5. Authorization layers: `isAdmin`, `isVerified`, `isDocumentOwnerOrAdmin(Model)`.
 
+Ingredients, units, sizes and prep methods are shared. `filterIsVisible` lists every user's
+items to a verified user, and only the admins' items (plus their own) to anyone else. So
+`uniqueAcrossUsers` makes their names unique across all owners. Only the owner or an admin
+edits one.
+
 ### Standard units
 
 The size of a mass or volume unit is defined in code, not in the database.

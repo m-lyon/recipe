@@ -16,10 +16,15 @@ type QueryableDoc = Pick<Document<Types.ObjectId>, '_id' | 'model'>;
 type OwnedDoc = QueryableDoc & { owner: Types.ObjectId };
 
 /**
- * An owned document that may opt out of uniqueness. Models without a `unique` field are always
+ * A document that may opt out of uniqueness. Models without a `unique` field are always
  * checked.
  */
-type ScopedUniqueDoc = OwnedDoc & { unique?: boolean };
+type UniqueDoc = QueryableDoc & { unique?: boolean };
+
+/**
+ * An owned document that may opt out of uniqueness, scoped to the owner and the admins.
+ */
+type ScopedUniqueDoc = OwnedDoc & UniqueDoc;
 
 /**
  * A field declared on the model itself, rather than one inherited from `Document`.
@@ -46,8 +51,36 @@ async function findDuplicatesInAdminsAndUserScope(
 }
 
 /**
+ * Verified users see every user's items, so a name must be unique across all owners, not only
+ * within the user's own and the admins' items.
+ *
  * Mongoose doesn't type a validator's `this`, so callers name the model, e.g.
- * `uniqueInAdminsAndUser<Unit>('Unit', 'shortSingular')`, to check it has the fields used here.
+ * `uniqueAcrossUsers<Unit>('Unit', 'shortSingular')`, to check it has the fields used here.
+ */
+export function uniqueAcrossUsers<TDoc extends UniqueDoc>(
+    model: string,
+    attribute: ModelField<TDoc>,
+    message?: string
+) {
+    async function validator(this: TDoc, value: string) {
+        if (this.unique === false) {
+            return true;
+        }
+        const duplicate = await this.model(model).exists({
+            _id: { $ne: this._id },
+            $or: [{ unique: true }, { unique: { $exists: false } }],
+            [attribute]: value,
+        });
+        return duplicate == null;
+    }
+    return {
+        validator,
+        message: message ? message : `The ${model.toLowerCase()} ${attribute} must be unique.`,
+    };
+}
+
+/**
+ * Unique within the owner's and the admins' documents. Display ladders use it.
  */
 export function uniqueInAdminsAndUser<TDoc extends ScopedUniqueDoc>(
     model: string,

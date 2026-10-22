@@ -2,7 +2,7 @@ import { Document, Schema, Types, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 
 import { STANDARD_UNIT_KEYS } from '../utils/units.js';
-import { ownerExists, uniqueInAdminsAndUser } from './validation.js';
+import { ownerExists, uniqueAcrossUsers } from './validation.js';
 
 export const UnitDimensions = ['mass', 'volume', 'count'] as const;
 export type UnitDimension = (typeof UnitDimensions)[number];
@@ -31,7 +31,7 @@ const unitSchema = new Schema<Unit>({
         type: String,
         required: true,
         set: (value: string) => value.toLowerCase(),
-        validate: uniqueInAdminsAndUser<Unit>(
+        validate: uniqueAcrossUsers<Unit>(
             'Unit',
             'shortSingular',
             'The short singular unit name must be unique.'
@@ -41,7 +41,7 @@ const unitSchema = new Schema<Unit>({
         type: String,
         required: true,
         set: (value: string) => value.toLowerCase(),
-        validate: uniqueInAdminsAndUser<Unit>(
+        validate: uniqueAcrossUsers<Unit>(
             'Unit',
             'shortPlural',
             'The short plural unit name must be unique.'
@@ -51,7 +51,7 @@ const unitSchema = new Schema<Unit>({
         type: String,
         required: true,
         set: (value: string) => value.toLowerCase(),
-        validate: uniqueInAdminsAndUser<Unit>(
+        validate: uniqueAcrossUsers<Unit>(
             'Unit',
             'longSingular',
             'The long singular unit name must be unique.'
@@ -61,7 +61,7 @@ const unitSchema = new Schema<Unit>({
         type: String,
         required: true,
         set: (value: string) => value.toLowerCase(),
-        validate: uniqueInAdminsAndUser<Unit>(
+        validate: uniqueAcrossUsers<Unit>(
             'Unit',
             'longPlural',
             'The long plural unit name must be unique.'

@@ -3,7 +3,7 @@ import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { Size, SizeCreateTC, SizeTC } from '../models/Size.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
 import { validateItemNotInMeasure, validateItemNotInRecipe } from './validation.js';
-import { filterIsEditable, filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
+import { filterIsEditable, filterIsUnique, filterIsVisible } from '../middleware/filters.js';
 
 SizeTC.addRelation('owner', {
     resolver: () => OwnerTC.getResolver('findById'),
@@ -35,7 +35,7 @@ export const SizeQuery = {
     sizeOne: SizeTC.mongooseResolvers.findOne().setDescription('Retrieve a single size'),
     sizeMany: SizeTC.mongooseResolvers
         .findMany()
-        .wrapResolve(filterIsOwnerOrAdmin())
+        .wrapResolve(filterIsVisible())
         .wrapResolve(filterIsUnique())
         .setDescription('Retrieve multiple sizes'),
     sizeManyEditable: SizeTC.mongooseResolvers

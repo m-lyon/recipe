@@ -3,7 +3,7 @@ import { validateItemNotInRecipe } from './validation.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { IngredientMeasure } from '../models/IngredientMeasure.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
-import { filterIsEditable, filterIsOwnerOrAdmin } from '../middleware/filters.js';
+import { filterIsEditable, filterIsVisible } from '../middleware/filters.js';
 import { Ingredient, IngredientCreateTC, IngredientTC } from '../models/Ingredient.js';
 
 IngredientTC.addRelation('owner', {
@@ -40,12 +40,15 @@ export const IngredientQuery = {
         .setDescription('Retrieve a single ingredient'),
     ingredientMany: IngredientTC.mongooseResolvers
         .findMany()
-        .wrapResolve(filterIsOwnerOrAdmin())
+        .wrapResolve(filterIsVisible())
         .setDescription('Retrieve multiple ingredients'),
     ingredientManyEditable: IngredientTC.mongooseResolvers
         .findMany()
         .wrapResolve(filterIsEditable())
         .setDescription('Retrieve the ingredients the current user can edit'),
+};
+
+export const IngredientQueryAdmin = {
     ingredientManyAll: IngredientTC.mongooseResolvers
         .findMany()
         .setDescription('Retrieve all ingredients'),

@@ -1,7 +1,7 @@
 import { Document, Schema, Types, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 
-import { ownerExists, uniqueInAdminsAndUser } from './validation.js';
+import { ownerExists, uniqueAcrossUsers } from './validation.js';
 
 export interface PrepMethod extends Document {
     value: string;
@@ -13,7 +13,7 @@ const prepMethodSchema = new Schema<PrepMethod>({
     value: {
         type: String,
         required: true,
-        validate: uniqueInAdminsAndUser<PrepMethod>(
+        validate: uniqueAcrossUsers<PrepMethod>(
             'PrepMethod',
             'value',
             'The prep method must be unique.'
