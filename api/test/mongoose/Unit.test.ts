@@ -339,7 +339,7 @@ describe('Unit Model', function () {
         }
     });
 
-    it('Should NOT save a unit with a duplicate short singular name user1 to admin', async function () {
+    it('Should NOT save a unit with a duplicate short singular name user1 to user2', async function () {
         const user1 = await User.findOne({ firstName: 'Tester1' }).orFail();
         const user2 = await User.findOne({ firstName: 'Tester2' }).orFail();
         const newUnit = new Unit(getMockUnitOne(user1));
@@ -364,7 +364,7 @@ describe('Unit Model', function () {
         }
     });
 
-    it('Should NOT update a unit with a duplicate short singular name user1 to admin', async function () {
+    it('Should NOT update a unit with a duplicate short singular name user1 to user2', async function () {
         const user1 = await User.findOne({ firstName: 'Tester1' }).orFail();
         const user2 = await User.findOne({ firstName: 'Tester2' }).orFail();
         const newUnit1 = new Unit(getMockUnitOne(user1));
