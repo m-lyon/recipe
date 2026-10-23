@@ -4,6 +4,9 @@ export interface RecordedRequest {
     operation: string;
     variables: Record<string, unknown>;
     cookie?: string;
+    /** Files sent as a multipart request, keyed by variable path: "variables.labelPhoto". */
+    files?: Record<string, { name: string; type: string; size: number }>;
+    headers?: Record<string, string>;
 }
 
 export interface GraphQLReply {
@@ -51,17 +54,16 @@ export class FakeApi {
     install(): void {
         this.stub = sinon.stub(globalThis, 'fetch').callsFake((async (
             _url: string,
-            init: { headers: Record<string, string>; body: string }
+            init: { headers: Record<string, string>; body: string | FormData }
         ) => {
-            const body = JSON.parse(init.body) as {
-                query: string;
-                variables: Record<string, unknown>;
-            };
+            const { body, files } = readBody(init.body);
             const operation = OPERATION.exec(body.query)?.[1] ?? 'unknown';
             this.requests.push({
                 operation,
                 variables: body.variables,
                 cookie: init.headers['Cookie'],
+                files,
+                headers: init.headers,
             });
             const handler = this.handlers.get(operation);
             if (!handler) {
@@ -100,3 +102,19 @@ export const LOGIN_OK: GraphQLReply = {
 export const UNAUTHENTICATED: GraphQLReply = {
     errors: [{ message: 'Not authenticated', extensions: { code: 'UNAUTHENTICATED' } }],
 };
+
+/** A JSON body, or a GraphQL multipart request: operations, a map, then the files. */
+function readBody(raw: string | FormData): {
+    body: { query: string; variables: Record<string, unknown> };
+    files?: RecordedRequest['files'];
+} {
+    if (typeof raw === 'string') return { body: JSON.parse(raw) };
+    const body = JSON.parse(raw.get('operations') as string);
+    const map = JSON.parse(raw.get('map') as string) as Record<string, string[]>;
+    const files: NonNullable<RecordedRequest['files']> = {};
+    for (const [field, [path]] of Object.entries(map)) {
+        const file = raw.get(field) as File;
+        files[path] = { name: file.name, type: file.type, size: file.size };
+    }
+    return { body, files };
+}

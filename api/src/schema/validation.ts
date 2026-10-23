@@ -110,6 +110,10 @@ function forbidden(message: string) {
     return new GraphQLError(message, { extensions: { code: 'FORBIDDEN' } });
 }
 
+export function badInput(message: string): GraphQLError {
+    return new GraphQLError(message, { extensions: { code: 'BAD_USER_INPUT' } });
+}
+
 /** Only each is hidden: a hidden unit cannot be picked by name in the recipe editor. */
 const HIDDEN_ERROR = 'Only a standard unit can be hidden.';
 

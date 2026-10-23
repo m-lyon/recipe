@@ -38,9 +38,18 @@ function sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/** A file sent with an operation, under the GraphQL multipart request spec. */
+export interface UploadFile {
+    filename: string;
+    contentType: string;
+    data: Uint8Array;
+}
+
 export interface RequestOptions<TResult> {
     /** Recognises a response that means the session has expired. */
     staleWhen?: (result: TResult) => boolean;
+    /** Files keyed by the variable that takes them, such as "labelPhoto". */
+    files?: Record<string, UploadFile>;
 }
 
 export interface ApiClientOptions {
@@ -98,7 +107,7 @@ export class ApiClient {
         }
         let result: TResult;
         try {
-            result = await this.send(document, variables);
+            result = await this.send(document, variables, options.files);
         } catch (error) {
             // Exactly one re-login and retry, and only on UNAUTHENTICATED. A
             // FORBIDDEN is a wrong role, which re-authenticating never fixes.
@@ -109,13 +118,13 @@ export class ApiClient {
             await this.login();
             // Fall through rather than returning, so the retry still gets the
             // `staleWhen` post-check applied to the normal path.
-            result = await this.send(document, variables);
+            result = await this.send(document, variables, options.files);
         }
         // Some resolvers answer an expired session with a null field rather than
         // an UNAUTHENTICATED error, so the caller can recognise that shape too.
         if (options.staleWhen?.(result)) {
             await this.login();
-            const retried = await this.send(document, variables);
+            const retried = await this.send(document, variables, options.files);
             if (options.staleWhen(retried)) {
                 throw notAuthenticated(
                     'The API accepted the request but returned no authenticated user. ' +
@@ -154,6 +163,12 @@ export class ApiClient {
         options: { refresh?: boolean } = {}
     ): Promise<TResult> {
         return this.cachedRecord('openFoodFacts', barcode, document, variables, options);
+    }
+
+    /** Drops a product from both caches, after it was changed on Open Food Facts. */
+    forgetOpenFoodFactsProduct(barcode: string): void {
+        this.memory.openFoodFacts.delete(barcode);
+        this.disk.openFoodFacts?.forget(barcode);
     }
 
     private async cachedRecord<TResult, TVars>(
@@ -223,11 +238,12 @@ export class ApiClient {
 
     private async send<TResult, TVars>(
         document: TypedDocumentNode<TResult, TVars>,
-        variables?: TVars
+        variables?: TVars,
+        files?: Record<string, UploadFile>
     ): Promise<TResult> {
         const body = { query: print(assertGenerated(document)), variables: variables ?? {} };
         for (let attempt = 0; ; attempt++) {
-            const response = await this.post(body, this.cookie);
+            const response = await this.post(body, this.cookie, files);
             const json = (await this.parse(response)) as GraphQLResponse<TResult>;
             const failure = json.errors?.[0];
             if (failure) {
@@ -250,15 +266,24 @@ export class ApiClient {
         }
     }
 
-    private async post(body: unknown, cookie: string | null): Promise<Response> {
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    private async post(
+        body: { query: string; variables: unknown },
+        cookie: string | null,
+        files?: Record<string, UploadFile>
+    ): Promise<Response> {
+        const hasFiles = files && Object.keys(files).length > 0;
+        // fetch sets a multipart Content-Type with its boundary. Apollo refuses a multipart
+        // request without this header, as a guard against cross-site requests.
+        const headers: Record<string, string> = hasFiles
+            ? { 'Apollo-Require-Preflight': 'true' }
+            : { 'Content-Type': 'application/json' };
         if (cookie) headers['Cookie'] = cookie;
         this.requestCount++;
         try {
             return await fetch(this.config.url, {
                 method: 'POST',
                 headers,
-                body: JSON.stringify(body),
+                body: hasFiles ? multipart(body, files) : JSON.stringify(body),
             });
         } catch (error) {
             throw runtime(
@@ -280,4 +305,31 @@ export class ApiClient {
         }
         return json;
     }
+}
+
+/**
+ * A GraphQL multipart request: the operation with each file variable set to null, a map
+ * from form field to variable path, then one form field per file.
+ * https://github.com/jaydenseric/graphql-multipart-request-spec
+ */
+function multipart(
+    body: { query: string; variables: unknown },
+    files: Record<string, UploadFile>
+): FormData {
+    const names = Object.keys(files);
+    const variables = { ...(body.variables as Record<string, unknown>) };
+    for (const name of names) variables[name] = null;
+    const form = new FormData();
+    form.append('operations', JSON.stringify({ ...body, variables }));
+    form.append(
+        'map',
+        JSON.stringify(
+            Object.fromEntries(names.map((name, i) => [String(i), [`variables.${name}`]]))
+        )
+    );
+    names.forEach((name, i) => {
+        const file = files[name];
+        form.append(String(i), new Blob([file.data], { type: file.contentType }), file.filename);
+    });
+    return form;
 }
