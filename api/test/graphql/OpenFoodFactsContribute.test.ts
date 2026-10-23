@@ -105,6 +105,13 @@ describe('openFoodFactsContribute: request building', function () {
         });
     });
 
+    it('sends values per 100 ml for a label that gives them so', function () {
+        const fields = productFields({ barcode: '1', per100ml: KNORR.per100g });
+        assert.equal(fields.nutrition_data_per, '100ml');
+        assert.equal(fields['nutriment_energy-kcal'], '69');
+        assert.equal(fields.nutriment_fat_unit, 'g');
+    });
+
     it('sends only the fields given, trimmed', function () {
         assert.deepEqual(productFields({ barcode: '1', brands: ' Knorr ', productName: '' }), {
             brands: 'Knorr',
@@ -254,7 +261,7 @@ describe('openFoodFactsContribute', function () {
         assert.isFalse(fetchStub.called);
     });
 
-    it('refuses a value that is not a barcode, and a negative value', async function () {
+    it('refuses a value that is not a barcode, a negative value, and both bases', async function () {
         const fetchStub = stub(global, 'fetch');
 
         const badCode = await contribute(this.apolloServer, {
@@ -265,6 +272,10 @@ describe('openFoodFactsContribute', function () {
             input: { ...KNORR, per100g: { ...KNORR.per100g, fat: -1 } },
         });
         assert.equal(negative.errors?.[0].extensions?.code, 'BAD_USER_INPUT');
+        const both = await contribute(this.apolloServer, {
+            input: { ...KNORR, per100ml: KNORR.per100g },
+        });
+        assert.include(both.errors?.[0].message, 'not both');
         assert.isFalse(fetchStub.called);
     });
 

@@ -1523,6 +1523,7 @@ input OpenFoodFactsContributionInput {
   barcode: String!
   brands: String
   per100g: OpenFoodFactsNutritionInput
+  per100ml: OpenFoodFactsNutritionInput
   productName: String
   quantity: String
 }
@@ -1534,7 +1535,7 @@ type OpenFoodFactsContributionResult {
   photoUploaded: Boolean!
 }
 
-"""Values per 100 g, as printed on the pack label"""
+"""Values per 100 g or per 100 ml, as printed on the pack label"""
 input OpenFoodFactsNutritionInput {
   calories: Float!
   carbs: Float!

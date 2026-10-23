@@ -90,6 +90,11 @@ Open Food Facts. **This writes to a public database that other people rely on.**
   against the photo; an edit without one is more likely to be reverted.
 - Send only the fields that the label shows. Do not send a name, a brand or a pack size you
   inferred.
+- **Send values on the label's basis.** When the label gives values per 100 ml, pass them
+  with `--label-per-100ml`, as printed. Do not convert them to 100 g with a density, even one
+  the operator weighed: volunteers compare the values with the photo. (`nutrition link
+  --label-per-100g` is different: our data is per gram, so there a per-100 ml label needs the
+  operator's weight of a known volume.)
 - A missing product needs `--name`, so that others can find it.
 - The server sends contributions to the **staging** server unless production is
   configured. The result names the host, and the CLI warns when it was staging. Tell the
