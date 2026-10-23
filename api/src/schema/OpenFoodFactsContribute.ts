@@ -5,9 +5,10 @@ import { GraphQLError } from 'graphql';
 import { schemaComposer } from 'graphql-compose';
 import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
 
+import { badInput } from './validation.js';
 import { FileUpload } from '../utils/upload.js';
 import { forgetOpenFoodFactsProduct, isBarcode } from './OpenFoodFacts.js';
-import { OPEN_FOOD_FACTS_CONTACT, openFoodFactsWriteConfig } from '../constants.js';
+import { OPEN_FOOD_FACTS_CONTACT, OPEN_FOOD_FACTS_WRITE } from '../constants.js';
 
 const APP_NAME = 'recipe';
 const APP_VERSION = '1.0';
@@ -41,7 +42,7 @@ const OpenFoodFactsContributionInputTC = schemaComposer.createInputTC({
         barcode: 'String!',
         productName: 'String',
         brands: 'String',
-        // The pack size as printed: "4 x 26 g"
+        // The pack size as printed e.g. "4 x 26 g"
         quantity: 'String',
         per100g: OpenFoodFactsNutritionInputTC,
     },
@@ -59,10 +60,6 @@ const OpenFoodFactsContributionResultTC = schemaComposer.createObjectTC({
         photoUploaded: 'Boolean!',
     },
 });
-
-function badInput(message: string): GraphQLError {
-    return new GraphQLError(message, { extensions: { code: 'BAD_USER_INPUT' } });
-}
 
 /**
  * A stable ID for one of our users, from which Open Food Facts can neither read the user
@@ -113,23 +110,6 @@ function validate(contribution: OpenFoodFactsContribution, hasPhoto: boolean): v
     if (Object.keys(productFields(contribution)).length === 0 && !hasPhoto) {
         throw badInput('A contribution needs a product field, values per 100 g or a photo');
     }
-}
-
-interface WriteConfig {
-    url: string;
-    userId: string;
-    password: string;
-    salt: string;
-}
-
-function writeConfig(): WriteConfig {
-    const { url, userId, password, appUuidSalt } = openFoodFactsWriteConfig();
-    if (!userId || !password || !appUuidSalt) {
-        throw new GraphQLError('Open Food Facts contributions are not configured on this server', {
-            extensions: { code: 'NOT_CONFIGURED' },
-        });
-    }
-    return { url, userId, password, salt: appUuidSalt };
 }
 
 function headers(url: string): Record<string, string> {
@@ -197,7 +177,7 @@ export const OpenFoodFactsMutation = {
             contribution.barcode = contribution.barcode?.trim();
             const photo = args.labelPhoto as Promise<FileUpload> | undefined;
             validate(contribution, Boolean(photo));
-            const { url, userId, password, salt } = writeConfig();
+            const { url, userId, password, appUuidSalt } = OPEN_FOOD_FACTS_WRITE;
             // Read before any write, so a bad photo cannot leave half a contribution.
             const photoBase64 = photo ? await readPhoto(photo) : null;
 
@@ -206,7 +186,7 @@ export const OpenFoodFactsMutation = {
                 password,
                 app_name: APP_NAME,
                 app_version: APP_VERSION,
-                app_uuid: appUuid(String(user._id), salt),
+                app_uuid: appUuid(String(user._id), appUuidSalt),
             };
             const fields = productFields(contribution);
             if (Object.keys(fields).length > 0) {

@@ -1,6 +1,7 @@
 import { GraphQLError } from 'graphql';
 import { schemaComposer } from 'graphql-compose';
 
+import { badInput } from './validation.js';
 import { OPEN_FOOD_FACTS_SEARCH_URL } from '../constants.js';
 import { MappedPortion, UsdaFoodPortionTC, buildPortion } from './Usda.js';
 import { OPEN_FOOD_FACTS_API_URL, OPEN_FOOD_FACTS_CONTACT } from '../constants.js';
@@ -294,9 +295,7 @@ export const OpenFoodFactsQuery = {
             requireUser(context);
             const barcode = typeof args.barcode === 'string' ? args.barcode.trim() : '';
             if (!isBarcode(barcode)) {
-                throw new GraphQLError('A barcode is 8 to 14 digits', {
-                    extensions: { code: 'BAD_USER_INPUT' },
-                });
+                throw badInput('A barcode is 8 to 14 digits');
             }
             const cached = productCache.get(barcode);
             if (cached) return cached;
@@ -328,9 +327,7 @@ export const OpenFoodFactsQuery = {
             requireUser(context);
             const query = typeof args.query === 'string' ? args.query.trim() : '';
             if (!query) {
-                throw new GraphQLError('Invalid query argument', {
-                    extensions: { code: 'BAD_USER_INPUT' },
-                });
+                throw badInput('Invalid query argument');
             }
             const pageSize = Math.min(
                 Math.max((args.pageSize as number) ?? 20, 1),

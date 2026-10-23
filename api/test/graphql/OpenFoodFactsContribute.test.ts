@@ -3,12 +3,13 @@ import { Readable } from 'stream';
 import { assert } from 'chai';
 import mongoose from 'mongoose';
 import { ApolloServer } from '@apollo/server';
-import { SinonStub, restore, stub } from 'sinon';
+import { SinonStub, replace, restore, stub } from 'sinon';
 import Upload from 'graphql-upload/Upload.mjs';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { User } from '../../src/models/User.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
+import { OPEN_FOOD_FACTS_WRITE } from '../../src/constants.js';
 import { resetRateLimits } from '../../src/middleware/rateLimit.js';
 import { createUnverifiedUser, createUser } from '../utils/data.js';
 import { resetOpenFoodFacts } from '../../src/schema/OpenFoodFacts.js';
@@ -36,20 +37,6 @@ const KNORR = {
     quantity: '4 x 26 g',
     per100g: { calories: 69, protein: 3.8, carbs: 12, fat: 0.5 },
 };
-
-const ENV = {
-    OPEN_FOOD_FACTS_WRITE_URL: 'https://world.openfoodfacts.net',
-    OPEN_FOOD_FACTS_USER_ID: 'recipe-app',
-    OPEN_FOOD_FACTS_PASSWORD: 'secret-password',
-    OPEN_FOOD_FACTS_APP_UUID_SALT: 'salt',
-};
-
-function setEnv(values: Partial<typeof ENV>) {
-    for (const key of Object.keys(ENV) as Array<keyof typeof ENV>) {
-        if (values[key] === undefined) delete process.env[key];
-        else process.env[key] = values[key];
-    }
-}
 
 /** A label photo, as graphql-upload hands it to a resolver. */
 function photo(filename: string, content = 'jpeg bytes') {
@@ -141,12 +128,10 @@ describe('openFoodFactsContribute', function () {
     beforeEach(async function () {
         resetRateLimits();
         resetOpenFoodFacts();
-        setEnv(ENV);
         await createUser();
     });
     afterEach(function (done) {
         restore();
-        setEnv({});
         const users = mongoose.connection.collections['users'];
         (users ? users.drop() : Promise.resolve(true)).then(() => done(), done);
     });
@@ -187,11 +172,14 @@ describe('openFoodFactsContribute', function () {
         assert.equal(form.get('code'), '8721317714801');
         assert.equal(form.get('product_name'), 'Roasted Garlic Stock Pot');
         assert.equal(form.get('nutriment_carbohydrates'), '12');
-        assert.equal(form.get('user_id'), 'recipe-app');
-        assert.equal(form.get('password'), 'secret-password');
+        assert.equal(form.get('user_id'), OPEN_FOOD_FACTS_WRITE.userId);
+        assert.equal(form.get('password'), OPEN_FOOD_FACTS_WRITE.password);
         assert.equal(form.get('app_name'), 'recipe');
         const user = await User.findOne({ username: 'testuser1' }).orFail();
-        assert.equal(form.get('app_uuid'), appUuid(String(user._id), 'salt'));
+        assert.equal(
+            form.get('app_uuid'),
+            appUuid(String(user._id), OPEN_FOOD_FACTS_WRITE.appUuidSalt)
+        );
         // Staging asks for basic auth.
         const headers = init.headers as Record<string, string>;
         assert.equal(headers.Authorization, `Basic ${Buffer.from('off:off').toString('base64')}`);
@@ -199,7 +187,7 @@ describe('openFoodFactsContribute', function () {
     });
 
     it('sends no basic auth to production', async function () {
-        setEnv({ ...ENV, OPEN_FOOD_FACTS_WRITE_URL: 'https://world.openfoodfacts.org' });
+        replace(OPEN_FOOD_FACTS_WRITE, 'url', 'https://world.openfoodfacts.org');
         const fetchStub = stub(global, 'fetch').resolves(SAVED);
 
         const result = await contribute(this.apolloServer, { input: KNORR });
@@ -230,7 +218,7 @@ describe('openFoodFactsContribute', function () {
         const body = JSON.parse((fetchStub.secondCall.args[1] as RequestInit).body as string);
         assert.equal(body.image_data_base64, Buffer.from('jpeg bytes').toString('base64'));
         assert.deepEqual(body.selected, { nutrition: { en: {} } });
-        assert.equal(body.user_id, 'recipe-app');
+        assert.equal(body.user_id, OPEN_FOOD_FACTS_WRITE.userId);
         assert.equal(body.app_name, 'recipe');
     });
 
@@ -277,15 +265,6 @@ describe('openFoodFactsContribute', function () {
             input: { ...KNORR, per100g: { ...KNORR.per100g, fat: -1 } },
         });
         assert.equal(negative.errors?.[0].extensions?.code, 'BAD_USER_INPUT');
-        assert.isFalse(fetchStub.called);
-    });
-
-    it('is turned off when the app account is not configured', async function () {
-        setEnv({ OPEN_FOOD_FACTS_WRITE_URL: ENV.OPEN_FOOD_FACTS_WRITE_URL });
-        const fetchStub = stub(global, 'fetch');
-
-        const result = await contribute(this.apolloServer, { input: KNORR });
-        assert.equal(result.errors?.[0].extensions?.code, 'NOT_CONFIGURED');
         assert.isFalse(fetchStub.called);
     });
 
