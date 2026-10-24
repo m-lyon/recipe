@@ -1,6 +1,7 @@
 import { GraphQLError } from 'graphql';
 import { schemaComposer } from 'graphql-compose';
 
+import { badInput } from './validation.js';
 import { USDA_API_KEY } from '../constants.js';
 
 const USDA_BASE = 'https://api.nal.usda.gov/fdc/v1';
@@ -398,9 +399,7 @@ export const UsdaQuery = {
                 });
             }
             if (typeof args.query !== 'string' || !args.query) {
-                throw new GraphQLError('Invalid query argument', {
-                    extensions: { code: 'BAD_USER_INPUT' },
-                });
+                throw badInput('Invalid query argument');
             }
             // Clamped at both ends: USDA answers 400 for pageSize < 1, and that wasted
             // request still spends the shared key's hourly quota.

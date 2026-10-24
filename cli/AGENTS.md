@@ -68,6 +68,36 @@ seitan, a pack of pearl couscous), link the Open Food Facts product by its barco
 - When a product is missing from Open Food Facts, say so. Do not fall back to a USDA
   branded record for a UK product without asking.
 
+## Contributing back to Open Food Facts
+
+`recipe open-food-facts contribute <barcode>` sends a correction, or a missing product, to
+Open Food Facts. **This writes to a public database that other people rely on.**
+
+```text
+1. Read the values from the operator's label photo. Quote them to the operator.
+2. recipe open-food-facts contribute <barcode> \
+     --label-per-100g kcal,protein,carbs,fat \
+     [--name "..."] [--brands "..."] [--quantity "4 x 26 g"] \
+     --photo <label photo> --dry-run                    plan: current values beside new ones
+3. Show the plan to the operator. Send only after the operator approves it.
+4. Re-run step 2 without --dry-run.
+5. Link the ingredient as a separate step: nutrition link --barcode <code>.
+```
+
+- **Never send a value you have not read from a label photo**, and never send without the
+  operator's approval of that exact plan.
+- **Attach the label photo** with `--photo` whenever you have one. Volunteers check edits
+  against the photo; an edit without one is more likely to be reverted.
+- Send only the fields that the label shows. Do not send a name, a brand or a pack size you
+  inferred.
+- A missing product needs `--name`, so that others can find it.
+- The server sends contributions to the **staging** server unless production is
+  configured. The result names the host, and the CLI warns when it was staging. Tell the
+  operator which one it was.
+- A contribution does not change our nutritional data. After it, `nutrition link` reads the
+  product fresh. A contribution to staging does not change what `open-food-facts show`
+  reads, because reads come from production.
+
 ## Judgement rules
 
 These are not style advice. Each one was derived from a real error found while sampling the

@@ -273,6 +273,20 @@ export const OPEN_FOOD_FACTS_PRODUCT = gql(`
     }
 `);
 
+export const OPEN_FOOD_FACTS_CONTRIBUTE = gql(`
+    mutation CliOpenFoodFactsContribute(
+        $input: OpenFoodFactsContributionInput!
+        $labelPhoto: Upload
+    ) {
+        openFoodFactsContribute(input: $input, labelPhoto: $labelPhoto) {
+            barcode
+            host
+            fieldsSent
+            photoUploaded
+        }
+    }
+`);
+
 export const CREATE_NUTRITIONAL_INFO = gql(`
     mutation CliCreateNutritionalInfo($record: CreateOneNutritionalInfoCreateInput!) {
         nutritionalInfoCreateOne(record: $record) {

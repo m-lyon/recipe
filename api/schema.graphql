@@ -1427,6 +1427,7 @@ type Mutation {
   """
   nutritionalInfoRemoveById(_id: MongoID!): RemoveByIdNutritionalInfoPayload
   nutritionalInfoUpdateById(_id: MongoID!, record: UpdateByIdNutritionalInfoInput!): UpdateByIdNutritionalInfoPayload
+  openFoodFactsContribute(input: OpenFoodFactsContributionInput!, labelPhoto: Upload): OpenFoodFactsContributionResult!
 
   """Create a new prep method"""
   prepMethodCreateOne(record: CreateOnePrepMethodCreateInput!): CreateOnePrepMethodPayload
@@ -1512,6 +1513,29 @@ type NutritionalInfoPerGram {
 }
 
 input NutritionalInfoPerGramInput {
+  calories: Float!
+  carbs: Float!
+  fat: Float!
+  protein: Float!
+}
+
+input OpenFoodFactsContributionInput {
+  barcode: String!
+  brands: String
+  per100g: OpenFoodFactsNutritionInput
+  productName: String
+  quantity: String
+}
+
+type OpenFoodFactsContributionResult {
+  barcode: String!
+  fieldsSent: [String!]!
+  host: String!
+  photoUploaded: Boolean!
+}
+
+"""Values per 100 g, as printed on the pack label"""
+input OpenFoodFactsNutritionInput {
   calories: Float!
   carbs: Float!
   fat: Float!
