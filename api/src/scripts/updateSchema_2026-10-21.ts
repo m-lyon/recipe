@@ -11,23 +11,11 @@
  *
  * Only the sizes are changed. Safe to re-run.
  *
- * From a checkout of the branch that adds this script, in api/:
+ *   npm run compile
+ *   MONGODB_URI=mongodb://localhost:27017/recipeProdBackup DRY_RUN=1 \
+ *       node ./dist/src/scripts/updateSchema_2026-10-21.js
  *
- *   1. Back up the database, for example:
- *        mongodump --uri "<production MONGODB_URI>" --out ./backup-2026-10-21
- *
- *   2. Compile:
- *        npm run compile
- *
- *   3. Dry run. It reports everything and writes nothing:
- *        MONGODB_URI="<production MONGODB_URI>" DRY_RUN=1 \
- *            node ./dist/src/scripts/updateSchema_2026-10-21.js
- *
- *   4. Run it, to clear the sizes:
- *        MONGODB_URI="<production MONGODB_URI>" \
- *            node ./dist/src/scripts/updateSchema_2026-10-21.js
- *
- *   5. Fix the reported references and cycles by hand.
+ *  Fix the reported references and cycles by hand.
  *
  * The production MONGODB_URI is in /etc/recipe.env on the server. The order against the
  * deploy does not matter: the new API reads old data correctly.

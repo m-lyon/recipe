@@ -169,11 +169,6 @@ const instructionSubsection = new Schema(
     { _id: false }
 );
 
-/**
- * How much one batch makes, as measures of the whole batch: "2 each" and "900 g" for two
- * pizza bases. A recipe line that uses this recipe is priced through the row in its own
- * dimension, so a yield matters only when the recipe is an ingredient.
- */
 export interface RecipeYield {
     quantity: string;
     unit: Types.ObjectId;
@@ -193,7 +188,6 @@ const recipeYieldSchema = new Schema<RecipeYield>(
     { _id: false }
 );
 
-/** Every unit exists, and no two rows share a dimension: two mass rows would disagree. */
 async function validYieldUnits(rows?: RecipeYield[]): Promise<boolean> {
     if (!rows || rows.length === 0) return true;
     const ids = rows.map((row) => String(row.unit));
@@ -204,8 +198,8 @@ async function validYieldUnits(rows?: RecipeYield[]): Promise<boolean> {
             extensions: { code: 'BAD_USER_INPUT' },
         });
     }
-    const dimensions = ids.map((id) => dimensionOf.get(id));
-    return new Set(dimensions).size === dimensions.length;
+    const keys = ids.map((id) => (dimensionOf.get(id) === 'count' ? id : dimensionOf.get(id)));
+    return new Set(keys).size === keys.length;
 }
 
 export interface Recipe extends Document {
@@ -318,7 +312,7 @@ const recipeSchema: Schema<Recipe> = new Schema<Recipe>({
         default: undefined,
         validate: {
             validator: validYieldUnits,
-            message: 'A yield has at most one row per dimension.',
+            message: 'A recipe can only have one yield for weight, volume, and each count unit.',
         },
     },
     isIngredient: { type: Boolean, required: true },

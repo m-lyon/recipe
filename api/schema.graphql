@@ -1918,8 +1918,6 @@ type Recipe {
   lastModified: Date!
   notes: String
   numServings: Float!
-
-  """Calculated on read, through recipes used as ingredients"""
   nutrition: RecipeNutrition!
   originalRecipe: Recipe
   owner: MongoID!
@@ -1931,8 +1929,6 @@ type Recipe {
   title: String!
   titleIdentifier: String!
   veganVersion: Recipe
-
-  """How much one batch makes: at most one row per dimension"""
   yield: [RecipeYield!]
 }
 

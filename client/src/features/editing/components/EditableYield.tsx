@@ -14,10 +14,14 @@ function unitLabel(unit: UnitChoice): string {
 }
 
 /**
- * How much one batch makes, as rows of quantity and unit: "2 each" and "900 g" for two
- * pizza bases. A recipe that uses this one as an ingredient is priced through the row in its
- * own dimension, so each dimension has at most one row.
+ * What a row's unit rules out for the other rows. A mass or volume line reads against any row in
+ * its dimension, so a mass row rules out every mass unit. A count line reads only against its
+ * own unit, so "8 slice" and "2 each" can both be given.
  */
+function yieldKey(unit: UnitChoice): string {
+    return unit.dimension === 'count' ? unit._id : unit.dimension;
+}
+
 export function EditableYield() {
     const { rows, isIngredient, addRow, updateRow, removeRow } = useRecipeStore(
         useShallow((state) => ({
@@ -31,19 +35,19 @@ export function EditableYield() {
     const { data } = useQuery(GET_INGREDIENT_COMPONENTS);
     const units = data?.units ?? [];
 
-    /** The units a row may choose: none in a dimension that another row already has. */
     const choicesFor = (index: number) => {
         const taken = new Set(
             rows
                 .filter((_, i) => i !== index)
-                .flatMap((row) => (row.unit ? [row.unit.dimension] : []))
+                .flatMap((row) => (row.unit ? [yieldKey(row.unit)] : []))
         );
         return units
-            .filter((unit) => !taken.has(unit.dimension))
+            .filter((unit) => !taken.has(yieldKey(unit)))
             .map((unit) => ({ value: unit._id, label: unitLabel(unit) }));
     };
-    const allTaken = new Set(rows.flatMap((row) => (row.unit ? [row.unit.dimension] : [])));
-    const canAdd = rows.length < 3 && allTaken.size === rows.length;
+    const allTaken = new Set(rows.flatMap((row) => (row.unit ? [yieldKey(row.unit)] : [])));
+    const canAdd =
+        allTaken.size === rows.length && units.some((unit) => !allTaken.has(yieldKey(unit)));
 
     return (
         <Stack gap='xs' aria-label='Recipe yield'>

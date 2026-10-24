@@ -82,6 +82,15 @@ describe('yieldFraction', function () {
         assert.equal(yieldFraction(1, EACH, pizzaDough), 0.5);
     });
 
+    it('reads a count line against the row in its own unit', function () {
+        const garlic = [
+            { quantity: 2, unit: EACH },
+            { quantity: 20, unit: CLOVE },
+        ];
+        assert.equal(yieldFraction(1, EACH, garlic), 0.5);
+        assert.equal(yieldFraction(5, CLOVE, garlic), 0.25);
+    });
+
     it('reads a mass line against the mass row', function () {
         assert.closeTo(yieldFraction(300, GRAM, pizzaDough)!, 1 / 3, 1e-9);
         assert.closeTo(yieldFraction(0.3, KILOGRAM, pizzaDough)!, 1 / 3, 1e-9);

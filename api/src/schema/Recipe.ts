@@ -176,7 +176,6 @@ RecipeTC.addFields({
     },
 });
 
-// A yield row's unit, resolved like a recipe line's.
 RecipeTC.getFieldOTC('yield').addRelation('unit', {
     resolver: () => UnitTC.mongooseResolvers.findById(),
     prepareArgs: { _id: (source: { unit: unknown }) => source.unit },
@@ -184,7 +183,7 @@ RecipeTC.getFieldOTC('yield').addRelation('unit', {
 });
 RecipeTC.extendField('yield', {
     type: '[RecipeYield!]',
-    description: 'How much one batch makes: at most one row per dimension',
+    description: 'How much one batch makes: one weight, one volume, and one row per count unit',
 });
 
 const MacrosTC = schemaComposer.createObjectTC({
@@ -237,7 +236,6 @@ const RecipeNutritionTC = schemaComposer.createObjectTC({
 RecipeTC.addFields({
     nutrition: {
         type: RecipeNutritionTC.NonNull,
-        description: 'Calculated on read, through recipes used as ingredients',
         resolve: async (source: Recipe) => {
             const result = await recipeNutrition(String(source._id));
             return result ?? { total: { calories: 0, protein: 0, carbs: 0, fat: 0 }, lines: [] };

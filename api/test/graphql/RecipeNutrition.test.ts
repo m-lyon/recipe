@@ -97,6 +97,22 @@ async function ingredient(name: string, perGram = PER_GRAM): Promise<Types.Objec
     return doc._id as Types.ObjectId;
 }
 
+async function countUnit(name: string): Promise<Types.ObjectId> {
+    const doc = await new Unit({
+        shortSingular: name,
+        shortPlural: `${name}s`,
+        longSingular: name,
+        longPlural: `${name}s`,
+        preferredNumberFormat: 'decimal',
+        owner: user._id,
+        hasSpace: true,
+        unique: true,
+        dimension: 'count',
+        perCanonical: 1,
+    }).save();
+    return doc._id as Types.ObjectId;
+}
+
 /** Rejects with an error whose extensions carry `code`. */
 async function rejectsWithCode(promise: Promise<unknown>, code: string) {
     try {
@@ -149,7 +165,40 @@ describe('recipe yields and recipe lines', function () {
                 }).save();
                 assert.fail('Expected a validation error');
             } catch (error) {
-                assert.include((error as Error).message, 'at most one row per dimension');
+                assert.include(
+                    (error as Error).message,
+                    'one yield for weight, volume, and each count unit'
+                );
+            }
+        });
+
+        it('saves rows in two count units', async function () {
+            const flour = await ingredient('flour');
+            const slice = await countUnit('slice');
+            const saved = await recipe('Pizza', [line(flour, '500', units.gram)], {
+                yield: [
+                    { quantity: '2', unit: units.each },
+                    { quantity: '8', unit: slice },
+                ],
+            }).save();
+            assert.lengthOf(saved.yield!, 2);
+        });
+
+        it('refuses two rows in one count unit', async function () {
+            const flour = await ingredient('flour');
+            try {
+                await recipe('Pizza', [line(flour, '500', units.gram)], {
+                    yield: [
+                        { quantity: '2', unit: units.each },
+                        { quantity: '3', unit: units.each },
+                    ],
+                }).save();
+                assert.fail('Expected a validation error');
+            } catch (error) {
+                assert.include(
+                    (error as Error).message,
+                    'one yield for weight, volume, and each count unit'
+                );
             }
         });
 

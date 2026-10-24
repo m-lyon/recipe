@@ -86,6 +86,32 @@ describe('Recipe yield', () => {
         expect(screen.queryByRole('option', { name: 'g (gram)' })).toBeNull();
     });
 
+    it('should not offer a count unit another row already has', async () => {
+        renderComponent();
+        const user = userEvent.setup();
+
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+        await fillRow(user, 1, '2', 'each (whole batches)');
+        await user.click(screen.getByRole('button', { name: 'Add measure' }));
+        await user.click(screen.getAllByLabelText('Yield unit 2')[0]);
+
+        // A count row rules out only its own unit, not the whole dimension.
+        expect(await screen.findByRole('option', { name: 'g (gram)' })).not.toBeNull();
+        expect(screen.queryByRole('option', { name: 'each (whole batches)' })).toBeNull();
+    });
+
+    it('should not add a row when every unit is ruled out', async () => {
+        renderComponent();
+        const user = userEvent.setup();
+
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+        await fillRow(user, 1, '2', 'each (whole batches)');
+        await fillRow(user, 2, '900', 'g (gram)');
+        await fillRow(user, 3, '4', 'cup (cup)');
+
+        expect(screen.queryByRole('button', { name: 'Add measure' })).toBeNull();
+    });
+
     it('should refuse to save a row with a quantity and no unit', async () => {
         renderComponent();
         const user = userEvent.setup();
