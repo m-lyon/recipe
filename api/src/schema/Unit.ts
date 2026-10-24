@@ -5,7 +5,7 @@ import { createOneResolver, updateByIdResolver } from './utils.js';
 import { validateUnitCreate, validateUnitUpdate } from './validation.js';
 import { validateUnitNotInLadder, validateUnitNotStandard } from './validation.js';
 import { validateItemNotInMeasure, validateItemNotInRecipe } from './validation.js';
-import { filterIsEditable, filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
+import { filterIsEditable, filterIsUnique, filterIsVisible } from '../middleware/filters.js';
 
 UnitTC.addRelation('owner', {
     resolver: () => OwnerTC.getResolver('findById'),
@@ -40,7 +40,7 @@ export const UnitQuery = {
     unitOne: UnitTC.mongooseResolvers.findOne().setDescription('Retrieve a single unit'),
     unitMany: UnitTC.mongooseResolvers
         .findMany()
-        .wrapResolve(filterIsOwnerOrAdmin())
+        .wrapResolve(filterIsVisible())
         .wrapResolve(filterIsUnique())
         .setDescription('Retrieve multiple units'),
     unitManyEditable: UnitTC.mongooseResolvers

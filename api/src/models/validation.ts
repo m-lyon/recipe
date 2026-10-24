@@ -6,7 +6,7 @@ import { Unit } from './Unit.js';
 import { Recipe } from './Recipe.js';
 
 /**
- * A document that can query its own collection, which is all `unique` needs.
+ * A document that can query its own collection.
  */
 type QueryableDoc = Pick<Document<Types.ObjectId>, '_id' | 'model'>;
 
@@ -16,10 +16,15 @@ type QueryableDoc = Pick<Document<Types.ObjectId>, '_id' | 'model'>;
 type OwnedDoc = QueryableDoc & { owner: Types.ObjectId };
 
 /**
- * An owned document that may opt out of uniqueness. Models without a `unique` field are always
+ * A document that may opt out of uniqueness. Models without a `unique` field are always
  * checked.
  */
-type ScopedUniqueDoc = OwnedDoc & { unique?: boolean };
+type UniqueDoc = QueryableDoc & { unique?: boolean };
+
+/**
+ * An owned document that may opt out of uniqueness, scoped to the owner and the admins.
+ */
+type ScopedUniqueDoc = OwnedDoc & UniqueDoc;
 
 /**
  * A field declared on the model itself, rather than one inherited from `Document`.
@@ -45,9 +50,30 @@ async function findDuplicatesInAdminsAndUserScope(
     return { admins, duplicates };
 }
 
+export function unique<TDoc extends UniqueDoc>(
+    model: string,
+    attribute: ModelField<TDoc>,
+    message?: string
+) {
+    async function validator(this: TDoc, value: string) {
+        if (this.unique === false) {
+            return true;
+        }
+        const duplicate = await this.model(model).exists({
+            _id: { $ne: this._id },
+            $or: [{ unique: true }, { unique: { $exists: false } }],
+            [attribute]: value,
+        });
+        return duplicate == null;
+    }
+    return {
+        validator,
+        message: message ? message : `The ${model.toLowerCase()} ${attribute} must be unique.`,
+    };
+}
+
 /**
- * Mongoose doesn't type a validator's `this`, so callers name the model, e.g.
- * `uniqueInAdminsAndUser<Unit>('Unit', 'shortSingular')`, to check it has the fields used here.
+ * Unique within the owner's and the admins' documents.
  */
 export function uniqueInAdminsAndUser<TDoc extends ScopedUniqueDoc>(
     model: string,
@@ -118,27 +144,6 @@ export function uniqueRecipeTitleInAdminsAndUser(message?: string) {
         validator,
         message: message ? message : 'The recipe title must be unique.',
     };
-}
-
-export function unique<TDoc extends QueryableDoc>(
-    model: string,
-    attribute: ModelField<TDoc>,
-    message?: string
-) {
-    async function validator(this: TDoc, value: string) {
-        if (this._id) {
-            const count = await this.model(model).countDocuments({
-                $and: [
-                    { _id: { $ne: this._id } }, // Exclude the current document
-                    { [attribute]: value },
-                ],
-            });
-            return count === 0;
-        }
-        const count = await this.model(model).countDocuments({ [attribute]: value });
-        return count === 0;
-    }
-    return { validator, message: message ?? `The ${attribute} must be unique, please try again.` };
 }
 
 export function ownerExists() {
