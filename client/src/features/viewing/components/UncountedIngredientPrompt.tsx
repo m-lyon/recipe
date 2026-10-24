@@ -15,7 +15,6 @@ interface Option {
     prepMethodId: string | null;
 }
 
-/** "1 cup of honey", "1 large onion": the thing whose weight is missing. */
 function describeOneUnit(
     unit: Pick<UnitChoice, 'longSingular' | 'hidden'>,
     ingredientName: string,
@@ -74,7 +73,7 @@ export function UncountedIngredientPrompt(props: Props) {
     const [error, setError] = useState<string | null>(null);
     const [createMeasure, { loading }] = useMutation(CREATE_INGREDIENT_MEASURE, {
         // Evict the cached measure lists, so the ingredient page does not show a stale one,
-        // and fetch the recipe's figures again: the API calculates them.
+        // and fetch the recipe's figures again.
         update: (cache) => {
             cache.evict({ id: 'ROOT_QUERY', fieldName: 'ingredientMeasuresByIngredientIds' });
             cache.gc();

@@ -93,8 +93,6 @@ const ingredientSuggestions = (
     value: string,
     sized: boolean
 ): IngredientSuggestion[] => {
-    // A recipe's yield has no size, so "1 large pizza dough" means nothing: once a size is
-    // chosen, only ingredients are offered.
     const recipes = sized ? [] : (data?.recipes ?? []);
     const items = sortIngredients(data?.ingredients ?? [], recipes, value);
     items.push({ value: 'add new ingredient', colour: 'gray.400' });

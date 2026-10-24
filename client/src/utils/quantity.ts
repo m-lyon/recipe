@@ -13,7 +13,7 @@ export function changeQuantity(
     if (newServings === oldServings || ingr.quantity == null) {
         return ingr;
     }
-    const newQuantity = calculateQuantity(ingr.quantity, newServings, oldServings, ingr.unit);
+    const newQuantity = scaleQuantity(ingr.quantity, newServings, oldServings, ingr.unit);
     return { ...ingr, ...unitConversion({ quantity: newQuantity, unit: ingr.unit }) };
 }
 

@@ -420,8 +420,8 @@ declare global {
     // - Nutrition ----------------------------------------------------------------
 
     /**
-     * Calories (kcal) and grams of protein, carbohydrate and fat: a recipe's total, one serving,
-     * or one gram of an ingredient.
+     * Calories (kcal) and grams of protein, carbohydrate and fat, for a recipe or
+     * ingredient.
      */
     type MacroNutrients = Omit<
         NonNullable<GetRecipeNutritionQuery['recipeById']>['nutrition']['total'],
