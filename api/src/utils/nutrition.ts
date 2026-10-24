@@ -1,20 +1,20 @@
 import { Types } from 'mongoose';
 
 import { Size } from '../models/Size.js';
+import { Unit } from '../models/Unit.js';
 import { Ingredient } from '../models/Ingredient.js';
-import { Unit, UnitDimension } from '../models/Unit.js';
 import { IngredientMeasure } from '../models/IngredientMeasure.js';
 import { MacroNutrients, NutritionalInfo } from '../models/NutritionalInfo.js';
 import { Recipe, RecipeIngredientType, RecipeYield } from '../models/Recipe.js';
 
 /**
- * A recipe's nutrition, calculated on read from its ingredients (issue #116).
+ * A recipe's nutrition, calculated from its ingredients.
  *
  * Every quantity reaches grams, or a share of a child recipe, before it meets a macro:
  *  - an ingredient: grams(quantity, unit, measures) × perGram
  *  - a recipe used as an ingredient: (quantity ÷ the child's yield in the same dimension) ×
  *    the child's total
- * Nothing is stored, so a recipe never needs re-saving when an ingredient's data changes.
+ * Nutrition data is not stored, so a recipe does not need re-saving when ingredients change.
  */
 
 /** Recipes nested deeper than this are not followed. */
@@ -87,13 +87,9 @@ export function quantityToFloat(quantity: string): number {
     return parts.length === 1 ? parseNumber(parts[0]) : NaN;
 }
 
-export interface UnitData {
+export type UnitData = Pick<Unit, 'longSingular' | 'hidden' | 'dimension' | 'perCanonical'> & {
     _id: Types.ObjectId | string;
-    longSingular: string;
-    hidden?: boolean;
-    dimension: UnitDimension;
-    perCanonical: number;
-}
+};
 
 export interface MeasureData {
     unit: UnitData;
@@ -113,7 +109,7 @@ function specificity(measure: MeasureData): number {
 }
 
 /**
- * Grams in one of the key's unit, from the most specific measure that matches:
+ * Grams in one of the measure key's unit, from the most specific measure that matches:
  *  1. exact (unit, size, prep)
  *  2. drop prep (unit, size)
  *  3. drop size (unit)
@@ -134,7 +130,6 @@ export function gramsPerUnit(measures: MeasureData[], key: MeasureKey): number |
     return (volume.grams / volume.unit.perCanonical) * key.unit.perCanonical;
 }
 
-/** "1 cup of honey", "1 large onion": the thing whose weight is missing. */
 export function describeOneUnit(unit: UnitData, name: string, sizeName?: string | null): string {
     const unitStr = unit.hidden ? '' : `${unit.longSingular} of `;
     return `1 ${unitStr}${sizeName ? `${sizeName} ` : ''}${name}`;
@@ -169,15 +164,14 @@ export function yieldFraction(quantity: number, unit: UnitData, yields: YieldRow
 
 // ---------- the calculation over loaded data ----------
 
-interface LoadedIngredient {
+type LoadedIngredient = Pick<RecipeIngredientType, 'type'> & {
     _id: Types.ObjectId;
-    type: 'ingredient' | 'recipe';
     quantity: string | null;
     unit: string | null;
     size: string | null;
     prepMethod: string | null;
     ingredient: string;
-}
+};
 
 interface LoadedRecipe {
     _id: string;
