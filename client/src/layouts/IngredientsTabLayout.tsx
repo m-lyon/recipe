@@ -7,7 +7,6 @@ interface Props {
     IngredientList: ReactNode;
     Notes: ReactNode;
     Tags?: ReactNode;
-    /** How much the recipe makes, below the servings. */
     Yield?: ReactNode;
     UsedIn?: ReactNode;
 }

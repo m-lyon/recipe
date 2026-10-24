@@ -2,7 +2,6 @@ import { StateCreator } from 'zustand';
 
 import { RecipeState } from './useRecipeStore';
 
-/** One row of a recipe's yield, as it is being edited: "2 each", "900 g". */
 export interface EditableYieldRow {
     quantity: string;
     unit: UnitChoice | null;
@@ -10,9 +9,7 @@ export interface EditableYieldRow {
 
 export interface YieldSlice {
     yieldRows: EditableYieldRow[];
-    /** True when the recipe being edited was saved with a yield, so clearing it must be sent. */
     hadYield: boolean;
-    /** Loads a saved recipe's yield. */
     setYield: (rows: EditableYieldRow[]) => void;
     addYieldRow: () => void;
     updateYieldRow: (index: number, row: Partial<EditableYieldRow>) => void;

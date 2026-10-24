@@ -9,15 +9,6 @@ import { indent, num, renderTable } from '../../lib/format.js';
 import { RECIPE_NUTRITION } from '../../graphql/operations.js';
 import type { RecipeIngredientSummary } from '../../lib/types.js';
 
-interface IngredientNutrition {
-    recipeIngredient: string;
-    status: 'COUNTED' | 'PARTIAL' | 'UNCOUNTED';
-    macros: Macros;
-    reason: { code: string; message: string } | null;
-    childUncounted: number | null;
-    childRecipe: string | null;
-}
-
 /** "300 g Pearl Couscous", "1 garlic clove": an ingredient as it reads. */
 function describeIngredient(item: RecipeIngredientSummary): string {
     const name =
@@ -60,12 +51,10 @@ export default class Nutrition extends BaseCommand {
                 .flatMap((subsection) => subsection.ingredients)
                 .map((ingredient) => [String(ingredient._id), describeIngredient(ingredient)])
         );
-        const ingredients = (data.nutrition.ingredients as IngredientNutrition[]).map(
-            (ingredient) => ({
-                ...ingredient,
-                text: textOf.get(ingredient.recipeIngredient) ?? ingredient.recipeIngredient,
-            })
-        );
+        const ingredients = data.nutrition.ingredients.map((ingredient) => ({
+            ...ingredient,
+            text: textOf.get(ingredient.recipeIngredient) ?? ingredient.recipeIngredient,
+        }));
         const uncounted = ingredients.filter((ingredient) => ingredient.status === 'UNCOUNTED');
         const partial = ingredients.filter((ingredient) => ingredient.status === 'PARTIAL');
 

@@ -5,7 +5,6 @@ import { Box, Button, Checkbox, HStack, IconButton, Skeleton } from '@chakra-ui/
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react';
 
 import { useErrorToast } from '@recipe/common/hooks';
-import { MacroNutrients } from '@recipe/utils/macros';
 import { GET_INGREDIENT_COMPONENTS } from '@recipe/graphql/queries/recipe';
 import { FloatingLabelInput, SearchableSelect } from '@recipe/common/components';
 import { GET_INGREDIENT_MEASURES } from '@recipe/graphql/queries/nutritionalInfo';

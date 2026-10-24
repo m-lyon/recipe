@@ -1332,7 +1332,6 @@ export const mockUpdateRecipeThreeVeganCopyNoChange = {
     },
 };
 
-/** Saves Recipe One with a yield of "2 each" and "900 g". */
 export const mockUpdateRecipeAddYield = {
     request: {
         query: UPDATE_RECIPE,
@@ -1364,7 +1363,6 @@ export const mockUpdateRecipeAddYield = {
     },
 };
 
-/** Clears Recipe One's yield: an empty list, so the saved rows are removed. */
 export const mockUpdateRecipeRemoveYield = {
     request: {
         query: UPDATE_RECIPE,

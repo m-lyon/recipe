@@ -38,7 +38,6 @@ export const getCache = () =>
             },
             Recipe: {
                 fields: {
-                    // A yield's rows have no ids, so a saved yield replaces the cached one.
                     yield: {
                         merge(_existing, incoming) {
                             return incoming;

@@ -5,7 +5,6 @@ import { Stack, StackProps, Tooltip } from '@chakra-ui/react';
 import { MutableRefObject, forwardRef, useCallback, useEffect } from 'react';
 import { Box, Button, ButtonGroup, Checkbox, HStack } from '@chakra-ui/react';
 
-import { MacroNutrients } from '@recipe/utils/macros';
 import { IngredientTags } from '@recipe/graphql/enums';
 import type { Owner } from '@recipe/common/components';
 import { FloatingLabelInput, OwnerText } from '@recipe/common/components';

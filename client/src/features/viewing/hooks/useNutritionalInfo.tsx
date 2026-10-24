@@ -1,6 +1,5 @@
 import { useQuery } from '@apollo/client';
 
-import { MacroNutrients } from '@recipe/utils/macros';
 import { UncountedCode } from '@recipe/graphql/generated';
 import { GET_RECIPE_NUTRITION } from '@recipe/graphql/queries/nutritionalInfo';
 

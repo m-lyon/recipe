@@ -5,7 +5,6 @@ import { TbAlertTriangle, TbChevronDown, TbChevronUp } from 'react-icons/tb';
 import { Anchor, Box, Collapse, Group, SimpleGrid, Skeleton, Text } from '@mantine/core';
 
 import { PATH } from '@recipe/constants';
-import { MacroNutrients } from '@recipe/utils/macros';
 import { DisplayedIngredient } from '@recipe/features/servings';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 
