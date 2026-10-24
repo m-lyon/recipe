@@ -17,7 +17,6 @@ export function changeQuantity(
     return { ...ingr, ...unitConversion({ quantity: newQuantity, unit: ingr.unit }) };
 }
 
-/** A quantity scaled from one number of servings to another: "1/2" for 2 servings is "1" for 4. */
 export function scaleQuantity(
     qty: string,
     newServings: number,
