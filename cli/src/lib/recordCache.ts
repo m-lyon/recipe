@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 
 /**
  * USDA and Open Food Facts records change rarely, but the API's mapping of them
@@ -73,6 +73,17 @@ export class RecordCache {
             writeFileSync(this.file(id, fingerprint), JSON.stringify(entry), 'utf8');
         } catch {
             // A cache that cannot be written costs a round trip, nothing more.
+        }
+    }
+
+    /** Deletes every cached entry for an id, whatever query wrote it. */
+    forget(id: string | number): void {
+        try {
+            for (const name of readdirSync(this.directory)) {
+                if (name.startsWith(`${id}-`)) rmSync(join(this.directory, name), { force: true });
+            }
+        } catch {
+            // No directory means nothing is cached.
         }
     }
 

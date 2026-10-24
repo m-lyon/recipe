@@ -56,9 +56,15 @@ seitan, a pack of pearl couscous), link the Open Food Facts product by its barco
   8 searches a minute. Use it only when the operator has no barcode, and confirm the pick.
 - **Check the label.** Volunteers enter this data. When a label photo is available, compare
   kcal, protein, carbs and fat per 100 g. A value that differs is a stop-and-report
-  condition: tell the operator what differs, and do not link it.
+  condition: tell the operator what differs, and do not link it as it is.
 - **A data warning is a stop-and-report condition** too: a missing macro, or kcal that the
   macros do not explain.
+- **When the operator approves, link with the label values.** `--label-per-100g
+  kcal,protein,carbs,fat` writes the values read from the label photo in place of the
+  record's. The barcode and the portions still come from the record. Read the four values
+  from the photo yourself and quote them to the operator; never type values you have not
+  seen. The dry run shows the label beside the record and marks each difference. A
+  re-link without the flag replaces the label values with the record's.
 - A check-digit warning usually means a misread digit. Re-read the photo before you look
   the code up.
 - Check the brand and the pack size in `open-food-facts show` against the photo. Two products often
@@ -68,6 +74,41 @@ seitan, a pack of pearl couscous), link the Open Food Facts product by its barco
   ambiguous. Prefer the multipack portion, or a weight from the label, read by the operator.
 - When a product is missing from Open Food Facts, say so. Do not fall back to a USDA
   branded record for a UK product without asking.
+
+## Contributing back to Open Food Facts
+
+`recipe open-food-facts contribute <barcode>` sends a correction, or a missing product, to
+Open Food Facts. **This writes to a public database that other people rely on.**
+
+```text
+1. Read the values from the operator's label photo. Quote them to the operator.
+2. recipe open-food-facts contribute <barcode> \
+     --label-per-100g kcal,protein,carbs,fat \
+     [--name "..."] [--brands "..."] [--quantity "4 x 26 g"] \
+     --photo <label photo> --dry-run                    plan: current values beside new ones
+3. Show the plan to the operator. Send only after the operator approves it.
+4. Re-run step 2 without --dry-run.
+5. Link the ingredient as a separate step: nutrition link --barcode <code>.
+```
+
+- **Never send a value you have not read from a label photo**, and never send without the
+  operator's approval of that exact plan.
+- **Attach the label photo** with `--photo` whenever you have one. Volunteers check edits
+  against the photo; an edit without one is more likely to be reverted.
+- Send only the fields that the label shows. Do not send a name, a brand or a pack size you
+  inferred.
+- **Send values on the label's basis.** When the label gives values per 100 ml, pass them
+  with `--label-per-100ml`, as printed. Do not convert them to 100 g with a density, even one
+  the operator weighed: volunteers compare the values with the photo. (`nutrition link
+  --label-per-100g` is different: our data is per gram, so there a per-100 ml label needs the
+  operator's weight of a known volume.)
+- A missing product needs `--name`, so that others can find it.
+- The server sends contributions to the **staging** server unless production is
+  configured. The result names the host, and the CLI warns when it was staging. Tell the
+  operator which one it was.
+- A contribution does not change our nutritional data. After it, `nutrition link` reads the
+  product fresh. A contribution to staging does not change what `open-food-facts show`
+  reads, because reads come from production.
 
 ## Judgement rules
 
@@ -84,6 +125,14 @@ USDA API, recorded in `spec-usda-portions.md`.
 - Prefer Foundation and SR Legacy over Branded for generic ingredients. The `TYPE` column in
   `usda search` and the heading of `usda show` carry the data type.
 - Match the preparation state: raw against raw, cooked against cooked.
+- **Search many times.** USDA search quality is poor: one query often returns the wrong food, or
+  only branded records. For each ingredient, run 5 or so queries with different wording
+  before you accept a record or give up. Vary the form of the name: singular and plural,
+  "peppers, <name>, dried" (the SR Legacy style), the generic parent food, a close variety,
+  and with or without the state (raw, dried, cooked). Run them one at a time. Compare the
+  Foundation and SR Legacy hits across all the queries, and keep your notes. If no query
+  finds a specific record, say so and name the closest generic record. Do not link a close
+  variety without asking.
 
 ### Choosing portions
 
@@ -128,8 +177,9 @@ free and does not touch the quota. Fetch a candidate as often as you find useful
 - `usda search` and `open-food-facts search` are not cached by the CLI, so do not repeat a search you
   have already run. Keep the results in your own working notes.
 
-The USDA quota is 1000 requests per hour for the whole server. Budget roughly one upstream call
-per ingredient, plus one per search. Open Food Facts allows the server 12 product reads and
+The USDA quota is 1000 requests per hour for the whole server, and each account may run 60
+USDA searches per hour. Budget 5 to 10 searches and one record fetch per ingredient (see "Search
+many times"), so an hour covers about 6 to 12 ingredients. Open Food Facts allows the server 12 product reads and
 8 searches per minute; a `RATE_LIMITED` error says how long to wait.
 
 ## Reading the output

@@ -1,8 +1,8 @@
 import { Document, Schema, Types, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 
+import { ownerExists, unique } from './validation.js';
 import { STANDARD_UNIT_KEYS } from '../utils/units.js';
-import { ownerExists, uniqueInAdminsAndUser } from './validation.js';
 
 export const UnitDimensions = ['mass', 'volume', 'count'] as const;
 export type UnitDimension = (typeof UnitDimensions)[number];
@@ -31,7 +31,7 @@ const unitSchema = new Schema<Unit>({
         type: String,
         required: true,
         set: (value: string) => value.toLowerCase(),
-        validate: uniqueInAdminsAndUser<Unit>(
+        validate: unique<Unit>(
             'Unit',
             'shortSingular',
             'The short singular unit name must be unique.'
@@ -41,17 +41,13 @@ const unitSchema = new Schema<Unit>({
         type: String,
         required: true,
         set: (value: string) => value.toLowerCase(),
-        validate: uniqueInAdminsAndUser<Unit>(
-            'Unit',
-            'shortPlural',
-            'The short plural unit name must be unique.'
-        ),
+        validate: unique<Unit>('Unit', 'shortPlural', 'The short plural unit name must be unique.'),
     },
     longSingular: {
         type: String,
         required: true,
         set: (value: string) => value.toLowerCase(),
-        validate: uniqueInAdminsAndUser<Unit>(
+        validate: unique<Unit>(
             'Unit',
             'longSingular',
             'The long singular unit name must be unique.'
@@ -61,11 +57,7 @@ const unitSchema = new Schema<Unit>({
         type: String,
         required: true,
         set: (value: string) => value.toLowerCase(),
-        validate: uniqueInAdminsAndUser<Unit>(
-            'Unit',
-            'longPlural',
-            'The long plural unit name must be unique.'
-        ),
+        validate: unique<Unit>('Unit', 'longPlural', 'The long plural unit name must be unique.'),
     },
     preferredNumberFormat: { type: String, required: true, enum: ['decimal', 'fraction'] },
     owner: { type: Schema.Types.ObjectId, required: true, ref: 'User', validate: ownerExists() },

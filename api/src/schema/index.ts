@@ -17,7 +17,7 @@ import { RatingMutation, RatingQuery } from './Rating.js';
 import { DisplayLadder } from '../models/DisplayLadder.js';
 import { SizeMutation, SizeQuery, SizeQueryAdmin } from './Size.js';
 import { UnitMutation, UnitQuery, UnitQueryAdmin } from './Unit.js';
-import { IngredientMutation, IngredientQuery } from './Ingredient.js';
+import { OpenFoodFactsMutation } from './OpenFoodFactsContribute.js';
 import { isAdmin, isImageOwnerOrAdmin } from '../middleware/authorisation.js';
 import { isNutritionalInfoOwnerOrAdmin } from '../middleware/authorisation.js';
 import { DisplayLadderMutation, DisplayLadderQuery } from './DisplayLadder.js';
@@ -25,6 +25,7 @@ import { isIngredientMeasureOwnerOrAdmin } from '../middleware/authorisation.js'
 import { isDocumentOwnerOrAdmin, isVerified } from '../middleware/authorisation.js';
 import { NutritionalInfoMutation, NutritionalInfoQuery } from './NutritionalInfo.js';
 import { IngredientMeasureMutation, IngredientMeasureQuery } from './IngredientMeasure.js';
+import { IngredientMutation, IngredientQuery, IngredientQueryAdmin } from './Ingredient.js';
 import { PrepMethodMutation, PrepMethodQuery, PrepMethodQueryAdmin } from './PrepMethod.js';
 
 export const USDA_SEARCH_LIMIT = 60;
@@ -35,6 +36,8 @@ export const OPEN_FOOD_FACTS_SEARCH_LIMIT = 60;
 export const OPEN_FOOD_FACTS_SEARCH_WINDOW_MS = 60 * 60 * 1000;
 export const OPEN_FOOD_FACTS_PRODUCT_LIMIT = 300;
 export const OPEN_FOOD_FACTS_PRODUCT_WINDOW_MS = 60 * 60 * 1000;
+export const OPEN_FOOD_FACTS_CONTRIBUTE_LIMIT = 30;
+export const OPEN_FOOD_FACTS_CONTRIBUTE_WINDOW_MS = 60 * 60 * 1000;
 
 type Middleware = ResolverNextRpCb<unknown, GraphQLContext>;
 
@@ -66,6 +69,7 @@ const isAdminQueries = withMiddleware(
     {
         ...SizeQueryAdmin,
         ...UnitQueryAdmin,
+        ...IngredientQueryAdmin,
         ...PrepMethodQueryAdmin,
     },
     isAdmin()
@@ -107,6 +111,17 @@ const openFoodFactsQueries = {
         )
     ),
 };
+// Contributions change a public database under one shared app account, so only verified
+// users may send them, and each user is capped.
+const openFoodFactsMutations = withMiddleware(
+    OpenFoodFactsMutation,
+    isVerified(),
+    rateLimit(
+        'openFoodFactsContribute',
+        OPEN_FOOD_FACTS_CONTRIBUTE_LIMIT,
+        OPEN_FOOD_FACTS_CONTRIBUTE_WINDOW_MS
+    )
+);
 const isAuthenticatedMutations = withMiddleware(
     {
         recipeCreateOne: RecipeMutation.recipeCreateOne,
@@ -203,6 +218,7 @@ schemaComposer.Mutation.addFields({
     ...UserMutation,
     ...isAdminMutations,
     ...isAuthenticatedMutations,
+    ...openFoodFactsMutations,
     ...isRecipeOwnerOrAdminMutations,
     ...isUnitOwnerOrAdminMutations,
     ...isSizeOwnerOrAdminMutations,

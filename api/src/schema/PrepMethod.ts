@@ -3,7 +3,7 @@ import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
 import { validateItemNotInMeasure, validateItemNotInRecipe } from './validation.js';
 import { PrepMethod, PrepMethodCreateTC, PrepMethodTC } from '../models/PrepMethod.js';
-import { filterIsEditable, filterIsOwnerOrAdmin, filterIsUnique } from '../middleware/filters.js';
+import { filterIsEditable, filterIsUnique, filterIsVisible } from '../middleware/filters.js';
 
 PrepMethodTC.addRelation('owner', {
     resolver: () => OwnerTC.getResolver('findById'),
@@ -39,7 +39,7 @@ export const PrepMethodQuery = {
         .setDescription('Retrieve a single prep method'),
     prepMethodMany: PrepMethodTC.mongooseResolvers
         .findMany()
-        .wrapResolve(filterIsOwnerOrAdmin())
+        .wrapResolve(filterIsVisible())
         .wrapResolve(filterIsUnique())
         .setDescription('Retrieve multiple prep methods'),
     prepMethodManyEditable: PrepMethodTC.mongooseResolvers

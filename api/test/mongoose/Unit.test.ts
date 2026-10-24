@@ -339,7 +339,7 @@ describe('Unit Model', function () {
         }
     });
 
-    it('Should save a unit with a duplicate short singular name user1 to user2', async function () {
+    it('Should NOT save a unit with a duplicate short singular name user1 to user2', async function () {
         const user1 = await User.findOne({ firstName: 'Tester1' }).orFail();
         const user2 = await User.findOne({ firstName: 'Tester2' }).orFail();
         const newUnit = new Unit(getMockUnitOne(user1));
@@ -355,17 +355,20 @@ describe('Unit Model', function () {
 
         try {
             await duplicateUnit.save();
-            assert.isFalse(duplicateUnit.isNew);
-        } catch {
-            assert.fail('Duplicate unit not saved');
+            assert.fail('Duplicate unit saved');
+        } catch (error) {
+            assert.equal(
+                (error as mongoose.Error.ValidationError).errors.shortSingular.message,
+                'The short singular unit name must be unique.'
+            );
         }
     });
 
-    it('Should update a unit with a duplicate short singular name user1 to user2', async function () {
+    it('Should NOT update a unit with a duplicate short singular name user1 to user2', async function () {
         const user1 = await User.findOne({ firstName: 'Tester1' }).orFail();
         const user2 = await User.findOne({ firstName: 'Tester2' }).orFail();
         const newUnit1 = new Unit(getMockUnitOne(user1));
-        const newUnit2 = new Unit({ ...getMockUnitOne(user2), shortSingular: 'test2' });
+        const newUnit2 = new Unit(getMockUnitTwo(user2));
 
         try {
             await newUnit1.save();
@@ -380,10 +383,12 @@ describe('Unit Model', function () {
         newUnit2.shortSingular = 'test';
         try {
             await newUnit2.save();
-            assert.isFalse(newUnit2.isNew);
+            assert.fail('Duplicate unit saved');
         } catch (error) {
-            console.log(error);
-            assert.fail('Duplicate unit not saved');
+            assert.equal(
+                (error as mongoose.Error.ValidationError).errors.shortSingular.message,
+                'The short singular unit name must be unique.'
+            );
         }
     });
 });
