@@ -14,12 +14,12 @@ import { ResolveParams } from '../types.js';
 import { ImageTC } from '../models/Image.js';
 import { RatingTC } from '../models/Rating.js';
 import { PrepMethodTC } from '../models/PrepMethod.js';
-import { recipeNutrition } from '../utils/nutrition.js';
 import { validateItemNotInRecipe } from './validation.js';
 import { ReservedIngredientTags } from '../models/Ingredient.js';
 import { Ingredient, IngredientTC } from '../models/Ingredient.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
 import { RecipeTC, generateRecipeIdentifier } from '../models/Recipe.js';
+import { NutritionStatuses, UncountedCodes, recipeNutrition } from '../utils/nutrition.js';
 import { Recipe, RecipeCreateTC, RecipeIngredientTC, RecipeModifyTC } from '../models/Recipe.js';
 
 const IngredientOrRecipeTC = schemaComposer.createUnionTC({
@@ -183,7 +183,6 @@ RecipeTC.getFieldOTC('yield').addRelation('unit', {
 });
 RecipeTC.extendField('yield', {
     type: '[RecipeYield!]',
-    description: 'How much one batch makes: one weight, one volume, and one row per count unit',
 });
 
 const MacrosTC = schemaComposer.createObjectTC({
@@ -192,19 +191,11 @@ const MacrosTC = schemaComposer.createObjectTC({
 });
 schemaComposer.createEnumTC({
     name: 'NutritionStatus',
-    values: { COUNTED: {}, PARTIAL: {}, UNCOUNTED: {} },
+    values: Object.fromEntries(NutritionStatuses.map((status) => [status, {}])),
 });
 schemaComposer.createEnumTC({
     name: 'UncountedCode',
-    values: {
-        NO_QUANTITY: {},
-        NO_NUTRITION: {},
-        NO_MEASURE: {},
-        NO_YIELD: {},
-        CHILD_PARTIAL: {},
-        CYCLE: {},
-        DEPTH_LIMIT: {},
-    },
+    values: Object.fromEntries(UncountedCodes.map((code) => [code, {}])),
 });
 const UncountedReasonTC = schemaComposer.createObjectTC({
     name: 'UncountedReason',

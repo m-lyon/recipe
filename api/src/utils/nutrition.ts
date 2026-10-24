@@ -20,15 +20,18 @@ import { Recipe, RecipeIngredientType, RecipeYield } from '../models/Recipe.js';
 /** Recipes nested deeper than this are not followed. */
 export const MAX_DEPTH = 10;
 
-export type NutritionStatus = 'COUNTED' | 'PARTIAL' | 'UNCOUNTED';
-export type UncountedCode =
-    | 'NO_QUANTITY'
-    | 'NO_NUTRITION'
-    | 'NO_MEASURE'
-    | 'NO_YIELD'
-    | 'CHILD_PARTIAL'
-    | 'CYCLE'
-    | 'DEPTH_LIMIT';
+export const NutritionStatuses = ['COUNTED', 'PARTIAL', 'UNCOUNTED'] as const;
+export type NutritionStatus = (typeof NutritionStatuses)[number];
+export const UncountedCodes = [
+    'NO_QUANTITY',
+    'NO_NUTRITION',
+    'NO_MEASURE',
+    'NO_YIELD',
+    'CHILD_PARTIAL',
+    'CYCLE',
+    'DEPTH_LIMIT',
+] as const;
+export type UncountedCode = (typeof UncountedCodes)[number];
 
 export interface IngredientNutrition {
     recipeIngredient: Types.ObjectId;
