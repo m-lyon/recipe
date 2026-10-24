@@ -1,7 +1,7 @@
 import { Document, Schema, Types, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 
-import { ownerExists, uniqueAcrossUsers } from './validation.js';
+import { ownerExists, unique } from './validation.js';
 
 export interface Size extends Document {
     value: string;
@@ -13,7 +13,7 @@ const sizeSchema = new Schema<Size>({
     value: {
         type: String,
         required: true,
-        validate: uniqueAcrossUsers<Size>('Size', 'value', 'The size must be unique.'),
+        validate: unique<Size>('Size', 'value', 'The size must be unique.'),
     },
     unique: { type: Boolean, required: true },
     owner: { type: Schema.Types.ObjectId, ref: 'User', required: true, validate: ownerExists() },

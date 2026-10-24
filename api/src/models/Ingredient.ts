@@ -1,8 +1,8 @@
 import { Document, Schema, Types, model } from 'mongoose';
 import { composeMongoose } from 'graphql-compose-mongoose';
 
+import { unique } from './validation.js';
 import { ownerExists } from './validation.js';
-import { uniqueAcrossUsers } from './validation.js';
 
 export const ReservedIngredientTags = {
     Vegan: 'vegan',
@@ -21,17 +21,13 @@ const ingredientSchema = new Schema<Ingredient>({
         type: String,
         required: true,
         set: (value: string) => value.toLowerCase(),
-        validate: uniqueAcrossUsers<Ingredient>(
-            'Ingredient',
-            'name',
-            'The ingredient name must be unique.'
-        ),
+        validate: unique<Ingredient>('Ingredient', 'name', 'The ingredient name must be unique.'),
     },
     pluralName: {
         type: String,
         required: true,
         set: (value: string) => value.toLowerCase(),
-        validate: uniqueAcrossUsers<Ingredient>(
+        validate: unique<Ingredient>(
             'Ingredient',
             'pluralName',
             'The plural ingredient name must be unique.'

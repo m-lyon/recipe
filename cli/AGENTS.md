@@ -84,7 +84,7 @@ USDA API, recorded in `spec-usda-portions.md`.
   `usda search` and the heading of `usda show` carry the data type.
 - Match the preparation state: raw against raw, cooked against cooked.
 - **Search many times.** USDA search quality is poor: one query often returns the wrong food, or
-  only branded records. For each ingredient, run 5 to 10 queries with different wording
+  only branded records. For each ingredient, run 5 or so queries with different wording
   before you accept a record or give up. Vary the form of the name: singular and plural,
   "peppers, <name>, dried" (the SR Legacy style), the generic parent food, a close variety,
   and with or without the state (raw, dried, cooked). Run them one at a time. Compare the

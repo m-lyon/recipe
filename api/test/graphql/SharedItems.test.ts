@@ -121,7 +121,7 @@ describe('Shared ingredients, units, sizes and prep methods', () => {
     afterEach(dropCollections);
 
     describe('lists', () => {
-        it('should show a verified user every user’s items', async function () {
+        it("should show a verified user every user's items", async function () {
             const lists = names(data<Lists>(await execute(this, user, LIST_QUERY)));
             const everyone = ['admin', 'other', 'unverified', 'user'];
             assert.deepEqual(
@@ -142,13 +142,13 @@ describe('Shared ingredients, units, sizes and prep methods', () => {
             );
         });
 
-        it('should show an admin every user’s items', async function () {
+        it("should show an admin every user's items", async function () {
             const lists = names(data<Lists>(await execute(this, admin, LIST_QUERY)));
             assert.include(lists.ingredients, 'other ingredient');
             assert.include(lists.prepMethods, 'other prep');
         });
 
-        it('should show an unverified user only the admins’ items and their own', async function () {
+        it("should show an unverified user only the admins' items and their own", async function () {
             const lists = names(data<Lists>(await execute(this, unverified, LIST_QUERY)));
             assert.deepEqual(lists.ingredients, ['admin ingredient', 'unverified ingredient']);
             assert.deepEqual(lists.units, ['admin unit', 'unverified unit']);
@@ -156,7 +156,7 @@ describe('Shared ingredients, units, sizes and prep methods', () => {
             assert.deepEqual(lists.prepMethods, ['admin prep', 'unverified prep']);
         });
 
-        it('should show a logged-out visitor only the admins’ items', async function () {
+        it("should show a logged-out visitor only the admins' items", async function () {
             const lists = names(data<Lists>(await execute(this, null, LIST_QUERY)));
             assert.deepEqual(lists.ingredients, ['admin ingredient']);
             assert.deepEqual(lists.units, ['admin unit']);
@@ -228,7 +228,7 @@ describe('Shared ingredients, units, sizes and prep methods', () => {
             );
         });
 
-        it('should NOT let a user rename an ingredient to another user’s name', async function () {
+        it("should NOT let a user rename an ingredient to another user's name", async function () {
             const own = await Ingredient.findOne({ name: 'user ingredient' }).orFail();
             const response = await execute(
                 this,
@@ -289,7 +289,7 @@ describe('Shared ingredients, units, sizes and prep methods', () => {
             assert.include(errorMessage(response), 'must be unique.');
         });
 
-        it('should let a user reuse another user’s name for a throwaway size', async function () {
+        it("should let a user reuse another user's name for a throwaway size", async function () {
             const response = await execute(
                 this,
                 user,

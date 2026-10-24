@@ -4,10 +4,6 @@ import { User } from '../models/User.js';
 import { GraphQLContext } from '../types.js';
 import { unauthenticated } from './authorisation.js';
 
-/**
- * Verified users see every user's items, so that recipes can be written with anything in
- * the database. Anyone else sees the admins' items, plus their own.
- */
 export const filterIsVisible =
     (): ResolverNextRpCb<unknown, GraphQLContext> => (next) => async (rp) => {
         const user = rp.context.getUser();

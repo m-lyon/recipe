@@ -6,7 +6,7 @@ import { Unit } from './Unit.js';
 import { Recipe } from './Recipe.js';
 
 /**
- * A document that can query its own collection, which is all `unique` needs.
+ * A document that can query its own collection.
  */
 type QueryableDoc = Pick<Document<Types.ObjectId>, '_id' | 'model'>;
 
@@ -50,14 +50,7 @@ async function findDuplicatesInAdminsAndUserScope(
     return { admins, duplicates };
 }
 
-/**
- * Verified users see every user's items, so a name must be unique across all owners, not only
- * within the user's own and the admins' items.
- *
- * Mongoose doesn't type a validator's `this`, so callers name the model, e.g.
- * `uniqueAcrossUsers<Unit>('Unit', 'shortSingular')`, to check it has the fields used here.
- */
-export function uniqueAcrossUsers<TDoc extends UniqueDoc>(
+export function unique<TDoc extends UniqueDoc>(
     model: string,
     attribute: ModelField<TDoc>,
     message?: string
@@ -80,7 +73,7 @@ export function uniqueAcrossUsers<TDoc extends UniqueDoc>(
 }
 
 /**
- * Unique within the owner's and the admins' documents. Display ladders use it.
+ * Unique within the owner's and the admins' documents.
  */
 export function uniqueInAdminsAndUser<TDoc extends ScopedUniqueDoc>(
     model: string,
@@ -151,27 +144,6 @@ export function uniqueRecipeTitleInAdminsAndUser(message?: string) {
         validator,
         message: message ? message : 'The recipe title must be unique.',
     };
-}
-
-export function unique<TDoc extends QueryableDoc>(
-    model: string,
-    attribute: ModelField<TDoc>,
-    message?: string
-) {
-    async function validator(this: TDoc, value: string) {
-        if (this._id) {
-            const count = await this.model(model).countDocuments({
-                $and: [
-                    { _id: { $ne: this._id } }, // Exclude the current document
-                    { [attribute]: value },
-                ],
-            });
-            return count === 0;
-        }
-        const count = await this.model(model).countDocuments({ [attribute]: value });
-        return count === 0;
-    }
-    return { validator, message: message ?? `The ${attribute} must be unique, please try again.` };
 }
 
 export function ownerExists() {
