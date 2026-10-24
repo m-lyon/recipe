@@ -20,7 +20,7 @@ const NUTRITION = `
             yield { quantity unit { longSingular } }
             nutrition {
                 total { calories protein carbs fat }
-                lines {
+                ingredients {
                     recipeIngredient
                     status
                     macros { calories }
@@ -37,7 +37,7 @@ interface NutritionResult {
         yield: Array<{ quantity: string; unit: { longSingular: string } }> | null;
         nutrition: {
             total: { calories: number; protein: number; carbs: number; fat: number };
-            lines: Array<{
+            ingredients: Array<{
                 recipeIngredient: string;
                 status: string;
                 macros: { calories: number };
@@ -58,7 +58,7 @@ async function unitId(standard: string): Promise<Types.ObjectId> {
     return (await Unit.findOne({ standard }).orFail())._id as Types.ObjectId;
 }
 
-function line(
+function recipeIngredient(
     ingredient: Types.ObjectId,
     quantity: string | null,
     unit: Types.ObjectId | null,
@@ -67,12 +67,12 @@ function line(
     return { ingredient, quantity, unit, ...extra };
 }
 
-/** A recipe with the fields every recipe needs, and these lines. */
-function recipe(title: string, lines: object[], extra: object = {}) {
+/** A recipe with the fields every recipe needs, and these ingredients. */
+function recipe(title: string, ingredients: object[], extra: object = {}) {
     return new Recipe({
         title,
         titleIdentifier: `${title.toLowerCase().replace(/\W+/g, '-')}-test`,
-        ingredientSubsections: [{ ingredients: lines }],
+        ingredientSubsections: [{ ingredients }],
         instructionSubsections: [{ instructions: ['Mix.'] }],
         owner: user._id,
         numServings: 2,
@@ -124,7 +124,7 @@ async function rejectsWithCode(promise: Promise<unknown>, code: string) {
     assert.fail(`Expected ${code}`);
 }
 
-describe('recipe yields and recipe lines', function () {
+describe('recipe yields and recipes used as ingredients', function () {
     before(startServer);
     after(stopServer);
     beforeEach(async function () {
@@ -144,7 +144,7 @@ describe('recipe yields and recipe lines', function () {
     describe('yield', function () {
         it('saves rows in different dimensions', async function () {
             const flour = await ingredient('flour');
-            const saved = await recipe('Dough', [line(flour, '500', units.gram)], {
+            const saved = await recipe('Dough', [recipeIngredient(flour, '500', units.gram)], {
                 yield: [
                     { quantity: '2', unit: units.each },
                     { quantity: '900', unit: units.gram },
@@ -157,7 +157,7 @@ describe('recipe yields and recipe lines', function () {
             const flour = await ingredient('flour');
             const kilogram = await unitId('kilogram');
             try {
-                await recipe('Dough', [line(flour, '500', units.gram)], {
+                await recipe('Dough', [recipeIngredient(flour, '500', units.gram)], {
                     yield: [
                         { quantity: '900', unit: units.gram },
                         { quantity: '1', unit: kilogram },
@@ -175,7 +175,7 @@ describe('recipe yields and recipe lines', function () {
         it('saves rows in two count units', async function () {
             const flour = await ingredient('flour');
             const slice = await countUnit('slice');
-            const saved = await recipe('Pizza', [line(flour, '500', units.gram)], {
+            const saved = await recipe('Pizza', [recipeIngredient(flour, '500', units.gram)], {
                 yield: [
                     { quantity: '2', unit: units.each },
                     { quantity: '8', unit: slice },
@@ -187,7 +187,7 @@ describe('recipe yields and recipe lines', function () {
         it('refuses two rows in one count unit', async function () {
             const flour = await ingredient('flour');
             try {
-                await recipe('Pizza', [line(flour, '500', units.gram)], {
+                await recipe('Pizza', [recipeIngredient(flour, '500', units.gram)], {
                     yield: [
                         { quantity: '2', unit: units.each },
                         { quantity: '3', unit: units.each },
@@ -205,7 +205,7 @@ describe('recipe yields and recipe lines', function () {
         it('refuses a quantity in the wrong format', async function () {
             const flour = await ingredient('flour');
             try {
-                await recipe('Dough', [line(flour, '500', units.gram)], {
+                await recipe('Dough', [recipeIngredient(flour, '500', units.gram)], {
                     yield: [{ quantity: 'about 2', unit: units.each }],
                 }).save();
                 assert.fail('Expected a validation error');
@@ -216,19 +216,25 @@ describe('recipe yields and recipe lines', function () {
 
         it('is optional', async function () {
             const flour = await ingredient('flour');
-            const saved = await recipe('Dough', [line(flour, '500', units.gram)]).save();
+            const saved = await recipe('Dough', [
+                recipeIngredient(flour, '500', units.gram),
+            ]).save();
             assert.isUndefined(saved.yield);
         });
     });
 
-    describe('recipe lines', function () {
-        it('refuses a size on a line that uses a recipe', async function () {
+    describe('recipes used as ingredients', function () {
+        it('refuses a size on a recipe used as an ingredient', async function () {
             const flour = await ingredient('flour');
-            const dough = await recipe('Dough', [line(flour, '500', units.gram)]).save();
+            const dough = await recipe('Dough', [
+                recipeIngredient(flour, '500', units.gram),
+            ]).save();
             const large = await new Size({ value: 'large', owner: user._id, unique: true }).save();
             await rejectsWithCode(
                 recipe('Pizza', [
-                    line(dough._id as Types.ObjectId, '1', units.each, { size: large._id }),
+                    recipeIngredient(dough._id as Types.ObjectId, '1', units.each, {
+                        size: large._id,
+                    }),
                 ]).save(),
                 'RECIPE_INGREDIENT_SIZE'
             );
@@ -236,43 +242,51 @@ describe('recipe yields and recipe lines', function () {
 
         it('refuses a recipe that is not marked as an ingredient', async function () {
             const flour = await ingredient('flour');
-            const dinner = await recipe('Dinner', [line(flour, '500', units.gram)], {
+            const dinner = await recipe('Dinner', [recipeIngredient(flour, '500', units.gram)], {
                 isIngredient: false,
             }).save();
             await rejectsWithCode(
-                recipe('Pizza', [line(dinner._id as Types.ObjectId, '1', units.each)]).save(),
+                recipe('Pizza', [
+                    recipeIngredient(dinner._id as Types.ObjectId, '1', units.each),
+                ]).save(),
                 'RECIPE_INGREDIENT_NOT_INGREDIENT'
             );
         });
 
         it('refuses a recipe that leads back to itself', async function () {
             const flour = await ingredient('flour');
-            const a = await recipe('A', [line(flour, '1', units.gram)]).save();
-            const b = await recipe('B', [line(a._id as Types.ObjectId, '1', units.gram)]).save();
-            const c = await recipe('C', [line(b._id as Types.ObjectId, '1', units.gram)]).save();
+            const a = await recipe('A', [recipeIngredient(flour, '1', units.gram)]).save();
+            const b = await recipe('B', [
+                recipeIngredient(a._id as Types.ObjectId, '1', units.gram),
+            ]).save();
+            const c = await recipe('C', [
+                recipeIngredient(b._id as Types.ObjectId, '1', units.gram),
+            ]).save();
             // A → C → B → A
             a.ingredientSubsections = [
-                { ingredients: [line(c._id as Types.ObjectId, '1', units.gram)] },
+                { ingredients: [recipeIngredient(c._id as Types.ObjectId, '1', units.gram)] },
             ] as never;
             await rejectsWithCode(a.save(), 'RECIPE_INGREDIENT_CYCLE');
         });
 
         it('refuses a recipe that uses itself', async function () {
             const flour = await ingredient('flour');
-            const a = await recipe('A', [line(flour, '1', units.gram)]).save();
+            const a = await recipe('A', [recipeIngredient(flour, '1', units.gram)]).save();
             a.ingredientSubsections = [
-                { ingredients: [line(a._id as Types.ObjectId, '1', units.gram)] },
+                { ingredients: [recipeIngredient(a._id as Types.ObjectId, '1', units.gram)] },
             ] as never;
             await rejectsWithCode(a.save(), 'RECIPE_INGREDIENT_CYCLE');
         });
 
         it('allows the same recipe twice, and in two branches', async function () {
             const flour = await ingredient('flour');
-            const a = await recipe('A', [line(flour, '1', units.gram)]).save();
-            const b = await recipe('B', [line(a._id as Types.ObjectId, '1', units.gram)]).save();
+            const a = await recipe('A', [recipeIngredient(flour, '1', units.gram)]).save();
+            const b = await recipe('B', [
+                recipeIngredient(a._id as Types.ObjectId, '1', units.gram),
+            ]).save();
             await recipe('C', [
-                line(a._id as Types.ObjectId, '1', units.gram),
-                line(b._id as Types.ObjectId, '1', units.gram),
+                recipeIngredient(a._id as Types.ObjectId, '1', units.gram),
+                recipeIngredient(b._id as Types.ObjectId, '1', units.gram),
             ]).save();
         });
     });
@@ -296,12 +310,15 @@ describe('recipe yields and recipe lines', function () {
             await new IngredientMeasure({ ingredient: stock, unit: units.each, grams: 26 }).save();
             const couscous = await recipe(
                 'Pearl Couscous',
-                [line(flour, '100', units.gram), line(stock, '1', units.each)],
+                [
+                    recipeIngredient(flour, '100', units.gram),
+                    recipeIngredient(stock, '1', units.each),
+                ],
                 { yield: [{ quantity: '600', unit: units.gram }] }
             ).save();
             const saladDoc = await recipe('Salad', [
-                line(couscous._id as Types.ObjectId, '300', units.gram),
-                line(salt, null, null),
+                recipeIngredient(couscous._id as Types.ObjectId, '300', units.gram),
+                recipeIngredient(salt, null, null),
             ]).save();
             return { saladDoc, couscous, stock };
         }
@@ -309,13 +326,13 @@ describe('recipe yields and recipe lines', function () {
         it('counts a share of a recipe used as an ingredient', async function () {
             const { saladDoc, couscous } = await salad();
             const result = await query(this.apolloServer, saladDoc._id);
-            const [couscousLine, saltLine] = result.nutrition.lines;
+            const [couscousResult, saltResult] = result.nutrition.ingredients;
             // Couscous makes (100 + 26) g × 2 kcal = 252 kcal per 600 g; half is used.
-            assert.equal(couscousLine.status, 'COUNTED');
-            assert.closeTo(couscousLine.macros.calories, 126, 1e-9);
-            assert.equal(couscousLine.childRecipe, String(couscous._id));
-            assert.equal(saltLine.status, 'UNCOUNTED');
-            assert.deepEqual(saltLine.reason, { code: 'NO_QUANTITY', message: 'No quantity' });
+            assert.equal(couscousResult.status, 'COUNTED');
+            assert.closeTo(couscousResult.macros.calories, 126, 1e-9);
+            assert.equal(couscousResult.childRecipe, String(couscous._id));
+            assert.equal(saltResult.status, 'UNCOUNTED');
+            assert.deepEqual(saltResult.reason, { code: 'NO_QUANTITY', message: 'No quantity' });
             assert.closeTo(result.nutrition.total.calories, 126, 1e-9);
             assert.closeTo(result.nutrition.total.fat, 126 / 40, 1e-9);
         });
@@ -326,25 +343,27 @@ describe('recipe yields and recipe lines', function () {
             assert.deepEqual(result.yield, [{ quantity: '600', unit: { longSingular: 'gram' } }]);
         });
 
-        it('marks a recipe line partial when the child has uncounted lines', async function () {
+        it('marks a recipe used as an ingredient partial when the child has uncounted ingredients', async function () {
             const { saladDoc } = await salad();
             await IngredientMeasure.deleteMany({});
-            const [couscousLine] = (await query(this.apolloServer, saladDoc._id)).nutrition.lines;
-            assert.equal(couscousLine.status, 'PARTIAL');
-            assert.equal(couscousLine.childUncounted, 1);
-            assert.equal(couscousLine.reason?.code, 'CHILD_PARTIAL');
-            assert.closeTo(couscousLine.macros.calories, 100, 1e-9);
+            const [couscousResult] = (await query(this.apolloServer, saladDoc._id)).nutrition
+                .ingredients;
+            assert.equal(couscousResult.status, 'PARTIAL');
+            assert.equal(couscousResult.childUncounted, 1);
+            assert.equal(couscousResult.reason?.code, 'CHILD_PARTIAL');
+            assert.closeTo(couscousResult.macros.calories, 100, 1e-9);
         });
 
-        it('leaves a recipe line uncounted when the child has no yield', async function () {
+        it('leaves a recipe used as an ingredient uncounted when the child has no yield', async function () {
             const { saladDoc, couscous } = await salad();
             await Recipe.updateOne({ _id: couscous._id }, { $unset: { yield: '' } });
-            const [couscousLine] = (await query(this.apolloServer, saladDoc._id)).nutrition.lines;
-            assert.deepEqual(couscousLine.reason, {
+            const [couscousResult] = (await query(this.apolloServer, saladDoc._id)).nutrition
+                .ingredients;
+            assert.deepEqual(couscousResult.reason, {
                 code: 'NO_YIELD',
                 message: 'No yield recorded for Pearl Couscous',
             });
-            assert.equal(couscousLine.macros.calories, 0);
+            assert.equal(couscousResult.macros.calories, 0);
         });
 
         it('stops at a cycle that is already in the data', async function () {
@@ -369,15 +388,15 @@ describe('recipe yields and recipe lines', function () {
                 { $set: { yield: [{ quantity: '500', unit: units.gram }] } }
             );
             const result = await query(this.apolloServer, couscous._id);
-            const saladLine = result.nutrition.lines[2];
-            assert.equal(saladLine.status, 'PARTIAL');
+            const saladResult = result.nutrition.ingredients[2];
+            assert.equal(saladResult.status, 'PARTIAL');
         });
 
-        it('names the missing weight of an ingredient line', async function () {
+        it('names the missing weight of an ingredient', async function () {
             const { couscous, stock } = await salad();
             await IngredientMeasure.deleteMany({ ingredient: stock });
-            const lines = (await query(this.apolloServer, couscous._id)).nutrition.lines;
-            assert.deepEqual(lines[1].reason, {
+            const results = (await query(this.apolloServer, couscous._id)).nutrition.ingredients;
+            assert.deepEqual(results[1].reason, {
                 code: 'NO_MEASURE',
                 message: 'No weight recorded for 1 stock pot',
             });

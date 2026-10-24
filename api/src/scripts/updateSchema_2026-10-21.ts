@@ -1,13 +1,14 @@
 /**
- * Prepares existing recipes for recipe yields and recipe-line nutrition (issue #116).
+ * Prepares existing recipes for recipe yields and for the nutrition of recipes used as
+ * ingredients (issue #116).
  *
- *  - Clears `size` on lines that use a recipe. A yield has no size, so "1 large pizza dough"
- *    has no meaning, and the API now refuses a size on such a line.
- *  - Reports lines that use a recipe not marked as an ingredient. Saving such a recipe's
- *    lines is now refused, so they need fixing by hand: mark the used recipe as an
- *    ingredient, or change the line.
+ *  - Clears `size` on recipes used as ingredients. A yield has no size, so "1 large pizza
+ *    dough" has no meaning, and the API now refuses a size on such an ingredient.
+ *  - Reports recipes used as ingredients that are not marked as an ingredient. Saving the
+ *    recipe that uses one is now refused, so they need fixing by hand: mark the used recipe
+ *    as an ingredient, or change the ingredient.
  *  - Reports cycles: recipes that use themselves through other recipes. Nutrition marks those
- *    lines CYCLE; a person decides which line to remove.
+ *    ingredients CYCLE; a person decides which ingredient to remove.
  *
  * Only the sizes are changed. Safe to re-run.
  *
@@ -24,7 +25,7 @@ import { pathToFileURL } from 'url';
 
 import mongoose, { mongo } from 'mongoose';
 
-interface StoredLine {
+interface StoredIngredient {
     type?: 'ingredient' | 'recipe';
     ingredient: mongo.ObjectId;
     size?: mongo.ObjectId | null;
@@ -34,29 +35,34 @@ interface StoredRecipe {
     _id: mongo.ObjectId;
     title: string;
     isIngredient?: boolean;
-    ingredientSubsections: Array<{ name?: string; ingredients: StoredLine[] }>;
+    ingredientSubsections: Array<{ name?: string; ingredients: StoredIngredient[] }>;
 }
 
-export interface RecipeLineReport {
+export interface RecipeIngredientReport {
     dryRun: boolean;
     /** "Pizza: large Pizza Dough" for each size cleared, or to clear. */
     sizesCleared: string[];
-    /** "Pizza uses Dinner" for each line that uses a recipe not marked as an ingredient. */
+    /** "Pizza uses Dinner" for each recipe used as an ingredient but not marked as one. */
     notIngredient: string[];
     /** "A → B → A" for each cycle. */
     cycles: string[];
 }
 
-export async function migrateRecipeLines(
+export async function migrateRecipeIngredients(
     db: mongo.Db,
     { dryRun = false }: { dryRun?: boolean } = {}
-): Promise<RecipeLineReport> {
+): Promise<RecipeIngredientReport> {
     const collection = db.collection<StoredRecipe>('recipes');
     const recipes = await collection
         .find({}, { projection: { title: 1, isIngredient: 1, ingredientSubsections: 1 } })
         .toArray();
     const byId = new Map(recipes.map((recipe) => [String(recipe._id), recipe]));
-    const report: RecipeLineReport = { dryRun, sizesCleared: [], notIngredient: [], cycles: [] };
+    const report: RecipeIngredientReport = {
+        dryRun,
+        sizesCleared: [],
+        notIngredient: [],
+        cycles: [],
+    };
     const sizeNames = new Map(
         (
             await db
@@ -69,13 +75,13 @@ export async function migrateRecipeLines(
     for (const recipe of recipes) {
         let changed = false;
         for (const subsection of recipe.ingredientSubsections ?? []) {
-            for (const line of subsection.ingredients ?? []) {
-                const child = byId.get(String(line.ingredient));
+            for (const recipeIngredient of subsection.ingredients ?? []) {
+                const child = byId.get(String(recipeIngredient.ingredient));
                 if (!child) continue;
-                if (line.size != null) {
-                    const size = sizeNames.get(String(line.size)) ?? 'unknown size';
+                if (recipeIngredient.size != null) {
+                    const size = sizeNames.get(String(recipeIngredient.size)) ?? 'unknown size';
                     report.sizesCleared.push(`${recipe.title}: ${size} ${child.title}`);
-                    line.size = null;
+                    recipeIngredient.size = null;
                     changed = true;
                 }
                 if (!child.isIngredient) {
@@ -96,7 +102,7 @@ export async function migrateRecipeLines(
     const children = (recipe: StoredRecipe) =>
         (recipe.ingredientSubsections ?? [])
             .flatMap((subsection) => subsection.ingredients ?? [])
-            .map((line) => String(line.ingredient))
+            .map((recipeIngredient) => String(recipeIngredient.ingredient))
             .filter((id) => byId.has(id));
     const visit = (id: string, path: string[]) => {
         state.set(id, 'visiting');
@@ -125,7 +131,7 @@ async function main() {
     }
     await mongoose.connect(uri);
     try {
-        const report = await migrateRecipeLines(mongoose.connection.db, {
+        const report = await migrateRecipeIngredients(mongoose.connection.db, {
             dryRun: Boolean(process.env.DRY_RUN),
         });
         console.log(report.dryRun ? 'DRY RUN: nothing was written.' : 'Migration complete.');
@@ -134,11 +140,13 @@ async function main() {
             for (const item of items) console.log(`  - ${item}`);
         };
         list(
-            report.dryRun ? 'Sizes to clear on recipe lines' : 'Sizes cleared on recipe lines',
+            report.dryRun
+                ? 'Sizes to clear on recipes used as ingredients'
+                : 'Sizes cleared on recipes used as ingredients',
             report.sizesCleared
         );
         list(
-            'Lines using a recipe not marked as an ingredient (fix by hand)',
+            'Recipes used as ingredients but not marked as one (fix by hand)',
             report.notIngredient
         );
         list('Cycles (fix by hand)', report.cycles);

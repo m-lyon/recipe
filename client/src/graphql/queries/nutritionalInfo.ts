@@ -44,7 +44,7 @@ export const GET_RECIPE_NUTRITION = gql(`
             _id
             nutrition {
                 total { calories protein carbs fat }
-                lines {
+                ingredients {
                     recipeIngredient
                     status
                     macros { calories protein carbs fat }

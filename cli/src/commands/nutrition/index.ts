@@ -9,7 +9,7 @@ import { indent, num, renderTable } from '../../lib/format.js';
 import { RECIPE_NUTRITION } from '../../graphql/operations.js';
 import type { RecipeIngredientSummary } from '../../lib/types.js';
 
-interface LineNutrition {
+interface IngredientNutrition {
     recipeIngredient: string;
     status: 'COUNTED' | 'PARTIAL' | 'UNCOUNTED';
     macros: Macros;
@@ -18,12 +18,12 @@ interface LineNutrition {
     childRecipe: string | null;
 }
 
-/** "300 g Pearl Couscous", "1 garlic clove": a recipe line as it reads. */
-function describeLine(line: RecipeIngredientSummary): string {
+/** "300 g Pearl Couscous", "1 garlic clove": an ingredient as it reads. */
+function describeIngredient(item: RecipeIngredientSummary): string {
     const name =
-        line.ingredient.__typename === 'Ingredient' ? line.ingredient.name : line.ingredient.title;
-    const unit = line.unit && !line.unit.hidden ? line.unit.shortSingular : null;
-    return [line.quantity, unit, line.size?.value, line.prepMethod?.value, name]
+        item.ingredient.__typename === 'Ingredient' ? item.ingredient.name : item.ingredient.title;
+    const unit = item.unit && !item.unit.hidden ? item.unit.shortSingular : null;
+    return [item.quantity, unit, item.size?.value, item.prepMethod?.value, name]
         .filter(Boolean)
         .join(' ');
 }
@@ -31,7 +31,7 @@ function describeLine(line: RecipeIngredientSummary): string {
 export default class Nutrition extends BaseCommand {
     static description =
         "A recipe's nutrition as the API calculates it: the whole batch, one serving, and " +
-        'every line that is not fully counted with its reason. Recipes used as ingredients ' +
+        'every ingredient that is not fully counted with its reason. Recipes used as ingredients ' +
         'count through their yield.';
 
     static examples = [
@@ -58,14 +58,16 @@ export default class Nutrition extends BaseCommand {
         const textOf = new Map(
             recipe.ingredientSubsections
                 .flatMap((subsection) => subsection.ingredients)
-                .map((line) => [String(line._id), describeLine(line)])
+                .map((ingredient) => [String(ingredient._id), describeIngredient(ingredient)])
         );
-        const lines = (data.nutrition.lines as LineNutrition[]).map((line) => ({
-            ...line,
-            text: textOf.get(line.recipeIngredient) ?? line.recipeIngredient,
-        }));
-        const uncounted = lines.filter((line) => line.status === 'UNCOUNTED');
-        const partial = lines.filter((line) => line.status === 'PARTIAL');
+        const ingredients = (data.nutrition.ingredients as IngredientNutrition[]).map(
+            (ingredient) => ({
+                ...ingredient,
+                text: textOf.get(ingredient.recipeIngredient) ?? ingredient.recipeIngredient,
+            })
+        );
+        const uncounted = ingredients.filter((ingredient) => ingredient.status === 'UNCOUNTED');
+        const partial = ingredients.filter((ingredient) => ingredient.status === 'PARTIAL');
 
         const table = renderTable(
             ['', 'BATCH', `PER SERVING (of ${servings})`],
@@ -83,15 +85,23 @@ export default class Nutrition extends BaseCommand {
             '',
             table,
             '',
-            `${lines.length - uncounted.length - partial.length} of ${lines.length} lines counted`,
+            `${ingredients.length - uncounted.length - partial.length} of ${ingredients.length} ingredients counted`,
         ];
         if (uncounted.length > 0) {
             out.push('', `NOT COUNTED (${uncounted.length})`);
-            out.push(...uncounted.map((line) => indent(`${line.text} — ${line.reason?.message}`)));
+            out.push(
+                ...uncounted.map((ingredient) =>
+                    indent(`${ingredient.text} — ${ingredient.reason?.message}`)
+                )
+            );
         }
         if (partial.length > 0) {
             out.push('', `PARTLY COUNTED (${partial.length})`);
-            out.push(...partial.map((line) => indent(`${line.text} — ${line.reason?.message}`)));
+            out.push(
+                ...partial.map((ingredient) =>
+                    indent(`${ingredient.text} — ${ingredient.reason?.message}`)
+                )
+            );
         }
         this.out(out.join('\n'));
         return {
@@ -101,7 +111,7 @@ export default class Nutrition extends BaseCommand {
             numServings: data.numServings,
             total,
             perServing,
-            lines,
+            ingredients,
         };
     }
 }

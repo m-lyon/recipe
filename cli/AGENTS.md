@@ -31,7 +31,7 @@ entered by hand.
 `recipe ingredients list --missing-nutrition --json` is the entry point for a run across the
 whole database rather than one recipe.
 
-A line that uses another recipe counts through that recipe's **yield**: "300 g Pearl Couscous"
+A recipe used as an ingredient counts through its **yield**: "300 g Pearl Couscous"
 needs Pearl Couscous to record how much one batch makes, in grams. `recipe nutrition` names a
 missing yield (`NO_YIELD`). A yield is set in the recipe editor; the CLI does not set it. Report
 it to the operator.

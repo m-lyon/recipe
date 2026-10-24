@@ -77,7 +77,7 @@ The cookie cache lives at `~/.cache/recipe-cli/session-<hash of RECIPE_API_URL>`
 | `recipe nutrition link ... --label-per-100g <kcal,p,c,f>` | link the record, but write the values from the pack label: for a record that is wrong or has none |
 | `recipe nutrition measure <ingredient> --unit <u> --grams <n>` | stores a weight you supply, for a unit no USDA portion carries (a scoop) |
 | `recipe nutrition unlink <ingredient>` | removes the `NutritionalInfo`; measures stay |
-| `recipe nutrition <identifier>` | a recipe's totals and one serving as the API calculates them, with every line not fully counted; recipes used as ingredients count through their yield |
+| `recipe nutrition <identifier>` | a recipe's totals and one serving as the API calculates them, with every ingredient not fully counted; recipes used as ingredients count through their yield |
 | `recipe nutrition status` | calculable recipe rows, and the missing weights |
 
 Run `recipe <topic> <command> --help` for the flags.

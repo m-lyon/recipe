@@ -1362,6 +1362,15 @@ type IngredientMeasure {
   unit: Unit!
 }
 
+type IngredientNutrition {
+  childRecipe: MongoID
+  childUncounted: Int
+  macros: Macros!
+  reason: UncountedReason
+  recipeIngredient: MongoID!
+  status: NutritionStatus!
+}
+
 union IngredientOrRecipe = Ingredient | Recipe
 
 type IngredientSubsection {
@@ -1372,15 +1381,6 @@ type IngredientSubsection {
 type InstructionSubsection {
   instructions: [String!]!
   name: String
-}
-
-type LineNutrition {
-  childRecipe: MongoID
-  childUncounted: Int
-  macros: Macros!
-  reason: UncountedReason
-  recipeIngredient: MongoID!
-  status: NutritionStatus!
 }
 
 type Macros {
@@ -1965,7 +1965,7 @@ input RecipeInstructionSubsectionsInput {
 }
 
 type RecipeNutrition {
-  lines: [LineNutrition!]!
+  ingredients: [IngredientNutrition!]!
   total: Macros!
 }
 

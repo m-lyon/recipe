@@ -287,7 +287,7 @@ export const RECIPE_NUTRITION = gql(`
                     carbs
                     fat
                 }
-                lines {
+                ingredients {
                     recipeIngredient
                     status
                     macros {

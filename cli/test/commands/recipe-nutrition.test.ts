@@ -62,7 +62,7 @@ const NUTRITION = {
         numServings: 2,
         nutrition: {
             total: macros(400),
-            lines: [
+            ingredients: [
                 {
                     recipeIngredient: 'ri-couscous',
                     status: 'PARTIAL',
@@ -113,12 +113,12 @@ describe('nutrition <recipe>', () => {
         process.exitCode = 0;
     });
 
-    it('prints the batch, one serving, and the lines not fully counted', async () => {
+    it('prints the batch, one serving, and the ingredients not fully counted', async () => {
         api.install();
         const { stdout } = await runCommand(['nutrition', 'pesto-couscous-salad-abwmo'], ROOT);
         expect(stdout).to.contain('Pesto Couscous Salad (pesto-couscous-salad-abwmo)');
         expect(stdout).to.match(/kcal\s+400\.0\s+200\.0/);
-        expect(stdout).to.contain('1 of 3 lines counted');
+        expect(stdout).to.contain('1 of 3 ingredients counted');
         expect(stdout).to.contain('NOT COUNTED (1)');
         expect(stdout).to.contain('2 egg — No weight recorded for 1 egg');
         expect(stdout).to.contain('PARTLY COUNTED (1)');
@@ -132,7 +132,7 @@ describe('nutrition <recipe>', () => {
         });
     });
 
-    it('returns the totals, one serving and each line in --json mode', async () => {
+    it('returns the totals, one serving and each ingredient in --json mode', async () => {
         api.install();
         const { stdout } = await runCommand(
             ['nutrition', 'pesto-couscous-salad-abwmo', '--json'],
@@ -141,11 +141,9 @@ describe('nutrition <recipe>', () => {
         const data = JSON.parse(stdout).data;
         expect(data.total.calories).to.equal(400);
         expect(data.perServing.calories).to.equal(200);
-        expect(data.lines.map((line: { text: string }) => line.text)).to.deep.equal([
-            '300 g Pearl Couscous',
-            '2 egg',
-            '30 g olive oil',
-        ]);
+        expect(
+            data.ingredients.map((ingredient: { text: string }) => ingredient.text)
+        ).to.deep.equal(['300 g Pearl Couscous', '2 egg', '30 g olive oil']);
     });
 
     it('exits 4 for an unknown recipe', async () => {

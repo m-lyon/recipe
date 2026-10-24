@@ -98,17 +98,19 @@ describe('IngredientsTab unit conversion', () => {
     });
 });
 
-/** The API's answer for one recipe: these lines, with the total their macros add up to. */
-type NutritionLines = NonNullable<GetRecipeNutritionQuery['recipeById']>['nutrition']['lines'];
+/** The API's answer for one recipe: these ingredients, with the total their macros add up to. */
+type NutritionResults = NonNullable<
+    GetRecipeNutritionQuery['recipeById']
+>['nutrition']['ingredients'];
 
-function nutritionMock(lines: NutritionLines, ingredientIds: string[]): MockedResponse {
-    const total = lines.reduce(
-        (sum, line) => ({
+function nutritionMock(results: NutritionResults, ingredientIds: string[]): MockedResponse {
+    const total = results.reduce(
+        (sum, result) => ({
             ...sum,
-            calories: sum.calories + line.macros.calories,
-            protein: sum.protein + line.macros.protein,
-            carbs: sum.carbs + line.macros.carbs,
-            fat: sum.fat + line.macros.fat,
+            calories: sum.calories + result.macros.calories,
+            protein: sum.protein + result.macros.protein,
+            carbs: sum.carbs + result.macros.carbs,
+            fat: sum.fat + result.macros.fat,
         }),
         { __typename: 'Macros' as const, calories: 0, protein: 0, carbs: 0, fat: 0 }
     );
@@ -123,7 +125,7 @@ function nutritionMock(lines: NutritionLines, ingredientIds: string[]): MockedRe
                 recipeById: {
                     __typename: 'Recipe',
                     _id: mockRecipeOne._id,
-                    nutrition: { __typename: 'RecipeNutrition', total, lines },
+                    nutrition: { __typename: 'RecipeNutrition', total, ingredients: results },
                 },
                 ingredientByIds: [],
             } satisfies GetRecipeNutritionQuery,
@@ -140,8 +142,8 @@ const macros = (calories: number, protein = 0, carbs = 0, fat = 0) => ({
 });
 
 /** 1 kg chicken at 1.65 kcal/g: 1650 kcal, 413 kcal per serving of 4. */
-const chickenLine = {
-    __typename: 'LineNutrition' as const,
+const chickenNutrition = {
+    __typename: 'IngredientNutrition' as const,
     recipeIngredient: mockRecipeIngredientIdFifteen,
     status: 'COUNTED' as const,
     macros: macros(1650, 310, 0, 36),
@@ -150,7 +152,7 @@ const chickenLine = {
     childRecipe: null,
 };
 
-const chickenRecipeLine = {
+const chickenIngredient = {
     _id: mockRecipeIngredientIdFifteen,
     __typename: 'RecipeIngredient' as const,
     quantity: '1',
@@ -161,7 +163,7 @@ const chickenRecipeLine = {
 };
 
 /** 200 g of rhubarb pie, a recipe used as an ingredient. */
-const pieRecipeLine = {
+const pieIngredient = {
     _id: mockRecipeIngredientIdSixteen,
     __typename: 'RecipeIngredient' as const,
     quantity: '200',
@@ -172,7 +174,7 @@ const pieRecipeLine = {
 };
 
 function renderTab(
-    lines: (typeof chickenRecipeLine | typeof pieRecipeLine)[],
+    ingredients: (typeof chickenIngredient | typeof pieIngredient)[],
     mocks: MockedResponse[],
     currentUser: MockedResponse = mockCurrentUserAdmin
 ) {
@@ -182,7 +184,7 @@ function renderTab(
                 ...mockRecipeOne,
                 numServings: 4,
                 ingredientSubsections: [
-                    { __typename: 'IngredientSubsection', name: null, ingredients: lines },
+                    { __typename: 'IngredientSubsection', name: null, ingredients },
                 ],
             } satisfies CompletedRecipeView,
         };
@@ -203,7 +205,7 @@ describe('IngredientsTab nutritional info integration', () => {
     });
 
     it('renders the nutritional info panel with per-serving calories', async () => {
-        renderTab([chickenRecipeLine], [nutritionMock([chickenLine], [mockChickenId])]);
+        renderTab([chickenIngredient], [nutritionMock([chickenNutrition], [mockChickenId])]);
 
         expect(await screen.findByText('Nutritional Info (per serving)')).not.toBeNull();
         // 1650 kcal ÷ 4 servings = 412.5 → 413
@@ -212,7 +214,7 @@ describe('IngredientsTab nutritional info integration', () => {
 
     it('keeps per-serving macros fixed when the servings control is moved', async () => {
         const user = userEvent.setup();
-        renderTab([chickenRecipeLine], [nutritionMock([chickenLine], [mockChickenId])]);
+        renderTab([chickenIngredient], [nutritionMock([chickenNutrition], [mockChickenId])]);
         expect(await screen.findByText('413')).not.toBeNull();
 
         // Act -- the ingredient quantities scale with the control, so the per-serving
@@ -225,8 +227,8 @@ describe('IngredientsTab nutritional info integration', () => {
     });
 
     it('counts a recipe used as an ingredient, and links to it when it is partly counted', async () => {
-        const pieLine = {
-            __typename: 'LineNutrition' as const,
+        const pieNutrition = {
+            __typename: 'IngredientNutrition' as const,
             recipeIngredient: mockRecipeIngredientIdSixteen,
             status: 'PARTIAL' as const,
             macros: macros(350),
@@ -239,8 +241,8 @@ describe('IngredientsTab nutritional info integration', () => {
             childRecipe: mockRhurbarbPie._id,
         };
         renderTab(
-            [chickenRecipeLine, pieRecipeLine],
-            [nutritionMock([chickenLine, pieLine], [mockChickenId])]
+            [chickenIngredient, pieIngredient],
+            [nutritionMock([chickenNutrition, pieNutrition], [mockChickenId])]
         );
 
         // (1650 + 350) ÷ 4 = 500
@@ -254,8 +256,8 @@ describe('IngredientsTab nutritional info integration', () => {
     });
 
     it('offers to add a yield when a used recipe has none', async () => {
-        const pieLine = {
-            __typename: 'LineNutrition' as const,
+        const pieNutrition = {
+            __typename: 'IngredientNutrition' as const,
             recipeIngredient: mockRecipeIngredientIdSixteen,
             status: 'UNCOUNTED' as const,
             macros: macros(0),
@@ -268,8 +270,8 @@ describe('IngredientsTab nutritional info integration', () => {
             childRecipe: mockRhurbarbPie._id,
         };
         renderTab(
-            [chickenRecipeLine, pieRecipeLine],
-            [nutritionMock([chickenLine, pieLine], [mockChickenId])]
+            [chickenIngredient, pieIngredient],
+            [nutritionMock([chickenNutrition, pieNutrition], [mockChickenId])]
         );
 
         expect(await screen.findByText(/not counted: 1 ingredient$/i)).not.toBeNull();
@@ -280,8 +282,8 @@ describe('IngredientsTab nutritional info integration', () => {
     });
 
     it('does not offer to add a yield to a recipe the user cannot edit', async () => {
-        const pieLine = {
-            __typename: 'LineNutrition' as const,
+        const pieNutrition = {
+            __typename: 'IngredientNutrition' as const,
             recipeIngredient: mockRecipeIngredientIdSixteen,
             status: 'UNCOUNTED' as const,
             macros: macros(0),
@@ -294,8 +296,8 @@ describe('IngredientsTab nutritional info integration', () => {
             childRecipe: mockRhurbarbPie._id,
         };
         renderTab(
-            [chickenRecipeLine, pieRecipeLine],
-            [nutritionMock([chickenLine, pieLine], [mockChickenId])],
+            [chickenIngredient, pieIngredient],
+            [nutritionMock([chickenNutrition, pieNutrition], [mockChickenId])],
             mockCurrentUser
         );
 
@@ -304,8 +306,8 @@ describe('IngredientsTab nutritional info integration', () => {
     });
 
     it('shows the empty state when nothing is counted', async () => {
-        const pieLine = {
-            __typename: 'LineNutrition' as const,
+        const pieNutrition = {
+            __typename: 'IngredientNutrition' as const,
             recipeIngredient: mockRecipeIngredientIdSixteen,
             status: 'UNCOUNTED' as const,
             macros: macros(0),
@@ -317,7 +319,7 @@ describe('IngredientsTab nutritional info integration', () => {
             childUncounted: null,
             childRecipe: mockRhurbarbPie._id,
         };
-        renderTab([pieRecipeLine], [nutritionMock([pieLine], [])]);
+        renderTab([pieIngredient], [nutritionMock([pieNutrition], [])]);
 
         // The panel must not render a 0 kcal total.
         expect(await screen.findByText(/not available/i)).not.toBeNull();

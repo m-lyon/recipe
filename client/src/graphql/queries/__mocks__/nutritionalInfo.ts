@@ -92,7 +92,7 @@ export const mockCarrotEachMeasure: IngredientMeasureFieldsFragment = {
 };
 
 // ---------- Recipe.nutrition for Recipe One, as the API calculates it ----------
-// Recipe One's lines (4 servings):
+// Recipe One's ingredients (4 servings):
 //   1 tsp diced apple       → no volume weight for apple → uncounted
 //   1 small diced carrot    → 1 carrot = 61 g
 //   2 diced apples          → 1 apple = 182 g
@@ -118,14 +118,14 @@ function macrosOf(perGram: typeof applePerGram, grams: number): Macros {
     };
 }
 
-function sum(lines: Array<{ macros: Macros }>): Macros {
-    return lines.reduce(
-        (total, line) => ({
+function sum(results: Array<{ macros: Macros }>): Macros {
+    return results.reduce(
+        (total, result) => ({
             __typename: 'Macros',
-            calories: total.calories + line.macros.calories,
-            protein: total.protein + line.macros.protein,
-            carbs: total.carbs + line.macros.carbs,
-            fat: total.fat + line.macros.fat,
+            calories: total.calories + result.macros.calories,
+            protein: total.protein + result.macros.protein,
+            carbs: total.carbs + result.macros.carbs,
+            fat: total.fat + result.macros.fat,
         }),
         ZERO
     );
@@ -133,7 +133,7 @@ function sum(lines: Array<{ macros: Macros }>): Macros {
 
 function counted(recipeIngredient: string, macros: Macros) {
     return {
-        __typename: 'LineNutrition' as const,
+        __typename: 'IngredientNutrition' as const,
         recipeIngredient,
         status: 'COUNTED' as const,
         macros,
@@ -145,7 +145,7 @@ function counted(recipeIngredient: string, macros: Macros) {
 
 function uncounted(recipeIngredient: string, code: UncountedCode, message: string) {
     return {
-        __typename: 'LineNutrition' as const,
+        __typename: 'IngredientNutrition' as const,
         recipeIngredient,
         status: 'UNCOUNTED' as const,
         macros: ZERO,
@@ -168,13 +168,13 @@ const recipeOneOwners: GetRecipeNutritionQuery['ingredientByIds'] = [
     },
 ];
 
-function recipeOneNutrition(lines: ReturnType<typeof counted | typeof uncounted>[]) {
+function recipeOneNutrition(ingredients: ReturnType<typeof counted | typeof uncounted>[]) {
     return {
         __typename: 'Query',
         recipeById: {
             __typename: 'Recipe',
             _id: mockRecipeIdOne,
-            nutrition: { __typename: 'RecipeNutrition', total: sum(lines), lines },
+            nutrition: { __typename: 'RecipeNutrition', total: sum(ingredients), ingredients },
         },
         ingredientByIds: recipeOneOwners,
     } satisfies GetRecipeNutritionQuery;
@@ -185,9 +185,9 @@ const recipeOneVariables: GetRecipeNutritionQueryVariables = {
     ingredientIds: [mockAppleId, mockCarrotId],
 };
 
-const carrotLine = counted(mockRecipeIngredientIdTwo, macrosOf(carrotPerGram, 61));
-const twoApplesLine = counted(mockRecipeIngredientIdThree, macrosOf(applePerGram, 2 * 182));
-const ounceAppleLine = counted(
+const carrotNutrition = counted(mockRecipeIngredientIdTwo, macrosOf(carrotPerGram, 61));
+const twoApplesNutrition = counted(mockRecipeIngredientIdThree, macrosOf(applePerGram, 2 * 182));
+const ounceAppleNutrition = counted(
     mockRecipeIngredientIdFive,
     macrosOf(applePerGram, mockOunce.perCanonical)
 );
@@ -202,27 +202,27 @@ export const mockGetRecipeNutritionForRecipeOne = {
                 'NO_MEASURE',
                 'No weight recorded for 1 teaspoon of apple'
             ),
-            carrotLine,
-            twoApplesLine,
+            carrotNutrition,
+            twoApplesNutrition,
             uncounted(
                 mockRecipeIngredientIdFour,
                 'NO_MEASURE',
                 'No weight recorded for 1 cup of medium apple'
             ),
-            ounceAppleLine,
+            ounceAppleNutrition,
         ]),
     },
 };
 
-/** After the uncounted-line prompt saves "1 teaspoon of apple = 5 g": a volume row is a
- *  density, so it prices the cup line too. */
+/** After the uncounted-ingredient prompt saves "1 teaspoon of apple = 5 g": a volume row is a
+ *  density, so it prices the cup of apple too. */
 export const mockGetRecipeNutritionForRecipeOneWithTeaspoon = {
     request: { query: GET_RECIPE_NUTRITION, variables: recipeOneVariables },
     result: {
         data: recipeOneNutrition([
             counted(mockRecipeIngredientIdOne, macrosOf(applePerGram, 5)),
-            carrotLine,
-            twoApplesLine,
+            carrotNutrition,
+            twoApplesNutrition,
             counted(
                 mockRecipeIngredientIdFour,
                 macrosOf(
@@ -230,7 +230,7 @@ export const mockGetRecipeNutritionForRecipeOneWithTeaspoon = {
                     (((1 / 3) * mockCup.perCanonical) / mockTeaspoon.perCanonical) * 5
                 )
             ),
-            ounceAppleLine,
+            ounceAppleNutrition,
         ]),
     },
 };
@@ -263,7 +263,7 @@ export const mockGetRecipeNutritionFallback = {
             recipeById: {
                 __typename: 'Recipe',
                 _id: variables.recipeId,
-                nutrition: { __typename: 'RecipeNutrition', total: ZERO, lines: [] },
+                nutrition: { __typename: 'RecipeNutrition', total: ZERO, ingredients: [] },
             },
             ingredientByIds: [],
         } satisfies GetRecipeNutritionQuery,

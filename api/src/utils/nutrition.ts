@@ -8,11 +8,12 @@ import { MacroNutrients, NutritionalInfo } from '../models/NutritionalInfo.js';
 import { Recipe, RecipeIngredientType, RecipeYield } from '../models/Recipe.js';
 
 /**
- * A recipe's nutrition, calculated on read from its lines (issue #116).
+ * A recipe's nutrition, calculated on read from its ingredients (issue #116).
  *
  * Every quantity reaches grams, or a share of a child recipe, before it meets a macro:
- *  - an ingredient line: grams(quantity, unit, measures) × perGram
- *  - a recipe line: (quantity ÷ the child's yield in the same dimension) × the child's total
+ *  - an ingredient: grams(quantity, unit, measures) × perGram
+ *  - a recipe used as an ingredient: (quantity ÷ the child's yield in the same dimension) ×
+ *    the child's total
  * Nothing is stored, so a recipe never needs re-saving when an ingredient's data changes.
  */
 
@@ -29,23 +30,23 @@ export type UncountedCode =
     | 'CYCLE'
     | 'DEPTH_LIMIT';
 
-export interface LineNutrition {
+export interface IngredientNutrition {
     recipeIngredient: Types.ObjectId;
     status: NutritionStatus;
-    /** What this line contributed: zero when UNCOUNTED. */
+    /** What this ingredient contributed: zero when UNCOUNTED. */
     macros: MacroNutrients;
     /** Set when the status is not COUNTED. */
     reason: { code: UncountedCode; message: string } | null;
-    /** PARTIAL only: the lines of the child recipe that were not fully counted. */
+    /** PARTIAL only: the ingredients of the child recipe that were not fully counted. */
     childUncounted: number | null;
-    /** A recipe line: the recipe it uses, so a client can link to its breakdown. */
+    /** A recipe used as an ingredient: its id, so a client can link to its breakdown. */
     childRecipe: string | null;
 }
 
 export interface RecipeNutrition {
     /** The whole batch, as authored. */
     total: MacroNutrients;
-    lines: LineNutrition[];
+    ingredients: IngredientNutrition[];
 }
 
 export const ZERO_MACROS: MacroNutrients = { calories: 0, protein: 0, carbs: 0, fat: 0 };
@@ -145,30 +146,30 @@ export interface YieldRow {
 }
 
 /**
- * The share of a child recipe's batch that a line uses, or null when the child's yield has
- * no row to measure the line against.
+ * The share of a child recipe's batch that a quantity uses, or null when the child's yield has
+ * no row to measure the quantity against.
  *
- * A mass or volume line uses the yield row in its dimension, in canonical units, so grams
- * read against kilograms and tablespoons against cups. A count line needs a row in its exact
- * unit: "1 slice" cannot be read against "2 each".
+ * A mass or volume quantity uses the yield row in its dimension, in canonical units, so grams
+ * read against kilograms and tablespoons against cups. A count quantity needs a row in its
+ * exact unit: "1 slice" cannot be read against "2 each".
  */
 export function yieldFraction(quantity: number, unit: UnitData, yields: YieldRow[]): number | null {
     const canonical = (row: { quantity: number; unit: UnitData }) =>
         row.quantity * row.unit.perCanonical;
-    const line = { quantity, unit };
+    const amount = { quantity, unit };
     if (unit.dimension === 'count') {
         const row = yields.find((y) => String(y.unit._id) === String(unit._id));
         return row ? quantity / row.quantity : null;
     }
     // No density bridge is needed: a yield with both a mass and a volume row always has a
-    // row in the line's own dimension.
+    // row in the quantity's own dimension.
     const same = yields.find((y) => y.unit.dimension === unit.dimension);
-    return same ? canonical(line) / canonical(same) : null;
+    return same ? canonical(amount) / canonical(same) : null;
 }
 
 // ---------- the calculation over loaded data ----------
 
-interface LoadedLine {
+interface LoadedIngredient {
     _id: Types.ObjectId;
     type: 'ingredient' | 'recipe';
     quantity: string | null;
@@ -181,7 +182,7 @@ interface LoadedLine {
 interface LoadedRecipe {
     _id: string;
     title: string;
-    lines: LoadedLine[];
+    ingredients: LoadedIngredient[];
     yields: Array<{ quantity: string; unit: string }>;
 }
 
@@ -195,35 +196,39 @@ export interface NutritionData {
 }
 
 interface Calculated extends RecipeNutrition {
-    /** Lines not fully counted: UNCOUNTED and PARTIAL. */
+    /** Ingredients not fully counted: UNCOUNTED and PARTIAL. */
     notCounted: number;
 }
 
-function uncounted(line: LoadedLine, code: UncountedCode, message: string): LineNutrition {
+function uncounted(
+    recipeIngredient: LoadedIngredient,
+    code: UncountedCode,
+    message: string
+): IngredientNutrition {
     return {
-        recipeIngredient: line._id,
+        recipeIngredient: recipeIngredient._id,
         status: 'UNCOUNTED',
         macros: { ...ZERO_MACROS },
         reason: { code, message },
         childUncounted: null,
-        childRecipe: line.type === 'recipe' ? line.ingredient : null,
+        childRecipe: recipeIngredient.type === 'recipe' ? recipeIngredient.ingredient : null,
     };
 }
 
-function counted(line: LoadedLine, macros: MacroNutrients): LineNutrition {
+function counted(recipeIngredient: LoadedIngredient, macros: MacroNutrients): IngredientNutrition {
     return {
-        recipeIngredient: line._id,
+        recipeIngredient: recipeIngredient._id,
         status: 'COUNTED',
         macros,
         reason: null,
         childUncounted: null,
-        childRecipe: line.type === 'recipe' ? line.ingredient : null,
+        childRecipe: recipeIngredient.type === 'recipe' ? recipeIngredient.ingredient : null,
     };
 }
 
 /**
  * Calculates a loaded recipe. `stack` holds the recipes being calculated above it, so a
- * cycle already in the data gives CYCLE on its line instead of never ending. Each recipe is
+ * cycle already in the data gives CYCLE on its ingredient instead of never ending. Each recipe is
  * calculated once and memoised, so a recipe used twice costs nothing the second time.
  */
 export function calculate(
@@ -236,73 +241,87 @@ export function calculate(
     if (memoised) return memoised;
     const recipe = data.recipes.get(recipeId)!;
     const path = [...stack, recipeId];
-    const lines = recipe.lines.map((line) => calculateLine(line, data, path, memo));
-    const total = lines.reduce((sum, line) => addMacros(sum, line.macros), { ...ZERO_MACROS });
+    const ingredients = recipe.ingredients.map((recipeIngredient) =>
+        calculateIngredient(recipeIngredient, data, path, memo)
+    );
+    const total = ingredients.reduce((sum, result) => addMacros(sum, result.macros), {
+        ...ZERO_MACROS,
+    });
     const result = {
         total,
-        lines,
-        notCounted: lines.filter((line) => line.status !== 'COUNTED').length,
+        ingredients,
+        notCounted: ingredients.filter((result) => result.status !== 'COUNTED').length,
     };
     memo.set(recipeId, result);
     return result;
 }
 
-function calculateLine(
-    line: LoadedLine,
+function calculateIngredient(
+    recipeIngredient: LoadedIngredient,
     data: NutritionData,
     path: string[],
     memo: Map<string, Calculated>
-): LineNutrition {
-    if (!line.quantity) return uncounted(line, 'NO_QUANTITY', 'No quantity');
-    const quantity = quantityToFloat(line.quantity);
+): IngredientNutrition {
+    if (!recipeIngredient.quantity)
+        return uncounted(recipeIngredient, 'NO_QUANTITY', 'No quantity');
+    const quantity = quantityToFloat(recipeIngredient.quantity);
     if (!Number.isFinite(quantity))
-        return uncounted(line, 'NO_QUANTITY', 'Could not read the quantity');
-    const unit = line.unit ? data.units.get(line.unit) : undefined;
-    if (!unit) return uncounted(line, 'NO_MEASURE', 'No unit');
+        return uncounted(recipeIngredient, 'NO_QUANTITY', 'Could not read the quantity');
+    const unit = recipeIngredient.unit ? data.units.get(recipeIngredient.unit) : undefined;
+    if (!unit) return uncounted(recipeIngredient, 'NO_MEASURE', 'No unit');
 
-    if (line.type === 'recipe') {
-        return calculateRecipeLine(line, quantity, unit, data, path, memo);
+    if (recipeIngredient.type === 'recipe') {
+        return calculateRecipeIngredient(recipeIngredient, quantity, unit, data, path, memo);
     }
-    const name = data.ingredientNames.get(line.ingredient) ?? 'this ingredient';
-    const perGram = data.perGram.get(line.ingredient);
-    if (!perGram) return uncounted(line, 'NO_NUTRITION', `No nutritional data for ${name}`);
+    const name = data.ingredientNames.get(recipeIngredient.ingredient) ?? 'this ingredient';
+    const perGram = data.perGram.get(recipeIngredient.ingredient);
+    if (!perGram)
+        return uncounted(recipeIngredient, 'NO_NUTRITION', `No nutritional data for ${name}`);
     const perUnit =
         unit.dimension === 'mass'
             ? unit.perCanonical
-            : gramsPerUnit(data.measures.get(line.ingredient) ?? [], {
+            : gramsPerUnit(data.measures.get(recipeIngredient.ingredient) ?? [], {
                   unit,
-                  sizeId: line.size,
-                  prepMethodId: line.prepMethod,
+                  sizeId: recipeIngredient.size,
+                  prepMethodId: recipeIngredient.prepMethod,
               });
     if (perUnit === null) {
-        const sizeName = line.size ? data.sizeNames.get(line.size) : null;
+        const sizeName = recipeIngredient.size ? data.sizeNames.get(recipeIngredient.size) : null;
         return uncounted(
-            line,
+            recipeIngredient,
             'NO_MEASURE',
             `No weight recorded for ${describeOneUnit(unit, name, sizeName)}`
         );
     }
-    return counted(line, scaleMacros(perGram, quantity * perUnit));
+    return counted(recipeIngredient, scaleMacros(perGram, quantity * perUnit));
 }
 
-function calculateRecipeLine(
-    line: LoadedLine,
+function calculateRecipeIngredient(
+    recipeIngredient: LoadedIngredient,
     quantity: number,
     unit: UnitData,
     data: NutritionData,
     path: string[],
     memo: Map<string, Calculated>
-): LineNutrition {
-    const childId = line.ingredient;
+): IngredientNutrition {
+    const childId = recipeIngredient.ingredient;
     if (path.includes(childId)) {
-        return uncounted(line, 'CYCLE', 'This recipe uses itself through its ingredients');
+        return uncounted(
+            recipeIngredient,
+            'CYCLE',
+            'This recipe uses itself through its ingredients'
+        );
     }
     const child = data.recipes.get(childId);
     if (!child) {
         // Not loaded: deeper than MAX_DEPTH, or deleted.
         return path.length >= MAX_DEPTH
-            ? uncounted(line, 'DEPTH_LIMIT', `Recipes are nested more than ${MAX_DEPTH} deep`)
-            : uncounted(line, 'NO_NUTRITION', 'The recipe it uses no longer exists');
+            ? uncounted(
+                  recipeIngredient,
+                  'DEPTH_LIMIT',
+                  `Recipes are nested more than ${MAX_DEPTH} deep`
+              )
+            : uncounted(recipeIngredient, 'NO_NUTRITION', 'The recipe it uses no longer exists');
     }
     const yields = child.yields.flatMap((row) => {
         const rowUnit = data.units.get(row.unit);
@@ -314,7 +333,7 @@ function calculateRecipeLine(
         const what =
             unit.dimension === 'count' && !unit.hidden ? `${unit.longSingular}s` : unit.dimension;
         return uncounted(
-            line,
+            recipeIngredient,
             'NO_YIELD',
             yields.length === 0
                 ? `No yield recorded for ${child.title}`
@@ -323,13 +342,13 @@ function calculateRecipeLine(
     }
     const result = calculate(childId, data, path, memo);
     const macros = scaleMacros(result.total, fraction);
-    if (result.notCounted === 0) return counted(line, macros);
+    if (result.notCounted === 0) return counted(recipeIngredient, macros);
     return {
-        ...counted(line, macros),
+        ...counted(recipeIngredient, macros),
         status: 'PARTIAL',
         reason: {
             code: 'CHILD_PARTIAL',
-            message: `${result.notCounted} of ${result.lines.length} ingredients in ${child.title} not counted`,
+            message: `${result.notCounted} of ${result.ingredients.length} ingredients in ${child.title} not counted`,
         },
         childUncounted: result.notCounted,
     };
@@ -345,8 +364,8 @@ function asId(value: unknown): string | null {
 
 /**
  * Loads everything a recipe's calculation needs: the recipe tree breadth-first, one query a
- * level, then the nutrition, measures, names, units and sizes of every line in one query
- * each.
+ * level, then the nutrition, measures, names, units and sizes of every ingredient in one
+ * query each.
  */
 export async function loadNutritionData(rootId: string): Promise<NutritionData> {
     const recipes = new Map<string, LoadedRecipe>();
@@ -357,44 +376,53 @@ export async function loadNutritionData(rootId: string): Promise<NutritionData> 
             .lean();
         const next = new Set<string>();
         for (const doc of docs) {
-            const lines: LoadedLine[] = doc.ingredientSubsections.flatMap((subsection) =>
-                subsection.ingredients.map((line: RecipeIngredientType) => ({
-                    _id: line._id as Types.ObjectId,
-                    type: line.type,
-                    quantity: line.quantity ?? null,
-                    unit: asId(line.unit),
-                    size: asId(line.size),
-                    prepMethod: asId(line.prepMethod),
-                    ingredient: asId(line.ingredient)!,
-                }))
+            const ingredients: LoadedIngredient[] = doc.ingredientSubsections.flatMap(
+                (subsection) =>
+                    subsection.ingredients.map((recipeIngredient: RecipeIngredientType) => ({
+                        _id: recipeIngredient._id as Types.ObjectId,
+                        type: recipeIngredient.type,
+                        quantity: recipeIngredient.quantity ?? null,
+                        unit: asId(recipeIngredient.unit),
+                        size: asId(recipeIngredient.size),
+                        prepMethod: asId(recipeIngredient.prepMethod),
+                        ingredient: asId(recipeIngredient.ingredient)!,
+                    }))
             );
             recipes.set(String(doc._id), {
                 _id: String(doc._id),
                 title: doc.title,
-                lines,
+                ingredients,
                 yields: (doc.yield ?? []).map((row: RecipeYield) => ({
                     quantity: row.quantity,
                     unit: String(row.unit),
                 })),
             });
-            for (const line of lines) {
-                if (line.type === 'recipe' && !recipes.has(line.ingredient))
-                    next.add(line.ingredient);
+            for (const recipeIngredient of ingredients) {
+                if (recipeIngredient.type === 'recipe' && !recipes.has(recipeIngredient.ingredient))
+                    next.add(recipeIngredient.ingredient);
             }
         }
         level = [...next];
     }
 
     const all = [...recipes.values()];
-    const lines = all.flatMap((recipe) => recipe.lines);
+    const used = all.flatMap((recipe) => recipe.ingredients);
     const ingredientIds = [
-        ...new Set(lines.filter((l) => l.type === 'ingredient').map((l) => l.ingredient)),
+        ...new Set(used.filter((i) => i.type === 'ingredient').map((i) => i.ingredient)),
     ];
     const unitIds = new Set([
-        ...lines.flatMap((line) => (line.unit ? [line.unit] : [])),
+        ...used.flatMap((recipeIngredient) =>
+            recipeIngredient.unit ? [recipeIngredient.unit] : []
+        ),
         ...all.flatMap((recipe) => recipe.yields.map((row) => row.unit)),
     ]);
-    const sizeIds = [...new Set(lines.flatMap((line) => (line.size ? [line.size] : [])))];
+    const sizeIds = [
+        ...new Set(
+            used.flatMap((recipeIngredient) =>
+                recipeIngredient.size ? [recipeIngredient.size] : []
+            )
+        ),
+    ];
 
     const [infos, measureDocs, ingredients, sizes] = await Promise.all([
         NutritionalInfo.find({ ingredient: { $in: ingredientIds } }).lean(),
@@ -441,6 +469,6 @@ export async function loadNutritionData(rootId: string): Promise<NutritionData> 
 export async function recipeNutrition(recipeId: string): Promise<RecipeNutrition | null> {
     const data = await loadNutritionData(recipeId);
     if (!data.recipes.has(recipeId)) return null;
-    const { total, lines } = calculate(recipeId, data);
-    return { total, lines };
+    const { total, ingredients } = calculate(recipeId, data);
+    return { total, ingredients };
 }

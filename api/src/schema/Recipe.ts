@@ -210,27 +210,26 @@ const UncountedReasonTC = schemaComposer.createObjectTC({
     name: 'UncountedReason',
     fields: { code: 'UncountedCode!', message: 'String!' },
 });
-const LineNutritionTC = schemaComposer.createObjectTC({
-    name: 'LineNutrition',
+const IngredientNutritionTC = schemaComposer.createObjectTC({
+    name: 'IngredientNutrition',
     fields: {
         recipeIngredient: 'MongoID!',
         status: 'NutritionStatus!',
-        // What this line contributed: zero when UNCOUNTED.
+        // What this ingredient contributed: zero when UNCOUNTED.
         macros: MacrosTC.NonNull,
         // Set when the status is not COUNTED.
         reason: UncountedReasonTC,
-        // PARTIAL only: the lines of the child recipe that were not fully counted.
+        // PARTIAL only: the ingredients of the child recipe that were not fully counted.
         childUncounted: 'Int',
-        // A recipe line: the recipe it uses, whose own nutrition shows its breakdown.
+        // A recipe used as an ingredient: its id, whose own nutrition shows its breakdown.
         childRecipe: 'MongoID',
     },
 });
 const RecipeNutritionTC = schemaComposer.createObjectTC({
     name: 'RecipeNutrition',
     fields: {
-        // The whole batch, as authored. Divide by numServings for one serving.
         total: MacrosTC.NonNull,
-        lines: LineNutritionTC.NonNull.List.NonNull,
+        ingredients: IngredientNutritionTC.NonNull.List.NonNull,
     },
 });
 RecipeTC.addFields({
@@ -238,7 +237,9 @@ RecipeTC.addFields({
         type: RecipeNutritionTC.NonNull,
         resolve: async (source: Recipe) => {
             const result = await recipeNutrition(String(source._id));
-            return result ?? { total: { calories: 0, protein: 0, carbs: 0, fat: 0 }, lines: [] };
+            return (
+                result ?? { total: { calories: 0, protein: 0, carbs: 0, fat: 0 }, ingredients: [] }
+            );
         },
     },
 });

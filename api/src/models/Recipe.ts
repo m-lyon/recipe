@@ -325,43 +325,47 @@ const recipeSchema: Schema<Recipe> = new Schema<Recipe>({
 
 recipeSchema.index({ 'ingredientSubsections.ingredients.ingredient': 1 });
 
-/** The ids of the ingredients and recipes a recipe's lines use. */
-function lineIngredientIds(subsections: IngredientSubsection[]): Types.ObjectId[] {
+function usedIngredientIds(subsections: IngredientSubsection[]): Types.ObjectId[] {
     return subsections.flatMap((subsection) =>
         subsection.ingredients.map(
-            (line) => (line.ingredient as { _id?: Types.ObjectId })?._id ?? line.ingredient
+            (recipeIngredient) =>
+                (recipeIngredient.ingredient as { _id?: Types.ObjectId })?._id ??
+                recipeIngredient.ingredient
         )
     ) as Types.ObjectId[];
 }
 
-function lineError(message: string, code: string): GraphQLError {
+function recipeIngredientError(message: string, code: string): GraphQLError {
     return new GraphQLError(message, { extensions: { code } });
 }
 
 /**
- * Checks the lines that use other recipes:
- *  - a recipe line has no size, because a yield has no size to match it against;
+ * Checks the recipes used as ingredients:
+ *  - each has no size, because a yield has no size to match it against;
  *  - a used recipe is marked as an ingredient;
- *  - no chain of recipe lines leads back to this recipe, so a nutrition calculation ends.
+ *  - no chain of recipes used as ingredients leads back to this recipe, so a nutrition
+ *    calculation ends.
  * The chain is walked breadth-first, one query per level.
  */
-async function validateRecipeLines(recipe: HydratedDocument<Recipe>): Promise<void> {
-    const ids = lineIngredientIds(recipe.ingredientSubsections);
+async function validateRecipeIngredients(recipe: HydratedDocument<Recipe>): Promise<void> {
+    const ids = usedIngredientIds(recipe.ingredientSubsections);
     const used = await Recipe.find({ _id: { $in: ids } }).select('title isIngredient');
     if (used.length === 0) return;
     const usedById = new Map(used.map((child) => [String(child._id), child]));
     for (const subsection of recipe.ingredientSubsections) {
-        for (const line of subsection.ingredients) {
-            const child = usedById.get(String(lineIngredientIds([{ ingredients: [line] }])[0]));
+        for (const recipeIngredient of subsection.ingredients) {
+            const child = usedById.get(
+                String(usedIngredientIds([{ ingredients: [recipeIngredient] }])[0])
+            );
             if (!child) continue;
-            if (line.size != null) {
-                throw lineError(
-                    `A recipe line cannot have a size: "${child.title}" is a recipe.`,
+            if (recipeIngredient.size != null) {
+                throw recipeIngredientError(
+                    `${child.title} is a recipe, so it cannot have a size.`,
                     'RECIPE_INGREDIENT_SIZE'
                 );
             }
             if (!child.isIngredient) {
-                throw lineError(
+                throw recipeIngredientError(
                     `"${child.title}" is not marked as an ingredient, so no recipe can use it.`,
                     'RECIPE_INGREDIENT_NOT_INGREDIENT'
                 );
@@ -373,7 +377,7 @@ async function validateRecipeLines(recipe: HydratedDocument<Recipe>): Promise<vo
     let frontier = used.map((child) => String(child._id));
     while (frontier.length > 0) {
         if (frontier.includes(self)) {
-            throw lineError(
+            throw recipeIngredientError(
                 `"${recipe.title}" cannot use a recipe that uses it, directly or through others.`,
                 'RECIPE_INGREDIENT_CYCLE'
             );
@@ -383,7 +387,7 @@ async function validateRecipeLines(recipe: HydratedDocument<Recipe>): Promise<vo
             'ingredientSubsections.ingredients.ingredient'
         );
         const next = await Recipe.find({
-            _id: { $in: level.flatMap((child) => lineIngredientIds(child.ingredientSubsections)) },
+            _id: { $in: level.flatMap((child) => usedIngredientIds(child.ingredientSubsections)) },
         }).select('_id');
         frontier = next.map((child) => String(child._id)).filter((id) => !visited.has(id));
     }
@@ -391,7 +395,7 @@ async function validateRecipeLines(recipe: HydratedDocument<Recipe>): Promise<vo
 
 recipeSchema.pre('save', async function (this: HydratedDocument<Recipe>) {
     if (this.isNew || this.isModified('ingredientSubsections')) {
-        await validateRecipeLines(this);
+        await validateRecipeIngredients(this);
     }
     const calculatedTags: ReservedTags[] = [];
     await this.populate('ingredientSubsections.ingredients.ingredient');

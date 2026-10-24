@@ -14,9 +14,9 @@ function unitLabel(unit: UnitChoice): string {
 }
 
 /**
- * What a row's unit rules out for the other rows. A mass or volume line reads against any row in
- * its dimension, so a mass row rules out every mass unit. A count line reads only against its
- * own unit, so "8 slice" and "2 each" can both be given.
+ * What a row's unit rules out for the other rows. A mass or volume quantity reads against any
+ * row in its dimension, so a mass row rules out every mass unit. A count quantity reads only
+ * against its own unit, so "8 slice" and "2 each" can both be given.
  */
 function yieldKey(unit: UnitChoice): string {
     return unit.dimension === 'count' ? unit._id : unit.dimension;

@@ -78,11 +78,11 @@ describe('yieldFraction', function () {
         { quantity: 260, unit: GRAM },
     ];
 
-    it('reads a count line against the count row', function () {
+    it('reads a count quantity against the count row', function () {
         assert.equal(yieldFraction(1, EACH, pizzaDough), 0.5);
     });
 
-    it('reads a count line against the row in its own unit', function () {
+    it('reads a count quantity against the row in its own unit', function () {
         const garlic = [
             { quantity: 2, unit: EACH },
             { quantity: 20, unit: CLOVE },
@@ -91,13 +91,13 @@ describe('yieldFraction', function () {
         assert.equal(yieldFraction(5, CLOVE, garlic), 0.25);
     });
 
-    it('reads a mass line against the mass row', function () {
+    it('reads a mass quantity against the mass row', function () {
         assert.closeTo(yieldFraction(300, GRAM, pizzaDough)!, 1 / 3, 1e-9);
         assert.closeTo(yieldFraction(0.3, KILOGRAM, pizzaDough)!, 1 / 3, 1e-9);
         assert.closeTo(yieldFraction(200, GRAM, curryPaste)!, 200 / 260, 1e-9);
     });
 
-    it('reads a volume line against the volume row, in canonical units', function () {
+    it('reads a volume quantity against the volume row, in canonical units', function () {
         assert.closeTo(yieldFraction(2, TABLESPOON, curryPaste)!, 1 / 8, 1e-3);
     });
 
@@ -106,7 +106,7 @@ describe('yieldFraction', function () {
             { quantity: 4, unit: CUP },
             { quantity: 1000, unit: GRAM },
         ];
-        // A volume row in the line's own dimension is used directly.
+        // A volume row in the quantity's own dimension is used directly.
         assert.closeTo(yieldFraction(1, CUP, ragu)!, 0.25, 1e-9);
         // Teaspoons against a cup row, in canonical millilitres:
         const massAndVolume = [
@@ -120,7 +120,7 @@ describe('yieldFraction', function () {
         );
     });
 
-    it('gives null when no row measures the line', function () {
+    it('gives null when no row measures the quantity', function () {
         assert.isNull(yieldFraction(1, EACH, curryPaste), 'no count row');
         assert.isNull(yieldFraction(1, CLOVE, pizzaDough), 'a count row in another unit');
         assert.isNull(yieldFraction(200, GRAM, []), 'no yield');
@@ -142,7 +142,7 @@ describe('calculate', function () {
                         _id: 'salad',
                         title: 'Salad',
                         yields: [],
-                        lines: [
+                        ingredients: [
                             {
                                 _id: id(),
                                 type: 'recipe',
@@ -170,7 +170,7 @@ describe('calculate', function () {
                         _id: 'couscous',
                         title: 'Pearl Couscous',
                         yields: [{ quantity: '600', unit: 'gram' }],
-                        lines: [
+                        ingredients: [
                             {
                                 _id: id(),
                                 type: 'ingredient',
@@ -216,7 +216,7 @@ describe('calculate', function () {
 
     it('adds a share of a child recipe, through its yield', function () {
         const result = calculate('salad', data());
-        const [couscous, salt] = result.lines;
+        const [couscous, salt] = result.ingredients;
         assert.equal(couscous.status, 'COUNTED');
         // Couscous: (100 + 26) g × 2 kcal = 252 kcal per 600 g batch; half of it is used.
         assert.closeTo(couscous.macros.calories, 126, 1e-9);
@@ -226,9 +226,9 @@ describe('calculate', function () {
         assert.closeTo(result.total.calories, 126, 1e-9);
     });
 
-    it('marks a child with uncounted lines as partial, and still adds what it has', function () {
+    it('marks a child with uncounted ingredients as partial, and still adds what it has', function () {
         const partial = data({ measures: new Map() });
-        const [couscous] = calculate('salad', partial).lines;
+        const [couscous] = calculate('salad', partial).ingredients;
         assert.equal(couscous.status, 'PARTIAL');
         assert.equal(couscous.childUncounted, 1);
         assert.equal(couscous.reason?.code, 'CHILD_PARTIAL');
@@ -237,24 +237,24 @@ describe('calculate', function () {
         assert.closeTo(couscous.macros.calories, 100, 1e-9);
     });
 
-    it('names the missing weight of an ingredient line', function () {
+    it('names the missing weight of an ingredient', function () {
         const result = calculate('couscous', data({ measures: new Map() }));
-        assert.deepEqual(result.lines[1].reason, {
+        assert.deepEqual(result.ingredients[1].reason, {
             code: 'NO_MEASURE',
             message: 'No weight recorded for 1 stock pot',
         });
     });
 
-    it('leaves a recipe line uncounted when the child has no yield in its dimension', function () {
+    it('leaves a recipe used as an ingredient uncounted when it has no yield in the dimension', function () {
         const noYield = data();
         noYield.recipes.get('couscous')!.yields = [];
-        assert.deepEqual(calculate('salad', noYield).lines[0].reason, {
+        assert.deepEqual(calculate('salad', noYield).ingredients[0].reason, {
             code: 'NO_YIELD',
             message: 'No yield recorded for Pearl Couscous',
         });
         const countOnly = data();
         countOnly.recipes.get('couscous')!.yields = [{ quantity: '2', unit: 'each' }];
-        assert.deepEqual(calculate('salad', countOnly).lines[0].reason, {
+        assert.deepEqual(calculate('salad', countOnly).ingredients[0].reason, {
             code: 'NO_YIELD',
             message: 'No yield in mass recorded for Pearl Couscous',
         });
@@ -262,7 +262,7 @@ describe('calculate', function () {
 
     it('stops at a cycle already in the data, instead of never ending', function () {
         const cyclic = data();
-        cyclic.recipes.get('couscous')!.lines.push({
+        cyclic.recipes.get('couscous')!.ingredients.push({
             _id: id(),
             type: 'recipe',
             quantity: '1',
@@ -273,18 +273,18 @@ describe('calculate', function () {
         });
         cyclic.recipes.get('salad')!.yields = [{ quantity: '100', unit: 'gram' }];
         const couscous = calculate('couscous', cyclic);
-        const salad = couscous.lines[2];
-        // Couscous uses salad, and salad's own couscous line is the cycle.
+        const salad = couscous.ingredients[2];
+        // Couscous uses salad, and salad's own couscous is the cycle.
         assert.equal(salad.status, 'PARTIAL');
-        const inner = calculate('salad', cyclic, ['couscous']).lines[0];
+        const inner = calculate('salad', cyclic, ['couscous']).ingredients[0];
         assert.equal(inner.reason?.code, 'CYCLE');
     });
 
     it('stops at the depth limit', function () {
         const deep = data();
         const stack = Array.from({ length: MAX_DEPTH }, (_, i) => `r${i}`);
-        deep.recipes.get('salad')!.lines[0].ingredient = 'not-loaded';
-        const [line] = calculate('salad', deep, stack.slice(0, MAX_DEPTH - 1)).lines;
-        assert.equal(line.reason?.code, 'DEPTH_LIMIT');
+        deep.recipes.get('salad')!.ingredients[0].ingredient = 'not-loaded';
+        const [result] = calculate('salad', deep, stack.slice(0, MAX_DEPTH - 1)).ingredients;
+        assert.equal(result.reason?.code, 'DEPTH_LIMIT');
     });
 });

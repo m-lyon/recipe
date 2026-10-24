@@ -3,7 +3,7 @@ import mongoose, { Types } from 'mongoose';
 import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 
 import { startServer, stopServer } from '../utils/mongodb.js';
-import { migrateRecipeLines } from '../../src/scripts/updateSchema_2026-10-21.js';
+import { migrateRecipeIngredients } from '../../src/scripts/updateSchema_2026-10-21.js';
 
 const recipes = () => mongoose.connection.db.collection('recipes');
 const ids = {
@@ -16,11 +16,11 @@ const ids = {
     large: new Types.ObjectId(),
 };
 
-function lines(...ingredients: Array<{ ingredient: Types.ObjectId; size?: Types.ObjectId }>) {
-    return [{ ingredients: ingredients.map((line) => ({ quantity: '1', ...line })) }];
+function subsections(...ingredients: Array<{ ingredient: Types.ObjectId; size?: Types.ObjectId }>) {
+    return [{ ingredients: ingredients.map((ingredient) => ({ quantity: '1', ...ingredient })) }];
 }
 
-describe('migrateRecipeLines', function () {
+describe('migrateRecipeIngredients', function () {
     before(startServer);
     after(stopServer);
     beforeEach(async function () {
@@ -33,13 +33,13 @@ describe('migrateRecipeLines', function () {
                 _id: ids.dough,
                 title: 'Pizza Dough',
                 isIngredient: true,
-                ingredientSubsections: lines({ ingredient: ids.flour }),
+                ingredientSubsections: subsections({ ingredient: ids.flour }),
             },
             {
                 _id: ids.pizza,
                 title: 'Pizza',
                 isIngredient: false,
-                ingredientSubsections: lines(
+                ingredientSubsections: subsections(
                     { ingredient: ids.dough, size: ids.large },
                     { ingredient: ids.dinner },
                     { ingredient: ids.flour, size: ids.large }
@@ -49,19 +49,19 @@ describe('migrateRecipeLines', function () {
                 _id: ids.dinner,
                 title: 'Dinner',
                 isIngredient: false,
-                ingredientSubsections: lines({ ingredient: ids.flour }),
+                ingredientSubsections: subsections({ ingredient: ids.flour }),
             },
             {
                 _id: ids.a,
                 title: 'A',
                 isIngredient: true,
-                ingredientSubsections: lines({ ingredient: ids.b }),
+                ingredientSubsections: subsections({ ingredient: ids.b }),
             },
             {
                 _id: ids.b,
                 title: 'B',
                 isIngredient: true,
-                ingredientSubsections: lines({ ingredient: ids.a }),
+                ingredientSubsections: subsections({ ingredient: ids.a }),
             },
         ]);
     });
@@ -75,10 +75,10 @@ describe('migrateRecipeLines', function () {
                 .ingredients as Array<{
                 size?: unknown;
             }>
-        ).map((line) => line.size ?? null);
+        ).map((ingredient) => ingredient.size ?? null);
 
     it('reports everything and writes nothing on a dry run', async function () {
-        const report = await migrateRecipeLines(mongoose.connection.db, { dryRun: true });
+        const report = await migrateRecipeIngredients(mongoose.connection.db, { dryRun: true });
         assert.deepEqual(report, {
             dryRun: true,
             sizesCleared: ['Pizza: large Pizza Dough'],
@@ -88,13 +88,13 @@ describe('migrateRecipeLines', function () {
         assert.equal(String((await pizzaSizes())[0]), String(ids.large));
     });
 
-    it('clears the size on recipe lines only, and is safe to re-run', async function () {
-        await migrateRecipeLines(mongoose.connection.db);
+    it('clears the size on recipes used as ingredients only, and is safe to re-run', async function () {
+        await migrateRecipeIngredients(mongoose.connection.db);
         const [dough, , flour] = await pizzaSizes();
         assert.isNull(dough);
-        assert.equal(String(flour), String(ids.large), 'an ingredient line keeps its size');
+        assert.equal(String(flour), String(ids.large), 'an ingredient keeps its size');
 
-        const again = await migrateRecipeLines(mongoose.connection.db);
+        const again = await migrateRecipeIngredients(mongoose.connection.db);
         assert.deepEqual(again.sizesCleared, []);
     });
 });

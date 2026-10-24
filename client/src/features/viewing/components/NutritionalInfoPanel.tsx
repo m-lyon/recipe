@@ -16,7 +16,7 @@ interface NutritionalInfoPanelProps {
     perServing: MacroNutrients;
     uncountedIds: Set<string>;
     uncounted?: UncountedIngredient[];
-    /** Lines that use a recipe with some lines of its own not counted. */
+    /** Recipes used as ingredients, with some ingredients of their own not counted. */
     partial?: PartialIngredient[];
     canEditIngredient?: (ingredientId: string) => boolean;
     /** Whether the viewer may edit a recipe with this owner, to offer adding a missing yield. */
@@ -122,28 +122,38 @@ export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
                                 </Text>
                             </Group>
                         )}
-                        {uncounted.map((line) => {
-                            const shown = displayLine(line.item);
+                        {uncounted.map((uncountedIngredient) => {
+                            const shown = displayLine(uncountedIngredient.item);
                             return (
-                                <Box key={line.item._id} mt='xs' ml='lg'>
+                                <Box key={uncountedIngredient.item._id} mt='xs' ml='lg'>
                                     <Text size='sm'>
                                         {shown.authored ? '≈ ' : ''}
                                         {getFinishedRecipeIngredientStr(shown).trim()}
                                         <Text span size='sm' c='dimmed'>
                                             {' '}
-                                            — {lowerFirst(line.reason)}
+                                            — {lowerFirst(uncountedIngredient.reason)}
                                         </Text>
                                     </Text>
-                                    {line.code === 'NO_MEASURE' &&
-                                        canEditIngredient(line.item.ingredient._id) && (
-                                            <UncountedIngredientPrompt uncounted={line} />
+                                    {uncountedIngredient.code === 'NO_MEASURE' &&
+                                        canEditIngredient(
+                                            uncountedIngredient.item.ingredient._id
+                                        ) && (
+                                            <UncountedIngredientPrompt
+                                                uncounted={uncountedIngredient}
+                                            />
                                         )}
-                                    {line.code === 'NO_YIELD' &&
-                                        line.item.ingredient.__typename === 'Recipe' &&
-                                        canEditRecipe(line.item.ingredient.owner) && (
+                                    {uncountedIngredient.code === 'NO_YIELD' &&
+                                        uncountedIngredient.item.ingredient.__typename ===
+                                            'Recipe' &&
+                                        canEditRecipe(
+                                            uncountedIngredient.item.ingredient.owner
+                                        ) && (
                                             <Anchor
                                                 component={Link}
-                                                to={recipeLink(line.item, 'edit') ?? ''}
+                                                to={
+                                                    recipeLink(uncountedIngredient.item, 'edit') ??
+                                                    ''
+                                                }
                                                 size='sm'
                                             >
                                                 Add a yield
@@ -152,17 +162,17 @@ export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
                                 </Box>
                             );
                         })}
-                        {partial.map((line) => {
-                            const shown = displayLine(line.item);
-                            const to = recipeLink(line.item, 'view');
+                        {partial.map((partialIngredient) => {
+                            const shown = displayLine(partialIngredient.item);
+                            const to = recipeLink(partialIngredient.item, 'view');
                             return (
-                                <Box key={line.item._id} mt='xs' ml='lg'>
+                                <Box key={partialIngredient.item._id} mt='xs' ml='lg'>
                                     <Text size='sm'>
                                         {shown.authored ? '≈ ' : ''}
                                         {getFinishedRecipeIngredientStr(shown).trim()}
                                         <Text span size='sm' c='dimmed'>
                                             {' '}
-                                            — {lowerFirst(line.reason)}
+                                            — {lowerFirst(partialIngredient.reason)}
                                         </Text>
                                     </Text>
                                     {to && (

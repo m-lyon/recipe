@@ -4,14 +4,14 @@ import { MacroNutrients } from '@recipe/utils/macros';
 import { UncountedCode } from '@recipe/graphql/generated';
 import { GET_RECIPE_NUTRITION } from '@recipe/graphql/queries/nutritionalInfo';
 
-/** A recipe line that added nothing to the totals, and why. */
+/** An ingredient that added nothing to the totals, and why. */
 export interface UncountedIngredient {
     item: RecipeIngredientView;
     code: UncountedCode;
     reason: string;
 }
 
-/** A line that uses a recipe with some lines of its own not counted. */
+/** A recipe used as an ingredient, with some ingredients of its own not counted. */
 export interface PartialIngredient {
     item: RecipeIngredientView;
     reason: string;
@@ -21,16 +21,18 @@ const ZERO: MacroNutrients = { calories: 0, protein: 0, carbs: 0, fat: 0 };
 
 /**
  * A recipe's nutrition, as the API calculates it: through recipes used as ingredients, with
- * every line's status. The API reads the whole tree, so the only arithmetic left here is one
+ * every ingredient's status. The API reads the whole tree, so the only arithmetic left here is one
  * serving.
  */
 export function useNutritionalInfo(recipe: CompletedRecipeView) {
-    const lines = recipe.ingredientSubsections.flatMap((subsection) => subsection.ingredients);
+    const recipeIngredients = recipe.ingredientSubsections.flatMap(
+        (subsection) => subsection.ingredients
+    );
     const ingredientIds = [
         ...new Set(
-            lines
-                .filter((line) => line.ingredient.__typename === 'Ingredient')
-                .map((line) => line.ingredient._id)
+            recipeIngredients
+                .filter((item) => item.ingredient.__typename === 'Ingredient')
+                .map((item) => item.ingredient._id)
         ),
     ];
     const { data, loading, error } = useQuery(GET_RECIPE_NUTRITION, {
@@ -50,16 +52,16 @@ export function useNutritionalInfo(recipe: CompletedRecipeView) {
         fat: total.fat / servings,
     };
 
-    const itemOf = new Map(lines.map((line) => [line._id, line]));
+    const itemOf = new Map(recipeIngredients.map((item) => [item._id, item]));
     const uncounted: UncountedIngredient[] = [];
     const partial: PartialIngredient[] = [];
-    for (const line of nutrition?.lines ?? []) {
-        const item = itemOf.get(line.recipeIngredient);
-        if (!item || !line.reason) continue;
-        if (line.status === 'UNCOUNTED') {
-            uncounted.push({ item, code: line.reason.code, reason: line.reason.message });
-        } else if (line.status === 'PARTIAL') {
-            partial.push({ item, reason: line.reason.message });
+    for (const result of nutrition?.ingredients ?? []) {
+        const item = itemOf.get(result.recipeIngredient);
+        if (!item || !result.reason) continue;
+        if (result.status === 'UNCOUNTED') {
+            uncounted.push({ item, code: result.reason.code, reason: result.reason.message });
+        } else if (result.status === 'PARTIAL') {
+            partial.push({ item, reason: result.reason.message });
         }
     }
     const owners = new Map(
@@ -67,13 +69,14 @@ export function useNutritionalInfo(recipe: CompletedRecipeView) {
     );
     const showLoading = loading && !nutrition;
     const nothingCounted =
-        !showLoading && (nutrition?.lines ?? []).every((line) => line.status === 'UNCOUNTED');
+        !showLoading &&
+        (nutrition?.ingredients ?? []).every((result) => result.status === 'UNCOUNTED');
 
     return {
         perServing,
         uncounted,
         partial,
-        uncountedIds: new Set(uncounted.map((line) => line.item._id)),
+        uncountedIds: new Set(uncounted.map((ingredient) => ingredient.item._id)),
         owners,
         nothingCounted,
         loading: showLoading,
