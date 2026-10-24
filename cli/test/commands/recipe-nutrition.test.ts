@@ -113,7 +113,7 @@ describe('nutrition <recipe>', () => {
         process.exitCode = 0;
     });
 
-    it('prints the batch, one serving, and the ingredients not fully counted', async () => {
+    it('prints the whole recipe, one serving, and the ingredients not fully counted', async () => {
         api.install();
         const { stdout } = await runCommand(['nutrition', 'pesto-couscous-salad-abwmo'], ROOT);
         expect(stdout).to.contain('Pesto Couscous Salad (pesto-couscous-salad-abwmo)');

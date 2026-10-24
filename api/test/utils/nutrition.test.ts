@@ -218,7 +218,7 @@ describe('calculate', function () {
         const result = calculate('salad', data());
         const [couscous, salt] = result.ingredients;
         assert.equal(couscous.status, 'COUNTED');
-        // Couscous: (100 + 26) g × 2 kcal = 252 kcal per 600 g batch; half of it is used.
+        // Couscous: (100 + 26) g × 2 kcal = 252 kcal per 600 g recipe; half of it is used.
         assert.closeTo(couscous.macros.calories, 126, 1e-9);
         assert.equal(couscous.childRecipe, 'couscous');
         assert.equal(salt.status, 'UNCOUNTED');
@@ -233,7 +233,7 @@ describe('calculate', function () {
         assert.equal(couscous.childUncounted, 1);
         assert.equal(couscous.reason?.code, 'CHILD_PARTIAL');
         assert.equal(couscous.reason?.message, '1 of 2 ingredients in Pearl Couscous not counted');
-        // Only the flour: 200 kcal per batch, half used.
+        // Only the flour: 200 kcal per recipe, half used.
         assert.closeTo(couscous.macros.calories, 100, 1e-9);
     });
 

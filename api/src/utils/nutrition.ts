@@ -47,7 +47,7 @@ export interface IngredientNutrition {
 }
 
 export interface RecipeNutrition {
-    /** The whole batch, as authored. */
+    /** The whole recipe, as authored. */
     total: MacroNutrients;
     ingredients: IngredientNutrition[];
 }
@@ -144,7 +144,7 @@ export interface YieldRow {
 }
 
 /**
- * The share of a child recipe's batch that a quantity uses, or null when the child's yield has
+ * The share of a child recipe that a quantity uses, or null when the child's yield has
  * no row to measure the quantity against.
  *
  * A mass or volume quantity uses the yield row in its dimension, in canonical units, so grams

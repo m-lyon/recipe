@@ -21,7 +21,7 @@ function describeIngredient(item: RecipeIngredientSummary): string {
 
 export default class Nutrition extends BaseCommand {
     static description =
-        "A recipe's nutrition as the API calculates it: the whole batch, one serving, and " +
+        "A recipe's nutrition as the API calculates it: the whole recipe, one serving, and " +
         'every ingredient that is not fully counted with its reason. Recipes used as ingredients ' +
         'count through their yield.';
 
@@ -59,7 +59,7 @@ export default class Nutrition extends BaseCommand {
         const partial = ingredients.filter((ingredient) => ingredient.status === 'PARTIAL');
 
         const table = renderTable(
-            ['', 'BATCH', `PER SERVING (of ${servings})`],
+            ['', 'RECIPE', `PER SERVING (of ${servings})`],
             (
                 [
                     ['kcal', 'calories'],
