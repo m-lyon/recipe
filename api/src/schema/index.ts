@@ -18,7 +18,6 @@ import { DisplayLadder } from '../models/DisplayLadder.js';
 import { SizeMutation, SizeQuery, SizeQueryAdmin } from './Size.js';
 import { UnitMutation, UnitQuery, UnitQueryAdmin } from './Unit.js';
 import { OpenFoodFactsMutation } from './OpenFoodFactsContribute.js';
-import { IngredientMutation, IngredientQuery } from './Ingredient.js';
 import { isAdmin, isImageOwnerOrAdmin } from '../middleware/authorisation.js';
 import { isNutritionalInfoOwnerOrAdmin } from '../middleware/authorisation.js';
 import { DisplayLadderMutation, DisplayLadderQuery } from './DisplayLadder.js';
@@ -26,6 +25,7 @@ import { isIngredientMeasureOwnerOrAdmin } from '../middleware/authorisation.js'
 import { isDocumentOwnerOrAdmin, isVerified } from '../middleware/authorisation.js';
 import { NutritionalInfoMutation, NutritionalInfoQuery } from './NutritionalInfo.js';
 import { IngredientMeasureMutation, IngredientMeasureQuery } from './IngredientMeasure.js';
+import { IngredientMutation, IngredientQuery, IngredientQueryAdmin } from './Ingredient.js';
 import { PrepMethodMutation, PrepMethodQuery, PrepMethodQueryAdmin } from './PrepMethod.js';
 
 export const USDA_SEARCH_LIMIT = 60;
@@ -69,6 +69,7 @@ const isAdminQueries = withMiddleware(
     {
         ...SizeQueryAdmin,
         ...UnitQueryAdmin,
+        ...IngredientQueryAdmin,
         ...PrepMethodQueryAdmin,
     },
     isAdmin()
