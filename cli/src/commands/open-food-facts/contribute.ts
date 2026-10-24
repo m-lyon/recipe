@@ -36,15 +36,17 @@ const MACROS: Array<[string, keyof Per100g]> = [
 export default class OpenFoodFactsContribute extends BaseCommand {
     static description =
         'Send a missing product, or a correction, to Open Food Facts: the name, brands, pack ' +
-        'size and values per 100 g from the pack label, with a photo of the label. This ' +
-        'writes to a public database. The server sends it to staging unless production is ' +
-        'configured.';
+        'size and values per 100 g (or per 100 ml) from the pack label, with a photo of the ' +
+        'label. This writes to a public database. The server sends it to staging unless ' +
+        'production is configured.';
 
     static examples = [
         '<%= config.bin %> <%= command.id %> 8721317714801 --label-per-100g 69,3.8,12,0.5 ' +
             '--photo label.jpg --dry-run',
         '<%= config.bin %> <%= command.id %> 5016084000374 --label-per-100g 349,47,19,5 ' +
             '--photo label.jpg',
+        '<%= config.bin %> <%= command.id %> 0050561846326 --label-per-100ml 98,14,8.6,0 ' +
+            '--photo label.jpg --dry-run',
     ];
 
     static args = {
@@ -55,6 +57,13 @@ export default class OpenFoodFactsContribute extends BaseCommand {
         'label-per-100g': Flags.string({
             description: 'Values per 100 g from the pack label',
             helpValue: 'KCAL,PROTEIN,CARBS,FAT',
+            exclusive: ['label-per-100ml'],
+        }),
+        'label-per-100ml': Flags.string({
+            description:
+                'Values per 100 ml from the pack label, for a liquid whose label gives them so',
+            helpValue: 'KCAL,PROTEIN,CARBS,FAT',
+            exclusive: ['label-per-100g'],
         }),
         name: Flags.string({ description: 'The product name, as on the pack' }),
         brands: Flags.string({ description: 'The brands, comma-separated' }),
@@ -71,29 +80,35 @@ export default class OpenFoodFactsContribute extends BaseCommand {
         const barcode = args.barcode.trim();
 
         // Everything a typo can break is checked before any request.
-        const label = flags['label-per-100g'] ? parseLabelPer100g(flags['label-per-100g']) : null;
-        if (flags['label-per-100g'] && !label) {
+        const basis: '100g' | '100ml' = flags['label-per-100ml'] ? '100ml' : '100g';
+        const labelFlag = `label-per-${basis}` as const;
+        const labelText = flags[labelFlag];
+        // The parser reads four numbers; the basis only says what they are per.
+        const label = labelText ? parseLabelPer100g(labelText) : null;
+        if (labelText && !label) {
             throw rejected(
-                `--label-per-100g takes four numbers, "kcal,protein,carbs,fat", not ` +
-                    `"${flags['label-per-100g']}".`
+                `--${labelFlag} takes four numbers, "kcal,protein,carbs,fat", not "${labelText}".`
             );
         }
+        const values = label && {
+            calories: label.caloriesPer100g!,
+            protein: label.proteinPer100g!,
+            carbs: label.carbsPer100g!,
+            fat: label.fatPer100g!,
+        };
         const photo = flags.photo ? readPhoto(flags.photo) : null;
         const input = {
             barcode,
             productName: flags.name?.trim() || null,
             brands: flags.brands?.trim() || null,
             quantity: flags.quantity?.trim() || null,
-            per100g: label && {
-                calories: label.caloriesPer100g!,
-                protein: label.proteinPer100g!,
-                carbs: label.carbsPer100g!,
-                fat: label.fatPer100g!,
-            },
+            per100g: basis === '100g' ? values : null,
+            per100ml: basis === '100ml' ? values : null,
         };
         if (!input.productName && !input.brands && !input.quantity && !label && !photo) {
             throw rejected(
-                'Nothing to send. Pass --label-per-100g, --name, --brands, --quantity or --photo.'
+                'Nothing to send. Pass --label-per-100g, --label-per-100ml, --name, --brands, ' +
+                    '--quantity or --photo.'
             );
         }
         if (!/^\d{8,14}$/.test(barcode)) {
@@ -121,6 +136,7 @@ export default class OpenFoodFactsContribute extends BaseCommand {
         const plan = {
             dryRun: flags['dry-run'],
             barcode,
+            basis: label ? basis : null,
             product: current ? openFoodFactsProductName(current) : null,
             isNew: !current,
             changes,
@@ -222,6 +238,7 @@ function describeChanges(
 function render(
     plan: {
         barcode: string;
+        basis: '100g' | '100ml' | null;
         product: string | null;
         isNew: boolean;
         changes: Change[];
@@ -242,6 +259,13 @@ function render(
         '',
         indent(`${'FIELD'.padEnd(8)}  ${'NOW'.padEnd(24)}  SENT`),
         ...rows,
+        ...(plan.basis === '100ml'
+            ? [
+                  '',
+                  'Values are sent per 100 ml. NOW shows the record per 100 g, so a value ' +
+                      'can differ only because the liquid is denser than water.',
+              ]
+            : []),
         '',
         plan.photo
             ? `Label photo: ${plan.photo.filename} (${plan.photo.bytes} bytes), as the nutrition photo`

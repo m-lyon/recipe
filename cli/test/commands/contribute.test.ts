@@ -118,6 +118,7 @@ describe('open-food-facts contribute', () => {
                 brands: null,
                 quantity: '4 x 26 g',
                 per100g: { calories: 69, protein: 3.8, carbs: 12, fat: 0.5 },
+                per100ml: null,
             },
             labelPhoto: null,
         });
@@ -125,6 +126,56 @@ describe('open-food-facts contribute', () => {
             'variables.labelPhoto': { name: 'label.jpg', type: 'image/jpeg', size: 10 },
         });
         expect(request.headers?.['Apollo-Require-Preflight']).to.equal('true');
+    });
+
+    it('sends values per 100 ml, and says the record it shows is per 100 g', async () => {
+        api = baseApi();
+        api.install();
+        const { stdout } = await runCommand(
+            [
+                'open-food-facts',
+                'contribute',
+                '5010338301255',
+                '--label-per-100ml',
+                '98,14,8.6,0',
+                '--dry-run',
+            ],
+            ROOT
+        );
+        expect(stdout).to.contain('Values are sent per 100 ml');
+        expect(contributions()).to.deep.equal([]);
+
+        await runCommand(
+            ['open-food-facts', 'contribute', '5010338301255', '--label-per-100ml', '98,14,8.6,0'],
+            ROOT
+        );
+        const [request] = contributions();
+        expect(request.variables.input).to.include({ per100g: null });
+        expect((request.variables.input as Record<string, unknown>).per100ml).to.deep.equal({
+            calories: 98,
+            protein: 14,
+            carbs: 8.6,
+            fat: 0,
+        });
+    });
+
+    it('refuses values per 100 g and per 100 ml together', async () => {
+        api = baseApi();
+        api.install();
+        const { error } = await runCommand(
+            [
+                'open-food-facts',
+                'contribute',
+                '5010338301255',
+                '--label-per-100g',
+                '98,14,8.6,0',
+                '--label-per-100ml',
+                '98,14,8.6,0',
+            ],
+            ROOT
+        );
+        expect(error?.message).to.contain('cannot also be provided');
+        expect(api.requests).to.deep.equal([]);
     });
 
     it('sends fields alone as plain JSON', async () => {
@@ -192,6 +243,7 @@ describe('open-food-facts contribute', () => {
         const cases = [
             ['5010338301255'],
             ['5010338301255', '--label-per-100g', '362,12,72'],
+            ['5010338301255', '--label-per-100ml', '362,12,72'],
             ['5010338301255', '--photo', join(directory, 'label.pdf')],
             ['5010338301255', '--photo', join(directory, 'missing.jpg')],
             ['12345', '--brands', 'Suma'],

@@ -22,12 +22,20 @@ export interface OpenFoodFactsContribution {
     productName?: string | null;
     brands?: string | null;
     quantity?: string | null;
-    per100g?: { calories: number; protein: number; carbs: number; fat: number } | null;
+    per100g?: OpenFoodFactsNutrition | null;
+    per100ml?: OpenFoodFactsNutrition | null;
+}
+
+interface OpenFoodFactsNutrition {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
 }
 
 const OpenFoodFactsNutritionInputTC = schemaComposer.createInputTC({
     name: 'OpenFoodFactsNutritionInput',
-    description: 'Values per 100 g, as printed on the pack label',
+    description: 'Values per 100 g or per 100 ml, as printed on the pack label',
     fields: {
         calories: 'Float!',
         protein: 'Float!',
@@ -45,6 +53,7 @@ const OpenFoodFactsContributionInputTC = schemaComposer.createInputTC({
         // The pack size as printed e.g. "4 x 26 g"
         quantity: 'String',
         per100g: OpenFoodFactsNutritionInputTC,
+        per100ml: OpenFoodFactsNutritionInputTC,
     },
 });
 
@@ -82,9 +91,9 @@ export function productFields(contribution: OpenFoodFactsContribution): Record<s
     if (contribution.productName?.trim()) fields.product_name = contribution.productName.trim();
     if (contribution.brands?.trim()) fields.brands = contribution.brands.trim();
     if (contribution.quantity?.trim()) fields.quantity = contribution.quantity.trim();
-    const values = contribution.per100g;
+    const values = contribution.per100g ?? contribution.per100ml;
     if (values) {
-        fields.nutrition_data_per = '100g';
+        fields.nutrition_data_per = contribution.per100g ? '100g' : '100ml';
         const nutriments: Array<[string, number, string]> = [
             ['energy-kcal', values.calories, 'kcal'],
             ['proteins', values.protein, 'g'],
@@ -103,12 +112,17 @@ function validate(contribution: OpenFoodFactsContribution, hasPhoto: boolean): v
     if (!isBarcode(contribution.barcode)) {
         throw badInput('A barcode is 8 to 14 digits');
     }
-    const values = contribution.per100g;
+    if (contribution.per100g && contribution.per100ml) {
+        throw badInput('Send values per 100 g or per 100 ml, not both');
+    }
+    const values = contribution.per100g ?? contribution.per100ml;
     if (values && Object.values(values).some((value) => !(Number.isFinite(value) && value >= 0))) {
-        throw badInput('Values per 100 g must be numbers of 0 or more');
+        throw badInput('Nutrition values must be numbers of 0 or more');
     }
     if (Object.keys(productFields(contribution)).length === 0 && !hasPhoto) {
-        throw badInput('A contribution needs a product field, values per 100 g or a photo');
+        throw badInput(
+            'A contribution needs a product field, values per 100 g or 100 ml, or a photo'
+        );
     }
 }
 
