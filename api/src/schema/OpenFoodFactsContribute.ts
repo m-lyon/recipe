@@ -23,8 +23,6 @@ export interface OpenFoodFactsContribution {
     brands?: string | null;
     quantity?: string | null;
     per100g?: OpenFoodFactsNutrition | null;
-    // For a liquid whose label gives values per 100 ml. Open Food Facts records them as a
-    // per 100 ml nutrition set, as printed.
     per100ml?: OpenFoodFactsNutrition | null;
 }
 
@@ -55,7 +53,6 @@ const OpenFoodFactsContributionInputTC = schemaComposer.createInputTC({
         // The pack size as printed e.g. "4 x 26 g"
         quantity: 'String',
         per100g: OpenFoodFactsNutritionInputTC,
-        // For a label that gives values per 100 ml. Not with per100g.
         per100ml: OpenFoodFactsNutritionInputTC,
     },
 });
