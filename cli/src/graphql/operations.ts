@@ -273,6 +273,41 @@ export const OPEN_FOOD_FACTS_PRODUCT = gql(`
     }
 `);
 
+export const RECIPE_NUTRITION = gql(`
+    query CliRecipeNutrition($id: MongoID!) {
+        recipeById(_id: $id) {
+            _id
+            title
+            titleIdentifier
+            numServings
+            nutrition {
+                total {
+                    calories
+                    protein
+                    carbs
+                    fat
+                }
+                ingredients {
+                    recipeIngredient
+                    status
+                    macros {
+                        calories
+                        protein
+                        carbs
+                        fat
+                    }
+                    reason {
+                        code
+                        message
+                    }
+                    childUncounted
+                    childRecipe
+                }
+            }
+        }
+    }
+`);
+
 export const OPEN_FOOD_FACTS_CONTRIBUTE = gql(`
     mutation CliOpenFoodFactsContribute(
         $input: OpenFoodFactsContributionInput!

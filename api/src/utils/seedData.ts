@@ -640,6 +640,7 @@ export interface SeedRecipe {
     tags: string[];
     /** Used as an ingredient in other recipes. */
     isIngredient?: boolean;
+    yield?: Array<[quantity: string, unit: string | null]>;
     source?: string;
     notes?: string;
     archived?: boolean;
@@ -662,6 +663,11 @@ export const SEED_RECIPES: SeedRecipe[] = [
         subTitle: 'Makes about 6 tablespoons',
         servings: 6,
         isIngredient: true,
+        // Chicken Curry uses it by the tablespoon.
+        yield: [
+            ['6', 'tablespoon'],
+            ['90', 'gram'],
+        ],
         tags: ['spicy', 'freezes'],
         daysAgo: 60,
         notes: 'Freeze in an ice cube tray. One cube is about a tablespoon.',
@@ -932,6 +938,7 @@ export const SEED_RECIPES: SeedRecipe[] = [
         pluralTitle: 'Chocolate Chip Cookies',
         subTitle: 'Makes 24',
         servings: 24,
+        yield: [['24', null]],
         tags: ['baking', 'dessert'],
         daysAgo: 18,
         notes: 'A stick of butter is 113 g, or half a cup.',
@@ -964,6 +971,10 @@ export const SEED_RECIPES: SeedRecipe[] = [
         title: 'Banana Bread',
         subTitle: 'For the spotty bananas',
         servings: 10,
+        yield: [
+            ['1', null],
+            ['900', 'gram'],
+        ],
         tags: ['baking', 'freezes'],
         daysAgo: 14,
         images: 1,

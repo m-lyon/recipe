@@ -90,9 +90,11 @@ const sizeSuggestions = (data: IngredientComponentQuery, value: string): SizeSug
 
 const ingredientSuggestions = (
     data: IngredientComponentQuery,
-    value: string
+    value: string,
+    sized: boolean
 ): IngredientSuggestion[] => {
-    const items = sortIngredients(data?.ingredients ?? [], data?.recipes ?? [], value);
+    const recipes = sized ? [] : (data?.recipes ?? []);
+    const items = sortIngredients(data?.ingredients ?? [], recipes, value);
     items.push({ value: 'add new ingredient', colour: 'gray.400' });
     return items;
 };
@@ -124,10 +126,28 @@ export const getSuggestions = (
         case 'size':
             return sizeSuggestions(data, strValue);
         case 'ingredient':
-            return ingredientSuggestions(data, strValue);
+            return ingredientSuggestions(data, strValue, Boolean(item.size.data));
         case 'prepMethod':
             return prepMethodSuggestions(data, strValue);
         default:
             return [];
     }
+};
+
+export const getYieldSuggestions = (
+    item: EditableRecipeIngredient,
+    units: UnitChoice[],
+    strValue: string
+): Suggestion[] => {
+    if (item.state !== 'unit') {
+        return [];
+    }
+    const items: Suggestion[] = sortUnits(
+        units.filter((unit) => !unit.hidden),
+        strValue
+    );
+    if (strValue === '' && units.some((unit) => unit.hidden)) {
+        items.unshift({ value: 'skip unit', colour: 'gray.400' });
+    }
+    return items;
 };

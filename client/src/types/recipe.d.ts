@@ -1,5 +1,6 @@
 import { CurrentUserQuery } from '@recipe/graphql/generated';
 import { GetEditableSizesQuery } from '@recipe/graphql/generated';
+import { GetRecipeNutritionQuery } from '@recipe/graphql/generated';
 import { GetEditableIngredientsQuery } from '@recipe/graphql/generated';
 import { GetEditablePrepMethodsQuery } from '@recipe/graphql/generated';
 import { GetIngredientComponentsQuery } from '@recipe/graphql/generated';
@@ -415,6 +416,17 @@ declare global {
      * an image using data from either the recipe view page or the home page.
      */
     type Image = ImageView | ImagePreview;
+
+    // - Nutrition ----------------------------------------------------------------
+
+    /**
+     * Calories (kcal) and grams of protein, carbohydrate and fat, for a recipe or
+     * ingredient.
+     */
+    type MacroNutrients = Omit<
+        NonNullable<GetRecipeNutritionQuery['recipeById']>['nutrition']['total'],
+        '__typename'
+    >;
 
     // - Search -------------------------------------------------------------------
 

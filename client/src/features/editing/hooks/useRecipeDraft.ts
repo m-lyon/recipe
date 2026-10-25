@@ -14,6 +14,9 @@ const DRAFT_FIELDS = [
     'pluralTitle',
     'isIngredient',
     'numServings',
+    'yieldRows',
+    'yieldEditable',
+    'hadYield',
     'createVeganVersion',
     'editableTag',
     'finishedTags',
@@ -101,6 +104,9 @@ export function useRecipeDraft(key: string, enabled: boolean) {
                 ...section,
                 editable: { ...section.editable, showDropdown: false, popover: null },
             })),
+            ...(draft.yieldEditable && {
+                yieldEditable: { ...draft.yieldEditable, showDropdown: false, popover: null },
+            }),
         });
         infoToastRef.current({ title: 'Restored unsaved changes', position: 'top' });
         return true;

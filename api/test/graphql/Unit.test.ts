@@ -6,6 +6,7 @@ import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 import { createUser } from '../utils/data.js';
 import { Unit } from '../../src/models/Unit.js';
 import { User } from '../../src/models/User.js';
+import { Recipe } from '../../src/models/Recipe.js';
 import type { DocId, RecordInput } from '../utils/types.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { createRecipeIngredientData, removeRecipeIngredientData } from './Recipe.test.js';
@@ -434,6 +435,30 @@ describe('unitRemoveById', () => {
             'Cannot delete unit as it is currently being used in existing recipes.'
         );
         assert.equal(response.body.singleResult.errors[0].extensions.code, 'ITEM_IN_USE');
+    });
+
+    it('should NOT delete a unit that is used in a recipe yield', async function () {
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const createResponse = await createUnit(this, user, {
+            shortSingular: 'slice',
+            shortPlural: 'slices',
+            longSingular: 'slice',
+            longPlural: 'slices',
+            preferredNumberFormat: 'fraction',
+            hasSpace: true,
+            unique: true,
+            dimension: 'count',
+            perCanonical: 1,
+        } satisfies RecordInput<Unit>);
+        const createdUnit = parseCreatedUnit(createResponse);
+        await Recipe.updateOne({}, { yield: [{ quantity: '8', unit: createdUnit._id }] });
+
+        const response = await deleteUnit(this, user, createdUnit._id);
+        assert.equal(response.body.kind, 'single');
+        assert.equal(
+            response.body.singleResult.errors?.[0].message,
+            'Cannot delete unit as it is currently being used in existing recipes.'
+        );
     });
 
     it('should NOT delete a unit that is the floor step of a display ladder', async function () {

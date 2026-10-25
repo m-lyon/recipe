@@ -7,7 +7,6 @@ import { Box, Button, ButtonGroup, Checkbox, HStack } from '@chakra-ui/react';
 
 import { IngredientTags } from '@recipe/graphql/enums';
 import type { Owner } from '@recipe/common/components';
-import { MacroNutrients } from '@recipe/utils/nutrition';
 import { FloatingLabelInput, OwnerText } from '@recipe/common/components';
 
 import { useFormLogic } from '../hooks/useFormLogic';

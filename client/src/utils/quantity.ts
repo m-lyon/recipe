@@ -13,8 +13,18 @@ export function changeQuantity(
     if (newServings === oldServings || ingr.quantity == null) {
         return ingr;
     }
-    const newQuantity = calculateQuantity(ingr.quantity, newServings, oldServings, ingr.unit);
+    const newQuantity = scaleQuantity(ingr.quantity, newServings, oldServings, ingr.unit);
     return { ...ingr, ...unitConversion({ quantity: newQuantity, unit: ingr.unit }) };
+}
+
+export function scaleQuantity(
+    qty: string,
+    newServings: number,
+    oldServings: number,
+    unit: FinishedUnit
+): string {
+    if (newServings === oldServings || oldServings <= 0) return qty;
+    return calculateQuantity(qty, newServings, oldServings, unit);
 }
 
 function calculateQuantity(

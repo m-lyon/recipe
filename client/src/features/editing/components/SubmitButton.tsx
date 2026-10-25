@@ -33,6 +33,10 @@ export function SubmitButton(props: Props) {
             }))
         );
 
+    const { yieldRows, hadYield } = useRecipeStore(
+        useShallow((state) => ({ yieldRows: state.yieldRows, hadYield: state.hadYield }))
+    );
+
     const validate = () => {
         if (title.trim() == '') {
             toast({ title: 'Please enter a title', position: 'top' });
@@ -154,6 +158,14 @@ export function SubmitButton(props: Props) {
                 : undefined,
             source: source ? source : undefined,
             isIngredient,
+            ...(yieldRows.length > 0 || hadYield
+                ? {
+                      yield: yieldRows.map((row) => ({
+                          quantity: row.quantity,
+                          unit: row.unit!._id,
+                      })),
+                  }
+                : {}),
         };
         handleSubmit(recipe);
     };

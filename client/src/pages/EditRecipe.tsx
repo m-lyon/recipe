@@ -41,6 +41,7 @@ export function EditRecipe() {
             setPluralTitle: state.setPluralTitle,
             resetAsIngredient: state.resetAsIngredient,
             setNumServings: state.setNumServings,
+            setYield: state.setYield,
             setInstructionSection: state.setInstructionSection,
             addInstructionSection: state.addInstructionSection,
             resetInstructions: state.resetInstructions,
@@ -122,6 +123,12 @@ export function EditRecipe() {
         if (!loadDraft()) {
             recipeState.setTitle(recipe.title);
             recipeState.setNumServings(recipe.numServings);
+            recipeState.setYield(
+                (recipe.yield ?? []).map((row) => ({
+                    quantity: row.quantity,
+                    unit: row.unit ?? null,
+                }))
+            );
             recipeState.resetIngredients();
             recipe.ingredientSubsections.forEach((sub, index) => {
                 recipeState.setIngredientSection(

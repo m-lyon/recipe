@@ -9,6 +9,7 @@ import { ReservedTags } from '@recipe/graphql/enums';
 import { getMockedImageBlob } from '@recipe/utils/tests';
 import { enterEditRecipePage } from '@recipe/utils/tests';
 import { enterViewRecipePage } from '@recipe/utils/tests';
+import { mockAdminId } from '@recipe/graphql/__mocks__/ids';
 import { enterCreateNewRecipePage } from '@recipe/utils/tests';
 import { MockedResponses, renderPage } from '@recipe/utils/tests';
 import { GET_RECIPE, GET_RECIPES } from '@recipe/graphql/queries/recipe';
@@ -248,6 +249,8 @@ describe('ViewRecipe - recipe ingredient vegan suffix', () => {
                                 _id: 'mock-recipe-ingredient-vegan-copy',
                                 title: 'Mock Stock',
                                 pluralTitle: null,
+                                titleIdentifier: 'mock-stock-vegan',
+                                owner: mockAdminId,
                                 originalRecipe: {
                                     __typename: 'Recipe' as const,
                                     _id: 'mock-recipe-ingredient-original',

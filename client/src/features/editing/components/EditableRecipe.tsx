@@ -8,6 +8,7 @@ import { IngredientsTabLayout } from '@recipe/layouts';
 import { EditableTagList } from '@recipe/features/tags';
 
 import { EditableNotes } from './EditableNotes';
+import { EditableYield } from './EditableYield';
 import { EditableTitle } from './EditableTitle';
 import { RecipeActionButtons } from './RecipeActionButtons';
 import { EditableInstructionsTab } from './EditableInstructionsTab';
@@ -101,6 +102,7 @@ export function EditableRecipe(props: Props) {
                                 colour='rgba(0, 0, 0, 0.64)'
                             />
                         }
+                        Yield={<EditableYield />}
                         IngredientList={
                             <EditableIngredientSubsections
                                 suppressItemInUseError={suppressItemInUseError}

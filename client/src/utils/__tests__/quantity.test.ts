@@ -103,4 +103,12 @@ describe('changeQuantity', () => {
         const result = changeQuantity(ingr, newServings, oldServings, (ingr) => ingr);
         expect(result.quantity).toBe('1.5');
     });
+
+    it('should leave the quantity unscaled when the recipe has no servings', () => {
+        const ingr = getIngredient({ quantity: '2' });
+        const newServings = 4;
+        const oldServings = 0;
+        const result = changeQuantity(ingr, newServings, oldServings, (ingr) => ingr);
+        expect(result.quantity).toBe('2');
+    });
 });

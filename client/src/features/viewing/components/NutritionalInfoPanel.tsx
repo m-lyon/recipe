@@ -1,18 +1,24 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { UnstyledButton } from '@mantine/core';
 import { TbAlertTriangle, TbChevronDown, TbChevronUp } from 'react-icons/tb';
-import { Box, Collapse, Group, SimpleGrid, Skeleton, Text, UnstyledButton } from '@mantine/core';
+import { Anchor, Box, Collapse, Group, SimpleGrid, Skeleton, Text } from '@mantine/core';
 
+import { PATH } from '@recipe/constants';
 import { DisplayedIngredient } from '@recipe/features/servings';
 import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
-import { MacroNutrients, UncountedIngredient } from '@recipe/utils/nutrition';
 
 import { UncountedIngredientPrompt } from './UncountedIngredientPrompt';
+import { PartialIngredient, UncountedIngredient } from '../hooks/useNutritionalInfo';
 
 interface NutritionalInfoPanelProps {
     perServing: MacroNutrients;
     uncountedIds: Set<string>;
     uncounted?: UncountedIngredient[];
+    /** Recipes used as ingredients, with some ingredients of their own not counted. */
+    partial?: PartialIngredient[];
     canEditIngredient?: (ingredientId: string) => boolean;
+    canEditRecipe?: (ownerId: string) => boolean;
     displayLine?: (item: RecipeIngredientView) => DisplayedIngredient;
     /** True when no ingredient contributed to the totals (none countable, or none present). */
     nothingCounted: boolean;
@@ -24,9 +30,20 @@ function round1(n: number): string {
     return n.toFixed(1).replace(/\.0$/, '');
 }
 
+function lowerFirst(text: string): string {
+    return text.charAt(0).toLowerCase() + text.slice(1);
+}
+
+function recipeLink(item: RecipeIngredientView, action: 'view' | 'edit'): string | null {
+    const used = item.ingredient;
+    return used.__typename === 'Recipe'
+        ? `${PATH.BASE}/${action}/recipe/${used.titleIdentifier}`
+        : null;
+}
+
 export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
     const { perServing, uncountedIds, uncounted = [], nothingCounted, loading, error } = props;
-    const { canEditIngredient = () => false } = props;
+    const { partial = [], canEditIngredient = () => false, canEditRecipe = () => false } = props;
     const { displayLine = (item) => ({ ...item, authored: null }) } = props;
     const [open, setOpen] = useState(true);
 
@@ -87,31 +104,81 @@ export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
                                 <Text fw={500}>{round1(perServing.fat)} g</Text>
                             </Box>
                         </SimpleGrid>
-                        {uncountedIds.size > 0 && (
+                        {(uncountedIds.size > 0 || partial.length > 0) && (
                             <Group mt='xs' gap='xs'>
                                 <TbAlertTriangle color='orange' />
                                 <Text size='sm' c='dimmed'>
-                                    Not counted: {uncountedIds.size} ingredient
-                                    {uncountedIds.size !== 1 ? 's' : ''}
+                                    {[
+                                        uncountedIds.size > 0 &&
+                                            `Not counted: ${uncountedIds.size} ingredient${uncountedIds.size !== 1 ? 's' : ''}`,
+                                        partial.length > 0 && `${partial.length} partly counted`,
+                                    ]
+                                        .filter(Boolean)
+                                        .join(' · ')}
                                 </Text>
                             </Group>
                         )}
-                        {uncounted.map((line) => {
-                            const shown = displayLine(line.item);
+                        {uncounted.map((uncountedIngredient) => {
+                            const shown = displayLine(uncountedIngredient.item);
                             return (
-                                <Box key={line.item._id} mt='xs' ml='lg'>
+                                <Box key={uncountedIngredient.item._id} mt='xs' ml='lg'>
                                     <Text size='sm'>
                                         {shown.authored ? '≈ ' : ''}
                                         {getFinishedRecipeIngredientStr(shown).trim()}
                                         <Text span size='sm' c='dimmed'>
                                             {' '}
-                                            — {line.reason.toLowerCase()}
+                                            — {lowerFirst(uncountedIngredient.reason)}
                                         </Text>
                                     </Text>
-                                    {line.missingMeasure &&
-                                        canEditIngredient(line.item.ingredient._id) && (
-                                            <UncountedIngredientPrompt uncounted={line} />
+                                    {uncountedIngredient.code === 'NO_MEASURE' &&
+                                        uncountedIngredient.item.unit &&
+                                        uncountedIngredient.item.ingredient.__typename ===
+                                            'Ingredient' &&
+                                        canEditIngredient(
+                                            uncountedIngredient.item.ingredient._id
+                                        ) && (
+                                            <UncountedIngredientPrompt
+                                                uncounted={uncountedIngredient}
+                                            />
                                         )}
+                                    {uncountedIngredient.code === 'NO_YIELD' &&
+                                        uncountedIngredient.item.ingredient.__typename ===
+                                            'Recipe' &&
+                                        canEditRecipe(
+                                            uncountedIngredient.item.ingredient.owner
+                                        ) && (
+                                            <Anchor
+                                                component={Link}
+                                                to={
+                                                    recipeLink(uncountedIngredient.item, 'edit') ??
+                                                    ''
+                                                }
+                                                size='sm'
+                                            >
+                                                Add a yield
+                                            </Anchor>
+                                        )}
+                                </Box>
+                            );
+                        })}
+                        {partial.map((partialIngredient) => {
+                            const shown = displayLine(partialIngredient.item);
+                            const to = recipeLink(partialIngredient.item, 'view');
+                            return (
+                                <Box key={partialIngredient.item._id} mt='xs' ml='lg'>
+                                    <Text size='sm'>
+                                        {shown.authored ? '≈ ' : ''}
+                                        {getFinishedRecipeIngredientStr(shown).trim()}
+                                        <Text span size='sm' c='dimmed'>
+                                            {' '}
+                                            — {lowerFirst(partialIngredient.reason)}
+                                        </Text>
+                                    </Text>
+                                    {to && (
+                                        <Anchor component={Link} to={to} size='sm'>
+                                            View its nutrition
+                                        </Anchor>
+                                    )}
                                 </Box>
                             );
                         })}

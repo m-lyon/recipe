@@ -11,18 +11,22 @@ export async function validateItemNotInRecipe(
     itemType: 'unit' | 'size' | 'ingredient' | 'prepMethod' | 'recipe',
     errorNoun?: string
 ) {
-    type QueryType = {
+    type IngredientsQuery = {
         'ingredientSubsections.ingredients': { $elemMatch: Record<string, Types.ObjectId> };
     };
+    type QueryType =
+        | IngredientsQuery
+        | { $or: [IngredientsQuery, { 'yield.unit': Types.ObjectId }] };
 
     let query: QueryType;
 
     switch (itemType) {
         case 'unit':
             query = {
-                'ingredientSubsections.ingredients': {
-                    $elemMatch: { unit: itemId },
-                },
+                $or: [
+                    { 'ingredientSubsections.ingredients': { $elemMatch: { unit: itemId } } },
+                    { 'yield.unit': itemId },
+                ],
             };
             break;
         case 'size':

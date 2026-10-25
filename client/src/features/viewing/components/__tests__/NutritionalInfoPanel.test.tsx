@@ -4,7 +4,6 @@ import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
 import { renderPage } from '@recipe/utils/tests';
-import { MacroNutrients } from '@recipe/utils/nutrition';
 
 import { NutritionalInfoPanel } from '../NutritionalInfoPanel';
 

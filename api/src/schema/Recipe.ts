@@ -19,6 +19,7 @@ import { ReservedIngredientTags } from '../models/Ingredient.js';
 import { Ingredient, IngredientTC } from '../models/Ingredient.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
 import { RecipeTC, generateRecipeIdentifier } from '../models/Recipe.js';
+import { NutritionStatuses, UncountedCodes, recipeNutrition } from '../utils/nutrition.js';
 import { Recipe, RecipeCreateTC, RecipeIngredientTC, RecipeModifyTC } from '../models/Recipe.js';
 
 const IngredientOrRecipeTC = schemaComposer.createUnionTC({
@@ -171,6 +172,65 @@ RecipeTC.addFields({
             return await RatingTC.mongooseResolvers.findMany().resolve({
                 args: { filter: { recipe: source._id } },
             });
+        },
+    },
+});
+
+RecipeTC.getFieldOTC('yield').addRelation('unit', {
+    resolver: () => UnitTC.mongooseResolvers.findById(),
+    prepareArgs: { _id: (source: { unit: unknown }) => source.unit },
+    projection: { unit: true },
+});
+RecipeTC.extendField('yield', {
+    type: '[RecipeYield!]',
+});
+
+const MacrosTC = schemaComposer.createObjectTC({
+    name: 'Macros',
+    fields: { calories: 'Float!', protein: 'Float!', carbs: 'Float!', fat: 'Float!' },
+});
+schemaComposer.createEnumTC({
+    name: 'NutritionStatus',
+    values: Object.fromEntries(NutritionStatuses.map((status) => [status, {}])),
+});
+schemaComposer.createEnumTC({
+    name: 'UncountedCode',
+    values: Object.fromEntries(UncountedCodes.map((code) => [code, {}])),
+});
+const UncountedReasonTC = schemaComposer.createObjectTC({
+    name: 'UncountedReason',
+    fields: { code: 'UncountedCode!', message: 'String!' },
+});
+const IngredientNutritionTC = schemaComposer.createObjectTC({
+    name: 'IngredientNutrition',
+    fields: {
+        recipeIngredient: 'MongoID!',
+        status: 'NutritionStatus!',
+        // What this ingredient contributed: zero when UNCOUNTED.
+        macros: MacrosTC.NonNull,
+        // Set when the status is not COUNTED.
+        reason: UncountedReasonTC,
+        // PARTIAL only: the ingredients of the child recipe that were not fully counted.
+        childUncounted: 'Int',
+        // A recipe used as an ingredient: its id, whose own nutrition shows its breakdown.
+        childRecipe: 'MongoID',
+    },
+});
+const RecipeNutritionTC = schemaComposer.createObjectTC({
+    name: 'RecipeNutrition',
+    fields: {
+        total: MacrosTC.NonNull,
+        ingredients: IngredientNutritionTC.NonNull.List.NonNull,
+    },
+});
+RecipeTC.addFields({
+    nutrition: {
+        type: RecipeNutritionTC.NonNull,
+        resolve: async (source: Recipe) => {
+            const result = await recipeNutrition(String(source._id));
+            return (
+                result ?? { total: { calories: 0, protein: 0, carbs: 0, fat: 0 }, ingredients: [] }
+            );
         },
     },
 });
@@ -394,6 +454,13 @@ export const RecipeMutation = {
             throw new Error(
                 'Linked vegan relationship fields can only be changed through the dedicated vegan flow'
             );
+        }
+
+        if (rp.args.record.isIngredient === false) {
+            const existing = await Recipe.findById(rp.args._id, { isIngredient: 1 });
+            if (existing?.isIngredient) {
+                await validateItemNotInRecipe(existing._id, 'recipe', 'unmark as an ingredient');
+            }
         }
 
         if (rp.args.record.title) {

@@ -6,7 +6,12 @@ export const GET_NUTRITIONAL_INFO_BY_INGREDIENT = gql(`
             _id
             ingredient
             usdaFdcId
-            perGram { calories protein carbs fat }
+            perGram {
+                calories
+                protein
+                carbs
+                fat
+            }
         }
     }
 `);
@@ -39,14 +44,33 @@ export const GET_INGREDIENT_MEASURES = gql(`
 `);
 
 export const GET_RECIPE_NUTRITION = gql(`
-    query GetRecipeNutrition($ingredientIds: [MongoID!]!) {
-        nutritionalInfosByIngredientIds(ingredientIds: $ingredientIds) {
+    query GetRecipeNutrition($recipeId: MongoID!, $ingredientIds: [MongoID!]!) {
+        recipeById(_id: $recipeId) {
             _id
-            ingredient
-            perGram { calories protein carbs fat }
-        }
-        ingredientMeasuresByIngredientIds(ingredientIds: $ingredientIds) {
-            ...IngredientMeasureFields
+            nutrition {
+                total {
+                    calories
+                    protein
+                    carbs
+                    fat
+                }
+                ingredients {
+                    recipeIngredient
+                    status
+                    macros {
+                        calories
+                        protein
+                        carbs
+                        fat
+                    }
+                    reason {
+                        code
+                        message
+                    }
+                    childUncounted
+                    childRecipe
+                }
+            }
         }
         ingredientByIds(_ids: $ingredientIds) {
             _id
@@ -63,7 +87,12 @@ export const GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS = gql(`
             _id
             ingredient
             usdaFdcId
-            perGram { calories protein carbs fat }
+            perGram {
+                calories
+                protein
+                carbs
+                fat
+            }
         }
     }
 `);

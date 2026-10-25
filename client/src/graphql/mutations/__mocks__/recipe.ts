@@ -8,7 +8,6 @@ import { UnarchiveRecipeMutation } from '@recipe/graphql/generated';
 import { mockSpicyTag } from '@recipe/graphql/queries/__mocks__/tag';
 import { CreateVeganRecipeMutation } from '@recipe/graphql/generated';
 import { CREATE_VEGAN_RECIPE } from '@recipe/graphql/mutations/recipe';
-import { mockTablespoon } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockApple } from '@recipe/graphql/queries/__mocks__/ingredient';
 import { mockDiced } from '@recipe/graphql/queries/__mocks__/prepMethod';
 import { mockRecipeTwo } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -26,6 +25,7 @@ import { mockRecipeThreeVeganCopy } from '@recipe/graphql/queries/__mocks__/reci
 import { ARCHIVE_RECIPE, UNARCHIVE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { mockRecipeWithVeganVersion } from '@recipe/graphql/queries/__mocks__/recipe';
 import { mockRecipeNew, mockRecipeThree } from '@recipe/graphql/queries/__mocks__/recipe';
+import { mockEach, mockGram, mockTablespoon } from '@recipe/graphql/queries/__mocks__/unit';
 import { CREATE_RECIPE, DELETE_RECIPE, UPDATE_RECIPE } from '@recipe/graphql/mutations/recipe';
 import { mockRecipeFour, mockRecipeNewAsIngr } from '@recipe/graphql/queries/__mocks__/recipe';
 import { CreateRecipeMutation, CreateRecipeMutationVariables } from '@recipe/graphql/generated';
@@ -1327,6 +1327,56 @@ export const mockUpdateRecipeThreeVeganCopyNoChange = {
             recipeUpdateById: {
                 __typename: 'UpdateByIdRecipePayload',
                 record: getMockRecipeReturn(mockRecipeThreeVeganCopy).record,
+            },
+        } satisfies UpdateRecipeMutation,
+    },
+};
+
+export const mockUpdateRecipeAddYield = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: {
+                ...recipeOneVars.recipe,
+                yield: [
+                    { quantity: '2', unit: mockEach._id },
+                    { quantity: '900', unit: mockGram._id },
+                ],
+            },
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: {
+                    ...recipeOneData.record,
+                    yield: [
+                        { __typename: 'RecipeYield', quantity: '2', unit: mockEach },
+                        { __typename: 'RecipeYield', quantity: '900', unit: mockGram },
+                    ],
+                },
+            },
+        } satisfies UpdateRecipeMutation,
+    },
+};
+
+export const mockUpdateRecipeRemoveYield = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: { ...recipeOneVars.recipe, yield: [] },
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: { ...recipeOneData.record, yield: [] },
             },
         } satisfies UpdateRecipeMutation,
     },

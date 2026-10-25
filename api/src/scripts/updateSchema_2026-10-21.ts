@@ -1,0 +1,163 @@
+/**
+ * Prepares existing recipes for recipe yields and for the nutrition of recipes used as
+ * ingredients (issue #116).
+ *
+ *  - Clears `size` on recipes used as ingredients. A yield has no size, so "1 large pizza
+ *    dough" has no meaning, and the API now refuses a size on such an ingredient.
+ *  - Reports recipes used as ingredients that are not marked as an ingredient. Saving the
+ *    recipe that uses one is now refused, so they need fixing by hand: mark the used recipe
+ *    as an ingredient, or change the ingredient.
+ *  - Reports cycles: recipes that use themselves through other recipes. Nutrition marks those
+ *    ingredients CYCLE; a person decides which ingredient to remove.
+ *
+ * Only the sizes are changed. Safe to re-run.
+ *
+ *   npm run compile
+ *   MONGODB_URI=mongodb://localhost:27017/recipeProdBackup DRY_RUN=1 \
+ *       node ./dist/src/scripts/updateSchema_2026-10-21.js
+ *
+ *  Fix the reported references and cycles by hand.
+ *
+ * The production MONGODB_URI is in /etc/recipe.env on the server. The order against the
+ * deploy does not matter: the new API reads old data correctly.
+ */
+import { pathToFileURL } from 'url';
+
+import mongoose, { mongo } from 'mongoose';
+
+interface StoredIngredient {
+    type?: 'ingredient' | 'recipe';
+    ingredient: mongo.ObjectId;
+    size?: mongo.ObjectId | null;
+}
+
+interface StoredRecipe {
+    _id: mongo.ObjectId;
+    title: string;
+    isIngredient?: boolean;
+    ingredientSubsections: Array<{ name?: string; ingredients: StoredIngredient[] }>;
+}
+
+export interface RecipeIngredientReport {
+    dryRun: boolean;
+    /** "Pizza: large Pizza Dough" for each size cleared, or to clear. */
+    sizesCleared: string[];
+    /** "Pizza uses Dinner" for each recipe used as an ingredient but not marked as one. */
+    notIngredient: string[];
+    /** "A → B → A" for each cycle. */
+    cycles: string[];
+}
+
+export async function migrateRecipeIngredients(
+    db: mongo.Db,
+    { dryRun = false }: { dryRun?: boolean } = {}
+): Promise<RecipeIngredientReport> {
+    const collection = db.collection<StoredRecipe>('recipes');
+    const recipes = await collection
+        .find({}, { projection: { title: 1, isIngredient: 1, ingredientSubsections: 1 } })
+        .toArray();
+    const byId = new Map(recipes.map((recipe) => [String(recipe._id), recipe]));
+    const report: RecipeIngredientReport = {
+        dryRun,
+        sizesCleared: [],
+        notIngredient: [],
+        cycles: [],
+    };
+    const sizeNames = new Map(
+        (
+            await db
+                .collection('sizes')
+                .find({}, { projection: { value: 1 } })
+                .toArray()
+        ).map((size) => [String(size._id), String(size.value)])
+    );
+
+    for (const recipe of recipes) {
+        let changed = false;
+        for (const subsection of recipe.ingredientSubsections ?? []) {
+            for (const recipeIngredient of subsection.ingredients ?? []) {
+                const child = byId.get(String(recipeIngredient.ingredient));
+                if (!child) continue;
+                if (recipeIngredient.size != null) {
+                    const size = sizeNames.get(String(recipeIngredient.size)) ?? 'unknown size';
+                    report.sizesCleared.push(`${recipe.title}: ${size} ${child.title}`);
+                    recipeIngredient.size = null;
+                    changed = true;
+                }
+                if (!child.isIngredient) {
+                    report.notIngredient.push(`${recipe.title} uses ${child.title}`);
+                }
+            }
+        }
+        if (changed && !dryRun) {
+            await collection.updateOne(
+                { _id: recipe._id },
+                { $set: { ingredientSubsections: recipe.ingredientSubsections } }
+            );
+        }
+    }
+
+    // Depth-first, with the current path: a recipe met again on its own path is a cycle.
+    const state = new Map<string, 'visiting' | 'done'>();
+    const children = (recipe: StoredRecipe) =>
+        (recipe.ingredientSubsections ?? [])
+            .flatMap((subsection) => subsection.ingredients ?? [])
+            .map((recipeIngredient) => String(recipeIngredient.ingredient))
+            .filter((id) => byId.has(id));
+    const visit = (id: string, path: string[]) => {
+        state.set(id, 'visiting');
+        for (const child of children(byId.get(id)!)) {
+            if (state.get(child) === 'visiting') {
+                const cycle = [...path.slice(path.indexOf(child)), child];
+                report.cycles.push(cycle.map((step) => byId.get(step)!.title).join(' → '));
+            } else if (!state.has(child)) {
+                visit(child, [...path, child]);
+            }
+        }
+        state.set(id, 'done');
+    };
+    for (const recipe of recipes) {
+        const id = String(recipe._id);
+        if (!state.has(id)) visit(id, [id]);
+    }
+    return report;
+}
+
+async function main() {
+    const uri = process.env.MONGODB_URI;
+    if (!uri) {
+        console.error('Set MONGODB_URI to the database to migrate.');
+        process.exit(1);
+    }
+    await mongoose.connect(uri);
+    try {
+        const report = await migrateRecipeIngredients(mongoose.connection.db, {
+            dryRun: Boolean(process.env.DRY_RUN),
+        });
+        console.log(report.dryRun ? 'DRY RUN: nothing was written.' : 'Migration complete.');
+        const list = (title: string, items: string[]) => {
+            console.log(`\n${title}: ${items.length}`);
+            for (const item of items) console.log(`  - ${item}`);
+        };
+        list(
+            report.dryRun
+                ? 'Sizes to clear on recipes used as ingredients'
+                : 'Sizes cleared on recipes used as ingredients',
+            report.sizesCleared
+        );
+        list(
+            'Recipes used as ingredients but not marked as one (fix by hand)',
+            report.notIngredient
+        );
+        list('Cycles (fix by hand)', report.cycles);
+    } finally {
+        await mongoose.disconnect();
+    }
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+    main().catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });
+}

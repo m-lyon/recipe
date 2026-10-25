@@ -38,6 +38,11 @@ export const getCache = () =>
             },
             Recipe: {
                 fields: {
+                    yield: {
+                        merge(_existing, incoming) {
+                            return incoming;
+                        },
+                    },
                     images: {
                         merge(_existing, incoming) {
                             return incoming;

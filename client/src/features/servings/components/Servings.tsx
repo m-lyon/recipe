@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import { number, object } from 'yup';
 import { useShallow } from 'zustand/shallow';
 import { AddIcon, MinusIcon } from '@chakra-ui/icons';
@@ -6,7 +7,11 @@ import { Button, IconButton } from '@chakra-ui/react';
 import { useRecipeStore } from '@recipe/stores';
 import { useErrorToast } from '@recipe/common/hooks';
 
-export function Servings() {
+interface Props {
+    info?: ReactNode;
+}
+export function Servings(props: Props) {
+    const { info } = props;
     const { num, increase, decrease } = useRecipeStore(
         useShallow((state) => ({
             num: state.numServings,
@@ -40,6 +45,7 @@ export function Servings() {
                 }}
             />
             <Button
+                as='div'
                 position='static'
                 variant='outline'
                 borderLeftRadius={0}
@@ -55,6 +61,7 @@ export function Servings() {
                 }}
             >
                 {`${num} Serving${num === 1 ? '' : 's'}`}
+                {info}
             </Button>
             <IconButton
                 position='static'

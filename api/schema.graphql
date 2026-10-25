@@ -136,6 +136,7 @@ input CreateOneRecipeCreateInput {
   subTitle: String
   tags: [MongoID]
   title: String!
+  yield: [RecipeYieldInput]
 }
 
 type CreateOneRecipePayload {
@@ -416,6 +417,7 @@ input FilterCountRecipeInput {
   title: String
   titleIdentifier: String
   veganVersion: MongoID
+  yield: [FilterCountRecipeYieldInput]
 }
 
 """"""
@@ -459,6 +461,12 @@ input FilterCountRecipeTitleOperatorsInput {
 
 input FilterCountRecipeVeganVersionOperatorsInput {
   exists: Boolean
+}
+
+""""""
+input FilterCountRecipeYieldInput {
+  quantity: String
+  unit: MongoID
 }
 
 input FilterCountRecipe_idOperatorsInput {
@@ -701,6 +709,7 @@ input FilterFindManyRecipeInput {
   title: String
   titleIdentifier: String
   veganVersion: MongoID
+  yield: [FilterFindManyRecipeYieldInput]
 }
 
 """"""
@@ -744,6 +753,12 @@ input FilterFindManyRecipeTitleOperatorsInput {
 
 input FilterFindManyRecipeVeganVersionOperatorsInput {
   exists: Boolean
+}
+
+""""""
+input FilterFindManyRecipeYieldInput {
+  quantity: String
+  unit: MongoID
 }
 
 input FilterFindManyRecipe_idOperatorsInput {
@@ -1108,6 +1123,7 @@ input FilterFindOneRecipeInput {
   title: String
   titleIdentifier: String
   veganVersion: MongoID
+  yield: [FilterFindOneRecipeYieldInput]
 }
 
 """"""
@@ -1146,6 +1162,12 @@ input FilterFindOneRecipeTitleOperatorsInput {
   ne: String
   nin: [String]
   regex: RegExpAsString
+}
+
+""""""
+input FilterFindOneRecipeYieldInput {
+  quantity: String
+  unit: MongoID
 }
 
 input FilterFindOneRecipe_idOperatorsInput {
@@ -1340,6 +1362,15 @@ type IngredientMeasure {
   unit: Unit!
 }
 
+type IngredientNutrition {
+  childRecipe: MongoID
+  childUncounted: Int
+  macros: Macros!
+  reason: UncountedReason
+  recipeIngredient: MongoID!
+  status: NutritionStatus!
+}
+
 union IngredientOrRecipe = Ingredient | Recipe
 
 type IngredientSubsection {
@@ -1350,6 +1381,13 @@ type IngredientSubsection {
 type InstructionSubsection {
   instructions: [String!]!
   name: String
+}
+
+type Macros {
+  calories: Float!
+  carbs: Float!
+  fat: Float!
+  protein: Float!
 }
 
 """
@@ -1493,6 +1531,12 @@ type Mutation {
 
   """Update a unit by its ID"""
   unitUpdateById(_id: MongoID!, record: UpdateByIdUnitInput!): UpdateByIdUnitPayload
+}
+
+enum NutritionStatus {
+  COUNTED
+  PARTIAL
+  UNCOUNTED
 }
 
 type NutritionalInfo {
@@ -1874,6 +1918,7 @@ type Recipe {
   lastModified: Date!
   notes: String
   numServings: Float!
+  nutrition: RecipeNutrition!
   originalRecipe: Recipe
   owner: MongoID!
   pluralTitle: String
@@ -1884,6 +1929,7 @@ type Recipe {
   title: String!
   titleIdentifier: String!
   veganVersion: Recipe
+  yield: [RecipeYield!]
 }
 
 type RecipeIngredient {
@@ -1916,6 +1962,21 @@ input RecipeIngredientSubsectionsInput {
 input RecipeInstructionSubsectionsInput {
   instructions: [String]!
   name: String
+}
+
+type RecipeNutrition {
+  ingredients: [IngredientNutrition!]!
+  total: Macros!
+}
+
+type RecipeYield {
+  quantity: String!
+  unit: Unit
+}
+
+input RecipeYieldInput {
+  quantity: String!
+  unit: MongoID!
 }
 
 """
@@ -2246,6 +2307,21 @@ type Tag {
   value: String!
 }
 
+enum UncountedCode {
+  CHILD_PARTIAL
+  CYCLE
+  DEPTH_LIMIT
+  NO_MEASURE
+  NO_NUTRITION
+  NO_QUANTITY
+  NO_YIELD
+}
+
+type UncountedReason {
+  code: UncountedCode!
+  message: String!
+}
+
 type Unit {
   _id: MongoID!
   dimension: EnumUnitDimension!
@@ -2424,6 +2500,7 @@ input UpdateByIdRecipeModifyInput {
   subTitle: String
   tags: [MongoID]
   title: String
+  yield: [UpdateByIdRecipeYieldInput]
 }
 
 type UpdateByIdRecipePayload {
@@ -2437,6 +2514,12 @@ type UpdateByIdRecipePayload {
 
   """Document ID"""
   recordId: MongoID
+}
+
+""""""
+input UpdateByIdRecipeYieldInput {
+  quantity: String
+  unit: MongoID
 }
 
 """"""

@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { Button, Group, NumberInput, Radio, Stack, Text } from '@mantine/core';
 
-import { UncountedIngredient, describeOneUnit } from '@recipe/utils/nutrition';
 import { CREATE_INGREDIENT_MEASURE } from '@recipe/graphql/mutations/ingredientMeasure';
+
+import { UncountedIngredient } from '../hooks/useNutritionalInfo';
 
 /** Chakra's teal.500 */
 const TEAL = '#319795';
@@ -12,6 +13,18 @@ interface Option {
     label: string;
     sizeId: string | null;
     prepMethodId: string | null;
+}
+
+function describeOneUnit(
+    unit: Pick<UnitChoice, 'longSingular' | 'hidden'>,
+    ingredientName: string,
+    sizeName?: string | null,
+    prepMethodName?: string | null
+): string {
+    const unitStr = unit.hidden ? '' : `${unit.longSingular} of `;
+    const sizeStr = sizeName ? `${sizeName} ` : '';
+    const prepStr = prepMethodName ? `${prepMethodName} ` : '';
+    return `1 ${unitStr}${sizeStr}${prepStr}${ingredientName}`;
 }
 
 /** How specific to save a weight: least specific first, so one answer covers most lines. */
@@ -59,12 +72,13 @@ export function UncountedIngredientPrompt(props: Props) {
     const [grams, setGrams] = useState<number | string>('');
     const [error, setError] = useState<string | null>(null);
     const [createMeasure, { loading }] = useMutation(CREATE_INGREDIENT_MEASURE, {
-        // Evict the cached measure lists: the nutrition query on screen refetches, and the
-        // ingredient page does not show a stale one.
+        // Evict the cached measure lists, so the ingredient page does not show a stale one,
+        // and fetch the recipe's figures again.
         update: (cache) => {
             cache.evict({ id: 'ROOT_QUERY', fieldName: 'ingredientMeasuresByIngredientIds' });
             cache.gc();
         },
+        refetchQueries: ['GetRecipeNutrition'],
         onCompleted: () => setError(null),
         onError: (err) => setError(err.message),
     });

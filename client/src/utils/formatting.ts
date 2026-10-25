@@ -10,7 +10,7 @@ function getEditableQuantityStr(item: EditableRecipeIngredient): string {
     }
     return getFinishedQuantityStr(item.quantity);
 }
-function getFinishedQuantityStr(quantity: FinishedQuantity): string {
+export function getFinishedQuantityStr(quantity: FinishedQuantity): string {
     if (quantity === null) {
         return '';
     }
@@ -54,6 +54,20 @@ export function unitDisplayValue(
         return isPlural(quantity) ? unit.shortPlural : unit.shortSingular;
     }
     return isPlural(quantity) ? unit.longPlural : unit.longSingular;
+}
+// Yield ----------------------------------------------------------------
+export function getYieldRowStr(
+    quantity: string,
+    unit: FinishedUnit,
+    title: string,
+    pluralTitle?: string | null
+): string {
+    const shown = getFinishedQuantityStr(quantity);
+    if (!unit || unit.hidden) {
+        const name = isPlural(quantity) ? pluralTitle || title : title;
+        return `${shown} ${name.toLowerCase()}`;
+    }
+    return `${shown}${unit.hasSpace ? ' ' : ''}${unitDisplayValue(quantity, unit, true)}`;
 }
 // Size -----------------------------------------------------------------
 function getEditableSizeStr(item: EditableRecipeIngredient): string {
