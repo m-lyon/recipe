@@ -4,7 +4,6 @@ import { useShallow } from 'zustand/shallow';
 import { useUser } from '@recipe/features/user';
 import { useRecipeStore } from '@recipe/stores';
 import { useErrorToast } from '@recipe/common/hooks';
-import { VALID_NUMBER_REGEX } from '@recipe/utils/number';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
 
 interface Props {
@@ -33,11 +32,10 @@ export function SubmitButton(props: Props) {
                 ingr: state.ingredientSections,
             }))
         );
+
     const { yieldRows, hadYield } = useRecipeStore(
         useShallow((state) => ({ yieldRows: state.yieldRows, hadYield: state.hadYield }))
     );
-    // A row left completely empty is ignored; a half-filled one is an error.
-    const filledYieldRows = yieldRows.filter((row) => row.quantity !== '' || row.unit !== null);
 
     const validate = () => {
         if (title.trim() == '') {
@@ -104,14 +102,6 @@ export function SubmitButton(props: Props) {
             });
             return false;
         }
-        if (filledYieldRows.some((row) => !row.unit || !VALID_NUMBER_REGEX.test(row.quantity))) {
-            toast({
-                title: 'Please complete the yield',
-                description: 'Each row needs a quantity, such as 2, 1/2 or 10-12, and a unit.',
-                position: 'top',
-            });
-            return false;
-        }
         return true;
     };
 
@@ -168,10 +158,9 @@ export function SubmitButton(props: Props) {
                 : undefined,
             source: source ? source : undefined,
             isIngredient,
-            // Sent when there is a yield, or to clear the one the recipe was saved with.
-            ...(filledYieldRows.length > 0 || hadYield
+            ...(yieldRows.length > 0 || hadYield
                 ? {
-                      yield: filledYieldRows.map((row) => ({
+                      yield: yieldRows.map((row) => ({
                           quantity: row.quantity,
                           unit: row.unit!._id,
                       })),

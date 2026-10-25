@@ -98,7 +98,6 @@ describe('IngredientsTab unit conversion', () => {
     });
 });
 
-/** The API's answer for one recipe: these ingredients, with the total their macros add up to. */
 type NutritionResults = NonNullable<
     GetRecipeNutritionQuery['recipeById']
 >['nutrition']['ingredients'];
@@ -321,7 +320,6 @@ describe('IngredientsTab nutritional info integration', () => {
         };
         renderTab([pieIngredient], [nutritionMock([pieNutrition], [])]);
 
-        // The panel must not render a 0 kcal total.
         expect(await screen.findByText(/not available/i)).not.toBeNull();
         expect(screen.queryByText('Calories')).toBeNull();
     });

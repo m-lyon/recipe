@@ -14,8 +14,8 @@ import { StarRating, getAverageRating } from '@recipe/features/rating';
 import { Servings, UnitSystemToggle, useDisplayedIngredient } from '@recipe/features/servings';
 
 import { Notes } from './Notes';
-import { Yield } from './Yield';
 import { UsedIn } from './UsedIn';
+import { YieldTooltip } from './YieldTooltip';
 import { IngredientList } from './IngredientList';
 import { NutritionalInfoPanel } from './NutritionalInfoPanel';
 import { useNutritionalInfo } from '../hooks/useNutritionalInfo';
@@ -60,7 +60,19 @@ export function IngredientsTab(props: Props) {
 
     return (
         <IngredientsTabLayout
-            Servings={<Servings />}
+            Servings={
+                <Servings
+                    info={
+                        <YieldTooltip
+                            rows={recipe.yield}
+                            title={recipe.title}
+                            pluralTitle={recipe.pluralTitle}
+                            currentServings={currentServings}
+                            origServings={recipe.numServings}
+                        />
+                    }
+                />
+            }
             StarRating={
                 <StarRating
                     rating={getAverageRating(recipe.ratings)}
@@ -68,17 +80,6 @@ export function IngredientsTab(props: Props) {
                     readonly={!isVerified}
                     colour='rgba(0, 0, 0, 0.64)'
                 />
-            }
-            Yield={
-                recipe.yield?.length ? (
-                    <Yield
-                        rows={recipe.yield}
-                        title={recipe.title}
-                        pluralTitle={recipe.pluralTitle}
-                        currentServings={currentServings}
-                        origServings={recipe.numServings}
-                    />
-                ) : undefined
             }
             IngredientList={
                 <>

@@ -10,12 +10,12 @@ import { Size } from '../models/Size.js';
 import { Image } from '../models/Image.js';
 import { IMAGE_DIR } from '../constants.js';
 import { Rating } from '../models/Rating.js';
-import { Recipe } from '../models/Recipe.js';
 import { Ingredient } from '../models/Ingredient.js';
 import { PrepMethod } from '../models/PrepMethod.js';
 import { DisplayLadder } from '../models/DisplayLadder.js';
 import { NutritionalInfo } from '../models/NutritionalInfo.js';
 import { IngredientMeasure } from '../models/IngredientMeasure.js';
+import { Recipe, generateRecipeIdentifier } from '../models/Recipe.js';
 import { describeStandardUnitReport, syncStandardUnits } from './standardUnits.js';
 import { SEED_COUNT_UNITS, SEED_INGREDIENTS, SEED_PREP_METHODS } from './seedData.js';
 import { SEED_RECIPES, SEED_SIZES, SEED_TAGS, SEED_USERS, SeedOwner } from './seedData.js';
@@ -194,7 +194,7 @@ export async function populateRecipes() {
         const date = new Date(now - seed.daysAgo * DAY_MS);
         const recipe = await Recipe.create({
             title: seed.title,
-            titleIdentifier: slug(seed.title),
+            titleIdentifier: generateRecipeIdentifier(seed.title),
             pluralTitle: seed.pluralTitle,
             subTitle: seed.subTitle,
             tags: seed.tags.map(tag),
@@ -217,6 +217,10 @@ export async function populateRecipes() {
             owner: owner[seed.owner ?? 'admin'],
             numServings: seed.servings,
             isIngredient: seed.isIngredient ?? false,
+            yield: seed.yield?.map(([quantity, unitName]) => ({
+                quantity,
+                unit: unit(unitName ?? 'each'),
+            })),
             archived: seed.archived ?? false,
             createdAt: date,
             lastModified: date,

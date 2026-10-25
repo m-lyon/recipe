@@ -133,3 +133,21 @@ export const getSuggestions = (
             return [];
     }
 };
+
+export const getYieldSuggestions = (
+    item: EditableRecipeIngredient,
+    units: UnitChoice[],
+    strValue: string
+): Suggestion[] => {
+    if (item.state !== 'unit') {
+        return [];
+    }
+    const items: Suggestion[] = sortUnits(
+        units.filter((unit) => !unit.hidden),
+        strValue
+    );
+    if (strValue === '' && units.some((unit) => unit.hidden)) {
+        items.unshift({ value: 'skip unit', colour: 'gray.400' });
+    }
+    return items;
+};

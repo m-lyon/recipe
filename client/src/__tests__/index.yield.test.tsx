@@ -1,11 +1,11 @@
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, screen } from '@testing-library/react';
+import { cleanup, screen, within } from '@testing-library/react';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
 
-import { enterEditRecipePage, enterViewRecipePage } from '@recipe/utils/tests';
 import { mockUpdateRecipeAddYield } from '@recipe/graphql/mutations/__mocks__/recipe';
 import { mockUpdateRecipeRemoveYield } from '@recipe/graphql/mutations/__mocks__/recipe';
+import { clickFindByText, enterEditRecipePage, enterViewRecipePage } from '@recipe/utils/tests';
 
 import { renderComponent } from './utils';
 
@@ -14,19 +14,32 @@ loadDevMessages();
 
 type User = ReturnType<typeof userEvent.setup>;
 
-/** Fills yield row `row` (1-based) with a quantity and a unit picked from its dropdown. */
-async function fillRow(user: User, row: number, quantity: string, unitLabel: string) {
-    await user.click(screen.getByRole('button', { name: 'Add measure' }));
-    await user.type(screen.getByLabelText(`Yield quantity ${row}`), quantity);
-    await user.click(screen.getAllByLabelText(`Yield unit ${row}`)[0]);
-    await user.click(await screen.findByRole('option', { name: unitLabel }));
+async function focusYield(user: User) {
+    if (document.activeElement !== screen.getByLabelText('Input yield')) {
+        await user.click(screen.getByLabelText('Enter yield'));
+    }
 }
 
-/** Adds "2 each" and "900 g" to Recipe One, and saves. */
+async function addRow(user: User, quantity: string, choice: string) {
+    await focusYield(user);
+    await user.keyboard(`${quantity} `);
+    await clickFindByText(screen, user, choice);
+}
+
+async function yieldTooltip(user: User): Promise<string[]> {
+    const info = screen.getByLabelText('Show recipe yield');
+    await user.unhover(info);
+    await user.hover(info);
+    const tooltip = await screen.findByLabelText('Recipe yield');
+    return within(tooltip)
+        .getAllByRole('listitem')
+        .map((item) => item.textContent ?? '');
+}
+
 async function addYield(user: User) {
     await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-    await fillRow(user, 1, '2', 'each (whole batches)');
-    await fillRow(user, 2, '900', 'g (gram)');
+    await addRow(user, '2', 'skip unit');
+    await addRow(user, '900', 'grams');
     await user.click(screen.getByLabelText('Save recipe'));
 }
 
@@ -35,13 +48,13 @@ describe('Recipe yield', () => {
         cleanup();
     });
 
-    it('should not show a yield when the recipe has none', async () => {
+    it('should not show the yield icon when the recipe has no yield', async () => {
         renderComponent();
         const user = userEvent.setup();
 
         await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
 
-        expect(screen.queryByLabelText('Recipe yield')).toBeNull();
+        expect(screen.queryByLabelText('Show recipe yield')).toBeNull();
     });
 
     it('should add a yield in two dimensions, and show it on the recipe', async () => {
@@ -50,11 +63,10 @@ describe('Recipe yield', () => {
 
         await addYield(user);
 
-        // A count of whole batches reads with the recipe's title.
+        // The servings info icon's tooltip lists each row; a count of whole recipes reads with
+        // the recipe's title.
         await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        expect((await screen.findByLabelText('Recipe yield')).textContent).toBe(
-            'Makes 2 mock recipe (≈ 900g)'
-        );
+        expect(await yieldTooltip(user)).toEqual(['2 mock recipe', '900g']);
     });
 
     it('should scale the yield with the servings', async () => {
@@ -63,13 +75,49 @@ describe('Recipe yield', () => {
 
         await addYield(user);
         await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        await screen.findByLabelText('Recipe yield');
         // 4 servings → 5
         await user.click(screen.getByLabelText('Increase serving size'));
 
-        expect(screen.getByLabelText('Recipe yield').textContent).toBe(
-            'Makes 2½ mock recipe (≈ 1125g)'
-        );
+        expect(await yieldTooltip(user)).toEqual(['2½ mock recipe', '1125g']);
+    });
+
+    it('should add a row once it has a quantity and a unit', async () => {
+        renderComponent();
+        const user = userEvent.setup();
+
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+        await addRow(user, '900', 'grams');
+
+        expect(screen.getByLabelText('900g')).not.toBeNull();
+        // The input stays open for the next row, as it does for ingredients.
+        expect(screen.getByLabelText('Enter yield').textContent).toBe('Enter quantity');
+    });
+
+    it('should add a row from a typed unit name', async () => {
+        renderComponent();
+        const user = userEvent.setup();
+
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+        await focusYield(user);
+        await user.keyboard('900 g ');
+
+        expect(screen.getByLabelText('900g')).not.toBeNull();
+    });
+
+    it('should refuse a quantity that starts with a letter', async () => {
+        renderComponent();
+        const user = userEvent.setup();
+
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+        await focusYield(user);
+        await user.keyboard('g');
+
+        // An ingredient may skip its quantity ("salt"); a yield row may not.
+        expect(
+            await screen.findByText(
+                'Only numbers and fractions are allowed when inputting a quantity.'
+            )
+        ).not.toBeNull();
     });
 
     it('should not offer a unit in a dimension another row already has', async () => {
@@ -77,13 +125,25 @@ describe('Recipe yield', () => {
         const user = userEvent.setup();
 
         await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        await fillRow(user, 1, '900', 'g (gram)');
-        await user.click(screen.getByRole('button', { name: 'Add measure' }));
-        await user.click(screen.getAllByLabelText('Yield unit 2')[0]);
+        await addRow(user, '900', 'grams');
+        await focusYield(user);
+        await user.keyboard('2 ');
 
-        expect(await screen.findByRole('option', { name: 'cup (cup)' })).not.toBeNull();
-        expect(screen.queryByRole('option', { name: 'kg (kilogram)' })).toBeNull();
-        expect(screen.queryByRole('option', { name: 'g (gram)' })).toBeNull();
+        expect(await screen.findByText('cups')).not.toBeNull();
+        expect(screen.queryByText('kilograms')).toBeNull();
+        expect(screen.queryByText('grams')).toBeNull();
+    });
+
+    it('should not add a typed unit in a dimension another row already has', async () => {
+        renderComponent();
+        const user = userEvent.setup();
+
+        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+        await addRow(user, '900', 'grams');
+        await focusYield(user);
+        await user.keyboard('1 kg ');
+
+        expect(screen.queryByLabelText('1kg')).toBeNull();
     });
 
     it('should not offer a count unit another row already has', async () => {
@@ -91,37 +151,25 @@ describe('Recipe yield', () => {
         const user = userEvent.setup();
 
         await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        await fillRow(user, 1, '2', 'each (whole batches)');
-        await user.click(screen.getByRole('button', { name: 'Add measure' }));
-        await user.click(screen.getAllByLabelText('Yield unit 2')[0]);
+        await addRow(user, '2', 'skip unit');
+        await focusYield(user);
+        await user.keyboard('2 ');
 
         // A count row rules out only its own unit, not the whole dimension.
-        expect(await screen.findByRole('option', { name: 'g (gram)' })).not.toBeNull();
-        expect(screen.queryByRole('option', { name: 'each (whole batches)' })).toBeNull();
+        expect(await screen.findByText('grams')).not.toBeNull();
+        expect(screen.queryByText('skip unit')).toBeNull();
     });
 
-    it('should not add a row when every unit is ruled out', async () => {
+    it('should hide the input when every unit is ruled out', async () => {
         renderComponent();
         const user = userEvent.setup();
 
         await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        await fillRow(user, 1, '2', 'each (whole batches)');
-        await fillRow(user, 2, '900', 'g (gram)');
-        await fillRow(user, 3, '4', 'cup (cup)');
+        await addRow(user, '2', 'skip unit');
+        await addRow(user, '900', 'grams');
+        await addRow(user, '4', 'cups');
 
-        expect(screen.queryByRole('button', { name: 'Add measure' })).toBeNull();
-    });
-
-    it('should refuse to save a row with a quantity and no unit', async () => {
-        renderComponent();
-        const user = userEvent.setup();
-
-        await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        await user.click(screen.getByRole('button', { name: 'Add measure' }));
-        await user.type(screen.getByLabelText('Yield quantity 1'), '2');
-        await user.click(screen.getByLabelText('Save recipe'));
-
-        expect(await screen.findByText('Please complete the yield')).not.toBeNull();
+        expect(screen.queryByLabelText('Enter yield')).toBeNull();
     });
 
     it('should remove a saved yield', async () => {
@@ -130,17 +178,16 @@ describe('Recipe yield', () => {
 
         await addYield(user);
         await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        await screen.findByLabelText('Recipe yield');
+        expect(await yieldTooltip(user)).toEqual(['2 mock recipe', '900g']);
         await user.click(screen.getByLabelText('Navigate to home page'));
 
         // The saved rows load into the editor; removing both clears the yield.
         await enterEditRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        expect(screen.getByLabelText('Yield quantity 1')).toHaveProperty('value', '2');
-        await user.click(screen.getByLabelText('Remove yield row 2'));
-        await user.click(screen.getByLabelText('Remove yield row 1'));
+        await user.click(screen.getByLabelText('Remove 900g'));
+        await user.click(screen.getByLabelText('Remove 2 mock recipe'));
         await user.click(screen.getByLabelText('Save recipe'));
 
         await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
-        expect(screen.queryByLabelText('Recipe yield')).toBeNull();
+        expect(screen.queryByLabelText('Show recipe yield')).toBeNull();
     });
 });

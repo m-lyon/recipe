@@ -17,12 +17,14 @@ export function IngredientsTabLayout(props: Props) {
         <Flex direction='column' justifyContent='space-between' height='100%'>
             <VStack spacing='24px' align='left'>
                 {Tags}
-                <Flex paddingBottom={3}>
-                    {Servings}
-                    <Spacer />
-                    {StarRating}
-                </Flex>
-                {Yield}
+                <VStack spacing={2} align='stretch' paddingBottom={3}>
+                    <Flex>
+                        {Servings}
+                        <Spacer />
+                        {StarRating}
+                    </Flex>
+                    {Yield}
+                </VStack>
                 {IngredientList}
             </VStack>
             <Spacer minH='20px' />

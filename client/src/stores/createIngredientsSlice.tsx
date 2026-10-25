@@ -1,31 +1,17 @@
 import { produce } from 'immer';
 import { StateCreator } from 'zustand';
 
-import { isPlural } from '@recipe/utils/plural';
-import { autoFormat } from '@recipe/utils/autoformat';
 import { ApplyUnitConversion } from '@recipe/features/servings';
-import { VALID_NUMBER_REGEX, isRange, validateRange } from '@recipe/utils/number';
-import { ingredientDisplayValue, sizeDisplayValue } from '@recipe/utils/formatting';
-import { getEditableRecipeIngredientStr, unitDisplayValue } from '@recipe/utils/formatting';
+import { getEditableRecipeIngredientStr } from '@recipe/utils/formatting';
 
 import { RecipeState } from './useRecipeStore';
+import { EditableFlow, changeEditable, getEditableAttributeString } from './editableItem';
+import { getEmptyEditable, removeEditableCharacter, setEditableAttribute } from './editableItem';
 
 interface EditableSubsection {
     name?: string;
     finished: FinishedRecipeIngredient[];
     editable: EditableRecipeIngredient;
-}
-function getEmptyIngredient(): EditableRecipeIngredient {
-    return {
-        quantity: null,
-        unit: { value: null, data: undefined },
-        size: { value: null, data: undefined },
-        ingredient: { value: null, data: undefined },
-        prepMethod: { value: null, data: undefined },
-        state: 'quantity',
-        showDropdown: false,
-        popover: null,
-    };
 }
 function getFinishedFromEditable(editable: EditableRecipeIngredient): FinishedRecipeIngredient {
     if (editable.ingredient.value == null || editable.ingredient.data == null) {
@@ -41,273 +27,19 @@ function getFinishedFromEditable(editable: EditableRecipeIngredient): FinishedRe
     };
     return finished;
 }
-const STATES: Record<number, EditableState> = {
-    0: 'quantity',
-    1: 'unit',
-    2: 'size',
-    3: 'ingredient',
-    4: 'prepMethod',
-};
-export const STATES_ORDER: Record<EditableState, number> = {
-    quantity: 0,
-    unit: 1,
-    size: 2,
-    ingredient: 3,
-    prepMethod: 4,
-};
-function getTextDiff(value: string, origStr: string): string {
-    if (value.length > origStr.length) {
-        return value.replace(origStr, '');
-    }
-    return '';
-}
-function incrementState(
-    state: IngredientSectionsSlice,
-    section: number,
-    increment: number | EditableState = 1
-) {
-    const item = state.ingredientSections[section].editable;
-    item.popover = null;
-    if (typeof increment === 'string') {
-        item.state = increment;
-        return;
-    }
-    const max = Object.keys(STATES).length - 1;
-    const newIndex = STATES_ORDER[item.state] + increment;
-    item.state = STATES[Math.min(newIndex, max)];
-}
-function append(state: IngredientSectionsSlice, section: number, value: string) {
-    const item = state.ingredientSections[section].editable;
-    if (item.state === 'quantity') {
-        if (item.quantity === null) {
-            item.quantity = value;
-        } else {
-            item.quantity += value;
-        }
-    } else {
-        const component = item[item.state];
-        if (component.value === null) {
-            component.value = value;
-        } else {
-            if (value === ' ') {
-                component.value = autoFormat(component.value + value);
-            } else {
-                component.value += value;
+function ingredientFlow(state: IngredientSectionsSlice, section: number): EditableFlow {
+    return {
+        steps: ['quantity', 'unit', 'size', 'ingredient', 'prepMethod'],
+        finish: (item) => {
+            if (item.ingredient.value === null) {
+                return;
             }
-        }
-    }
-}
-function setQuantity(state: IngredientSectionsSlice, section: number, value: FinishedQuantity) {
-    const item = state.ingredientSections[section].editable;
-    item.quantity = value;
-    if (value === null) {
-        item.unit = { value: null, data: null };
-    }
-}
-function setUnit(
-    state: IngredientSectionsSlice,
-    section: number,
-    data: FinishedUnit,
-    apply: ApplyUnitConversion
-) {
-    const item = state.ingredientSections[section].editable;
-    const { quantity, unit } = apply({ quantity: item.quantity, unit: data });
-    item.quantity = quantity;
-    item.unit = {
-        value: unit !== null ? unitDisplayValue(quantity, unit, true) : null,
-        data: unit,
+            state.ingredientSections[section].finished.push(getFinishedFromEditable({ ...item }));
+            const newEditable = getEmptyEditable();
+            newEditable.showDropdown = true;
+            state.ingredientSections[section].editable = newEditable;
+        },
     };
-}
-function setSize(state: IngredientSectionsSlice, section: number, data: FinishedSize) {
-    const item = state.ingredientSections[section].editable;
-    item.size = { value: data !== null ? sizeDisplayValue(data) : null, data };
-    // Set unit if skipping
-    if (item.unit.data === undefined) {
-        item.unit = { value: null, data: null };
-    }
-}
-function setIngredient(state: IngredientSectionsSlice, section: number, data: FinishedIngredient) {
-    const item = state.ingredientSections[section].editable;
-    if (item.unit.data === undefined) {
-        item.unit = { value: null, data: null };
-    }
-    if (item.size.data === undefined) {
-        item.size = { value: null, data: null };
-    }
-    const value =
-        data !== null
-            ? ingredientDisplayValue(item.quantity, item.unit.data as FinishedUnit, data)
-            : null;
-    item.ingredient = { value, data };
-}
-function setPrepMethod(state: IngredientSectionsSlice, section: number, data: FinishedPrepMethod) {
-    const item = state.ingredientSections[section].editable;
-    item.prepMethod = { value: data !== null ? data.value : null, data };
-    if (item.ingredient.value === null) {
-        return;
-    }
-    state.ingredientSections[section].finished.push(getFinishedFromEditable({ ...item }));
-    const newEditable = getEmptyIngredient();
-    newEditable.showDropdown = true;
-    state.ingredientSections[section].editable = newEditable;
-}
-/**
- * A quantity with no unit is a count: "2 onions" is 2 each. The each unit is hidden, so the
- * line renders the same, but it is stored with a real unit. Without a quantity, the line
- * keeps no unit.
- */
-function resolveSkippedUnit(
-    state: IngredientSectionsSlice,
-    section: number,
-    data: IngredientComponents | undefined
-) {
-    const item = state.ingredientSections[section]?.editable;
-    if (!item || item.quantity === null || item.unit.data !== null) {
-        return;
-    }
-    const each = data?.units.find((unit) => unit.standard === 'each');
-    if (each) {
-        item.unit = { value: null, data: each };
-    }
-}
-interface handleChangeOpts {
-    state: IngredientSectionsSlice;
-    section: number;
-    char: string;
-    item: EditableRecipeIngredient;
-    data: IngredientComponents;
-    apply: ApplyUnitConversion;
-}
-function handleQuantityChange(opts: handleChangeOpts) {
-    const { state, section, char, item, apply } = opts;
-    // Validate quantity upon completion
-    if (char === ' ' && item.quantity !== null) {
-        if (!VALID_NUMBER_REGEX.test(item.quantity)) {
-            throw new Error('Invalid quantity.');
-        }
-        if (isRange(item.quantity)) {
-            if (!validateRange(item.quantity)) {
-                throw new Error('First number in range must be smaller than second.');
-            }
-        }
-        incrementState(state, section);
-        item.showDropdown = true;
-        // Skip quantity with alphabetical characters
-    } else if (item.quantity === null && /^[a-zA-Z]$/.test(char)) {
-        incrementState(state, section, 2);
-        item.showDropdown = true;
-        setUnit(state, section, null, apply);
-        handleSizeChange(opts);
-        // Starting input should be a number
-    } else if (item.quantity === null && /^[\d]$/.test(char)) {
-        append(state, section, char);
-        item.showDropdown = false;
-        // Valid numerical input
-    } else if (item.quantity !== null && /^[\d/.-]$/.test(char)) {
-        append(state, section, char);
-        item.showDropdown = false;
-        // Throw error for invalid input
-    } else {
-        throw new Error('Only numbers and fractions are allowed when inputting a quantity.');
-    }
-}
-const VALID_CHAR = /^[a-zA-Z ,.\-"]?$/;
-function handleUnitChange(opts: handleChangeOpts) {
-    const { state, section, char, item, data, apply } = opts;
-    if (VALID_CHAR.test(char)) {
-        if (char === ' ') {
-            const value = item.unit.value;
-            for (const unit of data.units) {
-                if (isPlural(item.quantity)) {
-                    if (unit.longPlural === value || unit.shortPlural === value) {
-                        setUnit(state, section, unit, apply);
-                        incrementState(state, section);
-                        return;
-                    }
-                } else {
-                    if (unit.longSingular === value || unit.shortSingular === value) {
-                        setUnit(state, section, unit, apply);
-                        incrementState(state, section);
-                        return;
-                    }
-                }
-            }
-            for (const size of data.sizes) {
-                if (size.value === value) {
-                    setSize(state, section, size);
-                    incrementState(state, section, 'ingredient');
-                    return;
-                }
-            }
-        }
-        append(state, section, char);
-    } else {
-        throw new Error('Invalid character.');
-    }
-}
-function handleSizeChange(opts: handleChangeOpts) {
-    const { state, section, char, item, data } = opts;
-    if (VALID_CHAR.test(char)) {
-        if (char === ' ') {
-            const value = item.size.value;
-            for (const size of data.sizes) {
-                if (size.value === value) {
-                    setSize(state, section, size);
-                    incrementState(state, section);
-                    return;
-                }
-            }
-        }
-        append(state, section, char);
-    } else {
-        throw new Error('Invalid character.');
-    }
-}
-const VALID_CHAR_WITH_NUMBERS = /^[a-zA-Z0-9 ,.\-/"]?$/;
-function handleIngredientChange(opts: handleChangeOpts) {
-    const { state, section, char } = opts;
-    if (VALID_CHAR.test(char)) {
-        append(state, section, char);
-    } else {
-        throw new Error('Invalid character.');
-    }
-}
-function handlePrepMethodChange(opts: handleChangeOpts) {
-    const { state, section, char } = opts;
-    // Prep method can contain numbers, to allow for less strict bespoke
-    // prep methods.
-    if (VALID_CHAR_WITH_NUMBERS.test(char)) {
-        append(state, section, char);
-    } else {
-        throw new Error('Invalid character.');
-    }
-}
-function setPreviousState(editable: EditableRecipeIngredient) {
-    switch (editable.state) {
-        case 'quantity':
-            break;
-        case 'unit':
-            editable.state = 'quantity';
-            break;
-        case 'size':
-            if (editable.quantity === null) {
-                // this is the scenario where quantity (and therefore unit) have been skipped.
-                editable.state = 'quantity';
-                break;
-            }
-            editable.unit.data = undefined;
-            editable.state = 'unit';
-            break;
-        case 'ingredient':
-            editable.size.data = undefined;
-            editable.state = 'size';
-            break;
-        case 'prepMethod':
-            editable.state = 'ingredient';
-            break;
-        default:
-            break;
-    }
 }
 export interface IngredientSectionsSlice {
     ingredientSections: EditableSubsection[];
@@ -345,7 +77,7 @@ export const createIngredientsSlice: StateCreator<RecipeState, [], [], Ingredien
     set,
     get
 ) => ({
-    ingredientSections: [{ finished: [], editable: getEmptyIngredient() }],
+    ingredientSections: [{ finished: [], editable: getEmptyEditable() }],
     showIngredientDropdown: (section: number) =>
         set(
             produce((state: IngredientSectionsSlice) => {
@@ -361,12 +93,12 @@ export const createIngredientsSlice: StateCreator<RecipeState, [], [], Ingredien
     resetEditableIngredient: (section: number) =>
         set(
             produce((state: IngredientSectionsSlice) => {
-                state.ingredientSections[section].editable = getEmptyIngredient();
+                state.ingredientSections[section].editable = getEmptyEditable();
             })
         ),
     resetIngredients: () => {
         set({
-            ingredientSections: [{ finished: [], editable: getEmptyIngredient() }],
+            ingredientSections: [{ finished: [], editable: getEmptyEditable() }],
         });
     },
     setIngredientPopover: (section: number, type: PopoverType) =>
@@ -377,153 +109,38 @@ export const createIngredientsSlice: StateCreator<RecipeState, [], [], Ingredien
         ),
     getIngredientString: (section: number) =>
         getEditableRecipeIngredientStr(get().ingredientSections[section].editable),
-    getIngredientAttributeString: (section: number) => {
-        const item = get().ingredientSections[section].editable;
-        if (item.state === 'quantity') {
-            return item.quantity ?? '';
-        }
-        return item[item.state].value ?? '';
-    },
+    getIngredientAttributeString: (section: number) =>
+        getEditableAttributeString(get().ingredientSections[section].editable),
     setEditableIngredientAttribute: (
         section: number,
         attr: SetAttr,
         data: IngredientComponents | undefined,
         apply: ApplyUnitConversion
-    ) => {
-        set(
-            produce((state: IngredientSectionsSlice) => {
-                const inputState = state.ingredientSections[section].editable.state;
-                if (typeof attr === 'string') {
-                    if (inputState !== 'quantity') {
-                        throw new Error('Cannot set string value after initial state');
-                    }
-                    setQuantity(state, section, attr);
-                    incrementState(state, section);
-                    return;
-                }
-                if (attr === null) {
-                    switch (inputState) {
-                        case 'quantity':
-                            setQuantity(state, section, attr);
-                            setUnit(state, section, attr, apply);
-                            incrementState(state, section, 'size');
-                            return;
-                        case 'unit':
-                            setUnit(state, section, attr, apply);
-                            incrementState(state, section);
-                            return;
-                        case 'size':
-                            setSize(state, section, attr);
-                            incrementState(state, section);
-                            return;
-                        case 'prepMethod':
-                            setPrepMethod(state, section, attr);
-                            return;
-                        default:
-                            return;
-                    }
-                }
-                if (attr === undefined) {
-                    // this happens when enter is pressed on an empty dropdown list.
-                    // is relevant for quantity change. should do nothing for other states.
-                    if (inputState === 'quantity') {
-                        if (!data) {
-                            throw new Error('Could not load ingredient components');
-                        }
-                        const item = state.ingredientSections[section].editable;
-                        const opts = { state, section, char: ' ', item, data, apply };
-                        handleQuantityChange(opts);
-                    }
-                    return;
-                }
-                switch (attr.__typename) {
-                    case 'Unit':
-                        setUnit(state, section, attr, apply);
-                        incrementState(state, section, 'size');
-                        return;
-                    case 'Size':
-                        setSize(state, section, attr);
-                        incrementState(state, section, 'ingredient');
-                        return;
-                    case 'Ingredient':
-                    case 'Recipe':
-                        setIngredient(state, section, attr);
-                        incrementState(state, section, 'prepMethod');
-                        return;
-                    case 'PrepMethod':
-                        setPrepMethod(state, section, attr);
-                        return;
-                    default:
-                        break;
-                }
-            })
-        );
-        set(produce((state: IngredientSectionsSlice) => resolveSkippedUnit(state, section, data)));
-    },
-    removeIngredientCharacter: (section: number) => {
+    ) =>
         set(
             produce((state: IngredientSectionsSlice) => {
                 const item = state.ingredientSections[section].editable;
-                if (item.state === 'quantity') {
-                    const currentValue = item.quantity;
-                    if (currentValue === null) {
-                        return;
-                    }
-                    if (currentValue.length === 1) {
-                        item.quantity = null;
-                        item.showDropdown = true;
-                    } else {
-                        item.quantity = currentValue.slice(0, -1);
-                    }
-                } else {
-                    const currentItem = item[item.state];
-                    if (currentItem.value === null) {
-                        item.popover = null;
-                        if (item.state === 'unit' && item.quantity !== null) {
-                            item.showDropdown = false;
-                        }
-                        setPreviousState(item);
-                    } else if (currentItem.value.length === 1) {
-                        currentItem.value = null;
-                    } else {
-                        currentItem.value = currentItem.value.slice(0, -1);
-                    }
-                }
+                setEditableAttribute(item, ingredientFlow(state, section), attr, data, apply);
             })
-        );
-    },
+        ),
+    removeIngredientCharacter: (section: number) =>
+        set(
+            produce((state: IngredientSectionsSlice) => {
+                removeEditableCharacter(state.ingredientSections[section].editable);
+            })
+        ),
     handleIngredientChange: (
         section: number,
         value: string,
         data: IngredientComponents | undefined,
         apply: ApplyUnitConversion
-    ) => {
+    ) =>
         set(
             produce((state: IngredientSectionsSlice) => {
                 const item = state.ingredientSections[section].editable;
-                const char = getTextDiff(value, state.getIngredientString(section));
-                if (!data) {
-                    throw new Error('Could not load ingredient components');
-                }
-                const opts = { state, section, char, item, data, apply };
-                switch (item.state) {
-                    case 'quantity':
-                        return handleQuantityChange(opts);
-                    case 'unit':
-                        return handleUnitChange(opts);
-                    case 'size':
-                        return handleSizeChange(opts);
-                    case 'ingredient':
-                        return handleIngredientChange(opts);
-                    case 'prepMethod':
-                        return handlePrepMethodChange(opts);
-                    default:
-                        return;
-                }
+                changeEditable(item, ingredientFlow(state, section), value, data, apply);
             })
-        );
-        set(produce((state: IngredientSectionsSlice) => resolveSkippedUnit(state, section, data)));
-    },
+        ),
     setFinishedIngredients: (section: number, ingredients: FinishedRecipeIngredient[]) =>
         set(
             produce((state: IngredientSectionsSlice) => {
@@ -533,7 +150,7 @@ export const createIngredientsSlice: StateCreator<RecipeState, [], [], Ingredien
     addIngredientSection: () =>
         set(
             produce((state: IngredientSectionsSlice) => {
-                state.ingredientSections.push({ finished: [], editable: getEmptyIngredient() });
+                state.ingredientSections.push({ finished: [], editable: getEmptyEditable() });
             })
         ),
     removeIngredientSection: (section: number) =>

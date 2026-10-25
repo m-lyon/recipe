@@ -37,7 +37,7 @@ export function IngredientDropdown(props: Props) {
 
     return (
         <DropdownList
-            isOpen={item.showDropdown}
+            isOpen={item.showDropdown && suggestions.length > 0}
             width='100%'
             aria-label='Dropdown suggestion list'
             ref={listRef}

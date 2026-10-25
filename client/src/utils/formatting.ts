@@ -55,6 +55,20 @@ export function unitDisplayValue(
     }
     return isPlural(quantity) ? unit.longPlural : unit.longSingular;
 }
+// Yield ----------------------------------------------------------------
+export function getYieldRowStr(
+    quantity: string,
+    unit: FinishedUnit,
+    title: string,
+    pluralTitle?: string | null
+): string {
+    const shown = getFinishedQuantityStr(quantity);
+    if (!unit || unit.hidden) {
+        const name = isPlural(quantity) ? pluralTitle || title : title;
+        return `${shown} ${name.toLowerCase()}`;
+    }
+    return `${shown}${unit.hasSpace ? ' ' : ''}${unitDisplayValue(quantity, unit, true)}`;
+}
 // Size -----------------------------------------------------------------
 function getEditableSizeStr(item: EditableRecipeIngredient): string {
     if (STATES_ORDER[item.state] < STATES_ORDER['size']) {
