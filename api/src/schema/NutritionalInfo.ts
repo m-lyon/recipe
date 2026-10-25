@@ -27,8 +27,6 @@ NutritionalInfoTC.addRelation('prepMethod', {
 });
 
 export const NutritionalInfoQuery = {
-    // Every record of each ingredient: the one with no prep method, and one for each prep
-    // method that changes the food, such as juiced.
     nutritionalInfosByIngredientIds: schemaComposer.createResolver({
         name: 'nutritionalInfosByIngredientIds',
         type: [NutritionalInfoTC],

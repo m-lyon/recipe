@@ -405,7 +405,6 @@ describe('recipe yields and recipes used as ingredients', function () {
                 return doc._id as Types.ObjectId;
             }
 
-            /** Limes weigh 67 g whole and give 44 g of juice, with values for the juice. */
             async function limes() {
                 const juiced = await prep('juiced');
                 const sliced = await prep('sliced');

@@ -13,11 +13,6 @@ export interface MacroNutrients {
 export const NUTRITION_SOURCES = ['usda', 'openFoodFacts', 'manual'] as const;
 export type NutritionSource = (typeof NUTRITION_SOURCES)[number];
 
-/**
- * The macros of one gram of an ingredient. A record with a prep method holds the prepared
- * food, such as lime juice for "lime, juiced"; the record with none holds the ingredient as
- * bought, and is used for any prep method without a record of its own.
- */
 export interface NutritionalInfo extends Document {
     ingredient: Types.ObjectId;
     prepMethod: Types.ObjectId | null;
@@ -47,7 +42,6 @@ const nutritionalInfoSchema = new Schema<NutritionalInfo>({
     prepMethod: {
         type: Schema.Types.ObjectId,
         ref: 'PrepMethod',
-        // Stored as an explicit null so the unique index treats "no prep method" as one value.
         default: null,
         validate: {
             validator: async (prepMethod: Types.ObjectId | null) =>

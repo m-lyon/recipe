@@ -154,7 +154,7 @@ export interface SeedIngredient {
     owner?: SeedOwner;
     /** Per 100 g: kcal, protein, carbs, fat. Missing: the ingredient has no nutrition. */
     per100g?: [number, number, number, number];
-    /** Per 100 g of the prepared food, by prep method: lemon, juiced, is lemon juice. */
+    /** Per 100 g of the prepared food, by prep method */
     prepPer100g?: Record<string, [number, number, number, number]>;
     measures?: SeedMeasure[];
 }

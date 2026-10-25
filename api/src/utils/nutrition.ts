@@ -11,8 +11,7 @@ import { Recipe, RecipeIngredientType, RecipeYield } from '../models/Recipe.js';
  * A recipe's nutrition, calculated from its ingredients.
  *
  * Every quantity reaches grams, or a share of a child recipe, before it meets a macro:
- *  - an ingredient: grams(quantity, unit, measures) × perGram, where perGram is the record
- *    for the line's prep method, or else the record with no prep method
+ *  - an ingredient: grams(quantity, unit, measures) × perGram
  *  - a recipe used as an ingredient: (quantity ÷ the child's yield in the same dimension) ×
  *    the child's total
  * Nutrition data is not stored, so a recipe does not need re-saving when ingredients change.
@@ -204,7 +203,6 @@ interface Calculated extends RecipeNutrition {
     notCounted: number;
 }
 
-/** The record for the prep method, or else the record with no prep method. */
 export function perGramFor(
     records: Map<string, MacroNutrients> | undefined,
     prepMethodId: string | null
@@ -290,7 +288,6 @@ function calculateIngredient(
     const perGram = perGramFor(records, recipeIngredient.prepMethod);
     if (!perGram)
         return uncounted(recipeIngredient, 'NO_NUTRITION', `No nutritional data for ${name}`);
-    // The prep method's own record is per gram of the prepared food, so only its measures weigh it.
     const prepared = !!recipeIngredient.prepMethod && records?.has(recipeIngredient.prepMethod);
     const measures = (data.measures.get(recipeIngredient.ingredient) ?? []).filter(
         (m) => !prepared || m.prepMethod === recipeIngredient.prepMethod
