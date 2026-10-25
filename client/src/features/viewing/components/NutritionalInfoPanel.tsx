@@ -131,6 +131,9 @@ export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
                                         </Text>
                                     </Text>
                                     {uncountedIngredient.code === 'NO_MEASURE' &&
+                                        uncountedIngredient.item.unit &&
+                                        uncountedIngredient.item.ingredient.__typename ===
+                                            'Ingredient' &&
                                         canEditIngredient(
                                             uncountedIngredient.item.ingredient._id
                                         ) && (
