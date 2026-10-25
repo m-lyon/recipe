@@ -4,6 +4,7 @@ import { GraphQLError } from 'graphql';
 import { Unit } from '../models/Unit.js';
 import { Recipe } from '../models/Recipe.js';
 import { DisplayLadder } from '../models/DisplayLadder.js';
+import { NutritionalInfo } from '../models/NutritionalInfo.js';
 import { IngredientMeasure } from '../models/IngredientMeasure.js';
 
 export async function validateItemNotInRecipe(
@@ -90,6 +91,18 @@ export async function validateItemNotInMeasure(
             `Cannot delete ${itemType} as it is currently being used in ingredient measures.`,
             itemType,
             itemId
+        );
+    }
+}
+
+/** Blocks deleting a prep method that nutritional data is recorded for. */
+export async function validatePrepMethodNotInNutrition(prepMethodId: Types.ObjectId) {
+    const inUse = await NutritionalInfo.exists({ prepMethod: prepMethodId });
+    if (inUse) {
+        throw itemInUseError(
+            'Cannot delete prepMethod as it is currently being used in nutritional data.',
+            'prepMethod',
+            prepMethodId
         );
     }
 }

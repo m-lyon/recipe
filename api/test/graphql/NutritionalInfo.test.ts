@@ -9,6 +9,7 @@ import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 import { Unit } from '../../src/models/Unit.js';
 import { User } from '../../src/models/User.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
+import { PrepMethod } from '../../src/models/PrepMethod.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { resetRateLimits } from '../../src/middleware/rateLimit.js';
 import { MappedPortion, __testables } from '../../src/schema/Usda.js';
@@ -59,15 +60,6 @@ const REMOVE_MUTATION = `
     mutation NutritionalInfoRemoveById($id: MongoID!) {
         nutritionalInfoRemoveById(_id: $id) {
             recordId
-        }
-    }`;
-
-const QUERY_BY_INGREDIENT = `
-    query NutritionalInfoByIngredient($filter: FilterFindOneNutritionalInfoInput) {
-        nutritionalInfoByIngredient(filter: $filter) {
-            _id
-            ingredient
-            perGram { calories protein carbs fat }
         }
     }`;
 
@@ -154,7 +146,6 @@ interface NutritionalInfoRecord {
 type CreateOneData = { nutritionalInfoCreateOne: { record: NutritionalInfoRecord } };
 type UpdateByIdData = { nutritionalInfoUpdateById: { record: NutritionalInfoRecord } };
 type RemoveByIdData = { nutritionalInfoRemoveById: { recordId: string } };
-type ByIngredientData = { nutritionalInfoByIngredient: NutritionalInfoRecord | null };
 type ByIngredientIdsData = { nutritionalInfosByIngredientIds: NutritionalInfoRecord[] };
 type UsdaSearchData = {
     usdaSearch: (Pick<
@@ -192,7 +183,7 @@ async function createOtherUser() {
 function dropCollections(done: Mocha.Done) {
     const collections = mongoose.connection.collections;
     const drops: Promise<boolean>[] = [];
-    for (const name of ['users', 'ingredients', 'nutritionalinfos']) {
+    for (const name of ['users', 'ingredients', 'nutritionalinfos', 'prepmethods']) {
         if (collections[name]) {
             drops.push(collections[name].drop());
         }
@@ -501,53 +492,171 @@ describe('nutritionalInfoRemoveById', function () {
 
 // ---------- Query tests ----------
 
-describe('nutritionalInfoByIngredient', function () {
+describe('nutritional info prep methods', function () {
     before(startServer);
     after(stopServer);
     beforeEach(seedUserAndIngredient);
     afterEach(dropCollections);
 
-    it('should return nutritional info for an ingredient', async function () {
+    const PREP_FIELDS = `
+                _id
+                prepMethod { _id value }`;
+    const CREATE_WITH_PREP = `
+    mutation NutritionalInfoCreateOne($record: CreateOneNutritionalInfoCreateInput!) {
+        nutritionalInfoCreateOne(record: $record) {
+            record {${PREP_FIELDS}
+            }
+        }
+    }`;
+    const QUERY_WITH_PREP = `
+    query NutritionalInfosByIngredientIds($ingredientIds: [MongoID!]!) {
+        nutritionalInfosByIngredientIds(ingredientIds: $ingredientIds) {${PREP_FIELDS}
+        }
+    }`;
+    type PrepRecord = { _id: string; prepMethod: { _id: string; value: string } | null };
+
+    async function juiced() {
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        return new PrepMethod({ value: 'juiced', unique: true, owner: user._id }).save();
+    }
+
+    /** Creates a record as the ingredient owner. Returns the record, or the first error. */
+    async function create(server: ApolloServer, fields: Record<string, unknown>) {
         const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
-
-        await new NutritionalInfo({
-            ingredient: ingredient._id,
-            source: 'manual',
-            perGram: VALID_PER_GRAM,
-        }).save();
-
-        const response = await this.apolloServer.executeOperation(
+        const response = await server.executeOperation(
             {
-                query: QUERY_BY_INGREDIENT,
-                variables: { filter: { ingredient: ingredient._id.toString() } },
+                query: CREATE_WITH_PREP,
+                variables: {
+                    record: {
+                        ingredient: ingredient._id.toString(),
+                        source: 'manual',
+                        perGram: VALID_PER_GRAM,
+                        ...fields,
+                    },
+                },
             },
             makeContext(user)
         );
-        assert.equal(response.body.kind, 'single');
-        assert.isUndefined(response.body.singleResult.errors);
-        const result = (response.body.singleResult.data as ByIngredientData)
-            .nutritionalInfoByIngredient;
-        assert.isNotNull(result);
-        assert.approximately(result!.perGram!.calories, 1.65, 0.001);
+        if (response.body.kind !== 'single') assert.fail('Expected a single result');
+        const { data, errors } = response.body.singleResult;
+        const record = (data as { nutritionalInfoCreateOne: { record: PrepRecord } } | null)
+            ?.nutritionalInfoCreateOne?.record;
+        return { record, error: errors?.[0].message };
+    }
+
+    it('should save a record with no prep method as null', async function () {
+        const { record, error } = await create(this.apolloServer, {});
+        assert.isUndefined(error);
+        assert.isNull(record!.prepMethod);
+        const stored = await NutritionalInfo.findById(record!._id).lean().orFail();
+        assert.isNull(stored.prepMethod);
     });
 
-    it('should return null when ingredient has no nutritional info', async function () {
+    it('should save a record for a prep method beside the one with none', async function () {
+        const prep = await juiced();
+        assert.isUndefined((await create(this.apolloServer, {})).error);
+        const { record, error } = await create(this.apolloServer, { prepMethod: prep._id });
+        assert.isUndefined(error);
+        assert.deepEqual(record!.prepMethod, { _id: String(prep._id), value: 'juiced' });
+    });
+
+    it('should return every record of the ingredient', async function () {
         const user = await User.findOne({ username: 'testuser1' }).orFail();
         const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
+        const prep = await juiced();
+        await create(this.apolloServer, {});
+        await create(this.apolloServer, { prepMethod: prep._id });
+        const response = await this.apolloServer.executeOperation(
+            { query: QUERY_WITH_PREP, variables: { ingredientIds: [String(ingredient._id)] } },
+            makeContext(user)
+        );
+        assert.equal(response.body.kind, 'single');
+        assert.isUndefined(response.body.singleResult.errors);
+        const records = (
+            response.body.singleResult.data as { nutritionalInfosByIngredientIds: PrepRecord[] }
+        ).nutritionalInfosByIngredientIds;
+        assert.sameMembers(
+            records.map((record) => record.prepMethod?.value ?? null),
+            [null, 'juiced']
+        );
+    });
 
+    it('should refuse a second record with no prep method', async function () {
+        await create(this.apolloServer, {});
+        const { error } = await create(this.apolloServer, { prepMethod: null });
+        assert.include(
+            error,
+            'Nutritional data for this ingredient and prep method already exists'
+        );
+    });
+
+    it('should refuse a second record for the same prep method', async function () {
+        const prep = await juiced();
+        await create(this.apolloServer, { prepMethod: prep._id });
+        const { error } = await create(this.apolloServer, { prepMethod: prep._id });
+        assert.include(
+            error,
+            'Nutritional data for this ingredient and prep method already exists'
+        );
+    });
+
+    it('should refuse a record saved before prep methods as a duplicate', async function () {
+        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
+        // Inserted through the driver with no prepMethod field, as old data is.
+        await mongoose.connection.db
+            .collection('nutritionalinfos')
+            .insertOne({ ingredient: ingredient._id, source: 'manual', perGram: VALID_PER_GRAM });
+        const { error } = await create(this.apolloServer, {});
+        assert.include(error, 'already exists');
+    });
+
+    it('should refuse a prep method that does not exist', async function () {
+        const { error } = await create(this.apolloServer, {
+            prepMethod: new mongoose.Types.ObjectId().toString(),
+        });
+        assert.include(error, 'Prep method does not exist.');
+    });
+
+    it('should refuse to delete a prep method that nutritional data uses', async function () {
+        const admin = await createAdmin();
+        const prep = await juiced();
+        await create(this.apolloServer, { prepMethod: prep._id });
         const response = await this.apolloServer.executeOperation(
             {
-                query: QUERY_BY_INGREDIENT,
-                variables: { filter: { ingredient: ingredient._id.toString() } },
+                query: `mutation Remove($id: MongoID!) {
+                    prepMethodRemoveById(_id: $id) { recordId }
+                }`,
+                variables: { id: String(prep._id) },
+            },
+            makeContext(admin)
+        );
+        assert.equal(response.body.kind, 'single');
+        assert.include(
+            response.body.singleResult.errors?.[0].message,
+            'Cannot delete prepMethod as it is currently being used in nutritional data.'
+        );
+        assert.isNotNull(await PrepMethod.findById(prep._id));
+    });
+
+    it('should delete the nutritional data of a deleted ingredient', async function () {
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
+        const prep = await juiced();
+        await create(this.apolloServer, {});
+        await create(this.apolloServer, { prepMethod: prep._id });
+        const response = await this.apolloServer.executeOperation(
+            {
+                query: `mutation Remove($id: MongoID!) {
+                    ingredientRemoveById(_id: $id) { recordId }
+                }`,
+                variables: { id: String(ingredient._id) },
             },
             makeContext(user)
         );
         assert.equal(response.body.kind, 'single');
         assert.isUndefined(response.body.singleResult.errors);
-        const result = (response.body.singleResult.data as ByIngredientData)
-            .nutritionalInfoByIngredient;
-        assert.isNull(result);
+        assert.equal(await NutritionalInfo.countDocuments({ ingredient: ingredient._id }), 0);
     });
 });
 

@@ -1,5 +1,6 @@
 import { schemaComposer } from 'graphql-compose';
 
+import { PrepMethodTC } from '../models/PrepMethod.js';
 import { NutritionalInfoTC } from '../models/NutritionalInfo.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
 import { NutritionalInfo, NutritionalInfoCreateTC } from '../models/NutritionalInfo.js';
@@ -18,8 +19,16 @@ NutritionalInfoTC.addResolver({
     resolve: updateByIdResolver(NutritionalInfo, NutritionalInfoTC),
 });
 
+// After the resolvers, so their inputs keep prepMethod as an id.
+NutritionalInfoTC.addRelation('prepMethod', {
+    resolver: () => PrepMethodTC.mongooseResolvers.findById(),
+    prepareArgs: { _id: (source) => source.prepMethod },
+    projection: { prepMethod: true },
+});
+
 export const NutritionalInfoQuery = {
-    nutritionalInfoByIngredient: NutritionalInfoTC.mongooseResolvers.findOne(),
+    // Every record of each ingredient: the one with no prep method, and one for each prep
+    // method that changes the food, such as juiced.
     nutritionalInfosByIngredientIds: schemaComposer.createResolver({
         name: 'nutritionalInfosByIngredientIds',
         type: [NutritionalInfoTC],

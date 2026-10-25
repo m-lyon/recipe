@@ -21,7 +21,9 @@ function baseApi(item = EGG, existing: unknown = null, measures: unknown[] = [])
         CliLogin: LOGIN_OK,
         CliGetAllIngredients: { data: { ingredientManyAll: INGREDIENTS } },
         CliUsdaFoodItem: { data: { usdaFoodItem: { __typename: 'UsdaFoodItem', ...item } } },
-        CliGetNutritionalInfo: { data: { nutritionalInfoByIngredient: existing } },
+        CliGetNutritionalInfos: {
+            data: { nutritionalInfosByIngredientIds: existing ? [existing] : [] },
+        },
         CliCreateNutritionalInfo: (variables) => ({
             data: {
                 nutritionalInfoCreateOne: {
@@ -109,6 +111,7 @@ describe('nutrition link', () => {
             ?.variables.record as Record<string, unknown>;
         expect(record).to.deep.equal({
             ingredient: 'ing-oil',
+            prepMethod: null,
             source: 'usda',
             usdaFdcId: 171413,
             openFoodFactsBarcode: null,
@@ -280,7 +283,7 @@ describe('nutrition link', () => {
         );
         expect(api.operations.filter((name) => MUTATIONS.includes(name))).to.deep.equal([]);
         expect(api.countOf('CliUsdaFoodItem')).to.equal(1);
-        expect(api.countOf('CliGetNutritionalInfo')).to.equal(1);
+        expect(api.countOf('CliGetNutritionalInfos')).to.equal(1);
         const data = json<{ dryRun: boolean; measures: Array<{ key: string }> }>(stdout).data;
         expect(data.dryRun).to.equal(true);
         expect(data.measures.map((m) => m.key)).to.deep.equal(['each · large']);

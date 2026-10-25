@@ -58,10 +58,11 @@ export const LITRE = unit('unit-l', 'litre', {
 export const UNITS = [EACH, GRAM, MILLILITRE, TEASPOON, TABLESPOON, CUP];
 export const LARGE = { _id: 'size-large', value: 'large' };
 export const CHOPPED = { _id: 'prep-chopped', value: 'chopped' };
+export const JUICED = { _id: 'prep-juiced', value: 'juiced' };
 export const MEASURE_COMPONENTS = {
     units: UNITS,
     sizes: [LARGE],
-    prepMethods: [CHOPPED],
+    prepMethods: [CHOPPED, JUICED],
 };
 
 /** Egg, whole, raw, fresh — five item sizes plus an ambiguous cup. */

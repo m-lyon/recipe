@@ -75,6 +75,40 @@ seitan, a pack of pearl couscous), link the Open Food Facts product by its barco
 - When a product is missing from Open Food Facts, say so. Do not fall back to a USDA
   branded record for a UK product without asking.
 
+## Prep methods that change the food
+
+Some prep methods change what the food is. "Lime, juiced" is lime juice, not lime: USDA has
+**Limes, raw** and **Lime juice, raw** as separate records. An ingredient can have one
+`NutritionalInfo` with no prep method and one for each such prep method.
+
+- A recipe line uses the record for its prep method. When there is none, it uses the record
+  with no prep method. So "onion, diced" uses the onion record, and needs no record of its own.
+- Add a prep record only when the prep method changes the food: juiced, zested, drained.
+  Chopping, slicing or dicing does not.
+- Link it with `nutrition link <id> --prep juiced --fdc-id <n>`. Each portion is then stored
+  with that prep method: `1 cup` of lime juice becomes `cup · juiced`. A portion of another
+  prep method is refused with exit 6.
+- The measure of a prep method is the weight of the **prepared** food. `1 each · juiced = 44 g`
+  means one lime gives 44 g of juice, not that a lime weighs 44 g.
+- An ingredient with only a prep record shows as `prep only` in `ingredients list`. Lines with
+  no prep method, or another one, stay uncounted until it has a plain record too.
+- `nutrition unlink <id> --prep juiced` removes the prep record and leaves the plain one.
+
+## Values entered by hand
+
+`nutrition set <id> --per-100g kcal,protein,carbs,fat` writes a record linked to no database,
+with source `manual`. Use it when neither USDA nor Open Food Facts has the food.
+
+- **Never type values you have not seen.** Use values the operator gave you, or read from a
+  photo they sent. Quote them to the operator before you write.
+- Pass `--name` to say where they came from, such as `"Tesco pack label"`.
+- For a liquid labelled per 100 ml, pass `--per-100ml`. The CLI converts with the
+  ingredient's volume measure for the same prep method, and shows the density it used. When
+  there is none, it exits 6: store the operator's weight of a known volume first with
+  `nutrition measure <id> --unit millilitre [--prep ...] --grams <n>`. Never guess a density.
+- `--prep` writes a prep method's record, as for `link`.
+- An existing record exits 5, as for `link`.
+
 ## Contributing back to Open Food Facts
 
 `recipe open-food-facts contribute <barcode>` sends a correction, or a missing product, to
@@ -100,8 +134,8 @@ Open Food Facts. **This writes to a public database that other people rely on.**
 - **Send values on the label's basis.** When the label gives values per 100 ml, pass them
   with `--label-per-100ml`, as printed. Do not convert them to 100 g with a density, even one
   the operator weighed: volunteers compare the values with the photo. (`nutrition link
-  --label-per-100g` is different: our data is per gram, so there a per-100 ml label needs the
-  operator's weight of a known volume.)
+  --label-per-100g` and `nutrition set --per-100ml` are different: our data is per gram, so
+  there a per-100 ml label needs the operator's weight of a known volume.)
 - A missing product needs `--name`, so that others can find it.
 - The server sends contributions to the **staging** server unless production is
   configured. The result names the host, and the CLI warns when it was staging. Tell the
@@ -124,7 +158,9 @@ USDA API, recorded in `spec-usda-portions.md`.
   the portion data.
 - Prefer Foundation and SR Legacy over Branded for generic ingredients. The `TYPE` column in
   `usda search` and the heading of `usda show` carry the data type.
-- Match the preparation state: raw against raw, cooked against cooked.
+- Match the preparation state: raw against raw, cooked against cooked. A juice record
+  (**Lemon juice, raw**) belongs on the juiced prep record (`--prep juiced`), never on the
+  plain ingredient.
 - **Search many times.** USDA search quality is poor: one query often returns the wrong food, or
   only branded records. For each ingredient, run 5 or so queries with different wording
   before you accept a record or give up. Vary the form of the name: singular and plural,

@@ -16,7 +16,7 @@ describe('USDA caching across commands', () => {
             CliLogin: LOGIN_OK,
             CliGetAllIngredients: { data: { ingredientManyAll: INGREDIENTS } },
             CliUsdaFoodItem: { data: { usdaFoodItem: { __typename: 'UsdaFoodItem', ...EGG } } },
-            CliGetNutritionalInfo: { data: { nutritionalInfoByIngredient: null } },
+            CliGetNutritionalInfos: { data: { nutritionalInfosByIngredientIds: [] } },
             CliGetMeasureComponents: { data: MEASURE_COMPONENTS },
             CliGetIngredientMeasures: { data: { ingredientMeasuresByIngredientIds: [] } },
             CliCreateIngredientMeasure: (variables) => ({

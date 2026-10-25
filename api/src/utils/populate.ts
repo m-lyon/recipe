@@ -120,19 +120,33 @@ export async function populateIngredients() {
 export async function populateNutritionalInfo() {
     await NutritionalInfo.deleteMany({});
     const ingredient = await lookup(Ingredient.find(), (i) => i.name);
+    const prep = await lookup(PrepMethod.find(), (p) => p.value);
+    const perGram = (per100g: number[]) => {
+        const [calories, protein, carbs, fat] = per100g.map((value) => value / 100);
+        return { calories, protein, carbs, fat };
+    };
     const withNutrition = SEED_INGREDIENTS.filter((i) => i.per100g);
-    await NutritionalInfo.create(
-        withNutrition.map(({ name, per100g }) => {
-            const [calories, protein, carbs, fat] = per100g!.map((value) => value / 100);
-            return {
-                ingredient: ingredient(name),
-                source: 'manual',
-                perGram: { calories, protein, carbs, fat },
-            };
-        })
+    const forPrep = SEED_INGREDIENTS.flatMap(({ name, prepPer100g = {} }) =>
+        Object.entries(prepPer100g).map(([prepMethod, per100g]) => ({
+            ingredient: ingredient(name),
+            prepMethod: prep(prepMethod),
+            source: 'manual',
+            perGram: perGram(per100g),
+        }))
     );
+    await NutritionalInfo.create([
+        ...withNutrition.map(({ name, per100g }) => ({
+            ingredient: ingredient(name),
+            source: 'manual',
+            perGram: perGram(per100g!),
+        })),
+        ...forPrep,
+    ]);
     const without = SEED_INGREDIENTS.filter((i) => !i.per100g).map((i) => i.name);
-    console.log(`Nutritional info: ${withNutrition.length} (none for ${without.join(', ')})`);
+    console.log(
+        `Nutritional info: ${withNutrition.length}, and ${forPrep.length} for a prep method ` +
+            `(none for ${without.join(', ')})`
+    );
 }
 
 export async function populateIngredientMeasures() {

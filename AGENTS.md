@@ -228,6 +228,20 @@ with the same name (keeping its id), corrects its size, and creates missing core
 - To add a standard unit, add it to `STANDARD_UNITS`. Mark it `core: false` if it has more than
   one common size (US and imperial pints), so it is sized when present but never created.
 
+### Nutritional data and prep methods
+
+An ingredient has one `NutritionalInfo` with `prepMethod: null`, and may have one more for each
+prep method that changes the food (lime, juiced is lime juice). The pair (ingredient,
+prepMethod) is unique, and "no prep method" is stored as an explicit `null`.
+
+- A recipe line uses the record for its prep method, or else the record with `prepMethod:
+  null` (`perGramFor` in `api/src/utils/nutrition.ts`). It never uses another prep method's
+  record.
+- A measure with a prep method is the weight of the **prepared** food:
+  `each · juiced = 44 g` is the juice of one lime.
+- `source` is `usda`, `openFoodFacts` or `manual`. A manual record carries no database id;
+  `sourceName` says where its values came from.
+
 ### Global types (client)
 
 `client/src/types/recipe.d.ts` declares global TypeScript types derived from generated GraphQL types. These are available without imports (e.g., `RecipePreview`, `RecipeView`, `EditableRecipeIngredient`).

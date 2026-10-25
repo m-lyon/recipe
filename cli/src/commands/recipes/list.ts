@@ -3,9 +3,9 @@ import { Flags } from '@oclif/core';
 import { BaseCommand } from '../../lib/base.js';
 import { renderTable } from '../../lib/format.js';
 import { GET_RECIPES_BY_IDS } from '../../graphql/operations.js';
-import { indexByIngredient, recipeIngredientIds } from '../../lib/nutrition.js';
 import { GET_ALL_RECIPES, GET_NUTRITIONAL_INFOS } from '../../graphql/operations.js';
 import type { NutritionalInfoSummary, RecipeDetail, RecipeSummary } from '../../lib/types.js';
+import { indexByIngredient, recipeIngredientIds, recordForPrep } from '../../lib/nutrition.js';
 
 export default class RecipesList extends BaseCommand {
     static description =
@@ -91,7 +91,7 @@ export default class RecipesList extends BaseCommand {
                 title: recipe.title,
                 titleIdentifier: recipe.titleIdentifier,
                 ingredients: ids.length,
-                linked: ids.filter((id) => byIngredient.has(id)).length,
+                linked: ids.filter((id) => recordForPrep(byIngredient.get(id), null)).length,
             };
         });
     }

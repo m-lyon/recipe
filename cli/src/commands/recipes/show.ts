@@ -4,11 +4,12 @@ import { BaseCommand } from '../../lib/base.js';
 import { resolveRecipe } from '../../lib/resolve.js';
 import { describeSource } from '../../lib/sources.js';
 import { measuresByIngredient } from '../../lib/measures.js';
+import { recipeIngredientIds } from '../../lib/nutrition.js';
 import { GET_NUTRITIONAL_INFOS } from '../../graphql/operations.js';
 import { GET_INGREDIENT_MEASURES } from '../../graphql/operations.js';
 import { EMPTY, indent, renderTable, text } from '../../lib/format.js';
 import type { MeasureSummary, NutritionalInfoSummary } from '../../lib/types.js';
-import { indexByIngredient, nutritionStatus, recipeIngredientIds } from '../../lib/nutrition.js';
+import { findNutrition, indexByIngredient, nutritionStatus } from '../../lib/nutrition.js';
 
 export default class RecipesShow extends BaseCommand {
     static description =
@@ -51,10 +52,12 @@ export default class RecipesShow extends BaseCommand {
             const entries = subsection.ingredients.map((entry) => {
                 const ingredient = entry.ingredient;
                 const isRecipe = ingredient.__typename !== 'Ingredient';
-                const info = isRecipe ? null : byIngredient.get(ingredient._id);
+                const records = isRecipe ? null : byIngredient.get(ingredient._id);
+                // The record that prices the line: its prep method's, or the plain one.
+                const info = findNutrition(records, entry.prepMethod?._id ?? null);
                 const status = nutritionStatus(
                     entry,
-                    info,
+                    records,
                     isRecipe ? [] : (measuresOf.get(ingredient._id) ?? [])
                 );
                 return {
@@ -69,6 +72,7 @@ export default class RecipesShow extends BaseCommand {
                     nutrition: status.state,
                     reason: status.reason,
                     source: info ? describeSource(info) : null,
+                    prepMethod: info?.prepMethod?.value ?? null,
                     usdaFdcId: info?.usdaFdcId ?? null,
                     openFoodFactsBarcode: info?.openFoodFactsBarcode ?? null,
                 };
@@ -80,7 +84,9 @@ export default class RecipesShow extends BaseCommand {
                     text(entry.unit),
                     entry.type === 'recipe' ? `${entry.name} (sub-recipe)` : entry.name,
                     entry.nutrition,
-                    text(entry.source),
+                    entry.source && entry.prepMethod
+                        ? `${entry.source} (${entry.prepMethod})`
+                        : text(entry.source),
                     entry.reason === '' ? EMPTY : entry.reason,
                 ])
             );

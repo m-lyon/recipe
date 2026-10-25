@@ -1,6 +1,7 @@
 import { OwnerTC } from '../models/User.js';
 import { validateItemNotInRecipe } from './validation.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
+import { NutritionalInfo } from '../models/NutritionalInfo.js';
 import { IngredientMeasure } from '../models/IngredientMeasure.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
 import { filterIsEditable, filterIsVisible } from '../middleware/filters.js';
@@ -65,6 +66,7 @@ export const IngredientMutation = {
             await validateItemNotInRecipe(rp.args._id, 'ingredient');
             const result = await next(rp);
             await IngredientMeasure.deleteMany({ ingredient: rp.args._id });
+            await NutritionalInfo.deleteMany({ ingredient: rp.args._id });
             return result;
         }),
 };

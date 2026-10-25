@@ -6,8 +6,8 @@ import { measuresByIngredient } from '../../lib/measures.js';
 import { GET_NUTRITIONAL_INFOS } from '../../graphql/operations.js';
 import { allIngredients, resolveRecipe } from '../../lib/resolve.js';
 import { GET_INGREDIENT_MEASURES } from '../../graphql/operations.js';
-import { indexByIngredient, recipeIngredientIds } from '../../lib/nutrition.js';
 import type { MeasureSummary, NutritionalInfoSummary } from '../../lib/types.js';
+import { indexByIngredient, recipeIngredientIds, recordForPrep } from '../../lib/nutrition.js';
 
 export default class IngredientsList extends BaseCommand {
     static description =
@@ -22,7 +22,9 @@ export default class IngredientsList extends BaseCommand {
 
     static flags = {
         'missing-nutrition': Flags.boolean({
-            description: 'Only ingredients with no NutritionalInfo record',
+            description:
+                'Only ingredients with no NutritionalInfo record, or with records for prep ' +
+                'methods only',
             default: false,
         }),
         recipe: Flags.string({
@@ -66,22 +68,29 @@ export default class IngredientsList extends BaseCommand {
         const measuresOf = measuresByIngredient(measures);
 
         const all = ingredients.map((ingredient) => {
-            const info = byIngredient.get(ingredient._id);
+            const records = byIngredient.get(ingredient._id) ?? [];
+            // The plain record describes the ingredient; prep records are listed by name.
+            const plain = recordForPrep(records, null);
+            const info = plain ?? records[0];
             return {
                 _id: ingredient._id,
                 name: ingredient.name,
                 pluralName: ingredient.pluralName,
                 isCountable: ingredient.isCountable,
-                nutrition: info ? 'linked' : 'missing',
+                // Prep only: lines with no prep method, or another one, are not counted.
+                nutrition: plain ? 'linked' : info ? 'prep only' : 'missing',
                 source: info?.source ?? null,
                 usdaFdcId: info?.usdaFdcId ?? null,
                 openFoodFactsBarcode: info?.openFoodFactsBarcode ?? null,
                 hasPerGram: Boolean(info?.perGram),
+                prepMethods: records.flatMap((record) =>
+                    record.prepMethod ? [record.prepMethod.value] : []
+                ),
                 measures: measuresOf.get(ingredient._id)?.length ?? 0,
             };
         });
         const filtered = flags['missing-nutrition']
-            ? all.filter((ingredient) => ingredient.nutrition === 'missing')
+            ? all.filter((ingredient) => ingredient.nutrition !== 'linked')
             : all;
         const page = filtered.slice(flags.offset, flags.offset + flags.limit);
 
@@ -93,7 +102,9 @@ export default class IngredientsList extends BaseCommand {
                     ingredient.name,
                     ingredient.isCountable ? 'yes' : 'no',
                     String(ingredient.measures),
-                    ingredient.nutrition,
+                    ingredient.prepMethods.length > 0
+                        ? `${ingredient.nutrition} (+${ingredient.prepMethods.join(', ')})`
+                        : ingredient.nutrition,
                 ])
             )
         );

@@ -8,6 +8,7 @@ import { Unit } from '../../src/models/Unit.js';
 import { User } from '../../src/models/User.js';
 import { Recipe } from '../../src/models/Recipe.js';
 import { createAdmin, createUser } from '../utils/data.js';
+import { PrepMethod } from '../../src/models/PrepMethod.js';
 import { Ingredient } from '../../src/models/Ingredient.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { syncStandardUnits } from '../../src/utils/standardUnits.js';
@@ -83,7 +84,10 @@ function recipe(title: string, ingredients: object[], extra: object = {}) {
     });
 }
 
-async function ingredient(name: string, perGram = PER_GRAM): Promise<Types.ObjectId> {
+async function ingredient(
+    name: string,
+    perGram: typeof PER_GRAM | null = PER_GRAM
+): Promise<Types.ObjectId> {
     const doc = await new Ingredient({
         name,
         pluralName: `${name}s`,
@@ -390,6 +394,89 @@ describe('recipe yields and recipes used as ingredients', function () {
             const result = await query(this.apolloServer, couscous._id);
             const saladResult = result.nutrition.ingredients[2];
             assert.equal(saladResult.status, 'PARTIAL');
+        });
+
+        describe('prep methods', function () {
+            const LIME = { calories: 0.3, protein: 0.007, carbs: 0.106, fat: 0.002 };
+            const JUICE = { calories: 0.25, protein: 0.004, carbs: 0.084, fat: 0.001 };
+
+            async function prep(value: string): Promise<Types.ObjectId> {
+                const doc = await new PrepMethod({ value, unique: true, owner: user._id }).save();
+                return doc._id as Types.ObjectId;
+            }
+
+            /** Limes weigh 67 g whole and give 44 g of juice, with values for the juice. */
+            async function limes() {
+                const juiced = await prep('juiced');
+                const sliced = await prep('sliced');
+                const lime = await ingredient('lime', LIME);
+                await new NutritionalInfo({
+                    ingredient: lime,
+                    prepMethod: juiced,
+                    source: 'manual',
+                    perGram: JUICE,
+                }).save();
+                await new IngredientMeasure({
+                    ingredient: lime,
+                    unit: units.each,
+                    grams: 67,
+                }).save();
+                await new IngredientMeasure({
+                    ingredient: lime,
+                    unit: units.each,
+                    prepMethod: juiced,
+                    grams: 44,
+                }).save();
+                return { lime, juiced, sliced };
+            }
+
+            it('uses the record for the prep method', async function () {
+                const { lime, juiced } = await limes();
+                const doc = await recipe('Dressing', [
+                    recipeIngredient(lime, '1', units.each, { prepMethod: juiced }),
+                ]).save();
+                const [result] = (await query(this.apolloServer, doc._id)).nutrition.ingredients;
+                assert.equal(result.status, 'COUNTED');
+                assert.closeTo(result.macros.calories, 44 * 0.25, 1e-9);
+            });
+
+            it('uses the record with no prep method for another prep method, or none', async function () {
+                const { lime, sliced } = await limes();
+                const doc = await recipe('Garnish', [
+                    recipeIngredient(lime, '1', units.each, { prepMethod: sliced }),
+                    recipeIngredient(lime, '1', units.each),
+                ]).save();
+                const results = (await query(this.apolloServer, doc._id)).nutrition.ingredients;
+                assert.closeTo(results[0].macros.calories, 67 * 0.3, 1e-9);
+                assert.closeTo(results[1].macros.calories, 67 * 0.3, 1e-9);
+            });
+
+            it('leaves a line uncounted when only another prep method has a record', async function () {
+                const { lime, juiced } = await limes();
+                await NutritionalInfo.deleteOne({ ingredient: lime, prepMethod: null });
+                const doc = await recipe('Garnish', [
+                    recipeIngredient(lime, '1', units.each),
+                    recipeIngredient(lime, '1', units.each, { prepMethod: juiced }),
+                ]).save();
+                const results = (await query(this.apolloServer, doc._id)).nutrition.ingredients;
+                assert.deepEqual(results[0].reason, {
+                    code: 'NO_NUTRITION',
+                    message: 'No nutritional data for lime',
+                });
+                assert.equal(results[1].status, 'COUNTED');
+            });
+
+            it('reads a record saved before prep methods, with no prepMethod field', async function () {
+                const stock = await ingredient('stock', null);
+                await mongoose.connection.db
+                    .collection('nutritionalinfos')
+                    .insertOne({ ingredient: stock, source: 'manual', perGram: PER_GRAM });
+                const doc = await recipe('Soup', [
+                    recipeIngredient(stock, '100', units.gram),
+                ]).save();
+                const [result] = (await query(this.apolloServer, doc._id)).nutrition.ingredients;
+                assert.closeTo(result.macros.calories, 200, 1e-9);
+            });
         });
 
         it('names the missing weight of an ingredient', async function () {

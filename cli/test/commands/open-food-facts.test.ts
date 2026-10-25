@@ -36,7 +36,9 @@ function baseApi(
         CliGetAllIngredients: { data: { ingredientManyAll: INGREDIENTS } },
         CliOpenFoodFactsProduct: openFoodFactsProduct(product),
         CliOpenFoodFactsSearch: { data: { openFoodFactsSearch: [PEARL_COUSCOUS, KNORR_POTS] } },
-        CliGetNutritionalInfo: { data: { nutritionalInfoByIngredient: existing } },
+        CliGetNutritionalInfos: {
+            data: { nutritionalInfosByIngredientIds: existing ? [existing] : [] },
+        },
         CliCreateNutritionalInfo: (variables) => ({
             data: {
                 nutritionalInfoCreateOne: {
@@ -188,6 +190,7 @@ describe('open-food-facts commands', () => {
             );
             expect(nutritionRecord()).to.deep.equal({
                 ingredient: 'ing-oil',
+                prepMethod: null,
                 source: 'openFoodFacts',
                 usdaFdcId: null,
                 openFoodFactsBarcode: '5010338301255',

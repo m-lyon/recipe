@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 
-import { nutritionStatus } from '../src/lib/nutrition.js';
 import { KNORR_POTS, LITRE } from './helpers/fixtures.js';
 import type { RecipeIngredientSummary } from '../src/lib/types.js';
+import { findNutrition, nutritionStatus } from '../src/lib/nutrition.js';
 import { findMeasure, suggestFromPortion } from '../src/lib/measures.js';
 import type { MeasureSummary, NutritionalInfoSummary } from '../src/lib/types.js';
 import { CUP, EACH, EGG, GARLIC, GRAM, LARGE, MILLILITRE, TEASPOON } from './helpers/fixtures.js';
@@ -45,30 +45,30 @@ describe('nutrition state, in the words the web UI uses', () => {
     });
 
     it('prices a mass unit with no measure', () => {
-        expect(nutritionStatus(entry({ unit: GRAM }), info()).state).to.equal('linked');
+        expect(nutritionStatus(entry({ unit: GRAM }), [info()]).state).to.equal('linked');
     });
 
     it('names the weight to record for a count or volume line', () => {
-        expect(nutritionStatus(entry(), info())).to.deep.equal({
+        expect(nutritionStatus(entry(), [info()])).to.deep.equal({
             state: 'partial',
             reason: 'No weight recorded for 1 milk',
             missingWeight: '1 milk',
         });
-        expect(nutritionStatus(entry({ unit: CUP }), info()).reason).to.equal(
+        expect(nutritionStatus(entry({ unit: CUP }), [info()]).reason).to.equal(
             'No weight recorded for 1 cup of milk'
         );
     });
 
     it('is calculable once a measure covers the line', () => {
-        expect(nutritionStatus(entry(), info(), [measure(EACH, 240)]).state).to.equal('linked');
+        expect(nutritionStatus(entry(), [info()], [measure(EACH, 240)]).state).to.equal('linked');
         // A volume row is a density, so it prices every volume unit.
         expect(
-            nutritionStatus(entry({ unit: TEASPOON }), info(), [measure(MILLILITRE, 1.03)]).state
+            nutritionStatus(entry({ unit: TEASPOON }), [info()], [measure(MILLILITRE, 1.03)]).state
         ).to.equal('linked');
     });
 
     it('reports a missing quantity as partial when a record exists', () => {
-        expect(nutritionStatus(entry({ quantity: null }), info())).to.deep.equal({
+        expect(nutritionStatus(entry({ quantity: null }), [info()])).to.deep.equal({
             state: 'partial',
             reason: 'No quantity',
         });
@@ -79,6 +79,29 @@ describe('nutrition state, in the words the web UI uses', () => {
             state: 'missing',
             reason: 'No quantity',
         });
+    });
+});
+
+describe('findNutrition', () => {
+    const JUICED = { _id: 'prep-juiced', value: 'juiced' };
+    const lime = info({ _id: 'lime' });
+    const juice = info({ _id: 'lime-juice', prepMethod: JUICED });
+
+    it('uses the record for the prep method', () => {
+        expect(findNutrition([lime, juice], JUICED._id)).to.equal(juice);
+    });
+
+    it('falls back to the record with no prep method', () => {
+        expect(findNutrition([juice, lime], 'prep-sliced')).to.equal(lime);
+        expect(findNutrition([juice, lime], null)).to.equal(lime);
+    });
+
+    it('never uses the record of another prep method', () => {
+        expect(findNutrition([juice], null)).to.equal(undefined);
+        expect(nutritionStatus(entry(), [juice]).state).to.equal('missing');
+        expect(
+            nutritionStatus(entry({ prepMethod: JUICED }), [juice], [measure(EACH, 44)])
+        ).to.have.property('state', 'linked');
     });
 });
 

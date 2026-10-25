@@ -10,47 +10,19 @@ import { mockNutritionalInfoIdCarrot } from '@recipe/graphql/__mocks__/ids';
 import { IngredientMeasureFieldsFragment } from '@recipe/graphql/generated';
 import { mockRecipeIngredientIdThree } from '@recipe/graphql/__mocks__/ids';
 import { GET_RECIPE_NUTRITION } from '@recipe/graphql/queries/nutritionalInfo';
-import { GetNutritionalInfoByIngredientQuery } from '@recipe/graphql/generated';
 import { GET_INGREDIENT_MEASURES } from '@recipe/graphql/queries/nutritionalInfo';
 import { GetNutritionalInfosByIngredientIdsQuery } from '@recipe/graphql/generated';
 import { mockAdminId, mockAppleEachMeasureId } from '@recipe/graphql/__mocks__/ids';
 import { UsdaSearchQuery, UsdaSearchQueryVariables } from '@recipe/graphql/generated';
 import { mockAppleId, mockCarrotId, mockChickenId } from '@recipe/graphql/__mocks__/ids';
-import { GetNutritionalInfoByIngredientQueryVariables } from '@recipe/graphql/generated';
 import { UsdaFoodItemQuery, UsdaFoodItemQueryVariables } from '@recipe/graphql/generated';
 import { mockRecipeIdOne, mockRecipeIngredientIdOne } from '@recipe/graphql/__mocks__/ids';
 import { GetRecipeNutritionQueryVariables, UncountedCode } from '@recipe/graphql/generated';
-import { GET_NUTRITIONAL_INFO_BY_INGREDIENT } from '@recipe/graphql/queries/nutritionalInfo';
+import { mockDicedId, mockNutritionalInfoIdCarrotDiced } from '@recipe/graphql/__mocks__/ids';
 import { GetIngredientMeasuresQuery, GetRecipeNutritionQuery } from '@recipe/graphql/generated';
 import { GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS } from '@recipe/graphql/queries/nutritionalInfo';
 
 import { mockCup, mockEach, mockOunce, mockTeaspoon } from './unit';
-
-/** Returns null nutritional info (ingredient has no linked data) */
-const nullResult: GetNutritionalInfoByIngredientQuery = {
-    __typename: 'Query',
-    nutritionalInfoByIngredient: null,
-};
-
-export const mockGetNutritionalInfoByIngredientCarrot = {
-    request: {
-        query: GET_NUTRITIONAL_INFO_BY_INGREDIENT,
-        variables: {
-            ingredientId: mockCarrotId,
-        } satisfies GetNutritionalInfoByIngredientQueryVariables,
-    },
-    result: { data: nullResult },
-};
-
-export const mockGetNutritionalInfoByIngredientChicken = {
-    request: {
-        query: GET_NUTRITIONAL_INFO_BY_INGREDIENT,
-        variables: {
-            ingredientId: mockChickenId,
-        } satisfies GetNutritionalInfoByIngredientQueryVariables,
-    },
-    result: { data: nullResult },
-};
 
 // ---------- Recipe nutrition mocks for Recipe One ----------
 // Recipe One has: apple (×4), carrot (×1) → unique IDs: [apple, carrot].
@@ -300,12 +272,39 @@ export const mockGetNutritionalInfosForEditIngredientCarrotLinked = {
                     __typename: 'NutritionalInfo',
                     _id: mockNutritionalInfoIdCarrot,
                     ingredient: mockCarrotId,
+                    prepMethod: null,
                     usdaFdcId: null,
                     perGram: {
                         __typename: 'NutritionalInfoPerGram',
                         calories: 0.41,
                         protein: 0.009,
                         carbs: 0.096,
+                        fat: 0.002,
+                    },
+                },
+            ],
+        } satisfies GetNutritionalInfosByIngredientIdsQuery,
+    },
+};
+
+/** Carrot has nutritional data for diced carrot only, which the form does not edit. */
+export const mockGetNutritionalInfosForEditIngredientCarrotDicedOnly = {
+    request: mockGetNutritionalInfosForEditIngredient.request,
+    result: {
+        data: {
+            __typename: 'Query',
+            nutritionalInfosByIngredientIds: [
+                {
+                    __typename: 'NutritionalInfo',
+                    _id: mockNutritionalInfoIdCarrotDiced,
+                    ingredient: mockCarrotId,
+                    prepMethod: { __typename: 'PrepMethod', _id: mockDicedId },
+                    usdaFdcId: null,
+                    perGram: {
+                        __typename: 'NutritionalInfoPerGram',
+                        calories: 0.35,
+                        protein: 0.008,
+                        carbs: 0.082,
                         fat: 0.002,
                     },
                 },
