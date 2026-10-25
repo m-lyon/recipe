@@ -1,3 +1,4 @@
+import type { NamedSummary } from './types.js';
 import { describeOneUnit, findMeasure } from './measures.js';
 import type { MeasureSummary, NutritionalInfoSummary, RecipeIngredientSummary } from './types.js';
 
@@ -24,13 +25,14 @@ export interface NutritionStatus {
  */
 export function nutritionStatus(
     recipeIngredient: RecipeIngredientSummary,
-    info: NutritionalInfoSummary | null | undefined,
+    records: NutritionalInfoSummary[] | null | undefined,
     measures: MeasureSummary[] = []
 ): NutritionStatus {
     const ingredient = recipeIngredient.ingredient;
     if (ingredient.__typename !== 'Ingredient') {
         return { state: 'recipe', reason: 'Sub-recipe, not linkable' };
     }
+    const info = findNutrition(records, recipeIngredient.prepMethod?._id ?? null);
     if (!recipeIngredient.quantity) {
         return { state: info ? 'partial' : 'missing', reason: 'No quantity' };
     }
@@ -45,11 +47,17 @@ export function nutritionStatus(
     if (unit.dimension === 'mass') {
         return { state: 'linked', reason: '' };
     }
-    const found = findMeasure(measures, {
-        unit,
-        sizeId: recipeIngredient.size?._id ?? null,
-        prepMethodId: recipeIngredient.prepMethod?._id ?? null,
-    });
+    // The prep method's own record is per gram of the prepared food, so only its measures weigh it.
+    const prepId = recipeIngredient.prepMethod?._id ?? null;
+    const prepared = prepId !== null && (info.prepMethod?._id ?? null) === prepId;
+    const found = findMeasure(
+        prepared ? measures.filter((m) => (m.prepMethod?._id ?? null) === prepId) : measures,
+        {
+            unit,
+            sizeId: recipeIngredient.size?._id ?? null,
+            prepMethodId: prepId,
+        }
+    );
     if (found) {
         return { state: 'linked', reason: '' };
     }
@@ -57,11 +65,40 @@ export function nutritionStatus(
     return { state: 'partial', reason: `No weight recorded for ${one}`, missingWeight: one };
 }
 
-/** Indexes nutritional info records by ingredient id. */
+/** Indexes nutritional info records by ingredient id: each ingredient has one record with no
+ *  prep method, and one for each prep method that changes the food. */
 export function indexByIngredient(
     infos: NutritionalInfoSummary[]
-): Map<string, NutritionalInfoSummary> {
-    return new Map(infos.map((info) => [String(info.ingredient), info]));
+): Map<string, NutritionalInfoSummary[]> {
+    const index = new Map<string, NutritionalInfoSummary[]>();
+    for (const info of infos) {
+        const key = String(info.ingredient);
+        index.set(key, [...(index.get(key) ?? []), info]);
+    }
+    return index;
+}
+
+/** The record with exactly this prep method, or with none when it is null. */
+export function recordForPrep(
+    records: NutritionalInfoSummary[] | null | undefined,
+    prepMethodId: string | null
+): NutritionalInfoSummary | undefined {
+    return records?.find((record) => (record.prepMethod?._id ?? null) === prepMethodId);
+}
+
+/**
+ * The record that prices a recipe line, as the API picks it: the record for the line's prep
+ * method, or else the record with no prep method. "Lime, juiced" uses the juice record; "lime,
+ * sliced" uses the lime record.
+ */
+export function findNutrition(
+    records: NutritionalInfoSummary[] | null | undefined,
+    prepMethodId: string | null
+): NutritionalInfoSummary | undefined {
+    return (
+        (prepMethodId ? recordForPrep(records, prepMethodId) : undefined) ??
+        recordForPrep(records, null)
+    );
 }
 
 /** Every distinct ingredient id used across a recipe's subsections. */
@@ -77,4 +114,9 @@ export function recipeIngredientIds(subsections: {
         }
     }
     return [...ids];
+}
+
+/** "lime" or "lime (juiced)": the record a write names. */
+export function describeTarget(name: string, prep: NamedSummary | null): string {
+    return prep ? `${name} (${prep.value})` : name;
 }

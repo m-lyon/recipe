@@ -3,16 +3,18 @@ import { Args, Flags } from '@oclif/core';
 import { indent, num } from '../../lib/format.js';
 import { ApiClient } from '../../graphql/client.js';
 import { selectPortion } from '../../lib/portions.js';
-import { resolveIngredient } from '../../lib/resolve.js';
+import { resolvePrepMethod } from '../../lib/measures.js';
 import { UPDATE_NUTRITIONAL_INFO } from '../../graphql/operations.js';
 import { kcalMismatch, parseLabelPer100g } from '../../lib/macros.js';
+import { CREATE_NUTRITIONAL_INFO } from '../../graphql/operations.js';
+import { describeTarget, recordForPrep } from '../../lib/nutrition.js';
 import { BaseCommand, usdaFlags, writeFlags } from '../../lib/base.js';
 import { notFound, rejected, wouldOverwrite } from '../../lib/errors.js';
+import { ingredientNutrition, resolveIngredient } from '../../lib/resolve.js';
 import { formatMacros, missingMacros, perGramFrom } from '../../lib/macros.js';
 import { OPEN_FOOD_FACTS_PRODUCT, USDA_FOOD_ITEM } from '../../graphql/operations.js';
 import type { NutritionSource, OpenFoodFactsProduct, Per100g } from '../../lib/types.js';
 import type { Macros, MeasureSummary, NutritionalInfoSummary } from '../../lib/types.js';
-import { CREATE_NUTRITIONAL_INFO, GET_NUTRITIONAL_INFO } from '../../graphql/operations.js';
 import { MeasureDraft, describeMeasureKey, suggestFromPortion } from '../../lib/measures.js';
 import { GET_INGREDIENT_MEASURES, GET_MEASURE_COMPONENTS } from '../../graphql/operations.js';
 import type { NamedSummary, UnitSummary, UsdaFoodItem, UsdaPortion } from '../../lib/types.js';
@@ -49,7 +51,8 @@ export default class NutritionLink extends BaseCommand {
     static description =
         'Link a USDA food item or an Open Food Facts product to an ingredient, writing ' +
         'perGram, and store its named portions as ingredient measures (the weight of one ' +
-        'unit of the ingredient).';
+        'unit of the ingredient). With --prep, link the prepared food, such as lime juice ' +
+        'for lime, juiced.';
 
     static examples = [
         '<%= config.bin %> <%= command.id %> "olive oil" --fdc-id 171413 --dry-run',
@@ -58,6 +61,7 @@ export default class NutritionLink extends BaseCommand {
         '<%= config.bin %> <%= command.id %> "olive oil" --fdc-id 171413 --all-portions',
         '<%= config.bin %> <%= command.id %> banana --fdc-id 173944 --portion 5 --default-portion 5',
         '<%= config.bin %> <%= command.id %> "pearl couscous" --barcode 5010338301255 --dry-run',
+        '<%= config.bin %> <%= command.id %> lime --prep juiced --fdc-id 168156 --portion 1',
     ];
 
     static args = {
@@ -100,6 +104,12 @@ export default class NutritionLink extends BaseCommand {
                 'when the record is wrong or has none. The link and its portions still come ' +
                 'from the record.',
             helpValue: 'KCAL,PROTEIN,CARBS,FAT',
+        }),
+        prep: Flags.string({
+            description:
+                'Link the record for this prep method, such as juiced: the prepared food, ' +
+                'used for recipe lines with that prep method. Each portion is stored with ' +
+                'this prep method.',
         }),
         overwrite: Flags.boolean({
             description:
@@ -166,12 +176,14 @@ export default class NutritionLink extends BaseCommand {
         const existingMeasures = ((
             await client.request(GET_INGREDIENT_MEASURES, { ingredientIds: [ingredient._id] })
         ).ingredientMeasuresByIngredientIds ?? []) as unknown as MeasureSummary[];
+        const prep = flags.prep ? resolvePrepMethod(components.prepMethods, flags.prep) : null;
         const measures = this.planMeasures(
             selected,
             components,
             existingMeasures,
             flags['all-portions'],
-            flags.overwrite
+            flags.overwrite,
+            prep
         );
         if (selected.length === 0) {
             this.warnUnusedPortions(portions, components);
@@ -179,21 +191,21 @@ export default class NutritionLink extends BaseCommand {
 
         // Checked before any write, and under --dry-run too, so a dry run reports
         // the conflict rather than describing a write that would be refused.
-        const existing = (
-            await client.request(GET_NUTRITIONAL_INFO, {
-                ingredientId: ingredient._id,
-            })
-        ).nutritionalInfoByIngredient as unknown as NutritionalInfoSummary | null;
+        const existing = recordForPrep(
+            await ingredientNutrition(client, ingredient._id),
+            prep?._id ?? null
+        );
         if (existing && !flags.overwrite) {
             throw wouldOverwrite(
-                `${ingredient.name} already has nutritional data (${describeSource(existing)}). ` +
-                    'Pass --overwrite to replace it.',
+                `${describeTarget(ingredient.name, prep)} already has nutritional data ` +
+                    `(${describeSource(existing)}). Pass --overwrite to replace it.`,
                 existing
             );
         }
 
         const record = {
             ingredient: ingredient._id,
+            prepMethod: prep?._id ?? null,
             source: item.source,
             ...item.ids,
             sourceName: item.description,
@@ -203,6 +215,7 @@ export default class NutritionLink extends BaseCommand {
             dryRun: flags['dry-run'],
             action: existing ? 'update' : 'create',
             ingredient: { _id: ingredient._id, name: ingredient.name },
+            prepMethod: prep,
             item: { source: item.source, id: item.id, description: item.description },
             record,
             label: label && { values: label, record: item.per100g },
@@ -312,7 +325,8 @@ export default class NutritionLink extends BaseCommand {
         components: { units: UnitSummary[]; sizes: NamedSummary[]; prepMethods: NamedSummary[] },
         existing: MeasureSummary[],
         skipUnmatched: boolean,
-        overwrite: boolean
+        overwrite: boolean,
+        prep: NamedSummary | null
     ): PlannedMeasure[] {
         const planned: PlannedMeasure[] = [];
         for (const { portion, unsized } of portions) {
@@ -347,8 +361,26 @@ export default class NutritionLink extends BaseCommand {
                     { portion }
                 );
             }
+            // Under --prep the record is the prepared food, so its portions are too: a cup
+            // of lime juice is a cup of juiced lime, not a cup of lime.
+            const portionPrep = suggestion.draft.prepMethodId;
+            if (prep && portionPrep && portionPrep !== prep._id) {
+                const other = components.prepMethods.find((p) => p._id === portionPrep)?.value;
+                const reason = `it is ${other}, and the link is for ${prep.value}`;
+                if (skipUnmatched) {
+                    this.addWarning(`Skipped portion ${suggestion.label}: ${reason}.`);
+                    continue;
+                }
+                throw rejected(`Portion ${suggestion.label} cannot be stored: ${reason}.`, {
+                    portion,
+                });
+            }
             // The default size: lines with no size match only a measure with no size.
-            const draft = unsized ? { ...suggestion.draft, sizeId: null } : suggestion.draft;
+            const draft = {
+                ...suggestion.draft,
+                ...(unsized ? { sizeId: null } : {}),
+                ...(prep ? { prepMethodId: prep._id } : {}),
+            };
             const sameKey = (m: {
                 unitId: string;
                 sizeId: string | null;
@@ -386,9 +418,9 @@ export default class NutritionLink extends BaseCommand {
             }
             const unit = components.units.find((u) => u._id === draft.unitId)!;
             const size = components.sizes.find((s) => s._id === draft.sizeId);
-            const prep = components.prepMethods.find((p) => p._id === draft.prepMethodId);
+            const draftPrep = components.prepMethods.find((p) => p._id === draft.prepMethodId);
             planned.push({
-                key: [unit.longSingular, size?.value, prep?.value].filter(Boolean).join(' · '),
+                key: [unit.longSingular, size?.value, draftPrep?.value].filter(Boolean).join(' · '),
                 portion: portion.description,
                 draft,
                 replaces,
@@ -439,6 +471,7 @@ export default class NutritionLink extends BaseCommand {
             'DRY RUN — nothing was sent.',
             '',
             `Ingredient   ${plan.ingredient.name} (${plan.ingredient._id})`,
+            ...(plan.prepMethod ? [`Prep method  ${plan.prepMethod.value}`] : []),
             `Source       ${describeSource(plan.record)}  ·  ${plan.item.description}`,
             '',
             `Would ${plan.action} NutritionalInfo:`,
@@ -458,7 +491,8 @@ export default class NutritionLink extends BaseCommand {
 
     private renderResult(plan: LinkPlan, written: NutritionalInfoSummary | null): string {
         const lines = [
-            `${plan.action === 'create' ? 'Created' : 'Updated'} NutritionalInfo for ${plan.ingredient.name}`,
+            `${plan.action === 'create' ? 'Created' : 'Updated'} NutritionalInfo for ` +
+                describeTarget(plan.ingredient.name, plan.prepMethod),
             indent(`source      ${describeSource(plan.record)}`),
             indent(`perGram     ${formatMacros(plan.record.perGram)}`),
         ];
@@ -480,9 +514,11 @@ interface LinkPlan {
     dryRun: boolean;
     action: 'create' | 'update';
     ingredient: { _id: string; name: string };
+    prepMethod: NamedSummary | null;
     item: { source: SourceRecord['source']; id: string; description: string };
     record: {
         ingredient: string;
+        prepMethod: string | null;
         source: SourceRecord['source'];
         usdaFdcId: number | null;
         openFoodFactsBarcode: string | null;

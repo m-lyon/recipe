@@ -76,6 +76,10 @@ export const NUTRITIONAL_INFO_FIELDS = gql(`
     fragment CliNutritionalInfoFields on NutritionalInfo {
         _id
         ingredient
+        prepMethod {
+            _id
+            value
+        }
         source
         usdaFdcId
         openFoodFactsBarcode
@@ -100,14 +104,6 @@ export const GET_ALL_INGREDIENTS = gql(`
 export const GET_NUTRITIONAL_INFOS = gql(`
     query CliGetNutritionalInfos($ingredientIds: [MongoID!]!) {
         nutritionalInfosByIngredientIds(ingredientIds: $ingredientIds) {
-            ...CliNutritionalInfoFields
-        }
-    }
-`);
-
-export const GET_NUTRITIONAL_INFO = gql(`
-    query CliGetNutritionalInfo($ingredientId: MongoID!) {
-        nutritionalInfoByIngredient(filter: { ingredient: $ingredientId }) {
             ...CliNutritionalInfoFields
         }
     }

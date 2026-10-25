@@ -2,20 +2,20 @@ import { Args } from '@oclif/core';
 
 import { BaseCommand } from '../../lib/base.js';
 import { describeSource } from '../../lib/sources.js';
-import { resolveIngredient } from '../../lib/resolve.js';
 import type { MeasureSummary } from '../../lib/types.js';
 import { describeMeasureKey } from '../../lib/measures.js';
-import { recipeIngredientIds } from '../../lib/nutrition.js';
+import { GET_ALL_RECIPES } from '../../graphql/operations.js';
 import { GET_RECIPES_BY_IDS } from '../../graphql/operations.js';
 import { GET_INGREDIENT_MEASURES } from '../../graphql/operations.js';
+import { recipeIngredientIds, recordForPrep } from '../../lib/nutrition.js';
 import { EMPTY, indent, num, renderTable, text } from '../../lib/format.js';
-import { GET_ALL_RECIPES, GET_NUTRITIONAL_INFO } from '../../graphql/operations.js';
+import { ingredientNutrition, resolveIngredient } from '../../lib/resolve.js';
 import type { NutritionalInfoSummary, RecipeDetail, RecipeSummary } from '../../lib/types.js';
 
 export default class IngredientsShow extends BaseCommand {
     static description =
-        'Show one ingredient in full: its fields, its NutritionalInfo if any, and the recipes ' +
-        'that use it.';
+        'Show one ingredient in full: its fields, its NutritionalInfo records (one with no ' +
+        'prep method, and one per prep method such as juiced), and the recipes that use it.';
 
     static examples = [
         '<%= config.bin %> <%= command.id %> "olive oil"',
@@ -31,8 +31,10 @@ export default class IngredientsShow extends BaseCommand {
         const client = this.api(flags.url);
         const { ingredient } = await resolveIngredient(client, args.ingredient);
 
-        const info = (await client.request(GET_NUTRITIONAL_INFO, { ingredientId: ingredient._id }))
-            .nutritionalInfoByIngredient as unknown as NutritionalInfoSummary | null;
+        // The plain record first, then one per prep method.
+        const infos = (await ingredientNutrition(client, ingredient._id)).sort(
+            (a, b) => Number(Boolean(a.prepMethod)) - Number(Boolean(b.prepMethod))
+        );
 
         const measures = ((
             await client.request(GET_INGREDIENT_MEASURES, { ingredientIds: [ingredient._id] })
@@ -56,8 +58,15 @@ export default class IngredientsShow extends BaseCommand {
                 titleIdentifier: recipe.titleIdentifier,
             }));
 
-        this.out(this.render(ingredient, info, measures, usedBy));
-        return { ingredient, nutritionalInfo: info ?? null, ingredientMeasures: measures, usedBy };
+        this.out(this.render(ingredient, infos, measures, usedBy));
+        return {
+            ingredient,
+            // The plain record, which prices a line with no record for its prep method.
+            nutritionalInfo: recordForPrep(infos, null) ?? null,
+            nutritionalInfos: infos,
+            ingredientMeasures: measures,
+            usedBy,
+        };
     }
 
     private render(
@@ -68,7 +77,7 @@ export default class IngredientsShow extends BaseCommand {
             isCountable: boolean;
             tags?: string[] | null;
         },
-        info: NutritionalInfoSummary | null,
+        infos: NutritionalInfoSummary[],
         measures: MeasureSummary[],
         usedBy: Array<{ title: string; titleIdentifier: string }>
     ): string {
@@ -81,14 +90,20 @@ export default class IngredientsShow extends BaseCommand {
             '',
             'NUTRITION',
         ];
-        if (info) {
+        if (infos.length === 0) {
+            lines.push(indent('No nutritional data'));
+        }
+        infos.forEach((info, index) => {
+            if (index > 0) lines.push('');
             lines.push(
+                indent(`prep        ${info.prepMethod ? info.prepMethod.value : '(none)'}`),
                 indent(`source      ${describeSource(info)}`),
                 indent(`name        ${text(info.sourceName)}`),
                 indent(`perGram     ${macros(info.perGram)}`)
             );
-        } else {
-            lines.push(indent('No nutritional data'));
+        });
+        if (infos.length > 0 && !recordForPrep(infos, null)) {
+            lines.push('', indent('No record without a prep method: other lines are not counted'));
         }
         lines.push('', 'MEASURES');
         lines.push(

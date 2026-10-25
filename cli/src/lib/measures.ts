@@ -1,3 +1,4 @@
+import { notFound } from './errors.js';
 import type { MeasureSummary, NamedSummary, UnitSummary, UsdaPortion } from './types.js';
 
 /**
@@ -24,8 +25,9 @@ function specificity(measure: MeasureSummary): number {
  * The most specific measure that matches a recipe line:
  *  1. exact (unit, size, prep)
  *  2. drop prep (unit, size)
- *  3. drop size (unit)
- *  4. volume only: the least specific volume row, rescaled by perCanonical
+ *  3. drop size (unit, prep)
+ *  4. drop both (unit)
+ *  5. volume only: the least specific volume row, rescaled by perCanonical
  */
 export function findMeasure(measures: MeasureSummary[], key: MeasureKey): FoundMeasure | null {
     const forUnit = measures.filter((m) => m.unit._id === key.unit._id);
@@ -34,6 +36,7 @@ export function findMeasure(measures: MeasureSummary[], key: MeasureKey): FoundM
     const match =
         forUnit.find((m) => sizeId(m) === key.sizeId && prepId(m) === key.prepMethodId) ??
         forUnit.find((m) => sizeId(m) === key.sizeId && prepId(m) === null) ??
+        forUnit.find((m) => sizeId(m) === null && prepId(m) === key.prepMethodId) ??
         forUnit.find((m) => sizeId(m) === null && prepId(m) === null);
     if (match) {
         return { gramsPerUnit: match.grams, measure: match };
@@ -121,6 +124,39 @@ function sizeWithin(sizes: NamedSummary[], text: string): NamedSummary | undefin
 export function matchNamed(options: NamedSummary[], name: string): NamedSummary | undefined {
     const target = normalise(name);
     return options.find((option) => normalise(option.value) === target);
+}
+
+/** The prep method named by a --prep flag. Exits 4 when there is none. */
+export function resolvePrepMethod(prepMethods: NamedSummary[], name: string): NamedSummary {
+    const prep = matchNamed(prepMethods, name);
+    if (!prep) {
+        throw notFound(`No prep method named "${name}".`);
+    }
+    return prep;
+}
+
+export interface Density {
+    gramsPerMillilitre: number;
+    /** The volume measure the density comes from. */
+    measure: MeasureSummary;
+}
+
+/**
+ * Grams per millilitre, from a volume measure with no size and exactly this prep method.
+ * Unlike a recipe line, this never borrows another prep method's row: a cup of lime pieces
+ * says nothing about the density of lime juice.
+ */
+export function densityFor(
+    measures: MeasureSummary[],
+    prepMethodId: string | null
+): Density | null {
+    const measure = measures.find(
+        (m) =>
+            m.unit.dimension === 'volume' && !m.size && (m.prepMethod?._id ?? null) === prepMethodId
+    );
+    if (!measure) return null;
+    // A volume unit's perCanonical is its size in millilitres.
+    return { gramsPerMillilitre: measure.grams / measure.unit.perCanonical, measure };
 }
 
 function parseAmount(raw: string): number {

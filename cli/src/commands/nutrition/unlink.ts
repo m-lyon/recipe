@@ -1,43 +1,64 @@
-import { Args } from '@oclif/core';
+import { Args, Flags } from '@oclif/core';
 
 import { indent } from '../../lib/format.js';
 import { notFound } from '../../lib/errors.js';
 import { formatMacros } from '../../lib/macros.js';
 import { describeSource } from '../../lib/sources.js';
-import { resolveIngredient } from '../../lib/resolve.js';
+import { recordForPrep } from '../../lib/nutrition.js';
+import type { NamedSummary } from '../../lib/types.js';
+import { resolvePrepMethod } from '../../lib/measures.js';
 import { BaseCommand, writeFlags } from '../../lib/base.js';
-import type { NutritionalInfoSummary } from '../../lib/types.js';
-import { DELETE_NUTRITIONAL_INFO, GET_NUTRITIONAL_INFO } from '../../graphql/operations.js';
+import { ingredientNutrition, resolveIngredient } from '../../lib/resolve.js';
+import { DELETE_NUTRITIONAL_INFO, GET_MEASURE_COMPONENTS } from '../../graphql/operations.js';
 
 export default class NutritionUnlink extends BaseCommand {
-    static description = "Remove an ingredient's NutritionalInfo. Its measures are left alone.";
+    static description =
+        "Remove an ingredient's NutritionalInfo: the record with no prep method, or with " +
+        '--prep the record for that prep method. Its measures are left alone.';
 
     static examples = [
         '<%= config.bin %> <%= command.id %> "olive oil" --dry-run',
         '<%= config.bin %> <%= command.id %> "olive oil"',
+        '<%= config.bin %> <%= command.id %> lime --prep juiced',
     ];
 
     static args = {
         ingredient: Args.string({ description: 'An exact name or a MongoID', required: true }),
     };
 
-    static flags = { ...writeFlags };
+    static flags = {
+        prep: Flags.string({
+            description: 'Remove the record for this prep method, such as juiced',
+        }),
+        ...writeFlags,
+    };
 
     async run(): Promise<unknown> {
         const { args, flags } = await this.parse(NutritionUnlink);
         const client = this.api(flags.url);
         const { ingredient } = await resolveIngredient(client, args.ingredient);
 
-        const existing = (
-            await client.request(GET_NUTRITIONAL_INFO, {
-                ingredientId: ingredient._id,
-            })
-        ).nutritionalInfoByIngredient as unknown as NutritionalInfoSummary | null;
+        const prep = flags.prep
+            ? resolvePrepMethod(
+                  ((await client.request(GET_MEASURE_COMPONENTS)).prepMethods ??
+                      []) as unknown as NamedSummary[],
+                  flags.prep
+              )
+            : null;
+        const existing = recordForPrep(
+            await ingredientNutrition(client, ingredient._id),
+            prep?._id ?? null
+        );
         if (!existing) {
-            throw notFound(`${ingredient.name} has no nutritional data to remove.`);
+            throw notFound(
+                prep
+                    ? `${ingredient.name} has no nutritional data for ${prep.value} to remove.`
+                    : `${ingredient.name} has no nutritional data to remove.`
+            );
         }
 
         const removed = [
+            `prep        ${prep?.value ?? '(none)'}`,
             `source      ${describeSource(existing)}`,
             `perGram     ${formatMacros(existing.perGram)}`,
         ].join('\n');

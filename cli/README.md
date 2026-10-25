@@ -75,8 +75,11 @@ The cookie cache lives at `~/.cache/recipe-cli/session-<hash of RECIPE_API_URL>`
 | `recipe nutrition link <ingredient> --barcode <code>` | the same, from an Open Food Facts product |
 | `recipe open-food-facts contribute <barcode>` | send a missing product or a correction to Open Food Facts: `--label-per-100g` (or `--label-per-100ml` for a liquid), `--name`, `--brands`, `--quantity`, `--photo` |
 | `recipe nutrition link ... --label-per-100g <kcal,p,c,f>` | link the record, but write the values from the pack label: for a record that is wrong or has none |
+| `recipe nutrition link <ingredient> --prep juiced ...` | link the prepared food (lime juice for lime, juiced); its portions are stored with that prep method |
+| `recipe nutrition set <ingredient> --per-100g <kcal,p,c,f>` | write values entered by hand, linked to no database (source `manual`); `--name` says where they came from, `--prep` writes a prep method's record |
+| `recipe nutrition set ... --per-100ml <kcal,p,c,f>` | the same for a liquid, converted with the ingredient's volume measure for that prep method |
 | `recipe nutrition measure <ingredient> --unit <u> --grams <n>` | stores a weight you supply, for a unit no USDA portion carries (a scoop) |
-| `recipe nutrition unlink <ingredient>` | removes the `NutritionalInfo`; measures stay |
+| `recipe nutrition unlink <ingredient>` | removes the `NutritionalInfo` (with `--prep`, that prep method's record); measures stay |
 | `recipe nutrition <identifier>` | a recipe's totals and one serving as the API calculates them, with every ingredient not fully counted; recipes used as ingredients count through their yield |
 | `recipe nutrition status` | calculable recipe rows, and the missing weights |
 
@@ -100,7 +103,7 @@ On failure:
 
 **`--dry-run`** is accepted by every write command. It resolves everything, prints the exact mutation variables that would be sent, and sends nothing.
 
-**`--overwrite`** guards existing data. `nutrition link` refuses to replace an existing `NutritionalInfo`, or an ingredient measure with the same unit, size and prep method, unless the flag is present. It exits 5 and names what is there now.
+**`--overwrite`** guards existing data. `nutrition link` and `nutrition set` refuse to replace an existing `NutritionalInfo`, or an ingredient measure with the same unit, size and prep method, unless the flag is present. They exit 5 and name what is there now.
 
 `--overwrite` is required for a **replacement**. Its presence in a command line is itself a signal that something is being changed rather than filled in.
 

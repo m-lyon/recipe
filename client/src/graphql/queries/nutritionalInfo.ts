@@ -1,21 +1,5 @@
 import { gql } from '../../__generated__';
 
-export const GET_NUTRITIONAL_INFO_BY_INGREDIENT = gql(`
-    query GetNutritionalInfoByIngredient($ingredientId: MongoID!) {
-        nutritionalInfoByIngredient(filter: { ingredient: $ingredientId }) {
-            _id
-            ingredient
-            usdaFdcId
-            perGram {
-                calories
-                protein
-                carbs
-                fat
-            }
-        }
-    }
-`);
-
 export const INGREDIENT_MEASURE_FIELDS = gql(`
     fragment IngredientMeasureFields on IngredientMeasure {
         _id
@@ -86,6 +70,9 @@ export const GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS = gql(`
         nutritionalInfosByIngredientIds(ingredientIds: $ingredientIds) {
             _id
             ingredient
+            prepMethod {
+                _id
+            }
             usdaFdcId
             perGram {
                 calories

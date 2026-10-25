@@ -90,7 +90,6 @@ describe('read commands', () => {
             CliGetRecipesByIds: { data: { recipeByIds: [RECIPE] } },
             CliGetRecipeByIdentifier: { data: { recipeOne: RECIPE } },
             CliGetNutritionalInfos: { data: { nutritionalInfosByIngredientIds: [EGG_INFO] } },
-            CliGetNutritionalInfo: { data: { nutritionalInfoByIngredient: EGG_INFO } },
             CliGetIngredientMeasures: {
                 data: { ingredientMeasuresByIngredientIds: [EGG_MEASURE] },
             },
@@ -246,7 +245,7 @@ describe('read commands', () => {
     });
 
     it('nutrition unlink exits 4 when there is nothing to remove', async () => {
-        api.on('CliGetNutritionalInfo', { data: { nutritionalInfoByIngredient: null } });
+        api.on('CliGetNutritionalInfos', { data: { nutritionalInfosByIngredientIds: [] } });
         api.install();
         const { error } = await runCommand(['nutrition', 'unlink', 'egg'], ROOT);
         expect(error?.oclif?.exit).to.equal(ExitCode.NOT_FOUND);

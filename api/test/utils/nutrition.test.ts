@@ -2,6 +2,7 @@ import { assert } from 'chai';
 import { Types } from 'mongoose';
 import { describe, it } from 'mocha';
 
+import { perGramFor } from '../../src/utils/nutrition.js';
 import { gramsPerUnit, quantityToFloat, yieldFraction } from '../../src/utils/nutrition.js';
 import { MAX_DEPTH, NutritionData, UnitData, calculate } from '../../src/utils/nutrition.js';
 
@@ -128,6 +129,31 @@ describe('yieldFraction', function () {
     });
 });
 
+describe('perGramFor', function () {
+    const lime = { calories: 0.3, protein: 0.007, carbs: 0.106, fat: 0.002 };
+    const juice = { calories: 0.25, protein: 0.004, carbs: 0.084, fat: 0.001 };
+    const records = new Map([
+        ['', lime],
+        ['juiced', juice],
+    ]);
+
+    it('uses the record for the prep method', function () {
+        assert.equal(perGramFor(records, 'juiced'), juice);
+    });
+
+    it('falls back to the record with no prep method', function () {
+        assert.equal(perGramFor(records, 'sliced'), lime);
+        assert.equal(perGramFor(records, null), lime);
+    });
+
+    it('never uses the record of another prep method', function () {
+        const juiceOnly = new Map([['juiced', juice]]);
+        assert.isUndefined(perGramFor(juiceOnly, null));
+        assert.isUndefined(perGramFor(juiceOnly, 'sliced'));
+        assert.isUndefined(perGramFor(undefined, 'juiced'));
+    });
+});
+
 describe('calculate', function () {
     const id = () => new Types.ObjectId();
     const perGram = { calories: 2, protein: 0.1, carbs: 0.2, fat: 0.05 };
@@ -194,8 +220,8 @@ describe('calculate', function () {
                 ],
             ]),
             perGram: new Map([
-                ['flour', perGram],
-                ['stock', perGram],
+                ['flour', new Map([['', perGram]])],
+                ['stock', new Map([['', perGram]])],
             ]),
             measures: new Map([
                 ['stock', [{ unit: EACH, size: null, prepMethod: null, grams: 26 }]],
@@ -243,6 +269,42 @@ describe('calculate', function () {
             code: 'NO_MEASURE',
             message: 'No weight recorded for 1 stock pot',
         });
+    });
+
+    it('weighs a prep method record only by measures with that prep method', function () {
+        const juiced = data({
+            perGram: new Map([['stock', new Map([['juiced', perGram]])]]),
+        });
+        juiced.recipes.get('couscous')!.ingredients[1].prepMethod = 'juiced';
+        assert.equal(calculate('couscous', juiced).ingredients[1].reason?.code, 'NO_MEASURE');
+        juiced.measures.set('stock', [
+            { unit: EACH, size: null, prepMethod: null, grams: 26 },
+            { unit: EACH, size: null, prepMethod: 'juiced', grams: 13 },
+        ]);
+        const [, stock] = calculate('couscous', juiced).ingredients;
+        assert.closeTo(stock.macros.calories, 26, 1e-9);
+    });
+
+    it('weighs a sized line with a prep method record by the unsized prep measure', function () {
+        const juiced = data({
+            perGram: new Map([['stock', new Map([['juiced', perGram]])]]),
+            measures: new Map([
+                [
+                    'stock',
+                    [
+                        { unit: EACH, size: null, prepMethod: null, grams: 26 },
+                        { unit: EACH, size: null, prepMethod: 'juiced', grams: 13 },
+                    ],
+                ],
+            ]),
+        });
+        Object.assign(juiced.recipes.get('couscous')!.ingredients[1], {
+            prepMethod: 'juiced',
+            size: 'large',
+        });
+        const [, stock] = calculate('couscous', juiced).ingredients;
+        assert.equal(stock.status, 'COUNTED');
+        assert.closeTo(stock.macros.calories, 26, 1e-9);
     });
 
     it('leaves a recipe used as an ingredient uncounted when it has no yield in the dimension', function () {

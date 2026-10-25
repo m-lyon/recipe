@@ -1,6 +1,7 @@
 import { OwnerTC } from '../models/User.js';
 import { setRecordOwnerAsUser } from '../middleware/create.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
+import { validatePrepMethodNotInNutrition } from './validation.js';
 import { validateItemNotInMeasure, validateItemNotInRecipe } from './validation.js';
 import { PrepMethod, PrepMethodCreateTC, PrepMethodTC } from '../models/PrepMethod.js';
 import { filterIsEditable, filterIsUnique, filterIsVisible } from '../middleware/filters.js';
@@ -68,6 +69,7 @@ export const PrepMethodMutation = {
         .wrapResolve((next) => async (rp) => {
             await validateItemNotInRecipe(rp.args._id, 'prepMethod');
             await validateItemNotInMeasure(rp.args._id, 'prepMethod');
+            await validatePrepMethodNotInNutrition(rp.args._id);
             return next(rp);
         }),
 };

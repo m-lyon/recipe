@@ -14,6 +14,7 @@ import { mockUsdaFoodItemChickenBreast } from '@recipe/graphql/queries/__mocks__
 import { mockDeleteNutritionalInfoCarrot } from '@recipe/graphql/mutations/__mocks__/nutritionalInfo';
 import { mockGetNutritionalInfosForEditIngredient } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { mockGetNutritionalInfosForEditIngredientCarrotLinked } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
+import { mockGetNutritionalInfosForEditIngredientCarrotDicedOnly } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { mockGetNutritionalInfosForEditIngredientAfterCarrotDeleted } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 
 import { EditIngredient } from '../EditIngredient';
@@ -117,6 +118,29 @@ describe('Edit Ingredient', () => {
 
         // Expect
         await waitFor(() => expect(deleted).toHaveBeenCalledTimes(1));
+    });
+
+    it('should not show nutritional data for a prep method as the link', async () => {
+        // Render -- carrot has data for diced carrot only
+        const user = userEvent.setup();
+        const routes = createRoutesFromElements(<Route path='/' element={<EditIngredient />} />);
+        renderPage(routes, [
+            mockGetEditableIngredients,
+            mockGetNutritionalInfosForEditIngredientCarrotDicedOnly,
+            mockGetIngredientComponents,
+        ]);
+
+        // Act
+        expect(await screen.findByText('Edit Ingredient')).not.toBeNull();
+        await user.click(screen.getByLabelText('Select ingredient'));
+        await user.click(await screen.findByRole('option', { name: 'carrot' }));
+        await waitFor(() =>
+            expect(screen.getByLabelText('Plural name')).toHaveProperty('value', 'carrots')
+        );
+
+        // Expect
+        expect(screen.getByLabelText('Search nutritional data')).not.toBeNull();
+        expect(screen.queryByText('Entered manually')).toBeNull();
     });
 
     it('should remove an ingredient', async () => {

@@ -110,5 +110,6 @@ export const mockAppleTeaspoonMeasureId = '60f4d2e5c3d5a0a4f1b9c1c3';
 // NutritionalInfo
 export const mockNutritionalInfoIdApple = '60f4d2e5c3d5a0a4f1b9d0a1';
 export const mockNutritionalInfoIdCarrot = '60f4d2e5c3d5a0a4f1b9d0a2';
+export const mockNutritionalInfoIdCarrotDiced = '60f4d2e5c3d5a0a4f1b9d0b7';
 export const mockNutritionalInfoIdBeef = '60f4d2e5c3d5a0a4f1b9d0a3';
 export const mockNutritionalInfoIdOnion = '60f4d2e5c3d5a0a4f1b9d0a4';

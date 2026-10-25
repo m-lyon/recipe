@@ -4,6 +4,7 @@ import { GraphQLError } from 'graphql';
 import { Unit } from '../models/Unit.js';
 import { Recipe } from '../models/Recipe.js';
 import { DisplayLadder } from '../models/DisplayLadder.js';
+import { NutritionalInfo } from '../models/NutritionalInfo.js';
 import { IngredientMeasure } from '../models/IngredientMeasure.js';
 
 export async function validateItemNotInRecipe(
@@ -78,8 +79,6 @@ function itemInUseError(message: string, itemType: string, itemId: Types.ObjectI
     });
 }
 
-/** Blocks deleting a unit, size or prep method that is used as an identifier for an
- * ingredient measure */
 export async function validateItemNotInMeasure(
     itemId: Types.ObjectId,
     itemType: 'unit' | 'size' | 'prepMethod'
@@ -90,6 +89,17 @@ export async function validateItemNotInMeasure(
             `Cannot delete ${itemType} as it is currently being used in ingredient measures.`,
             itemType,
             itemId
+        );
+    }
+}
+
+export async function validatePrepMethodNotInNutrition(prepMethodId: Types.ObjectId) {
+    const inUse = await NutritionalInfo.exists({ prepMethod: prepMethodId });
+    if (inUse) {
+        throw itemInUseError(
+            'Cannot delete prepMethod as it is currently being used in nutritional data.',
+            'prepMethod',
+            prepMethodId
         );
     }
 }
@@ -105,7 +115,6 @@ export async function validateUnitNotInLadder(unitId: Types.ObjectId) {
     }
 }
 
-/** The fields that define a unit's size. Code owns them on a standard unit. */
 const SIZE_FIELDS = ['dimension', 'perCanonical', 'system', 'hidden', 'standard'] as const;
 type SizeField = (typeof SIZE_FIELDS)[number];
 type UnitSizeFields = Partial<Record<SizeField, unknown>>;
@@ -118,14 +127,8 @@ export function badInput(message: string): GraphQLError {
     return new GraphQLError(message, { extensions: { code: 'BAD_USER_INPUT' } });
 }
 
-/** Only each is hidden: a hidden unit cannot be picked by name in the recipe editor. */
 const HIDDEN_ERROR = 'Only a standard unit can be hidden.';
 
-/**
- * Only an admin creates a mass or volume unit: its size changes the nutrition of every
- * recipe that uses it. Anyone may create a count unit, which reaches grams only through a
- * weight recorded on the ingredient. Nobody creates a hidden unit: only each is hidden.
- */
 export function validateUnitCreate(record: UnitSizeFields, isAdmin: boolean) {
     if (record.hidden) {
         throw forbidden(HIDDEN_ERROR);
@@ -137,12 +140,6 @@ export function validateUnitCreate(record: UnitSizeFields, isAdmin: boolean) {
     }
 }
 
-/**
- * Blocks a change to the size of a standard unit, whose size is defined in code, stops
- * anyone hiding a unit that is not standard, and stops anyone but an admin turning a unit
- * into a mass or volume unit. A record that repeats the stored values is allowed, so
- * a form may send every field.
- */
 export async function validateUnitUpdate(
     unitId: Types.ObjectId,
     record: UnitSizeFields,

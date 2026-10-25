@@ -23,9 +23,11 @@ export function EditIngredient() {
         GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS,
         { variables: { ingredientIds }, skip: ingredientIds.length === 0 }
     );
+    // The form edits the record with no prep method. Records for a prep method, such as
+    // lime juiced, are not edited here yet.
     const existingNutritionalInfo = (
         nutritionalInfoData?.nutritionalInfosByIngredientIds ?? []
-    ).find((info) => info?.ingredient === currentIngredient?._id);
+    ).find((info) => info?.ingredient === currentIngredient?._id && !info?.prepMethod);
 
     return (
         <VStack>

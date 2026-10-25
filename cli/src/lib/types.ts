@@ -26,6 +26,8 @@ export type NutritionSource = 'usda' | 'openFoodFacts' | 'manual';
 export interface NutritionalInfoSummary {
     _id: string;
     ingredient: string;
+    /** Set on the record for a prep method that changes the food: lime, juiced. */
+    prepMethod?: NamedSummary | null;
     source?: NutritionSource | null;
     usdaFdcId?: number | null;
     openFoodFactsBarcode?: string | null;

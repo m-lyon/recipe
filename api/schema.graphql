@@ -68,6 +68,7 @@ input CreateOneNutritionalInfoCreateInput {
   ingredient: MongoID!
   openFoodFactsBarcode: String
   perGram: NutritionalInfoPerGramInput!
+  prepMethod: MongoID
   source: EnumNutritionalInfoCreateSource!
   sourceName: String
   usdaFdcId: Float
@@ -941,58 +942,6 @@ input FilterFindOneIngredient_idOperatorsInput {
   nin: [MongoID]
 }
 
-input FilterFindOneNutritionalInfoIngredientOperatorsInput {
-  exists: Boolean
-  gt: MongoID
-  gte: MongoID
-  in: [MongoID]
-  lt: MongoID
-  lte: MongoID
-  ne: MongoID
-  nin: [MongoID]
-}
-
-""""""
-input FilterFindOneNutritionalInfoInput {
-  AND: [FilterFindOneNutritionalInfoInput!]
-  OR: [FilterFindOneNutritionalInfoInput!]
-  _id: MongoID
-
-  """List of *indexed* fields that can be filtered via operators."""
-  _operators: FilterFindOneNutritionalInfoOperatorsInput
-  ingredient: MongoID
-  openFoodFactsBarcode: String
-  perGram: FilterFindOneNutritionalInfoPerGramInput
-  source: EnumNutritionalInfoSource
-  sourceName: String
-  usdaFdcId: Float
-}
-
-"""For performance reason this type contains only *indexed* fields."""
-input FilterFindOneNutritionalInfoOperatorsInput {
-  _id: FilterFindOneNutritionalInfo_idOperatorsInput
-  ingredient: FilterFindOneNutritionalInfoIngredientOperatorsInput
-}
-
-""""""
-input FilterFindOneNutritionalInfoPerGramInput {
-  calories: Float
-  carbs: Float
-  fat: Float
-  protein: Float
-}
-
-input FilterFindOneNutritionalInfo_idOperatorsInput {
-  exists: Boolean
-  gt: MongoID
-  gte: MongoID
-  in: [MongoID]
-  lt: MongoID
-  lte: MongoID
-  ne: MongoID
-  nin: [MongoID]
-}
-
 """"""
 input FilterFindOnePrepMethodInput {
   AND: [FilterFindOnePrepMethodInput!]
@@ -1544,6 +1493,7 @@ type NutritionalInfo {
   ingredient: MongoID!
   openFoodFactsBarcode: String
   perGram: NutritionalInfoPerGram!
+  prepMethod: PrepMethod
   source: EnumNutritionalInfoSource!
   sourceName: String
   usdaFdcId: Float
@@ -1688,12 +1638,6 @@ type Query {
     skip: Int
     sort: SortFindOneIngredientInput
   ): Ingredient
-  nutritionalInfoByIngredient(
-    """Filter by fields"""
-    filter: FilterFindOneNutritionalInfoInput
-    skip: Int
-    sort: SortFindOneNutritionalInfoInput
-  ): NutritionalInfo
   nutritionalInfosByIngredientIds(ingredientIds: [MongoID!]!): [NutritionalInfo]
   openFoodFactsProduct(barcode: String!): OpenFoodFactsProduct
   openFoodFactsSearch(pageSize: Int = 20, query: String!, ukOnly: Boolean = true): [OpenFoodFactsProduct!]!
@@ -2250,13 +2194,6 @@ enum SortFindOneIngredientInput {
   _ID_DESC
 }
 
-enum SortFindOneNutritionalInfoInput {
-  INGREDIENT_ASC
-  INGREDIENT_DESC
-  _ID_ASC
-  _ID_DESC
-}
-
 enum SortFindOnePrepMethodInput {
   _ID_ASC
   _ID_DESC
@@ -2419,6 +2356,7 @@ input UpdateByIdNutritionalInfoInput {
   ingredient: MongoID
   openFoodFactsBarcode: String
   perGram: UpdateByIdNutritionalInfoPerGramInput
+  prepMethod: MongoID
   source: EnumNutritionalInfoSource
   sourceName: String
   usdaFdcId: Float

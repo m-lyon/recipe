@@ -2,6 +2,7 @@ import { Flags } from '@oclif/core';
 
 import { percent } from '../../lib/format.js';
 import { BaseCommand } from '../../lib/base.js';
+import { recordForPrep } from '../../lib/nutrition.js';
 import { measuresByIngredient } from '../../lib/measures.js';
 import { GET_RECIPES_BY_IDS } from '../../graphql/operations.js';
 import { allIngredients, resolveRecipe } from '../../lib/resolve.js';
@@ -99,9 +100,9 @@ export default class NutritionStatus extends BaseCommand {
                 }
             }
         }
-        const linkedIngredients = ingredients.filter((ingredient) =>
-            byIngredient.has(ingredient._id)
-        );
+        // Linked: a record with no prep method, which prices lines of any prep method.
+        const isLinked = (id: string) => recordForPrep(byIngredient.get(id), null) !== undefined;
+        const linkedIngredients = ingredients.filter((ingredient) => isLinked(ingredient._id));
         const gaps = [...missingWeights.values()].sort((a, b) => b.rows - a.rows);
 
         this.out(
@@ -131,7 +132,7 @@ export default class NutritionStatus extends BaseCommand {
             },
             gaps: {
                 missing: ingredients
-                    .filter((ingredient) => !byIngredient.has(ingredient._id))
+                    .filter((ingredient) => !isLinked(ingredient._id))
                     .map((ingredient) => ({ _id: ingredient._id, name: ingredient.name })),
                 missingWeights: gaps,
             },

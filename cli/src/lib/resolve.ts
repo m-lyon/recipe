@@ -1,8 +1,9 @@
 import { ambiguous, notFound } from './errors.js';
 import type { ApiClient } from '../graphql/client.js';
-import type { IngredientSummary, RecipeDetail } from './types.js';
+import { GET_NUTRITIONAL_INFOS } from '../graphql/operations.js';
 import { GET_RECIPE_BY_IDENTIFIER } from '../graphql/operations.js';
 import { GET_ALL_INGREDIENTS, GET_RECIPE_BY_ID } from '../graphql/operations.js';
+import type { IngredientSummary, NutritionalInfoSummary, RecipeDetail } from './types.js';
 
 export const MONGO_ID = /^[\da-f]{24}$/i;
 
@@ -13,6 +14,17 @@ export function isMongoId(value: string): boolean {
 export async function allIngredients(client: ApiClient): Promise<IngredientSummary[]> {
     const data = await client.request(GET_ALL_INGREDIENTS);
     return (data.ingredientManyAll ?? []).filter(Boolean) as unknown as IngredientSummary[];
+}
+
+/** Every NutritionalInfo of one ingredient: the plain record and one per prep method. */
+export async function ingredientNutrition(
+    client: ApiClient,
+    ingredientId: string
+): Promise<NutritionalInfoSummary[]> {
+    const data = await client.request(GET_NUTRITIONAL_INFOS, { ingredientIds: [ingredientId] });
+    return (data.nutritionalInfosByIngredientIds ?? []).filter(
+        Boolean
+    ) as unknown as NutritionalInfoSummary[];
 }
 
 /**

@@ -154,6 +154,8 @@ export interface SeedIngredient {
     owner?: SeedOwner;
     /** Per 100 g: kcal, protein, carbs, fat. Missing: the ingredient has no nutrition. */
     per100g?: [number, number, number, number];
+    /** Per 100 g of the prepared food, by prep method */
+    prepPer100g?: Record<string, [number, number, number, number]>;
     measures?: SeedMeasure[];
 }
 
@@ -317,6 +319,7 @@ export const SEED_INGREDIENTS: SeedIngredient[] = [
         countable: true,
         tags: VEGAN,
         per100g: [29, 1.1, 9.3, 0.3],
+        prepPer100g: { juiced: [22, 0.4, 6.9, 0.2] },
         measures: [
             ['each', 84],
             // A juiced lemon gives its juice, not its weight.

@@ -115,14 +115,16 @@ function specificity(measure: MeasureData): number {
  * Grams in one of the measure key's unit, from the most specific measure that matches:
  *  1. exact (unit, size, prep)
  *  2. drop prep (unit, size)
- *  3. drop size (unit)
- *  4. volume only: the least specific volume row, rescaled by perCanonical
+ *  3. drop size (unit, prep)
+ *  4. drop both (unit)
+ *  5. volume only: the least specific volume row, rescaled by perCanonical
  */
 export function gramsPerUnit(measures: MeasureData[], key: MeasureKey): number | null {
     const forUnit = measures.filter((m) => String(m.unit._id) === String(key.unit._id));
     const match =
         forUnit.find((m) => m.size === key.sizeId && m.prepMethod === key.prepMethodId) ??
         forUnit.find((m) => m.size === key.sizeId && m.prepMethod === null) ??
+        forUnit.find((m) => m.size === null && m.prepMethod === key.prepMethodId) ??
         forUnit.find((m) => m.size === null && m.prepMethod === null);
     if (match) return match.grams;
     if (key.unit.dimension !== 'volume') return null;
@@ -183,9 +185,13 @@ interface LoadedRecipe {
     yields: Array<{ quantity: string; unit: string }>;
 }
 
+/** The record with no prep method, keyed as the empty string. */
+const NO_PREP = '';
+
 export interface NutritionData {
     recipes: Map<string, LoadedRecipe>;
-    perGram: Map<string, MacroNutrients>;
+    /** Per ingredient, the perGram of each record, keyed by prep method id. */
+    perGram: Map<string, Map<string, MacroNutrients>>;
     measures: Map<string, MeasureData[]>;
     ingredientNames: Map<string, string>;
     units: Map<string, UnitData>;
@@ -195,6 +201,13 @@ export interface NutritionData {
 interface Calculated extends RecipeNutrition {
     /** Ingredients not fully counted: UNCOUNTED and PARTIAL. */
     notCounted: number;
+}
+
+export function perGramFor(
+    records: Map<string, MacroNutrients> | undefined,
+    prepMethodId: string | null
+): MacroNutrients | undefined {
+    return (prepMethodId ? records?.get(prepMethodId) : undefined) ?? records?.get(NO_PREP);
 }
 
 function uncounted(
@@ -271,13 +284,18 @@ function calculateIngredient(
         return calculateRecipeIngredient(recipeIngredient, quantity, unit, data, path, memo);
     }
     const name = data.ingredientNames.get(recipeIngredient.ingredient) ?? 'this ingredient';
-    const perGram = data.perGram.get(recipeIngredient.ingredient);
+    const records = data.perGram.get(recipeIngredient.ingredient);
+    const perGram = perGramFor(records, recipeIngredient.prepMethod);
     if (!perGram)
         return uncounted(recipeIngredient, 'NO_NUTRITION', `No nutritional data for ${name}`);
+    const prepared = !!recipeIngredient.prepMethod && records?.has(recipeIngredient.prepMethod);
+    const measures = (data.measures.get(recipeIngredient.ingredient) ?? []).filter(
+        (m) => !prepared || m.prepMethod === recipeIngredient.prepMethod
+    );
     const perUnit =
         unit.dimension === 'mass'
             ? unit.perCanonical
-            : gramsPerUnit(data.measures.get(recipeIngredient.ingredient) ?? [], {
+            : gramsPerUnit(measures, {
                   unit,
                   sizeId: recipeIngredient.size,
                   prepMethodId: recipeIngredient.prepMethod,
@@ -452,9 +470,16 @@ export async function loadNutritionData(rootId: string): Promise<NutritionData> 
             },
         ]);
     }
+    const perGram = new Map<string, Map<string, MacroNutrients>>();
+    for (const info of infos) {
+        const key = String(info.ingredient);
+        const records = perGram.get(key) ?? new Map<string, MacroNutrients>();
+        records.set(asId(info.prepMethod) ?? NO_PREP, info.perGram);
+        perGram.set(key, records);
+    }
     return {
         recipes,
-        perGram: new Map(infos.map((info) => [String(info.ingredient), info.perGram])),
+        perGram,
         measures,
         ingredientNames: new Map(ingredients.map((i) => [String(i._id), i.name])),
         units,
