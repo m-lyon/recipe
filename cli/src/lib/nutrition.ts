@@ -47,11 +47,17 @@ export function nutritionStatus(
     if (unit.dimension === 'mass') {
         return { state: 'linked', reason: '' };
     }
-    const found = findMeasure(measures, {
-        unit,
-        sizeId: recipeIngredient.size?._id ?? null,
-        prepMethodId: recipeIngredient.prepMethod?._id ?? null,
-    });
+    // The prep method's own record is per gram of the prepared food, so only its measures weigh it.
+    const prepId = recipeIngredient.prepMethod?._id ?? null;
+    const prepared = prepId !== null && (info.prepMethod?._id ?? null) === prepId;
+    const found = findMeasure(
+        prepared ? measures.filter((m) => (m.prepMethod?._id ?? null) === prepId) : measures,
+        {
+            unit,
+            sizeId: recipeIngredient.size?._id ?? null,
+            prepMethodId: prepId,
+        }
+    );
     if (found) {
         return { state: 'linked', reason: '' };
     }

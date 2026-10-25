@@ -271,6 +271,20 @@ describe('calculate', function () {
         });
     });
 
+    it('weighs a prep method record only by measures with that prep method', function () {
+        const juiced = data({
+            perGram: new Map([['stock', new Map([['juiced', perGram]])]]),
+        });
+        juiced.recipes.get('couscous')!.ingredients[1].prepMethod = 'juiced';
+        assert.equal(calculate('couscous', juiced).ingredients[1].reason?.code, 'NO_MEASURE');
+        juiced.measures.set('stock', [
+            { unit: EACH, size: null, prepMethod: null, grams: 26 },
+            { unit: EACH, size: null, prepMethod: 'juiced', grams: 13 },
+        ]);
+        const [, stock] = calculate('couscous', juiced).ingredients;
+        assert.closeTo(stock.macros.calories, 26, 1e-9);
+    });
+
     it('leaves a recipe used as an ingredient uncounted when it has no yield in the dimension', function () {
         const noYield = data();
         noYield.recipes.get('couscous')!.yields = [];

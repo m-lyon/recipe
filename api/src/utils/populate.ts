@@ -119,6 +119,7 @@ export async function populateIngredients() {
 
 export async function populateNutritionalInfo() {
     await NutritionalInfo.deleteMany({});
+    await NutritionalInfo.syncIndexes();
     const ingredient = await lookup(Ingredient.find(), (i) => i.name);
     const prep = await lookup(PrepMethod.find(), (p) => p.value);
     const perGram = (per100g: number[]) => {

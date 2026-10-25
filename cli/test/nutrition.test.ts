@@ -100,8 +100,29 @@ describe('findNutrition', () => {
         expect(findNutrition([juice], null)).to.equal(undefined);
         expect(nutritionStatus(entry(), [juice]).state).to.equal('missing');
         expect(
-            nutritionStatus(entry({ prepMethod: JUICED }), [juice], [measure(EACH, 44)])
+            nutritionStatus(
+                entry({ prepMethod: JUICED }),
+                [juice],
+                [measure(EACH, 44, { prepMethod: JUICED })]
+            )
         ).to.have.property('state', 'linked');
+    });
+
+    it('weighs a prep method record only by measures with that prep method', () => {
+        const status = nutritionStatus(
+            entry({ prepMethod: JUICED }),
+            [lime, juice],
+            [measure(EACH, 67)]
+        );
+        expect(status.state).to.equal('partial');
+        // A line with no record of its own uses the plain record and the plain measure.
+        expect(
+            nutritionStatus(
+                entry({ prepMethod: { _id: 'prep-sliced', value: 'sliced' } }),
+                [lime],
+                [measure(EACH, 67)]
+            ).state
+        ).to.equal('linked');
     });
 });
 

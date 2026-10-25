@@ -402,7 +402,8 @@ describe('prep methods and manual entry', () => {
                 ],
             };
             const each = { _id: 'meas-each', ingredient: 'ing-lime', unit: EACH, grams: 67 };
-            api = limeApi([PLAIN_RECORD, JUICE_RECORD], [each]);
+            const juiced = { ...each, _id: 'meas-juiced', prepMethod: JUICED, grams: 44 };
+            api = limeApi([PLAIN_RECORD, JUICE_RECORD], [each, juiced]);
             api.on('CliGetRecipeByIdentifier', { data: { recipeOne: recipe } });
             api.install();
             const { stdout } = await runCommand(['recipes', 'show', 'dressing-a1', '--json'], ROOT);

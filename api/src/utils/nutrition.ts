@@ -284,16 +284,19 @@ function calculateIngredient(
         return calculateRecipeIngredient(recipeIngredient, quantity, unit, data, path, memo);
     }
     const name = data.ingredientNames.get(recipeIngredient.ingredient) ?? 'this ingredient';
-    const perGram = perGramFor(
-        data.perGram.get(recipeIngredient.ingredient),
-        recipeIngredient.prepMethod
-    );
+    const records = data.perGram.get(recipeIngredient.ingredient);
+    const perGram = perGramFor(records, recipeIngredient.prepMethod);
     if (!perGram)
         return uncounted(recipeIngredient, 'NO_NUTRITION', `No nutritional data for ${name}`);
+    // The prep method's own record is per gram of the prepared food, so only its measures weigh it.
+    const prepared = !!recipeIngredient.prepMethod && records?.has(recipeIngredient.prepMethod);
+    const measures = (data.measures.get(recipeIngredient.ingredient) ?? []).filter(
+        (m) => !prepared || m.prepMethod === recipeIngredient.prepMethod
+    );
     const perUnit =
         unit.dimension === 'mass'
             ? unit.perCanonical
-            : gramsPerUnit(data.measures.get(recipeIngredient.ingredient) ?? [], {
+            : gramsPerUnit(measures, {
                   unit,
                   sizeId: recipeIngredient.size,
                   prepMethodId: recipeIngredient.prepMethod,
