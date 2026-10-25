@@ -116,14 +116,16 @@ function specificity(measure: MeasureData): number {
  * Grams in one of the measure key's unit, from the most specific measure that matches:
  *  1. exact (unit, size, prep)
  *  2. drop prep (unit, size)
- *  3. drop size (unit)
- *  4. volume only: the least specific volume row, rescaled by perCanonical
+ *  3. drop size (unit, prep)
+ *  4. drop both (unit)
+ *  5. volume only: the least specific volume row, rescaled by perCanonical
  */
 export function gramsPerUnit(measures: MeasureData[], key: MeasureKey): number | null {
     const forUnit = measures.filter((m) => String(m.unit._id) === String(key.unit._id));
     const match =
         forUnit.find((m) => m.size === key.sizeId && m.prepMethod === key.prepMethodId) ??
         forUnit.find((m) => m.size === key.sizeId && m.prepMethod === null) ??
+        forUnit.find((m) => m.size === null && m.prepMethod === key.prepMethodId) ??
         forUnit.find((m) => m.size === null && m.prepMethod === null);
     if (match) return match.grams;
     if (key.unit.dimension !== 'volume') return null;

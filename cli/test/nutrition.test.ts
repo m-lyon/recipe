@@ -124,6 +124,15 @@ describe('findNutrition', () => {
             ).state
         ).to.equal('linked');
     });
+
+    it('weighs a sized line with a prep method record by the unsized prep measure', () => {
+        const status = nutritionStatus(
+            entry({ prepMethod: JUICED, size: LARGE }),
+            [lime, juice],
+            [measure(EACH, 67), { ...measure(EACH, 44, { prepMethod: JUICED }), _id: 'm-juiced' }]
+        );
+        expect(status.state).to.equal('linked');
+    });
 });
 
 describe('findMeasure', () => {

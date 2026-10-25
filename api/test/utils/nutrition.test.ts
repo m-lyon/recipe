@@ -285,6 +285,28 @@ describe('calculate', function () {
         assert.closeTo(stock.macros.calories, 26, 1e-9);
     });
 
+    it('weighs a sized line with a prep method record by the unsized prep measure', function () {
+        const juiced = data({
+            perGram: new Map([['stock', new Map([['juiced', perGram]])]]),
+            measures: new Map([
+                [
+                    'stock',
+                    [
+                        { unit: EACH, size: null, prepMethod: null, grams: 26 },
+                        { unit: EACH, size: null, prepMethod: 'juiced', grams: 13 },
+                    ],
+                ],
+            ]),
+        });
+        Object.assign(juiced.recipes.get('couscous')!.ingredients[1], {
+            prepMethod: 'juiced',
+            size: 'large',
+        });
+        const [, stock] = calculate('couscous', juiced).ingredients;
+        assert.equal(stock.status, 'COUNTED');
+        assert.closeTo(stock.macros.calories, 26, 1e-9);
+    });
+
     it('leaves a recipe used as an ingredient uncounted when it has no yield in the dimension', function () {
         const noYield = data();
         noYield.recipes.get('couscous')!.yields = [];

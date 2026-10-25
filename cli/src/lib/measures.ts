@@ -25,8 +25,9 @@ function specificity(measure: MeasureSummary): number {
  * The most specific measure that matches a recipe line:
  *  1. exact (unit, size, prep)
  *  2. drop prep (unit, size)
- *  3. drop size (unit)
- *  4. volume only: the least specific volume row, rescaled by perCanonical
+ *  3. drop size (unit, prep)
+ *  4. drop both (unit)
+ *  5. volume only: the least specific volume row, rescaled by perCanonical
  */
 export function findMeasure(measures: MeasureSummary[], key: MeasureKey): FoundMeasure | null {
     const forUnit = measures.filter((m) => m.unit._id === key.unit._id);
@@ -35,6 +36,7 @@ export function findMeasure(measures: MeasureSummary[], key: MeasureKey): FoundM
     const match =
         forUnit.find((m) => sizeId(m) === key.sizeId && prepId(m) === key.prepMethodId) ??
         forUnit.find((m) => sizeId(m) === key.sizeId && prepId(m) === null) ??
+        forUnit.find((m) => sizeId(m) === null && prepId(m) === key.prepMethodId) ??
         forUnit.find((m) => sizeId(m) === null && prepId(m) === null);
     if (match) {
         return { gramsPerUnit: match.grams, measure: match };
