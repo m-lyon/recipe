@@ -18,7 +18,6 @@ interface NutritionalInfoPanelProps {
     /** Recipes used as ingredients, with some ingredients of their own not counted. */
     partial?: PartialIngredient[];
     canEditIngredient?: (ingredientId: string) => boolean;
-    /** Whether the viewer may edit a recipe with this owner, to offer adding a missing yield. */
     canEditRecipe?: (ownerId: string) => boolean;
     displayLine?: (item: RecipeIngredientView) => DisplayedIngredient;
     /** True when no ingredient contributed to the totals (none countable, or none present). */
@@ -31,12 +30,10 @@ function round1(n: number): string {
     return n.toFixed(1).replace(/\.0$/, '');
 }
 
-/** "No weight recorded for…" reads as "no weight recorded for…" after a dash. */
 function lowerFirst(text: string): string {
     return text.charAt(0).toLowerCase() + text.slice(1);
 }
 
-/** The used recipe's page: its own panel shows what it leaves out. */
 function recipeLink(item: RecipeIngredientView, action: 'view' | 'edit'): string | null {
     const used = item.ingredient;
     return used.__typename === 'Recipe'

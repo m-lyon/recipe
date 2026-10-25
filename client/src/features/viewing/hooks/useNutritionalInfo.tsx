@@ -3,7 +3,6 @@ import { useQuery } from '@apollo/client';
 import { UncountedCode } from '@recipe/graphql/generated';
 import { GET_RECIPE_NUTRITION } from '@recipe/graphql/queries/nutritionalInfo';
 
-/** An ingredient that added nothing to the totals, and why. */
 export interface UncountedIngredient {
     item: RecipeIngredientView;
     code: UncountedCode;
@@ -18,11 +17,6 @@ export interface PartialIngredient {
 
 const ZERO: MacroNutrients = { calories: 0, protein: 0, carbs: 0, fat: 0 };
 
-/**
- * A recipe's nutrition, as the API calculates it: through recipes used as ingredients, with
- * every ingredient's status. The API reads the whole tree, so the only arithmetic left here is one
- * serving.
- */
 export function useNutritionalInfo(recipe: CompletedRecipeView) {
     const recipeIngredients = recipe.ingredientSubsections.flatMap(
         (subsection) => subsection.ingredients

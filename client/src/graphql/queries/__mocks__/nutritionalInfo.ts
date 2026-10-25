@@ -1,3 +1,4 @@
+import { Macros } from '@recipe/graphql/schema';
 import { mockLettuceId } from '@recipe/graphql/__mocks__/ids';
 import { USDA_SEARCH } from '@recipe/graphql/queries/nutritionalInfo';
 import { mockCarrotEachMeasureId } from '@recipe/graphql/__mocks__/ids';
@@ -91,21 +92,6 @@ export const mockCarrotEachMeasure: IngredientMeasureFieldsFragment = {
     prepMethod: null,
 };
 
-// ---------- Recipe.nutrition for Recipe One, as the API calculates it ----------
-// Recipe One's ingredients (4 servings):
-//   1 tsp diced apple       → no volume weight for apple → uncounted
-//   1 small diced carrot    → 1 carrot = 61 g
-//   2 diced apples          → 1 apple = 182 g
-//   1/3 cup medium apple    → no volume weight for apple → uncounted
-//   1 oz apple              → a mass unit, converted directly
-
-type Macros = {
-    __typename: 'Macros';
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-};
 const ZERO: Macros = { __typename: 'Macros', calories: 0, protein: 0, carbs: 0, fat: 0 };
 
 function macrosOf(perGram: typeof applePerGram, grams: number): Macros {
