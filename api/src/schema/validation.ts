@@ -11,10 +11,12 @@ export async function validateItemNotInRecipe(
     itemType: 'unit' | 'size' | 'ingredient' | 'prepMethod' | 'recipe',
     errorNoun?: string
 ) {
-    type LineQuery = {
+    type IngredientsQuery = {
         'ingredientSubsections.ingredients': { $elemMatch: Record<string, Types.ObjectId> };
     };
-    type QueryType = LineQuery | { $or: [LineQuery, { 'yield.unit': Types.ObjectId }] };
+    type QueryType =
+        | IngredientsQuery
+        | { $or: [IngredientsQuery, { 'yield.unit': Types.ObjectId }] };
 
     let query: QueryType;
 
