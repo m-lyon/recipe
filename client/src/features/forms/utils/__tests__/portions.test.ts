@@ -101,6 +101,25 @@ describe('suggestFromPortion', () => {
         ).toBe('no matching prep method "sifted"');
     });
 
+    it('maps a whole-item word to each with no size', () => {
+        const fruit = portion({ description: '1 fruit (2" dia)', modifier: 'fruit (2" dia)' });
+        expect(suggest(fruit)?.draft).toEqual({
+            unitId: mockEach._id,
+            sizeId: null,
+            prepMethodId: null,
+            grams: 150,
+        });
+    });
+
+    it('maps "1 lime yields" to each only when the ingredient is lime', () => {
+        const yields = portion({ description: '1 lime yields', modifier: 'lime yields' });
+        expect(
+            suggestFromPortion(yields, mockUnits, mockSizes, mockPrepMethods, ['lime', 'limes'])
+                ?.draft
+        ).toEqual({ unitId: mockEach._id, sizeId: null, prepMethodId: null, grams: 150 });
+        expect(suggest(yields)?.reason).toBe('no matching unit or size "lime yields"');
+    });
+
     it('offers no row for a weight, and explains a serving', () => {
         expect(
             suggest(portion({ kind: 'WEIGHT', modifier: 'oz', description: '1 oz' }))

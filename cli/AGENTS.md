@@ -89,7 +89,9 @@ Some prep methods change what the food is. "Lime, juiced" is lime juice, not lim
   with that prep method: `1 cup` of lime juice becomes `cup · juiced`. A portion of another
   prep method is refused with exit 6.
 - The measure of a prep method is the weight of the **prepared** food. `1 each · juiced = 44 g`
-  means one lime gives 44 g of juice, not that a lime weighs 44 g.
+  means one lime gives 44 g of juice, not that a lime weighs 44 g. Store it from the juice
+  record's `1 lime yields` portion: `--prep juiced --portion "1 lime yields"`. A yield maps to
+  `each` only when it names the ingredient, so `1 wedge yields` is refused.
 - An ingredient with only a prep record shows as `prep only` in `ingredients list`. Lines with
   no prep method, or another one, stay uncounted until it has a plain record too.
 - `nutrition unlink <id> --prep juiced` removes the prep record and leaves the plain one.
@@ -183,6 +185,8 @@ A linked ingredient has `perGram` macros. A recipe line reaches grams by its uni
 
 - `--portion` stores a USDA portion as a measure. Repeat it to store several. `"1 large"`
   becomes `each` + size `large`; `"cup, chopped"` becomes `cup` + prep method `chopped`.
+  `"1 fruit (2" dia)"`, `"1 piece"` and a portion that names the ingredient (`"1 lime
+  yields"` for lime) become `each` with no size, so they need no `--default-portion`.
 - A portion whose unit, size or prep method has no match in the database is refused with
   exit 6 and the reason, such as `no matching unit or size "jumbo"`. Do not force it through.
 - `--all-portions` stores every portion that maps, and warns about each one it skips.

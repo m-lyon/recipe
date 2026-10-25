@@ -63,6 +63,18 @@ function sizeWithin(sizes: NamedOption[], text: string): NamedOption | undefined
     });
 }
 
+/** Words that name one whole item with no size: "1 fruit (2" dia)", "1 piece whole". */
+const WHOLE_ITEM_WORDS = new Set(['fruit', 'whole', 'piece', 'piece whole']);
+
+/**
+ * Whether an item portion is one whole item: a whole-item word, or the ingredient's own
+ * name. "1 lime yields" (on Lime juice, raw) is what one whole lime gives, so it is one too.
+ */
+function namesWholeItem(head: string, itemNames: string[]): boolean {
+    const target = normalise(head).replace(/\s+yields$/, '');
+    return WHOLE_ITEM_WORDS.has(target) || itemNames.map(normalise).includes(target);
+}
+
 function matchNamed(options: NamedOption[], name: string): NamedOption | undefined {
     const target = normalise(name);
     return options.find((option) => normalise(option.value) === target);
@@ -73,15 +85,17 @@ function formatGrams(grams: number): string {
 }
 
 /**
- * Suggests a measure row for a USDA portion: "1 large" is each + size large, and
- * "cup, chopped" is cup + prep chopped. Names are matched only to suggest a row that the
- * user confirms; nothing reads a name once the row is saved.
+ * Suggests a measure row for a USDA portion: "1 large" is each + size large, "1 fruit" is
+ * each, and "cup, chopped" is cup + prep chopped. Names are matched only to suggest a row
+ * that the user confirms; nothing reads a name once the row is saved. `itemNames` are the
+ * ingredient's names, so that "1 lime yields" is one lime.
  */
 export function suggestFromPortion(
     portion: UsdaPortion,
     units: UnitOption[],
     sizes: NamedOption[],
-    prepMethods: NamedOption[]
+    prepMethods: NamedOption[],
+    itemNames: string[] = []
 ): PortionSuggestion | null {
     if (portion.kind === 'WEIGHT') {
         // Already a mass: perGram prices it with no measure.
@@ -123,13 +137,16 @@ export function suggestFromPortion(
             units.filter((u) => u.dimension === 'count'),
             head
         );
+        const each = units.find((u) => u.standard === 'each');
         if (size) {
-            const each = units.find((u) => u.standard === 'each');
             if (!each) return { label, reason: 'no each unit' };
             unitId = each._id;
             sizeId = size._id;
         } else if (countUnit) {
             unitId = countUnit._id;
+        } else if (namesWholeItem(head, itemNames)) {
+            if (!each) return { label, reason: 'no each unit' };
+            unitId = each._id;
         } else {
             return { label, reason: `no matching unit or size "${head}"` };
         }
