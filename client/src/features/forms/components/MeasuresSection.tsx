@@ -20,7 +20,6 @@ export interface MeasuresSectionProps {
     portions: UsdaPortion[];
     /** Per-gram macros, so each row can show its calories. Display only. */
     perGram: MacroNutrients | null;
-    /** The ingredient's names, so that a "1 lime yields" portion is one lime. */
     itemNames?: string[];
     disabled?: boolean;
 }

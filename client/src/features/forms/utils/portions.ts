@@ -63,13 +63,8 @@ function sizeWithin(sizes: NamedOption[], text: string): NamedOption | undefined
     });
 }
 
-/** Words that name one whole item with no size: "1 fruit (2" dia)", "1 piece whole". */
 const WHOLE_ITEM_WORDS = new Set(['fruit', 'whole', 'piece', 'piece whole']);
 
-/**
- * Whether an item portion is one whole item: a whole-item word, or the ingredient's own
- * name. "1 lime yields" (on Lime juice, raw) is what one whole lime gives, so it is one too.
- */
 function namesWholeItem(head: string, itemNames: string[]): boolean {
     const target = normalise(head).replace(/\s+yields$/, '');
     return WHOLE_ITEM_WORDS.has(target) || itemNames.map(normalise).includes(target);
@@ -87,8 +82,7 @@ function formatGrams(grams: number): string {
 /**
  * Suggests a measure row for a USDA portion: "1 large" is each + size large, "1 fruit" is
  * each, and "cup, chopped" is cup + prep chopped. Names are matched only to suggest a row
- * that the user confirms; nothing reads a name once the row is saved. `itemNames` are the
- * ingredient's names, so that "1 lime yields" is one lime.
+ * that the user confirms; nothing reads a name once the row is saved.
  */
 export function suggestFromPortion(
     portion: UsdaPortion,
