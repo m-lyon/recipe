@@ -108,9 +108,6 @@ with source `manual`. Use it when neither USDA nor Open Food Facts has the food.
   `nutrition measure <id> --unit millilitre [--prep ...] --grams <n>`. Never guess a density.
 - `--prep` writes a prep method's record, as for `link`.
 - An existing record exits 5, as for `link`.
-- A record with all four values zero (water, salt) counts every recipe line of that
-  ingredient as zero, with or without a quantity or a weight. `--per-100g 0,0,0,0` is how
-  to make "salt, to taste" count.
 
 ## Contributing back to Open Food Facts
 

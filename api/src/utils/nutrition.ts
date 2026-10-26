@@ -276,8 +276,6 @@ function calculateIngredient(
     path: string[],
     memo: Map<string, Calculated>
 ): IngredientNutrition {
-    // An ingredient with no calories or macros, such as water or salt, adds nothing whatever
-    // its amount, so it is counted without a quantity or a weight: "salt, to taste".
     if (recipeIngredient.type === 'ingredient') {
         const records = data.perGram.get(recipeIngredient.ingredient);
         const perGram = perGramFor(records, recipeIngredient.prepMethod);
