@@ -183,6 +183,9 @@ export const BaseIngredientForm = forwardRef<UsdaLinkSectionHandle, BaseIngredie
                     ingredientId={ingredientId}
                     portions={portions}
                     perGram={perGram}
+                    itemNames={[formData.name, formData.pluralName].filter((n): n is string =>
+                        Boolean(n)
+                    )}
                     disabled={disabled}
                 />
                 <ButtonGroup display='flex' justifyContent='flex-end' isDisabled={disabled}>

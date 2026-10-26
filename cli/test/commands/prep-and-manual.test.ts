@@ -48,6 +48,16 @@ const LIME_JUICE: UsdaFoodItem = {
             impliedDensity: 0.63,
             ambiguous: false,
         },
+        {
+            description: '1 lime yields',
+            amount: 1,
+            modifier: 'lime yields',
+            gramWeight: 44,
+            kind: 'ITEM',
+            millilitres: null,
+            impliedDensity: null,
+            ambiguous: true,
+        },
     ],
 };
 
@@ -158,6 +168,34 @@ describe('prep methods and manual entry', () => {
                 },
             ]);
             expect(stdout).to.contain('Created NutritionalInfo for lime (juiced)');
+        });
+
+        it('stores "1 lime yields" as the juice of one lime: each · juiced', async () => {
+            api = limeApi([PLAIN_RECORD]);
+            api.install();
+            await runCommand(
+                [
+                    'nutrition',
+                    'link',
+                    'lime',
+                    '--prep',
+                    'juiced',
+                    '--fdc-id',
+                    '168156',
+                    '--portion',
+                    '"1 lime yields"',
+                ],
+                ROOT
+            );
+            expect(sent('CliCreateIngredientMeasure')).to.deep.equal([
+                {
+                    ingredient: 'ing-lime',
+                    unit: EACH._id,
+                    size: null,
+                    prepMethod: JUICED._id,
+                    grams: 44,
+                },
+            ]);
         });
 
         it('exits 5 when the prep method already has a record', async () => {

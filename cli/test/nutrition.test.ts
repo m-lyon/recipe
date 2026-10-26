@@ -197,6 +197,42 @@ describe('suggestFromPortion', () => {
         });
     });
 
+    const item = (description: string, gramWeight: number) => ({
+        description,
+        amount: 1,
+        modifier: description.replace(/^1 /, ''),
+        gramWeight,
+        kind: 'ITEM' as const,
+        millilitres: null,
+        impliedDensity: null,
+        ambiguous: true,
+    });
+    const each = (grams: number) => ({ unitId: EACH._id, sizeId: null, prepMethodId: null, grams });
+
+    it('maps a whole-item word to each with no size', () => {
+        const fruit = item('1 fruit (2" dia)', 67);
+        expect(suggestFromPortion(fruit, units, sizes, [])?.draft).to.deep.equal(each(67));
+        const piece = item('1 piece whole', 19);
+        expect(suggestFromPortion(piece, units, sizes, [])?.draft).to.deep.equal(each(19));
+    });
+
+    it('maps "1 lime yields" to each when the ingredient is lime', () => {
+        const yields = item('1 lime yields', 44);
+        expect(
+            suggestFromPortion(yields, units, sizes, [], ['lime', 'limes'])?.draft
+        ).to.deep.equal(each(44));
+        expect(suggestFromPortion(yields, units, sizes, [])?.reason).to.equal(
+            'no matching unit or size "lime yields"'
+        );
+    });
+
+    it('does not read a part of the item as the whole: "1 wedge yields"', () => {
+        const wedge = item('1 wedge yields', 5.9);
+        expect(suggestFromPortion(wedge, units, sizes, [], ['lemon', 'lemons'])?.reason).to.equal(
+            'no matching unit or size "wedge yields"'
+        );
+    });
+
     it('maps an Open Food Facts multipack item to each', () => {
         expect(suggestFromPortion(KNORR_POTS.portions![0], units, sizes, [])?.draft).to.deep.equal({
             unitId: EACH._id,

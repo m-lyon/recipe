@@ -177,16 +177,19 @@ export default class NutritionLink extends BaseCommand {
             await client.request(GET_INGREDIENT_MEASURES, { ingredientIds: [ingredient._id] })
         ).ingredientMeasuresByIngredientIds ?? []) as unknown as MeasureSummary[];
         const prep = flags.prep ? resolvePrepMethod(components.prepMethods, flags.prep) : null;
+        // "1 lime yields" names one lime, so the ingredient's names mark a whole item.
+        const itemNames = [ingredient.name, ingredient.pluralName];
         const measures = this.planMeasures(
             selected,
             components,
             existingMeasures,
             flags['all-portions'],
             flags.overwrite,
-            prep
+            prep,
+            itemNames
         );
         if (selected.length === 0) {
-            this.warnUnusedPortions(portions, components);
+            this.warnUnusedPortions(portions, components, itemNames);
         }
 
         // Checked before any write, and under --dry-run too, so a dry run reports
@@ -326,7 +329,8 @@ export default class NutritionLink extends BaseCommand {
         existing: MeasureSummary[],
         skipUnmatched: boolean,
         overwrite: boolean,
-        prep: NamedSummary | null
+        prep: NamedSummary | null,
+        itemNames: string[]
     ): PlannedMeasure[] {
         const planned: PlannedMeasure[] = [];
         for (const { portion, unsized } of portions) {
@@ -334,7 +338,8 @@ export default class NutritionLink extends BaseCommand {
                 portion,
                 components.units,
                 components.sizes,
-                components.prepMethods
+                components.prepMethods,
+                itemNames
             );
             if (!suggestion) {
                 if (skipUnmatched) continue;
@@ -432,7 +437,8 @@ export default class NutritionLink extends BaseCommand {
     /** Without a measure, volume and count lines of this ingredient stay uncounted. */
     private warnUnusedPortions(
         portions: UsdaPortion[],
-        components: { units: UnitSummary[]; sizes: NamedSummary[]; prepMethods: NamedSummary[] }
+        components: { units: UnitSummary[]; sizes: NamedSummary[]; prepMethods: NamedSummary[] },
+        itemNames: string[]
     ): void {
         const usable = portions.filter(
             (portion) =>
@@ -440,7 +446,8 @@ export default class NutritionLink extends BaseCommand {
                     portion,
                     components.units,
                     components.sizes,
-                    components.prepMethods
+                    components.prepMethods,
+                    itemNames
                 )?.draft
         );
         if (usable.length > 0) {

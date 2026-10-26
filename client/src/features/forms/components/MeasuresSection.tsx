@@ -20,6 +20,7 @@ export interface MeasuresSectionProps {
     portions: UsdaPortion[];
     /** Per-gram macros, so each row can show its calories. Display only. */
     perGram: MacroNutrients | null;
+    itemNames?: string[];
     disabled?: boolean;
 }
 
@@ -60,7 +61,7 @@ function sameKey(a: MeasureDraft, b: MeasureDraft): boolean {
  */
 export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSectionProps>(
     function MeasuresSection(props, ref) {
-        const { ingredientId, portions, perGram, disabled } = props;
+        const { ingredientId, portions, perGram, itemNames, disabled } = props;
         const toast = useErrorToast();
         const { data: components } = useQuery(GET_INGREDIENT_COMPONENTS);
         const { data: measureData, loading: measuresLoading } = useQuery(GET_INGREDIENT_MEASURES, {
@@ -132,7 +133,7 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
         const rows = [...saved.filter((row) => !removed.has(row.measureId!)), ...staged];
 
         const suggestions = portions
-            .map((portion) => suggestFromPortion(portion, units, sizes, prepMethods))
+            .map((portion) => suggestFromPortion(portion, units, sizes, prepMethods, itemNames))
             .filter((s) => s != null)
             .filter((s) => !s.draft || !rows.some((row) => sameKey(row.draft, s.draft!)));
 
