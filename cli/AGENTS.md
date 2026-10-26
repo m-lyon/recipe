@@ -194,8 +194,9 @@ A linked ingredient has `perGram` macros. A recipe line reaches grams by its uni
   ingredient too. Prefer an unqualified volume portion; `cup, chopped` is a packing density.
 - Roughly a third of foods offer no item portion. When a recipe counts the ingredient, look
   for a better record before giving up. **Do not invent a gram weight.**
-- The `ambiguous` flag means read the label carefully. `NLEA serving`, `1 lemon yields` and
-  `slice` all count like items and are not one whole item.
+- The `ambiguous` flag means read the label carefully. `NLEA serving` and `slice` count like
+  items and are not one whole item. `1 lemon yields` is the juice of one lemon: store it only
+  on the juice record with `--prep juiced`, never on the plain ingredient.
 - When several sizes exist — egg spans 38 g to 63 g, onion 70 g to 150 g — store the sizes the
   recipes use, or the one a recipe writer would mean, usually medium or large. **State which
   you picked.**
