@@ -252,6 +252,42 @@ describe('calculate', function () {
         assert.closeTo(result.total.calories, 126, 1e-9);
     });
 
+    it('counts an ingredient with zero macros without a quantity or a weight', function () {
+        const zero = { calories: 0, protein: 0, carbs: 0, fat: 0 };
+        const salted = data({
+            perGram: new Map([
+                ['flour', new Map([['', perGram]])],
+                ['stock', new Map([['', zero]])],
+                ['salt', new Map([['', zero]])],
+            ]),
+            measures: new Map(),
+        });
+        const [couscous, salt] = calculate('salad', salted).ingredients;
+        assert.equal(salt.status, 'COUNTED');
+        assert.isNull(salt.reason);
+        assert.deepEqual(salt.macros, zero);
+        // The stock pot has no weight recorded, but adds nothing, so the child is counted.
+        assert.equal(couscous.status, 'COUNTED');
+    });
+
+    it('does not count a zero plain record for a prep method with its own record', function () {
+        const zero = { calories: 0, protein: 0, carbs: 0, fat: 0 };
+        const juiced = data({
+            perGram: new Map([
+                [
+                    'stock',
+                    new Map([
+                        ['', zero],
+                        ['juiced', perGram],
+                    ]),
+                ],
+            ]),
+            measures: new Map(),
+        });
+        juiced.recipes.get('couscous')!.ingredients[1].prepMethod = 'juiced';
+        assert.equal(calculate('couscous', juiced).ingredients[1].reason?.code, 'NO_MEASURE');
+    });
+
     it('marks a child with uncounted ingredients as partial, and still adds what it has', function () {
         const partial = data({ measures: new Map() });
         const [couscous] = calculate('salad', partial).ingredients;

@@ -63,6 +63,10 @@ export function addMacros(a: MacroNutrients, b: MacroNutrients): MacroNutrients 
     };
 }
 
+function isZero(macros: MacroNutrients): boolean {
+    return !macros.calories && !macros.protein && !macros.carbs && !macros.fat;
+}
+
 export function scaleMacros(macros: MacroNutrients, factor: number): MacroNutrients {
     return {
         calories: macros.calories * factor,
@@ -272,6 +276,13 @@ function calculateIngredient(
     path: string[],
     memo: Map<string, Calculated>
 ): IngredientNutrition {
+    // An ingredient with no calories or macros, such as water or salt, adds nothing whatever
+    // its amount, so it is counted without a quantity or a weight: "salt, to taste".
+    if (recipeIngredient.type === 'ingredient') {
+        const records = data.perGram.get(recipeIngredient.ingredient);
+        const perGram = perGramFor(records, recipeIngredient.prepMethod);
+        if (perGram && isZero(perGram)) return counted(recipeIngredient, { ...ZERO_MACROS });
+    }
     if (!recipeIngredient.quantity)
         return uncounted(recipeIngredient, 'NO_QUANTITY', 'No quantity');
     const quantity = quantityToFloat(recipeIngredient.quantity);
