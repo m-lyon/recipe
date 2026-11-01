@@ -1,8 +1,8 @@
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, screen, waitFor } from '@testing-library/react';
 import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
+import { cleanup, screen, waitFor, within } from '@testing-library/react';
 
 import { mockUpdateIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
 import { mockDeleteIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
@@ -120,7 +120,7 @@ describe('Edit Ingredient', () => {
         await waitFor(() => expect(deleted).toHaveBeenCalledTimes(1));
     });
 
-    it('should not show nutritional data for a prep method as the link', async () => {
+    it('should show nutritional data for a prep method in a row of its own', async () => {
         // Render -- carrot has data for diced carrot only
         const user = userEvent.setup();
         const routes = createRoutesFromElements(<Route path='/' element={<EditIngredient />} />);
@@ -138,9 +138,12 @@ describe('Edit Ingredient', () => {
             expect(screen.getByLabelText('Plural name')).toHaveProperty('value', 'carrots')
         );
 
-        // Expect
-        expect(screen.getByLabelText('Search nutritional data')).not.toBeNull();
-        expect(screen.queryByText('Entered manually')).toBeNull();
+        // Expect -- the plain record has no data, and diced carrot has its own row
+        const plain = within(screen.getByRole('group', { name: 'Nutritional data' }));
+        const diced = within(screen.getByRole('group', { name: 'Nutritional data · diced' }));
+        expect(plain.getByLabelText('Search nutritional data')).not.toBeNull();
+        expect(plain.queryByText(/Entered manually/)).toBeNull();
+        expect(diced.getByText('Entered manually · Pack label')).not.toBeNull();
     });
 
     it('should remove an ingredient', async () => {

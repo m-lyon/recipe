@@ -1,3 +1,5 @@
+import { GraphQLError } from 'graphql';
+
 import { Macros } from '@recipe/graphql/schema';
 import { mockLettuceId } from '@recipe/graphql/__mocks__/ids';
 import { USDA_SEARCH } from '@recipe/graphql/queries/nutritionalInfo';
@@ -9,11 +11,16 @@ import { mockRecipeIngredientIdFive } from '@recipe/graphql/__mocks__/ids';
 import { mockNutritionalInfoIdCarrot } from '@recipe/graphql/__mocks__/ids';
 import { IngredientMeasureFieldsFragment } from '@recipe/graphql/generated';
 import { mockRecipeIngredientIdThree } from '@recipe/graphql/__mocks__/ids';
+import { OpenFoodFactsSearchQueryVariables } from '@recipe/graphql/generated';
 import { GET_RECIPE_NUTRITION } from '@recipe/graphql/queries/nutritionalInfo';
+import { OpenFoodFactsProductFieldsFragment } from '@recipe/graphql/generated';
+import { OPEN_FOOD_FACTS_SEARCH } from '@recipe/graphql/queries/nutritionalInfo';
 import { GET_INGREDIENT_MEASURES } from '@recipe/graphql/queries/nutritionalInfo';
+import { OPEN_FOOD_FACTS_PRODUCT } from '@recipe/graphql/queries/nutritionalInfo';
 import { GetNutritionalInfosByIngredientIdsQuery } from '@recipe/graphql/generated';
 import { mockAdminId, mockAppleEachMeasureId } from '@recipe/graphql/__mocks__/ids';
 import { UsdaSearchQuery, UsdaSearchQueryVariables } from '@recipe/graphql/generated';
+import { EnumNutritionalInfoSource, UsdaPortionKind } from '@recipe/graphql/generated';
 import { mockAppleId, mockCarrotId, mockChickenId } from '@recipe/graphql/__mocks__/ids';
 import { UsdaFoodItemQuery, UsdaFoodItemQueryVariables } from '@recipe/graphql/generated';
 import { mockRecipeIdOne, mockRecipeIngredientIdOne } from '@recipe/graphql/__mocks__/ids';
@@ -244,7 +251,7 @@ export const mockGetIngredientMeasuresFallback = {
 // ---------- Batch query mock for the EditIngredient page ----------
 // EditIngredient prefetches nutritional info for every ingredient in the list (in
 // ingredientMany order: apple, chicken, carrot, lettuce) alongside the ingredient list
-// itself, so UsdaLinkSection doesn't need a per-ingredient loading query.
+// itself, so the form doesn't need a per-ingredient loading query.
 
 export const mockGetNutritionalInfosForEditIngredient = {
     request: {
@@ -273,7 +280,10 @@ export const mockGetNutritionalInfosForEditIngredientCarrotLinked = {
                     _id: mockNutritionalInfoIdCarrot,
                     ingredient: mockCarrotId,
                     prepMethod: null,
+                    source: EnumNutritionalInfoSource.Manual,
                     usdaFdcId: null,
+                    openFoodFactsBarcode: null,
+                    sourceName: null,
                     perGram: {
                         __typename: 'NutritionalInfoPerGram',
                         calories: 0.41,
@@ -287,7 +297,7 @@ export const mockGetNutritionalInfosForEditIngredientCarrotLinked = {
     },
 };
 
-/** Carrot has nutritional data for diced carrot only, which the form does not edit. */
+/** Carrot has nutritional data for diced carrot only, which the form shows as its own row. */
 export const mockGetNutritionalInfosForEditIngredientCarrotDicedOnly = {
     request: mockGetNutritionalInfosForEditIngredient.request,
     result: {
@@ -298,8 +308,11 @@ export const mockGetNutritionalInfosForEditIngredientCarrotDicedOnly = {
                     __typename: 'NutritionalInfo',
                     _id: mockNutritionalInfoIdCarrotDiced,
                     ingredient: mockCarrotId,
-                    prepMethod: { __typename: 'PrepMethod', _id: mockDicedId },
+                    prepMethod: { __typename: 'PrepMethod', _id: mockDicedId, value: 'diced' },
+                    source: EnumNutritionalInfoSource.Manual,
                     usdaFdcId: null,
+                    openFoodFactsBarcode: null,
+                    sourceName: 'Pack label',
                     perGram: {
                         __typename: 'NutritionalInfoPerGram',
                         calories: 0.35,
@@ -337,7 +350,7 @@ export const mockGetNutritionalInfosForEditIngredientAfterCarrotDeleted = {
 export const usdaOnionPer100g = { calories: 40, protein: 1.1, carbs: 9.34, fat: 0.1 };
 
 /** The per-100g figures behind mockUsdaSearchChickenBreast, exported so the mutation mock
- *  can derive per-gram values by the same arithmetic UsdaLinkSection uses. */
+ *  can derive per-gram values by the same arithmetic the form uses. */
 export const usdaChickenBreastPer100g = { calories: 165, protein: 31, carbs: 0, fat: 3.6 };
 
 const usdaSearchChickenBreastResult: UsdaSearchQuery = {
@@ -749,4 +762,109 @@ export const mockUsdaFoodItemOliveOil = {
         variables: { fdcId: 171413 } satisfies UsdaFoodItemQueryVariables,
     },
     result: { data: usdaFoodItemOliveOilResult },
+};
+
+// ---------- Open Food Facts mocks ----------
+
+/** The per-100g figures behind mockOffPearlCouscous, exported so the mutation mock can
+ *  derive per-gram values by the same arithmetic the form uses. */
+export const offPearlCouscousPer100g = { calories: 356, protein: 12, carbs: 72, fat: 1.5 };
+export const offPearlCouscousBarcode = '5010338301255';
+
+export const mockOffPearlCouscous: OpenFoodFactsProductFieldsFragment = {
+    __typename: 'OpenFoodFactsProduct',
+    barcode: offPearlCouscousBarcode,
+    name: 'Pearl Couscous',
+    brands: "Al'fez",
+    quantity: '200 g',
+    caloriesPer100g: offPearlCouscousPer100g.calories,
+    proteinPer100g: offPearlCouscousPer100g.protein,
+    carbsPer100g: offPearlCouscousPer100g.carbs,
+    fatPer100g: offPearlCouscousPer100g.fat,
+    warnings: [],
+    portions: [
+        {
+            __typename: 'UsdaFoodPortion',
+            description: '1 cup',
+            amount: 1,
+            modifier: null,
+            gramWeight: 170,
+            kind: UsdaPortionKind.Volume,
+            millilitres: 236.5882365,
+            impliedDensity: 0.72,
+            ambiguous: false,
+        },
+    ],
+};
+
+/** A product with no fat value, which the API flags in `warnings`. */
+export const mockOffCouscousNoFat: OpenFoodFactsProductFieldsFragment = {
+    __typename: 'OpenFoodFactsProduct',
+    barcode: '5000168001142',
+    name: 'Giant Couscous',
+    brands: 'Tesco',
+    quantity: '500 g',
+    caloriesPer100g: 350,
+    proteinPer100g: 12,
+    carbsPer100g: 70,
+    fatPer100g: null,
+    warnings: ['No value for fat'],
+    portions: [],
+};
+
+export const mockOpenFoodFactsSearchCouscous = {
+    request: {
+        query: OPEN_FOOD_FACTS_SEARCH,
+        variables: {
+            query: 'couscous',
+            pageSize: 20,
+            ukOnly: true,
+        } satisfies OpenFoodFactsSearchQueryVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Query' as const,
+            openFoodFactsSearch: [mockOffPearlCouscous, mockOffCouscousNoFat],
+        },
+    },
+};
+
+/** The same search over all countries, after the UK filter is turned off. */
+export const mockOpenFoodFactsSearchCouscousAllCountries = {
+    request: {
+        query: OPEN_FOOD_FACTS_SEARCH,
+        variables: {
+            query: 'couscous',
+            pageSize: 20,
+            ukOnly: false,
+        } satisfies OpenFoodFactsSearchQueryVariables,
+    },
+    result: {
+        data: { __typename: 'Query' as const, openFoodFactsSearch: [mockOffPearlCouscous] },
+    },
+};
+
+export const mockOpenFoodFactsProductCouscous = {
+    request: {
+        query: OPEN_FOOD_FACTS_PRODUCT,
+        variables: { barcode: offPearlCouscousBarcode },
+    },
+    result: {
+        data: { __typename: 'Query' as const, openFoodFactsProduct: mockOffPearlCouscous },
+    },
+};
+
+/** The API answers an unknown barcode with a NOT_FOUND error. */
+export const mockOpenFoodFactsProductNotFound = {
+    request: {
+        query: OPEN_FOOD_FACTS_PRODUCT,
+        variables: { barcode: '5012345678900' },
+    },
+    result: {
+        errors: [
+            new GraphQLError('No Open Food Facts product with barcode 5012345678900', {
+                extensions: { code: 'NOT_FOUND' },
+            }),
+        ],
+    },
 };

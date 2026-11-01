@@ -72,8 +72,12 @@ export const GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS = gql(`
             ingredient
             prepMethod {
                 _id
+                value
             }
+            source
             usdaFdcId
+            openFoodFactsBarcode
+            sourceName
             perGram {
                 calories
                 protein
@@ -81,6 +85,19 @@ export const GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS = gql(`
                 fat
             }
         }
+    }
+`);
+
+export const NUTRITION_PORTION_FIELDS = gql(`
+    fragment NutritionPortionFields on UsdaFoodPortion {
+        description
+        amount
+        modifier
+        gramWeight
+        kind
+        millilitres
+        impliedDensity
+        ambiguous
     }
 `);
 
@@ -114,15 +131,41 @@ export const USDA_FOOD_ITEM = gql(`
             carbsPer100g
             fatPer100g
             portions {
-                description
-                amount
-                modifier
-                gramWeight
-                kind
-                millilitres
-                impliedDensity
-                ambiguous
+                ...NutritionPortionFields
             }
+        }
+    }
+`);
+
+export const OPEN_FOOD_FACTS_PRODUCT_FIELDS = gql(`
+    fragment OpenFoodFactsProductFields on OpenFoodFactsProduct {
+        barcode
+        name
+        brands
+        quantity
+        caloriesPer100g
+        proteinPer100g
+        carbsPer100g
+        fatPer100g
+        warnings
+        portions {
+            ...NutritionPortionFields
+        }
+    }
+`);
+
+export const OPEN_FOOD_FACTS_SEARCH = gql(`
+    query OpenFoodFactsSearch($query: String!, $pageSize: Int, $ukOnly: Boolean) {
+        openFoodFactsSearch(query: $query, pageSize: $pageSize, ukOnly: $ukOnly) {
+            ...OpenFoodFactsProductFields
+        }
+    }
+`);
+
+export const OPEN_FOOD_FACTS_PRODUCT = gql(`
+    query OpenFoodFactsProduct($barcode: String!) {
+        openFoodFactsProduct(barcode: $barcode) {
+            ...OpenFoodFactsProductFields
         }
     }
 `);

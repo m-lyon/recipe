@@ -6,4 +6,5 @@ export { CreateIngredientForm } from './components/CreateIngredientForm';
 export { ModifyIngredientForm } from './components/ModifyIngredientForm';
 export { CreatePrepMethodForm } from './components/CreatePrepMethodForm';
 export { ModifyPrepMethodForm } from './components/ModifyPrepMethodForm';
+export type { ExistingNutritionalInfo } from './components/nutritionTypes';
 export { CreateBespokeUnitForm } from './components/CreateBespokeUnitForm';

@@ -7,7 +7,7 @@ import { mockChoppedId, mockLargeId } from '@recipe/graphql/__mocks__/ids';
 import { mockPrepMethods } from '@recipe/graphql/queries/__mocks__/prepMethod';
 
 import { suggestFromPortion } from '../portions';
-import { UsdaPortion } from '../../components/UsdaLinkSection';
+import { NutritionPortion as UsdaPortion } from '../../components/nutritionTypes';
 
 function portion(overrides: Partial<UsdaPortion>): UsdaPortion {
     return {

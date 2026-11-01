@@ -10,11 +10,12 @@ import type { Owner } from '@recipe/common/components';
 import { FloatingLabelInput, OwnerText } from '@recipe/common/components';
 
 import { useFormLogic } from '../hooks/useFormLogic';
-import { UsdaLinkSectionHandle } from './UsdaLinkSection';
-import { ExistingNutritionalInfo } from './UsdaLinkSection';
+import { MeasureForDensity } from '../utils/nutrition';
+import { PerGramByPrep } from './NutritionLinkSection';
 import { useKeyboardSubmit } from '../hooks/useKeyboardSubmit';
-import { UsdaLinkSection, UsdaPortion } from './UsdaLinkSection';
+import { ExistingNutritionalInfo, LinkedPortion } from './nutritionTypes';
 import { MeasuresSection, MeasuresSectionHandle } from './MeasuresSection';
+import { NutritionLinkSection, NutritionLinkSectionHandle } from './NutritionLinkSection';
 
 export function formatIngredientError(error: ApolloError) {
     if (error.message.startsWith('E11000')) {
@@ -41,12 +42,13 @@ export interface BaseIngredientFormProps extends StackProps {
     onDelete?: () => void;
     /** The owner, shown beside the buttons. */
     owner?: Owner | null;
-    /** Nutritional info for this ingredient, prefetched by the page alongside the ingredient list. */
-    existingNutritionalInfo?: ExistingNutritionalInfo | null;
-    /** Called after a link is created or cleared, so the prefetched list can be refreshed. */
+    /** The ingredient's nutritional info records, prefetched by the page alongside the
+     *  ingredient list. */
+    existingNutritionalInfos?: ExistingNutritionalInfo[];
+    /** Called after a record is created or cleared, so the prefetched list can be refreshed. */
     onNutritionalInfoChange?: () => void;
 }
-export const BaseIngredientForm = forwardRef<UsdaLinkSectionHandle, BaseIngredientFormProps>(
+export const BaseIngredientForm = forwardRef<NutritionLinkSectionHandle, BaseIngredientFormProps>(
     function BaseIngredientForm(props, ref) {
         const {
             fieldRef,
@@ -56,7 +58,7 @@ export const BaseIngredientForm = forwardRef<UsdaLinkSectionHandle, BaseIngredie
             submitForm,
             onDelete,
             owner,
-            existingNutritionalInfo,
+            existingNutritionalInfos,
             onNutritionalInfoChange,
             ...rest
         } = props;
@@ -78,18 +80,19 @@ export const BaseIngredientForm = forwardRef<UsdaLinkSectionHandle, BaseIngredie
                 'ingredient'
             );
         const { setIsFocused } = useKeyboardSubmit(handleSubmit);
-        const usdaLinkRef = useRef<UsdaLinkSectionHandle>(null);
+        const nutritionRef = useRef<NutritionLinkSectionHandle>(null);
         const measuresRef = useRef<MeasuresSectionHandle>(null);
-        const [portions, setPortions] = useState<UsdaPortion[]>([]);
-        const [perGram, setPerGram] = useState<MacroNutrients | null>(null);
+        const [portions, setPortions] = useState<LinkedPortion[]>([]);
+        const [perGram, setPerGram] = useState<PerGramByPrep | null>(null);
+        const [measures, setMeasures] = useState<MeasureForDensity[]>([]);
         // The nutrition link and measures are staged, and saved once the ingredient is.
         useImperativeHandle(ref, () => ({
             commitChanges: async (savedIngredientId: string) => {
                 // Read both handles first: the form may unmount while the link is saved.
-                const usdaLink = usdaLinkRef.current;
-                const measures = measuresRef.current;
-                await usdaLink?.commitChanges(savedIngredientId);
-                await measures?.commitChanges(savedIngredientId);
+                const nutrition = nutritionRef.current;
+                const measureList = measuresRef.current;
+                await nutrition?.commitChanges(savedIngredientId);
+                await measureList?.commitChanges(savedIngredientId);
             },
         }));
         useEffect(() => {
@@ -168,12 +171,13 @@ export const BaseIngredientForm = forwardRef<UsdaLinkSectionHandle, BaseIngredie
                         Vegetarian
                     </Checkbox>
                 </HStack>
-                <UsdaLinkSection
-                    ref={usdaLinkRef}
+                <NutritionLinkSection
+                    ref={nutritionRef}
                     ingredientId={ingredientId}
                     ingredientName={initData?.name}
                     disabled={disabled}
-                    existingNutritionalInfo={existingNutritionalInfo}
+                    existingNutritionalInfos={existingNutritionalInfos}
+                    measures={measures}
                     onNutritionalInfoChange={onNutritionalInfoChange}
                     onPortionsChange={setPortions}
                     onPerGramChange={setPerGram}
@@ -187,6 +191,7 @@ export const BaseIngredientForm = forwardRef<UsdaLinkSectionHandle, BaseIngredie
                         Boolean(n)
                     )}
                     disabled={disabled}
+                    onMeasuresChange={setMeasures}
                 />
                 <ButtonGroup display='flex' justifyContent='flex-end' isDisabled={disabled}>
                     <OwnerText owner={owner} />
