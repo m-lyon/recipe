@@ -41,7 +41,6 @@ describe('lastRoute', () => {
     });
 
     it('restores the saved route when the app launches at the manifest start_url', () => {
-        // Vite serves the manifest under the base path, so its URLs resolve against that
         const manifestUrl = new URL(`${PATH.BASE}/manifest.json`, 'https://example.com');
         const startUrl = new URL(manifest.start_url, manifestUrl);
         saveLastRoute(location(RECIPE_PATH), 1000);
