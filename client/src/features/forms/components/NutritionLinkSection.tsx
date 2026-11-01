@@ -134,10 +134,14 @@ export const NutritionLinkSection = forwardRef<
                 .map((key) => editors.current.get(key))
                 .filter((handle) => handle != null);
             let changed = false;
-            for (const handle of handles) {
-                changed = (await handle.commitChanges(targetIngredientId)) || changed;
+            try {
+                for (const handle of handles) {
+                    changed = (await handle.commitChanges(targetIngredientId)) || changed;
+                }
+            } finally {
+                // Refetch even when a later record fails, so a retry updates the saved ones.
+                if (changed) onNutritionalInfoChange?.();
             }
-            if (changed) onNutritionalInfoChange?.();
         },
         [slotKeys, onNutritionalInfoChange]
     );
