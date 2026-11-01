@@ -1,6 +1,7 @@
+import { TbCheck } from 'react-icons/tb';
 import { useQuery } from '@apollo/client';
-import { Stack, Text } from '@chakra-ui/react';
 import { useMemo, useRef, useState } from 'react';
+import { Box, Stack, Text } from '@chakra-ui/react';
 import { forwardRef, useCallback, useEffect, useImperativeHandle } from 'react';
 
 import { SearchableSelect } from '@recipe/common/components';
@@ -41,8 +42,6 @@ interface Slot {
     key: string;
     prepMethod: { _id: string; value: string } | null;
     existing: ExistingNutritionalInfo | null;
-    /** Added in this form and not saved yet. */
-    added: boolean;
 }
 
 const NO_INFOS: ExistingNutritionalInfo[] = [];
@@ -63,16 +62,15 @@ export const NutritionLinkSection = forwardRef<
     const measures = props.measures ?? NO_MEASURES;
 
     const { data: components } = useQuery(GET_INGREDIENT_COMPONENTS);
-    const [added, setAdded] = useState<{ _id: string; value: string }[]>([]);
+    // Prep methods picked in this form, kept so a staged link survives picking another.
+    const [picked, setPicked] = useState<{ _id: string; value: string }[]>([]);
+    const [selectedKey, setSelectedKey] = useState('plain');
     const [shownBySlot, setShownBySlot] = useState<Record<string, ShownNutrition | null>>({});
     const editors = useRef(new Map<string, NutritionRecordEditorHandle>());
-    // Undefined until the user opens or closes a record: the plain record then opens when
-    // it has no values.
-    const [openKey, setOpenKey] = useState<string | null>();
 
     useEffect(() => {
-        setAdded([]);
-        setOpenKey(undefined);
+        setPicked([]);
+        setSelectedKey('plain');
     }, [ingredientId]);
 
     const prepInfos = infos
@@ -83,21 +81,18 @@ export const NutritionLinkSection = forwardRef<
             key: 'plain',
             prepMethod: null,
             existing: infos.find((info) => !info.prepMethod) ?? null,
-            added: false,
         },
         ...prepInfos.map((info) => ({
             key: info.prepMethod!._id,
             prepMethod: info.prepMethod!,
             existing: info,
-            added: false,
         })),
-        // Once saved, an added record arrives with the infos and leaves this list.
-        ...added
+        // Once saved, a picked record arrives with the infos and leaves this list.
+        ...picked
             .filter((prep) => !prepInfos.some((info) => info.prepMethod!._id === prep._id))
-            .map((prep) => ({ key: prep._id, prepMethod: prep, existing: null, added: true })),
+            .map((prep) => ({ key: prep._id, prepMethod: prep, existing: null })),
     ];
     const slotKeys = slots.map((slot) => slot.key).join(',');
-    const shownKey = openKey === undefined ? (slots[0].existing ? null : 'plain') : openKey;
 
     const linkedPortions = useMemo(
         () =>
@@ -151,55 +146,56 @@ export const NutritionLinkSection = forwardRef<
     );
     useImperativeHandle(ref, () => ({ commitChanges }), [commitChanges]);
 
-    const usedPrepIds = new Set(slots.map((slot) => slot.prepMethod?._id));
-    const prepOptions = (components?.prepMethods ?? [])
-        .filter((prep) => !usedPrepIds.has(prep._id))
-        .map((prep) => ({ value: prep._id, label: prep.value }));
+    const name = ingredientName || 'This ingredient';
+    const hasValues = (key: string) => shownBySlot[key]?.linked;
+    const options = [
+        { value: 'plain', label: name, icon: hasValues('plain') ? TbCheck : undefined },
+        ...(components?.prepMethods ?? []).map((prep) => ({
+            value: prep._id,
+            label: `${name}, ${prep.value}`,
+            icon: hasValues(prep._id) ? TbCheck : undefined,
+        })),
+    ];
 
     return (
         <Stack spacing={4}>
             <Text opacity={disabled ? 0.4 : undefined}>Nutritional data</Text>
-            {slots.map((slot) => (
-                <NutritionRecordEditor
-                    key={slot.key}
-                    ref={(handle) => {
-                        if (handle) editors.current.set(slot.key, handle);
-                        else editors.current.delete(slot.key);
-                    }}
-                    slotKey={`nutrition-${slot.key}`}
-                    ingredientId={ingredientId}
-                    ingredientName={ingredientName}
-                    disabled={disabled}
-                    prepMethod={slot.prepMethod}
-                    existing={slot.existing}
-                    measures={measures}
-                    onShownChange={(shown) => setShownBySlot((s) => ({ ...s, [slot.key]: shown }))}
-                    onRemove={
-                        slot.added
-                            ? () => {
-                                  setAdded((a) => a.filter((p) => p._id !== slot.key));
-                                  if (shownKey === slot.key) setOpenKey(null);
-                              }
-                            : undefined
-                    }
-                    open={shownKey === slot.key}
-                    onOpen={() => setOpenKey(slot.key)}
-                    onClose={() => setOpenKey(null)}
-                />
-            ))}
             <SearchableSelect
-                label='Add values for a prep method'
-                aria-label='Add values for a prep method'
-                options={prepOptions}
-                value={null}
-                onChange={(id) => {
-                    const prep = components?.prepMethods.find((p) => p._id === id);
-                    if (!prep) return;
-                    setAdded((a) => [...a, { _id: prep._id, value: prep.value }]);
-                    setOpenKey(prep._id);
+                label='Values for'
+                aria-label='Values for'
+                options={options}
+                value={selectedKey}
+                onChange={(key) => {
+                    const prep = components?.prepMethods.find((p) => p._id === key);
+                    if (prep && !slots.some((slot) => slot.key === key)) {
+                        setPicked((p) => [...p, { _id: prep._id, value: prep.value }]);
+                    }
+                    setSelectedKey(key);
                 }}
                 disabled={disabled}
             />
+            {/* Every record stays mounted, so its staged change is saved with the form. */}
+            {slots.map((slot) => (
+                <Box key={slot.key} hidden={slot.key !== selectedKey}>
+                    <NutritionRecordEditor
+                        ref={(handle) => {
+                            if (handle) editors.current.set(slot.key, handle);
+                            else editors.current.delete(slot.key);
+                        }}
+                        slotKey={`nutrition-${slot.key}`}
+                        ingredientId={ingredientId}
+                        ingredientName={ingredientName}
+                        disabled={disabled}
+                        prepMethod={slot.prepMethod}
+                        existing={slot.existing}
+                        measures={measures}
+                        visible={slot.key === selectedKey}
+                        onShownChange={(shown) =>
+                            setShownBySlot((s) => ({ ...s, [slot.key]: shown }))
+                        }
+                    />
+                </Box>
+            ))}
         </Stack>
     );
 });

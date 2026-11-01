@@ -83,6 +83,11 @@ const record = (prep?: string) =>
         })
     );
 
+async function pickRecord(user: User, name: string) {
+    await user.click(screen.getByLabelText('Values for'));
+    await user.click(await screen.findByRole('option', { name }));
+}
+
 async function chooseSource(user: User, label: string, prep?: string) {
     await user.click(record(prep).getByLabelText(label));
 }
@@ -251,6 +256,7 @@ describe('NutritionLinkSection portions for the measures list', () => {
             onPortionsChange,
         });
 
+        await pickRecord(user, 'carrot, diced');
         await user.click(record('diced').getByLabelText('Unlink nutritional data for diced'));
         await chooseSource(user, 'UK products (Open Food Facts)', 'diced');
         await user.type(record('diced').getByLabelText('Barcode'), offPearlCouscousBarcode);
@@ -474,15 +480,16 @@ describe('NutritionLinkSection prep records', () => {
         cleanup();
     });
 
-    it('should show the plain record first, then each prep record', async () => {
+    it('should show the plain record first, and a prep record once picked', async () => {
+        const user = userEvent.setup();
         renderSection([], { existingNutritionalInfos: dicedInfos });
 
-        const groups = screen
-            .getAllByRole('group', { name: /^Nutritional data/ })
-            .map((g) => g.getAttribute('aria-label'));
-        expect(groups).toEqual(['Nutritional data', 'Nutritional data · diced']);
         expect(record().getByLabelText('Search nutritional data')).not.toBeNull();
+        expect(screen.queryByRole('group', { name: 'Nutritional data · diced' })).toBeNull();
+
+        await pickRecord(user, 'carrot, diced');
         expect(record('diced').getByText('Entered manually · Pack label')).not.toBeNull();
+        expect(screen.queryByRole('group', { name: 'Nutritional data' })).toBeNull();
     });
 
     it('should add values for a prep method as a record of its own', async () => {
@@ -492,54 +499,31 @@ describe('NutritionLinkSection prep records', () => {
             { ...mockCreateNutritionalInfoCarrotChopped, result: created },
         ]);
 
-        await user.click(screen.getByLabelText('Add values for a prep method'));
-        await user.click(await screen.findByRole('option', { name: 'chopped' }));
+        await pickRecord(user, 'carrot, chopped');
         await chooseSource(user, 'Enter manually', 'chopped');
         await enterManually(user, carrotLabelPer100, 'chopped');
         await user.click(record('chopped').getByLabelText('Use entered nutritional data'));
+        await pickRecord(user, 'carrot');
 
         // The plain record is unlinked, so it writes nothing.
         await commit(ref);
         expect(created).toHaveBeenCalledTimes(1);
     });
 
-    it('should show the search of one record at a time', async () => {
+    it('should keep the current values when a change is cancelled', async () => {
         const user = userEvent.setup();
-        renderSection([]);
-        const sourceSwitch = (prep?: string) =>
-            record(prep).queryByRole('radiogroup', { name: 'Nutritional data source' });
-
-        expect(sourceSwitch()).not.toBeNull();
-        await user.click(screen.getByLabelText('Add values for a prep method'));
-        await user.click(await screen.findByRole('option', { name: 'chopped' }));
-
-        expect(sourceSwitch('chopped')).not.toBeNull();
-        expect(sourceSwitch()).toBeNull();
-        expect(record().getByText('No values yet')).not.toBeNull();
-    });
-
-    it('should close a search on cancel and open it again', async () => {
-        const user = userEvent.setup();
-        renderSection([]);
+        renderSection([], { existingNutritionalInfos: dicedInfos });
         const sourceSwitch = () =>
-            record().queryByRole('radiogroup', { name: 'Nutritional data source' });
+            record('diced').queryByRole('radiogroup', { name: 'Nutritional data source' });
 
-        await user.click(screen.getByLabelText('Cancel finding nutritional data'));
+        await pickRecord(user, 'carrot, diced');
         expect(sourceSwitch()).toBeNull();
-
-        await user.click(screen.getByLabelText('Find nutritional data'));
+        await user.click(screen.getByLabelText('Change nutritional data for diced'));
         expect(sourceSwitch()).not.toBeNull();
-    });
 
-    it('should drop an added prep method that was not linked', async () => {
-        const user = userEvent.setup();
-        renderSection([]);
-
-        await user.click(screen.getByLabelText('Add values for a prep method'));
-        await user.click(await screen.findByRole('option', { name: 'chopped' }));
-        await user.click(screen.getByLabelText('Remove nutritional data for chopped'));
-
-        expect(screen.queryByRole('group', { name: 'Nutritional data · chopped' })).toBeNull();
+        await user.click(screen.getByLabelText('Keep nutritional data for diced'));
+        expect(sourceSwitch()).toBeNull();
+        expect(record('diced').getByText('Entered manually · Pack label')).not.toBeNull();
     });
 
     it('should edit a prep record', async () => {
@@ -551,6 +535,7 @@ describe('NutritionLinkSection prep records', () => {
             { existingNutritionalInfos: dicedInfos, onNutritionalInfoChange }
         );
 
+        await pickRecord(user, 'carrot, diced');
         await user.click(screen.getByLabelText('Change nutritional data for diced'));
         await chooseSource(user, 'Enter manually', 'diced');
         await enterManually(user, carrotLabelPer100, 'diced');
@@ -569,6 +554,7 @@ describe('NutritionLinkSection prep records', () => {
             { existingNutritionalInfos: dicedInfos }
         );
 
+        await pickRecord(user, 'carrot, diced');
         await user.click(screen.getByLabelText('Unlink nutritional data for diced'));
 
         // Staged: nothing is deleted until the ingredient is saved.

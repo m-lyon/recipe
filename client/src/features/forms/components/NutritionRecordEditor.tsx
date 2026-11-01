@@ -32,6 +32,7 @@ export interface ShownNutrition {
     source: NutritionSource;
     perGram: MacroNutrients;
     portions: NutritionPortion[];
+    linked: boolean;
 }
 
 export interface NutritionRecordEditorProps {
@@ -43,13 +44,9 @@ export interface NutritionRecordEditorProps {
     prepMethod: { _id: string; value: string } | null;
     existing?: ExistingNutritionalInfo | null;
     measures: MeasureForDensity[];
+    /** False while the form shows another record: a selection here is then dropped. */
+    visible: boolean;
     onShownChange: (shown: ShownNutrition | null) => void;
-    /** Present for a record added in this form and not yet saved. */
-    onRemove?: () => void;
-    /** Whether this record's search is shown. The form shows one at a time. */
-    open: boolean;
-    onOpen: () => void;
-    onClose: () => void;
 }
 
 /** Changes are staged. Resolves true when the record was written. Throws when the change
@@ -91,7 +88,7 @@ export const NutritionRecordEditor = forwardRef<
     NutritionRecordEditorProps
 >(function NutritionRecordEditor(props, ref) {
     const { slotKey, ingredientId, ingredientName, disabled, prepMethod, existing } = props;
-    const { measures, onShownChange, onRemove, open, onOpen, onClose } = props;
+    const { measures, visible, onShownChange } = props;
 
     // Read from the cache only: the navbar has fetched the user, and a request here
     // would add nothing.
@@ -105,6 +102,9 @@ export const NutritionRecordEditor = forwardRef<
     const [linked, setLinked] = useState<NutritionSelection | null>(null);
     // The values selected in the active panel, shown to the measures list before a link.
     const [preview, setPreview] = useState<NutritionSelection | null>(null);
+    // True while a linked record's search is open to replace its values.
+    const [changing, setChanging] = useState(false);
+    const searching = visible && (!linked || changing);
     const shown = linked ?? preview;
 
     // Hydrate the link from the prefetched record. Re-runs when that record arrives after
@@ -112,8 +112,15 @@ export const NutritionRecordEditor = forwardRef<
     useEffect(() => {
         setLinked(existing ? selectionFromExisting(existing) : null);
         setPreview(null);
+        setChanging(false);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ingredientId, existing?._id]);
+
+    useEffect(() => {
+        if (visible) return;
+        setPreview(null);
+        setChanging(false);
+    }, [visible]);
 
     // Portions, and the USDA item's name, come from a second request. A USDA search
     // result carries no portions. An Open Food Facts product is fetched only for a saved
@@ -165,14 +172,13 @@ export const NutritionRecordEditor = forwardRef<
         : (currentDetails?.portions ?? NO_PORTIONS);
 
     useEffect(() => {
-        onShownChange(shown ? { source: shown.source, perGram: shown.perGram, portions } : null);
+        onShownChange(
+            shown
+                ? { source: shown.source, perGram: shown.perGram, portions, linked: !!linked }
+                : null
+        );
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [shown, portions]);
-
-    const close = () => {
-        setPreview(null);
-        onClose();
-    };
 
     const chooseSource = (next: NutritionSource) => {
         setSource(next);
@@ -232,8 +238,6 @@ export const NutritionRecordEditor = forwardRef<
         .join(', ');
     const title = prepMethod ? `Nutritional data · ${prepMethod.value}` : 'Nutritional data';
     const forPrep = prepMethod ? ` for ${prepMethod.value}` : '';
-    // Chakra fades a disabled field to 0.4; plain text has to fade itself to match.
-    const dimmed = disabled ? 0.4 : undefined;
     const panelProps = {
         idPrefix: slotKey,
         ingredientId,
@@ -243,41 +247,12 @@ export const NutritionRecordEditor = forwardRef<
         // Staged: the link is saved with the ingredient, like every other field.
         onLink: (selection: NutritionSelection) => {
             setLinked(selection);
-            close();
+            setChanging(false);
         },
     };
 
     return (
-        <Stack spacing={2} role='group' aria-label={title}>
-            <HStack minH={8}>
-                <Text fontSize='sm' opacity={dimmed} flex={1}>
-                    {targetName}
-                </Text>
-                {onRemove && !linked ? (
-                    <Button
-                        size='sm'
-                        variant='outline'
-                        colorScheme='red'
-                        onClick={onRemove}
-                        isDisabled={disabled}
-                        aria-label={`Remove nutritional data${forPrep}`}
-                    >
-                        Remove
-                    </Button>
-                ) : (
-                    open && (
-                        <Button
-                            size='sm'
-                            variant='outline'
-                            onClick={close}
-                            isDisabled={disabled}
-                            aria-label={`Cancel finding nutritional data${forPrep}`}
-                        >
-                            Cancel
-                        </Button>
-                    )
-                )}
-            </HStack>
+        <Stack spacing={4} role='group' aria-label={title}>
             {linked && (
                 <Stack spacing={2} fontWeight='normal'>
                     <LinkedText
@@ -294,11 +269,24 @@ export const NutritionRecordEditor = forwardRef<
                         })}
                     </Text>
                     <HStack spacing={2}>
-                        {!open && (
+                        {changing ? (
                             <Button
                                 size='sm'
                                 variant='outline'
-                                onClick={onOpen}
+                                onClick={() => {
+                                    setPreview(null);
+                                    setChanging(false);
+                                }}
+                                isDisabled={disabled}
+                                aria-label={`Keep nutritional data${forPrep}`}
+                            >
+                                Cancel
+                            </Button>
+                        ) : (
+                            <Button
+                                size='sm'
+                                variant='outline'
+                                onClick={() => setChanging(true)}
                                 isDisabled={disabled}
                                 aria-label={`Change nutritional data${forPrep}`}
                             >
@@ -312,7 +300,7 @@ export const NutritionRecordEditor = forwardRef<
                             // Staged: the saved record is removed only when the ingredient is saved.
                             onClick={() => {
                                 setLinked(null);
-                                onOpen();
+                                setChanging(false);
                             }}
                             isDisabled={disabled}
                             aria-label={`Unlink nutritional data${forPrep}`}
@@ -322,45 +310,8 @@ export const NutritionRecordEditor = forwardRef<
                     </HStack>
                 </Stack>
             )}
-            {!linked && !open && (
-                <HStack spacing={4} fontWeight='normal'>
-                    <Text fontSize='sm' color='gray.500' opacity={dimmed} flex={1}>
-                        No values yet
-                    </Text>
-                    <Button
-                        size='sm'
-                        onClick={onOpen}
-                        isDisabled={disabled}
-                        aria-label={`Find nutritional data${forPrep}`}
-                    >
-                        Find values
-                    </Button>
-                </HStack>
-            )}
-            {/* Panels stay mounted while closed, so reopening finds the search as it was. */}
-            <Stack
-                as='fieldset'
-                hidden={!open}
-                spacing={4}
-                border='1px solid'
-                borderColor={disabled ? 'gray.100' : 'gray.200'}
-                borderRadius='md'
-                px={3}
-                pt={4}
-                pb={3}
-            >
-                <Text
-                    as='legend'
-                    px={1}
-                    fontSize='sm'
-                    color='gray.400'
-                    opacity={dimmed}
-                    // Sit the border as low on the text as on the floating input labels.
-                    position='relative'
-                    top='-2px'
-                >
-                    Find values for {targetName}
-                </Text>
+            {/* Panels stay mounted while hidden, so reopening finds the search as it was. */}
+            <Stack spacing={4} hidden={!searching}>
                 <RadioGroup
                     value={source}
                     onChange={(value) => chooseSource(value as NutritionSource)}
@@ -377,18 +328,18 @@ export const NutritionRecordEditor = forwardRef<
                     </Stack>
                 </RadioGroup>
                 <Box hidden={source !== 'usda'}>
-                    <UsdaSearchPanel {...panelProps} active={source === 'usda' && open} />
+                    <UsdaSearchPanel {...panelProps} active={source === 'usda' && searching} />
                 </Box>
                 <Box hidden={source !== 'openFoodFacts'}>
                     <OpenFoodFactsPanel
                         {...panelProps}
-                        active={source === 'openFoodFacts' && open}
+                        active={source === 'openFoodFacts' && searching}
                     />
                 </Box>
                 <Box hidden={source !== 'manual'}>
                     <ManualNutritionPanel
                         {...panelProps}
-                        active={source === 'manual' && open}
+                        active={source === 'manual' && searching}
                         measures={measures}
                         prepMethodId={prepMethod?._id ?? null}
                         targetName={targetName}

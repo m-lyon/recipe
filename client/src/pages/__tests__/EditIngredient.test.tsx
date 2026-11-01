@@ -120,7 +120,7 @@ describe('Edit Ingredient', () => {
         await waitFor(() => expect(deleted).toHaveBeenCalledTimes(1));
     });
 
-    it('should show nutritional data for a prep method in a row of its own', async () => {
+    it('should show nutritional data for a prep method as a record of its own', async () => {
         // Render -- carrot has data for diced carrot only
         const user = userEvent.setup();
         const routes = createRoutesFromElements(<Route path='/' element={<EditIngredient />} />);
@@ -138,11 +138,13 @@ describe('Edit Ingredient', () => {
             expect(screen.getByLabelText('Plural name')).toHaveProperty('value', 'carrots')
         );
 
-        // Expect -- the plain record has no data, and diced carrot has its own row
+        // Expect -- the plain record has no data, and diced carrot has its own record
         const plain = within(screen.getByRole('group', { name: 'Nutritional data' }));
-        const diced = within(screen.getByRole('group', { name: 'Nutritional data · diced' }));
         expect(plain.getByLabelText('Search nutritional data')).not.toBeNull();
         expect(plain.queryByText(/Entered manually/)).toBeNull();
+        await user.click(screen.getByLabelText('Values for'));
+        await user.click(await screen.findByRole('option', { name: 'carrot, diced' }));
+        const diced = within(screen.getByRole('group', { name: 'Nutritional data · diced' }));
         expect(diced.getByText('Entered manually · Pack label')).not.toBeNull();
     });
 
