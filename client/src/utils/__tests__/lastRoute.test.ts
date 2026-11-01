@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { PATH } from '@recipe/constants';
 import { LAST_ROUTE_MAX_AGE, getRestorableRoute, saveLastRoute } from '@recipe/utils/lastRoute';
 
+import manifest from '../../../public/manifest.json';
+
 const RECIPE_PATH = `${PATH.BASE}/view/recipe/mock_recipe`;
 const location = (pathname: string, search = '', hash = '') => ({ pathname, search, hash });
 
@@ -36,6 +38,14 @@ describe('lastRoute', () => {
         saveLastRoute(location(RECIPE_PATH), 1000);
         saveLastRoute(location(PATH.LOGIN), 1500);
         expect(getRestorableRoute(location(PATH.ROOT), 2000)).toBe(RECIPE_PATH);
+    });
+
+    it('restores the saved route when the app launches at the manifest start_url', () => {
+        // Vite serves the manifest under the base path, so its URLs resolve against that
+        const manifestUrl = new URL(`${PATH.BASE}/manifest.json`, 'https://example.com');
+        const startUrl = new URL(manifest.start_url, manifestUrl);
+        saveLastRoute(location(RECIPE_PATH), 1000);
+        expect(getRestorableRoute(location(startUrl.pathname), 2000)).toBe(RECIPE_PATH);
     });
 
     it('ignores invalid stored data', () => {

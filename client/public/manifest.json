@@ -3,13 +3,14 @@
   "short_name": "Recipes",
   "icons": [
     {
-      "src": "/recipes/icon_512px.png",
+      "src": "icon_512px.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ],
-  "start_url": "/recipes",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff"
