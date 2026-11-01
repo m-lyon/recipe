@@ -1,5 +1,5 @@
-import { Stack } from '@chakra-ui/react';
 import { useQuery } from '@apollo/client';
+import { Stack, Text } from '@chakra-ui/react';
 import { useMemo, useRef, useState } from 'react';
 import { forwardRef, useCallback, useEffect, useImperativeHandle } from 'react';
 
@@ -66,9 +66,13 @@ export const NutritionLinkSection = forwardRef<
     const [added, setAdded] = useState<{ _id: string; value: string }[]>([]);
     const [shownBySlot, setShownBySlot] = useState<Record<string, ShownNutrition | null>>({});
     const editors = useRef(new Map<string, NutritionRecordEditorHandle>());
+    // Undefined until the user opens or closes a record: the plain record then opens when
+    // it has no values.
+    const [openKey, setOpenKey] = useState<string | null>();
 
     useEffect(() => {
         setAdded([]);
+        setOpenKey(undefined);
     }, [ingredientId]);
 
     const prepInfos = infos
@@ -93,6 +97,7 @@ export const NutritionLinkSection = forwardRef<
             .map((prep) => ({ key: prep._id, prepMethod: prep, existing: null, added: true })),
     ];
     const slotKeys = slots.map((slot) => slot.key).join(',');
+    const shownKey = openKey === undefined ? (slots[0].existing ? null : 'plain') : openKey;
 
     const linkedPortions = useMemo(
         () =>
@@ -152,7 +157,8 @@ export const NutritionLinkSection = forwardRef<
         .map((prep) => ({ value: prep._id, label: prep.value }));
 
     return (
-        <Stack spacing={6}>
+        <Stack spacing={4}>
+            <Text opacity={disabled ? 0.4 : undefined}>Nutritional data</Text>
             {slots.map((slot) => (
                 <NutritionRecordEditor
                     key={slot.key}
@@ -170,9 +176,15 @@ export const NutritionLinkSection = forwardRef<
                     onShownChange={(shown) => setShownBySlot((s) => ({ ...s, [slot.key]: shown }))}
                     onRemove={
                         slot.added
-                            ? () => setAdded((a) => a.filter((p) => p._id !== slot.key))
+                            ? () => {
+                                  setAdded((a) => a.filter((p) => p._id !== slot.key));
+                                  if (shownKey === slot.key) setOpenKey(null);
+                              }
                             : undefined
                     }
+                    open={shownKey === slot.key}
+                    onOpen={() => setOpenKey(slot.key)}
+                    onClose={() => setOpenKey(null)}
                 />
             ))}
             <SearchableSelect
@@ -182,7 +194,9 @@ export const NutritionLinkSection = forwardRef<
                 value={null}
                 onChange={(id) => {
                     const prep = components?.prepMethods.find((p) => p._id === id);
-                    if (prep) setAdded((a) => [...a, { _id: prep._id, value: prep.value }]);
+                    if (!prep) return;
+                    setAdded((a) => [...a, { _id: prep._id, value: prep.value }]);
+                    setOpenKey(prep._id);
                 }}
                 disabled={disabled}
             />

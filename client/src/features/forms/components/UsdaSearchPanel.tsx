@@ -144,7 +144,6 @@ export function UsdaSearchPanel(props: SourcePanelProps) {
                     lowercase
                     results={searchResults.map((item) => ({
                         key: item.fdcId.toString(),
-                        badge: 'USDA',
                         title: item.description,
                         details: [item.brandOwner],
                         per100g: formatPer100(per100gOf(item)),

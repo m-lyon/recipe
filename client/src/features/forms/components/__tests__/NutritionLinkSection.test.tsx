@@ -269,7 +269,7 @@ describe('NutritionLinkSection Open Food Facts', () => {
         cleanup();
     });
 
-    it('should show each product with its badge, brand, quantity and macros', async () => {
+    it('should show each product with its brand, quantity and macros', async () => {
         const user = userEvent.setup();
         renderSection([mockOpenFoodFactsSearchCouscous]);
         await chooseSource(user, 'UK products (Open Food Facts)');
@@ -278,7 +278,6 @@ describe('NutritionLinkSection Open Food Facts', () => {
         await user.type(screen.getByLabelText('Search products'), 'couscous{Enter}');
 
         expect(await screen.findByText('Pearl Couscous')).not.toBeNull();
-        expect(screen.getAllByText('OFF')).toHaveLength(2);
         expect(screen.getByText("Al'fez · 200 g")).not.toBeNull();
         expect(
             screen.getByText('356 kcal · 12 g protein · 72 g carbs · 1.5 g fat per 100 g')
@@ -504,6 +503,34 @@ describe('NutritionLinkSection prep records', () => {
         expect(created).toHaveBeenCalledTimes(1);
     });
 
+    it('should show the search of one record at a time', async () => {
+        const user = userEvent.setup();
+        renderSection([]);
+        const sourceSwitch = (prep?: string) =>
+            record(prep).queryByRole('radiogroup', { name: 'Nutritional data source' });
+
+        expect(sourceSwitch()).not.toBeNull();
+        await user.click(screen.getByLabelText('Add values for a prep method'));
+        await user.click(await screen.findByRole('option', { name: 'chopped' }));
+
+        expect(sourceSwitch('chopped')).not.toBeNull();
+        expect(sourceSwitch()).toBeNull();
+        expect(record().getByText('No values yet')).not.toBeNull();
+    });
+
+    it('should close a search on cancel and open it again', async () => {
+        const user = userEvent.setup();
+        renderSection([]);
+        const sourceSwitch = () =>
+            record().queryByRole('radiogroup', { name: 'Nutritional data source' });
+
+        await user.click(screen.getByLabelText('Cancel finding nutritional data'));
+        expect(sourceSwitch()).toBeNull();
+
+        await user.click(screen.getByLabelText('Find nutritional data'));
+        expect(sourceSwitch()).not.toBeNull();
+    });
+
     it('should drop an added prep method that was not linked', async () => {
         const user = userEvent.setup();
         renderSection([]);
@@ -524,7 +551,7 @@ describe('NutritionLinkSection prep records', () => {
             { existingNutritionalInfos: dicedInfos, onNutritionalInfoChange }
         );
 
-        await user.click(screen.getByLabelText('Unlink nutritional data for diced'));
+        await user.click(screen.getByLabelText('Change nutritional data for diced'));
         await chooseSource(user, 'Enter manually', 'diced');
         await enterManually(user, carrotLabelPer100, 'diced');
         await user.click(record('diced').getByLabelText('Use entered nutritional data'));

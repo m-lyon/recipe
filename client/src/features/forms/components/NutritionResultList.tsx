@@ -1,10 +1,9 @@
 import { WarningTwoIcon } from '@chakra-ui/icons';
 import { Skeleton, Stack, Text, Tooltip } from '@chakra-ui/react';
-import { Badge, Box, HStack, Radio, RadioGroup } from '@chakra-ui/react';
+import { Box, HStack, Radio, RadioGroup } from '@chakra-ui/react';
 
 export interface NutritionResult {
     key: string;
-    badge: string;
     title: string;
     /** Brand, pack quantity and the like, one line each. Empty lines are left out. */
     details: (string | null | undefined)[];
@@ -65,9 +64,6 @@ export function NutritionResultList(props: Props) {
                                 <Radio value={item.key} mt={1} />
                                 <Stack spacing={0.5} flex={1} minW={0}>
                                     <HStack spacing={2} align='flex-start'>
-                                        <Badge flexShrink={0} mt={0.5} fontSize='0.65em'>
-                                            {item.badge}
-                                        </Badge>
                                         <Text
                                             fontSize='sm'
                                             wordBreak='break-word'

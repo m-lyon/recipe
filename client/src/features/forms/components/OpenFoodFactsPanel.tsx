@@ -190,7 +190,6 @@ export function OpenFoodFactsPanel(props: SourcePanelProps) {
                     label='Open Food Facts results'
                     results={results.map((product) => ({
                         key: product.barcode,
-                        badge: 'OFF',
                         title: product.name ?? product.barcode,
                         details: [[product.brands, product.quantity].filter(Boolean).join(' · ')],
                         per100g: formatPer100(per100gOf(product)),
