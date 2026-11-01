@@ -9,7 +9,6 @@ export interface NutritionResult {
     /** Brand, pack quantity and the like, one line each. Empty lines are left out. */
     details: (string | null | undefined)[];
     per100g: string;
-    /** Missing macros, or a kcal the macros do not explain. */
     warnings?: string[];
 }
 
@@ -35,7 +34,6 @@ export function NutritionSearchSkeleton() {
     );
 }
 
-/** One radio row for each search result. */
 export function NutritionResultList(props: Props) {
     const { label, results, selectedKey, onSelect, lowercase } = props;
     const textTransform = lowercase ? 'lowercase' : undefined;

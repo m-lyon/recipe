@@ -24,7 +24,6 @@ export function EditIngredient() {
         GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS,
         { variables: { ingredientIds }, skip: ingredientIds.length === 0 }
     );
-    // The record with no prep method, and one for each prep method that changes the food.
     const existingNutritionalInfos = useMemo(
         () =>
             (nutritionalInfoData?.nutritionalInfosByIngredientIds ?? []).filter(

@@ -33,7 +33,6 @@ export function onEnter(action: () => void) {
     };
 }
 
-/** Searches the USDA database of generic foods. */
 export function UsdaSearchPanel(props: SourcePanelProps) {
     const { idPrefix, ingredientId, ingredientName, disabled, active, onPreview, onLink } = props;
 

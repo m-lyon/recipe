@@ -28,7 +28,6 @@ export interface ManualNutritionPanelProps extends Omit<SourcePanelProps, 'onPre
     targetName: string;
 }
 
-/** Values typed from a pack label or another source, per 100 g or per 100 ml. */
 export function ManualNutritionPanel(props: ManualNutritionPanelProps) {
     const { idPrefix, ingredientId, disabled, onLink, measures, prepMethodId, targetName } = props;
     const [values, setValues] = useState(EMPTY);
@@ -43,7 +42,6 @@ export function ManualNutritionPanel(props: ManualNutritionPanelProps) {
         setShowInvalid(false);
     }, [ingredientId]);
 
-    // Four non-negative numbers, as `recipe nutrition set` takes them.
     const parsed = Object.fromEntries(
         FIELDS.map(({ key }) => {
             const text = values[key].trim();
@@ -62,7 +60,6 @@ export function ManualNutritionPanel(props: ManualNutritionPanelProps) {
         }
         if (noDensity) return;
         const perGram = perGramFrom(parsed);
-        // The values are per millilitre; divide by the grams in a millilitre.
         const scale = density === null ? 1 : 1 / density;
         onLink({
             source: 'manual',

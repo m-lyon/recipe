@@ -829,7 +829,6 @@ export const mockOpenFoodFactsSearchCouscous = {
     },
 };
 
-/** The same search over all countries, after the UK filter is turned off. */
 export const mockOpenFoodFactsSearchCouscousAllCountries = {
     request: {
         query: OPEN_FOOD_FACTS_SEARCH,

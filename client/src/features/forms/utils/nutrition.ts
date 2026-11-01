@@ -1,4 +1,3 @@
-/** Values per 100 g (or per 100 ml), as a label or a database gives them. */
 export interface Per100 {
     calories: number | null | undefined;
     protein: number | null | undefined;

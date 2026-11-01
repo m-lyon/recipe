@@ -153,10 +153,8 @@ function created(_id: string, record: RecordInput) {
     };
 }
 
-/** Values typed by hand for carrot, per 100 g, from a pack label. */
 export const carrotLabelPer100 = { calories: 41, protein: 0.9, carbs: 9.6, fat: 0.2 };
 
-/** Carrot linked to a USDA item. */
 export const mockCreateNutritionalInfoCarrotUsda = created(mockNutritionalInfoIdCarrot, {
     ingredient: mockCarrotId,
     source: EnumNutritionalInfoCreateSource.Usda,
@@ -166,7 +164,6 @@ export const mockCreateNutritionalInfoCarrotUsda = created(mockNutritionalInfoId
     perGram: chickenBreastPerGram,
 });
 
-/** Carrot linked to an Open Food Facts product. */
 export const mockCreateNutritionalInfoCarrotOpenFoodFacts = created(mockNutritionalInfoIdCarrot, {
     ingredient: mockCarrotId,
     source: EnumNutritionalInfoCreateSource.OpenFoodFacts,
@@ -176,7 +173,6 @@ export const mockCreateNutritionalInfoCarrotOpenFoodFacts = created(mockNutritio
     perGram: perGramOf(offPearlCouscousPer100g),
 });
 
-/** Carrot values entered by hand, per 100 g. */
 export const mockCreateNutritionalInfoCarrotManual = created(mockNutritionalInfoIdCarrot, {
     ingredient: mockCarrotId,
     source: EnumNutritionalInfoCreateSource.Manual,
@@ -205,7 +201,6 @@ export const mockCreateNutritionalInfoCarrotManualPer100ml = created(mockNutriti
     ) as RecordInput['perGram'],
 });
 
-/** Values entered by hand for chopped carrot, a record of its own. */
 export const mockCreateNutritionalInfoCarrotChopped = created(mockNutritionalInfoIdCarrotDiced, {
     ingredient: mockCarrotId,
     prepMethod: mockChoppedId,
@@ -216,7 +211,6 @@ export const mockCreateNutritionalInfoCarrotChopped = created(mockNutritionalInf
     perGram: perGramOf(carrotLabelPer100),
 });
 
-/** Diced carrot's record, changed to values entered by hand. */
 export const mockUpdateNutritionalInfoCarrotDiced = {
     request: {
         query: UPDATE_NUTRITIONAL_INFO,
@@ -253,7 +247,6 @@ export const mockUpdateNutritionalInfoCarrotDiced = {
     },
 };
 
-/** Removes diced carrot's record only. */
 export const mockDeleteNutritionalInfoCarrotDiced = {
     request: {
         query: DELETE_NUTRITIONAL_INFO,

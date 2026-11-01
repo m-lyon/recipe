@@ -67,7 +67,6 @@ export const NutritionLinkSection = forwardRef<
     const [shownBySlot, setShownBySlot] = useState<Record<string, ShownNutrition | null>>({});
     const editors = useRef(new Map<string, NutritionRecordEditorHandle>());
 
-    // A prep method added for one ingredient belongs to that ingredient.
     useEffect(() => {
         setAdded([]);
     }, [ingredientId]);

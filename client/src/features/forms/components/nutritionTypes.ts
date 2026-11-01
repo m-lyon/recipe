@@ -7,7 +7,6 @@ export type ExistingNutritionalInfo = NonNullable<
     NonNullable<GetNutritionalInfosByIngredientIdsQuery['nutritionalInfosByIngredientIds']>[number]
 >;
 
-/** A named portion with a gram weight, from USDA or Open Food Facts. */
 export type NutritionPortion = NutritionPortionFieldsFragment;
 
 /** The source switch. Each choice writes the `source` of the same name. */
@@ -25,7 +24,6 @@ export const SOURCE_LABELS: Record<NutritionSource, string> = {
     manual: 'manual entry',
 };
 
-/** Values chosen from a source, ready to link. */
 export interface NutritionSelection {
     source: NutritionSource;
     usdaFdcId: number | null;
@@ -38,14 +36,12 @@ export interface NutritionSelection {
     portions: NutritionPortion[];
 }
 
-/** A portion for the measures list, with the prep method of the record it came from. */
 export interface LinkedPortion {
     portion: NutritionPortion;
     prepMethodId: string | null;
     source: NutritionSource;
 }
 
-/** Props that every source panel takes. */
 export interface SourcePanelProps {
     /** Makes input ids unique when the form shows more than one record. */
     idPrefix: string;
@@ -54,7 +50,6 @@ export interface SourcePanelProps {
     disabled?: boolean;
     /** False while another source is chosen: the panel then drops its selection. */
     active: boolean;
-    /** Called with the selected values before they are linked, or null. */
     onPreview: (selection: NutritionSelection | null) => void;
     onLink: (selection: NutritionSelection) => void;
 }

@@ -9,7 +9,6 @@ export interface PreferencesState {
     /** The system a reader wants recipes shown in. Recipes are stored as authored. */
     unitSystem: UnitSystemPreference;
     setUnitSystem: (unitSystem: UnitSystemPreference) => void;
-    /** The last nutrition source each user chose, by user id. */
     nutritionSourceByUser: Record<string, NutritionSourcePreference>;
     setNutritionSource: (userId: string, source: NutritionSourcePreference) => void;
 }

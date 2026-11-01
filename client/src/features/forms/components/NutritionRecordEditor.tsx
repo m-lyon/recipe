@@ -28,7 +28,6 @@ const SOURCE_CHOICES: { value: NutritionSource; label: string }[] = [
 // One array, so an effect that depends on the portions does not run on every render.
 const NO_PORTIONS: NutritionPortion[] = [];
 
-/** What the measures list needs from a record: its macros and its portions. */
 export interface ShownNutrition {
     source: NutritionSource;
     perGram: MacroNutrients;
@@ -41,11 +40,9 @@ export interface NutritionRecordEditorProps {
     ingredientId?: string;
     ingredientName?: string;
     disabled?: boolean;
-    /** The prep method of the record, or null for the plain record. */
     prepMethod: { _id: string; value: string } | null;
     existing?: ExistingNutritionalInfo | null;
     measures: MeasureForDensity[];
-    /** Called with the linked or selected values, or null. */
     onShownChange: (shown: ShownNutrition | null) => void;
     /** Present for a record added in this form and not yet saved. */
     onRemove?: () => void;
@@ -85,7 +82,6 @@ function sameValues(a: NutritionSelection, b: NutritionSelection): boolean {
     );
 }
 
-/** The values for one record: the plain ingredient, or one prep method of it. */
 export const NutritionRecordEditor = forwardRef<
     NutritionRecordEditorHandle,
     NutritionRecordEditorProps

@@ -287,7 +287,6 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                 .filter(Boolean)
                 .join(' · ');
         };
-        // A recipe line uses the record for its prep method, or else the plain one.
         const rowPerGram = (row: Row) =>
             perGram?.get(row.draft.prepMethodId) ?? perGram?.get(null) ?? null;
         // One format for saved rows and suggestions: "1 cup · chopped = 120 g".
