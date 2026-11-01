@@ -279,8 +279,7 @@ describe('NutritionLinkSection Open Food Facts', () => {
 
         expect(await screen.findByText('Pearl Couscous')).not.toBeNull();
         expect(screen.getAllByText('OFF')).toHaveLength(2);
-        expect(screen.getByText("Al'fez")).not.toBeNull();
-        expect(screen.getByText('200 g')).not.toBeNull();
+        expect(screen.getByText("Al'fez · 200 g")).not.toBeNull();
         expect(
             screen.getByText('356 kcal · 12 g protein · 72 g carbs · 1.5 g fat per 100 g')
         ).not.toBeNull();

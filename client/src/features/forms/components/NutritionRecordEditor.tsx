@@ -246,8 +246,9 @@ export const NutritionRecordEditor = forwardRef<
                 </Text>
                 {onRemove && !linked && (
                     <Button
-                        size='xs'
-                        variant='ghost'
+                        size='sm'
+                        variant='outline'
+                        colorScheme='red'
                         onClick={onRemove}
                         isDisabled={disabled}
                         aria-label={`Remove nutritional data for ${prepMethod?.value}`}
@@ -298,10 +299,10 @@ export const NutritionRecordEditor = forwardRef<
                     aria-label='Nutritional data source'
                     fontWeight='normal'
                 >
-                    <Wrap spacingX={4} spacingY={1}>
+                    <Wrap spacingX='12px' spacingY={1}>
                         {SOURCE_CHOICES.map((choice) => (
-                            <Radio key={choice.value} value={choice.value} size='sm'>
-                                <Text fontSize='sm'>{choice.label}</Text>
+                            <Radio key={choice.value} value={choice.value}>
+                                {choice.label}
                             </Radio>
                         ))}
                     </Wrap>

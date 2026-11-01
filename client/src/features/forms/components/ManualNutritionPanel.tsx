@@ -87,12 +87,12 @@ export function ManualNutritionPanel(props: ManualNutritionPanelProps) {
                 isDisabled={disabled}
                 aria-label='Values per'
             >
-                <HStack spacing={4}>
+                <HStack spacing='12px'>
                     <Radio value='100g'>per 100 g</Radio>
                     <Radio value='100ml'>per 100 ml</Radio>
                 </HStack>
             </RadioGroup>
-            <SimpleGrid columns={2} spacing={2}>
+            <SimpleGrid columns={2} spacingX={2} spacingY={4}>
                 {FIELDS.map(({ key, label }) => (
                     <Box key={key}>
                         <FloatingLabelInput

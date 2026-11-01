@@ -161,6 +161,8 @@ export function OpenFoodFactsPanel(props: SourcePanelProps) {
             </HStack>
             <Checkbox
                 alignSelf='flex-start'
+                // The panel's text is normal weight; checkboxes in the form are bold.
+                fontWeight='bold'
                 isChecked={!ukOnly}
                 isDisabled={disabled}
                 onChange={(e) => setUkOnly(!e.target.checked)}
@@ -190,7 +192,7 @@ export function OpenFoodFactsPanel(props: SourcePanelProps) {
                         key: product.barcode,
                         badge: 'OFF',
                         title: product.name ?? product.barcode,
-                        details: [product.brands, product.quantity],
+                        details: [[product.brands, product.quantity].filter(Boolean).join(' · ')],
                         per100g: formatPer100(per100gOf(product)),
                         warnings: product.warnings,
                     }))}
