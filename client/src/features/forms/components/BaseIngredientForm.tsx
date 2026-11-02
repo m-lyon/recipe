@@ -174,7 +174,7 @@ export const BaseIngredientForm = forwardRef<NutritionLinkSectionHandle, BaseIng
                 <NutritionLinkSection
                     ref={nutritionRef}
                     ingredientId={ingredientId}
-                    ingredientName={initData?.name}
+                    ingredientName={initData?.name || formData.name}
                     disabled={disabled}
                     existingNutritionalInfos={existingNutritionalInfos}
                     measures={measures}

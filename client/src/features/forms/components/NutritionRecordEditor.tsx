@@ -1,7 +1,9 @@
+import { useState } from 'react';
+import { Collapse } from '@mantine/core';
 import { Stack, Text } from '@chakra-ui/react';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
 import { Box, Button, HStack, Link, Radio, RadioGroup, Skeleton } from '@chakra-ui/react';
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 
 import { usePreferencesStore } from '@recipe/stores';
 import { CURRENT_USER } from '@recipe/graphql/queries/user';
@@ -106,6 +108,10 @@ export const NutritionRecordEditor = forwardRef<
     const searching = !saved || removed || changing;
     // A picked result replaces the search. Manual values stay in their form while typed.
     const picked = selection && selection.source !== 'manual' ? selection : null;
+    // Kept while the selected item collapses after Clear selection.
+    const lastPicked = useRef(picked);
+    if (picked) lastPicked.current = picked;
+    const shownPick = picked ?? lastPicked.current;
     const shown = selection ?? (removed ? null : saved);
 
     // Re-runs when the record arrives after the ingredient switch (e.g. first load), or
@@ -310,67 +316,75 @@ export const NutritionRecordEditor = forwardRef<
                     </Button>
                 </HStack>
             )}
-            {picked && (
-                <Stack spacing={2} fontWeight='normal'>
-                    <LinkedText
-                        linked={picked}
-                        label='Selected'
-                        usdaName={currentDetails?.name ?? null}
-                        loading={foodItemLoading}
-                    />
-                    <Text fontSize='sm' color='gray.500'>
-                        {formatPer100({
-                            calories: picked.perGram.calories * 100,
-                            protein: picked.perGram.protein * 100,
-                            carbs: picked.perGram.carbs * 100,
-                            fat: picked.perGram.fat * 100,
-                        })}
-                    </Text>
-                    {picked.warnings && picked.warnings.length > 0 && (
-                        <Text fontSize='sm' color='orange.600'>
-                            {picked.warnings.join('. ')}. Check the values against the pack label.
+            <Collapse in={picked !== null}>
+                {shownPick && (
+                    <Stack spacing={2} fontWeight='normal'>
+                        <LinkedText
+                            linked={shownPick}
+                            label='Selected'
+                            usdaName={currentDetails?.name ?? null}
+                            loading={foodItemLoading}
+                        />
+                        <Text fontSize='sm' color='gray.500'>
+                            {formatPer100({
+                                calories: shownPick.perGram.calories * 100,
+                                protein: shownPick.perGram.protein * 100,
+                                carbs: shownPick.perGram.carbs * 100,
+                                fat: shownPick.perGram.fat * 100,
+                            })}
                         </Text>
-                    )}
-                    <ClearSelectionButton disabled={disabled} onClear={() => setSelection(null)} />
-                </Stack>
-            )}
-            {/* Panels stay mounted while hidden, so clearing a selection finds the search as
-                it was. */}
-            <Stack spacing={4} hidden={!searching || picked !== null}>
-                <RadioGroup
-                    value={source}
-                    onChange={(value) => chooseSource(value as NutritionSource)}
-                    isDisabled={disabled}
-                    aria-label='Nutritional data source'
-                    fontWeight='normal'
-                >
-                    <Stack spacing={1}>
-                        {SOURCE_CHOICES.map((choice) => (
-                            <Radio key={choice.value} value={choice.value}>
-                                {choice.label}
-                            </Radio>
-                        ))}
+                        {shownPick.warnings && shownPick.warnings.length > 0 && (
+                            <Text fontSize='sm' color='orange.600'>
+                                {shownPick.warnings.join('. ')}. Check the values against the pack
+                                label.
+                            </Text>
+                        )}
+                        <ClearSelectionButton
+                            disabled={disabled}
+                            onClear={() => setSelection(null)}
+                        />
                     </Stack>
-                </RadioGroup>
-                <Box hidden={source !== 'usda'}>
-                    <UsdaSearchPanel {...panelProps} active={source === 'usda' && searching} />
-                </Box>
-                <Box hidden={source !== 'openFoodFacts'}>
-                    <OpenFoodFactsPanel
-                        {...panelProps}
-                        active={source === 'openFoodFacts' && searching}
-                    />
-                </Box>
-                <Box hidden={source !== 'manual'}>
-                    <ManualNutritionPanel
-                        {...panelProps}
-                        active={source === 'manual' && searching}
-                        measures={measures}
-                        prepMethodId={prepMethod?._id ?? null}
-                        targetName={targetName}
-                    />
-                </Box>
-            </Stack>
+                )}
+            </Collapse>
+            {/* Panels stay mounted while collapsed, so clearing a selection finds the search as
+                it was. */}
+            <Collapse in={searching && picked === null}>
+                <Stack spacing={4}>
+                    <RadioGroup
+                        value={source}
+                        onChange={(value) => chooseSource(value as NutritionSource)}
+                        isDisabled={disabled}
+                        aria-label='Nutritional data source'
+                        fontWeight='normal'
+                    >
+                        <Stack spacing={1}>
+                            {SOURCE_CHOICES.map((choice) => (
+                                <Radio key={choice.value} value={choice.value}>
+                                    {choice.label}
+                                </Radio>
+                            ))}
+                        </Stack>
+                    </RadioGroup>
+                    <Box hidden={source !== 'usda'}>
+                        <UsdaSearchPanel {...panelProps} active={source === 'usda' && searching} />
+                    </Box>
+                    <Box hidden={source !== 'openFoodFacts'}>
+                        <OpenFoodFactsPanel
+                            {...panelProps}
+                            active={source === 'openFoodFacts' && searching}
+                        />
+                    </Box>
+                    <Box hidden={source !== 'manual'}>
+                        <ManualNutritionPanel
+                            {...panelProps}
+                            active={source === 'manual' && searching}
+                            measures={measures}
+                            prepMethodId={prepMethod?._id ?? null}
+                            targetName={targetName}
+                        />
+                    </Box>
+                </Stack>
+            </Collapse>
         </Stack>
     );
 });

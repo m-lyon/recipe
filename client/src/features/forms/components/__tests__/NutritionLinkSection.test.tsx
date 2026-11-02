@@ -128,6 +128,7 @@ describe('NutritionLinkSection USDA search', () => {
     it('should search the text just typed, without waiting', async () => {
         const user = userEvent.setup();
         renderSection([mockUsdaSearchChickenBreast]);
+        await pickRecord(user, 'carrot');
 
         // No pause between the last keystroke and the click: the mock only answers
         // the full query, so a stale value would leave the list empty.
@@ -141,6 +142,7 @@ describe('NutritionLinkSection USDA search', () => {
     it('should say so when a search returns no matches', async () => {
         const user = userEvent.setup();
         renderSection([mockUsdaSearchNoMatches]);
+        await pickRecord(user, 'carrot');
 
         expect(screen.queryByText(/No matches found/)).toBeNull();
         await user.clear(screen.getByLabelText('Search nutritional data'));
@@ -155,6 +157,7 @@ describe('NutritionLinkSection USDA search', () => {
         renderSection([
             { request: mockUsdaSearchNoMatches.request, error: new Error('USDA is down') },
         ]);
+        await pickRecord(user, 'carrot');
 
         await user.clear(screen.getByLabelText('Search nutritional data'));
         await user.type(screen.getByLabelText('Search nutritional data'), 'zzzzz');
@@ -167,6 +170,7 @@ describe('NutritionLinkSection USDA search', () => {
     it('should show only the selected item in place of the search', async () => {
         const user = userEvent.setup();
         renderSection([mockUsdaSearchChickenBreast, mockUsdaFoodItemChickenBreast]);
+        await pickRecord(user, 'carrot');
 
         await searchUsdaAndSelect(user, 'chicken breast', 'Chicken breast, cooked');
 
@@ -179,13 +183,15 @@ describe('NutritionLinkSection USDA search', () => {
         const user = userEvent.setup();
         // No mock for a write: a request would fail the test with a warning.
         const { ref } = renderSection([mockUsdaSearchChickenBreast, mockUsdaFoodItemChickenBreast]);
+        await pickRecord(user, 'carrot');
         await searchUsdaAndSelect(user, 'chicken breast', 'Chicken breast, cooked');
 
         await user.click(screen.getByLabelText('Clear nutritional data selection'));
 
-        expect(screen.queryByText(/Selected:/)).toBeNull();
+        expect(
+            screen.queryByRole('button', { name: 'Clear nutritional data selection' })
+        ).toBeNull();
         expect(screen.getByText('Chicken breast, cooked')).not.toBeNull();
-        expect(screen.queryByLabelText('Clear nutritional data selection')).toBeNull();
         await commit(ref);
     });
 
@@ -197,6 +203,7 @@ describe('NutritionLinkSection USDA search', () => {
             mockUsdaFoodItemChickenBreast,
             { ...mockCreateNutritionalInfoCarrotUsda, result: created },
         ]);
+        await pickRecord(user, 'carrot');
         await searchUsdaAndSelect(user, 'chicken breast', 'Chicken breast, cooked');
 
         await commit(ref);
@@ -218,6 +225,7 @@ describe('NutritionLinkSection portions for the measures list', () => {
             onPortionsChange,
             onPerGramChange,
         });
+        await pickRecord(user, 'carrot');
 
         await searchUsdaAndSelect(user, 'chicken breast', 'Chicken breast, cooked');
 
@@ -243,6 +251,7 @@ describe('NutritionLinkSection portions for the measures list', () => {
                 {section({ onPortionsChange })}
             </MockedProvider>
         );
+        await pickRecord(user, 'carrot');
         await searchUsdaAndSelect(user, 'chicken breast', 'Chicken breast, cooked');
         await waitFor(() => expect(onPortionsChange.mock.lastCall?.[0].length).toBeGreaterThan(0));
 
@@ -285,6 +294,7 @@ describe('NutritionLinkSection Open Food Facts', () => {
     it('should show each product with its brand, quantity and macros', async () => {
         const user = userEvent.setup();
         renderSection([mockOpenFoodFactsSearchCouscous]);
+        await pickRecord(user, 'carrot');
         await chooseSource(user, 'UK products (Open Food Facts)');
 
         await user.clear(screen.getByLabelText('Search products'));
@@ -300,6 +310,7 @@ describe('NutritionLinkSection Open Food Facts', () => {
     it('should mark a product with a missing macro', async () => {
         const user = userEvent.setup();
         renderSection([mockOpenFoodFactsSearchCouscous]);
+        await pickRecord(user, 'carrot');
         await chooseSource(user, 'UK products (Open Food Facts)');
         await user.clear(screen.getByLabelText('Search products'));
         await user.type(screen.getByLabelText('Search products'), 'couscous');
@@ -315,6 +326,7 @@ describe('NutritionLinkSection Open Food Facts', () => {
     it('should search all countries once the UK filter is off', async () => {
         const user = userEvent.setup();
         renderSection([mockOpenFoodFactsSearchCouscousAllCountries]);
+        await pickRecord(user, 'carrot');
         await chooseSource(user, 'UK products (Open Food Facts)');
 
         await user.click(screen.getByLabelText('Search all countries'));
@@ -337,6 +349,7 @@ describe('NutritionLinkSection Open Food Facts', () => {
             ],
             { onPortionsChange }
         );
+        await pickRecord(user, 'carrot');
         await chooseSource(user, 'UK products (Open Food Facts)');
 
         // Digits only: the spaces of a pasted barcode are dropped.
@@ -379,6 +392,7 @@ describe('NutritionLinkSection Open Food Facts', () => {
         const user = userEvent.setup();
         // No mock for the lookup: a request would fail the test with a warning.
         renderSection([]);
+        await pickRecord(user, 'carrot');
         await chooseSource(user, 'UK products (Open Food Facts)');
 
         await user.type(screen.getByLabelText('Barcode'), '5010338301256');
@@ -390,6 +404,7 @@ describe('NutritionLinkSection Open Food Facts', () => {
     it('should say so when no product has the barcode', async () => {
         const user = userEvent.setup();
         renderSection([mockOpenFoodFactsProductNotFound]);
+        await pickRecord(user, 'carrot');
         await chooseSource(user, 'UK products (Open Food Facts)');
 
         await user.type(screen.getByLabelText('Barcode'), '5012345678900');
@@ -414,6 +429,7 @@ describe('NutritionLinkSection source switch', () => {
             data: { __typename: 'Query', currentUser: mockUser },
         });
         const { unmount } = renderSection([], {}, cache);
+        await pickRecord(user, 'carrot');
         expect(screen.getByLabelText('Generic foods (USDA)')).toHaveProperty('checked', true);
 
         await chooseSource(user, 'Enter manually');
@@ -435,6 +451,7 @@ describe('NutritionLinkSection manual entry', () => {
         const { ref } = renderSection([
             { ...mockCreateNutritionalInfoCarrotManual, result: created },
         ]);
+        await pickRecord(user, 'carrot');
         await chooseSource(user, 'Enter manually');
 
         await enterManually(user, carrotLabelPer100);
@@ -455,6 +472,7 @@ describe('NutritionLinkSection manual entry', () => {
                 ],
             }
         );
+        await pickRecord(user, 'carrot');
         await chooseSource(user, 'Enter manually');
 
         await user.click(screen.getByLabelText('per 100 ml'));
@@ -468,6 +486,7 @@ describe('NutritionLinkSection manual entry', () => {
         const user = userEvent.setup();
         // No mock for a write: a request would fail the test with a warning.
         const { ref } = renderSection([]);
+        await pickRecord(user, 'carrot');
         await chooseSource(user, 'Enter manually');
 
         await user.type(screen.getByLabelText('Calories (kcal)'), '41');
@@ -480,6 +499,7 @@ describe('NutritionLinkSection manual entry', () => {
         const user = userEvent.setup();
         // No mock for a write: a request would fail the test with a warning.
         const { ref } = renderSection([]);
+        await pickRecord(user, 'carrot');
         await chooseSource(user, 'Enter manually');
 
         await user.click(screen.getByLabelText('per 100 ml'));
@@ -493,6 +513,7 @@ describe('NutritionLinkSection manual entry', () => {
     it('should warn when the kcal does not match the macros', async () => {
         const user = userEvent.setup();
         renderSection([]);
+        await pickRecord(user, 'carrot');
         await chooseSource(user, 'Enter manually');
 
         // Protein and carbs swapped with kcal: 4·41 + 4·9.6 + 9·0.2 is far from 0.9 kcal.
@@ -509,16 +530,35 @@ describe('NutritionLinkSection prep records', () => {
         cleanup();
     });
 
-    it('should show the plain record first, and a prep record once picked', async () => {
+    it('should disable the form until a record is picked', async () => {
+        const user = userEvent.setup();
+        renderSection([]);
+
+        expect(screen.getByLabelText('Values for')).toHaveProperty('value', '');
+        expect(record().getByLabelText('Search nutritional data')).toHaveProperty('disabled', true);
+
+        await pickRecord(user, 'carrot');
+        expect(record().getByLabelText('Search nutritional data')).toHaveProperty(
+            'disabled',
+            false
+        );
+    });
+
+    it('should show a saved record at once, and another record once picked', async () => {
         const user = userEvent.setup();
         renderSection([], { existingNutritionalInfos: dicedInfos });
 
-        expect(record().getByLabelText('Search nutritional data')).not.toBeNull();
-        expect(screen.queryByRole('group', { name: 'Nutritional data · diced' })).toBeNull();
-
-        await pickRecord(user, 'carrot, diced');
+        await waitFor(() =>
+            expect(screen.getByLabelText('Values for')).toHaveProperty('value', 'carrot, diced')
+        );
         expect(record('diced').getByText('Entered manually · Pack label')).not.toBeNull();
-        expect(screen.queryByRole('group', { name: 'Nutritional data' })).toBeNull();
+
+        await pickRecord(user, 'carrot');
+        expect(record().getByLabelText('Search nutritional data')).toHaveProperty(
+            'disabled',
+            false
+        );
+        expect(screen.queryByRole('group', { name: 'Nutritional data · diced' })).toBeNull();
     });
 
     it('should add values for a prep method as a record of its own', async () => {

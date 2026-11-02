@@ -64,13 +64,14 @@ export const NutritionLinkSection = forwardRef<
     const { data: components } = useQuery(GET_INGREDIENT_COMPONENTS);
     // Prep methods picked in this form, kept so a staged link survives picking another.
     const [picked, setPicked] = useState<{ _id: string; value: string }[]>([]);
-    const [selectedKey, setSelectedKey] = useState('plain');
+    // Null until the user picks a record, so they choose what the values are for.
+    const [chosenKey, setChosenKey] = useState<string | null>(null);
     const [shownBySlot, setShownBySlot] = useState<Record<string, ShownNutrition | null>>({});
     const editors = useRef(new Map<string, NutritionRecordEditorHandle>());
 
     useEffect(() => {
         setPicked([]);
-        setSelectedKey('plain');
+        setChosenKey(null);
     }, [ingredientId]);
 
     const prepInfos = infos
@@ -93,6 +94,9 @@ export const NutritionLinkSection = forwardRef<
             .map((prep) => ({ key: prep._id, prepMethod: prep, existing: null })),
     ];
     const slotKeys = slots.map((slot) => slot.key).join(',');
+    // A saved record is shown at once: there is nothing to choose.
+    const savedKey = slots.find((slot) => slot.existing)?.key ?? null;
+    const selectedKey = chosenKey ?? savedKey;
 
     const linkedPortions = useMemo(
         () =>
@@ -170,13 +174,14 @@ export const NutritionLinkSection = forwardRef<
                     if (prep && !slots.some((slot) => slot.key === key)) {
                         setPicked((p) => [...p, { _id: prep._id, value: prep.value }]);
                     }
-                    setSelectedKey(key);
+                    setChosenKey(key);
                 }}
                 disabled={disabled}
             />
-            {/* Every record stays mounted, so its staged change is saved with the form. */}
+            {/* Every record stays mounted, so its staged change is saved with the form. Until a
+                record is picked, the plain one is shown disabled. */}
             {slots.map((slot) => (
-                <Box key={slot.key} hidden={slot.key !== selectedKey}>
+                <Box key={slot.key} hidden={slot.key !== (selectedKey ?? 'plain')}>
                     <NutritionRecordEditor
                         ref={(handle) => {
                             if (handle) editors.current.set(slot.key, handle);
@@ -185,7 +190,7 @@ export const NutritionLinkSection = forwardRef<
                         slotKey={`nutrition-${slot.key}`}
                         ingredientId={ingredientId}
                         ingredientName={ingredientName}
-                        disabled={disabled}
+                        disabled={disabled || selectedKey === null}
                         prepMethod={slot.prepMethod}
                         existing={slot.existing}
                         measures={measures}

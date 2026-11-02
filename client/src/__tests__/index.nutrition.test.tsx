@@ -160,6 +160,8 @@ describe('USDA portions as measures from the new ingredient form', () => {
         await user.click(screen.getByText('Use singular form with units'));
 
         // Act -- search USDA and select the record, which fetches its portions
+        await user.click(screen.getByLabelText('Values for'));
+        await user.click(await screen.findByRole('option', { name: 'onion' }));
         await user.type(screen.getByLabelText('Search nutritional data'), 'onion');
         await user.click(screen.getByLabelText('Search USDA database'));
         await user.click(await screen.findByText('Onions, raw'));

@@ -359,6 +359,8 @@ describe('Create new Ingredient', () => {
         await user.keyboard('{1}{ }');
         await clickGetByText(screen, user, 'skip unit', 'skip size', 'add new ingredient');
         await user.keyboard('beef');
+        await user.click(screen.getByLabelText('Values for'));
+        await user.click(await screen.findByRole('option', { name: 'beef' }));
 
         await user.type(screen.getByLabelText('Search nutritional data'), 'chicken breast');
         await user.click(screen.getByLabelText('Search USDA database'));
@@ -397,6 +399,8 @@ describe('Create new Ingredient', () => {
         await user.keyboard('{1}{ }');
         await clickGetByText(screen, user, 'skip unit', 'skip size', 'add new ingredient');
         await user.keyboard('beef');
+        await user.click(screen.getByLabelText('Values for'));
+        await user.click(await screen.findByRole('option', { name: 'beef' }));
 
         await user.type(screen.getByLabelText('Search nutritional data'), 'chicken breast');
         await user.click(screen.getByLabelText('Search USDA database'));

@@ -138,14 +138,14 @@ describe('Edit Ingredient', () => {
             expect(screen.getByLabelText('Plural name')).toHaveProperty('value', 'carrots')
         );
 
-        // Expect -- the plain record has no data, and diced carrot has its own record
+        // Expect -- diced carrot's record shows at once, and the plain record has no data
+        const diced = within(screen.getByRole('group', { name: 'Nutritional data · diced' }));
+        expect(diced.getByText('Entered manually · Pack label')).not.toBeNull();
+        await user.click(screen.getByLabelText('Values for'));
+        await user.click(await screen.findByRole('option', { name: 'carrot' }));
         const plain = within(screen.getByRole('group', { name: 'Nutritional data' }));
         expect(plain.getByLabelText('Search nutritional data')).not.toBeNull();
         expect(plain.queryByText(/Entered manually/)).toBeNull();
-        await user.click(screen.getByLabelText('Values for'));
-        await user.click(await screen.findByRole('option', { name: 'carrot, diced' }));
-        const diced = within(screen.getByRole('group', { name: 'Nutritional data · diced' }));
-        expect(diced.getByText('Entered manually · Pack label')).not.toBeNull();
     });
 
     it('should remove an ingredient', async () => {
@@ -186,6 +186,8 @@ describe('Edit Ingredient', () => {
         await waitFor(() =>
             expect(screen.getByLabelText('Plural name')).toHaveProperty('value', 'carrots')
         );
+        await user.click(screen.getByLabelText('Values for'));
+        await user.click(await screen.findByRole('option', { name: 'carrot' }));
         // The USDA search bar is prepopulated with the selected ingredient's name
         expect(screen.getByLabelText('Search nutritional data')).toHaveProperty('value', 'carrot');
 
@@ -209,7 +211,9 @@ describe('Edit Ingredient', () => {
             )
         );
         expect(screen.queryByText('Chicken breast, cooked')).toBeNull();
-        expect(screen.queryByLabelText('Clear nutritional data selection')).toBeNull();
+        expect(
+            screen.queryByRole('button', { name: 'Clear nutritional data selection' })
+        ).toBeNull();
     });
 
     it('should search on Enter from the USDA search bar without it reaching the page-level save-on-Enter handler', async () => {
@@ -226,6 +230,9 @@ describe('Edit Ingredient', () => {
         await waitFor(() =>
             expect(screen.getByLabelText('Plural name')).toHaveProperty('value', 'carrots')
         );
+
+        await user.click(screen.getByLabelText('Values for'));
+        await user.click(await screen.findByRole('option', { name: 'carrot' }));
 
         const windowKeydown = vi.fn();
         window.addEventListener('keydown', windowKeydown);
