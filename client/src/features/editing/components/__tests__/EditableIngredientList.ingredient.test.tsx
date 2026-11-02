@@ -363,8 +363,6 @@ describe('Create new Ingredient', () => {
         await user.type(screen.getByLabelText('Search nutritional data'), 'chicken breast');
         await user.click(screen.getByLabelText('Search USDA database'));
         await user.click(await screen.findByText('Chicken breast, cooked'));
-        await user.click(screen.getByLabelText('Link selected nutritional data'));
-        expect(await screen.findByText(/Linked: chicken breast, cooked/)).not.toBeNull();
 
         // Act -- saving the ingredient commits the staged link using the new ingredient's id
         await user.click(screen.getByLabelText('Save ingredient'));
@@ -382,7 +380,7 @@ describe('Create new Ingredient', () => {
         ).toBeNull();
     });
 
-    it('should not link USDA data that was previewed but never confirmed', async () => {
+    it('should not link USDA data whose selection was cleared', async () => {
         const user = userEvent.setup();
         // Render -- the link mock is supplied, so firing it would be recorded rather than
         // silently swallowed as a mock mismatch.
@@ -394,7 +392,7 @@ describe('Create new Ingredient', () => {
             linkMock,
         ]);
 
-        // Act -- select a search result to inspect its macros, but never click "Link"
+        // Act -- select a search result to inspect its macros, then clear it
         await user.click(screen.getByText('Enter ingredient'));
         await user.keyboard('{1}{ }');
         await clickGetByText(screen, user, 'skip unit', 'skip size', 'add new ingredient');
@@ -403,11 +401,11 @@ describe('Create new Ingredient', () => {
         await user.type(screen.getByLabelText('Search nutritional data'), 'chicken breast');
         await user.click(screen.getByLabelText('Search USDA database'));
         await user.click(await screen.findByText('Chicken breast, cooked'));
+        await user.click(screen.getByLabelText('Clear nutritional data selection'));
 
         await user.click(screen.getByLabelText('Save ingredient'));
 
-        // Expect -- the ingredient saves, and no link mutation is attempted: a merely
-        // previewed USDA result must not be persisted.
+        // Expect -- the ingredient saves, and no link mutation is attempted.
         await waitFor(() =>
             haveValueByLabelText(screen, 'Input ingredient #1 for subsection 1', '1 beef, ')
         );

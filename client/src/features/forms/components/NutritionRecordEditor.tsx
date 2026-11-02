@@ -1,7 +1,7 @@
 import { Stack, Text } from '@chakra-ui/react';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
 import { Box, Button, HStack, Link, Radio, RadioGroup, Skeleton } from '@chakra-ui/react';
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react';
 
 import { usePreferencesStore } from '@recipe/stores';
 import { CURRENT_USER } from '@recipe/graphql/queries/user';
@@ -32,7 +32,6 @@ export interface ShownNutrition {
     source: NutritionSource;
     perGram: MacroNutrients;
     portions: NutritionPortion[];
-    linked: boolean;
 }
 
 export interface NutritionRecordEditorProps {
@@ -44,8 +43,6 @@ export interface NutritionRecordEditorProps {
     prepMethod: { _id: string; value: string } | null;
     existing?: ExistingNutritionalInfo | null;
     measures: MeasureForDensity[];
-    /** False while the form shows another record: a selection here is then dropped. */
-    visible: boolean;
     onShownChange: (shown: ShownNutrition | null) => void;
 }
 
@@ -88,7 +85,7 @@ export const NutritionRecordEditor = forwardRef<
     NutritionRecordEditorProps
 >(function NutritionRecordEditor(props, ref) {
     const { slotKey, ingredientId, ingredientName, disabled, prepMethod, existing } = props;
-    const { measures, visible, onShownChange } = props;
+    const { measures, onShownChange } = props;
 
     // Read from the cache only: the navbar has fetched the user, and a request here
     // would add nothing.
@@ -98,29 +95,28 @@ export const NutritionRecordEditor = forwardRef<
     const setPreferred = usePreferencesStore((state) => state.setNutritionSource);
     const [source, setSource] = useState<NutritionSource>(preferred ?? 'usda');
 
-    // The values to save, once the user links them or the saved record is loaded.
-    const [linked, setLinked] = useState<NutritionSelection | null>(null);
-    // The values selected in the active panel, shown to the measures list before a link.
-    const [preview, setPreview] = useState<NutritionSelection | null>(null);
-    // True while a linked record's search is open to replace its values.
+    const saved = useMemo(() => (existing ? selectionFromExisting(existing) : null), [existing]);
+    const savedKey = JSON.stringify(saved);
+    // The selection in the open search. It replaces the saved values when the form is saved.
+    const [selection, setSelection] = useState<NutritionSelection | null>(null);
+    // True once the saved values are unlinked: saving the form then removes them.
+    const [removed, setRemoved] = useState(false);
+    // True while the search is open to replace the saved values.
     const [changing, setChanging] = useState(false);
-    const searching = visible && (!linked || changing);
-    const shown = linked ?? preview;
+    const searching = !saved || removed || changing;
+    const shown = selection ?? (removed ? null : saved);
 
-    // Hydrate the link from the prefetched record. Re-runs when that record arrives after
-    // the ingredient switch (e.g. first load), or changes after a save.
+    // Re-runs when the record arrives after the ingredient switch (e.g. first load), or
+    // changes after a save.
     useEffect(() => {
-        setLinked(existing ? selectionFromExisting(existing) : null);
-        setPreview(null);
+        setSelection(null);
+        setRemoved(false);
         setChanging(false);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [ingredientId, existing?._id]);
+    }, [ingredientId, savedKey]);
 
     useEffect(() => {
-        if (visible) return;
-        setPreview(null);
-        setChanging(false);
-    }, [visible]);
+        if (!searching) setSelection(null);
+    }, [searching]);
 
     // Portions, and the USDA item's name, come from a second request. A USDA search
     // result carries no portions. An Open Food Facts product is fetched only for a saved
@@ -128,10 +124,7 @@ export const NutritionRecordEditor = forwardRef<
     const detailsKey =
         shown?.source === 'usda' && shown.usdaFdcId
             ? `usda:${shown.usdaFdcId}`
-            : shown?.source === 'openFoodFacts' &&
-                shown === linked &&
-                shown.openFoodFactsBarcode &&
-                shown.openFoodFactsBarcode === existing?.openFoodFactsBarcode
+            : shown?.source === 'openFoodFacts' && shown === saved && shown.openFoodFactsBarcode
               ? `off:${shown.openFoodFactsBarcode}`
               : null;
     const [details, setDetails] = useState<{
@@ -172,17 +165,13 @@ export const NutritionRecordEditor = forwardRef<
         : (currentDetails?.portions ?? NO_PORTIONS);
 
     useEffect(() => {
-        onShownChange(
-            shown
-                ? { source: shown.source, perGram: shown.perGram, portions, linked: !!linked }
-                : null
-        );
+        onShownChange(shown ? { source: shown.source, perGram: shown.perGram, portions } : null);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [shown, portions]);
 
     const chooseSource = (next: NutritionSource) => {
         setSource(next);
-        setPreview(null);
+        setSelection(null);
         setPreferred(userId, next);
     };
 
@@ -193,8 +182,7 @@ export const NutritionRecordEditor = forwardRef<
 
     const commitChanges = useCallback(
         async (targetIngredientId: string) => {
-            const saved = existing ? selectionFromExisting(existing) : null;
-            const unchanged = linked && saved ? sameValues(linked, saved) : !linked && !saved;
+            const unchanged = shown && saved ? sameValues(shown, saved) : !shown && !saved;
             if (unchanged) return false;
 
             const record = (wanted: NutritionSelection): CreateOneNutritionalInfoCreateInput => ({
@@ -208,12 +196,12 @@ export const NutritionRecordEditor = forwardRef<
                 perGram: wanted.perGram,
             });
             let result;
-            if (linked && existing) {
+            if (shown && existing) {
                 result = await updateNutritionalInfo({
-                    variables: { _id: existing._id, record: record(linked) },
+                    variables: { _id: existing._id, record: record(shown) },
                 });
-            } else if (linked) {
-                result = await createNutritionalInfo({ variables: { record: record(linked) } });
+            } else if (shown) {
+                result = await createNutritionalInfo({ variables: { record: record(shown) } });
             } else {
                 result = await deleteNutritionalInfo({ variables: { _id: existing!._id } });
             }
@@ -224,7 +212,8 @@ export const NutritionRecordEditor = forwardRef<
         },
         [
             existing,
-            linked,
+            saved,
+            shown,
             prepMethod,
             createNutritionalInfo,
             updateNutritionalInfo,
@@ -243,46 +232,39 @@ export const NutritionRecordEditor = forwardRef<
         ingredientId,
         ingredientName,
         disabled,
-        onPreview: setPreview,
-        // Staged: the link is saved with the ingredient, like every other field.
-        onLink: (selection: NutritionSelection) => {
-            setLinked(selection);
-            setChanging(false);
-        },
+        onSelect: setSelection,
     };
 
     return (
         <Stack spacing={4} role='group' aria-label={title}>
-            {linked && (
+            {saved && !removed && (
                 <Stack spacing={2} fontWeight='normal'>
                     <LinkedText
-                        linked={linked}
-                        usdaName={currentDetails?.name ?? null}
-                        loading={foodItemLoading}
+                        linked={saved}
+                        usdaName={selection ? null : (currentDetails?.name ?? null)}
+                        loading={!selection && foodItemLoading}
                     />
                     <Text fontSize='sm' color='gray.500'>
                         {formatPer100({
-                            calories: linked.perGram.calories * 100,
-                            protein: linked.perGram.protein * 100,
-                            carbs: linked.perGram.carbs * 100,
-                            fat: linked.perGram.fat * 100,
+                            calories: saved.perGram.calories * 100,
+                            protein: saved.perGram.protein * 100,
+                            carbs: saved.perGram.carbs * 100,
+                            fat: saved.perGram.fat * 100,
                         })}
                     </Text>
-                    <HStack spacing={2}>
-                        {changing ? (
-                            <Button
-                                size='sm'
-                                variant='outline'
-                                onClick={() => {
-                                    setPreview(null);
-                                    setChanging(false);
-                                }}
-                                isDisabled={disabled}
-                                aria-label={`Keep nutritional data${forPrep}`}
-                            >
-                                Cancel
-                            </Button>
-                        ) : (
+                    {changing ? (
+                        <Button
+                            size='sm'
+                            variant='outline'
+                            alignSelf='flex-start'
+                            onClick={() => setChanging(false)}
+                            isDisabled={disabled}
+                            aria-label={`Keep nutritional data${forPrep}`}
+                        >
+                            Cancel
+                        </Button>
+                    ) : (
+                        <HStack spacing={2}>
                             <Button
                                 size='sm'
                                 variant='outline'
@@ -292,23 +274,38 @@ export const NutritionRecordEditor = forwardRef<
                             >
                                 Change
                             </Button>
-                        )}
-                        <Button
-                            size='sm'
-                            variant='outline'
-                            colorScheme='red'
-                            // Staged: the saved record is removed only when the ingredient is saved.
-                            onClick={() => {
-                                setLinked(null);
-                                setChanging(false);
-                            }}
-                            isDisabled={disabled}
-                            aria-label={`Unlink nutritional data${forPrep}`}
-                        >
-                            Unlink
-                        </Button>
-                    </HStack>
+                            <Button
+                                size='sm'
+                                variant='outline'
+                                colorScheme='red'
+                                onClick={() => setRemoved(true)}
+                                isDisabled={disabled}
+                                aria-label={`Unlink nutritional data${forPrep}`}
+                            >
+                                Unlink
+                            </Button>
+                        </HStack>
+                    )}
+                    {selection && (
+                        <Text fontSize='sm' color='gray.500'>
+                            The selected values replace these when you save.
+                        </Text>
+                    )}
                 </Stack>
+            )}
+            {saved && removed && (
+                <HStack spacing={2} fontWeight='normal'>
+                    <Text fontSize='sm'>The saved values are removed when you save.</Text>
+                    <Button
+                        size='sm'
+                        variant='outline'
+                        onClick={() => setRemoved(false)}
+                        isDisabled={disabled}
+                        aria-label={`Undo unlink${forPrep}`}
+                    >
+                        Undo
+                    </Button>
+                </HStack>
             )}
             {/* Panels stay mounted while hidden, so reopening finds the search as it was. */}
             <Stack spacing={4} hidden={!searching}>

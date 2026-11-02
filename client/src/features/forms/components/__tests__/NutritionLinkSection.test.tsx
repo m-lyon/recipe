@@ -13,6 +13,7 @@ import { MockedResponses } from '@recipe/utils/tests';
 import { CURRENT_USER } from '@recipe/graphql/queries/user';
 import { mockCup } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockUser } from '@recipe/graphql/queries/__mocks__/user';
+import { EnumNutritionalInfoSource } from '@recipe/graphql/generated';
 import { carrotCupGrams } from '@recipe/graphql/mutations/__mocks__/nutritionalInfo';
 import { mockAppleId, mockCarrotId, mockDicedId } from '@recipe/graphql/__mocks__/ids';
 import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
@@ -163,22 +164,17 @@ describe('NutritionLinkSection USDA search', () => {
         expect(screen.queryByText(/No matches found/)).toBeNull();
     });
 
-    it('should keep the search and its results after an unlink', async () => {
+    it('should link nothing once the selection is cleared, and keep the results', async () => {
         const user = userEvent.setup();
-        // No ingredient yet, so the link is staged and unlinking needs no request.
-        renderSection([mockUsdaSearchChickenBreast, mockUsdaFoodItemChickenBreast], {
-            ingredientId: undefined,
-        });
+        // No mock for a write: a request would fail the test with a warning.
+        const { ref } = renderSection([mockUsdaSearchChickenBreast, mockUsdaFoodItemChickenBreast]);
         await searchUsdaAndSelect(user, 'chicken breast', 'Chicken breast, cooked');
-        await user.click(screen.getByLabelText('Link selected nutritional data'));
-        expect(await screen.findByText(/Linked: chicken breast, cooked/)).not.toBeNull();
 
-        await user.click(screen.getByLabelText('Unlink nutritional data'));
+        await user.click(screen.getByLabelText('Clear nutritional data selection'));
 
-        const input = screen.getByLabelText('Search nutritional data') as HTMLInputElement;
-        expect(input.value).toBe('chicken breast');
         expect(screen.getByText('Chicken breast, cooked')).not.toBeNull();
-        expect(screen.queryByText(/Linked:/)).toBeNull();
+        expect(screen.queryByLabelText('Clear nutritional data selection')).toBeNull();
+        await commit(ref);
     });
 
     it('should save a USDA link with its source and FDC ID', async () => {
@@ -190,7 +186,6 @@ describe('NutritionLinkSection USDA search', () => {
             { ...mockCreateNutritionalInfoCarrotUsda, result: created },
         ]);
         await searchUsdaAndSelect(user, 'chicken breast', 'Chicken breast, cooked');
-        await user.click(screen.getByLabelText('Link selected nutritional data'));
 
         await commit(ref);
 
@@ -319,7 +314,7 @@ describe('NutritionLinkSection Open Food Facts', () => {
         expect(screen.queryByText('Giant Couscous')).toBeNull();
     });
 
-    it('should look up a barcode, link it and save it', async () => {
+    it('should look up a barcode and save the product', async () => {
         const user = userEvent.setup();
         const created = vi.fn(() => mockCreateNutritionalInfoCarrotOpenFoodFacts.result);
         const onPortionsChange = vi.fn();
@@ -337,7 +332,24 @@ describe('NutritionLinkSection Open Food Facts', () => {
         expect(screen.getByLabelText('Barcode')).toHaveProperty('value', offPearlCouscousBarcode);
         await user.type(screen.getByLabelText('Barcode'), '{Enter}');
         expect(await screen.findByText('Pearl Couscous')).not.toBeNull();
-        await user.click(screen.getByLabelText('Link selected nutritional data'));
+
+        expect(onPortionsChange.mock.lastCall?.[0][0].portion.description).toBe('1 cup');
+        await commit(ref);
+        expect(created).toHaveBeenCalledTimes(1);
+    });
+
+    it('should link a saved product to its page', async () => {
+        renderSection([mockOpenFoodFactsProductCouscous], {
+            existingNutritionalInfos: [
+                {
+                    ...dicedInfos[0],
+                    prepMethod: null,
+                    source: EnumNutritionalInfoSource.OpenFoodFacts,
+                    openFoodFactsBarcode: offPearlCouscousBarcode,
+                    sourceName: "Al'fez · Pearl Couscous",
+                },
+            ],
+        });
 
         // Expect -- the product page link gives the ODbL attribution
         expect(screen.getByText(/Linked: Al'fez · Pearl Couscous/)).not.toBeNull();
@@ -347,10 +359,8 @@ describe('NutritionLinkSection Open Food Facts', () => {
         expect(link.getAttribute('href')).toBe(
             `https://world.openfoodfacts.org/product/${offPearlCouscousBarcode}`
         );
-        expect(onPortionsChange.mock.lastCall?.[0][0].portion.description).toBe('1 cup');
-
-        await commit(ref);
-        expect(created).toHaveBeenCalledTimes(1);
+        // The saved product's portions come from a lookup.
+        await waitFor(() => expect(screen.queryByText('Pearl Couscous')).toBeNull());
     });
 
     it('should refuse a barcode whose check digit is wrong, with no request', async () => {
@@ -417,9 +427,7 @@ describe('NutritionLinkSection manual entry', () => {
 
         await enterManually(user, carrotLabelPer100);
         await user.type(screen.getByLabelText('Source'), 'Tesco pack label');
-        await user.click(screen.getByLabelText('Use entered nutritional data'));
 
-        expect(screen.getByText('Entered manually · Tesco pack label')).not.toBeNull();
         await commit(ref);
         expect(created).toHaveBeenCalledTimes(1);
     });
@@ -439,15 +447,27 @@ describe('NutritionLinkSection manual entry', () => {
 
         await user.click(screen.getByLabelText('per 100 ml'));
         await enterManually(user, carrotLabelPer100);
-        await user.click(screen.getByLabelText('Use entered nutritional data'));
 
         await commit(ref);
         expect(created).toHaveBeenCalledTimes(1);
     });
 
+    it('should link nothing until all four values are entered', async () => {
+        const user = userEvent.setup();
+        // No mock for a write: a request would fail the test with a warning.
+        const { ref } = renderSection([]);
+        await chooseSource(user, 'Enter manually');
+
+        await user.type(screen.getByLabelText('Calories (kcal)'), '41');
+
+        expect(screen.getByText('Enter all four values to use them.')).not.toBeNull();
+        await commit(ref);
+    });
+
     it('should not convert values per 100 ml with no volume measure', async () => {
         const user = userEvent.setup();
-        renderSection([]);
+        // No mock for a write: a request would fail the test with a warning.
+        const { ref } = renderSection([]);
         await chooseSource(user, 'Enter manually');
 
         await user.click(screen.getByLabelText('per 100 ml'));
@@ -455,10 +475,7 @@ describe('NutritionLinkSection manual entry', () => {
 
         expect(screen.getByText(/carrot has no volume measure/)).not.toBeNull();
         expect(screen.getByText(/Add one in the measures list/)).not.toBeNull();
-        expect(screen.getByLabelText('Use entered nutritional data')).toHaveProperty(
-            'disabled',
-            true
-        );
+        await commit(ref);
     });
 
     it('should warn when the kcal does not match the macros', async () => {
@@ -502,8 +519,10 @@ describe('NutritionLinkSection prep records', () => {
         await pickRecord(user, 'carrot, chopped');
         await chooseSource(user, 'Enter manually', 'chopped');
         await enterManually(user, carrotLabelPer100, 'chopped');
-        await user.click(record('chopped').getByLabelText('Use entered nutritional data'));
         await pickRecord(user, 'carrot');
+        expect(
+            screen.getByRole('option', { name: 'carrot, chopped', hidden: true })
+        ).not.toBeNull();
 
         // The plain record is unlinked, so it writes nothing.
         await commit(ref);
@@ -539,7 +558,9 @@ describe('NutritionLinkSection prep records', () => {
         await user.click(screen.getByLabelText('Change nutritional data for diced'));
         await chooseSource(user, 'Enter manually', 'diced');
         await enterManually(user, carrotLabelPer100, 'diced');
-        await user.click(record('diced').getByLabelText('Use entered nutritional data'));
+        expect(
+            record('diced').getByText('The selected values replace these when you save.')
+        ).not.toBeNull();
 
         await commit(ref);
         expect(updated).toHaveBeenCalledTimes(1);
@@ -561,5 +582,19 @@ describe('NutritionLinkSection prep records', () => {
         expect(deleted).not.toHaveBeenCalled();
         await commit(ref);
         expect(deleted).toHaveBeenCalledTimes(1);
+    });
+
+    it('should keep a prep record when its unlink is undone', async () => {
+        const user = userEvent.setup();
+        // No mock for a write: a request would fail the test with a warning.
+        const { ref } = renderSection([], { existingNutritionalInfos: dicedInfos });
+
+        await pickRecord(user, 'carrot, diced');
+        await user.click(screen.getByLabelText('Unlink nutritional data for diced'));
+        expect(record('diced').queryByText('Entered manually · Pack label')).toBeNull();
+        await user.click(screen.getByLabelText('Undo unlink for diced'));
+
+        expect(record('diced').getByText('Entered manually · Pack label')).not.toBeNull();
+        await commit(ref);
     });
 });

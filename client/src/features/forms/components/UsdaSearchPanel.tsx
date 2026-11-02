@@ -34,7 +34,7 @@ export function onEnter(action: () => void) {
 }
 
 export function UsdaSearchPanel(props: SourcePanelProps) {
-    const { idPrefix, ingredientId, ingredientName, disabled, active, onPreview, onLink } = props;
+    const { idPrefix, ingredientId, ingredientName, disabled, active, onSelect } = props;
 
     const [searchInput, setSearchInput] = useState('');
     const [selection, setSelection] = useState<NutritionSelection | null>(null);
@@ -47,7 +47,7 @@ export function UsdaSearchPanel(props: SourcePanelProps) {
 
     const select = (next: NutritionSelection | null) => {
         setSelection(next);
-        onPreview(next);
+        onSelect(next);
     };
 
     // Reset the search whenever the ingredient being edited changes, so a search made
@@ -74,6 +74,7 @@ export function UsdaSearchPanel(props: SourcePanelProps) {
         // trigger, so searching a stale value would silently drop recent keystrokes.
         const query = searchInput.trim();
         if (!query) return;
+        select(null);
         setSearchAttempted(true);
         setSearchError(null);
         const { data, error } = await runSearchQuery({ variables: { query, pageSize: 20 } });
@@ -153,48 +154,26 @@ export function UsdaSearchPanel(props: SourcePanelProps) {
                 />
             )}
 
-            {selection && (
-                <LinkSelectionButtons
-                    disabled={disabled}
-                    onLink={() => {
-                        onLink(selection);
-                        select(null);
-                    }}
-                    onClear={() => select(null)}
-                />
-            )}
+            {selection && <ClearSelectionButton disabled={disabled} onClear={() => select(null)} />}
         </Stack>
     );
 }
 
-interface LinkSelectionButtonsProps {
+export function ClearSelectionButton(props: {
     disabled?: boolean;
-    onLink: () => void;
     onClear: () => void;
-}
-
-export function LinkSelectionButtons(props: LinkSelectionButtonsProps) {
-    const { disabled, onLink, onClear } = props;
+    label?: string;
+}) {
     return (
-        <HStack spacing={2}>
-            <Button
-                size='sm'
-                onClick={onLink}
-                isDisabled={disabled}
-                aria-label='Link selected nutritional data'
-            >
-                Link selected item
-            </Button>
-            <Button
-                size='sm'
-                variant='outline'
-                colorScheme='red'
-                onClick={onClear}
-                isDisabled={disabled}
-                aria-label='Clear nutritional data selection'
-            >
-                Clear
-            </Button>
-        </HStack>
+        <Button
+            size='sm'
+            variant='outline'
+            alignSelf='flex-start'
+            onClick={props.onClear}
+            isDisabled={props.disabled}
+            aria-label='Clear nutritional data selection'
+        >
+            {props.label ?? 'Clear selection'}
+        </Button>
     );
 }

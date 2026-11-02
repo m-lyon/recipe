@@ -48,8 +48,9 @@ export interface SourcePanelProps {
     ingredientId?: string;
     ingredientName?: string;
     disabled?: boolean;
-    /** False while another source is chosen: the panel then drops its selection. */
+    /** False while another source is chosen or the search is closed: the panel then
+     *  drops its selection. */
     active: boolean;
-    onPreview: (selection: NutritionSelection | null) => void;
-    onLink: (selection: NutritionSelection) => void;
+    /** The selection is the staged link: it is saved with the ingredient. */
+    onSelect: (selection: NutritionSelection | null) => void;
 }

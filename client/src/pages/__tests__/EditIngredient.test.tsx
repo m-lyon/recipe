@@ -194,9 +194,9 @@ describe('Edit Ingredient', () => {
         await user.type(screen.getByLabelText('Search nutritional data'), 'chicken breast');
         await user.click(screen.getByLabelText('Search USDA database'));
         await user.click(await screen.findByText('Chicken breast, cooked'));
-        expect(await screen.findByLabelText('Link selected nutritional data')).not.toBeNull();
+        expect(await screen.findByLabelText('Clear nutritional data selection')).not.toBeNull();
 
-        // Act -- switch to a different ingredient without linking the selected item
+        // Act -- switch to a different ingredient without saving the selected item
         await user.click(screen.getByLabelText('Select ingredient'));
         await user.click(await screen.findByRole('option', { name: 'chicken' }));
 
@@ -209,7 +209,7 @@ describe('Edit Ingredient', () => {
             )
         );
         expect(screen.queryByText('Chicken breast, cooked')).toBeNull();
-        expect(screen.queryByLabelText('Link selected nutritional data')).toBeNull();
+        expect(screen.queryByLabelText('Clear nutritional data selection')).toBeNull();
     });
 
     it('should search on Enter from the USDA search bar without it reaching the page-level save-on-Enter handler', async () => {

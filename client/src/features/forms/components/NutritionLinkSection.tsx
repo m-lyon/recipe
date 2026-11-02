@@ -147,7 +147,7 @@ export const NutritionLinkSection = forwardRef<
     useImperativeHandle(ref, () => ({ commitChanges }), [commitChanges]);
 
     const name = ingredientName || 'This ingredient';
-    const hasValues = (key: string) => shownBySlot[key]?.linked;
+    const hasValues = (key: string) => shownBySlot[key] != null;
     const options = [
         { value: 'plain', label: name, icon: hasValues('plain') ? TbCheck : undefined },
         ...(components?.prepMethods ?? []).map((prep) => ({
@@ -189,7 +189,6 @@ export const NutritionLinkSection = forwardRef<
                         prepMethod={slot.prepMethod}
                         existing={slot.existing}
                         measures={measures}
-                        visible={slot.key === selectedKey}
                         onShownChange={(shown) =>
                             setShownBySlot((s) => ({ ...s, [slot.key]: shown }))
                         }

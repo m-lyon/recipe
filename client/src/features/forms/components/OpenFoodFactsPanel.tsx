@@ -7,7 +7,7 @@ import { OpenFoodFactsProductFieldsFragment } from '@recipe/graphql/generated';
 import { OPEN_FOOD_FACTS_SEARCH } from '@recipe/graphql/queries/nutritionalInfo';
 import { OPEN_FOOD_FACTS_PRODUCT } from '@recipe/graphql/queries/nutritionalInfo';
 
-import { LinkSelectionButtons, onEnter } from './UsdaSearchPanel';
+import { ClearSelectionButton, onEnter } from './UsdaSearchPanel';
 import { formatPer100, hasValidCheckDigit } from '../utils/nutrition';
 import { NutritionSelection, SourcePanelProps } from './nutritionTypes';
 import { openFoodFactsProductName, perGramFrom } from '../utils/nutrition';
@@ -40,7 +40,7 @@ export function selectionFromProduct(product: Product): NutritionSelection {
  * the server's Open Food Facts limit, so a search runs only on Enter or a button press.
  */
 export function OpenFoodFactsPanel(props: SourcePanelProps) {
-    const { idPrefix, ingredientId, ingredientName, disabled, active, onPreview, onLink } = props;
+    const { idPrefix, ingredientId, ingredientName, disabled, active, onSelect } = props;
 
     const [searchInput, setSearchInput] = useState('');
     const [barcodeInput, setBarcodeInput] = useState('');
@@ -53,7 +53,7 @@ export function OpenFoodFactsPanel(props: SourcePanelProps) {
 
     const select = (product: Product | null) => {
         setSelected(product);
-        onPreview(product ? selectionFromProduct(product) : null);
+        onSelect(product ? selectionFromProduct(product) : null);
     };
 
     useEffect(() => {
@@ -208,16 +208,7 @@ export function OpenFoodFactsPanel(props: SourcePanelProps) {
                 </Text>
             )}
 
-            {selected && (
-                <LinkSelectionButtons
-                    disabled={disabled}
-                    onLink={() => {
-                        onLink(selectionFromProduct(selected));
-                        select(null);
-                    }}
-                    onClear={() => select(null)}
-                />
-            )}
+            {selected && <ClearSelectionButton disabled={disabled} onClear={() => select(null)} />}
         </Stack>
     );
 }
