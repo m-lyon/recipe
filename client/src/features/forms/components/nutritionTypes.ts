@@ -34,6 +34,8 @@ export interface NutritionSelection {
     /** Portions offered to the measures list. Empty for a USDA item, whose portions come
      *  from a second request. */
     portions: NutritionPortion[];
+    /** Problems with an Open Food Facts product's values, such as a missing macro. */
+    warnings?: string[];
 }
 
 export interface LinkedPortion {
@@ -51,6 +53,7 @@ export interface SourcePanelProps {
     /** False while another source is chosen or the search is closed: the panel then
      *  drops its selection. */
     active: boolean;
-    /** The selection is the staged link: it is saved with the ingredient. */
+    /** The staged link, which is saved with the ingredient. */
+    selection: NutritionSelection | null;
     onSelect: (selection: NutritionSelection | null) => void;
 }

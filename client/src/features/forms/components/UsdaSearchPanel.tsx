@@ -6,8 +6,8 @@ import { UsdaSearchQuery } from '@recipe/graphql/generated';
 import { FloatingLabelInput } from '@recipe/common/components';
 import { USDA_SEARCH } from '@recipe/graphql/queries/nutritionalInfo';
 
+import { SourcePanelProps } from './nutritionTypes';
 import { formatPer100, perGramFrom } from '../utils/nutrition';
-import { NutritionSelection, SourcePanelProps } from './nutritionTypes';
 import { NutritionResultList, NutritionSearchSkeleton } from './NutritionResultList';
 
 type UsdaSearchResultItem = NonNullable<NonNullable<UsdaSearchQuery['usdaSearch']>[number]>;
@@ -34,10 +34,9 @@ export function onEnter(action: () => void) {
 }
 
 export function UsdaSearchPanel(props: SourcePanelProps) {
-    const { idPrefix, ingredientId, ingredientName, disabled, active, onSelect } = props;
+    const { idPrefix, ingredientId, ingredientName, disabled, selection, onSelect } = props;
 
     const [searchInput, setSearchInput] = useState('');
-    const [selection, setSelection] = useState<NutritionSelection | null>(null);
     const [searchResults, setSearchResults] = useState<UsdaSearchResultItem[]>([]);
     /** True once a search has run for the current input, so an empty result list can
      *  be reported as "no matches" instead of rendering nothing. */
@@ -45,25 +44,15 @@ export function UsdaSearchPanel(props: SourcePanelProps) {
     // A failed search is reported as a failure, not as "no matches".
     const [searchError, setSearchError] = useState<string | null>(null);
 
-    const select = (next: NutritionSelection | null) => {
-        setSelection(next);
-        onSelect(next);
-    };
-
     // Reset the search whenever the ingredient being edited changes, so a search made
     // for one ingredient doesn't leak into the next one. Linking and unlinking leave it.
     useEffect(() => {
         setSearchInput(ingredientName ?? '');
-        setSelection(null);
         setSearchResults([]);
         setSearchAttempted(false);
         setSearchError(null);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ingredientId]);
-
-    useEffect(() => {
-        if (!active) setSelection(null);
-    }, [active]);
 
     // Results are handled from the promise each call returns, which resolves with `data`
     // or `error`: the hooks' onCompleted and onError options are deprecated.
@@ -74,7 +63,7 @@ export function UsdaSearchPanel(props: SourcePanelProps) {
         // trigger, so searching a stale value would silently drop recent keystrokes.
         const query = searchInput.trim();
         if (!query) return;
-        select(null);
+        onSelect(null);
         setSearchAttempted(true);
         setSearchError(null);
         const { data, error } = await runSearchQuery({ variables: { query, pageSize: 20 } });
@@ -92,7 +81,7 @@ export function UsdaSearchPanel(props: SourcePanelProps) {
         // perGram and the name both come from the search result, so the macro and
         // "Linked:" displays do not wait on the second request. The record editor
         // fetches the portions: search results carry none.
-        select({
+        onSelect({
             source: 'usda',
             usdaFdcId: fdcId,
             openFoodFactsBarcode: null,
@@ -153,8 +142,6 @@ export function UsdaSearchPanel(props: SourcePanelProps) {
                     onSelect={(key) => handleSelectResult(Number(key))}
                 />
             )}
-
-            {selection && <ClearSelectionButton disabled={disabled} onClear={() => select(null)} />}
         </Stack>
     );
 }

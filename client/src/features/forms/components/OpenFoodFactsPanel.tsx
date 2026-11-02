@@ -7,7 +7,7 @@ import { OpenFoodFactsProductFieldsFragment } from '@recipe/graphql/generated';
 import { OPEN_FOOD_FACTS_SEARCH } from '@recipe/graphql/queries/nutritionalInfo';
 import { OPEN_FOOD_FACTS_PRODUCT } from '@recipe/graphql/queries/nutritionalInfo';
 
-import { ClearSelectionButton, onEnter } from './UsdaSearchPanel';
+import { onEnter } from './UsdaSearchPanel';
 import { formatPer100, hasValidCheckDigit } from '../utils/nutrition';
 import { NutritionSelection, SourcePanelProps } from './nutritionTypes';
 import { openFoodFactsProductName, perGramFrom } from '../utils/nutrition';
@@ -32,6 +32,7 @@ export function selectionFromProduct(product: Product): NutritionSelection {
         sourceName: openFoodFactsProductName(product),
         perGram: perGramFrom(per100gOf(product)),
         portions: product.portions,
+        warnings: product.warnings,
     };
 }
 
@@ -40,35 +41,27 @@ export function selectionFromProduct(product: Product): NutritionSelection {
  * the server's Open Food Facts limit, so a search runs only on Enter or a button press.
  */
 export function OpenFoodFactsPanel(props: SourcePanelProps) {
-    const { idPrefix, ingredientId, ingredientName, disabled, active, onSelect } = props;
+    const { idPrefix, ingredientId, ingredientName, disabled, selection, onSelect } = props;
 
     const [searchInput, setSearchInput] = useState('');
     const [barcodeInput, setBarcodeInput] = useState('');
     const [ukOnly, setUkOnly] = useState(true);
     const [results, setResults] = useState<Product[]>([]);
-    const [selected, setSelected] = useState<Product | null>(null);
     // Says what the last search or lookup was, so an empty list can say why.
     const [attempted, setAttempted] = useState<'search' | 'barcode' | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const select = (product: Product | null) => {
-        setSelected(product);
+    const select = (product: Product | null) =>
         onSelect(product ? selectionFromProduct(product) : null);
-    };
 
     useEffect(() => {
         setSearchInput(ingredientName ?? '');
         setBarcodeInput('');
         setResults([]);
-        setSelected(null);
         setAttempted(null);
         setError(null);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ingredientId]);
-
-    useEffect(() => {
-        if (!active) setSelected(null);
-    }, [active]);
 
     const [runSearch, { loading: searchLoading }] = useLazyQuery(OPEN_FOOD_FACTS_SEARCH);
     const [runLookup, { loading: lookupLoading }] = useLazyQuery(OPEN_FOOD_FACTS_PRODUCT);
@@ -195,20 +188,12 @@ export function OpenFoodFactsPanel(props: SourcePanelProps) {
                         per100g: formatPer100(per100gOf(product)),
                         warnings: product.warnings,
                     }))}
-                    selectedKey={selected?.barcode ?? null}
+                    selectedKey={selection?.openFoodFactsBarcode ?? null}
                     onSelect={(barcode) =>
                         select(results.find((product) => product.barcode === barcode) ?? null)
                     }
                 />
             )}
-
-            {selected && selected.warnings.length > 0 && (
-                <Text fontSize='sm' color='orange.600'>
-                    {selected.warnings.join('. ')}. Check the values against the pack label.
-                </Text>
-            )}
-
-            {selected && <ClearSelectionButton disabled={disabled} onClear={() => select(null)} />}
         </Stack>
     );
 }

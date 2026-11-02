@@ -164,6 +164,17 @@ describe('NutritionLinkSection USDA search', () => {
         expect(screen.queryByText(/No matches found/)).toBeNull();
     });
 
+    it('should show only the selected item in place of the search', async () => {
+        const user = userEvent.setup();
+        renderSection([mockUsdaSearchChickenBreast, mockUsdaFoodItemChickenBreast]);
+
+        await searchUsdaAndSelect(user, 'chicken breast', 'Chicken breast, cooked');
+
+        expect(screen.getByText('Selected: chicken breast, cooked')).not.toBeNull();
+        expect(screen.queryByRole('radiogroup', { name: 'Nutritional data source' })).toBeNull();
+        expect(screen.queryByRole('textbox', { name: 'Search nutritional data' })).toBeNull();
+    });
+
     it('should link nothing once the selection is cleared, and keep the results', async () => {
         const user = userEvent.setup();
         // No mock for a write: a request would fail the test with a warning.
@@ -172,6 +183,7 @@ describe('NutritionLinkSection USDA search', () => {
 
         await user.click(screen.getByLabelText('Clear nutritional data selection'));
 
+        expect(screen.queryByText(/Selected:/)).toBeNull();
         expect(screen.getByText('Chicken breast, cooked')).not.toBeNull();
         expect(screen.queryByLabelText('Clear nutritional data selection')).toBeNull();
         await commit(ref);

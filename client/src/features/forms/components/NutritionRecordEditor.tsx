@@ -12,10 +12,10 @@ import { CREATE_NUTRITIONAL_INFO } from '@recipe/graphql/mutations/nutritionalIn
 import { UPDATE_NUTRITIONAL_INFO } from '@recipe/graphql/mutations/nutritionalInfo';
 import { DELETE_NUTRITIONAL_INFO } from '@recipe/graphql/mutations/nutritionalInfo';
 
-import { UsdaSearchPanel } from './UsdaSearchPanel';
 import { OpenFoodFactsPanel } from './OpenFoodFactsPanel';
 import { ManualNutritionPanel } from './ManualNutritionPanel';
 import { NutritionSource, SOURCE_ENUM } from './nutritionTypes';
+import { ClearSelectionButton, UsdaSearchPanel } from './UsdaSearchPanel';
 import { MeasureForDensity, formatPer100, openFoodFactsUrl } from '../utils/nutrition';
 import { ExistingNutritionalInfo, NutritionPortion, NutritionSelection } from './nutritionTypes';
 
@@ -104,6 +104,8 @@ export const NutritionRecordEditor = forwardRef<
     // True while the search is open to replace the saved values.
     const [changing, setChanging] = useState(false);
     const searching = !saved || removed || changing;
+    // A picked result replaces the search. Manual values stay in their form while typed.
+    const picked = selection && selection.source !== 'manual' ? selection : null;
     const shown = selection ?? (removed ? null : saved);
 
     // Re-runs when the record arrives after the ingredient switch (e.g. first load), or
@@ -232,6 +234,7 @@ export const NutritionRecordEditor = forwardRef<
         ingredientId,
         ingredientName,
         disabled,
+        selection,
         onSelect: setSelection,
     };
 
@@ -307,8 +310,33 @@ export const NutritionRecordEditor = forwardRef<
                     </Button>
                 </HStack>
             )}
-            {/* Panels stay mounted while hidden, so reopening finds the search as it was. */}
-            <Stack spacing={4} hidden={!searching}>
+            {picked && (
+                <Stack spacing={2} fontWeight='normal'>
+                    <LinkedText
+                        linked={picked}
+                        label='Selected'
+                        usdaName={currentDetails?.name ?? null}
+                        loading={foodItemLoading}
+                    />
+                    <Text fontSize='sm' color='gray.500'>
+                        {formatPer100({
+                            calories: picked.perGram.calories * 100,
+                            protein: picked.perGram.protein * 100,
+                            carbs: picked.perGram.carbs * 100,
+                            fat: picked.perGram.fat * 100,
+                        })}
+                    </Text>
+                    {picked.warnings && picked.warnings.length > 0 && (
+                        <Text fontSize='sm' color='orange.600'>
+                            {picked.warnings.join('. ')}. Check the values against the pack label.
+                        </Text>
+                    )}
+                    <ClearSelectionButton disabled={disabled} onClear={() => setSelection(null)} />
+                </Stack>
+            )}
+            {/* Panels stay mounted while hidden, so clearing a selection finds the search as
+                it was. */}
+            <Stack spacing={4} hidden={!searching || picked !== null}>
                 <RadioGroup
                     value={source}
                     onChange={(value) => chooseSource(value as NutritionSource)}
@@ -349,10 +377,11 @@ export const NutritionRecordEditor = forwardRef<
 
 function LinkedText(props: {
     linked: NutritionSelection;
+    label?: string;
     usdaName: string | null;
     loading: boolean;
 }) {
-    const { linked, usdaName, loading } = props;
+    const { linked, label = 'Linked', usdaName, loading } = props;
     if (linked.source === 'manual') {
         return (
             <Text fontSize='sm'>
@@ -365,7 +394,7 @@ function LinkedText(props: {
         // The product page link gives the ODbL attribution.
         return (
             <Text fontSize='sm'>
-                Linked: {linked.sourceName ?? barcode} ·{' '}
+                {label}: {linked.sourceName ?? barcode} ·{' '}
                 <Link href={openFoodFactsUrl(barcode)} isExternal textDecoration='underline'>
                     Open Food Facts {barcode}
                 </Link>
@@ -376,14 +405,14 @@ function LinkedText(props: {
     if (!name && loading) {
         return (
             <HStack fontSize='sm' spacing={1}>
-                <Text>Linked:</Text>
+                <Text>{label}:</Text>
                 <Skeleton height='10px' width='12em' aria-label='Loading linked item name' />
             </HStack>
         );
     }
     return (
         <Text fontSize='sm'>
-            {name ? `Linked: ${name.toLowerCase()}` : `Linked: FDC ID ${linked.usdaFdcId}`}
+            {label}: {name ? name.toLowerCase() : `FDC ID ${linked.usdaFdcId}`}
         </Text>
     );
 }
