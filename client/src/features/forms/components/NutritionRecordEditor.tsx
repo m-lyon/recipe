@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Collapse } from '@mantine/core';
 import { Stack, Text } from '@chakra-ui/react';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
-import { Box, Button, HStack, Link, Radio, RadioGroup, Skeleton } from '@chakra-ui/react';
+import { Button, HStack, Link, Radio, RadioGroup, Skeleton } from '@chakra-ui/react';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 
 import { usePreferencesStore } from '@recipe/stores';
@@ -26,6 +26,8 @@ const SOURCE_CHOICES: { value: NutritionSource; label: string }[] = [
     { value: 'openFoodFacts', label: 'UK products (Open Food Facts)' },
     { value: 'manual', label: 'Enter manually' },
 ];
+
+const TRANSITION_MS = 300;
 
 // One array, so an effect that depends on the portions does not run on every render.
 const NO_PORTIONS: NutritionPortion[] = [];
@@ -316,7 +318,7 @@ export const NutritionRecordEditor = forwardRef<
                     </Button>
                 </HStack>
             )}
-            <Collapse in={picked !== null}>
+            <Collapse in={picked !== null} transitionDuration={TRANSITION_MS}>
                 {shownPick && (
                     <Stack spacing={2} fontWeight='normal'>
                         <LinkedText
@@ -348,7 +350,7 @@ export const NutritionRecordEditor = forwardRef<
             </Collapse>
             {/* Panels stay mounted while collapsed, so clearing a selection finds the search as
                 it was. */}
-            <Collapse in={searching && picked === null}>
+            <Collapse in={searching && picked === null} transitionDuration={TRANSITION_MS}>
                 <Stack spacing={4}>
                     <RadioGroup
                         value={source}
@@ -365,16 +367,16 @@ export const NutritionRecordEditor = forwardRef<
                             ))}
                         </Stack>
                     </RadioGroup>
-                    <Box hidden={source !== 'usda'}>
+                    <Collapse in={source === 'usda'} transitionDuration={TRANSITION_MS}>
                         <UsdaSearchPanel {...panelProps} active={source === 'usda' && searching} />
-                    </Box>
-                    <Box hidden={source !== 'openFoodFacts'}>
+                    </Collapse>
+                    <Collapse in={source === 'openFoodFacts'} transitionDuration={TRANSITION_MS}>
                         <OpenFoodFactsPanel
                             {...panelProps}
                             active={source === 'openFoodFacts' && searching}
                         />
-                    </Box>
-                    <Box hidden={source !== 'manual'}>
+                    </Collapse>
+                    <Collapse in={source === 'manual'} transitionDuration={TRANSITION_MS}>
                         <ManualNutritionPanel
                             {...panelProps}
                             active={source === 'manual' && searching}
@@ -382,7 +384,7 @@ export const NutritionRecordEditor = forwardRef<
                             prepMethodId={prepMethod?._id ?? null}
                             targetName={targetName}
                         />
-                    </Box>
+                    </Collapse>
                 </Stack>
             </Collapse>
         </Stack>

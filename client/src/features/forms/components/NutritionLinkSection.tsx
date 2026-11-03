@@ -164,42 +164,50 @@ export const NutritionLinkSection = forwardRef<
     return (
         <Stack spacing={4}>
             <Text opacity={disabled ? 0.4 : undefined}>Nutritional data</Text>
-            <SearchableSelect
-                label='Values for'
-                aria-label='Values for'
-                options={options}
-                value={selectedKey}
-                onChange={(key) => {
-                    const prep = components?.prepMethods.find((p) => p._id === key);
-                    if (prep && !slots.some((slot) => slot.key === key)) {
-                        setPicked((p) => [...p, { _id: prep._id, value: prep.value }]);
-                    }
-                    setChosenKey(key);
-                }}
-                disabled={disabled}
-            />
-            {/* Every record stays mounted, so its staged change is saved with the form. Until a
-                record is picked, the plain one is shown disabled. */}
-            {slots.map((slot) => (
-                <Box key={slot.key} hidden={slot.key !== (selectedKey ?? 'plain')}>
-                    <NutritionRecordEditor
-                        ref={(handle) => {
-                            if (handle) editors.current.set(slot.key, handle);
-                            else editors.current.delete(slot.key);
-                        }}
-                        slotKey={`nutrition-${slot.key}`}
-                        ingredientId={ingredientId}
-                        ingredientName={ingredientName}
-                        disabled={disabled || selectedKey === null}
-                        prepMethod={slot.prepMethod}
-                        existing={slot.existing}
-                        measures={measures}
-                        onShownChange={(shown) =>
-                            setShownBySlot((s) => ({ ...s, [slot.key]: shown }))
+            <Stack
+                spacing={4}
+                border='1px solid'
+                borderColor={disabled ? 'gray.100' : 'gray.200'}
+                borderRadius='md'
+                p={3}
+            >
+                <SearchableSelect
+                    label='Values for'
+                    aria-label='Values for'
+                    options={options}
+                    value={selectedKey}
+                    onChange={(key) => {
+                        const prep = components?.prepMethods.find((p) => p._id === key);
+                        if (prep && !slots.some((slot) => slot.key === key)) {
+                            setPicked((p) => [...p, { _id: prep._id, value: prep.value }]);
                         }
-                    />
-                </Box>
-            ))}
+                        setChosenKey(key);
+                    }}
+                    disabled={disabled}
+                />
+                {/* Every record stays mounted, so its staged change is saved with the form. Until a
+                    record is picked, the plain one is shown disabled. */}
+                {slots.map((slot) => (
+                    <Box key={slot.key} hidden={slot.key !== (selectedKey ?? 'plain')}>
+                        <NutritionRecordEditor
+                            ref={(handle) => {
+                                if (handle) editors.current.set(slot.key, handle);
+                                else editors.current.delete(slot.key);
+                            }}
+                            slotKey={`nutrition-${slot.key}`}
+                            ingredientId={ingredientId}
+                            ingredientName={ingredientName}
+                            disabled={disabled || selectedKey === null}
+                            prepMethod={slot.prepMethod}
+                            existing={slot.existing}
+                            measures={measures}
+                            onShownChange={(shown) =>
+                                setShownBySlot((s) => ({ ...s, [slot.key]: shown }))
+                            }
+                        />
+                    </Box>
+                ))}
+            </Stack>
         </Stack>
     );
 });
