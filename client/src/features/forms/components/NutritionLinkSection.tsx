@@ -163,13 +163,18 @@ export const NutritionLinkSection = forwardRef<
 
     return (
         <Stack
+            as='fieldset'
             spacing={4}
             border='1px solid'
             borderColor={disabled ? 'gray.100' : 'gray.200'}
             borderRadius='md'
-            p={3}
+            px={3}
+            pt={5}
+            pb={3}
         >
-            <Text opacity={disabled ? 0.4 : undefined}>Nutritional data</Text>
+            <Text as='legend' px={1} opacity={disabled ? 0.4 : undefined}>
+                Nutritional data
+            </Text>
             <SearchableSelect
                 label='Values for'
                 aria-label='Values for'

@@ -235,7 +235,6 @@ export const NutritionRecordEditor = forwardRef<
     const targetName = [ingredientName || 'This ingredient', prepMethod?.value]
         .filter(Boolean)
         .join(', ');
-    const title = prepMethod ? `Nutritional data · ${prepMethod.value}` : 'Nutritional data';
     const forPrep = prepMethod ? ` for ${prepMethod.value}` : '';
     const panelProps = {
         idPrefix: slotKey,
@@ -247,7 +246,7 @@ export const NutritionRecordEditor = forwardRef<
     };
 
     return (
-        <Stack spacing={4} role='group' aria-label={title}>
+        <Stack spacing={4} role='group' aria-label={`Values for ${targetName}`}>
             {saved && !removed && (
                 <Stack spacing={2} fontWeight='normal'>
                     <LinkedText

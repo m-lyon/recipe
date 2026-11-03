@@ -139,11 +139,11 @@ describe('Edit Ingredient', () => {
         );
 
         // Expect -- diced carrot's record shows at once, and the plain record has no data
-        const diced = within(screen.getByRole('group', { name: 'Nutritional data · diced' }));
+        const diced = within(screen.getByRole('group', { name: 'Values for carrot, diced' }));
         expect(diced.getByText('Entered manually · Pack label')).not.toBeNull();
         await user.click(screen.getByLabelText('Values for'));
         await user.click(await screen.findByRole('option', { name: 'carrot' }));
-        const plain = within(screen.getByRole('group', { name: 'Nutritional data' }));
+        const plain = within(screen.getByRole('group', { name: 'Values for carrot' }));
         expect(plain.getByLabelText('Search nutritional data')).not.toBeNull();
         expect(plain.queryByText(/Entered manually/)).toBeNull();
     });

@@ -80,7 +80,7 @@ function renderSection(
 const record = (prep?: string) =>
     within(
         screen.getByRole('group', {
-            name: prep ? `Nutritional data · ${prep}` : 'Nutritional data',
+            name: prep ? `Values for carrot, ${prep}` : 'Values for carrot',
         })
     );
 
@@ -558,7 +558,7 @@ describe('NutritionLinkSection prep records', () => {
             'disabled',
             false
         );
-        expect(screen.queryByRole('group', { name: 'Nutritional data · diced' })).toBeNull();
+        expect(screen.queryByRole('group', { name: 'Values for carrot, diced' })).toBeNull();
     });
 
     it('should add values for a prep method as a record of its own', async () => {

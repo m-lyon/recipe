@@ -295,13 +295,18 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
 
         return (
             <Stack
+                as='fieldset'
                 spacing={4}
                 border='1px solid'
                 borderColor={disabled ? 'gray.100' : 'gray.200'}
                 borderRadius='md'
-                p={3}
+                px={3}
+                pt={3}
+                pb={3}
             >
-                <Text opacity={dimmed}>Measures</Text>
+                <Text as='legend' px={1} opacity={dimmed}>
+                    Measures
+                </Text>
                 {measuresLoading && (
                     <Stack spacing={3} aria-label='Loading measures'>
                         <Skeleton height='10px' />
