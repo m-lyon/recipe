@@ -294,7 +294,13 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
             `1 ${describe(row)} = ${round1(row.draft.grams)} g`;
 
         return (
-            <Stack spacing={4}>
+            <Stack
+                spacing={4}
+                border='1px solid'
+                borderColor={disabled ? 'gray.100' : 'gray.200'}
+                borderRadius='md'
+                p={3}
+            >
                 <Text opacity={dimmed}>Measures</Text>
                 {measuresLoading && (
                     <Stack spacing={3} aria-label='Loading measures'>
