@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Collapse } from '@mantine/core';
 import { Stack, Text } from '@chakra-ui/react';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
-import { Button, HStack, Link, Radio, RadioGroup, Skeleton } from '@chakra-ui/react';
+import { Box, Button, HStack, Link, Radio, RadioGroup, Skeleton } from '@chakra-ui/react';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 
 import { usePreferencesStore } from '@recipe/stores';
@@ -350,7 +350,7 @@ export const NutritionRecordEditor = forwardRef<
             {/* Panels stay mounted while collapsed, so clearing a selection finds the search as
                 it was. */}
             <Collapse in={searching && picked === null} transitionDuration={TRANSITION_MS}>
-                <Stack spacing={4}>
+                <Stack spacing={1}>
                     <RadioGroup
                         value={source}
                         onChange={(value) => chooseSource(value as NutritionSource)}
@@ -366,16 +366,16 @@ export const NutritionRecordEditor = forwardRef<
                             ))}
                         </Stack>
                     </RadioGroup>
-                    <Collapse in={source === 'usda'} transitionDuration={TRANSITION_MS}>
+                    <PanelCollapse open={source === 'usda'}>
                         <UsdaSearchPanel {...panelProps} active={source === 'usda' && searching} />
-                    </Collapse>
-                    <Collapse in={source === 'openFoodFacts'} transitionDuration={TRANSITION_MS}>
+                    </PanelCollapse>
+                    <PanelCollapse open={source === 'openFoodFacts'}>
                         <OpenFoodFactsPanel
                             {...panelProps}
                             active={source === 'openFoodFacts' && searching}
                         />
-                    </Collapse>
-                    <Collapse in={source === 'manual'} transitionDuration={TRANSITION_MS}>
+                    </PanelCollapse>
+                    <PanelCollapse open={source === 'manual'}>
                         <ManualNutritionPanel
                             {...panelProps}
                             active={source === 'manual' && searching}
@@ -383,12 +383,22 @@ export const NutritionRecordEditor = forwardRef<
                             prepMethodId={prepMethod?._id ?? null}
                             targetName={targetName}
                         />
-                    </Collapse>
+                    </PanelCollapse>
                 </Stack>
             </Collapse>
         </Stack>
     );
 });
+
+/** The padding keeps the floating label of a panel's first input inside the collapse, which
+ *  clips its content while it animates. */
+function PanelCollapse(props: { open: boolean; children: React.ReactNode }) {
+    return (
+        <Collapse in={props.open} transitionDuration={TRANSITION_MS}>
+            <Box pt={3}>{props.children}</Box>
+        </Collapse>
+    );
+}
 
 function LinkedText(props: {
     linked: NutritionSelection;
