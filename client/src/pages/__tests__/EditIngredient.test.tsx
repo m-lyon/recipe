@@ -1,8 +1,8 @@
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, screen, waitFor } from '@testing-library/react';
 import { Route, createRoutesFromElements } from 'react-router-dom';
 import { loadDevMessages, loadErrorMessages } from '@apollo/client/dev';
+import { cleanup, screen, waitFor, within } from '@testing-library/react';
 
 import { mockUpdateIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
 import { mockDeleteIngredient } from '@recipe/graphql/mutations/__mocks__/ingredient';
@@ -120,7 +120,7 @@ describe('Edit Ingredient', () => {
         await waitFor(() => expect(deleted).toHaveBeenCalledTimes(1));
     });
 
-    it('should not show nutritional data for a prep method as the link', async () => {
+    it('should show nutritional data for a prep method as a record of its own', async () => {
         // Render -- carrot has data for diced carrot only
         const user = userEvent.setup();
         const routes = createRoutesFromElements(<Route path='/' element={<EditIngredient />} />);
@@ -138,9 +138,14 @@ describe('Edit Ingredient', () => {
             expect(screen.getByLabelText('Plural name')).toHaveProperty('value', 'carrots')
         );
 
-        // Expect
-        expect(screen.getByLabelText('Search nutritional data')).not.toBeNull();
-        expect(screen.queryByText('Entered manually')).toBeNull();
+        // Expect -- diced carrot's record shows at once, and the plain record has no data
+        const diced = within(screen.getByRole('group', { name: 'Values for carrot, diced' }));
+        expect(diced.getByText('Entered manually · Pack label')).not.toBeNull();
+        await user.click(screen.getByLabelText('Values for'));
+        await user.click(await screen.findByRole('option', { name: 'carrot' }));
+        const plain = within(screen.getByRole('group', { name: 'Values for carrot' }));
+        expect(plain.getByLabelText('Search nutritional data')).not.toBeNull();
+        expect(plain.queryByText(/Entered manually/)).toBeNull();
     });
 
     it('should remove an ingredient', async () => {
@@ -181,6 +186,8 @@ describe('Edit Ingredient', () => {
         await waitFor(() =>
             expect(screen.getByLabelText('Plural name')).toHaveProperty('value', 'carrots')
         );
+        await user.click(screen.getByLabelText('Values for'));
+        await user.click(await screen.findByRole('option', { name: 'carrot' }));
         // The USDA search bar is prepopulated with the selected ingredient's name
         expect(screen.getByLabelText('Search nutritional data')).toHaveProperty('value', 'carrot');
 
@@ -189,9 +196,9 @@ describe('Edit Ingredient', () => {
         await user.type(screen.getByLabelText('Search nutritional data'), 'chicken breast');
         await user.click(screen.getByLabelText('Search USDA database'));
         await user.click(await screen.findByText('Chicken breast, cooked'));
-        expect(await screen.findByLabelText('Link selected nutritional data')).not.toBeNull();
+        expect(await screen.findByLabelText('Clear nutritional data selection')).not.toBeNull();
 
-        // Act -- switch to a different ingredient without linking the selected item
+        // Act -- switch to a different ingredient without saving the selected item
         await user.click(screen.getByLabelText('Select ingredient'));
         await user.click(await screen.findByRole('option', { name: 'chicken' }));
 
@@ -204,7 +211,9 @@ describe('Edit Ingredient', () => {
             )
         );
         expect(screen.queryByText('Chicken breast, cooked')).toBeNull();
-        expect(screen.queryByLabelText('Link selected nutritional data')).toBeNull();
+        expect(
+            screen.queryByRole('button', { name: 'Clear nutritional data selection' })
+        ).toBeNull();
     });
 
     it('should search on Enter from the USDA search bar without it reaching the page-level save-on-Enter handler', async () => {
@@ -221,6 +230,9 @@ describe('Edit Ingredient', () => {
         await waitFor(() =>
             expect(screen.getByLabelText('Plural name')).toHaveProperty('value', 'carrots')
         );
+
+        await user.click(screen.getByLabelText('Values for'));
+        await user.click(await screen.findByRole('option', { name: 'carrot' }));
 
         const windowKeydown = vi.fn();
         window.addEventListener('keydown', windowKeydown);

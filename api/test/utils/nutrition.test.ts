@@ -321,6 +321,34 @@ describe('calculate', function () {
         assert.closeTo(stock.macros.calories, 26, 1e-9);
     });
 
+    it('never weighs a plain line by the measure of a prep method with its own record', function () {
+        const lime = data({
+            perGram: new Map([
+                [
+                    'stock',
+                    new Map([
+                        ['', perGram],
+                        ['juiced', perGram],
+                    ]),
+                ],
+            ]),
+            measures: new Map([
+                ['stock', [{ unit: TABLESPOON, size: null, prepMethod: 'juiced', grams: 15 }]],
+            ]),
+            units: new Map<string, UnitData>([
+                ['gram', GRAM],
+                ['cup', CUP],
+            ]),
+        });
+        lime.recipes.get('couscous')!.ingredients[1].unit = 'cup';
+        assert.equal(calculate('couscous', lime).ingredients[1].reason?.code, 'NO_MEASURE');
+
+        // A prep method with no record of its own still weighs the plain record.
+        lime.perGram.set('stock', new Map([['', perGram]]));
+        const [, stock] = calculate('couscous', lime).ingredients;
+        assert.equal(stock.status, 'COUNTED');
+    });
+
     it('weighs a sized line with a prep method record by the unsized prep measure', function () {
         const juiced = data({
             perGram: new Map([['stock', new Map([['juiced', perGram]])]]),

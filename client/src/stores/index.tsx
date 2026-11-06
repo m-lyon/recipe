@@ -5,3 +5,4 @@ export { useSearchStore } from './useSearchStore';
 export type { ImagesState } from './useImagesStore';
 export type { RecipeState } from './useRecipeStore';
 export { usePreferencesStore } from './usePreferencesStore';
+export type { NutritionSourcePreference } from './usePreferencesStore';

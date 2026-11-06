@@ -10,7 +10,9 @@ import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import { theme } from '@recipe/theme';
 import { getCache } from '@recipe/utils/cache';
 import { MockedResponses } from '@recipe/utils/tests';
-import { mockAppleId } from '@recipe/graphql/__mocks__/ids';
+import { UsdaPortionKind } from '@recipe/graphql/generated';
+import { NutritionPortion } from '@recipe/features/nutrition';
+import { mockAppleId, mockDicedId } from '@recipe/graphql/__mocks__/ids';
 import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
 import { CREATE_INGREDIENT_MEASURE } from '@recipe/graphql/mutations/ingredientMeasure';
 import { mockGetIngredientMeasuresFallback } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
@@ -120,5 +122,49 @@ describe('MeasuresSection', () => {
 
         expect(value('Quantity')).toBe('');
         expect(screen.queryByText(/No measures yet/)).toBeNull();
+    });
+
+    describe('portions of a prep record', () => {
+        const cup = (description: string): NutritionPortion => ({
+            __typename: 'UsdaFoodPortion',
+            description,
+            amount: 1,
+            modifier: null,
+            gramWeight: 120,
+            kind: UsdaPortionKind.Volume,
+            millilitres: null,
+            impliedDensity: null,
+            ambiguous: false,
+        });
+
+        it('should give each portion the prep method of its record', async () => {
+            renderSection([], {
+                portions: [{ portion: cup('1 cup'), prepMethodId: mockDicedId, source: 'usda' }],
+            });
+
+            expect(await screen.findByText('From USDA:')).not.toBeNull();
+            expect(screen.getByLabelText('Add USDA measure 1 cup (120 g)').textContent).toBe(
+                '1 cup · diced = 120 g +'
+            );
+        });
+
+        it('should refuse a portion with another prep method', async () => {
+            renderSection([], {
+                portions: [
+                    {
+                        portion: cup('1 cup, chopped'),
+                        prepMethodId: mockDicedId,
+                        source: 'openFoodFacts',
+                    },
+                ],
+            });
+
+            expect(await screen.findByText('From Open Food Facts:')).not.toBeNull();
+            expect(
+                screen.getByText(
+                    '1 cup, chopped (120 g) — it is chopped, and the values are for diced'
+                )
+            ).not.toBeNull();
+        });
     });
 });

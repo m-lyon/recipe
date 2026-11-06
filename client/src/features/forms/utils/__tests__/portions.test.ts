@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { NutritionPortion } from '@recipe/features/nutrition';
 import { mockSizes } from '@recipe/graphql/queries/__mocks__/size';
 import { mockUnits } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockCup, mockEach } from '@recipe/graphql/queries/__mocks__/unit';
@@ -7,9 +8,8 @@ import { mockChoppedId, mockLargeId } from '@recipe/graphql/__mocks__/ids';
 import { mockPrepMethods } from '@recipe/graphql/queries/__mocks__/prepMethod';
 
 import { suggestFromPortion } from '../portions';
-import { UsdaPortion } from '../../components/UsdaLinkSection';
 
-function portion(overrides: Partial<UsdaPortion>): UsdaPortion {
+function portion(overrides: Partial<NutritionPortion>): NutritionPortion {
     return {
         __typename: 'UsdaFoodPortion',
         description: '1 large',
@@ -24,7 +24,8 @@ function portion(overrides: Partial<UsdaPortion>): UsdaPortion {
     };
 }
 
-const suggest = (p: UsdaPortion) => suggestFromPortion(p, mockUnits, mockSizes, mockPrepMethods);
+const suggest = (p: NutritionPortion) =>
+    suggestFromPortion(p, mockUnits, mockSizes, mockPrepMethods);
 
 describe('suggestFromPortion', () => {
     it('maps a size word to each + size', () => {
