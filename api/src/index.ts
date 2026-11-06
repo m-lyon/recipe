@@ -17,6 +17,7 @@ import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHt
 import mongoose from './utils/database.js';
 import { schema } from './schema/index.js';
 import { uploadRouter } from './routes/uploads.js';
+import { sessionOptions } from './utils/session.js';
 import { createHttpServer } from './utils/server.js';
 import { describeStandardUnitReport, syncStandardUnits } from './utils/standardUnits.js';
 import { DELAY, HOST, PORT, SESSION_SECRET, SESSION_URI, WHITELIST } from './constants.js';
@@ -49,12 +50,10 @@ try {
     console.error('Could not sync standard units:', error);
 }
 app.use(
-    session({
-        store: MongoStore.create({ mongoUrl: SESSION_URI }),
-        secret: SESSION_SECRET!, // Non-null assertion since requireEnv.ts checks it
-        resave: false,
-        saveUninitialized: false,
-    })
+    session(
+        // Non-null assertion since requireEnv.ts checks it
+        sessionOptions(SESSION_SECRET!, MongoStore.create({ mongoUrl: SESSION_URI }))
+    )
 );
 app.use(passport.initialize());
 app.use(passport.session());
