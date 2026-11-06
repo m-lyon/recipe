@@ -165,10 +165,7 @@ Blank line between each group. `@recipe/**` imports are grouped after externals.
 
 ### Comments
 
-Add comments sparingly. Write one only when the code and its names cannot say what it needs
-to: a reason that is not visible in the code, a constraint from outside it, or a workaround.
-Do not add a comment that restates what the code does, and do not add a docstring to every
-function, prop or type. Prefer a clearer name to a comment.
+Add comments sparingly. Write one only when the code and its names cannot say what it needs to: a reason that is not visible in the code, a constraint from outside it, or a workaround. Do not add a comment that restates what the code does, and do not add a docstring to every function, prop or type. Prefer a clearer name to a comment.
 
 ### Client path aliases
 
