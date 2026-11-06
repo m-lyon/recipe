@@ -6,9 +6,11 @@ import { UsdaSearchQuery } from '@recipe/graphql/generated';
 import { FloatingLabelInput } from '@recipe/common/components';
 import { USDA_SEARCH } from '@recipe/graphql/queries/nutritionalInfo';
 
+import { onEnter } from '../utils/onEnter';
 import { SourcePanelProps } from './nutritionTypes';
+import { NutritionResultList } from './NutritionResultList';
 import { formatPer100, perGramFrom } from '../utils/nutrition';
-import { NutritionResultList, NutritionSearchSkeleton } from './NutritionResultList';
+import { NutritionSearchSkeleton } from './NutritionSearchSkeleton';
 
 type UsdaSearchResultItem = NonNullable<NonNullable<UsdaSearchQuery['usdaSearch']>[number]>;
 
@@ -18,15 +20,6 @@ function per100gOf(item: UsdaSearchResultItem) {
         protein: item.proteinPer100g,
         carbs: item.carbsPer100g,
         fat: item.fatPer100g,
-    };
-}
-
-export function onEnter(action: () => void) {
-    return (e: React.KeyboardEvent) => {
-        if (e.key !== 'Enter') return;
-        e.preventDefault();
-        e.stopPropagation();
-        action();
     };
 }
 
@@ -127,24 +120,5 @@ export function UsdaSearchPanel(props: SourcePanelProps) {
                 />
             )}
         </Stack>
-    );
-}
-
-export function ClearSelectionButton(props: {
-    disabled?: boolean;
-    onClear: () => void;
-    label?: string;
-}) {
-    return (
-        <Button
-            size='sm'
-            variant='outline'
-            alignSelf='flex-start'
-            onClick={props.onClear}
-            isDisabled={props.disabled}
-            aria-label='Clear nutritional data selection'
-        >
-            {props.label ?? 'Clear selection'}
-        </Button>
     );
 }

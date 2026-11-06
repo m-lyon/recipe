@@ -7,11 +7,12 @@ import { OpenFoodFactsProductFieldsFragment } from '@recipe/graphql/generated';
 import { OPEN_FOOD_FACTS_SEARCH } from '@recipe/graphql/queries/nutritionalInfo';
 import { OPEN_FOOD_FACTS_PRODUCT } from '@recipe/graphql/queries/nutritionalInfo';
 
-import { onEnter } from './UsdaSearchPanel';
+import { onEnter } from '../utils/onEnter';
+import { NutritionResultList } from './NutritionResultList';
+import { NutritionSearchSkeleton } from './NutritionSearchSkeleton';
 import { formatPer100, hasValidCheckDigit } from '../utils/nutrition';
 import { NutritionSelection, SourcePanelProps } from './nutritionTypes';
 import { openFoodFactsProductName, perGramFrom } from '../utils/nutrition';
-import { NutritionResultList, NutritionSearchSkeleton } from './NutritionResultList';
 
 type Product = OpenFoodFactsProductFieldsFragment;
 

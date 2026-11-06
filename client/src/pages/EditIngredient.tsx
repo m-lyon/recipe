@@ -5,7 +5,7 @@ import { Box, Heading, VStack } from '@chakra-ui/react';
 import { useSuccessToast } from '@recipe/common/hooks';
 import { SearchableSelect } from '@recipe/common/components';
 import { ModifyIngredientForm } from '@recipe/features/forms';
-import type { ExistingNutritionalInfo } from '@recipe/features/forms';
+import type { ExistingNutritionalInfo } from '@recipe/features/nutrition';
 import { GET_EDITABLE_INGREDIENTS } from '@recipe/graphql/queries/ingredient';
 import { GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS } from '@recipe/graphql/queries/nutritionalInfo';
 

@@ -5,15 +5,14 @@ import { Box, Button, Checkbox, HStack, IconButton, Skeleton } from '@chakra-ui/
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react';
 
 import { useErrorToast } from '@recipe/common/hooks';
+import { SOURCE_LABELS } from '@recipe/features/nutrition';
 import { GET_INGREDIENT_COMPONENTS } from '@recipe/graphql/queries/recipe';
 import { FloatingLabelInput, SearchableSelect } from '@recipe/common/components';
 import { GET_INGREDIENT_MEASURES } from '@recipe/graphql/queries/nutritionalInfo';
 import { CREATE_INGREDIENT_MEASURE } from '@recipe/graphql/mutations/ingredientMeasure';
 import { REMOVE_INGREDIENT_MEASURE } from '@recipe/graphql/mutations/ingredientMeasure';
+import { LinkedPortion, MeasureForDensity, PerGramByPrep } from '@recipe/features/nutrition';
 
-import { PerGramByPrep } from './NutritionLinkSection';
-import { MeasureForDensity } from '../utils/nutrition';
-import { LinkedPortion, SOURCE_LABELS } from './nutritionTypes';
 import { MeasureDraft, PortionSuggestion, suggestFromPortion } from '../utils/portions';
 
 export interface MeasuresSectionProps {

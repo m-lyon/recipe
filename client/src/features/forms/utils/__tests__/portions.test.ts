@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { NutritionPortion } from '@recipe/features/nutrition';
 import { mockSizes } from '@recipe/graphql/queries/__mocks__/size';
 import { mockUnits } from '@recipe/graphql/queries/__mocks__/unit';
 import { mockCup, mockEach } from '@recipe/graphql/queries/__mocks__/unit';
@@ -7,7 +8,6 @@ import { mockChoppedId, mockLargeId } from '@recipe/graphql/__mocks__/ids';
 import { mockPrepMethods } from '@recipe/graphql/queries/__mocks__/prepMethod';
 
 import { suggestFromPortion } from '../portions';
-import { NutritionPortion } from '../../components/nutritionTypes';
 
 function portion(overrides: Partial<NutritionPortion>): NutritionPortion {
     return {

@@ -1,5 +1,5 @@
 import { WarningTwoIcon } from '@chakra-ui/icons';
-import { Skeleton, Stack, Text, Tooltip } from '@chakra-ui/react';
+import { Stack, Text, Tooltip } from '@chakra-ui/react';
 import { Box, HStack, Radio, RadioGroup } from '@chakra-ui/react';
 
 export interface NutritionResult {
@@ -17,19 +17,6 @@ interface Props {
     selectedKey: string | null;
     onSelect: (key: string) => void;
     lowercase?: boolean;
-}
-
-export function NutritionSearchSkeleton() {
-    return (
-        <Stack spacing={3}>
-            <Skeleton height='10px' width='40%' />
-            <Skeleton height='10px' />
-            <Skeleton height='10px' />
-            <Skeleton height='10px' width='40%' />
-            <Skeleton height='10px' />
-            <Skeleton height='10px' />
-        </Stack>
-    );
 }
 
 export function NutritionResultList(props: Props) {

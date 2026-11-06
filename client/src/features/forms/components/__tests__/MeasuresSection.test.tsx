@@ -11,13 +11,13 @@ import { theme } from '@recipe/theme';
 import { getCache } from '@recipe/utils/cache';
 import { MockedResponses } from '@recipe/utils/tests';
 import { UsdaPortionKind } from '@recipe/graphql/generated';
+import { NutritionPortion } from '@recipe/features/nutrition';
 import { mockAppleId, mockDicedId } from '@recipe/graphql/__mocks__/ids';
 import { mockGetIngredientComponents } from '@recipe/graphql/queries/__mocks__/recipe';
 import { CREATE_INGREDIENT_MEASURE } from '@recipe/graphql/mutations/ingredientMeasure';
 import { mockGetIngredientMeasuresFallback } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { mockCreateMeasureAppleTeaspoon } from '@recipe/graphql/mutations/__mocks__/ingredientMeasure';
 
-import { NutritionPortion } from '../nutritionTypes';
 import { MeasuresSection, MeasuresSectionHandle, MeasuresSectionProps } from '../MeasuresSection';
 
 loadErrorMessages();

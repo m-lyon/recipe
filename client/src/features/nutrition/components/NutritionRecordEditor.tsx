@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Collapse } from '@mantine/core';
 import { Stack, Text } from '@chakra-ui/react';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
-import { Box, Button, HStack, Link, Radio, RadioGroup, Skeleton } from '@chakra-ui/react';
+import { Button, HStack, Radio, RadioGroup } from '@chakra-ui/react';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 
 import { usePreferencesStore } from '@recipe/stores';
@@ -14,11 +14,14 @@ import { CREATE_NUTRITIONAL_INFO } from '@recipe/graphql/mutations/nutritionalIn
 import { UPDATE_NUTRITIONAL_INFO } from '@recipe/graphql/mutations/nutritionalInfo';
 import { DELETE_NUTRITIONAL_INFO } from '@recipe/graphql/mutations/nutritionalInfo';
 
+import { LinkedText } from './LinkedText';
+import { UsdaSearchPanel } from './UsdaSearchPanel';
 import { OpenFoodFactsPanel } from './OpenFoodFactsPanel';
 import { ManualNutritionPanel } from './ManualNutritionPanel';
+import { ClearSelectionButton } from './ClearSelectionButton';
+import { PanelCollapse, TRANSITION_MS } from './PanelCollapse';
 import { NutritionSource, SOURCE_ENUM } from './nutritionTypes';
-import { ClearSelectionButton, UsdaSearchPanel } from './UsdaSearchPanel';
-import { MeasureForDensity, formatPer100, openFoodFactsUrl } from '../utils/nutrition';
+import { MeasureForDensity, formatPer100 } from '../utils/nutrition';
 import { ExistingNutritionalInfo, NutritionPortion, NutritionSelection } from './nutritionTypes';
 
 const SOURCE_CHOICES: { value: NutritionSource; label: string }[] = [
@@ -26,8 +29,6 @@ const SOURCE_CHOICES: { value: NutritionSource; label: string }[] = [
     { value: 'openFoodFacts', label: 'UK products (Open Food Facts)' },
     { value: 'manual', label: 'Enter manually' },
 ];
-
-const TRANSITION_MS = 300;
 
 // One array, so an effect that depends on the portions does not run on every render.
 const NO_PORTIONS: NutritionPortion[] = [];
@@ -374,53 +375,3 @@ export const NutritionRecordEditor = forwardRef<
         </Stack>
     );
 });
-
-function PanelCollapse(props: { open: boolean; children: React.ReactNode }) {
-    return (
-        <Collapse in={props.open} transitionDuration={TRANSITION_MS}>
-            <Box pt={3}>{props.children}</Box>
-        </Collapse>
-    );
-}
-
-function LinkedText(props: {
-    linked: NutritionSelection;
-    label?: string;
-    usdaName: string | null;
-    loading: boolean;
-}) {
-    const { linked, label = 'Linked', usdaName, loading } = props;
-    if (linked.source === 'manual') {
-        return (
-            <Text fontSize='sm'>
-                {['Entered manually', linked.sourceName].filter(Boolean).join(' · ')}
-            </Text>
-        );
-    }
-    if (linked.source === 'openFoodFacts') {
-        const barcode = linked.openFoodFactsBarcode ?? '';
-        // The product page link gives the ODbL attribution.
-        return (
-            <Text fontSize='sm'>
-                {label}: {linked.sourceName ?? barcode} ·{' '}
-                <Link href={openFoodFactsUrl(barcode)} isExternal textDecoration='underline'>
-                    Open Food Facts {barcode}
-                </Link>
-            </Text>
-        );
-    }
-    const name = usdaName ?? linked.sourceName;
-    if (!name && loading) {
-        return (
-            <HStack fontSize='sm' spacing={1}>
-                <Text>{label}:</Text>
-                <Skeleton height='10px' width='12em' aria-label='Loading linked item name' />
-            </HStack>
-        );
-    }
-    return (
-        <Text fontSize='sm'>
-            {label}: {name ? name.toLowerCase() : `FDC ID ${linked.usdaFdcId}`}
-        </Text>
-    );
-}

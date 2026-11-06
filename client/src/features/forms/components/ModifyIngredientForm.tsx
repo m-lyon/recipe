@@ -3,6 +3,7 @@ import { useMutation } from '@apollo/client';
 
 import { useErrorToast } from '@recipe/common/hooks';
 import { ModifyIngredientMutation } from '@recipe/graphql/generated';
+import { NutritionLinkSectionHandle } from '@recipe/features/nutrition';
 import { DELETE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 import { MODIFY_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 import { INGREDIENT_FIELDS_FULL } from '@recipe/graphql/queries/ingredient';
@@ -10,7 +11,6 @@ import { INGREDIENT_FIELDS_FULL } from '@recipe/graphql/queries/ingredient';
 import { BaseIngredientForm } from './BaseIngredientForm';
 import { formatIngredientError } from './BaseIngredientForm';
 import { BaseIngredientFormProps } from './BaseIngredientForm';
-import { NutritionLinkSectionHandle } from './NutritionLinkSection';
 
 interface Props extends Omit<BaseIngredientFormProps, 'submitForm'> {
     handleComplete: (data: ModifyIngredientMutation) => void;

@@ -4,7 +4,7 @@ import { Box, HStack, Radio, RadioGroup } from '@chakra-ui/react';
 
 import { FloatingLabelInput } from '@recipe/common/components';
 
-import { ClearSelectionButton } from './UsdaSearchPanel';
+import { ClearSelectionButton } from './ClearSelectionButton';
 import { kcalMismatch, perGramFrom } from '../utils/nutrition';
 import { NutritionSelection, SourcePanelProps } from './nutritionTypes';
 import { MeasureForDensity, gramsPerMillilitre } from '../utils/nutrition';

@@ -8,14 +8,13 @@ import { Box, Button, ButtonGroup, Checkbox, HStack } from '@chakra-ui/react';
 import { IngredientTags } from '@recipe/graphql/enums';
 import type { Owner } from '@recipe/common/components';
 import { FloatingLabelInput, OwnerText } from '@recipe/common/components';
+import { MeasureForDensity, PerGramByPrep } from '@recipe/features/nutrition';
+import { ExistingNutritionalInfo, LinkedPortion } from '@recipe/features/nutrition';
+import { NutritionLinkSection, NutritionLinkSectionHandle } from '@recipe/features/nutrition';
 
 import { useFormLogic } from '../hooks/useFormLogic';
-import { MeasureForDensity } from '../utils/nutrition';
-import { PerGramByPrep } from './NutritionLinkSection';
 import { useKeyboardSubmit } from '../hooks/useKeyboardSubmit';
-import { ExistingNutritionalInfo, LinkedPortion } from './nutritionTypes';
 import { MeasuresSection, MeasuresSectionHandle } from './MeasuresSection';
-import { NutritionLinkSection, NutritionLinkSectionHandle } from './NutritionLinkSection';
 
 export function formatIngredientError(error: ApolloError) {
     if (error.message.startsWith('E11000')) {

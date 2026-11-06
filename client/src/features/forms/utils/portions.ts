@@ -1,4 +1,4 @@
-import { NutritionPortion } from '../components/nutritionTypes';
+import { NutritionPortion } from '@recipe/features/nutrition';
 
 type UnitOption = Pick<
     UnitChoice,
