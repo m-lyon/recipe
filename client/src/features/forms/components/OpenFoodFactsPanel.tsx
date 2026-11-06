@@ -36,10 +36,6 @@ export function selectionFromProduct(product: Product): NutritionSelection {
     };
 }
 
-/**
- * Searches Open Food Facts for packaged products, by name or by barcode. All users share
- * the server's Open Food Facts limit, so a search runs only on Enter or a button press.
- */
 export function OpenFoodFactsPanel(props: SourcePanelProps) {
     const { idPrefix, ingredientId, ingredientName, disabled, selection, onSelect } = props;
 
@@ -47,7 +43,6 @@ export function OpenFoodFactsPanel(props: SourcePanelProps) {
     const [barcodeInput, setBarcodeInput] = useState('');
     const [ukOnly, setUkOnly] = useState(true);
     const [results, setResults] = useState<Product[]>([]);
-    // Says what the last search or lookup was, so an empty list can say why.
     const [attempted, setAttempted] = useState<'search' | 'barcode' | null>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -87,7 +82,6 @@ export function OpenFoodFactsPanel(props: SourcePanelProps) {
         if (!barcode) return;
         select(null);
         setAttempted('barcode');
-        // Checked here, so a mistyped digit costs no request.
         if (!hasValidCheckDigit(barcode)) {
             setResults([]);
             setError(
@@ -137,7 +131,6 @@ export function OpenFoodFactsPanel(props: SourcePanelProps) {
                     inputMode='numeric'
                     value={barcodeInput}
                     isInvalid={attempted === 'barcode' && error !== null && !loading}
-                    // Digits only: a pasted barcode often carries spaces.
                     onChange={(e) => setBarcodeInput(e.target.value.replace(/\D/g, ''))}
                     onKeyDown={onEnter(handleLookup)}
                     isDisabled={disabled}
@@ -154,7 +147,6 @@ export function OpenFoodFactsPanel(props: SourcePanelProps) {
             </HStack>
             <Checkbox
                 alignSelf='flex-start'
-                // The panel's text is normal weight; checkboxes in the form are bold.
                 fontWeight='bold'
                 isChecked={!ukOnly}
                 isDisabled={disabled}

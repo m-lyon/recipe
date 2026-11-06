@@ -5,7 +5,6 @@ export interface Per100 {
     fat: number | null | undefined;
 }
 
-/** A measure row as the measures list holds it, saved or staged. */
 export interface MeasureForDensity {
     unit: { dimension: string; perCanonical: number };
     sizeId: string | null;
@@ -18,7 +17,6 @@ function round1(n: number | null | undefined): string {
     return n.toFixed(1).replace(/\.0$/, '');
 }
 
-/** "52 kcal · 0.3 g protein · 14 g carbs · 0.2 g fat per 100 g". */
 export function formatPer100(values: Per100, per: '100 g' | '100 ml' = '100 g'): string {
     return (
         `${round1(values.calories)} kcal · ${round1(values.protein)} g protein · ` +
@@ -26,7 +24,6 @@ export function formatPer100(values: Per100, per: '100 g' | '100 ml' = '100 g'):
     );
 }
 
-/** Per-gram macros are the per-100 g values divided by 100. A missing value counts as 0. */
 export function perGramFrom(values: Per100): MacroNutrients {
     return {
         calories: (values.calories ?? 0) / 100,
@@ -41,8 +38,6 @@ export function perGramFrom(values: Per100): MacroNutrients {
 const KCAL_TOLERANCE_ABSOLUTE = 20;
 const KCAL_TOLERANCE_RELATIVE = 0.2;
 
-/** A kcal that the macros do not explain usually means a value typed in the wrong place.
- *  The same rule as `kcalMismatch` in the CLI. */
 export function kcalMismatch(values: {
     calories: number;
     protein: number;
@@ -58,22 +53,16 @@ export function kcalMismatch(values: {
     );
 }
 
-/**
- * Whether the last digit of a GTIN (EAN-8, UPC-A, EAN-13, GTIN-14) matches the others.
- * A failure usually means a mistyped digit.
- */
 export function hasValidCheckDigit(barcode: string): boolean {
     if (!/^\d{8,14}$/.test(barcode)) return false;
     const digits = [...barcode].map(Number);
     const check = digits.pop()!;
-    // From the right, the data digits weigh 3, 1, 3, 1...
     const sum = digits
         .reverse()
         .reduce((total, digit, index) => total + digit * (index % 2 === 0 ? 3 : 1), 0);
     return (10 - (sum % 10)) % 10 === check;
 }
 
-/** "Al'fez · Pearl Couscous", or the barcode alone, as the CLI names the record. */
 export function openFoodFactsProductName(product: {
     barcode: string;
     name?: string | null;
@@ -83,15 +72,10 @@ export function openFoodFactsProductName(product: {
     return parts.length > 0 ? parts.join(' · ') : product.barcode;
 }
 
-/** The product page, which also gives the ODbL attribution. */
 export function openFoodFactsUrl(barcode: string): string {
     return `https://world.openfoodfacts.org/product/${barcode}`;
 }
 
-/**
- * Grams per millilitre, from a volume measure with no size and the same prep method. The
- * same rule as `recipe nutrition set --per-100ml`: a density is never guessed.
- */
 export function gramsPerMillilitre(
     measures: MeasureForDensity[],
     prepMethodId: string | null

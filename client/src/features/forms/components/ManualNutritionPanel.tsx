@@ -20,11 +20,8 @@ type Field = (typeof FIELDS)[number]['key'];
 const EMPTY: Record<Field, string> = { calories: '', protein: '', carbs: '', fat: '' };
 
 export interface ManualNutritionPanelProps extends SourcePanelProps {
-    /** The ingredient's measures, saved and staged, to convert per 100 ml to grams. */
     measures: MeasureForDensity[];
-    /** The prep method of the record, which the volume measure must share. */
     prepMethodId: string | null;
-    /** "lime" or "lime, juiced", for messages. */
     targetName: string;
 }
 

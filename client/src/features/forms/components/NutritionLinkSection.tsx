@@ -19,21 +19,13 @@ export interface NutritionLinkSectionProps {
     ingredientId?: string;
     ingredientName?: string;
     disabled?: boolean;
-    /** Every record of this ingredient, prefetched by the page alongside the ingredient list. */
     existingNutritionalInfos?: ExistingNutritionalInfo[];
-    /** The ingredient's measures, saved and staged, to convert per 100 ml to grams. */
     measures?: MeasureForDensity[];
-    /** Called with the portions of the linked or selected items, which the measures list
-     *  offers as one-click rows. */
     onPortionsChange?: (portions: LinkedPortion[]) => void;
-    /** Called with the per-gram macros shown, so measures can show their calories. */
     onPerGramChange?: (perGram: PerGramByPrep) => void;
-    /** Called after a record is saved or removed, so the prefetched list can be refreshed. */
     onNutritionalInfoChange?: () => void;
 }
 
-/** Linking and unlinking are staged; the parent saves them with the ingredient, once it has
- *  an id. Throws when a change could not be saved. */
 export interface NutritionLinkSectionHandle {
     commitChanges: (ingredientId: string) => Promise<void>;
 }
@@ -47,11 +39,6 @@ interface Slot {
 const NO_INFOS: ExistingNutritionalInfo[] = [];
 const NO_MEASURES: MeasureForDensity[] = [];
 
-/**
- * The nutritional data of an ingredient: one record with no prep method, and one for each
- * prep method that changes the food (lime, juiced is lime juice). A recipe line uses the
- * record for its prep method, or else the plain one.
- */
 export const NutritionLinkSection = forwardRef<
     NutritionLinkSectionHandle,
     NutritionLinkSectionProps

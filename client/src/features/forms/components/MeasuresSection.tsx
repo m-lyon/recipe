@@ -18,13 +18,10 @@ import { MeasureDraft, PortionSuggestion, suggestFromPortion } from '../utils/po
 
 export interface MeasuresSectionProps {
     ingredientId?: string;
-    /** Portions of the linked items, offered as one-click rows. */
     portions: LinkedPortion[];
-    /** Per-gram macros by prep method, so each row can show its calories. Display only. */
     perGram: PerGramByPrep | null;
     itemNames?: string[];
     disabled?: boolean;
-    /** Called with the saved and staged rows, which convert per 100 ml to grams. */
     onMeasuresChange?: (measures: MeasureForDensity[]) => void;
 }
 
@@ -169,9 +166,6 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
             .filter((s) => !s.draft || !rows.some((row) => sameKey(row.draft, s.draft!)));
         const suggestionSources = [...new Set(suggestions.map((s) => s.source))];
 
-        /** A record for a prep method is the prepared food, so its portions are too: a cup
-         *  of lime juice is `cup · juiced`. A portion with another prep method is refused,
-         *  as `recipe nutrition link --prep` refuses it. */
         function forPrep(
             suggestion: PortionSuggestion,
             prepMethodId: string | null
@@ -495,8 +489,6 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                             <Text fontSize='sm' color='gray.500'>
                                 From {label}:
                             </Text>
-                            {/* Chips on one row, notes on their own lines, so a note never
-                                reads as describing the chip beside it. */}
                             <Wrap>
                                 {fromSource.map(
                                     (suggestion, index) =>

@@ -39,7 +39,6 @@ export interface ShownNutrition {
 }
 
 export interface NutritionRecordEditorProps {
-    /** Unique within the form, for input ids. */
     slotKey: string;
     ingredientId?: string;
     ingredientName?: string;
@@ -50,8 +49,6 @@ export interface NutritionRecordEditorProps {
     onShownChange: (shown: ShownNutrition | null) => void;
 }
 
-/** Changes are staged. Resolves true when the record was written. Throws when the change
- *  could not be saved. */
 export interface NutritionRecordEditorHandle {
     commitChanges: (ingredientId: string) => Promise<boolean>;
 }
@@ -101,16 +98,11 @@ export const NutritionRecordEditor = forwardRef<
 
     const saved = useMemo(() => (existing ? selectionFromExisting(existing) : null), [existing]);
     const savedKey = JSON.stringify(saved);
-    // The selection in the open search. It replaces the saved values when the form is saved.
     const [selection, setSelection] = useState<NutritionSelection | null>(null);
-    // True once the saved values are unlinked: saving the form then removes them.
     const [removed, setRemoved] = useState(false);
-    // True while the search is open to replace the saved values.
     const [changing, setChanging] = useState(false);
     const searching = !saved || removed || changing;
-    // A picked result replaces the search. Manual values stay in their form while typed.
     const picked = selection && selection.source !== 'manual' ? selection : null;
-    // Kept while the selected item collapses after Clear selection.
     const lastPicked = useRef(picked);
     if (picked) lastPicked.current = picked;
     const shownPick = picked ?? lastPicked.current;
@@ -128,9 +120,6 @@ export const NutritionRecordEditor = forwardRef<
         if (!searching) setSelection(null);
     }, [searching]);
 
-    // Portions, and the USDA item's name, come from a second request. A USDA search
-    // result carries no portions. An Open Food Facts product is fetched only for a saved
-    // record, since a search result already carries its portions.
     const detailsKey =
         shown?.source === 'usda' && shown.usdaFdcId
             ? `usda:${shown.usdaFdcId}`
@@ -148,9 +137,6 @@ export const NutritionRecordEditor = forwardRef<
         if (!detailsKey || details?.key === detailsKey) return;
         let stale = false;
         const [kind, id] = detailsKey.split(':');
-        // Results are handled from the promise each call returns: the hooks' onCompleted
-        // and onError options are deprecated. A failure leaves no portions, which are an
-        // enhancement: perGram is already linkable without them.
         const request =
             kind === 'usda'
                 ? fetchFoodItem({ variables: { fdcId: Number(id) } }).then(({ data }) => ({
@@ -185,7 +171,6 @@ export const NutritionRecordEditor = forwardRef<
         setPreferred(userId, next);
     };
 
-    // Run only by commitChanges, which reports a failure to the caller.
     const [createNutritionalInfo] = useMutation(CREATE_NUTRITIONAL_INFO);
     const [updateNutritionalInfo] = useMutation(UPDATE_NUTRITIONAL_INFO);
     const [deleteNutritionalInfo] = useMutation(DELETE_NUTRITIONAL_INFO);
@@ -390,8 +375,6 @@ export const NutritionRecordEditor = forwardRef<
     );
 });
 
-/** The padding keeps the floating label of a panel's first input inside the collapse, which
- *  clips its content while it animates. */
 function PanelCollapse(props: { open: boolean; children: React.ReactNode }) {
     return (
         <Collapse in={props.open} transitionDuration={TRANSITION_MS}>

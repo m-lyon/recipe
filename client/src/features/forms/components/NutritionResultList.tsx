@@ -16,7 +16,6 @@ interface Props {
     results: NutritionResult[];
     selectedKey: string | null;
     onSelect: (key: string) => void;
-    /** USDA names are in title case; shown in lower case to match the app. */
     lowercase?: boolean;
 }
 

@@ -16,8 +16,6 @@ import { offPearlCouscousBarcode } from '@recipe/graphql/queries/__mocks__/nutri
 import { offPearlCouscousPer100g } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 import { usdaChickenBreastPer100g } from '@recipe/graphql/queries/__mocks__/nutritionalInfo';
 
-/** Derived exactly as the form derives it, so the mock matches bit for bit --
- *  3.6 / 100 is not 0.036 in floating point, so the division must be replayed here. */
 const chickenBreastPerGram = {
     calories: usdaChickenBreastPer100g.calories / 100,
     protein: usdaChickenBreastPer100g.protein / 100,
@@ -25,7 +23,6 @@ const chickenBreastPerGram = {
     fat: usdaChickenBreastPer100g.fat / 100,
 };
 
-/** Derived exactly as the form derives it, so the mock matches bit for bit. */
 const onionPerGram = {
     calories: usdaOnionPer100g.calories / 100,
     protein: usdaOnionPer100g.protein / 100,
@@ -33,10 +30,6 @@ const onionPerGram = {
     fat: usdaOnionPer100g.fat / 100,
 };
 
-/** Fired when USDA nutritional data is staged (via search + "Link selected item") while
- *  creating a brand new "beef" ingredient, then committed once the ingredient is saved --
- *  see NutritionRecordEditor's commitChanges and CreateIngredientForm. Values derived from
- *  mockUsdaSearchChickenBreast's per-100g figures, divided down to per-gram. */
 export const mockCreateNutritionalInfoBeef = {
     request: {
         query: CREATE_NUTRITIONAL_INFO,
@@ -122,7 +115,6 @@ export const mockDeleteNutritionalInfoCarrot = {
 
 type RecordInput = CreateNutritionalInfoMutationVariables['record'];
 
-/** Derived exactly as the form derives it: per-100 g values divided by 100. */
 function perGramOf(per100g: { calories: number; protein: number; carbs: number; fat: number }) {
     return {
         calories: per100g.calories / 100,
@@ -182,11 +174,9 @@ export const mockCreateNutritionalInfoCarrotManual = created(mockNutritionalInfo
     perGram: perGramOf(carrotLabelPer100),
 });
 
-/** 1 cup of carrot weighs 240 g, so a millilitre weighs 240 / 236.5882365 g. */
 export const carrotCupGrams = 240;
 const carrotGramsPerMillilitre = carrotCupGrams / 236.5882365;
 
-/** Carrot values entered by hand, per 100 ml, and converted with the cup measure. */
 export const mockCreateNutritionalInfoCarrotManualPer100ml = created(mockNutritionalInfoIdCarrot, {
     ingredient: mockCarrotId,
     source: EnumNutritionalInfoCreateSource.Manual,

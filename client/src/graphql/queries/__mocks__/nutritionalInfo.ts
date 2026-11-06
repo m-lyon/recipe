@@ -766,8 +766,6 @@ export const mockUsdaFoodItemOliveOil = {
 
 // ---------- Open Food Facts mocks ----------
 
-/** The per-100g figures behind mockOffPearlCouscous, exported so the mutation mock can
- *  derive per-gram values by the same arithmetic the form uses. */
 export const offPearlCouscousPer100g = { calories: 356, protein: 12, carbs: 72, fat: 1.5 };
 export const offPearlCouscousBarcode = '5010338301255';
 

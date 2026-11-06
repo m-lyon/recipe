@@ -40,12 +40,8 @@ export interface BaseIngredientFormProps extends StackProps {
     disabled?: boolean;
     submitForm: (data: ModifyableIngredient) => void;
     onDelete?: () => void;
-    /** The owner, shown beside the buttons. */
     owner?: Owner | null;
-    /** The ingredient's nutritional info records, prefetched by the page alongside the
-     *  ingredient list. */
     existingNutritionalInfos?: ExistingNutritionalInfo[];
-    /** Called after a record is created or cleared, so the prefetched list can be refreshed. */
     onNutritionalInfoChange?: () => void;
 }
 export const BaseIngredientForm = forwardRef<NutritionLinkSectionHandle, BaseIngredientFormProps>(

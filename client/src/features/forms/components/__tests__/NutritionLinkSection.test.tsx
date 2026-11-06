@@ -93,8 +93,6 @@ async function chooseSource(user: User, label: string, prep?: string) {
     await user.click(record(prep).getByLabelText(label));
 }
 
-/** Types a query, searches, and selects the single result, which also fires the
- *  single-item query that carries the portions. */
 async function searchUsdaAndSelect(user: User, query: string, resultText: string) {
     await user.clear(screen.getByLabelText('Search nutritional data'));
     await user.type(screen.getByLabelText('Search nutritional data'), query);

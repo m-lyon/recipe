@@ -21,9 +21,6 @@ function per100gOf(item: UsdaSearchResultItem) {
     };
 }
 
-/** Stops Enter in a search field from also saving the ingredient form: preventDefault
- *  blocks the native implicit submission, stopPropagation the global Enter-to-save
- *  listener. */
 export function onEnter(action: () => void) {
     return (e: React.KeyboardEvent) => {
         if (e.key !== 'Enter') return;
@@ -38,14 +35,9 @@ export function UsdaSearchPanel(props: SourcePanelProps) {
 
     const [searchInput, setSearchInput] = useState('');
     const [searchResults, setSearchResults] = useState<UsdaSearchResultItem[]>([]);
-    /** True once a search has run for the current input, so an empty result list can
-     *  be reported as "no matches" instead of rendering nothing. */
     const [searchAttempted, setSearchAttempted] = useState(false);
-    // A failed search is reported as a failure, not as "no matches".
     const [searchError, setSearchError] = useState<string | null>(null);
 
-    // Reset the search whenever the ingredient being edited changes, so a search made
-    // for one ingredient doesn't leak into the next one. Linking and unlinking leave it.
     useEffect(() => {
         setSearchInput(ingredientName ?? '');
         setSearchResults([]);
@@ -54,13 +46,8 @@ export function UsdaSearchPanel(props: SourcePanelProps) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ingredientId]);
 
-    // Results are handled from the promise each call returns, which resolves with `data`
-    // or `error`: the hooks' onCompleted and onError options are deprecated.
     const [runSearchQuery, { loading: searchLoading }] = useLazyQuery(USDA_SEARCH);
-
     const handleSearch = async () => {
-        // The live input, not a debounced copy: this only fires on an explicit
-        // trigger, so searching a stale value would silently drop recent keystrokes.
         const query = searchInput.trim();
         if (!query) return;
         onSelect(null);
@@ -78,9 +65,6 @@ export function UsdaSearchPanel(props: SourcePanelProps) {
     const handleSelectResult = (fdcId: number) => {
         const item = searchResults.find((r) => r.fdcId === fdcId);
         if (!item) return;
-        // perGram and the name both come from the search result, so the macro and
-        // "Linked:" displays do not wait on the second request. The record editor
-        // fetches the portions: search results carry none.
         onSelect({
             source: 'usda',
             usdaFdcId: fdcId,
