@@ -1,4 +1,4 @@
-import { UsdaPortion } from '../components/UsdaLinkSection';
+import { NutritionPortion } from '@recipe/features/nutrition';
 
 type UnitOption = Pick<
     UnitChoice,
@@ -80,12 +80,12 @@ function formatGrams(grams: number): string {
 }
 
 /**
- * Suggests a measure row for a USDA portion: "1 large" is each + size large, "1 fruit" is
+ * Suggests a measure row for a USDA or Open Food Facts portion: "1 large" is each + size large, "1 fruit" is
  * each, and "cup, chopped" is cup + prep chopped. Names are matched only to suggest a row
  * that the user confirms; nothing reads a name once the row is saved.
  */
 export function suggestFromPortion(
-    portion: UsdaPortion,
+    portion: NutritionPortion,
     units: UnitOption[],
     sizes: NamedOption[],
     prepMethods: NamedOption[],

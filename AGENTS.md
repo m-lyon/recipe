@@ -163,6 +163,10 @@ cd cli && npm run generate
 
 Blank line between each group. `@recipe/**` imports are grouped after externals.
 
+### Comments
+
+Add comments sparingly. Write one only when the code and its names cannot say what it needs to: a reason that is not visible in the code, a constraint from outside it, or a workaround. Do not add a comment that restates what the code does, and do not add a docstring to every function, prop or type. Prefer a clearer name to a comment.
+
 ### Client path aliases
 
 All aliases resolve from `client/src/`:
@@ -197,6 +201,8 @@ import { SearchBar } from '@recipe/features/search';
 // Bad -- ESLint error
 import { SearchBar } from '@recipe/features/search/components/SearchBar';
 ```
+
+A file exports at most one React component. Put a helper component in a file of its own.
 
 ### GraphQL mock data (client)
 

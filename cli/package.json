@@ -82,5 +82,20 @@
   "allowScripts": {
     "unrs-resolver@1.12.2": true,
     "fsevents": false
+  },
+  "overrides": {
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^11.0.5"
+    },
+    "mocha": {
+      "glob": "^14.0.4",
+      "minimatch": "^11.0.5"
+    },
+    "graphql-config": {
+      "minimatch": "^11.0.5"
+    },
+    "@oclif/core": {
+      "minimatch": "^11.0.5"
+    }
   }
 }

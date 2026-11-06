@@ -3,12 +3,12 @@ import { useMutation } from '@apollo/client';
 
 import { useErrorToast } from '@recipe/common/hooks';
 import { ModifyIngredientMutation } from '@recipe/graphql/generated';
+import { NutritionLinkSectionHandle } from '@recipe/features/nutrition';
 import { DELETE_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 import { MODIFY_INGREDIENT } from '@recipe/graphql/mutations/ingredient';
 import { INGREDIENT_FIELDS_FULL } from '@recipe/graphql/queries/ingredient';
 
 import { BaseIngredientForm } from './BaseIngredientForm';
-import { UsdaLinkSectionHandle } from './UsdaLinkSection';
 import { formatIngredientError } from './BaseIngredientForm';
 import { BaseIngredientFormProps } from './BaseIngredientForm';
 
@@ -21,7 +21,7 @@ interface Props extends Omit<BaseIngredientFormProps, 'submitForm'> {
 export function ModifyIngredientForm(props: Props) {
     const { handleComplete, onDelete, ingredientId, ...rest } = props;
     const toast = useErrorToast();
-    const formRef = useRef<UsdaLinkSectionHandle>(null);
+    const formRef = useRef<NutritionLinkSectionHandle>(null);
 
     const [modifyIngredient] = useMutation(MODIFY_INGREDIENT, {
         onCompleted: async (data) => {

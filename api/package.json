@@ -77,5 +77,14 @@
     "sharp": false,
     "fsevents": false,
     "unrs-resolver@1.12.2": true
+  },
+  "overrides": {
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^11.0.5"
+    },
+    "mocha": {
+      "glob": "^14.0.4",
+      "minimatch": "^11.0.5"
+    }
   }
 }

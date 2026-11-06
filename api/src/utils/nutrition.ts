@@ -298,8 +298,10 @@ function calculateIngredient(
     if (!perGram)
         return uncounted(recipeIngredient, 'NO_NUTRITION', `No nutritional data for ${name}`);
     const prepared = !!recipeIngredient.prepMethod && records?.has(recipeIngredient.prepMethod);
-    const measures = (data.measures.get(recipeIngredient.ingredient) ?? []).filter(
-        (m) => !prepared || m.prepMethod === recipeIngredient.prepMethod
+    const measures = (data.measures.get(recipeIngredient.ingredient) ?? []).filter((m) =>
+        prepared
+            ? m.prepMethod === recipeIngredient.prepMethod
+            : !m.prepMethod || !records?.has(m.prepMethod)
     );
     const perUnit =
         unit.dimension === 'mass'

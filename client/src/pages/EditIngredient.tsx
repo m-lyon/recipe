@@ -5,6 +5,7 @@ import { Box, Heading, VStack } from '@chakra-ui/react';
 import { useSuccessToast } from '@recipe/common/hooks';
 import { SearchableSelect } from '@recipe/common/components';
 import { ModifyIngredientForm } from '@recipe/features/forms';
+import type { ExistingNutritionalInfo } from '@recipe/features/nutrition';
 import { GET_EDITABLE_INGREDIENTS } from '@recipe/graphql/queries/ingredient';
 import { GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS } from '@recipe/graphql/queries/nutritionalInfo';
 
@@ -23,11 +24,14 @@ export function EditIngredient() {
         GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS,
         { variables: { ingredientIds }, skip: ingredientIds.length === 0 }
     );
-    // The form edits the record with no prep method. Records for a prep method, such as
-    // lime juiced, are not edited here yet.
-    const existingNutritionalInfo = (
-        nutritionalInfoData?.nutritionalInfosByIngredientIds ?? []
-    ).find((info) => info?.ingredient === currentIngredient?._id && !info?.prepMethod);
+    const existingNutritionalInfos = useMemo(
+        () =>
+            (nutritionalInfoData?.nutritionalInfosByIngredientIds ?? []).filter(
+                (info): info is ExistingNutritionalInfo =>
+                    info != null && info.ingredient === currentIngredient?._id
+            ),
+        [nutritionalInfoData, currentIngredient]
+    );
 
     return (
         <VStack>
@@ -54,7 +58,7 @@ export function EditIngredient() {
                             initData={currentIngredient}
                             owner={currentIngredient?.owner}
                             disabled={!currentIngredient}
-                            existingNutritionalInfo={existingNutritionalInfo}
+                            existingNutritionalInfos={existingNutritionalInfos}
                             onNutritionalInfoChange={() => refetchNutritionalInfo()}
                             handleComplete={() => {
                                 toast({

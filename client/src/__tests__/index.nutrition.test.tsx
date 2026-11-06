@@ -160,6 +160,8 @@ describe('USDA portions as measures from the new ingredient form', () => {
         await user.click(screen.getByText('Use singular form with units'));
 
         // Act -- search USDA and select the record, which fetches its portions
+        await user.click(screen.getByLabelText('Values for'));
+        await user.click(await screen.findByRole('option', { name: 'onion' }));
         await user.type(screen.getByLabelText('Search nutritional data'), 'onion');
         await user.click(screen.getByLabelText('Search USDA database'));
         await user.click(await screen.findByText('Onions, raw'));
@@ -172,9 +174,7 @@ describe('USDA portions as measures from the new ingredient form', () => {
         // Per-unit macros are shown, not stored: 150 g × 0.4 kcal/g
         expect(screen.getByText('60 kcal')).not.toBeNull();
 
-        // Act -- stage the link, then save the ingredient
-        await user.click(screen.getByLabelText('Link selected nutritional data'));
-        expect(await screen.findByText(/Linked: onions, raw/)).not.toBeNull();
+        // Act -- the selection is staged; save the ingredient
         await user.click(screen.getByLabelText('Save ingredient'));
 
         // Expect -- every mutation matched its mock; a mismatch would surface as an Apollo

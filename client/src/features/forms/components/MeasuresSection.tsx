@@ -5,23 +5,23 @@ import { Box, Button, Checkbox, HStack, IconButton, Skeleton } from '@chakra-ui/
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react';
 
 import { useErrorToast } from '@recipe/common/hooks';
+import { SOURCE_LABELS } from '@recipe/features/nutrition';
 import { GET_INGREDIENT_COMPONENTS } from '@recipe/graphql/queries/recipe';
 import { FloatingLabelInput, SearchableSelect } from '@recipe/common/components';
 import { GET_INGREDIENT_MEASURES } from '@recipe/graphql/queries/nutritionalInfo';
 import { CREATE_INGREDIENT_MEASURE } from '@recipe/graphql/mutations/ingredientMeasure';
 import { REMOVE_INGREDIENT_MEASURE } from '@recipe/graphql/mutations/ingredientMeasure';
+import { LinkedPortion, MeasureForDensity, PerGramByPrep } from '@recipe/features/nutrition';
 
-import { UsdaPortion } from './UsdaLinkSection';
-import { MeasureDraft, suggestFromPortion } from '../utils/portions';
+import { MeasureDraft, PortionSuggestion, suggestFromPortion } from '../utils/portions';
 
 export interface MeasuresSectionProps {
     ingredientId?: string;
-    /** USDA portions of the linked item, offered as one-click rows. */
-    portions: UsdaPortion[];
-    /** Per-gram macros, so each row can show its calories. Display only. */
-    perGram: MacroNutrients | null;
+    portions: LinkedPortion[];
+    perGram: PerGramByPrep | null;
     itemNames?: string[];
     disabled?: boolean;
+    onMeasuresChange?: (measures: MeasureForDensity[]) => void;
 }
 
 /** Added and removed rows are staged; the parent saves them with the ingredient, once it
@@ -61,7 +61,7 @@ function sameKey(a: MeasureDraft, b: MeasureDraft): boolean {
  */
 export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSectionProps>(
     function MeasuresSection(props, ref) {
-        const { ingredientId, portions, perGram, itemNames, disabled } = props;
+        const { ingredientId, portions, perGram, itemNames, disabled, onMeasuresChange } = props;
         const toast = useErrorToast();
         const { data: components } = useQuery(GET_INGREDIENT_COMPONENTS);
         const { data: measureData, loading: measuresLoading } = useQuery(GET_INGREDIENT_MEASURES, {
@@ -132,10 +132,55 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
         }));
         const rows = [...saved.filter((row) => !removed.has(row.measureId!)), ...staged];
 
+        const reported: MeasureForDensity[] = rows.flatMap((row) => {
+            const unit = row.saved?.unit ?? unitsById.get(row.draft.unitId);
+            if (!unit) return [];
+            return [
+                {
+                    unit: { dimension: unit.dimension, perCanonical: unit.perCanonical },
+                    sizeId: row.draft.sizeId,
+                    prepMethodId: row.draft.prepMethodId,
+                    grams: row.draft.grams,
+                },
+            ];
+        });
+        const reportedKey = JSON.stringify(reported);
+        useEffect(() => {
+            onMeasuresChange?.(reported);
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [reportedKey]);
+
         const suggestions = portions
-            .map((portion) => suggestFromPortion(portion, units, sizes, prepMethods, itemNames))
+            .map(({ portion, prepMethodId, source }) => {
+                const suggestion = suggestFromPortion(
+                    portion,
+                    units,
+                    sizes,
+                    prepMethods,
+                    itemNames
+                );
+                return suggestion && { ...forPrep(suggestion, prepMethodId), source };
+            })
             .filter((s) => s != null)
             .filter((s) => !s.draft || !rows.some((row) => sameKey(row.draft, s.draft!)));
+        const suggestionSources = [...new Set(suggestions.map((s) => s.source))];
+
+        function forPrep(
+            suggestion: PortionSuggestion,
+            prepMethodId: string | null
+        ): PortionSuggestion {
+            if (!prepMethodId || !suggestion.draft) return suggestion;
+            const own = suggestion.draft.prepMethodId;
+            if (own && own !== prepMethodId) {
+                return {
+                    label: suggestion.label,
+                    reason:
+                        `it is ${prepById.get(own) ?? 'another prep method'}, and the values ` +
+                        `are for ${prepById.get(prepMethodId) ?? 'one prep method'}`,
+                };
+            }
+            return { ...suggestion, draft: { ...suggestion.draft, prepMethodId } };
+        }
 
         /** Stages a row, and says whether it was added. */
         const addRow = (draft: MeasureDraft): boolean => {
@@ -235,13 +280,26 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                 .filter(Boolean)
                 .join(' · ');
         };
-        // One format for saved rows and USDA suggestions: "1 cup · chopped = 120 g".
+        const rowPerGram = (row: Row) =>
+            perGram?.get(row.draft.prepMethodId) ?? perGram?.get(null) ?? null;
+        // One format for saved rows and suggestions: "1 cup · chopped = 120 g".
         const describeWithWeight = (row: Row) =>
             `1 ${describe(row)} = ${round1(row.draft.grams)} g`;
 
         return (
-            <Stack spacing={4}>
-                <Text opacity={dimmed}>Measures</Text>
+            <Stack
+                as='fieldset'
+                spacing={4}
+                border='1px solid'
+                borderColor={disabled ? 'gray.100' : 'gray.200'}
+                borderRadius='md'
+                px={3}
+                pt={3}
+                pb={3}
+            >
+                <Text as='legend' px={1} opacity={dimmed}>
+                    Measures
+                </Text>
                 {measuresLoading && (
                     <Stack spacing={3} aria-label='Loading measures'>
                         <Skeleton height='10px' />
@@ -272,9 +330,12 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                                             {(row.draft.grams / unit.perCanonical).toFixed(2)} g/ml
                                         </Text>
                                     )}
-                                    {perGram && (
+                                    {rowPerGram(row) && (
                                         <Text color='gray.500'>
-                                            {Math.round(perGram.calories * row.draft.grams)} kcal
+                                            {Math.round(
+                                                rowPerGram(row)!.calories * row.draft.grams
+                                            )}{' '}
+                                            kcal
                                         </Text>
                                     )}
                                     <IconButton
@@ -419,44 +480,46 @@ export const MeasuresSection = forwardRef<MeasuresSectionHandle, MeasuresSection
                         Add measure
                     </Button>
                 </Stack>
-                {suggestions.length > 0 && (
-                    <Stack spacing={1} fontWeight='normal'>
-                        <Text fontSize='sm' color='gray.500'>
-                            From USDA:
-                        </Text>
-                        {/* Chips on one row, notes on their own lines, so a note never
-                            reads as describing the chip beside it. */}
-                        <Wrap>
-                            {suggestions.map(
+                {suggestionSources.map((source) => {
+                    const fromSource = suggestions.filter((s) => s.source === source);
+                    const label = SOURCE_LABELS[source];
+                    return (
+                        <Stack key={source} spacing={1} fontWeight='normal'>
+                            <Text fontSize='sm' color='gray.500'>
+                                From {label}:
+                            </Text>
+                            <Wrap>
+                                {fromSource.map(
+                                    (suggestion, index) =>
+                                        suggestion.draft && (
+                                            <Button
+                                                key={index}
+                                                size='xs'
+                                                variant='outline'
+                                                isDisabled={inactive}
+                                                onClick={() => addRow(suggestion.draft!)}
+                                                aria-label={`Add ${label} measure ${suggestion.label}`}
+                                            >
+                                                {describeWithWeight({
+                                                    key: '',
+                                                    draft: suggestion.draft,
+                                                })}{' '}
+                                                +
+                                            </Button>
+                                        )
+                                )}
+                            </Wrap>
+                            {fromSource.map(
                                 (suggestion, index) =>
-                                    suggestion.draft && (
-                                        <Button
-                                            key={index}
-                                            size='xs'
-                                            variant='outline'
-                                            isDisabled={inactive}
-                                            onClick={() => addRow(suggestion.draft!)}
-                                            aria-label={`Add USDA measure ${suggestion.label}`}
-                                        >
-                                            {describeWithWeight({
-                                                key: '',
-                                                draft: suggestion.draft,
-                                            })}{' '}
-                                            +
-                                        </Button>
+                                    !suggestion.draft && (
+                                        <Text key={index} fontSize='xs' color='gray.500'>
+                                            {suggestion.label.toLowerCase()} — {suggestion.reason}
+                                        </Text>
                                     )
                             )}
-                        </Wrap>
-                        {suggestions.map(
-                            (suggestion, index) =>
-                                !suggestion.draft && (
-                                    <Text key={index} fontSize='xs' color='gray.500'>
-                                        {suggestion.label.toLowerCase()} — {suggestion.reason}
-                                    </Text>
-                                )
-                        )}
-                    </Stack>
-                )}
+                        </Stack>
+                    );
+                })}
             </Stack>
         );
     }
