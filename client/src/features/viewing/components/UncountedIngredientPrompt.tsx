@@ -66,7 +66,12 @@ interface Props {
  */
 export function UncountedIngredientPrompt(props: Props) {
     const { uncounted } = props;
-    const { item } = uncounted;
+    // A set amount is weighed in its own unit, so that is the weight that is missing.
+    const override = uncounted.item.nutritionOverride;
+    const item =
+        override?.mode === 'amount' && override.unit
+            ? { ...uncounted.item, unit: override.unit }
+            : uncounted.item;
     const options = specificityOptions(item);
     const [choice, setChoice] = useState('0');
     const [grams, setGrams] = useState<number | string>('');

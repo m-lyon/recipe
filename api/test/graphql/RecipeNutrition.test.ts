@@ -13,6 +13,7 @@ import { Ingredient } from '../../src/models/Ingredient.js';
 import { startServer, stopServer } from '../utils/mongodb.js';
 import { syncStandardUnits } from '../../src/utils/standardUnits.js';
 import { NutritionalInfo } from '../../src/models/NutritionalInfo.js';
+import { validateItemNotInRecipe } from '../../src/schema/validation.js';
 import { IngredientMeasure } from '../../src/models/IngredientMeasure.js';
 
 const NUTRITION = `
@@ -485,6 +486,266 @@ describe('recipe yields and recipes used as ingredients', function () {
             assert.deepEqual(results[1].reason, {
                 code: 'NO_MEASURE',
                 message: 'No weight recorded for 1 stock pot',
+            });
+        });
+
+        describe('nutrition overrides', function () {
+            async function run(
+                server: ApolloServer,
+                query: string,
+                variables: Record<string, unknown>,
+                asUser: User = user
+            ) {
+                const response = await server.executeOperation(
+                    { query, variables },
+                    { contextValue: { isAuthenticated: () => true, getUser: () => asUser } }
+                );
+                if (response.body.kind !== 'single') assert.fail('Expected a single result');
+                return response.body.singleResult;
+            }
+
+            const SET_OVERRIDE = `
+            mutation Set($id: MongoID!, $line: MongoID!, $override: RecipeIngredientNutritionOverrideInput) {
+                recipeSetNutritionOverride(_id: $id, recipeIngredient: $line, nutritionOverride: $override) {
+                    record {
+                        ingredientSubsections {
+                            ingredients {
+                                quantity
+                                nutritionOverride { mode percent quantity unit { longSingular } }
+                            }
+                        }
+                        nutrition { ingredients { status macros { calories } } }
+                    }
+                }
+            }`;
+
+            const PREVIEW = `
+            query Preview($recipeId: MongoID, $ingredients: [NutritionDraftIngredientInput!]!) {
+                recipeNutritionPreview(recipeId: $recipeId, ingredients: $ingredients) {
+                    total { calories }
+                    ingredients { status macros { calories } reason { code } }
+                }
+            }`;
+
+            /** Frying uses a cup of oil, and the pepper has no quantity. */
+            async function fried() {
+                const oil = await ingredient('oil');
+                const pepper = await ingredient('pepper');
+                await new IngredientMeasure({
+                    ingredient: oil,
+                    unit: units.cup,
+                    grams: 200,
+                }).save();
+                const doc = await recipe('Fried', [
+                    recipeIngredient(oil, '1', units.cup),
+                    recipeIngredient(pepper, null, null),
+                ]).save();
+                const [oilLine, pepperLine] = doc.ingredientSubsections[0].ingredients;
+                return { doc, oil, pepper, oilLine, pepperLine };
+            }
+
+            it('saves an override with the recipe and counts it', async function () {
+                const oil = await ingredient('oil');
+                await new IngredientMeasure({
+                    ingredient: oil,
+                    unit: units.cup,
+                    grams: 200,
+                }).save();
+                const doc = await recipe('Fried', [
+                    recipeIngredient(oil, '1', units.cup, {
+                        nutritionOverride: { mode: 'share', percent: 10 },
+                    }),
+                ]).save();
+                const [result] = (await query(this.apolloServer, doc._id)).nutrition.ingredients;
+                assert.equal(result.status, 'COUNTED');
+                assert.closeTo(result.macros.calories, 200 * 2 * 0.1, 1e-9);
+            });
+
+            it('refuses a share on a line with no quantity', async function () {
+                const pepper = await ingredient('pepper');
+                await rejectsWithCode(
+                    recipe('Seasoned', [
+                        recipeIngredient(pepper, null, null, {
+                            nutritionOverride: { mode: 'share', percent: 10 },
+                        }),
+                    ]).save(),
+                    'BAD_USER_INPUT'
+                );
+            });
+
+            it('refuses a set amount with no unit, and a percentage on another mode', async function () {
+                const pepper = await ingredient('pepper');
+                await rejectsWithCode(
+                    recipe('Seasoned', [
+                        recipeIngredient(pepper, null, null, {
+                            nutritionOverride: { mode: 'amount', quantity: '1' },
+                        }),
+                    ]).save(),
+                    'BAD_USER_INPUT'
+                );
+                await rejectsWithCode(
+                    recipe('Seasoned', [
+                        recipeIngredient(pepper, null, null, {
+                            nutritionOverride: { mode: 'negligible', percent: 5 },
+                        }),
+                    ]).save(),
+                    'BAD_USER_INPUT'
+                );
+            });
+
+            it('sets and clears the override of one line', async function () {
+                const { doc, pepperLine } = await fried();
+                const variables = {
+                    id: String(doc._id),
+                    line: String(pepperLine._id),
+                    override: { mode: 'amount', quantity: '1/2', unit: String(units.gram) },
+                };
+                const set = await run(this.apolloServer, SET_OVERRIDE, variables);
+                assert.isUndefined(set.errors);
+                const record = (
+                    set.data as {
+                        recipeSetNutritionOverride: {
+                            record: {
+                                ingredientSubsections: Array<{
+                                    ingredients: Array<{
+                                        quantity: string | null;
+                                        nutritionOverride: {
+                                            mode: string;
+                                            quantity: string;
+                                            unit: { longSingular: string };
+                                        } | null;
+                                    }>;
+                                }>;
+                                nutrition: {
+                                    ingredients: Array<{
+                                        status: string;
+                                        macros: { calories: number };
+                                    }>;
+                                };
+                            };
+                        };
+                    }
+                ).recipeSetNutritionOverride.record;
+                const pepper = record.ingredientSubsections[0].ingredients[1];
+                assert.isNull(pepper.quantity, 'the line itself does not change');
+                assert.equal(pepper.nutritionOverride?.mode, 'amount');
+                assert.equal(pepper.nutritionOverride?.unit.longSingular, 'gram');
+                assert.equal(record.nutrition.ingredients[1].status, 'COUNTED');
+                assert.closeTo(record.nutrition.ingredients[1].macros.calories, 1, 1e-9);
+
+                const cleared = await run(this.apolloServer, SET_OVERRIDE, {
+                    ...variables,
+                    override: null,
+                });
+                assert.isUndefined(cleared.errors);
+                const saved = await Recipe.findById(doc._id).lean();
+                assert.isUndefined(
+                    saved!.ingredientSubsections[0].ingredients[1].nutritionOverride
+                );
+            });
+
+            it('refuses to set the override of a line on a recipe the user does not own', async function () {
+                const { doc, oilLine } = await fried();
+                const other = await User.register(
+                    new User({ username: 'other', firstName: 'O', lastName: 'T', role: 'user' }),
+                    'password'
+                );
+                const result = await run(
+                    this.apolloServer,
+                    SET_OVERRIDE,
+                    {
+                        id: String(doc._id),
+                        line: String(oilLine._id),
+                        override: { mode: 'negligible' },
+                    },
+                    other
+                );
+                assert.equal(result.errors?.[0].extensions?.code, 'FORBIDDEN');
+            });
+
+            it('refuses an override that does not fit the line', async function () {
+                const { doc, pepperLine } = await fried();
+                const result = await run(this.apolloServer, SET_OVERRIDE, {
+                    id: String(doc._id),
+                    line: String(pepperLine._id),
+                    override: { mode: 'share', percent: 10 },
+                });
+                assert.equal(result.errors?.[0].extensions?.code, 'BAD_USER_INPUT');
+            });
+
+            it('previews a draft, in the order given, with its overrides', async function () {
+                const { oil, pepper } = await fried();
+                const result = await run(this.apolloServer, PREVIEW, {
+                    ingredients: [
+                        {
+                            ingredient: String(oil),
+                            quantity: '1',
+                            unit: String(units.cup),
+                            nutritionOverride: { mode: 'share', percent: 15 },
+                        },
+                        { ingredient: String(pepper) },
+                        { ingredient: String(pepper), nutritionOverride: { mode: 'negligible' } },
+                    ],
+                });
+                assert.isUndefined(result.errors);
+                const preview = (
+                    result.data as {
+                        recipeNutritionPreview: {
+                            total: { calories: number };
+                            ingredients: Array<{ status: string; reason: { code: string } | null }>;
+                        };
+                    }
+                ).recipeNutritionPreview;
+                assert.closeTo(preview.total.calories, 200 * 2 * 0.15, 1e-9);
+                assert.deepEqual(
+                    preview.ingredients.map((line) => line.status),
+                    ['COUNTED', 'UNCOUNTED', 'COUNTED']
+                );
+                assert.equal(preview.ingredients[1].reason?.code, 'NO_QUANTITY');
+            });
+
+            it('previews a recipe used as an ingredient, and a quantity with no unit as each', async function () {
+                const { saladDoc, couscous } = await salad();
+                const stock = await Ingredient.findOne({ name: 'stock pot' }).orFail();
+                const result = await run(this.apolloServer, PREVIEW, {
+                    recipeId: String(saladDoc._id),
+                    ingredients: [
+                        {
+                            ingredient: String(couscous._id),
+                            quantity: '300',
+                            unit: String(units.gram),
+                        },
+                        { ingredient: String(stock._id), quantity: '1' },
+                    ],
+                });
+                assert.isUndefined(result.errors);
+                const preview = (
+                    result.data as { recipeNutritionPreview: { total: { calories: number } } }
+                ).recipeNutritionPreview;
+                assert.closeTo(preview.total.calories, 126 + 52, 1e-9);
+            });
+
+            it('keeps a unit used only by an override in use', async function () {
+                const pepper = await ingredient('pepper');
+                const pinch = await countUnit('pinch');
+                await recipe('Seasoned', [
+                    recipeIngredient(pepper, null, null, {
+                        nutritionOverride: { mode: 'amount', quantity: '1', unit: pinch },
+                    }),
+                ]).save();
+                await rejectsWithCode(validateItemNotInRecipe(pinch, 'unit'), 'ITEM_IN_USE');
+            });
+
+            it('refuses a preview to a user who is not signed in', async function () {
+                const response = await this.apolloServer.executeOperation(
+                    { query: PREVIEW, variables: { ingredients: [] } },
+                    { contextValue: { isAuthenticated: () => false, getUser: () => null } }
+                );
+                if (response.body.kind !== 'single') assert.fail('Expected a single result');
+                assert.equal(
+                    response.body.singleResult.errors?.[0].extensions?.code,
+                    'UNAUTHENTICATED'
+                );
             });
         });
     });

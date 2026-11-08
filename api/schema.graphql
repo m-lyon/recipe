@@ -301,6 +301,12 @@ enum EnumRecipeCalculatedTags {
   vegetarian
 }
 
+enum EnumRecipeIngredientNutritionOverrideMode {
+  amount
+  negligible
+  share
+}
+
 enum EnumUnitCreateDimension {
   count
   mass
@@ -361,9 +367,18 @@ input FilterCountRecipeCalculatedTagsOperatorsInput {
 input FilterCountRecipeIngredientInput {
   _id: MongoID
   ingredient: MongoID
+  nutritionOverride: FilterCountRecipeIngredientNutritionOverrideInput
   prepMethod: MongoID
   quantity: String
   size: MongoID
+  unit: MongoID
+}
+
+""""""
+input FilterCountRecipeIngredientNutritionOverrideInput {
+  mode: EnumRecipeIngredientNutritionOverrideMode
+  percent: Float
+  quantity: String
   unit: MongoID
 }
 
@@ -653,9 +668,18 @@ input FilterFindManyRecipeCalculatedTagsOperatorsInput {
 input FilterFindManyRecipeIngredientInput {
   _id: MongoID
   ingredient: MongoID
+  nutritionOverride: FilterFindManyRecipeIngredientNutritionOverrideInput
   prepMethod: MongoID
   quantity: String
   size: MongoID
+  unit: MongoID
+}
+
+""""""
+input FilterFindManyRecipeIngredientNutritionOverrideInput {
+  mode: EnumRecipeIngredientNutritionOverrideMode
+  percent: Float
+  quantity: String
   unit: MongoID
 }
 
@@ -1015,9 +1039,18 @@ input FilterFindOneRecipeCalculatedTagsOperatorsInput {
 input FilterFindOneRecipeIngredientInput {
   _id: MongoID
   ingredient: MongoID
+  nutritionOverride: FilterFindOneRecipeIngredientNutritionOverrideInput
   prepMethod: MongoID
   quantity: String
   size: MongoID
+  unit: MongoID
+}
+
+""""""
+input FilterFindOneRecipeIngredientNutritionOverrideInput {
+  mode: EnumRecipeIngredientNutritionOverrideMode
+  percent: Float
+  quantity: String
   unit: MongoID
 }
 
@@ -1438,6 +1471,11 @@ type Mutation {
   """Remove a recipe by its ID"""
   recipeRemoveById(_id: MongoID!): RemoveByIdRecipePayload
 
+  """
+  Set or clear how much of one recipe line its nutrition counts, without changing the line. Pass no nutritionOverride to count the line as written.
+  """
+  recipeSetNutritionOverride(_id: MongoID!, nutritionOverride: RecipeIngredientNutritionOverrideInput, recipeIngredient: MongoID!): UpdateByIdRecipePayload
+
   """Unarchive a recipe by its ID"""
   recipeUnarchiveById(_id: MongoID!): RemoveByIdRecipePayload
 
@@ -1480,6 +1518,15 @@ type Mutation {
 
   """Update a unit by its ID"""
   unitUpdateById(_id: MongoID!, record: UpdateByIdUnitInput!): UpdateByIdUnitPayload
+}
+
+input NutritionDraftIngredientInput {
+  ingredient: MongoID!
+  nutritionOverride: RecipeIngredientNutritionOverrideInput
+  prepMethod: MongoID
+  quantity: String
+  size: MongoID
+  unit: MongoID
 }
 
 enum NutritionStatus {
@@ -1727,6 +1774,11 @@ type Query {
     sort: SortFindManyRecipeInput
   ): [Recipe!]!
 
+  """
+  The nutrition of a recipe that is not saved, such as a draft being edited. The ingredients of the result come in the order given. recipeId names the recipe being edited, if it is saved.
+  """
+  recipeNutritionPreview(ingredients: [NutritionDraftIngredientInput!]!, recipeId: MongoID): RecipeNutrition!
+
   """Get a single recipe"""
   recipeOne(
     """Filter by fields"""
@@ -1883,6 +1935,7 @@ type RecipeIngredient {
   Determine if the object is an ingredient or a recipe and return the appropriate type
   """
   ingredient: IngredientOrRecipe!
+  nutritionOverride: RecipeIngredientNutritionOverride
   prepMethod: PrepMethod
   quantity: String
   size: Size
@@ -1892,9 +1945,24 @@ type RecipeIngredient {
 input RecipeIngredientInput {
   _id: MongoID
   ingredient: MongoID!
+  nutritionOverride: RecipeIngredientNutritionOverrideInput
   prepMethod: MongoID
   quantity: String
   size: MongoID
+  unit: MongoID
+}
+
+type RecipeIngredientNutritionOverride {
+  mode: EnumRecipeIngredientNutritionOverrideMode!
+  percent: Float
+  quantity: String
+  unit: Unit
+}
+
+input RecipeIngredientNutritionOverrideInput {
+  mode: EnumRecipeIngredientNutritionOverrideMode!
+  percent: Float
+  quantity: String
   unit: MongoID
 }
 
@@ -2407,9 +2475,18 @@ type UpdateByIdPrepMethodPayload {
 input UpdateByIdRecipeIngredientInput {
   _id: MongoID
   ingredient: MongoID
+  nutritionOverride: UpdateByIdRecipeIngredientNutritionOverrideInput
   prepMethod: MongoID
   quantity: String
   size: MongoID
+  unit: MongoID
+}
+
+""""""
+input UpdateByIdRecipeIngredientNutritionOverrideInput {
+  mode: EnumRecipeIngredientNutritionOverrideMode
+  percent: Float
+  quantity: String
   unit: MongoID
 }
 

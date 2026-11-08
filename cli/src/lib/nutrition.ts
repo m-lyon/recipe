@@ -1,4 +1,5 @@
 import type { NamedSummary } from './types.js';
+import type { NutritionOverrideSummary } from './types.js';
 import { describeOneUnit, findMeasure } from './measures.js';
 import type { MeasureSummary, NutritionalInfoSummary, RecipeIngredientSummary } from './types.js';
 
@@ -32,6 +33,18 @@ export function nutritionStatus(
     if (ingredient.__typename !== 'Ingredient') {
         return { state: 'recipe', reason: 'Sub-recipe, not linkable' };
     }
+    const override = recipeIngredient.nutritionOverride;
+    if (override?.mode === 'negligible') {
+        return { state: 'linked', reason: '' };
+    }
+    // A set amount is counted in place of the line, so it is the amount that must reach grams.
+    if (override?.mode === 'amount') {
+        recipeIngredient = {
+            ...recipeIngredient,
+            quantity: override.quantity,
+            unit: override.unit,
+        };
+    }
     const info = findNutrition(records, recipeIngredient.prepMethod?._id ?? null);
     if (!recipeIngredient.quantity) {
         return { state: info ? 'partial' : 'missing', reason: 'No quantity' };
@@ -63,6 +76,20 @@ export function nutritionStatus(
     }
     const one = describeOneUnit(unit, ingredient.name, recipeIngredient.size?.value);
     return { state: 'partial', reason: `No weight recorded for ${one}`, missingWeight: one };
+}
+
+/** "15% of it", "1/4 tsp" or "none, too small to count": what the nutrition counts of a line. */
+export function describeOverride(override: NutritionOverrideSummary): string {
+    switch (override.mode) {
+        case 'share':
+            return `${override.percent ?? 0}% of it`;
+        case 'amount': {
+            const unit = override.unit && !override.unit.hidden ? override.unit.shortSingular : '';
+            return [override.quantity, unit].filter(Boolean).join(' ');
+        }
+        case 'negligible':
+            return 'none, too small to count';
+    }
 }
 
 /** Indexes nutritional info records by ingredient id: each ingredient has one record with no

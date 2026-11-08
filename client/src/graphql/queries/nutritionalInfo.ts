@@ -65,6 +65,44 @@ export const GET_RECIPE_NUTRITION = gql(`
     }
 `);
 
+export const RECIPE_NUTRITION_FIELDS = gql(`
+    fragment RecipeNutritionFields on RecipeNutrition {
+        total {
+            calories
+            protein
+            carbs
+            fat
+        }
+        ingredients {
+            recipeIngredient
+            status
+            macros {
+                calories
+                protein
+                carbs
+                fat
+            }
+            reason {
+                code
+                message
+            }
+            childUncounted
+            childRecipe
+        }
+    }
+`);
+
+export const GET_RECIPE_NUTRITION_PREVIEW = gql(`
+    query GetRecipeNutritionPreview(
+        $recipeId: MongoID
+        $ingredients: [NutritionDraftIngredientInput!]!
+    ) {
+        recipeNutritionPreview(recipeId: $recipeId, ingredients: $ingredients) {
+            ...RecipeNutritionFields
+        }
+    }
+`);
+
 export const GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS = gql(`
     query GetNutritionalInfosByIngredientIds($ingredientIds: [MongoID!]!) {
         nutritionalInfosByIngredientIds(ingredientIds: $ingredientIds) {

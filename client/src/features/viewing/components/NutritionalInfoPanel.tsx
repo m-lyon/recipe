@@ -24,6 +24,9 @@ interface NutritionalInfoPanelProps {
     nothingCounted: boolean;
     loading: boolean;
     error?: boolean;
+    /** Set both to control whether the panel is open; it starts open otherwise. */
+    open?: boolean;
+    onToggle?: (open: boolean) => void;
 }
 
 function round1(n: number): string {
@@ -36,7 +39,7 @@ function lowerFirst(text: string): string {
 
 function recipeLink(item: RecipeIngredientView, action: 'view' | 'edit'): string | null {
     const used = item.ingredient;
-    return used.__typename === 'Recipe'
+    return used.__typename === 'Recipe' && used.titleIdentifier
         ? `${PATH.BASE}/${action}/recipe/${used.titleIdentifier}`
         : null;
 }
@@ -45,7 +48,13 @@ export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
     const { perServing, uncountedIds, uncounted = [], nothingCounted, loading, error } = props;
     const { partial = [], canEditIngredient = () => false, canEditRecipe = () => false } = props;
     const { displayLine = (item) => ({ ...item, authored: null }) } = props;
-    const [open, setOpen] = useState(true);
+    const [openState, setOpenState] = useState(true);
+    const open = props.open ?? openState;
+    const setOpen = (toggle: (open: boolean) => boolean) => {
+        const next = toggle(open);
+        setOpenState(next);
+        props.onToggle?.(next);
+    };
 
     return (
         <Box mt='sm'>
@@ -131,7 +140,8 @@ export function NutritionalInfoPanel(props: NutritionalInfoPanelProps) {
                                         </Text>
                                     </Text>
                                     {uncountedIngredient.code === 'NO_MEASURE' &&
-                                        uncountedIngredient.item.unit &&
+                                        (uncountedIngredient.item.unit ||
+                                            uncountedIngredient.item.nutritionOverride?.unit) &&
                                         uncountedIngredient.item.ingredient.__typename ===
                                             'Ingredient' &&
                                         canEditIngredient(

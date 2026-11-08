@@ -1,11 +1,13 @@
 import { Types } from 'mongoose';
 
+import { EACH_KEY } from './units.js';
 import { Size } from '../models/Size.js';
 import { Unit } from '../models/Unit.js';
 import { Ingredient } from '../models/Ingredient.js';
 import { IngredientMeasure } from '../models/IngredientMeasure.js';
 import { MacroNutrients, NutritionalInfo } from '../models/NutritionalInfo.js';
 import { Recipe, RecipeIngredientType, RecipeYield } from '../models/Recipe.js';
+import type { NutritionOverride, NutritionOverrideMode } from '../models/Recipe.js';
 
 /**
  * A recipe's nutrition, calculated from its ingredients.
@@ -173,16 +175,24 @@ export function yieldFraction(quantity: number, unit: UnitData, yields: YieldRow
 
 // ---------- the calculation over loaded data ----------
 
-type LoadedIngredient = Pick<RecipeIngredientType, 'type'> & {
+export interface LoadedOverride {
+    mode: NutritionOverrideMode;
+    percent: number | null;
+    quantity: string | null;
+    unit: string | null;
+}
+
+export type LoadedIngredient = Pick<RecipeIngredientType, 'type'> & {
     _id: Types.ObjectId;
     quantity: string | null;
     unit: string | null;
     size: string | null;
     prepMethod: string | null;
     ingredient: string;
+    nutritionOverride?: LoadedOverride | null;
 };
 
-interface LoadedRecipe {
+export interface LoadedRecipe {
     _id: string;
     title: string;
     ingredients: LoadedIngredient[];
@@ -270,7 +280,28 @@ export function calculate(
     return result;
 }
 
+/**
+ * Calculates a line as its nutrition override says: a set amount stands in for the line's
+ * quantity and unit, and a share scales what the line's own quantity gives.
+ */
 function calculateIngredient(
+    recipeIngredient: LoadedIngredient,
+    data: NutritionData,
+    path: string[],
+    memo: Map<string, Calculated>
+): IngredientNutrition {
+    const override = recipeIngredient.nutritionOverride;
+    if (override?.mode === 'negligible') return counted(recipeIngredient, { ...ZERO_MACROS });
+    if (override?.mode === 'amount') {
+        const line = { ...recipeIngredient, quantity: override.quantity, unit: override.unit };
+        return calculateLine(line, data, path, memo);
+    }
+    const result = calculateLine(recipeIngredient, data, path, memo);
+    if (override?.mode !== 'share' || override.percent == null) return result;
+    return { ...result, macros: scaleMacros(result.macros, override.percent / 100) };
+}
+
+function calculateLine(
     recipeIngredient: LoadedIngredient,
     data: NutritionData,
     path: string[],
@@ -388,45 +419,70 @@ function asId(value: unknown): string | null {
     return String(withId._id ?? value);
 }
 
+function loadedOverride(override: NutritionOverride | null | undefined): LoadedOverride | null {
+    if (!override?.mode) return null;
+    return {
+        mode: override.mode,
+        percent: override.percent ?? null,
+        quantity: override.quantity ?? null,
+        unit: asId(override.unit),
+    };
+}
+
+function loadedIngredient(recipeIngredient: RecipeIngredientType): LoadedIngredient {
+    return {
+        _id: recipeIngredient._id as Types.ObjectId,
+        type: recipeIngredient.type,
+        quantity: recipeIngredient.quantity ?? null,
+        unit: asId(recipeIngredient.unit),
+        size: asId(recipeIngredient.size),
+        prepMethod: asId(recipeIngredient.prepMethod),
+        ingredient: asId(recipeIngredient.ingredient)!,
+        nutritionOverride: loadedOverride(recipeIngredient.nutritionOverride),
+    };
+}
+
+function childRecipeIds(recipe: LoadedRecipe, recipes: Map<string, LoadedRecipe>): string[] {
+    return recipe.ingredients
+        .filter((i) => i.type === 'recipe' && !recipes.has(i.ingredient))
+        .map((i) => i.ingredient);
+}
+
 /**
  * Loads everything a recipe's calculation needs: the recipe tree breadth-first, one query a
  * level, then the nutrition, measures, names, units and sizes of every ingredient in one
- * query each.
+ * query each. A `root` that is not saved, such as a draft, starts the tree in place of a
+ * stored recipe.
  */
-export async function loadNutritionData(rootId: string): Promise<NutritionData> {
+export async function loadNutritionData(
+    rootId: string,
+    root?: LoadedRecipe
+): Promise<NutritionData> {
     const recipes = new Map<string, LoadedRecipe>();
     let level = [rootId];
-    for (let depth = 0; level.length > 0 && depth < MAX_DEPTH; depth++) {
+    if (root) {
+        recipes.set(rootId, root);
+        level = [...new Set(childRecipeIds(root, recipes))];
+    }
+    for (let depth = root ? 1 : 0; level.length > 0 && depth < MAX_DEPTH; depth++) {
         const docs = await Recipe.find({ _id: { $in: level } })
             .select('title yield ingredientSubsections')
             .lean();
         const next = new Set<string>();
         for (const doc of docs) {
-            const ingredients: LoadedIngredient[] = doc.ingredientSubsections.flatMap(
-                (subsection) =>
-                    subsection.ingredients.map((recipeIngredient: RecipeIngredientType) => ({
-                        _id: recipeIngredient._id as Types.ObjectId,
-                        type: recipeIngredient.type,
-                        quantity: recipeIngredient.quantity ?? null,
-                        unit: asId(recipeIngredient.unit),
-                        size: asId(recipeIngredient.size),
-                        prepMethod: asId(recipeIngredient.prepMethod),
-                        ingredient: asId(recipeIngredient.ingredient)!,
-                    }))
-            );
-            recipes.set(String(doc._id), {
+            const loaded: LoadedRecipe = {
                 _id: String(doc._id),
                 title: doc.title,
-                ingredients,
+                ingredients: doc.ingredientSubsections.flatMap((subsection) =>
+                    subsection.ingredients.map(loadedIngredient)
+                ),
                 yields: (doc.yield ?? []).map((row: RecipeYield) => ({
                     quantity: row.quantity,
                     unit: String(row.unit),
                 })),
-            });
-            for (const recipeIngredient of ingredients) {
-                if (recipeIngredient.type === 'recipe' && !recipes.has(recipeIngredient.ingredient))
-                    next.add(recipeIngredient.ingredient);
-            }
+            };
+            recipes.set(loaded._id, loaded);
+            childRecipeIds(loaded, recipes).forEach((id) => next.add(id));
         }
         level = [...next];
     }
@@ -438,7 +494,9 @@ export async function loadNutritionData(rootId: string): Promise<NutritionData> 
     ];
     const unitIds = new Set([
         ...used.flatMap((recipeIngredient) =>
-            recipeIngredient.unit ? [recipeIngredient.unit] : []
+            [recipeIngredient.unit, recipeIngredient.nutritionOverride?.unit].filter(
+                (id): id is string => !!id
+            )
         ),
         ...all.flatMap((recipe) => recipe.yields.map((row) => row.unit)),
     ]);
@@ -503,5 +561,50 @@ export async function recipeNutrition(recipeId: string): Promise<RecipeNutrition
     const data = await loadNutritionData(recipeId);
     if (!data.recipes.has(recipeId)) return null;
     const { total, ingredients } = calculate(recipeId, data);
+    return { total, ingredients };
+}
+
+export interface DraftIngredient {
+    ingredient: string;
+    quantity?: string | null;
+    unit?: string | null;
+    size?: string | null;
+    prepMethod?: string | null;
+    nutritionOverride?: NutritionOverride | null;
+}
+
+/**
+ * The nutrition of a recipe that is not saved, such as one being edited. Its ingredients come
+ * back in the order given. `recipeId` is the recipe being edited, so a draft that uses a recipe
+ * which uses it gives CYCLE instead of following the stored copy.
+ */
+export async function draftNutrition(
+    draft: DraftIngredient[],
+    recipeId?: string | null
+): Promise<RecipeNutrition> {
+    const ids = [...new Set(draft.map((line) => line.ingredient))];
+    const ingredientIds = new Set(
+        (await Ingredient.find({ _id: { $in: ids } }).select('_id')).map((doc) => String(doc._id))
+    );
+    // A saved line with a quantity and no unit gets the each unit, so a draft line does too.
+    const each = await Unit.findOne({ standard: EACH_KEY }).select('_id');
+    const rootId = recipeId ?? String(new Types.ObjectId());
+    const root: LoadedRecipe = {
+        _id: rootId,
+        title: 'This recipe',
+        yields: [],
+        ingredients: draft.map((line) => ({
+            _id: new Types.ObjectId(),
+            type: ingredientIds.has(line.ingredient) ? 'ingredient' : 'recipe',
+            quantity: line.quantity || null,
+            unit: line.unit ?? (line.quantity && each ? String(each._id) : null),
+            size: line.size ?? null,
+            prepMethod: line.prepMethod ?? null,
+            ingredient: line.ingredient,
+            nutritionOverride: loadedOverride(line.nutritionOverride),
+        })),
+    };
+    const data = await loadNutritionData(rootId, root);
+    const { total, ingredients } = calculate(rootId, data);
     return { total, ingredients };
 }

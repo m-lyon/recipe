@@ -36,6 +36,7 @@ const renderComponent = () => {
                             {
                                 _id: mockRecipeIngredientIdOne,
                                 __typename: 'RecipeIngredient',
+                                nutritionOverride: null,
                                 quantity: '1',
                                 unit: mockKilogram,
                                 size: null,
@@ -154,6 +155,7 @@ const chickenNutrition = {
 const chickenIngredient = {
     _id: mockRecipeIngredientIdFifteen,
     __typename: 'RecipeIngredient' as const,
+    nutritionOverride: null,
     quantity: '1',
     unit: mockKilogram,
     size: null,
@@ -165,6 +167,7 @@ const chickenIngredient = {
 const pieIngredient = {
     _id: mockRecipeIngredientIdSixteen,
     __typename: 'RecipeIngredient' as const,
+    nutritionOverride: null,
     quantity: '200',
     unit: mockGram,
     size: null,

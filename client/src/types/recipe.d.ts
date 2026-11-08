@@ -5,6 +5,7 @@ import { GetEditableIngredientsQuery } from '@recipe/graphql/generated';
 import { GetEditablePrepMethodsQuery } from '@recipe/graphql/generated';
 import { GetIngredientComponentsQuery } from '@recipe/graphql/generated';
 import { EnumUnitPreferredNumberFormat } from '@recipe/graphql/generated';
+import { NutritionOverrideFieldsFragment } from '@recipe/graphql/generated';
 import { GetRecipeQuery, GetRecipesQuery } from '@recipe/graphql/generated';
 import { EnumIngredientTags, GetTagsQuery } from '@recipe/graphql/generated';
 import { EnumRecipeCalculatedTags, GetEditableUnitsQuery } from '@recipe/graphql/generated';
@@ -205,8 +206,14 @@ declare global {
         size: FinishedSize;
         ingredient: FinishedIngredient;
         prepMethod: FinishedPrepMethod;
+        nutritionOverride: NutritionOverride | null;
         key: string;
     }
+    /**
+     * How much of a recipe line its nutrition counts, when that differs from the line: a
+     * share of it, a set amount of its own, or nothing because the amount is too small.
+     */
+    type NutritionOverride = Omit<NutritionOverrideFieldsFragment, '__typename'>;
 
     // - Submittable --------------------------------------------------------------
 
@@ -247,6 +254,17 @@ declare global {
         size: SubmittableSize;
         ingredient: SubmittableIngredient;
         prepMethod: SubmittablePrepMethod;
+        nutritionOverride: SubmittableNutritionOverride | undefined;
+    }
+    /**
+     * Represents a nutrition override that is ready to be submitted to the API: its unit is
+     * the _id of the unit object.
+     */
+    interface SubmittableNutritionOverride {
+        mode: NutritionOverride['mode'];
+        percent?: number;
+        quantity?: string;
+        unit?: string;
     }
 
     // - Viewables ----------------------------------------------------------------

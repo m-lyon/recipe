@@ -8,6 +8,7 @@ import { USDA_FOOD_ITEM } from '@recipe/graphql/queries/nutritionalInfo';
 import { mockRecipeIngredientIdTwo } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdFour } from '@recipe/graphql/__mocks__/ids';
 import { mockRecipeIngredientIdFive } from '@recipe/graphql/__mocks__/ids';
+import { GetRecipeNutritionPreviewQuery } from '@recipe/graphql/generated';
 import { mockNutritionalInfoIdCarrot } from '@recipe/graphql/__mocks__/ids';
 import { IngredientMeasureFieldsFragment } from '@recipe/graphql/generated';
 import { mockRecipeIngredientIdThree } from '@recipe/graphql/__mocks__/ids';
@@ -17,9 +18,11 @@ import { OpenFoodFactsProductFieldsFragment } from '@recipe/graphql/generated';
 import { OPEN_FOOD_FACTS_SEARCH } from '@recipe/graphql/queries/nutritionalInfo';
 import { GET_INGREDIENT_MEASURES } from '@recipe/graphql/queries/nutritionalInfo';
 import { OPEN_FOOD_FACTS_PRODUCT } from '@recipe/graphql/queries/nutritionalInfo';
+import { GetRecipeNutritionPreviewQueryVariables } from '@recipe/graphql/generated';
 import { GetNutritionalInfosByIngredientIdsQuery } from '@recipe/graphql/generated';
 import { mockAdminId, mockAppleEachMeasureId } from '@recipe/graphql/__mocks__/ids';
 import { UsdaSearchQuery, UsdaSearchQueryVariables } from '@recipe/graphql/generated';
+import { GET_RECIPE_NUTRITION_PREVIEW } from '@recipe/graphql/queries/nutritionalInfo';
 import { EnumNutritionalInfoSource, UsdaPortionKind } from '@recipe/graphql/generated';
 import { mockAppleId, mockCarrotId, mockChickenId } from '@recipe/graphql/__mocks__/ids';
 import { UsdaFoodItemQuery, UsdaFoodItemQueryVariables } from '@recipe/graphql/generated';
@@ -29,6 +32,7 @@ import { mockDicedId, mockNutritionalInfoIdCarrotDiced } from '@recipe/graphql/_
 import { GetIngredientMeasuresQuery, GetRecipeNutritionQuery } from '@recipe/graphql/generated';
 import { GET_NUTRITIONAL_INFOS_BY_INGREDIENT_IDS } from '@recipe/graphql/queries/nutritionalInfo';
 
+import { mockRecipeOne } from './recipe';
 import { mockCup, mockEach, mockOunce, mockTeaspoon } from './unit';
 
 // ---------- Recipe nutrition mocks for Recipe One ----------
@@ -863,5 +867,52 @@ export const mockOpenFoodFactsProductNotFound = {
                 extensions: { code: 'NOT_FOUND' },
             }),
         ],
+    },
+};
+
+/** The draft of Recipe One as loaded: 400 kcal in all, the carrot not counted. */
+export const mockGetRecipeNutritionPreviewRecipeOne = {
+    request: {
+        query: GET_RECIPE_NUTRITION_PREVIEW,
+        variables: {
+            recipeId: mockRecipeIdOne,
+            ingredients: mockRecipeOne.ingredientSubsections
+                .flatMap((subsection) => subsection.ingredients)
+                .map((ingr) => ({
+                    ingredient: ingr.ingredient._id,
+                    quantity: ingr.quantity ?? undefined,
+                    unit: ingr.unit?._id,
+                    size: ingr.size?._id,
+                    prepMethod: ingr.prepMethod?._id,
+                })),
+        } satisfies GetRecipeNutritionPreviewQueryVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Query',
+            recipeNutritionPreview: {
+                __typename: 'RecipeNutrition',
+                total: { __typename: 'Macros', calories: 400, protein: 4, carbs: 100, fat: 2 },
+                ingredients: [
+                    mockRecipeIngredientIdOne,
+                    mockRecipeIngredientIdTwo,
+                    mockRecipeIngredientIdThree,
+                    mockRecipeIngredientIdFour,
+                    mockRecipeIngredientIdFive,
+                ].map((id) =>
+                    id === mockRecipeIngredientIdTwo
+                        ? uncounted(id, 'NO_NUTRITION', 'No nutritional data for carrot')
+                        : {
+                              __typename: 'IngredientNutrition' as const,
+                              recipeIngredient: id,
+                              status: 'COUNTED' as const,
+                              macros: { ...ZERO, calories: 100 },
+                              reason: null,
+                              childUncounted: null,
+                              childRecipe: null,
+                          }
+                ),
+            },
+        } satisfies GetRecipeNutritionPreviewQuery,
     },
 };

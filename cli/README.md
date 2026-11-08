@@ -79,6 +79,8 @@ The cookie cache lives at `~/.cache/recipe-cli/session-<hash of RECIPE_API_URL>`
 | `recipe nutrition set <ingredient> --per-100g <kcal,p,c,f>` | write values entered by hand, linked to no database (source `manual`); `--name` says where they came from, `--prep` writes a prep method's record |
 | `recipe nutrition set ... --per-100ml <kcal,p,c,f>` | the same for a liquid, converted with the ingredient's volume measure for that prep method |
 | `recipe nutrition measure <ingredient> --unit <u> --grams <n>` | stores a weight you supply, for a unit no USDA portion carries (a scoop) |
+| `recipe nutrition override <recipe> <line> --share <n>` | the nutrition counts a percentage of one recipe line, such as frying oil; the line does not change |
+| `recipe nutrition override ... --amount <q> --unit <u>` | the nutrition counts a set amount in place of the line, such as pepper "to taste"; `--negligible` counts nothing, `--clear` counts the line again |
 | `recipe nutrition unlink <ingredient>` | removes the `NutritionalInfo` (with `--prep`, that prep method's record); measures stay |
 | `recipe nutrition <identifier>` | a recipe's totals and one serving as the API calculates them, with every ingredient not fully counted; recipes used as ingredients count through their yield |
 | `recipe nutrition status` | calculable recipe rows, and the missing weights |

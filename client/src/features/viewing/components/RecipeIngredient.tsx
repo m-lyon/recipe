@@ -7,6 +7,7 @@ import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 
 import { RecipeModal } from './RecipeModal';
 import { ApproximateIngredient } from './ApproximateIngredient';
+import { NutritionOverrideHint } from './NutritionOverrideHint';
 
 interface Props {
     ingredient: RecipeIngredientAsRecipeView;
@@ -53,6 +54,9 @@ export function RecipeIngredient({ ingredient, authored }: Props) {
                     )}
                     <ChevronRightIcon style={{ marginLeft: 5 }} />
                 </Box>
+                {ingredient.nutritionOverride && (
+                    <NutritionOverrideHint override={ingredient.nutritionOverride} />
+                )}
                 <Spacer />
             </Flex>
             <RecipeModal recipe={data?.recipeOne} isOpen={isOpen} onClose={onClose} />

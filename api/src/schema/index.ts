@@ -12,13 +12,13 @@ import { PrepMethod } from '../models/PrepMethod.js';
 import { ImageMutation, ImageQuery } from './Image.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 import { OpenFoodFactsQuery } from './OpenFoodFacts.js';
-import { RecipeMutation, RecipeQuery } from './Recipe.js';
 import { RatingMutation, RatingQuery } from './Rating.js';
 import { DisplayLadder } from '../models/DisplayLadder.js';
 import { SizeMutation, SizeQuery, SizeQueryAdmin } from './Size.js';
 import { UnitMutation, UnitQuery, UnitQueryAdmin } from './Unit.js';
 import { OpenFoodFactsMutation } from './OpenFoodFactsContribute.js';
 import { isAdmin, isImageOwnerOrAdmin } from '../middleware/authorisation.js';
+import { RecipeMutation, RecipeQuery, RecipeQueryVerified } from './Recipe.js';
 import { isNutritionalInfoOwnerOrAdmin } from '../middleware/authorisation.js';
 import { DisplayLadderMutation, DisplayLadderQuery } from './DisplayLadder.js';
 import { isIngredientMeasureOwnerOrAdmin } from '../middleware/authorisation.js';
@@ -122,6 +122,7 @@ const openFoodFactsMutations = withMiddleware(
         OPEN_FOOD_FACTS_CONTRIBUTE_WINDOW_MS
     )
 );
+const isVerifiedQueries = withMiddleware(RecipeQueryVerified, isVerified());
 const isAuthenticatedMutations = withMiddleware(
     {
         recipeCreateOne: RecipeMutation.recipeCreateOne,
@@ -162,6 +163,7 @@ const isRecipeOwnerOrAdminMutations = withMiddleware(
         recipeRemoveById: RecipeMutation.recipeRemoveById,
         recipeArchiveById: RecipeMutation.recipeArchiveById,
         recipeUnarchiveById: RecipeMutation.recipeUnarchiveById,
+        recipeSetNutritionOverride: RecipeMutation.recipeSetNutritionOverride,
         imageUploadOne: ImageMutation.imageUploadOne,
         imageUploadMany: ImageMutation.imageUploadMany,
     },
@@ -212,6 +214,7 @@ schemaComposer.Query.addFields({
     ...NutritionalInfoQuery,
     ...usdaQueries,
     ...openFoodFactsQueries,
+    ...isVerifiedQueries,
     ...isAdminQueries,
 });
 schemaComposer.Mutation.addFields({

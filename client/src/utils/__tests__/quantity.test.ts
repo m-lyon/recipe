@@ -40,6 +40,7 @@ describe('changeQuantity', () => {
             ingredient,
             size: null,
             prepMethod: null,
+            nutritionOverride: null,
             unit,
             ...ingr,
         };
