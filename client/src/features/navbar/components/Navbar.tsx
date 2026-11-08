@@ -15,6 +15,7 @@ import { MobileNav } from './MobileNav';
 import { DesktopNav } from './DesktopNav';
 import { SearchFilter } from './SearchFilter';
 import { SelectedFilters } from './SelectedFilters';
+import { useEditRecipeHref } from '../hooks/useEditRecipeHref';
 
 export function Navbar() {
     const location = useLocation();
@@ -25,6 +26,7 @@ export function Navbar() {
     const { isLoggedIn, isVerified, isAdmin } = useUser();
     const isStandalone = useStandalone();
     const goBack = useBackNavigation();
+    const editRecipeHref = useEditRecipeHref();
 
     const isHomePage = location.pathname === PATH.ROOT;
     // In standalone PWA mode there is no browser back button, so on sub-pages the
@@ -93,6 +95,7 @@ export function Navbar() {
                                 isLoggedIn={isLoggedIn}
                                 isVerified={isVerified}
                                 isAdmin={isAdmin}
+                                editRecipeHref={editRecipeHref}
                             />
                         </Flex>
                         <Flex
@@ -131,6 +134,7 @@ export function Navbar() {
                     <MobileNav
                         isVerified={isVerified}
                         isAdmin={isAdmin}
+                        editRecipeHref={editRecipeHref}
                         parentOnToggle={onToggle}
                     />
                 </Slide>
