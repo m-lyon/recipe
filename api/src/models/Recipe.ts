@@ -21,13 +21,74 @@ const ReservedRecipeTags = {
 export const ReservedTags = { ...ReservedRecipeTags, ...ReservedIngredientTags } as const;
 type ReservedTags = (typeof ReservedTags)[keyof typeof ReservedTags];
 
+export const NutritionOverrideModes = ['share', 'amount', 'negligible'] as const;
+export type NutritionOverrideMode = (typeof NutritionOverrideModes)[number];
+/**
+ * How much of a line the nutrition counts, when it differs from the amount the recipe uses:
+ *  - share: a percentage of the line's quantity (frying oil that is mostly not absorbed)
+ *  - amount: a quantity of its own (pepper "to taste", which has no quantity)
+ *  - negligible: too small to count, so it counts as zero
+ */
+export interface NutritionOverride {
+    mode: NutritionOverrideMode;
+    percent?: number;
+    quantity?: string;
+    unit?: Types.ObjectId;
+}
+
 export interface RecipeIngredientType extends Document {
     quantity?: string;
     unit?: Types.ObjectId;
     size?: Types.ObjectId;
     ingredient: PopulatedDoc<Document<Types.ObjectId> & IngredientType>;
     prepMethod?: Types.ObjectId;
+    nutritionOverride?: NutritionOverride;
     type: 'ingredient' | 'recipe';
+}
+
+const nutritionOverrideSchema = new Schema<NutritionOverride>(
+    {
+        mode: { type: String, enum: NutritionOverrideModes, required: true },
+        percent: { type: Number, min: 0, max: 100 },
+        quantity: {
+            type: String,
+            validate: {
+                validator: (quantity: string) => quantity == null || quantityRegex.test(quantity),
+                message: 'Invalid nutrition quantity format',
+            },
+        },
+        unit: { type: Schema.Types.ObjectId, ref: 'Unit' },
+    },
+    { _id: false }
+);
+
+function overrideError(message: string): GraphQLError {
+    return new GraphQLError(message, { extensions: { code: 'BAD_USER_INPUT' } });
+}
+
+/** Checks that an override carries the fields of its mode, and only those. */
+export async function validateNutritionOverride(
+    override: NutritionOverride | null | undefined,
+    lineQuantity: string | null | undefined
+): Promise<void> {
+    if (override == null) return;
+    const { mode, percent, quantity, unit } = override;
+    if (mode === 'share') {
+        if (percent == null) throw overrideError('A share needs a percentage.');
+        if (!lineQuantity) {
+            throw overrideError('A line with no quantity cannot count a share of it.');
+        }
+    } else if (percent != null) {
+        throw overrideError(`A percentage is only for a share, not for ${mode}.`);
+    }
+    if (mode === 'amount') {
+        if (!quantity || unit == null) {
+            throw overrideError('A set amount needs a quantity and a unit.');
+        }
+        if (!(await Unit.exists({ _id: unit }))) throw overrideError('Unit does not exist.');
+    } else if (quantity != null || unit != null) {
+        throw overrideError(`A quantity and unit are only for a set amount, not for ${mode}.`);
+    }
 }
 
 export function generateRecipeIdentifier(title: string, existingSuffix?: string): string {
@@ -111,6 +172,7 @@ const recipeIngredientSchema: Schema<RecipeIngredientType> = new Schema<RecipeIn
             message: 'Prep method does not exist.',
         },
     },
+    nutritionOverride: { type: nutritionOverrideSchema, default: undefined },
 });
 recipeIngredientSchema.pre('save', async function (this: HydratedDocument<RecipeIngredientType>) {
     const isIngredient = await Ingredient.exists({ _id: this.ingredient });
@@ -126,6 +188,7 @@ recipeIngredientSchema.pre('save', async function (this: HydratedDocument<Recipe
             this.unit = each._id;
         }
     }
+    await validateNutritionOverride(this.nutritionOverride, this.quantity);
 });
 
 interface IngredientSubsection {

@@ -111,6 +111,21 @@ with source `manual`. Use it when neither USDA nor Open Food Facts has the food.
 - `--prep` writes a prep method's record, as for `link`.
 - An existing record exits 5, as for `link`.
 
+## Lines the nutrition counts differently
+
+`nutrition override <recipe> <line>` changes how much of one recipe line the nutrition counts.
+The line stays as the recipe shows it. `<line>` is the ingredient or sub-recipe name, or the
+line id from `recipes show --json` when the name is on more than one line (exit 4).
+
+- `--share 15`: a percentage of the line. Frying oil that is mostly not absorbed, or stock
+  vegetables that are strained out. A line with no quantity exits 6: use `--amount`.
+- `--amount 1/4 --unit tsp`: a quantity in place of the line, such as pepper "to taste".
+- `--negligible`: counts nothing, and the line is no longer listed as uncounted.
+- `--clear`: counts the line as written again.
+
+These are judgements about a recipe. Make one only when the operator asks, or quote the value
+you would use and wait for a yes. `recipes show` lists the current override of each line.
+
 ## Contributing back to Open Food Facts
 
 `recipe open-food-facts contribute <barcode>` sends a correction, or a missing product, to

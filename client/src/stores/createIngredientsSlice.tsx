@@ -24,6 +24,7 @@ function getFinishedFromEditable(editable: EditableRecipeIngredient): FinishedRe
         size: editable.size.data ? editable.size.data : null,
         ingredient: editable.ingredient.data,
         prepMethod: editable.prepMethod.data ? editable.prepMethod.data : null,
+        nutritionOverride: null,
     };
     return finished;
 }
@@ -64,6 +65,11 @@ export interface IngredientSectionsSlice {
         apply: ApplyUnitConversion
     ) => void;
     setFinishedIngredients: (section: number, ingredients: FinishedRecipeIngredient[]) => void;
+    setNutritionOverride: (
+        section: number,
+        key: string,
+        override: NutritionOverride | null
+    ) => void;
     addIngredientSection: () => void;
     removeIngredientSection: (section: number) => void;
     setIngredientSection: (
@@ -145,6 +151,15 @@ export const createIngredientsSlice: StateCreator<RecipeState, [], [], Ingredien
         set(
             produce((state: IngredientSectionsSlice) => {
                 state.ingredientSections[section].finished = ingredients;
+            })
+        ),
+    setNutritionOverride: (section: number, key: string, override: NutritionOverride | null) =>
+        set(
+            produce((state: IngredientSectionsSlice) => {
+                const item = state.ingredientSections[section].finished.find(
+                    (finished) => finished.key === key
+                );
+                if (item) item.nutritionOverride = override;
             })
         ),
     addIngredientSection: () =>

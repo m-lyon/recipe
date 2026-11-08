@@ -5,6 +5,7 @@ import { useUser } from '@recipe/features/user';
 import { useRecipeStore } from '@recipe/stores';
 import { useErrorToast } from '@recipe/common/hooks';
 import { CreateOneRecipeCreateInput } from '@recipe/graphql/generated';
+import { submittableNutritionOverride } from '@recipe/utils/nutritionOverride';
 
 interface Props {
     submitText: string;
@@ -121,6 +122,7 @@ export function SubmitButton(props: Props) {
                             size: item.size ? item.size._id : undefined,
                             ingredient: item.ingredient._id,
                             prepMethod: item.prepMethod ? item.prepMethod._id : undefined,
+                            nutritionOverride: submittableNutritionOverride(item.nutritionOverride),
                         } satisfies SubmittableRecipeIngredient;
                     }),
                 };

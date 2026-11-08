@@ -11,6 +11,9 @@ export interface PreferencesState {
     setUnitSystem: (unitSystem: UnitSystemPreference) => void;
     nutritionSourceByUser: Record<string, NutritionSourcePreference>;
     setNutritionSource: (userId: string, source: NutritionSourcePreference) => void;
+    /** Whether the edit page shows the nutrition of the draft, which it fetches as it changes. */
+    showDraftNutrition: boolean;
+    setShowDraftNutrition: (show: boolean) => void;
 }
 export const usePreferencesStore = create<PreferencesState>()(
     persist(
@@ -22,6 +25,8 @@ export const usePreferencesStore = create<PreferencesState>()(
                 set((state) => ({
                     nutritionSourceByUser: { ...state.nutritionSourceByUser, [userId]: source },
                 })),
+            showDraftNutrition: false,
+            setShowDraftNutrition: (show: boolean) => set(() => ({ showDraftNutrition: show })),
         }),
         { name: 'recipe-preferences' }
     )

@@ -65,12 +65,24 @@ export interface MeasureSummary {
     prepMethod?: NamedSummary | null;
 }
 
+/**
+ * How much of a recipe line its nutrition counts, when that differs from the line: a share
+ * of it, a set amount of its own, or nothing because it is too small to count.
+ */
+export interface NutritionOverrideSummary {
+    mode: 'share' | 'amount' | 'negligible';
+    percent?: number | null;
+    quantity?: string | null;
+    unit?: UnitSummary | null;
+}
+
 export interface RecipeIngredientSummary {
     _id?: string | null;
     quantity?: string | null;
     unit?: UnitSummary | null;
     size?: NamedSummary | null;
     prepMethod?: NamedSummary | null;
+    nutritionOverride?: NutritionOverrideSummary | null;
     ingredient:
         | ({ __typename: 'Ingredient' } & IngredientSummary)
         | { __typename: 'Recipe'; _id: string; title: string };

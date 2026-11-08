@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 import { describe, it } from 'mocha';
 
 import { perGramFor } from '../../src/utils/nutrition.js';
+import type { LoadedOverride } from '../../src/utils/nutrition.js';
 import { gramsPerUnit, quantityToFloat, yieldFraction } from '../../src/utils/nutrition.js';
 import { MAX_DEPTH, NutritionData, UnitData, calculate } from '../../src/utils/nutrition.js';
 
@@ -383,6 +384,76 @@ describe('calculate', function () {
         assert.deepEqual(calculate('salad', countOnly).ingredients[0].reason, {
             code: 'NO_YIELD',
             message: 'No yield in mass recorded for Pearl Couscous',
+        });
+    });
+
+    describe('a nutrition override', function () {
+        const override = (extra: Partial<LoadedOverride> & Pick<LoadedOverride, 'mode'>) => ({
+            percent: null,
+            quantity: null,
+            unit: null,
+            ...extra,
+        });
+
+        it('counts a share of the line', function () {
+            const shared = data();
+            shared.recipes.get('couscous')!.ingredients[0].nutritionOverride = override({
+                mode: 'share',
+                percent: 15,
+            });
+            const [flour] = calculate('couscous', shared).ingredients;
+            assert.equal(flour.status, 'COUNTED');
+            assert.closeTo(flour.macros.calories, 100 * 2 * 0.15, 1e-9);
+        });
+
+        it('scales a partial child recipe by the share, and keeps it partial', function () {
+            const partial = data({ measures: new Map() });
+            partial.recipes.get('salad')!.ingredients[0].nutritionOverride = override({
+                mode: 'share',
+                percent: 10,
+            });
+            const [couscous] = calculate('salad', partial).ingredients;
+            assert.equal(couscous.status, 'PARTIAL');
+            assert.closeTo(couscous.macros.calories, 10, 1e-9);
+        });
+
+        it('counts a set amount on a line with no quantity', function () {
+            const seasoned = data({
+                perGram: new Map([['salt', new Map([['', perGram]])]]),
+            });
+            seasoned.recipes.get('salad')!.ingredients[1].nutritionOverride = override({
+                mode: 'amount',
+                quantity: '1/2',
+                unit: 'gram',
+            });
+            const [, salt] = calculate('salad', seasoned).ingredients;
+            assert.equal(salt.status, 'COUNTED');
+            assert.closeTo(salt.macros.calories, 1, 1e-9);
+        });
+
+        it('reads a set amount in its own unit, with the measures of that unit', function () {
+            const weighed = data({ measures: new Map() });
+            weighed.recipes.get('couscous')!.ingredients[1].nutritionOverride = override({
+                mode: 'amount',
+                quantity: '5',
+                unit: 'gram',
+            });
+            const [, stock] = calculate('couscous', weighed).ingredients;
+            assert.equal(stock.status, 'COUNTED');
+            assert.closeTo(stock.macros.calories, 10, 1e-9);
+        });
+
+        it('counts a negligible line as zero, though it has no quantity', function () {
+            const seasoned = data({
+                perGram: new Map([['salt', new Map([['', perGram]])]]),
+            });
+            seasoned.recipes.get('salad')!.ingredients[1].nutritionOverride = override({
+                mode: 'negligible',
+            });
+            const [, salt] = calculate('salad', seasoned).ingredients;
+            assert.equal(salt.status, 'COUNTED');
+            assert.isNull(salt.reason);
+            assert.equal(salt.macros.calories, 0);
         });
     });
 

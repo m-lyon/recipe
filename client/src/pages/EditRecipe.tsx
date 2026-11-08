@@ -382,6 +382,7 @@ export function EditRecipe() {
     return (
         <>
             <EditableRecipe
+                recipeId={data.recipeOne._id}
                 rating={getAverageRating(data.recipeOne.ratings)}
                 addRating={(rating: number) => addRatingWithToast(rating, data.recipeOne)}
                 veganVersion={data.recipeOne.veganVersion ?? undefined}

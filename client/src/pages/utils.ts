@@ -1,5 +1,5 @@
 export function queryIngredientToFinished(ingr: RecipeIngredientView): FinishedRecipeIngredient {
-    const { quantity, unit, size, ingredient, prepMethod } = ingr;
+    const { quantity, unit, size, ingredient, prepMethod, nutritionOverride } = ingr;
     const key = crypto.randomUUID();
     if (
         quantity === undefined ||
@@ -10,5 +10,13 @@ export function queryIngredientToFinished(ingr: RecipeIngredientView): FinishedR
     ) {
         throw new Error('One or more property is undefined');
     }
-    return { key, quantity, unit, size, ingredient, prepMethod };
+    return {
+        key,
+        quantity,
+        unit,
+        size,
+        ingredient,
+        prepMethod,
+        nutritionOverride: nutritionOverride ?? null,
+    };
 }
