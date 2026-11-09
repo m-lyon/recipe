@@ -33,8 +33,8 @@ whole database rather than one recipe.
 
 A recipe used as an ingredient counts through its **yield**: "300 g Pearl Couscous"
 needs Pearl Couscous to record how much one recipe makes, in grams. `recipe nutrition` names a
-missing yield (`NO_YIELD`). A yield is set in the recipe editor; the CLI does not set it. Report
-it to the operator.
+missing yield (`NO_YIELD`). Do not set a yield on your own: it is a weight the operator
+measures. Report it to the operator.
 
 ## Branded products: Open Food Facts
 
@@ -145,6 +145,31 @@ Open Food Facts. **This writes to a public database that other people rely on.**
 - A contribution does not change our nutritional data. After it, `nutrition link` reads the
   product fresh. A contribution to staging does not change what `open-food-facts show`
   reads, because reads come from production.
+
+## Writing recipes
+
+`recipes create` and `recipes update` write a recipe from a recipe file (see README.md,
+"Recipe files"). **A recipe is the operator's own writing.** Change only what the operator
+asked you to change.
+
+```text
+1. recipe recipes export <identifier> > recipe.json      the current recipe
+2. edit recipe.json                                      only the requested change
+3. recipe recipes update <identifier> \
+     --file recipe.json --dry-run                        plan: the fields that change
+4. show the plan to the operator, then re-run without --dry-run
+```
+
+- Start an update from `recipes export`. A file that leaves a key out keeps that field, but a
+  list in the file replaces the stored list whole: a file with one ingredient line leaves a
+  recipe with one line.
+- Check the dry run's `Fields:` line. It must name only the fields you meant to change.
+  `No changes` means the file matches the recipe and nothing is sent.
+- Use the names that `ingredients list` shows. A name that does not resolve exits 4 and names
+  each one. Do not create a near match on your own: report it to the operator.
+- Never invent quantities, instructions or a yield. Use the operator's words.
+- For a new recipe, write the file, run `recipes create --file <path> --dry-run`, show the
+  plan, then create it. The result names the new `titleIdentifier`.
 
 ## Judgement rules
 

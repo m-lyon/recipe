@@ -22,7 +22,7 @@
         "description": "Diagnose authentication. Commands authenticate themselves, so there is no login step."
       },
       "recipes": {
-        "description": "List and inspect recipes"
+        "description": "List, inspect, export, create and change recipes"
       },
       "ingredients": {
         "description": "List and inspect ingredients"
