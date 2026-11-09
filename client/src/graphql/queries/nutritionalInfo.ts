@@ -32,28 +32,7 @@ export const GET_RECIPE_NUTRITION = gql(`
         recipeById(_id: $recipeId) {
             _id
             nutrition {
-                total {
-                    calories
-                    protein
-                    carbs
-                    fat
-                }
-                ingredients {
-                    recipeIngredient
-                    status
-                    macros {
-                        calories
-                        protein
-                        carbs
-                        fat
-                    }
-                    reason {
-                        code
-                        message
-                    }
-                    childUncounted
-                    childRecipe
-                }
+                ...RecipeNutritionFields
             }
         }
         ingredientByIds(_ids: $ingredientIds) {
