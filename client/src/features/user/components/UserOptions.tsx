@@ -81,6 +81,7 @@ function LoginOptions(props: { isLoading?: boolean }) {
                 fontWeight={600}
                 colorScheme='teal'
                 to={PATH.LOGIN}
+                state={{ from: `${location.pathname}${location.search}${location.hash}` }}
                 aria-label='Log in or sign up'
             >
                 Sign In
