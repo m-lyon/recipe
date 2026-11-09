@@ -22,7 +22,10 @@ export function NutritionOverrideButton(props: Props) {
     const { data } = useQuery(GET_INGREDIENT_COMPONENTS);
     const units = (data?.units ?? []).filter((unit) => unit.unique);
     const defaultUnit =
-        item.unit ?? units.find((unit) => unit.standard === 'teaspoon') ?? units[0] ?? null;
+        units.find((unit) => unit._id === item.unit?._id) ??
+        units.find((unit) => unit.standard === 'teaspoon') ??
+        units[0] ??
+        null;
     const override = item.nutritionOverride;
     const counts = override ? `Nutrition counts ${describeNutritionOverride(override)}` : null;
 

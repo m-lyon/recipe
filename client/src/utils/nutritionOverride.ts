@@ -1,3 +1,4 @@
+import { VALID_NUMBER_REGEX, isRange, validateRange } from './number';
 import { getFinishedQuantityStr, unitDisplayValue } from './formatting';
 
 /** "15% of it", "¼ tsp" or "none, too small to count": what the nutrition counts of a line. */
@@ -35,9 +36,8 @@ export function submittableNutritionOverride(
     }
 }
 
-/** The quantities the API accepts: "2", "1.5", "1/2" or a range such as "1-2". */
-const QUANTITY = /^((\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*)(-(\d+(\.\d+)?|[1-9]\d*\/[1-9]\d*))?)$/;
-
 export function isValidQuantity(quantity: string): boolean {
-    return QUANTITY.test(quantity.trim());
+    const trimmed = quantity.trim();
+    if (!VALID_NUMBER_REGEX.test(trimmed)) return false;
+    return !isRange(trimmed) || validateRange(trimmed);
 }
