@@ -65,8 +65,13 @@ The cookie cache lives at `~/.cache/recipe-cli/session-<hash of RECIPE_API_URL>`
 | `recipe auth logout` | invalidates the server session and deletes the cached cookie |
 | `recipe recipes list` | recipes with an ingredient count and a linked count |
 | `recipe recipes show <identifier>` | every ingredient, with its nutrition state and reason |
+| `recipe recipes export <identifier>` | the recipe as a [recipe file](#recipe-files) (JSON), ready to edit |
+| `recipe recipes create --file <path>` | creates a recipe from a recipe file; `--file -` reads standard input |
+| `recipe recipes update <identifier> --file <path>` | replaces each field the recipe file sets, and sends only the fields that changed |
 | `recipe ingredients list` | ingredients; `--missing-nutrition` shows the gaps |
 | `recipe ingredients show <name\|id>` | one ingredient in full, and the recipes using it |
+| `recipe ingredients create <name>` | creates an ingredient: `--plural` (defaults to the name), `--countable`, `--tag vegan\|vegetarian` |
+| `recipe ingredients update <name\|id>` | changes `--name`, `--plural`, `--countable`/`--no-countable`, `--tag` (replaces the tags) or `--clear-tags`; sends only what differs |
 | `recipe usda search <query>` | USDA search; values are per 100 g, portions are empty |
 | `recipe usda show <fdcId>` | macros and the **portion table**; judge a candidate here |
 | `recipe open-food-facts search <query>` | Open Food Facts search, UK products unless `--all-countries`; values are per 100 g |
@@ -84,6 +89,51 @@ The cookie cache lives at `~/.cache/recipe-cli/session-<hash of RECIPE_API_URL>`
 | `recipe nutrition status` | calculable recipe rows, and the missing weights |
 
 Run `recipe <topic> <command> --help` for the flags.
+
+### Recipe files
+
+`recipes create` and `recipes update` read a recipe as one JSON object. `recipes export`
+writes the same shape, so export, edit and update is the way to change one line.
+
+```json
+{
+    "title": "Curry Noodle Soup",
+    "numServings": 2,
+    "isIngredient": false,
+    "tags": ["spicy"],
+    "yield": [{ "quantity": "800", "unit": "g" }],
+    "ingredientSubsections": [
+        {
+            "name": "Broth",
+            "ingredients": [
+                { "quantity": "2", "unit": "tbsp", "recipe": "homemade-curry-paste-ajfpk" },
+                { "quantity": "1", "size": "large", "ingredient": "onion", "prepMethod": "diced" }
+            ]
+        },
+        { "name": "To serve", "ingredients": [{ "ingredient": "spring onion" }] }
+    ],
+    "instructionSubsections": [{ "name": null, "instructions": ["Fry the paste.", "Simmer."] }]
+}
+```
+
+- References are names: an ingredient by name or plural name, a unit by any of its names, a
+  size, prep method or tag by its value. A recipe used as an ingredient is named by its
+  `titleIdentifier` under `recipe`, not `ingredient`.
+- Any reference may be a MongoID instead. `export` writes an id where a name does not resolve
+  back to the same object: a one-recipe unit, or two ingredients with one name.
+- A line with a quantity and no unit is stored with the hidden `each` unit.
+- Other keys: `pluralTitle`, `subTitle`, `source`, `notes`. `null` clears an optional field.
+- `create` needs `title`, `numServings`, `ingredientSubsections` and `instructionSubsections`.
+  `isIngredient` defaults to `false`.
+- `update` changes only the keys in the file. A list (`tags`, `yield`, a subsection list) is
+  replaced whole. A new title changes the `titleIdentifier` (the random suffix stays). Use the
+  identifier that the update prints.
+- The CLI checks the file's shape and every reference before it sends anything. It reports
+  all problems in one run: exit 6 for the shape, exit 4 for a name that does not resolve or
+  matches more than one ingredient. The server validates the rest (quantity format, a unique
+  title, a sub-recipe that is not marked as an ingredient), and its rejection is exit 6.
+- New ingredients, units, sizes, prep methods and tags are not created. Create them in the
+  app first.
 
 ### Output
 

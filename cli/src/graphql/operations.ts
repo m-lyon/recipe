@@ -387,3 +387,141 @@ export const DELETE_INGREDIENT_MEASURE = gql(`
         }
     }
 `);
+
+export const GET_RECIPE_FILE_COMPONENTS = gql(`
+    query CliGetRecipeFileComponents {
+        ingredients: ingredientManyAll(limit: 5000) {
+            ...CliIngredientFields
+        }
+        recipes: recipeMany(limit: 5000) {
+            ...CliRecipeSummaryFields
+        }
+        units: unitMany(limit: 5000) {
+            ...CliUnitFields
+        }
+        sizes: sizeMany(limit: 5000) {
+            _id
+            value
+        }
+        prepMethods: prepMethodMany(limit: 5000) {
+            _id
+            value
+        }
+        tags: tagMany(limit: 5000) {
+            _id
+            value
+        }
+    }
+`);
+
+export const RECIPE_FILE_FIELDS = gql(`
+    fragment CliRecipeFileFields on Recipe {
+        _id
+        title
+        titleIdentifier
+        pluralTitle
+        subTitle
+        source
+        notes
+        numServings
+        isIngredient
+        tags {
+            _id
+            value
+        }
+        yield {
+            quantity
+            unit {
+                ...CliUnitFields
+            }
+        }
+        ingredientSubsections {
+            name
+            ingredients {
+                quantity
+                unit {
+                    ...CliUnitFields
+                }
+                size {
+                    _id
+                    value
+                }
+                prepMethod {
+                    _id
+                    value
+                }
+                ingredient {
+                    __typename
+                    ... on Ingredient {
+                        ...CliIngredientFields
+                    }
+                    ... on Recipe {
+                        _id
+                        title
+                        titleIdentifier
+                    }
+                }
+            }
+        }
+        instructionSubsections {
+            name
+            instructions
+        }
+    }
+`);
+
+export const GET_RECIPE_FILE_BY_ID = gql(`
+    query CliGetRecipeFileById($id: MongoID!) {
+        recipeById(_id: $id) {
+            ...CliRecipeFileFields
+        }
+    }
+`);
+
+export const GET_RECIPE_FILE_BY_IDENTIFIER = gql(`
+    query CliGetRecipeFileByIdentifier($titleIdentifier: String!) {
+        recipeOne(filter: { titleIdentifier: $titleIdentifier }) {
+            ...CliRecipeFileFields
+        }
+    }
+`);
+
+export const CREATE_RECIPE = gql(`
+    mutation CliCreateRecipe($record: CreateOneRecipeCreateInput!) {
+        recipeCreateOne(record: $record) {
+            record {
+                ...CliRecipeSummaryFields
+            }
+        }
+    }
+`);
+
+export const UPDATE_RECIPE = gql(`
+    mutation CliUpdateRecipe($id: MongoID!, $record: UpdateByIdRecipeModifyInput!) {
+        recipeUpdateById(_id: $id, record: $record) {
+            record {
+                ...CliRecipeSummaryFields
+            }
+        }
+    }
+`);
+
+export const CREATE_INGREDIENT = gql(`
+    mutation CliCreateIngredient($record: CreateOneIngredientCreateInput!) {
+        ingredientCreateOne(record: $record) {
+            record {
+                ...CliIngredientFields
+            }
+        }
+    }
+`);
+
+export const UPDATE_INGREDIENT = gql(`
+    mutation CliUpdateIngredient($id: MongoID!, $record: UpdateByIdIngredientInput!) {
+        ingredientUpdateById(_id: $id, record: $record) {
+            record {
+                ...CliIngredientFields
+            }
+        }
+    }
+`);
