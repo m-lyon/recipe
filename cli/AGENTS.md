@@ -171,6 +171,24 @@ asked you to change.
 - For a new recipe, write the file, run `recipes create --file <path> --dry-run`, show the
   plan, then create it. The result names the new `titleIdentifier`.
 
+## Adding and changing ingredients
+
+`ingredients create` and `ingredients update` write the ingredient itself: its names, whether
+it is counted, and its dietary tags. Nutrition is a separate step (`nutrition link`).
+
+- **Search before you create.** Run `ingredients show "<name>"`: a miss lists near matches.
+  Use an existing ingredient when it is the same food under another name (cornflour is
+  cornstarch). Create one only when the food is missing, and tell the operator which.
+- Names are stored lower-cased. A name or plural that another ingredient already uses exits 6
+  and names that ingredient.
+- Pass `--countable` with `--plural` for a food counted in items (2 limes). Leave both out for
+  a food that is measured (200 g flour); the plural then defaults to the name.
+- Tag `vegan` and `vegetarian` only when the operator says so, or when the food is plainly a
+  plant (a vegetable, a spice). Recipes derive their own dietary tags from these.
+- `update` changes only the flags you pass. `--tag` replaces the tags, so pass every tag the
+  ingredient should keep. Recipes refer to an ingredient by id, so a rename changes every
+  recipe that uses it. Dry-run a rename and show it to the operator first.
+
 ## Judgement rules
 
 These are not style advice. Each one was derived from a real error found while sampling the

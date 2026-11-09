@@ -70,6 +70,8 @@ The cookie cache lives at `~/.cache/recipe-cli/session-<hash of RECIPE_API_URL>`
 | `recipe recipes update <identifier> --file <path>` | replaces each field the recipe file sets, and sends only the fields that changed |
 | `recipe ingredients list` | ingredients; `--missing-nutrition` shows the gaps |
 | `recipe ingredients show <name\|id>` | one ingredient in full, and the recipes using it |
+| `recipe ingredients create <name>` | creates an ingredient: `--plural` (defaults to the name), `--countable`, `--tag vegan\|vegetarian` |
+| `recipe ingredients update <name\|id>` | changes `--name`, `--plural`, `--countable`/`--no-countable`, `--tag` (replaces the tags) or `--clear-tags`; sends only what differs |
 | `recipe usda search <query>` | USDA search; values are per 100 g, portions are empty |
 | `recipe usda show <fdcId>` | macros and the **portion table**; judge a candidate here |
 | `recipe open-food-facts search <query>` | Open Food Facts search, UK products unless `--all-countries`; values are per 100 g |

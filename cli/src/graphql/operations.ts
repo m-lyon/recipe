@@ -505,3 +505,23 @@ export const UPDATE_RECIPE = gql(`
         }
     }
 `);
+
+export const CREATE_INGREDIENT = gql(`
+    mutation CliCreateIngredient($record: CreateOneIngredientCreateInput!) {
+        ingredientCreateOne(record: $record) {
+            record {
+                ...CliIngredientFields
+            }
+        }
+    }
+`);
+
+export const UPDATE_INGREDIENT = gql(`
+    mutation CliUpdateIngredient($id: MongoID!, $record: UpdateByIdIngredientInput!) {
+        ingredientUpdateById(_id: $id, record: $record) {
+            record {
+                ...CliIngredientFields
+            }
+        }
+    }
+`);

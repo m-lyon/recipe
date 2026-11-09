@@ -25,7 +25,7 @@
         "description": "List, inspect, export, create and change recipes"
       },
       "ingredients": {
-        "description": "List and inspect ingredients"
+        "description": "List, inspect, create and change ingredients"
       },
       "usda": {
         "description": "Search USDA FoodData Central and inspect a food item"
