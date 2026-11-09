@@ -124,7 +124,8 @@ writes the same shape, so export, edit and update is the way to change one line.
 - `create` needs `title`, `numServings`, `ingredientSubsections` and `instructionSubsections`.
   `isIngredient` defaults to `false`.
 - `update` changes only the keys in the file. A list (`tags`, `yield`, a subsection list) is
-  replaced whole. `titleIdentifier` never changes, even when the title does.
+  replaced whole. A new title changes the `titleIdentifier` (the random suffix stays). Use the
+  identifier that the update prints.
 - The CLI checks the file's shape and every reference before it sends anything. It reports
   all problems in one run: exit 6 for the shape, exit 4 for a name that does not resolve or
   matches more than one ingredient. The server validates the rest (quantity format, a unique
