@@ -393,6 +393,16 @@ async function validateRecipeIngredients(recipe: HydratedDocument<Recipe>): Prom
     }
 }
 
+// The client shows the plural title on the card of an ingredient recipe with more than one serving.
+recipeSchema.pre('validate', function (this: HydratedDocument<Recipe>) {
+    if (this.isIngredient && !this.pluralTitle?.trim()) {
+        throw new GraphQLError(
+            `"${this.title}" is marked as an ingredient, so it needs a plural title.`,
+            { extensions: { code: 'BAD_USER_INPUT' } }
+        );
+    }
+});
+
 recipeSchema.pre('save', async function (this: HydratedDocument<Recipe>) {
     if (this.isNew || this.isModified('ingredientSubsections')) {
         await validateRecipeIngredients(this);
