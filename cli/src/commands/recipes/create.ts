@@ -3,6 +3,7 @@ import { Flags } from '@oclif/core';
 import { indent } from '../../lib/format.js';
 import { BaseCommand, writeFlags } from '../../lib/base.js';
 import { CREATE_RECIPE } from '../../graphql/operations.js';
+import { assertIngredientPlural } from '../../lib/recipeFile.js';
 import { recipeFileComponents, resolveRecipeFile } from '../../lib/recipeFile.js';
 import { describeResolved, parseRecipeFile, readRecipeFileText } from '../../lib/recipeFile.js';
 
@@ -31,6 +32,7 @@ export default class RecipesCreate extends BaseCommand {
         const client = this.api(flags.url);
 
         const file = parseRecipeFile(readRecipeFileText(flags.file), 'create');
+        assertIngredientPlural(file.isIngredient, file.pluralTitle);
         const resolved = resolveRecipeFile(file, await recipeFileComponents(client));
         const record = { isIngredient: false, ...resolved.record };
         const plan = describeResolved(resolved, record);

@@ -662,3 +662,20 @@ export function describeResolved(resolved: ResolvedRecipe, record: RecipeRecord)
     }
     return out.join('\n');
 }
+
+/**
+ * Exits 6 for a recipe marked as an ingredient with no plural title. The web app needs one to
+ * name the recipe on its card, and its home page fails to render without it.
+ */
+export function assertIngredientPlural(
+    isIngredient: boolean | undefined,
+    pluralTitle: string | null | undefined
+): void {
+    if (isIngredient && !pluralTitle?.trim()) {
+        throw rejected(
+            'A recipe marked as an ingredient needs a pluralTitle: the web app shows it on ' +
+                'the recipe card. Use the title when the plural is the same ' +
+                '("Black Bean Sauce").'
+        );
+    }
+}

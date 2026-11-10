@@ -125,6 +125,9 @@ writes the same shape, so export, edit and update is the way to change one line.
 - Other keys: `pluralTitle`, `subTitle`, `source`, `notes`. `null` clears an optional field.
 - `create` needs `title`, `numServings`, `ingredientSubsections` and `instructionSubsections`.
   `isIngredient` defaults to `false`.
+- A recipe with `"isIngredient": true` also needs a `pluralTitle`; use the title when the plural
+  is the same. The web app's home page fails to render a recipe card without it, so the CLI
+  exits 6 first.
 - `update` changes only the keys in the file. A list (`tags`, `yield`, a subsection list) is
   replaced whole. A new title changes the `titleIdentifier` (the random suffix stays). Use the
   identifier that the update prints.

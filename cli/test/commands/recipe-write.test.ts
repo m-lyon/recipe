@@ -201,6 +201,21 @@ describe('recipes create, update and export', () => {
             expect(mutations()).to.have.length(0);
         });
 
+        it('exits 6 for an ingredient recipe with no plural title, and sends nothing', async () => {
+            const { error } = await runCommand(
+                [
+                    'recipes',
+                    'create',
+                    '--file',
+                    writeRecipeFile({ ...NEW_RECIPE, isIngredient: true }),
+                ],
+                ROOT
+            );
+            expect(error?.oclif?.exit).to.equal(ExitCode.REJECTED);
+            expect(error?.message).to.contain('pluralTitle');
+            expect(api.requests).to.have.length(0);
+        });
+
         it('reports a server rejection as exit 6', async () => {
             api.on('CliCreateRecipe', {
                 errors: [
@@ -272,6 +287,38 @@ describe('recipes create, update and export', () => {
             expect(
                 (record.ingredientSubsections[0] as { ingredients: unknown[] }).ingredients
             ).to.have.length(2);
+        });
+
+        it('exits 6 when marking a recipe as an ingredient with no plural title', async () => {
+            const { error } = await runCommand(
+                [
+                    'recipes',
+                    'update',
+                    STORED.titleIdentifier,
+                    '--file',
+                    writeRecipeFile({ isIngredient: true }),
+                ],
+                ROOT
+            );
+            expect(error?.oclif?.exit).to.equal(ExitCode.REJECTED);
+            expect(mutations()).to.have.length(0);
+        });
+
+        it('sets a plural title and marks a recipe as an ingredient together', async () => {
+            await runCommand(
+                [
+                    'recipes',
+                    'update',
+                    STORED.titleIdentifier,
+                    '--file',
+                    writeRecipeFile({ isIngredient: true, pluralTitle: 'Egg soups' }),
+                ],
+                ROOT
+            );
+            expect(mutations()[0].variables.record).to.deep.equal({
+                pluralTitle: 'Egg soups',
+                isIngredient: true,
+            });
         });
 
         it('sends nothing on a dry run', async () => {

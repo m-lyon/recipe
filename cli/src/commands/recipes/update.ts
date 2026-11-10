@@ -3,6 +3,7 @@ import { Args, Flags } from '@oclif/core';
 import { indent } from '../../lib/format.js';
 import { BaseCommand, writeFlags } from '../../lib/base.js';
 import { UPDATE_RECIPE } from '../../graphql/operations.js';
+import { assertIngredientPlural } from '../../lib/recipeFile.js';
 import { changedKeys, resolveRecipeFile } from '../../lib/recipeFile.js';
 import { exportRecipe, recipeFileComponents } from '../../lib/recipeFile.js';
 import { describeResolved, parseRecipeFile, readRecipeFileText } from '../../lib/recipeFile.js';
@@ -50,6 +51,11 @@ export default class RecipesUpdate extends BaseCommand {
             this.out(`No changes: the file matches "${recipe.title}". Nothing was sent.`);
             return { dryRun: flags['dry-run'], recipe: summary, changed, record: {} };
         }
+        // The recipe after the update: a key the file leaves out keeps its stored value.
+        assertIngredientPlural(
+            file.isIngredient ?? current.isIngredient,
+            file.pluralTitle !== undefined ? file.pluralTitle : current.pluralTitle
+        );
         const onlyChanged = Object.fromEntries(changed.map((key) => [key, file[key]]));
         const resolved = resolveRecipeFile(onlyChanged, components);
         const plan = [
