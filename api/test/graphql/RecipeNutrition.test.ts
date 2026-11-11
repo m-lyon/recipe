@@ -78,6 +78,7 @@ function recipe(title: string, ingredients: object[], extra: object = {}) {
         owner: user._id,
         numServings: 2,
         isIngredient: true,
+        pluralTitle: title,
         createdAt: new Date(),
         lastModified: new Date(),
         ...extra,

@@ -11,12 +11,8 @@ import { getAverageRating } from '@recipe/features/rating';
 import { ModifyButtons } from './ModifyButtons';
 
 export function getCardTitle(recipe: RecipePreview): string {
-    if (recipe.isIngredient && !recipe.pluralTitle) {
-        throw new Error('No plural title for ingredient');
-    }
-    if (recipe.isIngredient) {
-        // pluralTitle is not undefined because of the check above
-        return recipe.numServings > 1 ? recipe.pluralTitle! : recipe.title;
+    if (recipe.isIngredient && recipe.pluralTitle && recipe.numServings > 1) {
+        return recipe.pluralTitle;
     }
     return recipe.title;
 }

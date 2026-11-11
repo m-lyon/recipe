@@ -112,21 +112,21 @@ const recipeIngredientSchema: Schema<RecipeIngredientType> = new Schema<RecipeIn
         },
     },
 });
-recipeIngredientSchema.pre('save', async function (this: HydratedDocument<RecipeIngredientType>) {
-    const isIngredient = await Ingredient.exists({ _id: this.ingredient });
-    if (isIngredient) {
-        this.type = 'ingredient';
-    } else {
-        this.type = 'recipe';
-    }
+
+async function deriveRecipeIngredientFields(recipeIngredient: RecipeIngredientType) {
+    const ingredientId =
+        (recipeIngredient.ingredient as { _id?: Types.ObjectId })?._id ??
+        recipeIngredient.ingredient;
+    const isIngredient = await Ingredient.exists({ _id: ingredientId });
+    recipeIngredient.type = isIngredient ? 'ingredient' : 'recipe';
     // Coerce empty unit into 'each' if quantity is present
-    if (this.quantity != null && this.unit == null) {
+    if (recipeIngredient.quantity != null && recipeIngredient.unit == null) {
         const each = await Unit.findOne({ standard: EACH_KEY }).select('_id');
         if (each) {
-            this.unit = each._id;
+            recipeIngredient.unit = each._id;
         }
     }
-});
+}
 
 interface IngredientSubsection {
     name?: string;
@@ -393,7 +393,21 @@ async function validateRecipeIngredients(recipe: HydratedDocument<Recipe>): Prom
     }
 }
 
-recipeSchema.pre('save', async function (this: HydratedDocument<Recipe>) {
+recipeSchema.pre('validate', async function (this: HydratedDocument<Recipe>) {
+    if (this.isIngredient && !this.pluralTitle?.trim()) {
+        throw new GraphQLError(
+            `"${this.title}" is marked as an ingredient, so it needs a plural title.`,
+            { extensions: { code: 'BAD_USER_INPUT' } }
+        );
+    }
+    for (const subsection of this.ingredientSubsections) {
+        for (const recipeIngredient of subsection.ingredients) {
+            await deriveRecipeIngredientFields(recipeIngredient);
+        }
+    }
+});
+
+recipeSchema.post('validate', async function (this: HydratedDocument<Recipe>) {
     if (this.isNew || this.isModified('ingredientSubsections')) {
         await validateRecipeIngredients(this);
     }
@@ -436,7 +450,9 @@ recipeSchema.pre('save', async function (this: HydratedDocument<Recipe>) {
         );
     }
     if (this.originalRecipe != null && !calculatedTags.includes(ReservedIngredientTags.Vegan)) {
-        throw new Error('Vegan recipe must have all vegan ingredients');
+        throw new GraphQLError('Vegan recipe must have all vegan ingredients', {
+            extensions: { code: 'VEGAN_RECIPE_NOT_VEGAN' },
+        });
     }
 });
 

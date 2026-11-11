@@ -364,7 +364,7 @@ RecipeModifyTC.addResolver({
         }
 
         try {
-            await veganDoc.save();
+            await veganDoc.save({ validateBeforeSave: false });
 
             const originalWithLink = await Recipe.findById(original._id);
             if (!originalWithLink) {
