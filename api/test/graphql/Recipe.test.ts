@@ -1,5 +1,6 @@
 import fs from 'fs';
 
+import { spy } from 'sinon';
 import { assert } from 'chai';
 import mongoose from 'mongoose';
 import type { GraphQLResponse } from '@apollo/server';
@@ -2365,6 +2366,7 @@ describe('recipeCreateOne vegan validation', () => {
             }
         ).recipeCreateOne.record._id;
 
+        const linkSpy = spy(Recipe, 'findOneAndUpdate');
         const response = await createVeganCopy(this, user, originalId, {
             title: 'Vegan Chicken Soup',
             ingredientSubsections: [
@@ -2383,13 +2385,18 @@ describe('recipeCreateOne vegan validation', () => {
             numServings: 2,
             tags: [],
             isIngredient: false,
-        });
+        }).finally(() => linkSpy.restore());
 
+        assert.isFalse(linkSpy.called, 'The original recipe should never be linked');
         assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors, 'Should have errors');
         assert.include(
             response.body.singleResult.errors[0].message,
             'Vegan recipe must have all vegan ingredients'
+        );
+        assert.equal(
+            response.body.singleResult.errors[0].extensions?.code,
+            'VEGAN_RECIPE_NOT_VEGAN'
         );
 
         const count = await Recipe.countDocuments({ title: 'Vegan Chicken Soup' });
