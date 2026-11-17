@@ -5,6 +5,7 @@ import type { ApiClient } from '../graphql/client.js';
 import { matchNamed, matchUnit } from './measures.js';
 import { isMongoId, matchIngredient } from './resolve.js';
 import { CliError, notFound, rejected } from './errors.js';
+import type { NutritionOverrideSummary } from './types.js';
 import { GET_RECIPE_FILE_COMPONENTS } from '../graphql/operations.js';
 import type { IngredientSummary, NamedSummary, RecipeSummary, UnitSummary } from './types.js';
 import { GET_RECIPE_FILE_BY_ID, GET_RECIPE_FILE_BY_IDENTIFIER } from '../graphql/operations.js';
@@ -23,6 +24,17 @@ export interface RecipeFileLine {
     ingredient?: string;
     /** A recipe marked as an ingredient, by titleIdentifier or MongoID. */
     recipe?: string;
+    /** How much of the line the nutrition counts, when that differs from the line. */
+    nutritionOverride?: RecipeFileOverride | null;
+}
+
+export interface RecipeFileOverride {
+    mode: 'share' | 'amount' | 'negligible';
+    /** For a share: the percentage of the line, from 0 to 100. */
+    percent?: number;
+    /** For a set amount: the quantity and the unit, by any of its names or a MongoID. */
+    quantity?: string;
+    unit?: string;
 }
 
 export interface RecipeFileYield {
@@ -66,7 +78,21 @@ const REQUIRED_TO_CREATE: RecipeFileKey[] = [
     'instructionSubsections',
 ];
 
-const LINE_KEYS = ['quantity', 'unit', 'size', 'prepMethod', 'ingredient', 'recipe'];
+const LINE_KEYS = [
+    'quantity',
+    'unit',
+    'size',
+    'prepMethod',
+    'ingredient',
+    'recipe',
+    'nutritionOverride',
+];
+
+const OVERRIDE_KEYS: Record<string, string[]> = {
+    share: ['mode', 'percent'],
+    amount: ['mode', 'quantity', 'unit'],
+    negligible: ['mode'],
+};
 
 type Json = Record<string, unknown>;
 
@@ -126,6 +152,37 @@ function checkLine(problems: Problems, path: string, line: unknown): void {
     } else {
         const key = hasIngredient ? 'ingredient' : 'recipe';
         problems.name(`${path}.${key}`, line[key]);
+    }
+    if (line.nutritionOverride !== undefined && line.nutritionOverride !== null) {
+        checkOverride(problems, `${path}.nutritionOverride`, line.nutritionOverride, line);
+    }
+}
+
+function checkOverride(problems: Problems, path: string, override: unknown, line: Json): void {
+    if (!isObject(override)) {
+        problems.add(path, 'must be an object or null');
+        return;
+    }
+    const allowed = OVERRIDE_KEYS[override.mode as string];
+    if (!allowed) {
+        problems.add(`${path}.mode`, 'must be "share", "amount" or "negligible"');
+        return;
+    }
+    problems.unknownKeys(path, override, allowed);
+    if (override.mode === 'share') {
+        const percent = override.percent;
+        if (typeof percent !== 'number' || !(percent >= 0 && percent <= 100)) {
+            problems.add(`${path}.percent`, 'must be a number from 0 to 100');
+        }
+        if (line.quantity === undefined || line.quantity === null || line.quantity === '') {
+            problems.add(path, 'a share needs a line with a quantity');
+        }
+    } else if (override.mode === 'amount') {
+        const quantity = override.quantity;
+        if (typeof quantity !== 'number' && (typeof quantity !== 'string' || quantity === '')) {
+            problems.add(`${path}.quantity`, 'must be a non-empty string');
+        }
+        problems.name(`${path}.unit`, override.unit);
     }
 }
 
@@ -248,12 +305,20 @@ export interface RecipeFileComponents {
     tags: NamedSummary[];
 }
 
+export interface RecipeRecordOverride {
+    mode: RecipeFileOverride['mode'];
+    percent?: number;
+    quantity?: string;
+    unit?: string;
+}
+
 export interface RecipeRecordLine {
     quantity: string | null;
     unit: string | null;
     size: string | null;
     prepMethod: string | null;
     ingredient: string;
+    nutritionOverride?: RecipeRecordOverride;
 }
 
 /** The record for `recipeCreateOne` and `recipeUpdateById`: only the keys the file sets. */
@@ -358,20 +423,39 @@ export function resolveRecipeFile(
                           components.ingredients,
                           missing
                       );
+                const override = line.nutritionOverride;
+                const overrideUnit =
+                    override?.mode === 'amount' && override.unit
+                        ? named(`${path}.nutritionOverride.unit`, 'unit', override.unit, (u) =>
+                              matchUnit(components.units, u)
+                          )
+                        : null;
                 if (!target) return [];
                 const quantity = quantityOf(line.quantity) ?? null;
-                shown.push(
-                    describeLine(quantity, unit, size, prep, target.name, Boolean(line.recipe))
-                );
-                return [
-                    {
-                        quantity,
-                        unit: unit?._id ?? null,
-                        size: size?._id ?? null,
-                        prepMethod: prep?._id ?? null,
-                        ingredient: target._id,
-                    },
-                ];
+                const text = describeLine(quantity, unit, size, prep, target.name, !!line.recipe);
+                const out: RecipeRecordLine = {
+                    quantity,
+                    unit: unit?._id ?? null,
+                    size: size?._id ?? null,
+                    prepMethod: prep?._id ?? null,
+                    ingredient: target._id,
+                };
+                if (override?.mode === 'share') {
+                    out.nutritionOverride = { mode: 'share', percent: override.percent };
+                    shown.push(`${text} (counts ${override.percent}% of it)`);
+                } else if (override?.mode === 'amount') {
+                    const amount = quantityOf(override.quantity) ?? '';
+                    out.nutritionOverride = { mode: 'amount', quantity: amount };
+                    if (overrideUnit) out.nutritionOverride.unit = overrideUnit._id;
+                    const unitName = nameOf(overrideUnit, 'shortSingular');
+                    shown.push(`${text} (counts ${[amount, unitName].filter(Boolean).join(' ')})`);
+                } else if (override?.mode === 'negligible') {
+                    out.nutritionOverride = { mode: 'negligible' };
+                    shown.push(`${text} (counts none, too small to count)`);
+                } else {
+                    shown.push(text);
+                }
+                return [out];
             });
             lines.push({ name: subsection.name ?? null, lines: shown });
             return { name: subsection.name ?? null, ingredients };
@@ -475,6 +559,7 @@ export interface RecipeFileSource {
             unit?: UnitSummary | null;
             size?: NamedSummary | null;
             prepMethod?: NamedSummary | null;
+            nutritionOverride?: NutritionOverrideSummary | null;
             ingredient:
                 | ({ __typename: 'Ingredient' } & IngredientSummary)
                 | { __typename: 'Recipe'; _id: string; title: string; titleIdentifier: string };
@@ -536,6 +621,16 @@ export function toRecipeFile(recipe: RecipeFileSource, components: RecipeFileCom
                 if (line.prepMethod) {
                     out.prepMethod = namedRef(line.prepMethod, components.prepMethods);
                 }
+                const override = line.nutritionOverride;
+                if (override) {
+                    const written: RecipeFileOverride = { mode: override.mode };
+                    if (override.mode === 'share') written.percent = override.percent ?? 0;
+                    if (override.mode === 'amount') {
+                        written.quantity = override.quantity ?? '';
+                        if (override.unit) written.unit = unitRef(override.unit);
+                    }
+                    out.nutritionOverride = written;
+                }
                 return out;
             }),
         })),
@@ -572,6 +667,14 @@ function normalise(key: RecipeFileKey, value: unknown): unknown {
                 prepMethod: line.prepMethod ?? null,
                 ingredient: line.ingredient ?? null,
                 recipe: line.recipe ?? null,
+                nutritionOverride: line.nutritionOverride
+                    ? {
+                          mode: line.nutritionOverride.mode,
+                          percent: line.nutritionOverride.percent ?? null,
+                          quantity: quantityOf(line.nutritionOverride.quantity) ?? null,
+                          unit: line.nutritionOverride.unit ?? null,
+                      }
+                    : null,
             })),
         }));
     }

@@ -1,10 +1,11 @@
 import { expect } from 'chai';
 
+import { UNITS } from './helpers/fixtures.js';
 import { toRecipeFile } from '../src/lib/recipeFile.js';
 import { CliError, ExitCode } from '../src/lib/errors.js';
 import type { RecipeFileComponents, RecipeFileSource } from '../src/lib/recipeFile.js';
 import { changedKeys, parseRecipeFile, resolveRecipeFile } from '../src/lib/recipeFile.js';
-import { CHOPPED, CUP, EACH, GRAM, INGREDIENTS, LARGE, UNITS } from './helpers/fixtures.js';
+import { CHOPPED, CUP, EACH, GRAM, INGREDIENTS, LARGE, TEASPOON } from './helpers/fixtures.js';
 
 const COUSCOUS = {
     _id: 'rec-couscous',
@@ -88,6 +89,40 @@ describe('recipe file', () => {
             ]);
         });
 
+        it('checks a nutrition override against its mode', () => {
+            const line = (nutritionOverride: unknown, quantity: unknown = '1') => ({
+                quantity,
+                ingredient: 'egg',
+                nutritionOverride,
+            });
+            const raw = JSON.stringify({
+                ingredientSubsections: [
+                    {
+                        ingredients: [
+                            line({ mode: 'share', percent: 15 }),
+                            line({ mode: 'amount', quantity: '1/4', unit: 'tsp' }),
+                            line({ mode: 'negligible' }),
+                            line(null),
+                            line({ mode: 'share', percent: 150 }),
+                            line({ mode: 'share', percent: 15 }, null),
+                            line({ mode: 'amount', unit: 'tsp', percent: 5 }),
+                            line({ mode: 'half' }),
+                        ],
+                    },
+                ],
+            });
+            const error = expectCliError(() => parseRecipeFile(raw, 'update'), ExitCode.REJECTED);
+            const at = (i: number) =>
+                `ingredientSubsections[0].ingredients[${i}].nutritionOverride`;
+            expect(error.details?.problems).to.deep.equal([
+                `${at(4)}.percent: must be a number from 0 to 100`,
+                `${at(5)}: a share needs a line with a quantity`,
+                `${at(6)}: unknown key "percent"`,
+                `${at(6)}.quantity: must be a non-empty string`,
+                `${at(7)}.mode: must be "share", "amount" or "negligible"`,
+            ]);
+        });
+
         it('rejects text that is not JSON', () => {
             expectCliError(() => parseRecipeFile('{ title: ', 'create'), ExitCode.REJECTED);
         });
@@ -141,6 +176,80 @@ describe('recipe file', () => {
                 '1 cup flour, chopped',
                 '300 g Pearl Couscous (recipe)',
             ]);
+        });
+
+        it('resolves the unit of a nutrition override, and shows what it counts', () => {
+            const { record, lines } = resolveRecipeFile(
+                {
+                    ingredientSubsections: [
+                        {
+                            ingredients: [
+                                {
+                                    quantity: '1',
+                                    unit: 'cup',
+                                    ingredient: 'olive oil',
+                                    nutritionOverride: { mode: 'share', percent: 15 },
+                                },
+                                {
+                                    ingredient: 'egg',
+                                    nutritionOverride: {
+                                        mode: 'amount',
+                                        quantity: '1/4',
+                                        unit: 'teaspoon',
+                                    },
+                                },
+                                { ingredient: 'flour', nutritionOverride: { mode: 'negligible' } },
+                                { ingredient: 'flour', nutritionOverride: null },
+                            ],
+                        },
+                    ],
+                },
+                COMPONENTS
+            );
+            const overrides = record.ingredientSubsections?.[0].ingredients.map(
+                (line) => line.nutritionOverride
+            );
+            expect(overrides).to.deep.equal([
+                { mode: 'share', percent: 15 },
+                { mode: 'amount', quantity: '1/4', unit: TEASPOON._id },
+                { mode: 'negligible' },
+                undefined,
+            ]);
+            expect(lines[0].lines).to.deep.equal([
+                '1 cup olive oil (counts 15% of it)',
+                'egg (counts 1/4 tsp)',
+                'flour (counts none, too small to count)',
+                'flour',
+            ]);
+        });
+
+        it('reports an override unit that does not resolve', () => {
+            const error = expectCliError(
+                () =>
+                    resolveRecipeFile(
+                        {
+                            ingredientSubsections: [
+                                {
+                                    ingredients: [
+                                        {
+                                            ingredient: 'egg',
+                                            nutritionOverride: {
+                                                mode: 'amount',
+                                                quantity: '1',
+                                                unit: 'pinch',
+                                            },
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                        COMPONENTS
+                    ),
+                ExitCode.NOT_FOUND
+            );
+            expect((error.details?.problems as Array<{ path: string }>)[0].path).to.equal(
+                'ingredientSubsections[0].ingredients[0].nutritionOverride.unit'
+            );
         });
 
         it('passes a MongoID through, for a one-recipe unit', () => {
@@ -219,10 +328,12 @@ describe('recipe file', () => {
                                 shortSingular: 'mug',
                             },
                             ingredient: { ...INGREDIENTS[4], __typename: 'Ingredient' as const },
+                            nutritionOverride: { mode: 'amount', quantity: '1', unit: TEASPOON },
                         },
                         {
                             quantity: '300',
                             unit: GRAM,
+                            nutritionOverride: { mode: 'share', percent: 40 },
                             ingredient: {
                                 __typename: 'Recipe',
                                 _id: COUSCOUS._id,
@@ -240,8 +351,18 @@ describe('recipe file', () => {
             const file = toRecipeFile(SOURCE, COMPONENTS);
             expect(file.ingredientSubsections[0].ingredients).to.deep.equal([
                 { quantity: '2', size: 'large', ingredient: 'egg' },
-                { quantity: '1', unit: 'unit-throwaway', ingredient: 'ing-dup-a' },
-                { quantity: '300', unit: 'g', recipe: COUSCOUS.titleIdentifier },
+                {
+                    quantity: '1',
+                    unit: 'unit-throwaway',
+                    ingredient: 'ing-dup-a',
+                    nutritionOverride: { mode: 'amount', quantity: '1', unit: 'tsp' },
+                },
+                {
+                    quantity: '300',
+                    unit: 'g',
+                    recipe: COUSCOUS.titleIdentifier,
+                    nutritionOverride: { mode: 'share', percent: 40 },
+                },
             ]);
             expect(file.tags).to.deep.equal(['soup']);
             expect(file.yield).to.deep.equal([{ quantity: '600', unit: 'g' }]);
@@ -250,6 +371,15 @@ describe('recipe file', () => {
         it('round trips: the exported file changes nothing', () => {
             const file = toRecipeFile(SOURCE, COMPONENTS);
             expect(changedKeys(JSON.parse(JSON.stringify(file)), file)).to.deep.equal([]);
+        });
+
+        it('names ingredientSubsections when only an override differs', () => {
+            const file = toRecipeFile(SOURCE, COMPONENTS);
+            const edited = JSON.parse(JSON.stringify(file));
+            edited.ingredientSubsections[0].ingredients[2].nutritionOverride.percent = 50;
+            expect(changedKeys(edited, file)).to.deep.equal(['ingredientSubsections']);
+            delete edited.ingredientSubsections[0].ingredients[2].nutritionOverride;
+            expect(changedKeys(edited, file)).to.deep.equal(['ingredientSubsections']);
         });
 
         it('names the keys that differ', () => {

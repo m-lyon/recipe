@@ -124,6 +124,10 @@ writes the same shape, so export, edit and update is the way to change one line.
 - Any reference may be a MongoID instead. `export` writes an id where a name does not resolve
   back to the same object: a one-recipe unit, or two ingredients with one name.
 - A line with a quantity and no unit is stored with the hidden `each` unit.
+- A line may carry a `nutritionOverride`, as `nutrition override` sets it:
+  `{ "mode": "share", "percent": 15 }`, `{ "mode": "amount", "quantity": "1/4", "unit": "tsp" }`
+  or `{ "mode": "negligible" }`. A line without one counts as written. `export` writes each
+  override, so an update from an exported file keeps them.
 - Other keys: `pluralTitle`, `subTitle`, `source`, `notes`. `null` clears an optional field.
 - `create` needs `title`, `numServings`, `ingredientSubsections` and `instructionSubsections`.
   `isIngredient` defaults to `false`.

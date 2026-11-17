@@ -474,6 +474,14 @@ export const RECIPE_FILE_FIELDS = gql(`
                     _id
                     value
                 }
+                nutritionOverride {
+                    mode
+                    percent
+                    quantity
+                    unit {
+                        ...CliUnitFields
+                    }
+                }
                 ingredient {
                     __typename
                     ... on Ingredient {

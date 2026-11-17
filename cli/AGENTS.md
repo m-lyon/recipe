@@ -183,6 +183,8 @@ asked you to change.
 - Use the names that `ingredients list` shows. A name that does not resolve exits 4 and names
   each one. Do not create a near match on your own: report it to the operator.
 - Never invent quantities, instructions or a yield. Use the operator's words.
+- Keep each line's `nutritionOverride` from the export. A line written without one loses its
+  override when the list is replaced. Add or change one only as `nutrition override` allows.
 - For a new recipe, write the file, run `recipes create --file <path> --dry-run`, show the
   plan, then create it. The result names the new `titleIdentifier`.
 

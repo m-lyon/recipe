@@ -261,6 +261,46 @@ describe('recipes create, update and export', () => {
             expect(stdout).to.contain('No changes');
         });
 
+        it('keeps the nutrition override of an exported line', async () => {
+            const oil = {
+                quantity: '10',
+                unit: GRAM,
+                size: null,
+                prepMethod: null,
+                nutritionOverride: { mode: 'share', percent: 15, quantity: null, unit: null },
+                ingredient: INGREDIENTS.find((i) => i._id === 'ing-oil'),
+            };
+            const stored = {
+                ...STORED,
+                ingredientSubsections: [
+                    {
+                        name: null,
+                        ingredients: [...STORED.ingredientSubsections[0].ingredients, oil],
+                    },
+                ],
+            };
+            api.on('CliGetRecipeFileByIdentifier', { data: { recipeOne: stored } });
+            const exported = JSON.parse(
+                (await runCommand(['recipes', 'export', STORED.titleIdentifier], ROOT)).stdout
+            );
+            expect(
+                exported.ingredientSubsections[0].ingredients[1].nutritionOverride
+            ).to.deep.equal({ mode: 'share', percent: 15 });
+            exported.ingredientSubsections[0].ingredients[0].quantity = '3';
+            const { stdout } = await runCommand(
+                ['recipes', 'update', STORED.titleIdentifier, '--file', writeRecipeFile(exported)],
+                ROOT
+            );
+            const record = mutations()[0].variables.record as {
+                ingredientSubsections: Array<{ ingredients: Array<Record<string, unknown>> }>;
+            };
+            expect(record.ingredientSubsections[0].ingredients[1].nutritionOverride).to.deep.equal({
+                mode: 'share',
+                percent: 15,
+            });
+            expect(stdout).to.contain('10 g olive oil (counts 15% of it)');
+        });
+
         it('replaces the ingredient list whole', async () => {
             const file = { ingredientSubsections: NEW_RECIPE.ingredientSubsections };
             await runCommand(
