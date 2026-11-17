@@ -4,7 +4,6 @@ import { useMutation, useQuery } from '@apollo/client';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
-import { useUser } from '@recipe/features/user';
 import { useSearch } from '@recipe/features/search';
 import { useErrorToast } from '@recipe/common/hooks';
 import { ConfirmModal } from '@recipe/common/components';
@@ -13,18 +12,12 @@ import { BraisingLoader } from '@recipe/common/components';
 import { GET_RECIPES } from '@recipe/graphql/queries/recipe';
 import { archiveRecipeCache } from '@recipe/features/editing';
 import { ARCHIVE_RECIPE } from '@recipe/graphql/mutations/recipe';
+import { hasEditPermission, useUser } from '@recipe/features/user';
 import { archiveRecipeConfirmConfig } from '@recipe/features/editing';
 import { DELAY_SHORT, FETCH_MORE_NUM, INIT_LOAD_NUM } from '@recipe/constants';
 
 import { RecipeCard } from './RecipeCard';
 import { ImageRecipeCard } from './ImageRecipeCard';
-
-function hasPermission(user: CurrentUser, recipe: RecipePreview): boolean {
-    if (!user) {
-        return false;
-    }
-    return user._id === recipe.owner || user.role === 'admin';
-}
 
 const gutter = 24;
 const padding = 24;
@@ -110,7 +103,7 @@ export function RecipeCardsContainer() {
             return (
                 <ImageRecipeCard
                     recipe={recipe}
-                    hasEditPermission={hasPermission(user, recipe)}
+                    hasEditPermission={hasEditPermission(user, recipe.owner)}
                     handleArchive={handleArchive}
                 />
             );
@@ -118,7 +111,7 @@ export function RecipeCardsContainer() {
         return (
             <RecipeCard
                 recipe={recipe}
-                hasEditPermission={hasPermission(user, recipe)}
+                hasEditPermission={hasEditPermission(user, recipe.owner)}
                 handleArchive={handleArchive}
             />
         );

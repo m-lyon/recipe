@@ -1,7 +1,7 @@
 import { Flags } from '@oclif/core';
 
 import { BaseCommand } from '../../lib/base.js';
-import { renderTable } from '../../lib/format.js';
+import { pageFooter, renderTable } from '../../lib/format.js';
 import { GET_RECIPES_BY_IDS } from '../../graphql/operations.js';
 import { GET_ALL_RECIPES, GET_NUTRITIONAL_INFOS } from '../../graphql/operations.js';
 import type { NutritionalInfoSummary, RecipeDetail, RecipeSummary } from '../../lib/types.js';
@@ -52,6 +52,8 @@ export default class RecipesList extends BaseCommand {
                 ])
             )
         );
+        const footer = pageFooter(flags.offset, rows.length, matched.length, '--search');
+        if (footer) this.out(`\n${footer}`);
         return { total: matched.length, offset: flags.offset, limit: flags.limit, recipes: rows };
     }
 

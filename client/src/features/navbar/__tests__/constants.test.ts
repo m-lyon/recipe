@@ -21,6 +21,22 @@ describe('getNavItems', () => {
     it('should return public items for unverified users', () => {
         expect(getNavItems(false, false)).toBe(PUBLIC_NAV_ITEMS);
     });
+
+    it('should link Edit to the recipe and list it first when given an edit recipe link', () => {
+        const edit = getNavItems(true, false, '/edit/recipe/mock').find((i) => i.label === 'Edit');
+        expect(edit?.href).toBe('/edit/recipe/mock');
+        expect(edit?.children?.[0]).toEqual({
+            label: 'Recipe',
+            ariaLabel: 'Edit this recipe',
+            href: '/edit/recipe/mock',
+        });
+    });
+
+    it('should leave Edit without a link when not given an edit recipe link', () => {
+        const edit = getNavItems(true, false).find((i) => i.label === 'Edit');
+        expect(edit?.href).toBeUndefined();
+        expect(edit?.children?.map((c) => c.label)).not.toContain('Recipe');
+    });
 });
 
 describe('filterNavItems', () => {

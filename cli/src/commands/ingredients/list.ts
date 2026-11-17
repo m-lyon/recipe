@@ -1,8 +1,8 @@
 import { Flags } from '@oclif/core';
 
 import { BaseCommand } from '../../lib/base.js';
-import { renderTable } from '../../lib/format.js';
 import { measuresByIngredient } from '../../lib/measures.js';
+import { pageFooter, renderTable } from '../../lib/format.js';
 import { GET_NUTRITIONAL_INFOS } from '../../graphql/operations.js';
 import { allIngredients, resolveRecipe } from '../../lib/resolve.js';
 import { GET_INGREDIENT_MEASURES } from '../../graphql/operations.js';
@@ -108,6 +108,8 @@ export default class IngredientsList extends BaseCommand {
                 ])
             )
         );
+        const footer = pageFooter(flags.offset, page.length, filtered.length);
+        if (footer) this.out(`\n${footer}`);
         return {
             total: filtered.length,
             offset: flags.offset,

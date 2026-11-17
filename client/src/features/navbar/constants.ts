@@ -92,10 +92,33 @@ export function filterNavItems(items: Array<NavItem>, isAdmin: boolean): Array<N
         .filter((item) => item.href || !item.children || item.children.length > 0);
 }
 
-/** Nav items to show the current user, without admin-only entries for non-admins. */
-export function getNavItems(isVerified: boolean, isAdmin: boolean): Array<NavItem> {
+function withEditRecipe(items: Array<NavItem>, editRecipeHref: string): Array<NavItem> {
+    return items.map((item) =>
+        item.label === 'Edit'
+            ? {
+                  ...item,
+                  href: editRecipeHref,
+                  children: [
+                      { label: 'Recipe', ariaLabel: 'Edit this recipe', href: editRecipeHref },
+                      ...(item.children ?? []),
+                  ],
+              }
+            : item
+    );
+}
+
+/**
+ * Nav items to show the current user, without admin-only entries for non-admins.
+ * With an `editRecipeHref`, the Edit item links to that recipe's edit page.
+ */
+export function getNavItems(
+    isVerified: boolean,
+    isAdmin: boolean,
+    editRecipeHref?: string
+): Array<NavItem> {
     if (!isVerified) return PUBLIC_NAV_ITEMS;
-    return filterNavItems(USER_NAV_ITEMS, isAdmin);
+    const items = filterNavItems(USER_NAV_ITEMS, isAdmin);
+    return editRecipeHref ? withEditRecipe(items, editRecipeHref) : items;
 }
 
 export const NAV_HEIGHT = 60;

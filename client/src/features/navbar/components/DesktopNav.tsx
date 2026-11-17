@@ -12,14 +12,15 @@ interface DesktopNavProps {
     isLoggedIn: boolean;
     isVerified: boolean;
     isAdmin: boolean;
+    editRecipeHref?: string;
 }
 export function DesktopNav(props: DesktopNavProps) {
-    const { isLoggedIn, isVerified, isAdmin } = props;
+    const { isLoggedIn, isVerified, isAdmin, editRecipeHref } = props;
     const ref = useRef<HTMLAnchorElement>(null);
     const linkColor = useColorModeValue('gray.600', 'gray.200');
     const linkHoverColor = useColorModeValue('gray.800', 'white');
     const popoverContentBgColor = useColorModeValue('white', 'gray.800');
-    const navItems = getNavItems(isVerified, isAdmin);
+    const navItems = getNavItems(isVerified, isAdmin, editRecipeHref);
 
     if (isLoggedIn && !isVerified) {
         return (

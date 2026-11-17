@@ -1,5 +1,6 @@
 import fs from 'fs';
 
+import { spy } from 'sinon';
 import { assert } from 'chai';
 import mongoose from 'mongoose';
 import type { GraphQLResponse } from '@apollo/server';
@@ -168,6 +169,48 @@ describe('recipeCreateOne', () => {
         const record = parseCreatedRecipe(response);
         assert.equal(record.title, 'Chicken Soup');
     });
+
+    it('should create an ingredient recipe with a plural title', async function () {
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
+        const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' }).orFail();
+        const newRecord = {
+            ...getDefaultRecipeRecord(ingredient, unit, prepMethod),
+            isIngredient: true,
+            pluralTitle: 'Chicken Soups',
+        };
+        const record = parseCreatedRecipe(await createRecipe(this, user, newRecord));
+        const doc = await Recipe.findById(record._id).orFail();
+        assert.equal(doc.pluralTitle, 'Chicken Soups');
+    });
+
+    for (const [label, pluralTitle] of [
+        ['no', undefined],
+        ['an empty', ''],
+        ['a blank', '   '],
+    ] as const) {
+        it(`should NOT create an ingredient recipe with ${label} plural title`, async function () {
+            const user = await User.findOne({ username: 'testuser1' }).orFail();
+            const ingredient = await Ingredient.findOne({ name: 'chicken' }).orFail();
+            const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
+            const prepMethod = await PrepMethod.findOne({ value: 'chopped' }).orFail();
+            const newRecord = {
+                ...getDefaultRecipeRecord(ingredient, unit, prepMethod),
+                isIngredient: true,
+                pluralTitle,
+            };
+            const response = await createRecipe(this, user, newRecord);
+            assert(response.body.kind === 'single');
+            const error = response.body.singleResult.errors?.[0];
+            assert.equal(error?.extensions?.code, 'BAD_USER_INPUT');
+            assert.equal(
+                error?.message,
+                '"Chicken Soup" is marked as an ingredient, so it needs a plural title.'
+            );
+            assert.isNull(await Recipe.findOne({ title: 'Chicken Soup' }));
+        });
+    }
 
     it('should create a vegan recipe', async function () {
         const user = await User.findOne({ username: 'testuser1' }).orFail();
@@ -778,6 +821,36 @@ describe('recipeUpdateById', () => {
             doc?.calculatedTags.includes('ingredient'),
             'Recipe should have ingredient tag'
         );
+    });
+
+    it('should NOT update a recipe to be an ingredient without a plural title', async function () {
+        const user = await User.findOne({ username: 'testuser1' }).orFail();
+        const ingredient1 = await Ingredient.findOne({ name: 'tomato' }).orFail();
+        const unit = await Unit.findOne({ shortSingular: 'g' }).orFail();
+        const prepMethod = await PrepMethod.findOne({ value: 'chopped' }).orFail();
+        const newRecipe = new Recipe(getDefaultRecipe(user, ingredient1, unit, prepMethod));
+        const recipe = await newRecipe.save();
+        const response = await updateRecipe(this, user, recipe._id, { isIngredient: true });
+        assert(response.body.kind === 'single');
+        const error = response.body.singleResult.errors?.[0];
+        assert.equal(error?.extensions?.code, 'BAD_USER_INPUT');
+        assert.include(error?.message, 'needs a plural title');
+        const doc = await Recipe.findById(recipe._id).orFail();
+        assert.isFalse(doc.isIngredient);
+    });
+
+    it('should NOT remove the plural title of an ingredient recipe', async function () {
+        const recipeIngredient = await Recipe.findOne({ title: 'Bimibap' }).orFail();
+        const user = await User.findById(recipeIngredient.owner).orFail();
+        const response = await updateRecipe(this, user, recipeIngredient._id, {
+            pluralTitle: '',
+        });
+        assert(response.body.kind === 'single');
+        const error = response.body.singleResult.errors?.[0];
+        assert.equal(error?.extensions?.code, 'BAD_USER_INPUT');
+        assert.include(error?.message, 'needs a plural title');
+        const doc = await Recipe.findById(recipeIngredient._id).orFail();
+        assert.equal(doc.pluralTitle, 'Bimibaps');
     });
 
     it('should update a recipe to have recipe as ingredient', async function () {
@@ -2293,6 +2366,7 @@ describe('recipeCreateOne vegan validation', () => {
             }
         ).recipeCreateOne.record._id;
 
+        const linkSpy = spy(Recipe, 'findOneAndUpdate');
         const response = await createVeganCopy(this, user, originalId, {
             title: 'Vegan Chicken Soup',
             ingredientSubsections: [
@@ -2311,13 +2385,18 @@ describe('recipeCreateOne vegan validation', () => {
             numServings: 2,
             tags: [],
             isIngredient: false,
-        });
+        }).finally(() => linkSpy.restore());
 
+        assert.isFalse(linkSpy.called, 'The original recipe should never be linked');
         assert.equal(response.body.kind, 'single');
         assert.isDefined(response.body.singleResult.errors, 'Should have errors');
         assert.include(
             response.body.singleResult.errors[0].message,
             'Vegan recipe must have all vegan ingredients'
+        );
+        assert.equal(
+            response.body.singleResult.errors[0].extensions?.code,
+            'VEGAN_RECIPE_NOT_VEGAN'
         );
 
         const count = await Recipe.countDocuments({ title: 'Vegan Chicken Soup' });

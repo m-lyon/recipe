@@ -144,6 +144,18 @@ describe('read commands', () => {
         expect(recipe.linked).to.equal(1);
     });
 
+    it('recipes list says when the table leaves rows out', async () => {
+        api.install();
+        const { stdout } = await runCommand(['recipes', 'list', '--limit', '0'], ROOT);
+        expect(stdout).to.contain('No rows at offset 0. There are 1.');
+    });
+
+    it('recipes list prints no footer when every row is shown', async () => {
+        api.install();
+        const { stdout } = await runCommand(['recipes', 'list'], ROOT);
+        expect(stdout).not.to.contain('Showing');
+    });
+
     it('recipes show names the reason an ingredient is not calculable', async () => {
         api.install();
         const { stdout } = await runCommand(['recipes', 'show', 'tomato-soup-a4f2k'], ROOT);

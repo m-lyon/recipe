@@ -9,11 +9,12 @@ import { NavItem, getNavItems } from '../constants';
 interface MobileNavProps {
     isVerified: boolean;
     isAdmin: boolean;
+    editRecipeHref?: string;
     parentOnToggle: () => void;
 }
 export function MobileNav(props: MobileNavProps) {
-    const { isVerified, isAdmin, parentOnToggle } = props;
-    const navItems = getNavItems(isVerified, isAdmin);
+    const { isVerified, isAdmin, editRecipeHref, parentOnToggle } = props;
+    const navItems = getNavItems(isVerified, isAdmin, editRecipeHref);
     return (
         <Stack bg={useColorModeValue('white', 'gray.800')} display={{ md: 'none' }} width='100%'>
             {navItems.map((navItem) => (

@@ -48,3 +48,22 @@ export function percent(part: number, total: number): string {
     if (total === 0) return '0%';
     return `${Math.round((part / total) * 100)}%`;
 }
+
+/**
+ * The line under a list table that says rows were left out, or null when the page shows
+ * every row. Without it, a table cut at --limit looks like the whole list.
+ */
+export function pageFooter(
+    offset: number,
+    shown: number,
+    total: number,
+    filterFlag?: string
+): string | null {
+    if (shown === total) return null;
+    if (shown === 0) return `No rows at offset ${offset}. There are ${total}.`;
+    return (
+        `Showing ${offset + 1}–${offset + shown} of ${total}. ` +
+        'Use --offset and --limit for more' +
+        (filterFlag ? `, or ${filterFlag} to filter.` : '.')
+    );
+}

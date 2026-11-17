@@ -1,7 +1,7 @@
 import { object, string } from 'yup';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { FormEvent, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useApolloClient, useMutation } from '@apollo/client';
 import { Box, Button, FormControl, HStack, Heading, Stack } from '@chakra-ui/react';
 
@@ -12,9 +12,22 @@ import { CURRENT_USER } from '@recipe/graphql/queries/user';
 import { LOGIN, SIGNUP } from '@recipe/graphql/mutations/user';
 import { FloatingLabelInput } from '@recipe/common/components';
 
+function getReturnPath(state: unknown) {
+    const from = (state as { from?: unknown } | null)?.from;
+    if (typeof from !== 'string' || !from.startsWith('/') || from.startsWith('//')) {
+        return PATH.ROOT;
+    }
+    if (from.split(/[?#]/)[0] === PATH.LOGIN) {
+        return PATH.ROOT;
+    }
+    return from;
+}
+
 export function Login() {
     const { isLoggedIn } = useUser();
     const navigate = useNavigate();
+    const location = useLocation();
+    const returnPath = getReturnPath(location.state);
     const toast = useErrorToast();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -100,9 +113,10 @@ export function Login() {
 
     useEffect(() => {
         if (isLoggedIn) {
-            navigate(PATH.ROOT);
+            // Replace the login page, so that the back button does not return to it.
+            navigate(returnPath, { replace: true });
         }
-    }, [isLoggedIn, navigate]);
+    }, [isLoggedIn, navigate, returnPath]);
 
     return (
         <Box pt='60px'>

@@ -71,6 +71,39 @@ describe('Auth Workflow', () => {
         expect(screen.queryByLabelText('Logout')).not.toBeNull();
     });
 
+    it('should return to the recipe page after logging in', async () => {
+        // Render -----------------------------------------------
+        renderComponent([
+            mockCurrentUserNull,
+            mockGetRecipeOne,
+            mockGetDisplayLadders,
+            mockLogin,
+            // Logging in refetches the queries on screen
+            mockCurrentUserAdmin,
+            mockGetRecipes,
+            mockGetTags,
+            mockGetIngredientAndRecipeIngredients,
+            mockGetRecipeOne,
+            mockGetDisplayLadders,
+        ]);
+        const user = userEvent.setup();
+
+        // Act --------------------------------------------------
+        expect(await screen.findByText('Recipes'));
+        await enterViewRecipePage(screen, user, 'Mock Recipe', 'Instruction one.');
+        await user.click(screen.getByLabelText('Log in or sign up'));
+        expect(await screen.findByText('Log In')).not.toBeNull();
+        await user.click(screen.getByLabelText('Email'));
+        await user.keyboard('test@gmail.com');
+        await user.click(screen.getByLabelText('Password'));
+        await user.keyboard('password');
+        await user.click(screen.getByLabelText('Login'));
+
+        // Expect ------------------------------------------------
+        expect(await screen.findByLabelText('Logout')).not.toBeNull();
+        expect(await screen.findByText('Instruction one.')).not.toBeNull();
+    });
+
     it('should log out', async () => {
         // Render -----------------------------------------------
         renderComponent([
