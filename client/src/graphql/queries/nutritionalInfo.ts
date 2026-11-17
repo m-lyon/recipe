@@ -32,28 +32,7 @@ export const GET_RECIPE_NUTRITION = gql(`
         recipeById(_id: $recipeId) {
             _id
             nutrition {
-                total {
-                    calories
-                    protein
-                    carbs
-                    fat
-                }
-                ingredients {
-                    recipeIngredient
-                    status
-                    macros {
-                        calories
-                        protein
-                        carbs
-                        fat
-                    }
-                    reason {
-                        code
-                        message
-                    }
-                    childUncounted
-                    childRecipe
-                }
+                ...RecipeNutritionFields
             }
         }
         ingredientByIds(_ids: $ingredientIds) {
@@ -61,6 +40,44 @@ export const GET_RECIPE_NUTRITION = gql(`
             owner {
                 _id
             }
+        }
+    }
+`);
+
+export const RECIPE_NUTRITION_FIELDS = gql(`
+    fragment RecipeNutritionFields on RecipeNutrition {
+        total {
+            calories
+            protein
+            carbs
+            fat
+        }
+        ingredients {
+            recipeIngredient
+            status
+            macros {
+                calories
+                protein
+                carbs
+                fat
+            }
+            reason {
+                code
+                message
+            }
+            childUncounted
+            childRecipe
+        }
+    }
+`);
+
+export const GET_RECIPE_NUTRITION_PREVIEW = gql(`
+    query GetRecipeNutritionPreview(
+        $recipeId: MongoID
+        $ingredients: [NutritionDraftIngredientInput!]!
+    ) {
+        recipeNutritionPreview(recipeId: $recipeId, ingredients: $ingredients) {
+            ...RecipeNutritionFields
         }
     }
 `);

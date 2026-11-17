@@ -138,6 +138,14 @@ export const RECIPE_INGREDIENT_FIELDS = gql(`
                     _id
                     value
                 }
+                nutritionOverride {
+                    mode
+                    percent
+                    quantity
+                    unit {
+                        ...CliUnitFields
+                    }
+                }
                 ingredient {
                     __typename
                     ... on Ingredient {
@@ -388,6 +396,22 @@ export const DELETE_INGREDIENT_MEASURE = gql(`
     }
 `);
 
+export const SET_NUTRITION_OVERRIDE = gql(`
+    mutation CliSetNutritionOverride(
+        $id: MongoID!
+        $recipeIngredient: MongoID!
+        $nutritionOverride: RecipeIngredientNutritionOverrideInput
+    ) {
+        recipeSetNutritionOverride(
+            _id: $id
+            recipeIngredient: $recipeIngredient
+            nutritionOverride: $nutritionOverride
+        ) {
+            recordId
+        }
+    }
+`);
+
 export const GET_RECIPE_FILE_COMPONENTS = gql(`
     query CliGetRecipeFileComponents {
         ingredients: ingredientManyAll(limit: 5000) {
@@ -449,6 +473,14 @@ export const RECIPE_FILE_FIELDS = gql(`
                 prepMethod {
                     _id
                     value
+                }
+                nutritionOverride {
+                    mode
+                    percent
+                    quantity
+                    unit {
+                        ...CliUnitFields
+                    }
                 }
                 ingredient {
                     __typename

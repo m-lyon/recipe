@@ -76,6 +76,7 @@ describe('getEditableRecipeIngredientStr', () => {
 describe('getFinishedRecipeIngredientStr', () => {
     it('should display plural unit when a fraction greater than 1', () => {
         const item: FinishedRecipeIngredient = {
+            nutritionOverride: null,
             quantity: '3/2',
             unit: {
                 _id: '60f4d2e5c3d5a0a4f1b9c0eb',
@@ -110,6 +111,7 @@ describe('getFinishedRecipeIngredientStr', () => {
 
     it('should display plural ingredient when a fraction greater than 1', () => {
         const item: FinishedRecipeIngredient = {
+            nutritionOverride: null,
             quantity: '3/2',
             unit: null,
             size: null,

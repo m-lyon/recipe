@@ -463,6 +463,7 @@ export const mockUpdateRecipeIngredientsAdd = {
                                 {
                                     _id: mockRecipeIngredientIdSeven,
                                     __typename: 'RecipeIngredient',
+                                    nutritionOverride: null,
                                     quantity: '4/3',
                                     unit: mockTablespoon,
                                     size: null,
@@ -522,6 +523,7 @@ export const mockUpdateRecipeIngredientsEdit = {
                                 {
                                     _id: mockRecipeIngredientIdThree,
                                     __typename: 'RecipeIngredient',
+                                    nutritionOverride: null,
                                     quantity: '4/3',
                                     unit: mockTablespoon,
                                     size: null,
@@ -704,6 +706,7 @@ export const mockUpdateRecipeAddIngredientSubsection = {
                                 {
                                     _id: mockRecipeIngredientIdSeven,
                                     __typename: 'RecipeIngredient',
+                                    nutritionOverride: null,
                                     quantity: '5/3',
                                     unit: mockTablespoon,
                                     size: null,
@@ -1377,6 +1380,65 @@ export const mockUpdateRecipeRemoveYield = {
             recipeUpdateById: {
                 __typename: 'UpdateByIdRecipePayload',
                 record: { ...recipeOneData.record, yield: [] },
+            },
+        } satisfies UpdateRecipeMutation,
+    },
+};
+
+/** Recipe One with its first ingredient counting 15% of it in nutrition. */
+export const mockUpdateRecipeNutritionOverrideShare = {
+    request: {
+        query: UPDATE_RECIPE,
+        variables: {
+            id: recipeOneVars.id,
+            recipe: {
+                ...recipeOneVars.recipe,
+                ingredientSubsections: [
+                    {
+                        ...recipeOneVars.recipe.ingredientSubsections[0],
+                        ingredients: recipeOneVars.recipe.ingredientSubsections[0].ingredients.map(
+                            (ingr: object, index: number) =>
+                                index === 0
+                                    ? { ...ingr, nutritionOverride: { mode: 'share', percent: 15 } }
+                                    : ingr
+                        ),
+                    },
+                    recipeOneVars.recipe.ingredientSubsections[1],
+                ],
+            },
+        } satisfies UpdateRecipeMutationVariables,
+    },
+    result: {
+        data: {
+            __typename: 'Mutation',
+            recipeUpdateById: {
+                __typename: 'UpdateByIdRecipePayload',
+                record: {
+                    ...recipeOneData.record,
+                    ingredientSubsections: [
+                        {
+                            ...recipeOneData.record.ingredientSubsections[0],
+                            ingredients:
+                                recipeOneData.record.ingredientSubsections[0].ingredients.map(
+                                    (ingr, index) =>
+                                        index === 0
+                                            ? {
+                                                  ...ingr,
+                                                  nutritionOverride: {
+                                                      __typename:
+                                                          'RecipeIngredientNutritionOverride',
+                                                      mode: 'share',
+                                                      percent: 15,
+                                                      quantity: null,
+                                                      unit: null,
+                                                  },
+                                              }
+                                            : ingr
+                                ),
+                        },
+                        recipeOneData.record.ingredientSubsections[1],
+                    ],
+                },
             },
         } satisfies UpdateRecipeMutation,
     },

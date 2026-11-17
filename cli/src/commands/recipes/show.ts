@@ -3,6 +3,7 @@ import { Args } from '@oclif/core';
 import { BaseCommand } from '../../lib/base.js';
 import { resolveRecipe } from '../../lib/resolve.js';
 import { describeSource } from '../../lib/sources.js';
+import { describeOverride } from '../../lib/nutrition.js';
 import { measuresByIngredient } from '../../lib/measures.js';
 import { recipeIngredientIds } from '../../lib/nutrition.js';
 import { GET_NUTRITIONAL_INFOS } from '../../graphql/operations.js';
@@ -13,8 +14,9 @@ import { findNutrition, indexByIngredient, nutritionStatus } from '../../lib/nut
 
 export default class RecipesShow extends BaseCommand {
     static description =
-        'Show every ingredient in a recipe, across all subsections, with its nutrition state ' +
-        'and the reason it is not calculable.';
+        'Show every ingredient in a recipe, across all subsections, with its nutrition state, ' +
+        'how much of it the nutrition counts when that differs from the line, and the reason ' +
+        'it is not calculable.';
 
     static examples = [
         '<%= config.bin %> <%= command.id %> tomato-soup-a4f2k',
@@ -70,6 +72,7 @@ export default class RecipesShow extends BaseCommand {
                     // The hidden each unit is shown as no unit, as recipes render it.
                     unit: entry.unit && !entry.unit.hidden ? entry.unit.shortSingular : null,
                     nutrition: status.state,
+                    nutritionOverride: entry.nutritionOverride ?? null,
                     reason: status.reason,
                     source: info ? describeSource(info) : null,
                     prepMethod: info?.prepMethod?.value ?? null,
@@ -83,7 +86,9 @@ export default class RecipesShow extends BaseCommand {
                     text(entry.quantity),
                     text(entry.unit),
                     entry.type === 'recipe' ? `${entry.name} (sub-recipe)` : entry.name,
-                    entry.nutrition,
+                    entry.nutritionOverride
+                        ? `${entry.nutrition} (counts ${describeOverride(entry.nutritionOverride)})`
+                        : entry.nutrition,
                     entry.source && entry.prepMethod
                         ? `${entry.source} (${entry.prepMethod})`
                         : text(entry.source),

@@ -10,11 +10,14 @@ import { EditableTagList } from '@recipe/features/tags';
 import { EditableNotes } from './EditableNotes';
 import { EditableYield } from './EditableYield';
 import { EditableTitle } from './EditableTitle';
+import { DraftNutritionPanel } from './DraftNutritionPanel';
 import { RecipeActionButtons } from './RecipeActionButtons';
 import { EditableInstructionsTab } from './EditableInstructionsTab';
 import { EditableIngredientSubsections } from './EditableIngredientSubsections';
 
 interface Props {
+    /** The recipe being edited, when it is saved. */
+    recipeId?: string;
     rating: number;
     addRating: (rating: number) => void;
     submitButton: React.ReactNode;
@@ -25,6 +28,7 @@ interface Props {
 }
 export function EditableRecipe(props: Props) {
     const {
+        recipeId,
         rating,
         addRating,
         submitButton,
@@ -104,9 +108,12 @@ export function EditableRecipe(props: Props) {
                         }
                         Yield={<EditableYield />}
                         IngredientList={
-                            <EditableIngredientSubsections
-                                suppressItemInUseError={suppressItemInUseError}
-                            />
+                            <>
+                                <EditableIngredientSubsections
+                                    suppressItemInUseError={suppressItemInUseError}
+                                />
+                                <DraftNutritionPanel recipeId={recipeId} />
+                            </>
                         }
                         Notes={<EditableNotes />}
                     />

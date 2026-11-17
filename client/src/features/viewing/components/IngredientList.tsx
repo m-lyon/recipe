@@ -9,6 +9,7 @@ import { getFinishedRecipeIngredientStr } from '@recipe/utils/formatting';
 
 import { RecipeIngredient } from './RecipeIngredient';
 import { ApproximateIngredient } from './ApproximateIngredient';
+import { NutritionOverrideHint } from './NutritionOverrideHint';
 
 function UncountedIngredientHint() {
     return (
@@ -77,6 +78,9 @@ export function IngredientList(props: IngredientListProps) {
                             getFinishedRecipeIngredientStr(item)
                         )}
                         {uncountedIngredientIds?.has(item._id) && <UncountedIngredientHint />}
+                        {item.nutritionOverride && (
+                            <NutritionOverrideHint override={item.nutritionOverride} />
+                        )}
                     </ListItem>
                 );
             }

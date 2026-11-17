@@ -22,17 +22,19 @@ interface Props {
 }
 export function EditableIngredientSubsection(props: Props) {
     const { section, optionalRef, handleOpen, suppressItemInUseError } = props;
-    const { removeFinished, setFinished, setTitle, finished, title, remove, add } = useRecipeStore(
-        useShallow((state) => ({
-            removeFinished: state.removeFinishedIngredient,
-            setFinished: state.setFinishedIngredients,
-            setTitle: state.setIngredientSectionName,
-            finished: state.ingredientSections[section].finished,
-            title: state.ingredientSections[section].name,
-            remove: state.removeIngredientSection,
-            add: state.addIngredientSection,
-        }))
-    );
+    const { removeFinished, setFinished, setTitle, finished, title, remove, add, setOverride } =
+        useRecipeStore(
+            useShallow((state) => ({
+                removeFinished: state.removeFinishedIngredient,
+                setOverride: state.setNutritionOverride,
+                setFinished: state.setFinishedIngredients,
+                setTitle: state.setIngredientSectionName,
+                finished: state.ingredientSections[section].finished,
+                title: state.ingredientSections[section].name,
+                remove: state.removeIngredientSection,
+                add: state.addIngredientSection,
+            }))
+        );
     const isLastSection = useRecipeStore(
         (state) => section === state.ingredientSections.length - 1
     );
@@ -98,6 +100,7 @@ export function EditableIngredientSubsection(props: Props) {
                 <FinishedIngredient
                     key={item.key}
                     item={item}
+                    setNutritionOverride={(override) => setOverride(section, item.key, override)}
                     removeFinished={() => {
                         removeFinished(section, itemIndex);
                         if (item.unit && !item.unit.unique) {

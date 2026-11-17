@@ -18,8 +18,10 @@ import { validateItemNotInRecipe } from './validation.js';
 import { ReservedIngredientTags } from '../models/Ingredient.js';
 import { Ingredient, IngredientTC } from '../models/Ingredient.js';
 import { createOneResolver, updateByIdResolver } from './utils.js';
+import { draftNutrition, recipeNutrition } from '../utils/nutrition.js';
 import { RecipeTC, generateRecipeIdentifier } from '../models/Recipe.js';
-import { NutritionStatuses, UncountedCodes, recipeNutrition } from '../utils/nutrition.js';
+import { NutritionOverride, validateNutritionOverride } from '../models/Recipe.js';
+import { DraftIngredient, NutritionStatuses, UncountedCodes } from '../utils/nutrition.js';
 import { Recipe, RecipeCreateTC, RecipeIngredientTC, RecipeModifyTC } from '../models/Recipe.js';
 
 const IngredientOrRecipeTC = schemaComposer.createUnionTC({
@@ -155,6 +157,12 @@ RecipeIngredientTC.addRelation('prepMethod', {
     prepareArgs: { _id: (source) => source.prepMethod },
     projection: { prepMethod: true },
 });
+const NutritionOverrideTC = RecipeIngredientTC.getFieldOTC('nutritionOverride');
+NutritionOverrideTC.addRelation('unit', {
+    resolver: () => UnitTC.mongooseResolvers.findById(),
+    prepareArgs: { _id: (source: { unit: unknown }) => source.unit },
+    projection: { unit: true },
+});
 RecipeTC.addFields({
     images: {
         type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(ImageTC.getType()))),
@@ -232,6 +240,18 @@ RecipeTC.addFields({
                 result ?? { total: { calories: 0, protein: 0, carbs: 0, fat: 0 }, ingredients: [] }
             );
         },
+    },
+});
+
+const NutritionDraftIngredientITC = schemaComposer.createInputTC({
+    name: 'NutritionDraftIngredientInput',
+    fields: {
+        ingredient: 'MongoID!',
+        quantity: 'String',
+        unit: 'MongoID',
+        size: 'MongoID',
+        prepMethod: 'MongoID',
+        nutritionOverride: NutritionOverrideTC.getInputTypeComposer(),
     },
 });
 
@@ -389,6 +409,56 @@ RecipeModifyTC.addResolver({
     },
 });
 
+RecipeTC.addResolver({
+    name: 'nutritionPreview',
+    description:
+        'The nutrition of a recipe that is not saved, such as a draft being edited. The ' +
+        'ingredients of the result come in the order given. recipeId names the recipe being ' +
+        'edited, if it is saved.',
+    type: RecipeNutritionTC.NonNull,
+    args: { recipeId: 'MongoID', ingredients: NutritionDraftIngredientITC.NonNull.List.NonNull },
+    resolve: ({
+        args,
+    }: ResolveParams<{ recipeId?: string | null; ingredients: DraftIngredient[] }>) =>
+        draftNutrition(args.ingredients, args.recipeId),
+});
+
+RecipeModifyTC.addResolver({
+    name: 'setNutritionOverride',
+    description:
+        'Set or clear how much of one recipe line its nutrition counts, without changing the ' +
+        'line. Pass no nutritionOverride to count the line as written.',
+    type: RecipeTC.mongooseResolvers.updateById().getType(),
+    args: {
+        _id: 'MongoID!',
+        recipeIngredient: 'MongoID!',
+        nutritionOverride: NutritionOverrideTC.getInputTypeComposer(),
+    },
+    resolve: async ({
+        args,
+    }: ResolveParams<{
+        _id: string;
+        recipeIngredient: string;
+        nutritionOverride?: NutritionOverride | null;
+    }>) => {
+        const recipe = await Recipe.findById(args._id);
+        if (!recipe) throw new GraphQLError('Recipe not found');
+        const line = recipe.ingredientSubsections
+            .flatMap((subsection) => subsection.ingredients)
+            .find((ingredient) => String(ingredient._id) === args.recipeIngredient);
+        if (!line) {
+            throw new GraphQLError('The recipe has no such ingredient', {
+                extensions: { code: 'NOT_FOUND' },
+            });
+        }
+        await validateNutritionOverride(args.nutritionOverride, line.quantity);
+        line.set('nutritionOverride', args.nutritionOverride ?? undefined);
+        recipe.lastModified = new Date();
+        await recipe.save();
+        return { recordId: recipe._id, record: recipe };
+    },
+});
+
 export const RecipeQuery = {
     recipeById: RecipeTC.mongooseResolvers
         .findById()
@@ -435,6 +505,10 @@ export const RecipeQuery = {
             },
         })
         .setDescription('Count the number of recipes'),
+};
+
+export const RecipeQueryVerified = {
+    recipeNutritionPreview: RecipeTC.getResolver('nutritionPreview'),
 };
 
 export const RecipeMutation = {
@@ -533,4 +607,5 @@ export const RecipeMutation = {
     recipeCreateVeganVersion: RecipeModifyTC.getResolver('recipeCreateVeganVersion'),
     recipeArchiveById: RecipeModifyTC.getResolver('archiveById'),
     recipeUnarchiveById: RecipeModifyTC.getResolver('unarchiveById'),
+    recipeSetNutritionOverride: RecipeModifyTC.getResolver('setNutritionOverride'),
 };

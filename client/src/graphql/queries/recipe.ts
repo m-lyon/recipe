@@ -73,6 +73,17 @@ export const RECIPE_FIELDS_SUBSET = gql(`
     }
 `);
 
+export const NUTRITION_OVERRIDE_FIELDS = gql(`
+    fragment NutritionOverrideFields on RecipeIngredientNutritionOverride {
+        mode
+        percent
+        quantity
+        unit {
+            ...UnitFields
+        }
+    }
+`);
+
 export const RECIPE_FIELDS_FULL = gql(`
     fragment RecipeFieldsFull on Recipe {
         ...RecipeFieldsSubset
@@ -108,6 +119,9 @@ export const RECIPE_FIELDS_FULL = gql(`
                 }
                 prepMethod {
                     ...PrepMethodFields
+                }
+                nutritionOverride {
+                    ...NutritionOverrideFields
                 }
             }
         }

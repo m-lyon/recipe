@@ -101,6 +101,7 @@ export const mockRecipeOne: CompletedRecipeView = {
                 {
                     // normal ingrediens
                     __typename: 'RecipeIngredient',
+                    nutritionOverride: null,
                     _id: mockRecipeIngredientIdOne,
                     quantity: '1',
                     unit: mockTeaspoon,
@@ -111,6 +112,7 @@ export const mockRecipeOne: CompletedRecipeView = {
                 {
                     // ingredient with no unit
                     __typename: 'RecipeIngredient',
+                    nutritionOverride: null,
                     _id: mockRecipeIngredientIdTwo,
                     quantity: '1',
                     unit: mockEach,
@@ -121,6 +123,7 @@ export const mockRecipeOne: CompletedRecipeView = {
                 {
                     // ingredient with no unit and plural quantity
                     __typename: 'RecipeIngredient',
+                    nutritionOverride: null,
                     _id: mockRecipeIngredientIdThree,
                     quantity: '2',
                     unit: mockEach,
@@ -138,6 +141,7 @@ export const mockRecipeOne: CompletedRecipeView = {
                     // ingredient with fraction quantity
                     _id: mockRecipeIngredientIdFour,
                     __typename: 'RecipeIngredient',
+                    nutritionOverride: null,
                     quantity: '1/3',
                     unit: mockCup,
                     size: mockMedium,
@@ -148,6 +152,7 @@ export const mockRecipeOne: CompletedRecipeView = {
                     // ingredient with no prep method
                     _id: mockRecipeIngredientIdFive,
                     __typename: 'RecipeIngredient',
+                    nutritionOverride: null,
                     quantity: '1',
                     unit: mockOunce,
                     size: null,
@@ -209,6 +214,7 @@ export const mockRecipeThree: CompletedRecipeView = {
                 {
                     // normal ingredient
                     __typename: 'RecipeIngredient',
+                    nutritionOverride: null,
                     _id: mockRecipeIngredientIdOne,
                     quantity: '1',
                     unit: mockTeaspoon,
@@ -219,6 +225,7 @@ export const mockRecipeThree: CompletedRecipeView = {
                 {
                     // ingredient with no unit
                     __typename: 'RecipeIngredient',
+                    nutritionOverride: null,
                     _id: mockRecipeIngredientIdTwo,
                     quantity: '1',
                     unit: mockEach,
@@ -229,6 +236,7 @@ export const mockRecipeThree: CompletedRecipeView = {
                 {
                     // ingredient with no unit and plural quantity
                     __typename: 'RecipeIngredient',
+                    nutritionOverride: null,
                     _id: mockRecipeIngredientIdThree,
                     quantity: '2',
                     unit: mockEach,
@@ -238,6 +246,7 @@ export const mockRecipeThree: CompletedRecipeView = {
                 },
                 {
                     __typename: 'RecipeIngredient',
+                    nutritionOverride: null,
                     _id: mockRecipeIngredientIdNine,
                     quantity: '1.13',
                     unit: mockOunce,
@@ -247,6 +256,7 @@ export const mockRecipeThree: CompletedRecipeView = {
                 },
                 {
                     __typename: 'RecipeIngredient',
+                    nutritionOverride: null,
                     _id: mockRecipeIngredientIdTen,
                     quantity: '5',
                     unit: mockOunce,
@@ -256,6 +266,7 @@ export const mockRecipeThree: CompletedRecipeView = {
                 },
                 {
                     __typename: 'RecipeIngredient',
+                    nutritionOverride: null,
                     _id: mockRecipeIngredientIdEleven,
                     quantity: '26.1',
                     unit: mockOunce,
@@ -265,6 +276,7 @@ export const mockRecipeThree: CompletedRecipeView = {
                 },
                 {
                     __typename: 'RecipeIngredient',
+                    nutritionOverride: null,
                     _id: mockRecipeIngredientIdTwelve,
                     quantity: '101',
                     unit: mockOunce,
@@ -274,6 +286,7 @@ export const mockRecipeThree: CompletedRecipeView = {
                 },
                 {
                     __typename: 'RecipeIngredient',
+                    nutritionOverride: null,
                     _id: mockRecipeIngredientIdThirteen,
                     quantity: '251',
                     unit: mockOunce,
@@ -340,6 +353,7 @@ export const mockRecipeFour: CompletedRecipeView = {
                 {
                     _id: mockRecipeIngredientIdEight,
                     __typename: 'RecipeIngredient',
+                    nutritionOverride: null,
                     quantity: '1',
                     unit: mockTeaspoon,
                     size: null,
@@ -373,6 +387,7 @@ export const mockRecipeFive: CompletedRecipeView = {
                 {
                     _id: mockRecipeIngredientIdFourteen,
                     __typename: 'RecipeIngredient',
+                    nutritionOverride: null,
                     quantity: '1',
                     unit: mockTeaspoon,
                     size: null,
@@ -404,6 +419,7 @@ export const mockRecipeNew: CompletedRecipeView = {
             ingredients: [
                 {
                     __typename: 'RecipeIngredient',
+                    nutritionOverride: null,
                     _id: mockRecipeIngredientIdSix,
                     quantity: '2',
                     unit: mockTeaspoon,

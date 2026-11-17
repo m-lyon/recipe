@@ -3,12 +3,15 @@ import { Tag, TagCloseButton, TagLabel } from '@chakra-ui/react';
 
 import { getFinishedRecipeIngredientParts } from '@recipe/utils/formatting';
 
+import { NutritionOverrideButton } from './NutritionOverrideButton';
+
 interface Props {
     item: FinishedRecipeIngredient;
     removeFinished: () => void;
+    setNutritionOverride: (override: NutritionOverride | null) => void;
 }
 export function FinishedIngredient(props: Props) {
-    const { item, removeFinished } = props;
+    const { item, removeFinished, setNutritionOverride } = props;
     const { quantity, rest } = getFinishedRecipeIngredientParts(item);
     const tagQuantity = `${quantity}${rest.startsWith(' ') ? ' ' : ''}`;
     return (
@@ -38,6 +41,11 @@ export function FinishedIngredient(props: Props) {
                         {rest}
                     </TagLabel>
                 </span>
+                <NutritionOverrideButton
+                    item={item}
+                    line={`${tagQuantity}${rest.trim()}`}
+                    setNutritionOverride={setNutritionOverride}
+                />
                 <TagCloseButton
                     onClick={() => removeFinished()}
                     aria-label={`Remove ${quantity}${rest}`}

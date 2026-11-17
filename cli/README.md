@@ -84,6 +84,8 @@ The cookie cache lives at `~/.cache/recipe-cli/session-<hash of RECIPE_API_URL>`
 | `recipe nutrition set <ingredient> --per-100g <kcal,p,c,f>` | write values entered by hand, linked to no database (source `manual`); `--name` says where they came from, `--prep` writes a prep method's record |
 | `recipe nutrition set ... --per-100ml <kcal,p,c,f>` | the same for a liquid, converted with the ingredient's volume measure for that prep method |
 | `recipe nutrition measure <ingredient> --unit <u> --grams <n>` | stores a weight you supply, for a unit no USDA portion carries (a scoop) |
+| `recipe nutrition override <recipe> <line> --share <n>` | the nutrition counts a percentage of one recipe line, such as frying oil; the line does not change |
+| `recipe nutrition override ... --amount <q> --unit <u>` | the nutrition counts a set amount in place of the line, such as pepper "to taste"; `--negligible` counts nothing, `--clear` counts the line again |
 | `recipe nutrition unlink <ingredient>` | removes the `NutritionalInfo` (with `--prep`, that prep method's record); measures stay |
 | `recipe nutrition <identifier>` | a recipe's totals and one serving as the API calculates them, with every ingredient not fully counted; recipes used as ingredients count through their yield |
 | `recipe nutrition status` | calculable recipe rows, and the missing weights |
@@ -122,6 +124,10 @@ writes the same shape, so export, edit and update is the way to change one line.
 - Any reference may be a MongoID instead. `export` writes an id where a name does not resolve
   back to the same object: a one-recipe unit, or two ingredients with one name.
 - A line with a quantity and no unit is stored with the hidden `each` unit.
+- A line may carry a `nutritionOverride`, as `nutrition override` sets it:
+  `{ "mode": "share", "percent": 15 }`, `{ "mode": "amount", "quantity": "1/4", "unit": "tsp" }`
+  or `{ "mode": "negligible" }`. A line without one counts as written. `export` writes each
+  override, so an update from an exported file keeps them.
 - Other keys: `pluralTitle`, `subTitle`, `source`, `notes`. `null` clears an optional field.
 - `create` needs `title`, `numServings`, `ingredientSubsections` and `instructionSubsections`.
   `isIngredient` defaults to `false`.

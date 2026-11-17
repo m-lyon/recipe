@@ -34,7 +34,7 @@
         "description": "Search Open Food Facts and inspect a product by barcode"
       },
       "nutrition": {
-        "description": "Link ingredients to USDA food items or Open Food Facts products"
+        "description": "Link ingredients to USDA food items or Open Food Facts products, and set how much of a recipe line the nutrition counts"
       }
     }
   },

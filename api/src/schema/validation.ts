@@ -17,7 +17,7 @@ export async function validateItemNotInRecipe(
     };
     type QueryType =
         | IngredientsQuery
-        | { $or: [IngredientsQuery, { 'yield.unit': Types.ObjectId }] };
+        | { $or: Array<IngredientsQuery | Record<string, Types.ObjectId>> };
 
     let query: QueryType;
 
@@ -26,6 +26,7 @@ export async function validateItemNotInRecipe(
             query = {
                 $or: [
                     { 'ingredientSubsections.ingredients': { $elemMatch: { unit: itemId } } },
+                    { 'ingredientSubsections.ingredients.nutritionOverride.unit': itemId },
                     { 'yield.unit': itemId },
                 ],
             };
